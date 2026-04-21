@@ -1,0 +1,8 @@
+# Configuração mínima para Supabase CLI (funções + db query --linked).
+# Depois de `npm run supabase:link`, o CLI preenche o project ref aqui.
+
+[api]
+enabled = true
+
+[functions.register-free]
+verify_jwt = false

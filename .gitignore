@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Claude / worktrees locais (nunca versionar)
+.claude/
+
+# Áudio bem-estar: ficheiros grandes — manter no disco, fora do Git
+public/assets/wellness/*.mp3
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Environment variables (NUNCA commitar)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+vite-dev.err
+vite-dev.log
+ai-server.err
+ai-server.log
+
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Vite cache
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# Supabase: bundle gerado localmente (fonte: deploy_registration_and_admin_rls.ps1)
+supabase/*.bundle.sql
+
+# Estado local do Supabase CLI (ex.: project-ref após link)
+supabase/.temp/
+
+# Pastas temporárias de sincronização (ex.: Drive)
+.tmp.driveupload/

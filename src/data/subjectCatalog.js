@@ -1,0 +1,96 @@
+export const subjectCatalog = [
+  {
+    id: 'subject-lingua-portuguesa',
+    nome: 'Lingua Portuguesa',
+    area: 'Basicas',
+    aliases: ['Portugues', 'Lingua portuguesa', 'Lingua portuguesa', 'Lingua portguesa'],
+  },
+  {
+    id: 'subject-matematica',
+    nome: 'Matematica',
+    area: 'Basicas',
+    aliases: ['Raciocinio Matematico'],
+  },
+  {
+    id: 'subject-informatica',
+    nome: 'Informatica',
+    area: 'Basicas',
+    aliases: ['Nocoes de Informatica', 'Tecnologia da Informacao', 'Computacao'],
+  },
+  {
+    id: 'subject-atualidades',
+    nome: 'Atualidades',
+    area: 'Basicas',
+    aliases: ['Conhecimentos Gerais', 'Atualidades e Conhecimentos Gerais'],
+  },
+  {
+    id: 'subject-direito-constitucional',
+    nome: 'Nocoes de Direito Constitucional',
+    area: 'Juridicas',
+    aliases: ['Direito Constitucional', 'Constitucional'],
+  },
+  {
+    id: 'subject-direito-administrativo',
+    nome: 'Nocoes de Direito Administrativo',
+    area: 'Juridicas',
+    aliases: ['Direito Administrativo', 'Administrativo'],
+  },
+  {
+    id: 'subject-direito-penal',
+    nome: 'Nocoes de Direito Penal',
+    area: 'Juridicas',
+    aliases: ['Direito Penal', 'Penal'],
+  },
+  {
+    id: 'subject-processo-penal',
+    nome: 'Nocoes de Processo Penal',
+    area: 'Juridicas',
+    aliases: ['Direito Processual Penal', 'Processo Penal', 'Processual Penal'],
+  },
+  {
+    id: 'subject-direitos-humanos',
+    nome: 'Nocoes de Direitos Humanos',
+    area: 'Juridicas',
+    aliases: ['Direitos Humanos'],
+  },
+  {
+    id: 'subject-direito-penal-militar',
+    nome: 'Nocoes de Direito Penal Militar',
+    area: 'Juridicas',
+    aliases: ['Direito Penal Militar', 'Penal Militar'],
+  },
+  {
+    id: 'subject-processo-penal-militar',
+    nome: 'Nocoes de Direito Processual Penal Militar',
+    area: 'Juridicas',
+    aliases: ['Direito Processual Penal Militar', 'Processo Penal Militar', 'Processual Penal Militar'],
+  },
+  {
+    id: 'subject-legislacao-militar',
+    nome: 'Legislacao Pertinente ao Policial Militar',
+    area: 'Policial',
+    aliases: [
+      'Legislacao Pertinente a Atuacao do Policial Militar de Alagoas',
+      'Legislacao Pertinente ao Policial Militar de Alagoas',
+      'Legislacao Militar',
+    ],
+  },
+  {
+    id: 'subject-biologia',
+    nome: 'Biologia',
+    area: 'Basicas',
+    aliases: [],
+  },
+  {
+    id: 'subject-fisica',
+    nome: 'Fisica',
+    area: 'Basicas',
+    aliases: [],
+  },
+  {
+    id: 'subject-quimica',
+    nome: 'Quimica',
+    area: 'Basicas',
+    aliases: [],
+  },
+];
