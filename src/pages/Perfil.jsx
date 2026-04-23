@@ -1,6 +1,7 @@
 ﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BadgeCheck,
+  BookOpen,
   Camera,
   Check,
   CheckCircle2,
@@ -20,6 +21,7 @@ import {
   User2,
   Users,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
 import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
 
@@ -494,6 +496,15 @@ export default function Perfil(props) {
 
   const handleSave = async () => {
     if (typeof onSaveProfile !== 'function') return;
+    if (!currentUserId) {
+      setSaveState({ type: 'error', message: 'Sessão indisponível. Entre novamente para salvar o perfil.' });
+      return;
+    }
+    const normalizedCpf = normalizeCpf(form.cpf);
+    if (normalizedCpf && !isValidCpf(normalizedCpf)) {
+      setSaveState({ type: 'error', message: 'CPF inválido. Revise os números antes de salvar.' });
+      return;
+    }
     setSaving(true);
     setSaveState({ type: '', message: '' });
     try {
@@ -531,11 +542,22 @@ export default function Perfil(props) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file || typeof onChangeAvatar !== 'function') return;
+    const isImage = String(file.type || '').startsWith('image/');
+    if (!isImage) {
+      setSaveState({ type: 'error', message: 'Formato inválido. Envie uma imagem.' });
+      return;
+    }
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setSaveState({ type: 'error', message: 'Imagem muito grande. O limite é 5 MB.' });
+      return;
+    }
     setAvatarBusy(true);
     setSaveState({ type: '', message: '' });
     try {
       await onChangeAvatar(file);
       setSaveState({ type: 'success', message: 'Foto atualizada com persistência real.' });
+      await loadRemoteProfile();
     } catch (error) {
       console.error(error);
       setSaveState({ type: 'error', message: 'Não foi possível atualizar a foto.' });
@@ -545,17 +567,21 @@ export default function Perfil(props) {
   };
 
   const handlePasswordReset = async () => {
-    if (!currentUserEmail) return;
+    const accountEmail = String(profileData?.email || currentUserEmail || '').trim();
+    if (!accountEmail) {
+      setSaveState({ type: 'error', message: 'E-mail da conta não encontrado para enviar a redefinição.' });
+      return;
+    }
     setPasswordBusy(true);
     setSaveState({ type: '', message: '' });
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(currentUserEmail, {
+      const { error } = await supabase.auth.resetPasswordForEmail(accountEmail, {
         redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
       });
       if (error) throw error;
       setSaveState({
         type: 'success',
-        message: `E-mail de redefinição enviado para ${currentUserEmail}. Verifique a caixa de entrada e o spam.`,
+        message: `E-mail de redefinição enviado para ${accountEmail}. Verifique a caixa de entrada e o spam.`,
       });
     } catch (error) {
       console.error(error);
@@ -736,9 +762,11 @@ export default function Perfil(props) {
                   ['Esquadrões', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vinculo'],
                   ['Proxima meta', `${formatNumber(xpSummary.nextLevelXp || 0)} XP`],
                 ].map(([label, value]) => (
-                  <div key={label} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                  <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
                     <span className="text-sm text-slate-600">{label}</span>
-                    <span className="text-right text-sm font-bold text-slate-950">{value}</span>
+                    <span className="block min-w-0 truncate text-right text-sm font-bold text-slate-950" title={String(value || '')}>
+                      {value}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -746,29 +774,25 @@ export default function Perfil(props) {
           </aside>
 
           <main className="space-y-6">
-            <Card className="overflow-hidden">
-              <div className={cn('relative px-6 py-6 text-white sm:px-7', HERO_BAR)}>
-                <div className="relative grid gap-5 xl:grid-cols-[1.15fr_0.85fr] xl:items-end">
-                  <div>
-                    <Badge tone="dark">Perfil conectado</Badge>
-                    <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-[38px]">
-                      Controle real da sua conta e da sua presenca na plataforma
-                    </h2>
-                    <p className="mt-3 max-w-3xl text-sm leading-6 text-blue-100">
-                      Username, codinome, CPF, XP, selos, assinatura e esquadrões alimentados pelos dados reais do app.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {heroStats.map((item) => (
-                      <div key={item.label} className="rounded-[22px] border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-blue-100">{item.label}</p>
-                        <p className="mt-2 text-sm font-semibold text-white">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <Card className="overflow-hidden p-0">
+              <PageHeadPremium
+                className="!rounded-none"
+                icon={User2}
+                badge={
+                  <PageHeadPremiumBadge icon={ShieldCheck}>Perfil conectado</PageHeadPremiumBadge>
+                }
+                title="Controle real da sua conta e da sua presença na plataforma"
+                titleAs="h2"
+                subtitle="Username, codinome, CPF, XP, selos, assinatura e esquadrões alimentados pelos dados reais do app."
+                statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
+                stats={[
+                  { key: 'p', label: 'Perfil', value: heroStats[0].value, icon: User2, accent: 'blue' },
+                  { key: 'pl', label: 'Plano', value: heroStats[1].value, icon: Crown, accent: 'amber' },
+                  { key: 'lv', label: 'Level', value: heroStats[2].value, icon: Sparkles, accent: 'violet' },
+                  { key: 'ab', label: 'Audiolivros', value: heroStats[3].value, icon: BookOpen, accent: 'emerald' },
+                ]}
+                leadingClassName="min-w-0 flex-1"
+              />
             </Card>
 
             {saveState.message ? (

@@ -21,6 +21,7 @@ import {
   Cloud,
   ArrowUpRight,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function Aplicativos() {
   return (
@@ -34,30 +35,28 @@ export default function Aplicativos() {
         </span>
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-6 border-b border-gray-200 pb-4 md:flex-row md:items-end">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-sm">
-            <Smartphone size={14} strokeWidth={3} />
-            Estude em qualquer lugar
+      <PageHeadPremium
+        icon={Smartphone}
+        badge={
+          <PageHeadPremiumBadge icon={Smartphone}>Estude em qualquer lugar</PageHeadPremiumBadge>
+        }
+        title={
+          (
+            <>
+              O Papirando no <span className="bg-gradient-to-r from-sky-200 to-indigo-200 bg-clip-text text-transparent">seu bolso</span>
+            </>
+          )
+        }
+        titleAs="h2"
+        subtitle="A mesma potência da plataforma web, agora otimizada para iOS e Android. Baixe seus materiais e estude offline."
+        trailing={(
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <TopPill icon={Cloud} text="Sincronização em nuvem" />
+            <TopPill icon={ShieldCheck} text="Acesso rápido e seguro" />
           </div>
-
-          <h2 className="text-4xl font-semibold leading-tight tracking-tighter text-slate-900 lg:text-5xl">
-            O Papirando no{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              seu bolso
-            </span>
-          </h2>
-
-          <p className="max-w-3xl text-lg font-medium leading-relaxed text-gray-500">
-            A mesma potência da plataforma web, agora otimizada para iOS e Android. Baixe seus materiais e estude offline.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <TopPill icon={Cloud} text="Sincronização em nuvem" />
-          <TopPill icon={ShieldCheck} text="Acesso rápido e seguro" />
-        </div>
-      </div>
+        )}
+        trailingClassName="w-full min-w-0 sm:w-auto"
+      />
 
       <div className="group relative flex flex-col items-center justify-between gap-14 overflow-hidden rounded-[3.5rem] bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 p-8 text-white shadow-2xl md:p-10 lg:flex-row lg:p-16">
         <div className="pointer-events-none absolute -mr-20 -mt-20 h-[520px] w-[520px] rounded-full bg-blue-400/20 blur-[110px]" />

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { BookOpen, Database, Pencil, Plus, Save, Tags, Trash2, X } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const EMPTY_FORM = {
   id: null,
@@ -122,22 +123,21 @@ export default function AdminDisciplinasPadrao({
         </div>
       ) : null}
 
-      <div className="rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-white p-6 shadow-sm">
-        <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-700">
-          <Database size={13} />
-          Banco padrão de disciplinas
-        </div>
-        <h2 className="page-title mt-4 text-4xl font-semibold tracking-tight text-slate-900">Padronização das disciplinas</h2>
-        <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-          Cadastre o nome canônico e os aliases aceitos para evitar duplicidade como Português x Língua Portuguesa.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard icon={BookOpen} label="Disciplinas padrao" value={stats.total} />
-        <StatCard icon={Tags} label="Aliases cadastrados" value={stats.aliases} />
-        <StatCard icon={Database} label="Areas" value={stats.areas} />
-      </div>
+      <PageHeadPremium
+        icon={Database}
+        badge={
+          <PageHeadPremiumBadge icon={Database}>Banco padrão de disciplinas</PageHeadPremiumBadge>
+        }
+        title="Padronização das disciplinas"
+        subtitle="Cadastre o nome canônico e os aliases aceitos para evitar duplicidade como Português x Língua Portuguesa."
+        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3"
+        stats={[
+          { key: 'd', label: 'Disciplinas padrão', value: String(stats.total), icon: BookOpen, accent: 'blue' },
+          { key: 'a', label: 'Aliases', value: String(stats.aliases), icon: Tags, accent: 'violet' },
+          { key: 'r', label: 'Áreas', value: String(stats.areas), icon: Database, accent: 'emerald' },
+        ]}
+        leadingClassName="min-w-0 flex-1"
+      />
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
         <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm">
@@ -302,18 +302,6 @@ export default function AdminDisciplinasPadrao({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-[1.8rem] border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
-        <Icon size={12} />
-        {label}
-      </div>
-      <p className="mt-4 text-3xl font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

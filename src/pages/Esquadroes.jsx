@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
   ClipboardList,
+  CircleHelp,
   Copy,
   Crown,
   Filter,
@@ -19,7 +20,6 @@ import {
   Plus,
   Search,
   Send,
-  Settings,
   Share2,
   Shield,
   Sparkles,
@@ -41,7 +41,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { shapeSquadFromCommunityPost, splitSquadForCommunityPostUpdate } from '../lib/squadRemote';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const EMPTY_FORM = {
   name: '',
@@ -59,6 +58,30 @@ const DEFAULT_SQUAD_PERMISSIONS = {
   publishActivities: true,
   pinNotices: true,
 };
+
+const CURSINHO_ROLE_OPTIONS = ['Diretor', 'Coordenador', 'Professor', 'Aluno'];
+
+function normalizeRoleLabel(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (value.includes('diretor') || value.includes('dono')) return 'Diretor';
+  if (value.includes('coordenador') || value.includes('coordena')) return 'Coordenador';
+  if (value.includes('professor')) return 'Professor';
+  return 'Aluno';
+}
+
+function getRolePillClass(role) {
+  const normalized = normalizeRoleLabel(role);
+  if (normalized === 'Diretor') {
+    return 'border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800';
+  }
+  if (normalized === 'Coordenador') {
+    return 'border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 text-violet-700';
+  }
+  if (normalized === 'Professor') {
+    return 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700';
+  }
+  return 'border-slate-200 bg-slate-100 text-slate-700';
+}
 
 const EMPTY_ADMIN_FLOW = {
   type: '',
@@ -109,7 +132,7 @@ function buildDefaultRoster(squad) {
     {
       id: `owner-${squad?.id || 'squad'}`,
       name: ownerName,
-      role: teacherNames.has(ownerName) ? 'Professor' : 'Dono do cursinho',
+      role: 'Diretor',
       tag: 'Gestão total',
       avatar: teachers[0]?.avatar || '',
       subject: teachers[0]?.subject || 'Coordenação geral',
@@ -139,7 +162,14 @@ function normalizeSquad(squad) {
           avatar: String(teacher.avatar || '').trim(),
           bio: String(teacher.bio || '').trim(),
         }))
-      : [];
+      : [
+          {
+            id: `teacher-${squad.id || 'squad'}-owner`,
+            name: ownerName,
+            subject: 'Coordenação geral',
+            avatar: '',
+          },
+        ];
 
   const rosterSource = Array.isArray(squad.roster) && squad.roster.length ? squad.roster : buildDefaultRoster({ ...squad, teachers });
   const roster = dedupeById(
@@ -183,7 +213,7 @@ function normalizeSquad(squad) {
     teachers,
     roster,
     subjects,
-    members: Math.max(1, roster.length),
+    members: Math.max(Number(squad.members || 0), roster.length || 1),
     notices: Array.isArray(squad.notices) ? squad.notices : [],
     activities: Array.isArray(squad.activities) ? squad.activities : [],
     simulados: Array.isArray(squad.simulados) ? squad.simulados : [],
@@ -200,19 +230,214 @@ function mapCommunityPostToSquad(post = {}) {
   return normalizeSquad(shapeSquadFromCommunityPost(post));
 }
 
-function getInternalSections(hasSelectedSquad, canAccessSettings) {
+function buildDemoEngagementSquad(displayName, profileAvatarUrl) {
+  const owner = String(displayName || 'Coordenação PF').trim();
+  const av = (u) => `https://i.pravatar.cc/150?u=${encodeURIComponent(u)}`;
+
+  return normalizeSquad({
+    id: 'demo-engajamento',
+    name: 'Esquadrão PF 2026',
+    owner,
+    roleLabel: 'Professor',
+    focus: 'Polícia Federal',
+    description:
+      'Simulação de cursinho altamente engajado: mural ativo, listas internas, simulados semanais e ranking por XP.',
+    inviteCode: 'PF2026-ALFA',
+    visibility: 'Privado',
+    members: 214,
+    rankingTier: 'Ouro',
+    nextEvent: 'Plantão hoje · 19h · Constitucional',
+    teachers: [
+      { id: 't1', name: 'Prof. Marcelo Farias', subject: 'Penal', avatar: av('pf-marcelo'), bio: 'Ex-questões PF · foco em parte geral.' },
+      { id: 't2', name: 'Profa. Ana Cordeiro', subject: 'Constitucional', avatar: av('pf-ana'), bio: 'Controle e ADI na prática de prova.' },
+      { id: 't3', name: 'Prof. Bruno Mello', subject: 'RLM', avatar: av('pf-bruno'), bio: 'Raciocínio rápido para provas longas.' },
+      { id: 't4', name: 'Profa. Helena Castro', subject: 'Português', avatar: av('pf-helena'), bio: 'Interpretação e concordância.' },
+    ],
+    notices: [
+      {
+        id: 'n1',
+        title: 'Virada final — protocolo de revisão',
+        text: 'Duas semanas decisivas: teoria curta de manhã, 80 questões à tarde, plantão à noite. Quem faltar a 2 simulados seguidos cai do ranking de presença.',
+        publishedBy: 'Profa. Ana Cordeiro',
+        publishedByAvatar: av('pf-ana'),
+        publishedAtLabel: 'Hoje · 08:12',
+        pinned: true,
+      },
+      {
+        id: 'n2',
+        title: 'Plantão de dúvidas (sala interna)',
+        text: 'Hoje 20h: tratem número da questão e alternativa marcada. Professores respondem em thread única para não perder nada.',
+        publishedBy: owner,
+        publishedByAvatar: profileAvatarUrl || av(owner),
+        publishedAtLabel: 'Hoje · 07:45',
+        pinned: false,
+      },
+      {
+        id: 'n3',
+        title: 'Regra do simulado PF 09',
+        text: 'Prova única, sem pausa. Gabarito libera 30 min após o encerramento. Discussão só no fórum na tag Simulado.',
+        publishedBy: 'Prof. Marcelo Farias',
+        publishedByAvatar: av('pf-marcelo'),
+        publishedAtLabel: 'Ontem · 18:20',
+        pinned: false,
+      },
+      {
+        id: 'n4',
+        title: 'Banco de questões — novas listas',
+        text: 'Subimos Constitucional 05 e Penal revisão 02. Prioridade para quem está abaixo de 75% de acerto em ADI.',
+        publishedBy: owner,
+        publishedByAvatar: profileAvatarUrl || av(owner),
+        publishedAtLabel: 'Ontem · 11:02',
+        pinned: false,
+      },
+      {
+        id: 'n5',
+        title: 'Comportamento no fórum interno',
+        text: 'Sem print de prova de outras bancas com marca d’água de cursinho. Respeito e foco: dúvida objetiva, resposta objetiva.',
+        publishedBy: owner,
+        publishedByAvatar: profileAvatarUrl || av(owner),
+        publishedAtLabel: '3 dias atrás',
+        pinned: false,
+      },
+    ],
+    activities: [
+      {
+        id: 'a1',
+        title: 'Lista PF — Constitucional 05',
+        status: 'Aberta',
+        helper: '52 questões · ADI, controle concentrado e súmulas vinculantes.',
+        dueDate: '24/04',
+        dueTime: '22:00',
+        publishedBy: 'Profa. Ana Cordeiro',
+        publishedByAvatar: av('pf-ana'),
+        publishedAtLabel: 'Há 2 h',
+        questionPackId: 'q-1',
+      },
+      {
+        id: 'a2',
+        title: 'Penal — Concurso de pessoas (bloco seco)',
+        status: 'Aberta',
+        helper: '70 questões para cravar autor, coautor, partícipes e excludentes.',
+        dueDate: '25/04',
+        dueTime: '21:30',
+        publishedBy: 'Prof. Marcelo Farias',
+        publishedByAvatar: av('pf-marcelo'),
+        publishedAtLabel: 'Há 5 h',
+        questionPackId: 'q-2',
+      },
+      {
+        id: 'a3',
+        title: 'RLM — Proporções e regra de três composta',
+        status: 'Aberta',
+        helper: '40 questões com tempo cronometrado sugerido (35 min).',
+        dueDate: '26/04',
+        dueTime: '20:00',
+        publishedBy: 'Prof. Bruno Mello',
+        publishedByAvatar: av('pf-bruno'),
+        publishedAtLabel: 'Ontem',
+        questionPackId: 'q-3',
+      },
+      {
+        id: 'a4',
+        title: 'Português — concordância nominal profunda',
+        status: 'Em revisão',
+        helper: 'Lista comentada pela Profa. Helena na sexta.',
+        dueDate: '28/04',
+        dueTime: '23:59',
+        publishedBy: 'Profa. Helena Castro',
+        publishedByAvatar: av('pf-helena'),
+        publishedAtLabel: 'Há 3 dias',
+        questionPackId: 'q-4',
+      },
+    ],
+    simulados: [
+      {
+        id: 's1',
+        title: 'Simulado PF 09 — Caderno completo',
+        date: '27/04',
+        time: '14:00',
+        dateLabel: '27/04 • 14:00',
+        helper: '90 questões · todas as áreas · ranking interno na segunda.',
+        publishedBy: owner,
+        publishedByAvatar: profileAvatarUrl || av(owner),
+        publishedAtLabel: 'Há 1 dia',
+      },
+      {
+        id: 's2',
+        title: 'Sprint noturno (45 questões)',
+        date: '29/04',
+        time: '19:30',
+        dateLabel: '29/04 • 19:30',
+        helper: 'Treino de resistência para provas longas.',
+        publishedBy: 'Prof. Bruno Mello',
+        publishedByAvatar: av('pf-bruno'),
+        publishedAtLabel: 'Há 2 dias',
+      },
+      {
+        id: 's3',
+        title: 'Simulado extra — Penal + Constitucional',
+        date: '02/05',
+        time: '09:00',
+        dateLabel: '02/05 • 09:00',
+        helper: 'Foco em jurisprudência e súmulas dos últimos 24 meses.',
+        publishedBy: 'Prof. Marcelo Farias',
+        publishedByAvatar: av('pf-marcelo'),
+        publishedAtLabel: 'Há 4 dias',
+      },
+    ],
+    questionPosts: [
+      { id: 'q-1', title: 'Lista PF — Constitucional 05', meta: '214 respostas · 81% acerto · média 48 min', tag: 'Constitucional', publishedBy: 'Profa. Ana Cordeiro', publishedByAvatar: av('pf-ana'), publishedAtLabel: 'Há 2 h', questionsCount: 52 },
+      { id: 'q-2', title: 'Penal — Concurso de pessoas', meta: '198 respostas · 74% acerto', tag: 'Penal', publishedBy: 'Prof. Marcelo Farias', publishedByAvatar: av('pf-marcelo'), publishedAtLabel: 'Há 5 h', questionsCount: 70 },
+      { id: 'q-3', title: 'RLM — Proporções avançadas', meta: '176 respostas · 69% acerto', tag: 'RLM', publishedBy: 'Prof. Bruno Mello', publishedByAvatar: av('pf-bruno'), publishedAtLabel: 'Ontem', questionsCount: 40 },
+      { id: 'q-4', title: 'Português — Concordância', meta: '165 respostas · 77% acerto', tag: 'Português', publishedBy: 'Profa. Helena Castro', publishedByAvatar: av('pf-helena'), publishedAtLabel: 'Ontem', questionsCount: 38 },
+      { id: 'q-5', title: 'Atualidades — Janeiro a abril', meta: '142 respostas · 72% acerto', tag: 'Atualidades', publishedBy: owner, publishedByAvatar: profileAvatarUrl || av(owner), publishedAtLabel: 'Há 2 dias', questionsCount: 30 },
+      { id: 'q-6', title: 'Simulado PF 08 — revisão comentada', meta: '189 tentativas · gabarito liberado', tag: 'Simulado', publishedBy: owner, publishedByAvatar: profileAvatarUrl || av(owner), publishedAtLabel: 'Há 3 dias', questionsCount: 90 },
+      { id: 'q-7', title: 'Informativos STF — bloco 12', meta: '128 respostas · 68% acerto', tag: 'Constitucional', publishedBy: 'Profa. Ana Cordeiro', publishedByAvatar: av('pf-ana'), publishedAtLabel: 'Há 4 dias', questionsCount: 25 },
+      { id: 'q-8', title: 'Desafio semanal — misto 60q', meta: '240 respostas · ranking por tempo', tag: 'Misto', publishedBy: 'Prof. Bruno Mello', publishedByAvatar: av('pf-bruno'), publishedAtLabel: 'Há 5 dias', questionsCount: 60 },
+    ],
+    internalRanking: [
+      { id: 'r1', name: 'Livia Nogueira', metric: '14.280 XP', tier: 'Diamante', avatar: av('livia-n'), rank: 1 },
+      { id: 'r2', name: 'Ana Clara', metric: '13.940 XP', tier: 'Ouro', avatar: av('ana-clara'), rank: 2 },
+      { id: 'r3', name: 'Mateus Freire', metric: '13.210 XP', tier: 'Ouro', avatar: av('mateus-f'), rank: 3 },
+      { id: 'r4', name: 'João Victor', metric: '12.880 XP', tier: 'Ouro', avatar: av('joao-v'), rank: 4 },
+      { id: 'r5', name: 'Sara Dantas', metric: '12.100 XP', tier: 'Prata', avatar: av('sara-d'), rank: 5 },
+      { id: 'r6', name: 'Daniel Souza', metric: '11.650 XP', tier: 'Prata', avatar: av('daniel-s'), rank: 6 },
+      { id: 'r7', name: 'Lara Mendes', metric: '11.200 XP', tier: 'Prata', avatar: av('lara-m'), rank: 7 },
+      { id: 'r8', name: 'Ricardo Prado', metric: '10.400 XP', tier: 'Bronze', avatar: av('ricardo-p'), rank: 8 },
+    ],
+    permissions: { ...DEFAULT_SQUAD_PERMISSIONS },
+    roster: [
+      { id: 'm-owner', name: owner, role: 'Diretor', tag: 'Gestão total', avatar: profileAvatarUrl || av(owner), subject: 'Coordenação', email: `${owner.split(' ')[0]?.toLowerCase() || 'coord'}@cursopf.demo`, joinedAt: 'Desde o lançamento' },
+      { id: 'm-t1', name: 'Prof. Marcelo Farias', role: 'Professor principal', tag: 'Selo professor · Penal', avatar: av('pf-marcelo'), subject: 'Penal', email: 'marcelo.farias@cursopf.demo', joinedAt: 'Jan/2026' },
+      { id: 'm-t2', name: 'Profa. Ana Cordeiro', role: 'Professor', tag: 'Selo professor · Const.', avatar: av('pf-ana'), subject: 'Constitucional', email: 'ana.cordeiro@cursopf.demo', joinedAt: 'Jan/2026' },
+      { id: 'm-t3', name: 'Prof. Bruno Mello', role: 'Professor', tag: 'Selo professor · RLM', avatar: av('pf-bruno'), subject: 'RLM', email: 'bruno.mello@cursopf.demo', joinedAt: 'Fev/2026' },
+      { id: 'm-t4', name: 'Profa. Helena Castro', role: 'Professor', tag: 'Selo professor · Port.', avatar: av('pf-helena'), subject: 'Português', email: 'helena.castro@cursopf.demo', joinedAt: 'Fev/2026' },
+      { id: 'm-mon', name: 'Carla Menezes', role: 'Monitora', tag: 'Suporte e correção', avatar: av('carla-mon'), subject: 'Monitoria', email: 'carla.menezes@cursopf.demo', joinedAt: 'Mar/2026' },
+      { id: 'm-a1', name: 'Livia Nogueira', role: 'Aluna', tag: 'Top 1 XP', avatar: av('livia-n'), subject: '', email: 'livia.n@email.demo', joinedAt: 'Jan/2026', streakDays: 18 },
+      { id: 'm-a2', name: 'Ana Clara', role: 'Aluna', tag: 'Presença 98%', avatar: av('ana-clara'), subject: '', email: 'ana.clara@email.demo', joinedAt: 'Jan/2026', streakDays: 12 },
+      { id: 'm-a3', name: 'Mateus Freire', role: 'Aluno', tag: 'Simulados: 12 feitos', avatar: av('mateus-f'), subject: '', email: 'mateus.f@email.demo', joinedAt: 'Fev/2026', streakDays: 9 },
+      { id: 'm-a4', name: 'João Victor', role: 'Aluno', tag: 'Fórum: 34 posts', avatar: av('joao-v'), subject: '', email: 'joao.v@email.demo', joinedAt: 'Fev/2026', streakDays: 7 },
+      { id: 'm-a5', name: 'Sara Dantas', role: 'Aluna', tag: 'Redação em evolução', avatar: av('sara-d'), subject: '', email: 'sara.d@email.demo', joinedAt: 'Mar/2026', streakDays: 5 },
+      { id: 'm-a6', name: 'Daniel Souza', role: 'Aluno', tag: 'Listas em dia', avatar: av('daniel-s'), subject: '', email: 'daniel.s@email.demo', joinedAt: 'Mar/2026', streakDays: 4 },
+    ],
+  });
+}
+
+function getInternalSections(canManageSquad) {
   const base = [
     { id: 'dashboard', label: 'Dashboard', icon: Sparkles },
     { id: 'forum', label: 'Fórum', icon: MessageCircle },
     { id: 'mural', label: 'Mural', icon: Megaphone },
     { id: 'cronograma', label: 'Cronograma', icon: CalendarDays },
-    { id: 'atividades', label: 'Atividades', icon: ClipboardList },
+    { id: 'praticas', label: 'Práticas', icon: ClipboardList },
     { id: 'simulados', label: 'Simulados', icon: Trophy },
+    { id: 'configuracao', label: 'Configuração', icon: Shield },
+    { id: 'membros', label: 'Membros', icon: Users },
     { id: 'ranking', label: 'Ranking', icon: Crown },
   ];
 
-  if (hasSelectedSquad && canAccessSettings) {
-    base.push({ id: 'configuracoes', label: 'Configurações', icon: Settings });
+  if (canManageSquad) {
+    base.push({ id: 'admin', label: 'ADM do esquadrão', icon: Wrench });
   }
 
   return base;
@@ -244,7 +469,11 @@ export default function Esquadroes({
   const [forumSort, setForumSort] = useState('recentes');
   const [forumPage, setForumPage] = useState(1);
   const [expandedReplies, setExpandedReplies] = useState({});
+  const [forumFocusedPostId, setForumFocusedPostId] = useState('');
   const [newForumPost, setNewForumPost] = useState('');
+  const [selectedSimuladoId, setSelectedSimuladoId] = useState('');
+  const [simuladoAttemptsByUser, setSimuladoAttemptsByUser] = useState({});
+  const [newTurmaName, setNewTurmaName] = useState('');
   const [adminFlow, setAdminFlow] = useState(EMPTY_ADMIN_FLOW);
   const [adminEdit, setAdminEdit] = useState({
     name: '',
@@ -263,7 +492,10 @@ export default function Esquadroes({
     return String(currentUserEmail || 'aluno').split('@')[0];
   }, [currentUsername, currentUserEmail, profile]);
 
-  const profileAvatarUrl = useMemo(() => String(profile?.avatar_url || '').trim(), [profile]);
+  const profileAvatarUrl = useMemo(
+    () => String(profile?.avatar_url || '').trim() || `https://i.pravatar.cc/150?u=${encodeURIComponent(displayName)}`,
+    [displayName, profile]
+  );
 
   const focusOptions = useMemo(
     () =>
@@ -321,7 +553,7 @@ export default function Esquadroes({
     if (usingRemoteSquads) {
       const overlaid = remoteSquads.map((remote) => {
         const local = squads.find((s) => String(s.id) === String(remote.id));
-        return local ? normalizeSquad({ ...remote, ...local }) : normalizeSquad(remote);
+        return local ? normalizeSquad({ ...remote, ...local }) : remote;
       });
       const remoteIds = new Set(overlaid.map((s) => String(s.id)));
       const extras = squads
@@ -334,7 +566,7 @@ export default function Esquadroes({
         .filter(Boolean);
       const merged = dedupeById([...overlaid, ...extras]);
       if (merged.length) return merged;
-      return [];
+      return [buildDemoEngagementSquad(displayName, profileAvatarUrl)].filter(Boolean);
     }
 
     const mine = squads.filter(
@@ -343,7 +575,7 @@ export default function Esquadroes({
         String(item.owner || '').trim().toLowerCase() === displayLower
     );
     if (mine.length) return mine.map(normalizeSquad).filter(Boolean);
-    return [];
+    return [buildDemoEngagementSquad(displayName, profileAvatarUrl)].filter(Boolean);
   }, [displayName, memberships, profileAvatarUrl, remoteSquads, squads, usingRemoteSquads]);
 
   const selectedSquad =
@@ -362,28 +594,15 @@ export default function Esquadroes({
     });
   }, [selectedSquad?.id, selectedSquad?.name, selectedSquad?.focus, selectedSquad?.description, selectedSquad?.inviteCode, selectedSquad?.visibility]);
 
-  const { canAccessSettings, canManageSquad } = useMemo(() => {
-    if (!selectedSquad) {
-      return { canAccessSettings: false, canManageSquad: false };
-    }
-    const row = memberships.find((item) => String(item.id) === String(selectedSquad.id));
-    const roleRaw = String(row?.role || '').trim();
-    const r = roleRaw.toLowerCase();
-    const displayLower = String(displayName || '').trim().toLowerCase();
-    const ownerLower = String(selectedSquad.owner || '').trim().toLowerCase();
-    const isSquadOwnerByName = Boolean(ownerLower && ownerLower === displayLower);
-    const ownerRoleMatch =
-      roleRaw === 'Dono' || roleRaw === 'Owner' || r === 'dono' || r === 'owner';
-    const coordinatorRoleMatch =
-      roleRaw === 'Coordenador' ||
-      r === 'coordenador' ||
-      r === 'coordenação' ||
-      r === 'coordenacao';
-    const isProfessor = roleRaw === 'Professor' || r === 'professor';
-    const canAccessSettings = Boolean(isSquadOwnerByName || ownerRoleMatch || coordinatorRoleMatch);
-    const canManageSquad = Boolean(canAccessSettings || isProfessor);
-    return { canAccessSettings, canManageSquad };
-  }, [selectedSquad, memberships, displayName]);
+  const isSquadOwner = Boolean(
+    selectedSquad &&
+      String(selectedSquad.owner || '').trim().toLowerCase() === String(displayName || '').trim().toLowerCase()
+  );
+  const canManageSquad = Boolean(
+    selectedSquad &&
+      (memberships.find((item) => item.id === selectedSquad.id)?.role === 'Professor' || isSquadOwner)
+  );
+  const canAssignRoles = isSquadOwner;
   const squadPermissions = selectedSquad?.permissions || DEFAULT_SQUAD_PERMISSIONS;
   const canPublishActivities = canManageSquad && squadPermissions.publishActivities !== false;
   const canPublishSimulados = canManageSquad && squadPermissions.publishSimulados !== false;
@@ -391,31 +610,30 @@ export default function Esquadroes({
   const canManageTeachers = canManageSquad && squadPermissions.manageTeachers !== false;
   const roleHierarchyDetail = [
     {
-      role: 'Dono do curso',
-      summary: 'Responsável pelo contrato do esquadrão, branding da turma e governança.',
+      role: 'Diretor',
+      summary: 'Responsável máximo pelo cursinho, governança e regras da operação.',
       can: [
-        'Editar dados do esquadrão, código de convite e visibilidade.',
-        'Distribuir ou revogar selo de professor e definir matéria de cada um.',
-        'Moderar fórum (fixar, ocultar, apagar) e publicar no mural.',
-        'Convidar alunos, aprovar entrada e acessar ADM completo.',
+        'Configurar papéis, turmas, permissões e regras globais.',
+        'Editar dados do esquadrão, convites e visibilidade.',
+        'Aprovar coordenação/professores e acessar ADM completo.',
       ],
     },
     {
-      role: 'Professor (selo Papirando)',
-      summary: 'Docente oficial do cursinho dentro do esquadrão.',
+      role: 'Coordenador',
+      summary: 'Gestão acadêmica da operação: calendário, simulados e acompanhamento das turmas.',
       can: [
-        'Publicar avisos no mural, atividades com prazo e simulados internos.',
-        'Responder e orientar threads prioritárias no fórum da turma.',
-        'Sugerir listas no banco interno de questões (conforme permissão do dono).',
+        'Organizar cronograma, práticas e simulados.',
+        'Acompanhar notas e repassar ajustes para professores.',
+        'Atuar na moderação e comunicação da turma.',
       ],
     },
     {
-      role: 'Monitor',
-      summary: 'Apoio operacional e acompanhamento de alunos.',
+      role: 'Professor',
+      summary: 'Docente responsável por conteúdo, gabarito comentado e orientação pedagógica.',
       can: [
-        'Ajudar em dúvidas recorrentes e organização de materiais.',
-        'Registrar presença em plantões e repassar alertas ao dono.',
-        'Sem poderes financeiros nem exclusão do esquadrão (configurável).',
+        'Publicar práticas e simulados na(s) turma(s) vinculada(s).',
+        'Corrigir tentativa única do aluno e comentar questões.',
+        'Responder dúvidas no fórum interno.',
       ],
     },
     {
@@ -428,17 +646,138 @@ export default function Esquadroes({
       ],
     },
   ];
-  const squadAccessFlow = [
-    '1. Aluno entra por codigo de convite ou aprovacao manual do curso.',
-    '2. Plataforma vincula o usuario ao esquadrao especifico (isolamento interno).',
-    '3. Dashboard do aluno abre diretamente no esquadrao da turma.',
-    '4. Conteudos e forum sao privados e visiveis so para membros autorizados.',
-  ];
-  const displayNotices = Array.isArray(selectedSquad?.notices) ? selectedSquad.notices : [];
-  const displayActivities = Array.isArray(selectedSquad?.activities) ? selectedSquad.activities : [];
-  const displaySimulados = Array.isArray(selectedSquad?.simulados) ? selectedSquad.simulados : [];
-  const displayRanking = Array.isArray(selectedSquad?.internalRanking) ? selectedSquad.internalRanking : [];
-  const questionPosts = Array.isArray(selectedSquad?.questionPosts) ? selectedSquad.questionPosts : [];
+  const displayNotices = (selectedSquad?.notices || []).length
+    ? selectedSquad.notices
+    : [
+        {
+          id: 'demo-notice-1',
+          title: 'Plano intensivo da semana liberado',
+          text: 'Foco total em Constitucional, Penal e RLM. Meta: 3 blocos por dia + revisão ativa à noite.',
+          publishedBy: selectedSquad?.owner || 'Coordenação',
+          publishedByAvatar: profileAvatarUrl,
+          publishedAtLabel: 'Hoje · 09:00',
+          pinned: true,
+        },
+        {
+          id: 'demo-notice-2',
+          title: 'Plantão de dúvidas hoje às 20h',
+          text: 'Equipe de professores vai responder dúvidas de questões e estratégia de prova ao vivo.',
+          publishedBy: 'Equipe pedagógica',
+          publishedByAvatar: '',
+          publishedAtLabel: 'Hoje · 08:15',
+          pinned: false,
+        },
+      ];
+  const displayActivities = (selectedSquad?.activities || []).length
+    ? selectedSquad.activities
+    : [
+        {
+          id: 'demo-activity-1',
+          title: 'Lista PF - Constitucional 04',
+          status: 'Aberta',
+          helper: '45 questões com foco em controle de constitucionalidade e jurisprudência recente.',
+          dueDate: '24/04',
+          dueTime: '22:00',
+          publishedBy: selectedSquad?.teachers?.[1]?.name || 'Professor',
+          publishedByAvatar: selectedSquad?.teachers?.[1]?.avatar || '',
+          publishedAtLabel: 'Há 3 h',
+          questionPackId: 'q-1',
+        },
+        {
+          id: 'demo-activity-2',
+          title: 'Bateria seca de Penal',
+          status: 'Aberta',
+          helper: '70 itens de fixação para consolidar parte geral e concurso de pessoas.',
+          dueDate: '25/04',
+          dueTime: '21:30',
+          publishedBy: selectedSquad?.teachers?.[0]?.name || 'Professor',
+          publishedByAvatar: selectedSquad?.teachers?.[0]?.avatar || '',
+          publishedAtLabel: 'Ontem',
+          questionPackId: 'q-2',
+        },
+      ];
+  const displaySimulados = (selectedSquad?.simulados || []).length
+    ? selectedSquad.simulados
+    : [
+        {
+          id: 'demo-sim-1',
+          title: 'Simulado PF 09',
+          date: '27/04',
+          dateLabel: '27/04 • 14:00',
+          helper: 'Aplicação completa com correção guiada e análise por disciplina.',
+          publishedBy: selectedSquad?.owner || 'Coordenação',
+          publishedByAvatar: profileAvatarUrl,
+          publishedAtLabel: 'Há 1 dia',
+        },
+        {
+          id: 'demo-sim-2',
+          title: 'Simulado Sprint Noturno',
+          date: '30/04',
+          dateLabel: '30/04 • 19:30',
+          helper: 'Formato curto para aferir evolução semanal e calibrar revisão.',
+          publishedBy: selectedSquad?.teachers?.[2]?.name || 'Professor',
+          publishedByAvatar: selectedSquad?.teachers?.[2]?.avatar || '',
+          publishedAtLabel: 'Há 2 dias',
+        },
+      ];
+  const selectedSimulado =
+    displaySimulados.find((item) => String(item.id) === String(selectedSimuladoId)) || null;
+  const attemptActorId = String(currentUserId || displayName || '').trim().toLowerCase();
+  const simuladoAttemptKey = selectedSimulado ? `${selectedSquad?.id || 'squad'}:${selectedSimulado.id}:${attemptActorId}` : '';
+  const simuladoAttempt = simuladoAttemptKey ? simuladoAttemptsByUser[simuladoAttemptKey] : null;
+  const canAttemptSelectedSimulado = Boolean(selectedSimulado) && !simuladoAttempt;
+  const canReviewAsTeacher = canManageSquad;
+  const displayRanking = (selectedSquad?.internalRanking || []).length
+    ? selectedSquad.internalRanking
+    : [
+        { id: 'demo-rank-1', name: 'Livia Nogueira', metric: '1.340 XP', tier: 'Diamante', avatar: 'https://i.pravatar.cc/150?u=livia', rank: 1 },
+        { id: 'demo-rank-2', name: 'Ana Clara', metric: '1.220 XP', tier: 'Ouro', avatar: 'https://i.pravatar.cc/150?img=5', rank: 2 },
+        { id: 'demo-rank-3', name: 'Mateus Freire', metric: '1.170 XP', tier: 'Ouro', avatar: 'https://i.pravatar.cc/150?img=33', rank: 3 },
+      ];
+  const questionPosts = (selectedSquad?.questionPosts || []).length
+    ? selectedSquad.questionPosts
+    : [
+        {
+          id: 'q-1',
+          title: 'Lista PF - Constitucional (bloco 04)',
+          meta: '120 respostas · 84% acerto médio',
+          tag: 'Constitucional',
+          publishedBy: selectedSquad?.teachers?.[1]?.name || 'Professor',
+          publishedByAvatar: selectedSquad?.teachers?.[1]?.avatar || '',
+          publishedAtLabel: 'Há 2 h',
+          questionsCount: 45,
+        },
+        {
+          id: 'q-2',
+          title: 'Penal - Concurso de pessoas',
+          meta: '96 respostas · 76% acerto médio',
+          tag: 'Penal',
+          publishedBy: selectedSquad?.teachers?.[0]?.name || 'Professor',
+          publishedByAvatar: selectedSquad?.teachers?.[0]?.avatar || '',
+          publishedAtLabel: 'Ontem',
+          questionsCount: 70,
+        },
+        {
+          id: 'q-3',
+          title: 'RLM - Proporções avançadas',
+          meta: '88 respostas · 71% acerto médio',
+          tag: 'RLM',
+          publishedBy: selectedSquad?.teachers?.[2]?.name || 'Professor',
+          publishedByAvatar: selectedSquad?.teachers?.[2]?.avatar || '',
+          publishedAtLabel: 'Ontem',
+          questionsCount: 40,
+        },
+        {
+          id: 'q-4',
+          title: 'Português - Sintaxe e regência',
+          meta: '104 respostas · 79% acerto médio',
+          tag: 'Português',
+          publishedBy: selectedSquad?.owner || 'Coordenação',
+          publishedByAvatar: profileAvatarUrl,
+          publishedAtLabel: 'Há 3 dias',
+          questionsCount: 38,
+        },
+      ];
 
   const cronogramaCards = useMemo(() => {
     const acts = (displayActivities || []).map((item) => ({
@@ -473,22 +812,15 @@ export default function Esquadroes({
       setForumPage(1);
       setForumQuery('');
       setExpandedReplies({});
+      setForumFocusedPostId('');
       setNewForumPost('');
+      setSelectedSimuladoId('');
       setAdminFlow(EMPTY_ADMIN_FLOW);
     }, 0);
     return () => window.clearTimeout(timer);
   }, [selectedSquad?.id]);
 
-  const internalSections = useMemo(
-    () => getInternalSections(Boolean(selectedSquad), canAccessSettings),
-    [selectedSquad, canAccessSettings]
-  );
-
-  useEffect(() => {
-    if (activeSection === 'configuracoes' && selectedSquad && !canAccessSettings) {
-      setActiveSection('dashboard');
-    }
-  }, [activeSection, selectedSquad, canAccessSettings]);
+  const internalSections = useMemo(() => getInternalSections(canManageSquad), [canManageSquad]);
 
   useEffect(() => {
     if (!accessibleSquads.length) return;
@@ -558,7 +890,254 @@ export default function Esquadroes({
     const savedPosts = (Array.isArray(communityState?.forumPosts) ? communityState.forumPosts : []).filter(
       (item) => item.squadId === selectedSquad.id
     );
-    return savedPosts;
+    if (savedPosts.length) {
+      return savedPosts;
+    }
+
+    return [
+      {
+        id: 'post-1',
+        author: selectedSquad.owner || 'Professor',
+        avatar: selectedSquad.teachers?.[0]?.avatar || '',
+        section: selectedSquad.name,
+        createdAt: 'Há 18 minutos',
+        category: 'Aviso',
+        subject: selectedSquad.focus,
+        title: 'Direcionamento da semana',
+        message: `Turma, esta semana o foco principal é ${selectedSquad.focus}. Priorizem teoria curta, bloco de questões, revisão dos erros e presença no simulado programado.`,
+        replies: 12,
+        helpful: 76,
+        views: 214,
+        badge: 'Professor',
+        pinned: true,
+        solved: false,
+        comments: [
+          {
+            id: 'c1',
+            author: 'Ana Clara',
+            avatar: 'https://i.pravatar.cc/150?img=5',
+            badge: '',
+            createdAt: 'Há 10 min',
+            content: 'Fechado. Vou priorizar Constitucional e revisão dos erros hoje.',
+            likes: 7,
+            children: [
+              {
+                id: 'c1-1',
+                author: selectedSquad.owner || 'Professor',
+                avatar: selectedSquad.teachers?.[0]?.avatar || '',
+                badge: 'Professor',
+                createdAt: 'Há 8 min',
+                content: 'Boa. Mantém isso até o simulado e já sobe bastante.',
+                likes: 10,
+              },
+            ],
+          },
+          {
+            id: 'c2',
+            author: 'Mateus Freire',
+            avatar: 'https://i.pravatar.cc/150?img=33',
+            badge: '',
+            createdAt: 'Há 5 min',
+            content: 'Vai ter bloco extra de Penal ou fica só no cronograma do mural?',
+            likes: 3,
+          },
+        ],
+      },
+      {
+        id: 'post-2',
+        author: 'Ana Clara',
+        avatar: 'https://i.pravatar.cc/150?img=5',
+        section: selectedSquad.name,
+        createdAt: 'Há 1 hora',
+        category: 'Dúvida de Questão',
+        subject: 'Constitucional',
+        title: 'Dúvida sobre controle preventivo e repressivo',
+        message:
+          'Pessoal, na lista 01 fiquei na dúvida entre controle preventivo e repressivo. Alguém consegue explicar de forma mais objetiva?',
+        replies: 6,
+        helpful: 21,
+        views: 88,
+        badge: '',
+        pinned: false,
+        solved: true,
+        comments: [
+          {
+            id: 'c3',
+            author: 'Profa. Ana Cordeiro',
+            avatar: selectedSquad.teachers?.[1]?.avatar || '',
+            badge: 'Professor',
+            createdAt: 'Há 55 min',
+            content: 'Preventivo acontece antes da norma produzir efeitos; repressivo, depois. Guarda isso que já te salva em boa parte das questões.',
+            likes: 14,
+            children: [
+              {
+                id: 'c3-1',
+                author: 'Ana Clara',
+                avatar: 'https://i.pravatar.cc/150?img=5',
+                badge: '',
+                createdAt: 'Há 48 min',
+                content: 'Agora clareou. Valeu demais.',
+                likes: 4,
+              },
+            ],
+          },
+          {
+            id: 'c4',
+            author: 'Lara Mendes',
+            avatar: 'https://i.pravatar.cc/150?img=45',
+            badge: '',
+            createdAt: 'Há 46 min',
+            content: 'Eu decoro como “pré” e “pós” efeito da norma. Me ajuda bastante.',
+            likes: 5,
+          },
+        ],
+      },
+      {
+        id: 'post-3',
+        author: selectedSquad.teachers?.[2]?.name || selectedSquad.teachers?.[1]?.name || 'Professor',
+        avatar: selectedSquad.teachers?.[2]?.avatar || selectedSquad.teachers?.[1]?.avatar || '',
+        section: selectedSquad.name,
+        createdAt: 'Há 3 horas',
+        category: 'Resumo',
+        subject: 'Atualidades',
+        title: 'Resumo rápido dos temas mais quentes da semana',
+        message:
+          'Publiquei um bloco resumido com os principais temas para revisão rápida. Vale usar antes da bateria de questões.',
+        replies: 9,
+        helpful: 43,
+        views: 132,
+        badge: 'Professor',
+        pinned: false,
+        solved: false,
+        comments: [
+          {
+            id: 'c5',
+            author: 'Daniel Souza',
+            avatar: 'https://i.pravatar.cc/150?u=daniel',
+            badge: '',
+            createdAt: 'Há 2 h',
+            content: 'Resumo objetivo. Li em 15 minutos e já fui direto pra bateria.',
+            likes: 8,
+          },
+        ],
+      },
+      {
+        id: 'post-4',
+        author: 'Mateus Freire',
+        avatar: 'https://i.pravatar.cc/150?img=33',
+        section: selectedSquad.name,
+        createdAt: 'Ontem',
+        category: 'Dúvida',
+        subject: 'Penal',
+        title: 'Alguém tem macete para decorar concurso de pessoas?',
+        message:
+          'Estou travando nesse ponto e queria um resumo curto ou uma linha de raciocínio melhor.',
+        replies: 4,
+        helpful: 11,
+        views: 56,
+        badge: '',
+        pinned: false,
+        solved: false,
+        comments: [
+          {
+            id: 'c6',
+            author: 'Prof. Marcelo Farias',
+            avatar: selectedSquad.teachers?.[0]?.avatar || '',
+            badge: 'Professor',
+            createdAt: 'Ontem',
+            content: 'Pensa em autor, coautor e participação. Quem executa, quem ajuda e quem induz. Depois pendura as exceções.',
+            likes: 12,
+          },
+        ],
+      },
+      {
+        id: 'post-5',
+        author: selectedSquad.teachers?.[1]?.name || 'Professor',
+        avatar: selectedSquad.teachers?.[1]?.avatar || '',
+        section: selectedSquad.name,
+        createdAt: 'Ontem',
+        category: 'Aviso',
+        subject: 'Penal',
+        title: 'Nova atividade lançada',
+        message:
+          'Acabei de subir a nova lista comentada com foco em erros recorrentes da turma.',
+        replies: 7,
+        helpful: 29,
+        views: 97,
+        badge: 'Professor',
+        pinned: false,
+        solved: false,
+        comments: [
+          {
+            id: 'c7',
+            author: 'Sara Dantas',
+            avatar: 'https://i.pravatar.cc/150?u=sara',
+            badge: '',
+            createdAt: 'Ontem',
+            content: 'Boa. Essa lista cai bem porque penal foi meu pior bloco no último simulado.',
+            likes: 6,
+          },
+        ],
+      },
+      {
+        id: 'post-6',
+        author: 'Livia Nogueira',
+        avatar: 'https://i.pravatar.cc/150?u=livia',
+        section: selectedSquad.name,
+        createdAt: '2 dias atrás',
+        category: 'Material',
+        subject: 'Português',
+        title: 'Mapa mental de regência verbal',
+        message:
+          'Montei um mapa bem curto para decorar os verbos que mais me confundiam. Posso subir no mural se ajudar geral.',
+        replies: 5,
+        helpful: 19,
+        views: 63,
+        badge: '',
+        pinned: false,
+        solved: false,
+        comments: [
+          {
+            id: 'c8',
+            author: 'Profa. Helena Castro',
+            avatar: selectedSquad.teachers?.[1]?.avatar || '',
+            badge: 'Professor',
+            createdAt: '2 dias atrás',
+            content: 'Sobe sim. Material assim salva revisão de véspera.',
+            likes: 9,
+          },
+        ],
+      },
+      {
+        id: 'post-7',
+        author: 'João Victor',
+        avatar: 'https://i.pravatar.cc/150?img=61',
+        section: selectedSquad.name,
+        createdAt: '3 dias atrás',
+        category: 'Dúvida de Questão',
+        subject: 'Matemática',
+        title: 'Razão e proporção ainda me pegam',
+        message:
+          'Quando a banca mistura proporcionalidade inversa eu me perco legal. Tem alguma forma mais visual de pensar?',
+        replies: 8,
+        helpful: 17,
+        views: 74,
+        badge: '',
+        pinned: false,
+        solved: true,
+        comments: [
+          {
+            id: 'c9',
+            author: 'Prof. Marcelo Farias',
+            avatar: selectedSquad.teachers?.[0]?.avatar || '',
+            badge: 'Professor',
+            createdAt: '3 dias atrás',
+            content: 'Se uma grandeza sobe e a outra desce, já liga o alerta de inversa. Faz uma tabelinha rápida e confere o comportamento.',
+            likes: 11,
+          },
+        ],
+      },
+    ];
   })();
   const scopedForumPosts = (Array.isArray(forumPosts) ? forumPosts : []).map((post) => ({
     ...post,
@@ -614,6 +1193,7 @@ export default function Esquadroes({
   })();
 
   const pinnedPost = filteredForumPosts.find((post) => post.pinned) || filteredForumPosts[0] || null;
+  const forumFocusedPost = filteredForumPosts.find((post) => post.id === forumFocusedPostId) || null;
 
   const latestPosts = filteredForumPosts.filter((post) => post.id !== pinnedPost?.id).slice(0, 3);
 
@@ -633,7 +1213,7 @@ export default function Esquadroes({
       {
         id: 'm1',
         name: selectedSquad.owner,
-        role: 'Dono do cursinho',
+        role: 'Diretor',
         tag: 'Gestão total',
         avatar: selectedSquad.teachers?.[0]?.avatar || '',
       },
@@ -644,6 +1224,27 @@ export default function Esquadroes({
         tag: 'Publica conteúdo',
         avatar: teacher.avatar || '',
       })),
+      {
+        id: 'm3',
+        name: 'Ana Clara',
+        role: 'Aluna',
+        tag: 'Membro ativo',
+        avatar: 'https://i.pravatar.cc/150?img=5',
+      },
+      {
+        id: 'm4',
+        name: 'Mateus Freire',
+        role: 'Aluno',
+        tag: 'Membro ativo',
+        avatar: 'https://i.pravatar.cc/150?img=33',
+      },
+      {
+        id: 'm5',
+        name: 'Livia Nogueira',
+        role: 'Aluna',
+        tag: 'Top 1 da semana',
+        avatar: 'https://i.pravatar.cc/150?u=livia',
+      },
     ];
   })();
 
@@ -686,10 +1287,39 @@ export default function Esquadroes({
           },
         ],
         subjects: ['Definir trilha da turma'],
-        notices: [],
-        activities: [],
-        simulados: [],
-        internalRanking: [],
+        notices: [
+          {
+            id: `notice-pending-${Date.now()}`,
+            title: 'Boas-vindas',
+            text: 'Apresente a proposta da turma e a primeira meta coletiva.',
+          },
+        ],
+        activities: [
+          {
+            id: `activity-pending-${Date.now()}`,
+            title: 'Lista diagnóstica',
+            status: 'Pendente',
+            helper: 'Bloco inicial para medir a base da turma.',
+          },
+        ],
+        simulados: [
+          {
+            id: `sim-pending-${Date.now()}`,
+            title: 'Simulado inaugural',
+            date: 'A definir',
+            helper: 'Primeiro simulado para formar o ranking interno.',
+          },
+        ],
+        internalRanking: [
+          {
+            id: `rank-pending-${Date.now()}`,
+            name: displayName,
+            metric: '0 XP no esquadrão',
+            tier: 'Bronze',
+            avatar: profileAvatarUrl,
+            rank: 1,
+          },
+        ],
         questionPosts: [],
         permissions: { ...DEFAULT_SQUAD_PERMISSIONS },
         roster: [
@@ -767,10 +1397,10 @@ export default function Esquadroes({
         },
       ],
       subjects: ['Definir trilha da turma'],
-      notices: [],
-      activities: [],
-      simulados: [],
-      internalRanking: [],
+      notices: [{ id: `notice-${id}-1`, title: 'Boas-vindas', text: 'Apresente a proposta da turma e a primeira meta coletiva.' }],
+      activities: [{ id: `activity-${id}-1`, title: 'Lista diagnóstica', status: 'Pendente', helper: 'Bloco inicial para medir a base da turma.' }],
+      simulados: [{ id: `sim-${id}-1`, title: 'Simulado inaugural', date: 'A definir', helper: 'Primeiro simulado para formar o ranking interno.' }],
+      internalRanking: [{ id: `rank-${id}-1`, name: displayName, metric: '0 XP no esquadrão', tier: 'Bronze', avatar: '', rank: 1 }],
       permissions: { ...DEFAULT_SQUAD_PERMISSIONS },
       roster: [
         {
@@ -830,14 +1460,62 @@ export default function Esquadroes({
     setActiveSection('dashboard');
     setForumPage(1);
     setForumQuery('');
+    setForumFocusedPostId('');
+    setSelectedSimuladoId('');
   }
 
   function focusForumComposer() {
     setActiveSection('forum');
+    setForumFocusedPostId('');
     window.setTimeout(() => {
       forumComposerRef.current?.focus();
       forumComposerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 20);
+  }
+
+  function openForumThread(postId) {
+    setActiveSection('forum');
+    setForumFocusedPostId(String(postId || ''));
+    setExpandedReplies((prev) => ({ ...prev, [postId]: true }));
+  }
+
+  function handleStartSimulado(simulado) {
+    if (!simulado) return;
+    const key = `${selectedSquad?.id || 'squad'}:${simulado.id}:${attemptActorId}`;
+    if (simuladoAttemptsByUser[key]) return;
+    setSimuladoAttemptsByUser((prev) => ({
+      ...prev,
+      [key]: {
+        score: Number((Math.random() * 3 + 7).toFixed(1)),
+        completedAt: new Date().toISOString(),
+        teacherComment: '',
+      },
+    }));
+  }
+
+  function handleTeacherCommentOnAttempt(comment) {
+    if (!simuladoAttemptKey || !simuladoAttempt) return;
+    setSimuladoAttemptsByUser((prev) => ({
+      ...prev,
+      [simuladoAttemptKey]: {
+        ...prev[simuladoAttemptKey],
+        teacherComment: String(comment || ''),
+      },
+    }));
+  }
+
+  function handleAddTurma() {
+    const turma = String(newTurmaName || '').trim();
+    if (!turma || !selectedSquad || !canManageSquad) return;
+    updateSelectedSquad((item) => {
+      const currentTurmas = Array.isArray(item.turmas) ? item.turmas : [];
+      if (currentTurmas.some((t) => String(t || '').toLowerCase() === turma.toLowerCase())) return item;
+      return {
+        ...item,
+        turmas: [...currentTurmas, turma],
+      };
+    });
+    setNewTurmaName('');
   }
 
   function toggleReplies(postId) {
@@ -878,7 +1556,7 @@ export default function Esquadroes({
   }
 
   function handleSaveSquadSettings() {
-    if (!selectedSquad || !canAccessSettings) return;
+    if (!selectedSquad || !canManageSquad) return;
     updateSelectedSquad((item) => ({
       ...item,
       name: String(adminEdit.name || item.name).trim() || item.name,
@@ -1017,7 +1695,43 @@ export default function Esquadroes({
     });
   }
 
-  function openAdminFlow(type, presetSection = 'configuracoes', seed = {}) {
+  function handleSetMemberRole(member, nextRole) {
+    if (!selectedSquad || !canAssignRoles || !member) return;
+    const role = String(nextRole || '').trim();
+    if (!CURSINHO_ROLE_OPTIONS.includes(role)) return;
+
+    updateSelectedSquad((item) => {
+      const roster = Array.isArray(item.roster) && item.roster.length ? item.roster : adminMembers;
+      const ownerName = String(item.owner || '').trim().toLowerCase();
+      const nextRoster = roster.map((rosterItem) => {
+        if (rosterItem.id !== member.id) return rosterItem;
+        const isOwnerRow = String(rosterItem.name || '').trim().toLowerCase() === ownerName;
+        if (isOwnerRow) return { ...rosterItem, role: 'Diretor', tag: 'Gestão total' };
+        return {
+          ...rosterItem,
+          role,
+          tag: role === 'Professor' ? 'Publica conteúdo' : role === 'Coordenador' ? 'Coordena a turma' : 'Membro ativo',
+        };
+      });
+
+      const nextTeachers = nextRoster
+        .filter((row) => String(row.role || '').toLowerCase().includes('professor'))
+        .map((row, index) => ({
+          id: row.teacherId || `teacher-${row.id || index}`,
+          name: row.name,
+          subject: row.subject || 'Professor do esquadrão',
+          avatar: row.avatar || '',
+        }));
+
+      return {
+        ...item,
+        roster: nextRoster,
+        teachers: nextTeachers,
+      };
+    });
+  }
+
+  function openAdminFlow(type, presetSection = 'admin', seed = {}) {
     setActiveSection(presetSection);
     setAdminFlow({
       ...EMPTY_ADMIN_FLOW,
@@ -1087,7 +1801,7 @@ export default function Esquadroes({
         ],
         nextEvent: dueDate ? `${title} · ${dueDate}${dueTime ? ` às ${dueTime}` : ''}` : title,
       }));
-      setActiveSection('atividades');
+      setActiveSection('praticas');
       closeAdminFlow();
       return;
     }
@@ -1128,6 +1842,7 @@ export default function Esquadroes({
       if (!inviteName) return;
       updateSelectedSquad((item) => ({
         ...item,
+        members: Number(item.members || 0) + 1,
         roster: [
           ...(Array.isArray(item.roster) ? item.roster : adminMembers),
           {
@@ -1139,7 +1854,7 @@ export default function Esquadroes({
           },
         ],
       }));
-      setActiveSection('configuracoes');
+      setActiveSection('membros');
       closeAdminFlow();
       return;
     }
@@ -1171,7 +1886,7 @@ export default function Esquadroes({
           },
         ],
       }));
-      setActiveSection('configuracoes');
+      setActiveSection('configuracao');
       closeAdminFlow();
       return;
     }
@@ -1199,7 +1914,7 @@ export default function Esquadroes({
             [permissionKey]: !(item.permissions || DEFAULT_SQUAD_PERMISSIONS)[permissionKey],
           },
         }));
-        setActiveSection('configuracoes');
+        setActiveSection('admin');
         closeAdminFlow();
         return;
       }
@@ -1208,7 +1923,7 @@ export default function Esquadroes({
         String(member.role || '').toLowerCase().includes('dono');
 
       if ((permissionScope === 'Professor' && alreadyProfessor) || (permissionScope === 'Membro' && !alreadyProfessor)) {
-        setActiveSection('configuracoes');
+        setActiveSection('membros');
         closeAdminFlow();
         return;
       }
@@ -1217,18 +1932,17 @@ export default function Esquadroes({
         ...member,
         subject: member.subject || adminFlow.teacherSubject || 'Professor do esquadrão',
       });
-      setActiveSection('configuracoes');
+      setActiveSection('membros');
       closeAdminFlow();
     }
   }
 
   function openInternalActivity(activity) {
     if (!activity) return;
+    setActiveSection('praticas');
     if (activity.questionPackId) {
-      setActiveSection('atividades');
       setSquadNavTarget({ type: 'questao', id: activity.questionPackId });
     } else {
-      setActiveSection('atividades');
       setSquadNavTarget({ type: 'activity', id: activity.id });
     }
   }
@@ -1237,6 +1951,7 @@ export default function Esquadroes({
     if (!sim?.id) return;
     setActiveSection('simulados');
     setSquadNavTarget({ type: 'simulado', id: sim.id });
+    setSelectedSimuladoId(sim.id);
   }
 
   function openCronogramaNavItem(item) {
@@ -1258,8 +1973,8 @@ export default function Esquadroes({
   }
 
   return (
-    <div className="page-shell !h-auto min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-gray-200 pb-3 md:flex-row md:items-center">
+    <div className="page-shell animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-gray-200 pb-3 md:flex-row md:items-center">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
             <Shield size={14} strokeWidth={3} /> Ecossistema Privado
@@ -1350,64 +2065,60 @@ export default function Esquadroes({
       </div>
 
       {selectedSquad ? (
-        <PageHeadPremium
-          className="shrink-0"
-          icon={Users}
-          badge={
-            <PageHeadPremiumBadge icon={ShieldCheck}>Esquadrão privado ativo</PageHeadPremiumBadge>
-          }
-          title={selectedSquad.name}
-          titleAs="h3"
-          subtitle={
-            <>
-              <span className="font-semibold text-slate-300">{selectedSquad.owner}</span>
-              <span className="text-slate-500"> · </span>
-              Foco da turma:{' '}
-              <span className="font-semibold text-indigo-200">{selectedSquad.focus}</span>
-              <span className="text-slate-500"> · </span>
-              Fórum interno, mural, simulados e atividades neste ecossistema privado.
-            </>
-          }
-          leadingExtra={
-            canAccessSettings ? (
-              <button
-                type="button"
-                onClick={() => setActiveSection('configuracoes')}
-                className="mt-1 inline-flex rounded-xl border border-white/15 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:border-white/25 hover:bg-white/[0.12]"
-              >
-                Configurações
-              </button>
-            ) : null
-          }
-          stats={[
-            {
-              key: 'liga',
-              icon: Trophy,
-              label: 'Liga',
-              value: selectedSquad.rankingTier || 'Bronze',
-              accent: 'amber',
-            },
-            {
-              key: 'membros',
-              icon: Users,
-              label: 'Membros',
-              value: String(selectedSquad.members || 0),
-              accent: 'indigo',
-            },
-            {
-              key: 'marco',
-              icon: CalendarDays,
-              label: 'Próximo marco',
-              value: selectedSquad.nextEvent || '—',
-              accent: 'violet',
-            },
-          ]}
-          statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:min-w-[380px]"
-        />
+        <div className="relative overflow-visible rounded-2xl border border-indigo-200/70 bg-gradient-to-br from-slate-50 via-white to-indigo-50/60 p-5 shadow-md shadow-indigo-950/5 ring-1 ring-indigo-100 md:p-6">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_55%_at_15%_-25%,rgba(99,102,241,0.14),transparent_55%)]" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-indigo-600 via-blue-500 to-amber-400" />
+          <div className="relative flex flex-col gap-5 pl-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex items-start gap-4">
+              {selectedSquad.coverUrl ? (
+                <img
+                  src={selectedSquad.coverUrl}
+                  alt={selectedSquad.name}
+                  className="h-14 w-14 shrink-0 rounded-2xl border border-white object-cover shadow-md shadow-slate-900/10 ring-1 ring-indigo-100"
+                />
+              ) : (
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-100 to-blue-50 text-indigo-700 shadow-inner ring-1 ring-white/80">
+                  <Users size={22} />
+                </div>
+              )}
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-100 to-yellow-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-950 shadow-sm">
+                  <ShieldCheck size={12} strokeWidth={2.5} className="text-amber-700" /> Esquadrão privado ativo
+                </span>
+                <h3 className="mt-2 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-xl font-semibold tracking-tight text-transparent md:text-2xl">
+                  {selectedSquad.name}
+                </h3>
+                <p className="mt-1 text-sm font-medium text-slate-600">
+                  <span className="font-semibold text-slate-800">{selectedSquad.owner}</span>
+                  <span className="text-slate-400"> · </span>
+                  Foco:{' '}
+                  <span className="font-semibold text-indigo-600 underline decoration-indigo-200 decoration-2 underline-offset-2">
+                    {selectedSquad.focus}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <MiniHeroStat label="Liga" value={selectedSquad.rankingTier || 'Bronze'} accent="amber" />
+              <MiniHeroStat label="Membros" value={String(selectedSquad.members || 0)} accent="indigo" />
+              <MiniHeroStat label="Próximo marco" value={selectedSquad.nextEvent || '---'} accent="slate" />
+              {canManageSquad ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('admin')}
+                  className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
+                >
+                  ADM do esquadrão
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {selectedSquad ? (
-        <div className="shrink-0 rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
+        <div className="rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
           <div className="mb-1.5 flex flex-col gap-1 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600/90">Área interna</p>
             <span className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-600 sm:text-right">
@@ -1418,14 +2129,14 @@ export default function Esquadroes({
             className="flex flex-row max-sm:gap-1.5 max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-0.5 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-center sm:gap-2 lg:justify-between"
             aria-label="Navegação do esquadrão"
           >
-            {activeSection === 'configuracoes' ? (
+            {activeSection === 'admin' ? (
               <button
                 type="button"
-                onClick={() => setActiveSection('dashboard')}
+                onClick={() => setActiveSection('forum')}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:gap-2 sm:px-3.5 sm:text-sm"
               >
                 <ArrowLeft size={14} className="shrink-0 sm:size-[15px]" />
-                <span className="whitespace-nowrap">Dashboard</span>
+                <span className="whitespace-nowrap">Fórum</span>
               </button>
             ) : null}
             {internalSections.map((item) => {
@@ -1531,7 +2242,32 @@ export default function Esquadroes({
                     </div>
                   </section>
 
-                  <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
+                  {forumFocusedPost ? (
+                    <section className="rounded-[2rem] border border-indigo-100 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Tópico aberto</p>
+                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Thread completa com comentários</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setForumFocusedPostId('')}
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+                        >
+                          <ArrowLeft size={14} />
+                          Voltar ao início do fórum
+                        </button>
+                      </div>
+                      <ForumPostFull
+                        post={forumFocusedPost}
+                        expanded={expandedReplies[forumFocusedPost.id]}
+                        onToggleReplies={() => toggleReplies(forumFocusedPost.id)}
+                      />
+                    </section>
+                  ) : null}
+
+                  {!forumFocusedPost ? (
+                    <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
                     <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Busca e filtros</p>
@@ -1614,29 +2350,18 @@ export default function Esquadroes({
                         </div>
                       </div>
                     </div>
-                  </section>
+                    </section>
+                  ) : null}
 
-                  <section className="group relative flex flex-col gap-4 overflow-hidden rounded-[2rem] border border-indigo-100 bg-white p-6 shadow-sm">
+                  {!forumFocusedPost ? (
+                    <section className="group relative flex flex-col gap-4 overflow-hidden rounded-[2rem] border border-indigo-100 bg-white p-6 shadow-sm">
                     <div className="absolute right-0 top-0 h-full w-2 bg-indigo-500" />
                     <div className="flex items-start gap-4">
-                      {profileAvatarUrl ? (
-                        <img
-                          src={profileAvatarUrl}
-                          alt=""
-                          className="h-12 w-12 rounded-full border-2 border-indigo-100 object-cover shadow-sm"
-                          aria-hidden
-                        />
-                      ) : (
-                        <div
-                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-indigo-100 bg-indigo-50 text-sm font-semibold text-indigo-700 shadow-sm"
-                          aria-hidden
-                        >
-                          {String(displayName || '?')
-                            .trim()
-                            .charAt(0)
-                            .toUpperCase() || '?'}
-                        </div>
-                      )}
+                      <img
+                        src={profileAvatarUrl}
+                        alt="Tu"
+                        className="h-12 w-12 rounded-full border-2 border-indigo-100 shadow-sm"
+                      />
                       <textarea
                         ref={forumComposerRef}
                         rows="3"
@@ -1656,9 +2381,10 @@ export default function Esquadroes({
                         <Send size={16} /> Publicar
                       </button>
                     </div>
-                  </section>
+                    </section>
+                  ) : null}
 
-                  {pinnedPost ? (
+                  {!forumFocusedPost && pinnedPost ? (
                     <section className="rounded-[2rem] border border-yellow-200 bg-[linear-gradient(180deg,#fffdf4_0%,#ffffff_100%)] p-5 shadow-sm">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
@@ -1673,11 +2399,13 @@ export default function Esquadroes({
                         post={pinnedPost}
                         expanded={expandedReplies[pinnedPost.id]}
                         onToggleReplies={() => toggleReplies(pinnedPost.id)}
+                        onOpenThread={() => openForumThread(pinnedPost.id)}
                       />
                     </section>
                   ) : null}
 
-                  <section className="space-y-4">
+                  {!forumFocusedPost ? (
+                    <section className="space-y-4">
                     {paginatedForumPosts
                       .filter((post) => post.id !== pinnedPost?.id)
                       .map((post) => (
@@ -1686,6 +2414,7 @@ export default function Esquadroes({
                           post={post}
                           expanded={expandedReplies[post.id]}
                           onToggleReplies={() => toggleReplies(post.id)}
+                          onOpenThread={() => openForumThread(post.id)}
                         />
                       ))}
 
@@ -1700,15 +2429,18 @@ export default function Esquadroes({
                         </p>
                       </div>
                     ) : null}
-                  </section>
+                    </section>
+                  ) : null}
 
-                  <PaginationBar
-                    page={forumPage}
-                    totalPages={totalForumPages}
-                    onPrev={() => setForumPage((prev) => Math.max(1, prev - 1))}
-                    onNext={() => setForumPage((prev) => Math.min(totalForumPages, prev + 1))}
-                    onPick={(value) => setForumPage(value)}
-                  />
+                  {!forumFocusedPost ? (
+                    <PaginationBar
+                      page={forumPage}
+                      totalPages={totalForumPages}
+                      onPrev={() => setForumPage((prev) => Math.max(1, prev - 1))}
+                      onNext={() => setForumPage((prev) => Math.min(totalForumPages, prev + 1))}
+                      onPick={(value) => setForumPage(value)}
+                    />
+                  ) : null}
                 </div>
               )}
 
@@ -1723,7 +2455,9 @@ export default function Esquadroes({
                     const who = notice.publishedBy || selectedSquad.owner || 'Coordenação';
                     const when = notice.publishedAtLabel || '';
                     const av =
-                      notice.publishedByAvatar || (who === selectedSquad.owner ? profileAvatarUrl : '') || '';
+                      notice.publishedByAvatar ||
+                      (who === selectedSquad.owner ? profileAvatarUrl : '') ||
+                      `https://i.pravatar.cc/150?u=${encodeURIComponent(who)}`;
                     return (
                       <article
                         key={notice.id}
@@ -1798,6 +2532,26 @@ export default function Esquadroes({
                       Aqui o cursinho concentra calendario de atividades, simulados e marcos da turma no proprio esquadrao.
                     </p>
                   </div>
+                  <div className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-5 shadow-sm ring-1 ring-indigo-100">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Visão calendário</p>
+                      <span className="text-xs font-semibold text-slate-500">{cronogramaCards.length} evento(s)</span>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {cronogramaCards.slice(0, 6).map((item) => (
+                        <button
+                          key={`calendar-${item.id}`}
+                          type="button"
+                          onClick={() => openCronogramaNavItem(item)}
+                          className="rounded-xl border border-indigo-100 bg-white px-3 py-3 text-left transition hover:border-indigo-200 hover:shadow-sm"
+                        >
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">{item.label}</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-900">{item.title}</p>
+                          <p className="mt-1 text-xs font-medium text-slate-500">{item.when}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {cronogramaCards.length ? (
                     <div className="grid gap-4 md:grid-cols-2">
                       {cronogramaCards.map((item) => (
@@ -1842,11 +2596,11 @@ export default function Esquadroes({
                 </div>
               )}
 
-              {activeSection === 'atividades' && (
+              {activeSection === 'praticas' && (
                 <div className="space-y-4">
                   {canPublishActivities ? (
                     <div className="flex justify-end">
-                      <ActionChip label="Nova atividade" onClick={() => openAdminFlow('activity', 'atividades', { status: 'Aberta' })} />
+                      <ActionChip label="Nova atividade" onClick={() => openAdminFlow('activity', 'praticas', { status: 'Aberta' })} />
                     </div>
                   ) : null}
                   {displayActivities.map((activity) => {
@@ -1917,70 +2671,60 @@ export default function Esquadroes({
                       Sem atividades no momento.
                     </div>
                   ) : null}
+                </div>
+              )}
 
-                  <div className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm">
-                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Banco do cursinho</p>
-                        <h3 className="mt-1 text-lg font-semibold text-slate-900">Listas e questões</h3>
-                        <p className="mt-1 text-sm font-medium text-slate-600">
-                          O mesmo fluxo das atividades: listas internas aparecem aqui. Para publicar com prazo, use <span className="font-semibold text-slate-800">Nova atividade</span>.
-                        </p>
-                      </div>
-                      {questionPosts.length ? (
-                        <span className="shrink-0 self-start rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
-                          {questionPosts.length} lista{questionPosts.length !== 1 ? 's' : ''}
-                        </span>
-                      ) : null}
+              {activeSection === 'praticas' && (
+                <div className="space-y-4">
+                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <h4 className="text-lg font-semibold text-slate-900">Listas com maior engajamento</h4>
+                      <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
+                        {questionPosts.length} posts
+                      </span>
                     </div>
-                    {questionPosts.length ? (
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {questionPosts.map((item) => {
-                          const hl = squadNavTarget.type === 'questao' && squadNavTarget.id === item.id;
-                          return (
-                            <button
-                              key={item.id}
-                              id={`squad-questao-${item.id}`}
-                              type="button"
-                              onClick={() => {
-                                setActiveSection('atividades');
-                                setSquadNavTarget({ type: 'questao', id: item.id });
-                              }}
-                              className={`rounded-xl border bg-slate-50 p-4 text-left transition hover:border-indigo-200 hover:bg-white hover:shadow-sm ${
-                                hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-100'
-                              }`}
-                            >
-                              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{item.tag}</p>
-                              <h5 className="mt-1 text-sm font-semibold text-slate-900">{item.title}</h5>
-                              <p className="mt-2 text-xs font-medium text-slate-500">{item.meta}</p>
-                              {item.publishedBy ? (
-                                <div className="mt-3 flex items-center gap-2 border-t border-slate-200/80 pt-3">
-                                  {item.publishedByAvatar ? (
-                                    <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" />
-                                  ) : (
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-slate-600">
-                                      {String(item.publishedBy).charAt(0)}
-                                    </div>
-                                  )}
-                                  <div>
-                                    <p className="text-[11px] font-semibold text-slate-700">Lista de {item.publishedBy}</p>
-                                    <p className="text-[10px] font-medium text-slate-400">
-                                      {item.publishedAtLabel || ''}
-                                      {item.questionsCount ? ` · ${item.questionsCount} questões` : ''}
-                                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {questionPosts.map((item) => {
+                        const hl = squadNavTarget.type === 'questao' && squadNavTarget.id === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            id={`squad-questao-${item.id}`}
+                            type="button"
+                            onClick={() => {
+                              setActiveSection('praticas');
+                              setSquadNavTarget({ type: 'questao', id: item.id });
+                            }}
+                            className={`rounded-xl border bg-slate-50 p-4 text-left transition hover:border-indigo-200 hover:bg-white hover:shadow-sm ${
+                              hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-100'
+                            }`}
+                          >
+                            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{item.tag}</p>
+                            <h5 className="mt-1 text-sm font-semibold text-slate-900">{item.title}</h5>
+                            <p className="mt-2 text-xs font-medium text-slate-500">{item.meta}</p>
+                            {item.publishedBy ? (
+                              <div className="mt-3 flex items-center gap-2 border-t border-slate-200/80 pt-3">
+                                {item.publishedByAvatar ? (
+                                  <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" />
+                                ) : (
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-slate-600">
+                                    {String(item.publishedBy).charAt(0)}
                                   </div>
-                                  <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
+                                )}
+                                <div>
+                                  <p className="text-[11px] font-semibold text-slate-700">Lista de {item.publishedBy}</p>
+                                  <p className="text-[10px] font-medium text-slate-400">
+                                    {item.publishedAtLabel || ''}
+                                    {item.questionsCount ? ` · ${item.questionsCount} questões` : ''}
+                                  </p>
                                 </div>
-                              ) : null}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="text-sm font-medium text-slate-500">
-                        Nenhuma lista interna ainda. Publique uma atividade com lista vinculada — tudo fica nesta aba.
-                      </p>
-                    )}
+                                <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
+                              </div>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
@@ -1992,6 +2736,60 @@ export default function Esquadroes({
                       <ActionChip label="Novo simulado" onClick={() => openAdminFlow('simulado', 'simulados')} />
                     </div>
                   ) : null}
+                  {selectedSimulado ? (
+                    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Simulado selecionado</p>
+                          <h4 className="mt-1 text-xl font-semibold text-slate-900">{selectedSimulado.title}</h4>
+                          <p className="mt-2 text-sm font-medium text-slate-600">
+                            {selectedSimulado.helper || 'Aplicação interna com resultado enviado ao professor responsável.'}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700">
+                          {simuladoAttempt ? 'Tentativa concluída' : '1 tentativa por aluno'}
+                        </span>
+                      </div>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Aluno</p>
+                          {simuladoAttempt ? (
+                            <>
+                              <p className="mt-1 text-lg font-semibold text-slate-900">Nota: {String(simuladoAttempt.score).replace('.', ',')}</p>
+                              <p className="mt-1 text-xs font-medium text-slate-500">Resultado enviado automaticamente para o professor.</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="mt-1 text-sm font-semibold text-slate-700">Você ainda não realizou este simulado.</p>
+                              <button
+                                type="button"
+                                onClick={() => handleStartSimulado(selectedSimulado)}
+                                disabled={!canAttemptSelectedSimulado}
+                                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
+                              >
+                                Iniciar simulado
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Gabarito · professor</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-700">
+                            {canReviewAsTeacher ? 'Professor pode marcar respostas corretas e comentar questão por questão.' : 'Disponível para professores e coordenação.'}
+                          </p>
+                          {canReviewAsTeacher ? (
+                            <textarea
+                              rows={3}
+                              value={simuladoAttempt?.teacherComment || ''}
+                              onChange={(e) => handleTeacherCommentOnAttempt(e.target.value)}
+                              placeholder="Comentário pedagógico do professor sobre erros e pontos de atenção..."
+                              className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                            />
+                          ) : null}
+                        </div>
+                      </div>
+                    </section>
+                  ) : null}
                   {displaySimulados.map((simulado) => {
                     const hl = squadNavTarget.type === 'simulado' && squadNavTarget.id === simulado.id;
                     return (
@@ -2000,11 +2798,15 @@ export default function Esquadroes({
                         id={`squad-simulado-${simulado.id}`}
                         role="button"
                         tabIndex={0}
-                        onClick={() => openInternalSimulado(simulado)}
+                        onClick={() => {
+                          openInternalSimulado(simulado);
+                          setSelectedSimuladoId(simulado.id);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             openInternalSimulado(simulado);
+                            setSelectedSimuladoId(simulado.id);
                           }
                         }}
                         className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
@@ -2055,11 +2857,199 @@ export default function Esquadroes({
                 </div>
               )}
 
+              {activeSection === 'configuracao' && (
+                <div className="space-y-6">
+                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Governança do esquadrão</p>
+                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Papéis, permissões e convite</h3>
+                    <p className="mt-2 text-sm font-medium text-slate-600">
+                      Cada papel tem escopo explícito. O dono controla selos de professor, matérias e moderação; alunos enxergam apenas o que a turma libera.
+                    </p>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {roleHierarchyDetail.map((item) => (
+                      <div key={item.role} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">{item.role}</p>
+                        <p className="mt-2 text-sm font-medium text-slate-700">{item.summary}</p>
+                        <ul className="mt-3 space-y-2 text-sm font-medium text-slate-600">
+                          {item.can.map((line) => (
+                            <li key={line} className="flex gap-2">
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rounded-[2rem] border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-white p-6 shadow-sm ring-1 ring-indigo-100">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Link de convite (ADM)</p>
+                        <h4 className="mt-1 text-lg font-semibold text-slate-900">Compartilhe com alunos e equipe</h4>
+                        <p className="mt-2 text-sm font-medium text-slate-600">
+                          Código atual: <span className="font-semibold text-indigo-700">{selectedSquad.inviteCode || '—'}</span>
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-slate-500">
+                          Fluxo: o aluno se cadastra na plataforma, entra com este convite e acessa apenas o esquadrão autorizado.
+                        </p>
+                        <p className="mt-1 break-all text-xs font-medium text-slate-500">
+                          {typeof window !== 'undefined'
+                            ? `${window.location.origin}${window.location.pathname || '/'}?convite=${encodeURIComponent(selectedSquad.inviteCode || '')}`
+                            : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={copySquadInviteLink}
+                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                        >
+                          <Copy size={16} />
+                          {inviteCopied ? 'Copiado!' : 'Copiar link'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={copySquadInviteLink}
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          <Link2 size={16} />
+                          Convite
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Estrutura acadêmica</p>
+                    <h4 className="mt-1 text-lg font-semibold text-slate-900">Funções do cursinho e turmas</h4>
+                    <p className="mt-2 text-sm font-medium text-slate-600">
+                      O ADM define os papéis oficiais (Diretor, Coordenador, Professor e Aluno) e segmenta conteúdos por turma.
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {['Diretor', 'Coordenador', 'Professor', 'Aluno'].map((role) => (
+                        <span key={role} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                          {role}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-5">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Turmas cadastradas</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(Array.isArray(selectedSquad?.turmas) && selectedSquad.turmas.length ? selectedSquad.turmas : ['Turma única']).map((turma) => (
+                          <span key={turma} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                            {turma}
+                          </span>
+                        ))}
+                      </div>
+                      {canManageSquad ? (
+                        <div className="mt-3 flex gap-2">
+                          <input
+                            value={newTurmaName}
+                            onChange={(e) => setNewTurmaName(e.target.value)}
+                            placeholder="Nova turma (ex.: Turma Noite A)"
+                            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddTurma}
+                            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-950"
+                          >
+                            Adicionar
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'configuracao' && (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {canManageTeachers ? (
+                    <div className="flex justify-end md:col-span-2">
+                      <ActionChip label="Adicionar professor" onClick={() => openAdminFlow('add-teacher', 'configuracao')} />
+                    </div>
+                  ) : null}
+                  {(selectedSquad.teachers || []).map((teacher) => (
+                    <TeacherCard key={teacher.id} teacher={teacher} />
+                  ))}
+
+                  <div className="rounded-[2rem] border border-dashed border-gray-200 bg-gray-50 p-6 text-sm font-medium leading-relaxed text-gray-600 md:col-span-2">
+                    O dono do esquadrão define aqui os professores responsáveis, as matérias da equipa e a trilha do cursinho.
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'membros' && (
+                <div className="space-y-6">
+                  <MembersHero squad={selectedSquad} canManageSquad={canManageSquad} />
+
+                  <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                      <div className="mb-5 flex items-center justify-between">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Membros internos</p>
+                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Pessoas do esquadrão</h3>
+                        </div>
+
+                        {canManageSquad ? (
+                          <button
+                            type="button"
+                            onClick={() => openAdminFlow('invite-student', 'membros')}
+                            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                          >
+                            <UserPlus size={14} />
+                            Convidar
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-3">
+                        {adminMembers.map((member) => (
+                          <MemberManagementRow
+                            key={member.id}
+                            member={member}
+                            canManageSquad={canManageSquad}
+                            canAssignRoles={canAssignRoles}
+                            onToggleProfessor={handleToggleProfessor}
+                            onSetRole={handleSetMemberRole}
+                            onOpenPermissions={() =>
+                              openAdminFlow('permissions', 'membros', {
+                                memberId: member.id,
+                                teacherName: member.name,
+                                teacherSubject: member.subject || '',
+                              })
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                        <div className="mb-5">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Permissões visuais</p>
+                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Quem pode fazer o quê</h3>
+                        </div>
+
+                        <div className="space-y-3">
+                          <PermissionItem label="Distribuir selo de professor" value={canManageSquad ? 'Ativo' : 'Restrito'} />
+                          <PermissionItem label="Publicar simulados" value="Professor / Dono" />
+                          <PermissionItem label="Publicar atividades" value="Professor / Dono" />
+                          <PermissionItem label="Gerir membros" value={canManageSquad ? 'Ativo' : 'Restrito'} />
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {activeSection === 'ranking' && (
                 <div className="space-y-4">
                   <div className="rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50/90 via-white to-indigo-50/40 p-6 shadow-sm ring-1 ring-amber-100/80">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-800">Como funciona a pontuação</p>
-                    <h3 className="mt-1 text-xl font-semibold text-slate-900">Regras de XP (simulação)</h3>
+                    <h3 className="mt-1 text-xl font-semibold text-slate-900">Regras de XP</h3>
                     <p className="mt-2 text-sm font-medium text-slate-600">
                       A turma acumula XP por engajamento nas listas internas, simulados e redação. Valores abaixo são exemplos para o cursinho calibrar.
                     </p>
@@ -2091,22 +3081,11 @@ export default function Esquadroes({
                 </div>
               )}
 
-              {activeSection === 'configuracoes' && selectedSquad && canAccessSettings && (
+              {activeSection === 'admin' && canManageSquad && (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
-                  <div className="rounded-[2rem] border border-indigo-200/80 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 text-white shadow-md sm:p-7">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-200">Área do cursinho</p>
-                    <h2 className="mt-1 text-2xl font-semibold tracking-tight">Configurações do curso</h2>
-                    <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-slate-300">
-                      Identidade, turma, selos de professor, convites e permissões ficam nesta página. Role até <span className="font-semibold text-white">Membros e selos</span> para convidar, promover ou ajustar cargo de cada pessoa.
-                    </p>
-                  </div>
-
                   <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Identidade</p>
-                    <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Nome e visibilidade</h3>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
-                      Estes dados aparecem no cabeçalho do esquadrão e no convite. Salve ao terminar cada bloco de alterações.
-                    </p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Dados do esquadrão</p>
+                    <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Configurações gerais</h3>
                     <div className="mt-5 grid gap-4 md:grid-cols-2">
                       <label className="text-sm font-semibold text-slate-700">
                         Nome
@@ -2159,172 +3138,16 @@ export default function Esquadroes({
                         onClick={handleSaveSquadSettings}
                         className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
                       >
-                        Salvar identidade
+                        Salvar configurações
                       </button>
-                    </div>
-                  </section>
-
-                  <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Equipe docente</p>
-                        <h3 className="mt-1 text-xl font-semibold text-slate-900">Professores e matérias</h3>
-                        <p className="mt-2 text-sm font-medium text-slate-600">
-                          Quem representa o cursinho nas disciplinas. A turma vê estes nomes em atividades, fórum e mural.
-                        </p>
-                      </div>
-                      {canManageTeachers ? (
-                        <ActionChip label="Adicionar professor" onClick={() => openAdminFlow('add-teacher', 'configuracoes')} />
-                      ) : null}
-                    </div>
-                    <div className="mt-6 grid gap-4 md:grid-cols-2">
-                      {(selectedSquad.teachers || []).length ? (
-                        (selectedSquad.teachers || []).map((teacher) => <TeacherCard key={teacher.id} teacher={teacher} />)
-                      ) : (
-                        <p className="text-sm font-medium text-slate-500 md:col-span-2">
-                          Nenhum professor cadastrado. Adicione a equipa para distribuir matérias e respostas no fórum.
-                        </p>
-                      )}
-                    </div>
-                  </section>
-
-                  <section id="squad-config-membros" className="space-y-6 scroll-mt-6">
-                    <MembersHero squad={selectedSquad} canManageSquad={canManageSquad} />
-
-                    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                      <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-5 flex items-center justify-between gap-3">
-                          <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Turma</p>
-                            <h3 className="mt-1 text-xl font-semibold text-slate-900">Membros e selos</h3>
-                            <p className="mt-2 text-sm font-medium text-slate-600">
-                              Convidar novos alunos, distribuir o selo de professor e abrir o fluxo de permissões por pessoa.
-                            </p>
-                          </div>
-
-                          {canManageSquad ? (
-                            <button
-                              type="button"
-                              onClick={() => openAdminFlow('invite-student', 'configuracoes')}
-                              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
-                            >
-                              <UserPlus size={14} />
-                              Convidar
-                            </button>
-                          ) : null}
-                        </div>
-
-                        <div className="space-y-3">
-                          {adminMembers.map((member) => (
-                            <MemberManagementRow
-                              key={member.id}
-                              member={member}
-                              canManageSquad={canManageSquad}
-                              onToggleProfessor={handleToggleProfessor}
-                              onOpenPermissions={() =>
-                                openAdminFlow('permissions', 'configuracoes', {
-                                  memberId: member.id,
-                                  teacherName: member.name,
-                                  teacherSubject: member.subject || '',
-                                })
-                              }
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-5">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Resumo de permissões</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Quem pode fazer o quê</h3>
-                          <p className="mt-2 text-sm font-medium text-slate-600">
-                            Visão geral; para mudar o selo de um aluno ou cargo, use <span className="font-semibold text-slate-800">Permissões</span> na linha da pessoa ao lado.
-                          </p>
-                        </div>
-
-                        <div className="space-y-3">
-                          <PermissionItem label="Distribuir selo de professor" value={canManageSquad ? 'Ativo' : 'Restrito'} />
-                          <PermissionItem label="Publicar simulados" value="Professor / Dono" />
-                          <PermissionItem label="Publicar atividades" value="Professor / Dono" />
-                          <PermissionItem label="Gerir membros" value={canManageSquad ? 'Ativo' : 'Restrito'} />
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className="space-y-4">
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Papéis e acesso</p>
-                      <h3 className="mt-1 text-xl font-semibold text-slate-900">Governança e convites</h3>
-                      <p className="mt-2 text-sm font-medium text-slate-600">
-                        Cada cargo tem escopo claro. O dono define quem publica, quem modera e quem entra pela porta do convite.
-                      </p>
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {roleHierarchyDetail.map((item) => (
-                        <div key={item.role} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">{item.role}</p>
-                          <p className="mt-2 text-sm font-medium text-slate-700">{item.summary}</p>
-                          <ul className="mt-3 space-y-2 text-sm font-medium text-slate-600">
-                            {item.can.map((line) => (
-                              <li key={line} className="flex gap-2">
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
-                                <span>{line}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="rounded-[2rem] border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-white p-6 shadow-sm ring-1 ring-indigo-100">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Link de convite</p>
-                          <h4 className="mt-1 text-lg font-semibold text-slate-900">Compartilhe com alunos e equipe</h4>
-                          <p className="mt-2 text-sm font-medium text-slate-600">
-                            Código atual: <span className="font-semibold text-indigo-700">{selectedSquad.inviteCode || '—'}</span>
-                          </p>
-                          <p className="mt-1 break-all text-xs font-medium text-slate-500">
-                            {typeof window !== 'undefined'
-                              ? `${window.location.origin}${window.location.pathname || '/'}?convite=${encodeURIComponent(selectedSquad.inviteCode || '')}`
-                              : ''}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={copySquadInviteLink}
-                            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
-                          >
-                            <Copy size={16} />
-                            {inviteCopied ? 'Copiado!' : 'Copiar link'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={copySquadInviteLink}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                          >
-                            <Link2 size={16} />
-                            Convite
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <h4 className="text-lg font-semibold text-slate-900">Como o aluno entra no esquadrão certo</h4>
-                      <ul className="mt-3 space-y-2 text-sm font-medium text-slate-600">
-                        {squadAccessFlow.map((step) => (
-                          <li key={step}>{step}</li>
-                        ))}
-                      </ul>
                     </div>
                   </section>
 
                   <section className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] p-5 shadow-sm">
                     <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Operação do esquadrão</p>
-                        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Atalhos e moderação</h3>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Administração do esquadrão</p>
+                        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Controle central do ambiente</h3>
                         <p className="mt-1 max-w-2xl text-sm font-medium text-gray-500">
                           Organize pessoas, publique conteúdo e ajuste permissões sem sair do fluxo atual.
                         </p>
@@ -2341,36 +3164,31 @@ export default function Esquadroes({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4">
                       <AdminCommandCard
                         icon={<Users size={18} />}
-                        title="Membros e selos"
-                        description="Convidar, promover e distribuir selo de professor na mesma página."
-                        actionLabel="Ir para a turma"
-                        onClick={() => {
-                          setActiveSection('configuracoes');
-                          window.setTimeout(() => {
-                            document.getElementById('squad-config-membros')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 80);
-                        }}
+                        title="Gerir membros"
+                        description="Convidar, promover ou reorganizar pessoas do esquadrão."
+                        actionLabel="Abrir membros"
+                        onClick={() => setActiveSection('membros')}
                       />
                       <AdminCommandCard
                         icon={<BookOpen size={18} />}
-                        title="Equipa docente"
-                        description="Professores e matérias ficam na área de Configurações; abra o fluxo para incluir alguém novo."
+                        title="Definir professores"
+                        description="Adicionar professor ou ajustar a equipa responsável."
                         actionLabel="Adicionar professor"
-                        onClick={() => openAdminFlow('add-teacher', 'configuracoes')}
+                        onClick={() => openAdminFlow('add-teacher', 'admin')}
                       />
                       <AdminCommandCard
                         icon={<ClipboardList size={18} />}
                         title="Publicações internas"
                         description="Lançar atividade, simulado ou aviso em poucos cliques."
                         actionLabel="Abrir atalhos"
-                        onClick={() => openAdminFlow('activity', 'configuracoes', { status: 'Aberta' })}
+                        onClick={() => openAdminFlow('activity', 'admin', { status: 'Aberta' })}
                       />
                       <AdminCommandCard
                         icon={<Shield size={18} />}
                         title="Permissões"
                         description="Controlar o que a gestão e os professores podem fazer."
                         actionLabel="Ajustar"
-                        onClick={() => openAdminFlow('permissions', 'configuracoes')}
+                        onClick={() => openAdminFlow('permissions', 'admin')}
                       />
                     </div>
                   </section>
@@ -2383,9 +3201,9 @@ export default function Esquadroes({
                         subtitle="Visual limpo para bater o olho e entender quem é dono, professor ou membro."
                       >
                         <div className="mb-4 flex flex-wrap gap-3">
-                          <ActionChip label="Convidar aluno" onClick={() => openAdminFlow('invite-student', 'configuracoes')} />
-                          <ActionChip label="Adicionar professor" onClick={() => openAdminFlow('add-teacher', 'configuracoes')} />
-                          <ActionChip label="Gerir permissões" onClick={() => openAdminFlow('permissions', 'configuracoes')} />
+                          <ActionChip label="Convidar aluno" onClick={() => openAdminFlow('invite-student', 'admin')} />
+                          <ActionChip label="Adicionar professor" onClick={() => openAdminFlow('add-teacher', 'admin')} />
+                          <ActionChip label="Gerir permissões" onClick={() => openAdminFlow('permissions', 'admin')} />
                         </div>
 
                         <div className="space-y-3">
@@ -2394,7 +3212,7 @@ export default function Esquadroes({
                               key={member.id}
                               member={member}
                               onManagePermissions={() =>
-                                openAdminFlow('permissions', 'configuracoes', {
+                                openAdminFlow('permissions', 'admin', {
                                   memberId: member.id,
                                   teacherName: member.name,
                                   teacherSubject: member.subject || '',
@@ -2415,25 +3233,25 @@ export default function Esquadroes({
                             title="Publicar atividade"
                             helper="Criar lista, checklist ou tarefa com prazo."
                             badge="Acadêmico"
-                            onClick={() => openAdminFlow('activity', 'configuracoes', { status: 'Aberta' })}
+                            onClick={() => openAdminFlow('activity', 'admin', { status: 'Aberta' })}
                           />
                           <AdminActionCard
                             title="Publicar simulado"
                             helper="Agendar aplicação com data, hora e instruções."
                             badge="Avaliação"
-                            onClick={() => openAdminFlow('simulado', 'configuracoes')}
+                            onClick={() => openAdminFlow('simulado', 'admin')}
                           />
                           <AdminActionCard
                             title="Fixar aviso"
                             helper="Subir comunicado importante para o topo do mural."
                             badge="Comunicado"
-                            onClick={() => openAdminFlow('notice', 'configuracoes')}
+                            onClick={() => openAdminFlow('notice', 'admin')}
                           />
                           <AdminActionCard
                             title="Promover professor"
                             helper="Dar selo e liberar atuação interna no esquadrão."
                             badge="Permissão"
-                            onClick={() => openAdminFlow('permissions', 'configuracoes')}
+                            onClick={() => openAdminFlow('permissions', 'admin')}
                           />
                         </div>
                       </AdminPanel>
@@ -2460,7 +3278,7 @@ export default function Esquadroes({
                           </p>
                           <button
                             type="button"
-                            onClick={() => openAdminFlow('permissions', 'configuracoes')}
+                            onClick={() => openAdminFlow('permissions', 'admin')}
                             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
                           >
                             Ajustar permissões
@@ -2559,6 +3377,23 @@ export default function Esquadroes({
   );
 }
 
+function MiniHeroStat({ label, value, accent = 'slate' }) {
+  const tone =
+    accent === 'amber'
+      ? 'border-amber-200/80 bg-amber-50/90'
+      : accent === 'indigo'
+        ? 'border-indigo-200/80 bg-indigo-50/90'
+        : 'border-slate-200 bg-slate-50';
+  const labelTone =
+    accent === 'amber' ? 'text-amber-800/90' : accent === 'indigo' ? 'text-indigo-800/90' : 'text-slate-500';
+  return (
+    <div className={`min-w-[7.5rem] rounded-xl border px-4 py-3 shadow-sm ring-1 ring-white/60 ${tone}`}>
+      <p className={`text-[10px] font-semibold uppercase tracking-widest ${labelTone}`}>{label}</p>
+      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
 function QuickStatCard({ icon, label, value }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
@@ -2580,27 +3415,12 @@ function ForumBadge({ label, value }) {
   );
 }
 
-function ForumParticipantAvatar({ name, avatarUrl, className }) {
-  const initial = String(name || '?').trim().charAt(0).toUpperCase() || '?';
-  if (avatarUrl) {
-    return <img src={avatarUrl} alt="" className={`${className} rounded-full object-cover`} aria-hidden />;
-  }
-  return (
-    <div
-      className={`${className} flex shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600`}
-      aria-hidden
-    >
-      {initial}
-    </div>
-  );
-}
-
 function ForumPostFeatured({ post }) {
   return (
     <div className="rounded-[1.6rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#eef4ff_100%)] p-5 shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <ForumParticipantAvatar name={post.author} avatarUrl={post.avatar} className="h-12 w-12" />
+          <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-12 w-12 rounded-full object-cover" />
           <div className="min-w-0">
             <h5 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
               <span className="truncate">{post.author}</span>
@@ -2647,7 +3467,7 @@ function ForumPostCompact({ post }) {
   return (
     <div className="w-full rounded-[1.4rem] border border-gray-100 bg-gray-50 p-4 text-left transition hover:bg-white hover:shadow-sm">
       <div className="flex items-start gap-3">
-        <ForumParticipantAvatar name={post.author} avatarUrl={post.avatar} className="h-10 w-10" />
+        <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-10 w-10 rounded-full object-cover" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-gray-800">{post.author}</p>
@@ -2667,12 +3487,12 @@ function ForumPostCompact({ post }) {
   );
 }
 
-function ForumPostFull({ post, expanded, onToggleReplies }) {
+function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
   return (
     <article className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <ForumParticipantAvatar name={post.author} avatarUrl={post.avatar} className="h-11 w-11" />
+          <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-11 w-11 rounded-full object-cover" />
           <div className="min-w-0">
             <h5 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
               <span className="truncate">{post.author}</span>
@@ -2732,6 +3552,13 @@ function ForumPostFull({ post, expanded, onToggleReplies }) {
         <button className="flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-indigo-600">
           <MessageCircle size={16} /> {post.replies} respostas
         </button>
+        <button
+          type="button"
+          onClick={onOpenThread}
+          className="flex items-center gap-2 text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-800"
+        >
+          Abrir tópico
+        </button>
         <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
           <Eye size={16} /> {post.views} visualizações
         </div>
@@ -2743,7 +3570,7 @@ function ForumPostFull({ post, expanded, onToggleReplies }) {
       <div className="space-y-4">
         <div className="rounded-[1.4rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4">
           <div className="mb-3 flex items-center gap-3">
-            <ForumParticipantAvatar name={post.author} avatarUrl={post.avatar} className="h-9 w-9" />
+            <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-9 w-9 rounded-full object-cover" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-gray-800">{post.author}</p>
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Responder no tópico</p>
@@ -2808,7 +3635,7 @@ function CommentThread({ comment, level = 0 }) {
       <div className="rounded-[1.4rem] border border-gray-100 bg-gray-50 p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <ForumParticipantAvatar name={comment.author} avatarUrl={comment.avatar} className="h-9 w-9" />
+            <img src={comment.avatar || 'https://i.pravatar.cc/150?img=1'} alt={comment.author} className="h-9 w-9 rounded-full object-cover" />
             <div className="min-w-0">
               <h6 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
                 <span className="truncate">{comment.author}</span>
@@ -2970,11 +3797,11 @@ function MembersHero({ squad, canManageSquad }) {
         <div>
           <div className="inline-flex items-center gap-2 rounded-lg border border-yellow-400 bg-yellow-500 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white shadow-sm">
             <Users size={12} />
-            Turma e selos
+            Gestão de membros
           </div>
-          <h3 className="mt-4 text-3xl font-semibold tracking-tight">Quem faz parte do esquadrão</h3>
+          <h3 className="mt-4 text-3xl font-semibold tracking-tight">Membros do esquadrão</h3>
           <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-indigo-200">
-            Na Configurações do curso você convida gente nova, distribui o selo de professor e abre o fluxo de permissões por pessoa — tudo na lista abaixo.
+            Aqui o dono do cursinho organiza quem entra, quem recebe selo de professor e quem ganha acesso às ferramentas internas.
           </p>
         </div>
 
@@ -2987,10 +3814,12 @@ function MembersHero({ squad, canManageSquad }) {
   );
 }
 
-function MemberManagementRow({ member, canManageSquad, onToggleProfessor, onOpenPermissions }) {
+function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleProfessor, onSetRole, onOpenPermissions }) {
+  const normalizedRole = normalizeRoleLabel(member.role);
   const isProfessor =
     String(member.role || '').toLowerCase().includes('professor') ||
-    String(member.role || '').toLowerCase().includes('dono');
+    String(member.role || '').toLowerCase().includes('dono') ||
+    String(member.role || '').toLowerCase().includes('diretor');
 
   return (
     <div className="flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-gray-50 p-4 lg:flex-row lg:items-center">
@@ -3021,11 +3850,9 @@ function MemberManagementRow({ member, canManageSquad, onToggleProfessor, onOpen
 
       <div className="flex flex-wrap items-center gap-2">
         <span
-          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${
-            isProfessor ? 'bg-blue-50 text-blue-600' : 'bg-gray-200 text-gray-600'
-          }`}
+          className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${getRolePillClass(normalizedRole)}`}
         >
-          {isProfessor ? 'Selo professor' : 'Aluno'}
+          {normalizedRole}
         </span>
 
         <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
@@ -3034,13 +3861,27 @@ function MemberManagementRow({ member, canManageSquad, onToggleProfessor, onOpen
 
         {canManageSquad ? (
           <>
-            <button
-              type="button"
-              onClick={() => onToggleProfessor?.(member)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
-            >
-              {isProfessor ? 'Remover selo' : 'Dar selo'}
-            </button>
+            {canAssignRoles ? (
+              <select
+                value={normalizedRole}
+                onChange={(e) => onSetRole?.(member, e.target.value)}
+                className="rounded-xl border border-indigo-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              >
+                {CURSINHO_ROLE_OPTIONS.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onToggleProfessor?.(member)}
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                {isProfessor ? 'Remover selo' : 'Dar selo'}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => onOpenPermissions?.()}
@@ -3101,9 +3942,7 @@ function AdminPanel({ icon, title, subtitle, children }) {
 }
 
 function AdminMemberRow({ member, onManagePermissions }) {
-  const role = String(member.role || '');
-  const isOwner = role.toLowerCase().includes('dono');
-  const isProfessor = role.toLowerCase().includes('professor') || isOwner;
+  const role = normalizeRoleLabel(member.role);
 
   return (
     <div className="flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 transition hover:shadow-sm lg:flex-row lg:items-center">
@@ -3122,13 +3961,7 @@ function AdminMemberRow({ member, onManagePermissions }) {
           <p className="truncate text-sm font-semibold text-gray-800">{member.name}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <span
-              className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${
-                isOwner
-                  ? 'bg-amber-50 text-amber-700'
-                  : isProfessor
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'bg-gray-200 text-gray-600'
-              }`}
+              className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${getRolePillClass(role)}`}
             >
               {role}
             </span>

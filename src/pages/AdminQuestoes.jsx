@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -370,25 +371,37 @@ export default function AdminQuestoes() {
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-800">Banco de Questões</h1>
-          <p className="text-xs font-semibold text-slate-500">{total} questão{total !== 1 ? 'ões' : ''} cadastrada{total !== 1 ? 's' : ''}</p>
-          {deleteErr ? (
-            <p className="mt-2 text-xs font-semibold text-red-600" role="alert">
+      <PageHeadPremium
+        icon={BookOpen}
+        badge={
+          <PageHeadPremiumBadge icon={BookOpen}>Admin · banco de questões</PageHeadPremiumBadge>
+        }
+        title="Banco de Questões"
+        titleAs="h1"
+        subtitle={`${total} questão${total !== 1 ? 'ões' : ''} cadastrada${total !== 1 ? 's' : ''}.`}
+        leadingExtra={
+          deleteErr ? (
+            <p className="text-xs font-semibold text-red-300" role="alert">
               {deleteErr}
             </p>
-          ) : null}
-        </div>
-        <button
-          onClick={() => { setFormErr(''); setCreateOpen(true); }}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700"
-        >
-          <Plus size={16} />
-          Nova questão
-        </button>
-      </div>
+          ) : null
+        }
+        statGridClassName="grid w-full min-w-0 max-w-[11rem] shrink-0 grid-cols-1 gap-2"
+        stats={[
+          { key: 'n', label: 'No banco', value: String(total), icon: BookOpen, accent: 'blue' },
+        ]}
+        trailingClassName="shrink-0"
+        trailing={(
+          <button
+            type="button"
+            onClick={() => { setFormErr(''); setCreateOpen(true); }}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15"
+          >
+            <Plus size={16} />
+            Nova questão
+          </button>
+        )}
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 border-b border-slate-100 bg-slate-50 px-6 py-3">

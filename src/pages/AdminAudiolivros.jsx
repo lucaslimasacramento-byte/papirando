@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Headphones, Save } from 'lucide-react';
+import { BookMarked, Headphones, Save } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import { AdminAudiobookCatalogEditor, sanitizeAudiobooksForSave } from '../components/AdminAudiobookCatalogEditor';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
 
@@ -30,24 +31,26 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1100px] flex-col gap-6 p-6">
-      <section className="rounded-[2rem] border border-violet-100 bg-white p-6 shadow-sm">
-        <div className="mb-5 flex flex-wrap items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white">
-            <Headphones size={22} strokeWidth={1.75} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-600">Admin · conteúdo</p>
-            <h2 className="page-title mt-1 text-3xl font-semibold tracking-tight text-slate-900">Catálogo de audiolivros</h2>
-            <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-gray-600">
-              Cadastre obras e faixas com URL de áudio. Os dados são gravados na tabela{' '}
-              <code className="rounded bg-gray-100 px-1 text-xs">redacao_site_content</code>, coluna{' '}
-              <code className="rounded bg-gray-100 px-1 text-xs">audiobook_catalog_json</code> — use o script{' '}
-              <code className="rounded bg-gray-100 px-1 text-xs">supabase/redacao_site_content_audiobooks.sql</code> se ainda
-              não existir. Sem obras válidas após salvar, o app volta ao catálogo de demonstração do código.
-            </p>
-          </div>
-        </div>
+      <PageHeadPremium
+        icon={Headphones}
+        badge={
+          <PageHeadPremiumBadge icon={BookMarked}>Admin · conteúdo</PageHeadPremiumBadge>
+        }
+        title="Catálogo de audiolivros"
+        titleAs="h2"
+        subtitle={(
+          <span>
+            Cadastre obras e faixas com URL de áudio. Os dados são gravados na tabela{' '}
+            <code className="rounded bg-white/10 px-1 text-[11px]">redacao_site_content</code>, coluna{' '}
+            <code className="rounded bg-white/10 px-1 text-[11px]">audiobook_catalog_json</code> — use o script{' '}
+            <code className="rounded bg-white/10 px-1 text-[11px]">supabase/redacao_site_content_audiobooks.sql</code> se ainda
+            não existir. Sem obras válidas após salvar, a aba de audiolivros ficará vazia.
+          </span>
+        )}
+        leadingClassName="min-w-0 flex-1"
+      />
 
+      <section className="rounded-[2rem] border border-violet-100 bg-white p-6 shadow-sm">
         {feedback ? (
           <div className="mb-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
             {feedback}

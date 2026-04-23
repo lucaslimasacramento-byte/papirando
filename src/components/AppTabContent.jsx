@@ -119,10 +119,8 @@ export default function AppTabContent(props) {
     handleSaveProfile,
     handleAvatarChange,
     handleLogout,
-    refreshSessionProfile,
     isAdmin,
     wellnessLibrary,
-    wellnessPageConfig,
     activeWellnessTrackId,
     handleStartWellnessTrack,
     communityState,
@@ -163,7 +161,6 @@ export default function AppTabContent(props) {
     setContestTrackers,
     targetContestId,
     adminProfiles,
-    adminProfilesLoading,
     adminExpenses,
     adminLeads,
     progressConfig,
@@ -186,7 +183,6 @@ export default function AppTabContent(props) {
     saveAdminLead,
     deleteAdminLead,
     handleSaveWellnessLibrary,
-    handleSaveWellnessPageConfig,
     viewingDiscipline,
     setBancoDisciplinas,
     setViewingDiscipline,
@@ -358,7 +354,6 @@ export default function AppTabContent(props) {
         onSaveProfile={handleSaveProfile}
         onChangeAvatar={handleAvatarChange}
         onLogout={handleLogout}
-        onSessionRefresh={refreshSessionProfile}
       />
     );
   }
@@ -379,7 +374,6 @@ export default function AppTabContent(props) {
     return (
       <BemEstar
         tracks={wellnessLibrary}
-        pageConfig={wellnessPageConfig}
         isAdmin={isAdmin}
         setActiveTab={setActiveTab}
         activeTrackId={activeWellnessTrackId}
@@ -581,7 +575,6 @@ export default function AppTabContent(props) {
     return (
       <AdminUsuarios
         profiles={adminProfiles}
-        isLoading={adminProfilesLoading}
         currentUserEmail={currentUserEmail}
         onUpdateProfile={updateAdminProfile}
       />
@@ -645,8 +638,6 @@ export default function AppTabContent(props) {
         onSaveProgressConfig={handleSaveProgressConfig}
         wellnessLibrary={wellnessLibrary}
         onSaveWellnessLibrary={handleSaveWellnessLibrary}
-        wellnessPageConfig={wellnessPageConfig}
-        onSaveWellnessPageConfig={handleSaveWellnessPageConfig}
         redacaoExpertTips={redacaoExpertTips}
         onSaveRedacaoExpertTips={handleSaveRedacaoExpertTips}
         redacaoThemeBankEffective={redacaoThemeBankEffective}
@@ -697,6 +688,8 @@ export default function AppTabContent(props) {
           currentUserId={currentUserId}
           editalText={targetContestSummary?.edital_text || targetContestSummary?.editalText || ''}
           bancoDisciplinas={bancoDisciplinas}
+          cursos={cursos}
+          targetContest={targetContestSummary}
           expandedEditalSubject={expandedEditalSubject}
         setExpandedEditalSubject={setExpandedEditalSubject}
         toggleEditalTopico={toggleEditalTopico}

@@ -259,7 +259,7 @@ function HeaderKpiChip({ icon: Icon, label, value, sub, tone = 'slate', variant 
   if (variant === 'dark') {
     return (
       <div
-        className={`flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border px-2.5 py-2.5 sm:gap-3 sm:px-3 sm:py-3 ${toneClass}`}
+        className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border px-2.5 py-2.5 sm:gap-3 sm:px-3 sm:py-3 ${toneClass}`}
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 sm:h-10 sm:w-10">
           <Icon size={15} className={iconCls} strokeWidth={2} aria-hidden />
@@ -686,9 +686,10 @@ export default function Redacoes({
         title="Correção de redações"
         subtitle="OCR, parecer por banca e histórico."
         trailingClassName="xl:flex-1 xl:!max-w-none xl:!w-full xl:min-w-0"
+        trailingWrapClassName="xl:flex-1 xl:max-w-[64rem]"
         leadingClassName="xl:!max-w-[min(100%,22rem)] xl:!flex-none"
         trailing={
-          <div className="flex w-full flex-wrap gap-1 sm:gap-1.5 sm:flex-nowrap sm:justify-end">
+          <div className="grid w-full min-w-0 grid-cols-2 gap-1 sm:grid-cols-4 sm:gap-1.5">
             <HeaderKpiChip
               icon={BrainCircuit}
               label="Corrigidas"

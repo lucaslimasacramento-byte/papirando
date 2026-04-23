@@ -494,7 +494,7 @@ export default function Audiobooks(props) {
           </PageHeadPremiumBadge>
         }
         title="Audiolivros em Lei Seca"
-        subtitle="Biblioteca, player, favoritos e retomada ligados ao seu perfil e às disciplinas. O catálogo pode ser trocado pelo admin (URLs de áudio reais); até lá, as faixas usam arquivos de demonstração."
+        subtitle="Biblioteca, player, favoritos e retomada ligados ao seu perfil e às disciplinas. São exibidos apenas audiolivros reais cadastrados no painel admin."
         stats={[
           { key: 'listened', icon: Waves, label: 'Tempo ouvido', value: formatListeningHours(totalListenedSeconds), accent: 'blue' },
           {

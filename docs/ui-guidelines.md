@@ -94,6 +94,21 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 
 ## Componentes padrão
 
+### Header premium padrão (replicar em todas as páginas)
+
+- **Componente único:** usar `PageHeadPremium` (`src/components/PageHeadPremium.jsx`) como base oficial de cabeçalho.
+- **Estrutura fixa:** bloco esquerdo com ícone + chip de contexto + título/subtítulo; bloco direito com frase/estado curto e ações.
+- **Container da página:** manter dentro de `.page-shell`; evitar headers paralelos fora desse shell.
+- **Tema do header:** `page-head page-head-premium-dark` (dark premium) com acento azul lateral.
+- **Badge/chips:** usar `PageHeadPremiumBadge`; visual padrão: `border-white/10`, `bg-white/[0.06]`, `backdrop-blur-sm`, tipografia compacta.
+- **Título/subtítulo:** título em branco (`font-semibold`, `tracking-tight`), subtítulo em `text-slate-400`; não usar `font-black` em massa.
+- **CTA primário (header):** estilo premium azul (família `blue/indigo`), texto branco e contraste alto; evitar CTA dourado fora de contexto de plano/selo.
+- **CTA secundário:** variante vidro escuro (`bg-white/10`, borda translúcida, texto claro), mantendo hierarquia do primário.
+- **Posicionamento de conteúdo contextual:** frase motivacional/estado no topo do bloco direito; botões abaixo.
+- **Quebra de texto:** frases longas devem quebrar da esquerda para a direita (sem alinhamento forçado à direita e sem truncar por padrão).
+- **Densidade:** manter header compacto, conteúdo centralizado verticalmente, sem aumentar altura do card sem necessidade.
+- **Responsividade:** em mobile empilhar (`flex-col`), em desktop distribuir esquerda/direita com `justify-between`.
+
 ### Cartões
 
 - **Padrão:** `.surface-card` ou `.section-card` (borda + sombra leve).
@@ -152,3 +167,42 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 - `font-black` em títulos longos ou em massa.
 - Gradientes agressivos fora dos selos de plano / hero muito justificado.
 - Larguras máximas diferentes de 1320px sem atualizar as utilities globais em `index.css`.
+
+---
+
+## Conceito funcional das páginas (rascunho validável)
+
+### Esquadrões
+
+- **O que é:** ambiente interno white-label para cursinhos que não possuem software próprio, operando como “campus privado” dentro do Papirando.
+- **Para quem é:** alunos, professores e dono/coordenação do cursinho; cada perfil enxerga ações conforme permissão.
+- **Regra central:** tudo é segmentado por esquadrão (turma/equipe). Conteúdo, mural, atividades, simulados, questões e gestão são visíveis apenas para membros autorizados.
+- **Objetivo de produto:** concentrar a operação pedagógica e comunitária do cursinho em um único espaço privado, sem depender de ferramentas externas desconectadas.
+
+#### Estrutura da página
+
+- **Header da área:** apresenta contexto “Ecossistema privado”, seletor de esquadrão, status de criação e ação de novo esquadrão (quando permitido).
+- **Card de esquadrão ativo:** mostra turma atual, foco, dono, métricas rápidas e atalho de administração para quem gerencia.
+- **Navegação interna por abas:** organiza as frentes operacionais do cursinho dentro do mesmo esquadrão.
+
+#### Conceito de cada aba interna
+
+- **Dashboard:** visão executiva rápida da turma (membros, professores, atividades, simulados, próximos passos e dados de acesso).
+- **Fórum:** discussões privadas da turma, com busca, ordenação, destaque e interação em árvore.
+- **Mural:** canal oficial de comunicados (avisos da coordenação/professores, com possibilidade de fixação e anexos).
+- **Cronograma:** agenda consolidada da turma (atividades + simulados + marcos) para orientação da rotina semanal.
+- **Atividades:** lista de tarefas internas com prazo, status, autoria e abertura para detalhe/execução.
+- **Questões:** banco privado de listas por disciplina/banca/nível para treino exclusivo do esquadrão.
+- **Simulados:** gestão e publicação de simulados internos da turma com metadados, anexos e abertura de ficha.
+- **Hierarquia:** regras de governança (papéis/permissões), fluxo de convite e explicação de acesso do aluno ao esquadrão correto.
+- **Professores:** gestão do corpo docente da turma (responsáveis, matérias e atuação interna).
+- **Membros:** gestão de alunos e equipe (convites, organização de pessoas e permissões visuais).
+- **Ranking:** camada de engajamento/gamificação com regras de XP e classificação interna da turma.
+- **Admin (somente gestão):** configuração estrutural do esquadrão (dados gerais, administração de membros/publicações e ações sensíveis).
+
+#### Regras de experiência (produto)
+
+- **Isolamento entre turmas:** um esquadrão não deve vazar conteúdo/participantes para outro.
+- **Permissão antes de ação:** publicar, fixar, convidar, promover ou editar deve respeitar papel do usuário.
+- **Operação do cursinho no mesmo fluxo:** professor publica onde o aluno consome (sem sair da área privada).
+- **Transparência de governança:** aluno enxerga estrutura e responsáveis; gestão enxerga controles completos.

@@ -10,6 +10,7 @@ import {
   PanelLeft,
   Plus,
   Save,
+  Settings,
   Sparkles,
   Trash2,
   Trophy,
@@ -33,6 +34,7 @@ import { AdminRedacaoThemeBankEditor } from '../components/AdminRedacaoThemeBank
 import { AdminAudiobookCatalogEditor, sanitizeAudiobooksForSave } from '../components/AdminAudiobookCatalogEditor';
 import { AdminSidebarLabelsEditor } from '../components/AdminSidebarLabelsEditor';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 function normalizeThemeBanca(banca) {
   const b = String(banca || '').trim();
@@ -199,28 +201,30 @@ export default function AdminConfiguracoes({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <section className="rounded-[2.2rem] border border-gray-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Admin do produto</p>
-            <h2 className="page-title mt-2 text-4xl font-semibold tracking-tight text-slate-900">Configurações estruturais</h2>
-            <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados.
-            </p>
-          </div>
-
+      <PageHeadPremium
+        icon={Settings}
+        badge={
+          <PageHeadPremiumBadge icon={LayoutGrid}>Admin do produto</PageHeadPremiumBadge>
+        }
+        title="Configurações estruturais"
+        subtitle="Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados."
+        leadingClassName="min-w-0 flex-1"
+        trailingClassName="shrink-0"
+        trailing={(
           <button
             type="button"
             onClick={() => void saveAll()}
             disabled={redacaoTipsSaving}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-700 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/15 disabled:opacity-50"
           >
             <Save size={16} />
             {redacaoTipsSaving ? 'Salvando…' : 'Salvar tudo'}
           </button>
-        </div>
+        )}
+      />
 
-        <div className="mt-6 flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
+      <section className="rounded-[2.2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
           <ConfigTab
             active={activeSection === 'conteudo'}
             onClick={() => setActiveSection('conteudo')}

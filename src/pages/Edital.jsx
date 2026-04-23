@@ -23,6 +23,8 @@ const DISCIPLINE_ACCENT_FALLBACK = '#1d4ed8';
 export default function Edital({
   editalText = '',
   bancoDisciplinas = [],
+  cursos = [],
+  targetContest = null,
   expandedEditalSubject,
   setExpandedEditalSubject,
   toggleEditalTopico,
@@ -35,22 +37,44 @@ export default function Edital({
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
 
-  // Extrai todos os planos únicos disponíveis no banco (ignorando 'Geral')
-  const planosDisponiveis = useMemo(() => {
-    const planos = (bancoDisciplinas || [])
-      .map((d) => d?.plano)
-      .filter((p) => p && p !== 'Geral');
-    return [...new Set(planos)];
-  }, [bancoDisciplinas]);
+  const concursosDoAluno = useMemo(() => {
+    const safeCursos = Array.isArray(cursos) ? cursos : [];
+    return safeCursos
+      .map((curso, index) => {
+        const plano = String(curso?.plano || curso?.nome || curso?.concurso || '').trim();
+        if (!plano) return null;
+        return {
+          id: String(curso?.id || `curso-${index}-${plano}`),
+          nome: String(curso?.nome || curso?.concurso || plano).trim(),
+          plano,
+        };
+      })
+      .filter(Boolean);
+  }, [cursos]);
 
-  const [planoSelecionado, setPlanoSelecionado] = useState(planosDisponiveis[0] || '');
+  const [concursoSelecionadoId, setConcursoSelecionadoId] = useState('');
 
-  // Garante que se o banco mudar e o planoSelecionado não existir mais, ele pega o primeiro
   useEffect(() => {
-    if (planosDisponiveis.length > 0 && !planosDisponiveis.includes(planoSelecionado)) {
-      setPlanoSelecionado(planosDisponiveis[0]);
+    if (concursosDoAluno.length === 0) {
+      setConcursoSelecionadoId('');
+      return;
     }
-  }, [planosDisponiveis, planoSelecionado]);
+
+    const targetId = String(targetContest?.id || '').trim();
+    if (targetId && concursosDoAluno.some((item) => item.id === targetId)) {
+      setConcursoSelecionadoId(targetId);
+      return;
+    }
+
+    if (!concursosDoAluno.some((item) => item.id === concursoSelecionadoId)) {
+      setConcursoSelecionadoId(concursosDoAluno[0].id);
+    }
+  }, [concursosDoAluno, concursoSelecionadoId, targetContest]);
+
+  const concursoSelecionado = useMemo(
+    () => concursosDoAluno.find((item) => item.id === concursoSelecionadoId) || null,
+    [concursosDoAluno, concursoSelecionadoId]
+  );
 
   const handleAnalyzeEdital = async () => {
     if (!hasEditalText) return;
@@ -67,10 +91,16 @@ export default function Edital({
     }
   };
 
-  // Filtra as disciplinas baseando-se no edital selecionado no filtro (e inclui as disciplinas Gerais)
-  const editalAtivo = (bancoDisciplinas || []).filter(
-    (d) => d?.plano === planoSelecionado || d?.plano === 'Geral'
-  );
+  // Filtra por concurso selecionado (e inclui disciplinas gerais compartilhadas).
+  const editalAtivo = useMemo(() => {
+    const safeDisciplinas = Array.isArray(bancoDisciplinas) ? bancoDisciplinas : [];
+    if (concursoSelecionado?.plano) {
+      return safeDisciplinas.filter(
+        (disciplina) => disciplina?.plano === concursoSelecionado.plano || disciplina?.plano === 'Geral'
+      );
+    }
+    return safeDisciplinas;
+  }, [bancoDisciplinas, concursoSelecionado]);
 
   let totTopicosEdital = 0;
   let concTopicosEdital = 0;
@@ -107,29 +137,6 @@ export default function Edital({
         }
         title="Edital verticalizado"
         subtitle="Acompanhe o progresso tópico por tópico, sem bagunça e sem sumir matéria no meio do caminho."
-        leadingExtra={
-          planosDisponiveis.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Edital</span>
-              <select
-                value={planoSelecionado}
-                onChange={(e) => setPlanoSelecionado(e.target.value)}
-                className="cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-1.5 pl-3 pr-9 text-xs font-semibold text-white outline-none transition-all hover:border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25 sm:py-2 sm:text-sm"
-                style={{
-                  backgroundImage: selectChevronDark,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 10px center',
-                }}
-              >
-                {planosDisponiveis.map((plano) => (
-                  <option key={plano} value={plano} className="bg-slate-900 text-white">
-                    {plano}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null
-        }
         trailing={
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
             {hasEditalText ? (
@@ -149,19 +156,29 @@ export default function Edital({
             <button
               type="button"
               onClick={() => setRegistroEstudoModalOpen?.(true)}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]"
             >
               <Plus size={14} strokeWidth={2} />
               Adicionar estudo
             </button>
-            <button
-              type="button"
-              onClick={() => setLinkModalOpen?.(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Calculator size={14} />
-              Gerenciar links
-            </button>
+            {concursosDoAluno.length > 0 ? (
+              <select
+                value={concursoSelecionadoId}
+                onChange={(e) => setConcursoSelecionadoId(e.target.value)}
+                className="min-w-[220px] cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-2 pl-3 pr-9 text-xs font-semibold text-slate-100 outline-none transition-all hover:border-white/30 hover:bg-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25 sm:min-w-[260px] sm:px-3.5 sm:py-2 sm:text-[13px]"
+                style={{
+                  backgroundImage: selectChevronDark,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 10px center',
+                }}
+              >
+                {concursosDoAluno.map((concurso) => (
+                  <option key={concurso.id} value={concurso.id} className="bg-slate-900 text-white">
+                    {concurso.nome}
+                  </option>
+                ))}
+              </select>
+            ) : null}
           </div>
         }
       />

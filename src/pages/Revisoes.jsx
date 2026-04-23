@@ -301,7 +301,7 @@ export default function Revisoes({
         }
         title="Revisões priorizadas"
         subtitle="A fila abaixo mistura revisão por disciplina, histórico real e flashcards vencidos no FSRS."
-        statGridClassName="grid shrink-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:max-w-md md:justify-end"
+        statGridClassName="grid w-full min-w-0 max-w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:ml-auto md:max-w-md"
         stats={[
           {
             key: 'urgent',

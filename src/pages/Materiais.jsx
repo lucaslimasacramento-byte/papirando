@@ -26,6 +26,9 @@ import PageHeadPremium from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
+const PRIMARY_HEADER_BUTTON_CLASS =
+  'inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]';
+
 const HIGHLIGHT_COLORS = [
   { value: '#FCD34D', label: 'Amarelo', cls: 'bg-yellow-300' },
   { value: '#6EE7B7', label: 'Verde',   cls: 'bg-emerald-300' },
@@ -877,7 +880,7 @@ export default function Materiais({ currentUserId }) {
           <button
             type="button"
             onClick={() => { setUploadErr(''); setUploadModal(true); }}
-            className="btn-primary inline-flex shrink-0 items-center gap-1.5 self-start px-3 py-2 text-xs font-semibold sm:self-center sm:px-3.5 sm:py-2 sm:text-[13px]"
+            className={`${PRIMARY_HEADER_BUTTON_CLASS} shrink-0 self-start sm:self-center`}
           >
             <Upload size={14} />
             Enviar PDF
@@ -902,7 +905,7 @@ export default function Materiais({ currentUserId }) {
             <button
               type="button"
               onClick={() => { setUploadErr(''); setUploadModal(true); }}
-              className="btn-primary"
+              className={PRIMARY_HEADER_BUTTON_CLASS}
             >
               <Upload size={16} />
               Enviar primeiro PDF

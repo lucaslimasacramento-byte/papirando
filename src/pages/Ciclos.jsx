@@ -10,6 +10,7 @@ import {
   RefreshCw,
   RotateCcw,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const CYCLE_PASTEL_COLORS = Array.from(
   new Set([
@@ -368,6 +369,13 @@ export default function Ciclos({
 
   return (
     <div className={`${embedded ? 'flex min-h-0 flex-col gap-3 overflow-hidden lg:h-full' : 'mx-auto flex max-w-[1400px] min-h-0 flex-col gap-3 overflow-hidden lg:h-[calc(100vh-13rem)]'} animate-in fade-in duration-500`}>
+      <PageHeadPremium
+        icon={ListOrdered}
+        badge={<PageHeadPremiumBadge icon={ListOrdered}>Estudo cíclico</PageHeadPremiumBadge>}
+        title="Ciclos de estudo"
+        subtitle="Sequencie blocos, acompanhe o progresso e ajuste o edital com ritmo claro."
+        className="!rounded-2xl"
+      />
       <div className="grid min-h-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:items-stretch">
         <div className="flex min-h-0 flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">

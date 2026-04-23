@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, CalendarDays, Crown, Heart, Layers3, Target } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function MeusConcursos({
   contests = [],
@@ -12,26 +13,26 @@ export default function MeusConcursos({
 
   return (
     <div className="page-shell">
-      <section className="page-head rounded-[26px] border border-slate-200/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] px-6 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
-        <div>
-          <div className="brand-badge mb-3 inline-flex items-center gap-2">
-            <Target size={12} />
-            Meus concursos
+      <PageHeadPremium
+        icon={Target}
+        badge={<PageHeadPremiumBadge icon={Target}>Meus concursos</PageHeadPremiumBadge>}
+        title="Seus concursos ativos"
+        subtitle={
+          contests.length > 0
+            ? `${contests.length} concurso(s) na sua base`
+            : 'Importe um concurso para começar'
+        }
+        trailing={(
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
+              {importedCount} importado(s)
+            </span>
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
+              {contests.length - importedCount} no radar
+            </span>
           </div>
-          <h1 className="page-title">Seus concursos ativos</h1>
-          <p className="page-subtitle mt-2">
-            {contests.length > 0 ? `${contests.length} concurso(s) na sua base` : 'Importe um concurso para começar'}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3 text-sm font-bold text-slate-500">
-          <span className="rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
-            {importedCount} importado(s)
-          </span>
-          <span className="rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
-            {contests.length - importedCount} no radar
-          </span>
-        </div>
-      </section>
+        )}
+      />
 
       {targetContest && (
         <section className="section-card soft-accent p-6">

@@ -19,12 +19,7 @@ import {
   parseStudyTimeToMinutes,
 } from '../lib/studyAnalytics';
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumBadge,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-} from '../components/PageHeadPremium';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function Estatisticas({
   setIsFilterPanelOpen,
@@ -108,50 +103,44 @@ export default function Estatisticas({
 
   return (
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremiumShell className="!block shrink-0">
-        <div className="relative z-10 grid w-full min-w-0 gap-4 lg:grid-cols-[1fr_0.9fr_1fr] lg:items-center">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
-            <PageHeadPremiumIconTile>
-              <PieChart className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-            </PageHeadPremiumIconTile>
-            <div className="min-w-0">
-              <PageHeadPremiumBadge icon={PieChart}>Inteligência analítica</PageHeadPremiumBadge>
-              <h2 className="text-base font-semibold tracking-tight text-white sm:text-lg">Estatísticas profundas</h2>
-              <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-                Consolidadas por matéria canônica.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex min-w-0 justify-center lg:px-2">
-            <div className="w-full max-w-sm">
-              <div className="mb-2 space-y-0.5 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-                <div>Desempenho geral</div>
-                <div className="text-base font-bold tracking-normal text-blue-300 tabular-nums">{percAcertos}%</div>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-blue-500" style={{ width: `${percAcertos}%` }} />
+      <PageHeadPremium
+        icon={PieChart}
+        badge={<PageHeadPremiumBadge icon={PieChart}>Inteligência analítica</PageHeadPremiumBadge>}
+        title="Estatísticas profundas"
+        subtitle="Painel consolidado para identificar padrões, gargalos e oportunidades por matéria canônica."
+        className="!flex-col !items-stretch gap-4 xl:!flex-row xl:items-center"
+        leadingClassName="min-w-0 shrink-0 xl:max-w-md"
+        trailing={(
+          <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-center gap-4 sm:grid-cols-2 sm:gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="flex min-w-0 items-center justify-center sm:px-0 xl:justify-self-center">
+              <div className="flex w-full max-w-[44rem] flex-col items-center justify-center">
+                <div className="mb-2.5 space-y-0.5 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                  <div>Desempenho geral</div>
+                  <div className="text-base font-bold tracking-normal text-blue-300 tabular-nums">{percAcertos}%</div>
+                </div>
+                <div className="mx-auto h-2.5 w-full max-w-[28rem] overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${percAcertos}%` }} />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-1.5 lg:items-end lg:text-right">
-            <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:justify-end">
-              <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
+            <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2">
+              <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-center text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
                 Matérias padronizadas
               </div>
               <button
                 type="button"
                 onClick={() => setIsFilterPanelOpen?.(true)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400/40 sm:w-auto sm:text-[13px]"
+                className="inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400/40 sm:w-auto sm:text-[13px]"
               >
                 <Filter size={14} />
                 Filtros avançados
               </button>
             </div>
           </div>
-        </div>
-      </PageHeadPremiumShell>
+        )}
+        trailingClassName="w-full min-w-0 flex-1 xl:min-w-0"
+        trailingWrapClassName="xl:max-w-[56rem]"
+      />
 
       <div
         className="-mx-1 flex min-w-0 shrink-0 gap-2 overflow-x-auto pb-1 pt-0.5 custom-scrollbar sm:mx-0 sm:grid sm:w-full sm:grid-cols-7 sm:gap-2 sm:overflow-visible sm:pb-0 [&>*]:min-w-0"
@@ -219,7 +208,7 @@ export default function Estatisticas({
         />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden xl:grid-cols-[1.25fr_1fr] xl:gap-4">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.25fr_1fr] xl:gap-4">
         <div className="section-card flex min-h-0 min-w-0 flex-col overflow-hidden p-4 md:p-5">
           <div className="mb-3 shrink-0">
             <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
@@ -252,8 +241,8 @@ export default function Estatisticas({
           </div>
         </div>
 
-        <div className="grid min-h-0 min-w-0 grid-rows-[minmax(24rem,1fr)_auto] gap-3">
-          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#2563EB]/15 sm:min-h-[26rem] sm:p-5 xl:h-full xl:min-h-0">
+        <div className="grid min-w-0 gap-3 xl:grid-rows-[minmax(26rem,auto)_auto]">
+          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#2563EB]/15 sm:min-h-[26rem] sm:p-5">
             <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-[#2563EB]/25 blur-3xl" />
             <div className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full bg-[#2563EB]/10 blur-2xl" />
             <div className="relative z-10 flex min-h-0 flex-1 flex-col">

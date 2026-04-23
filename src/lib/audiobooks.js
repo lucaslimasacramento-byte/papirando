@@ -71,17 +71,13 @@ function normalizeRemoteAudiobookBook(raw) {
   return { id, title, subtitle, category, accent, disciplineName, materialLabel, description, tracks };
 }
 
-/** Se `overrideBooks` for um array válido, substitui o catálogo padrão; senão usa só o embutido + vínculos de disciplina. */
+/** Usa somente o catálogo remoto válido; sem fallback de demonstração para a área do aluno. */
 export function mergeAudiobookCatalogFromRemote(overrideBooks, bancoDisciplinas = [], subjectCatalog = []) {
   const normalizedDisciplines = Array.isArray(bancoDisciplinas) ? bancoDisciplinas : [];
-  const base = buildDefaultAudiobookCatalog().map((book) =>
-    enrichBookWithDisciplineLinks(book, normalizedDisciplines, subjectCatalog)
-  );
-
-  if (!Array.isArray(overrideBooks) || overrideBooks.length === 0) return base;
+  if (!Array.isArray(overrideBooks) || overrideBooks.length === 0) return [];
 
   const parsed = overrideBooks.map((row) => normalizeRemoteAudiobookBook(row)).filter(Boolean);
-  if (!parsed.length) return base;
+  if (!parsed.length) return [];
 
   return parsed.map((book) => enrichBookWithDisciplineLinks(book, normalizedDisciplines, subjectCatalog));
 }

@@ -979,7 +979,7 @@ export default function Conciliador({
           },
           {
             label: 'Em comum',
-            value: `${comparison.commonSubjects.length} disc. · ${comparison.commonTopicsCount} tóp.`,
+            value: `${comparison.commonSubjects.length} disc.`,
             helper: 'Núcleo reaproveitável entre base e alvos',
             icon: Sparkles,
             tone: 'gold',
@@ -1016,6 +1016,7 @@ export default function Conciliador({
     label: item.label,
     value: String(item.value),
     accent: item.tone === 'gold' ? 'amber' : item.tone === 'rose' ? 'red' : 'blue',
+    className: 'min-w-[9.5rem]',
   }));
 
   const handleCompare = () => {
@@ -1123,8 +1124,10 @@ export default function Conciliador({
             </button>
           ) : null
         }
+        leadingClassName="xl:max-w-[min(100%,34rem)] xl:flex-none"
+        trailingWrapClassName="xl:max-w-[72rem]"
         stats={headlineStats}
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-4 md:gap-3 xl:min-w-[280px]"
+        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-4 md:gap-3 xl:min-w-[42rem]"
       />
 
       <div className="shrink-0 rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">

@@ -15,6 +15,7 @@ import {
   Plus,
   Users,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const STATUS_LABELS = {
   confirmado: 'Confirmado',
@@ -276,79 +277,104 @@ export default function ConcursoDetalhe({
   }
 
   return (
-    <div className="page-shell">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
-        >
-          <ArrowLeft size={16} />
-          Voltar para concursos
-        </button>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => onToggleFavorite?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isFavorite
-                ? 'border-rose-200 bg-rose-50 text-rose-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <Heart size={15} className={isFavorite ? 'fill-current' : ''} />
-            {isFavorite ? 'Favoritado' : 'Favoritar'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onToggleInterested?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isInterested
-                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <Bookmark size={15} className={isInterested ? 'fill-current' : ''} />
-            {isInterested ? 'Quero estudar' : 'Marcar interesse'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSetTargetContest?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isTargetContest
-                ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <BadgeCheck size={15} className={isTargetContest ? 'fill-current' : ''} />
-            {isTargetContest ? 'Concurso alvo' : 'Definir como alvo'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onImport?.(contest)}
-            disabled={importingId === contest.id || limiteAtingido}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#185FA5] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0C447C] disabled:opacity-70"
-          >
-            {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Importando...' : 'Adicionar aos meus cursos'}
-            <ArrowRight size={16} />
-          </button>
-
-          {contest.edital_url && (
+    <div className="page-shell flex flex-col gap-6">
+      <PageHeadPremium
+        icon={LibraryBig}
+        badge={
+          <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
+        }
+        title={contest.nome}
+        titleAs="h1"
+        subtitle={`${contest.cargo || contest.concurso} · ${contest.banca || 'Banca a definir'}`}
+        leadingClassName="min-w-0 flex-1"
+        leadingExtra={(
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <button
               type="button"
-              onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
+              onClick={onBack}
+              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100"
             >
-              Edital
-              <ExternalLink size={15} />
+              <ArrowLeft size={14} />
+              Voltar para concursos
             </button>
-          )}
-        </div>
-      </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
+                {contest.area || 'Geral'}
+              </span>
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                {STATUS_LABELS[contest.status_concurso] || 'Em análise'}
+              </span>
+            </div>
+          </div>
+        )}
+        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
+        stats={[
+          { key: 'pr', label: 'Prova', value: formatDateBR(contest.prova_data), icon: CalendarDays, accent: 'blue' },
+          { key: 'sl', label: 'Salário', value: formatCurrencyBR(contest.salario), icon: DollarSign, accent: 'emerald' },
+          { key: 'di', label: 'Disciplinas', value: String(contest.disciplinas?.length || 0), icon: Layers3, accent: 'indigo' },
+          { key: 'tp', label: 'Tópicos', value: String(topicosCount), icon: BadgeCheck, accent: 'violet' },
+        ]}
+        trailingClassName="max-w-full xl:max-w-md"
+        trailing={(
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => onToggleFavorite?.(contest.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
+                isFavorite
+                  ? 'border-rose-300/50 bg-rose-500/20 text-rose-100'
+                  : 'border-white/20 bg-white/5 text-slate-100'
+              }`}
+            >
+              <Heart size={14} className={isFavorite ? 'fill-current' : ''} />
+              {isFavorite ? 'Favoritado' : 'Favoritar'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onToggleInterested?.(contest.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
+                isInterested
+                  ? 'border-amber-300/50 bg-amber-500/20 text-amber-100'
+                  : 'border-white/20 bg-white/5 text-slate-100'
+              }`}
+            >
+              <Bookmark size={14} className={isInterested ? 'fill-current' : ''} />
+              {isInterested ? 'Quero estudar' : 'Interesse'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onSetTargetContest?.(contest.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
+                isTargetContest
+                  ? 'border-yellow-300/50 bg-yellow-500/20 text-yellow-100'
+                  : 'border-white/20 bg-white/5 text-slate-100'
+              }`}
+            >
+              <BadgeCheck size={14} className={isTargetContest ? 'fill-current' : ''} />
+              {isTargetContest ? 'Alvo' : 'Como alvo'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onImport?.(contest)}
+              disabled={importingId === contest.id || limiteAtingido}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#185FA5] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0C447C] disabled:opacity-60 sm:px-4 sm:text-sm"
+            >
+              {limiteAtingido ? 'Limite' : importingId === contest.id ? '…' : 'Importar curso'}
+              <ArrowRight size={14} />
+            </button>
+            {contest.edital_url ? (
+              <button
+                type="button"
+                onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100 sm:text-sm"
+              >
+                Edital
+                <ExternalLink size={14} />
+              </button>
+            ) : null}
+          </div>
+        )}
+      />
 
       <section className="section-card overflow-hidden p-0">
         <div className="grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
@@ -371,25 +397,9 @@ export default function ConcursoDetalhe({
           </div>
 
           <div className="p-6 lg:p-8">
-            <div className="flex flex-wrap gap-2">
-              <Badge tone="blue">{contest.area || 'Geral'}</Badge>
-              <Badge tone="green">{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</Badge>
-            </div>
-
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 lg:text-4xl">{contest.nome}</h1>
-            <p className="mt-2 text-base font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
-            <p className="mt-1 text-sm font-medium text-gray-500">{contest.banca || 'Banca a definir'}</p>
-
-            <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <StatBox label="Prova" value={formatDateBR(contest.prova_data)} icon={CalendarDays} />
-              <StatBox label="Salário" value={formatCurrencyBR(contest.salario)} icon={DollarSign} />
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <StatBox label="Inscrição" value={formatCurrencyBR(contest.inscricao_valor)} icon={DollarSign} />
               <StatBox label="Nível" value={contest.escolaridade || 'A definir'} icon={GraduationCap} />
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <StatBox label="Disciplinas" value={String(contest.disciplinas?.length || 0)} icon={Layers3} />
-              <StatBox label="Tópicos" value={String(topicosCount)} icon={BadgeCheck} />
               <StatBox label="Vagas" value={contest.vagas || 'A definir'} icon={Users} />
               <StatBox label="Lotação" value={contest.lotacao || 'A definir'} icon={Compass} />
             </div>
@@ -629,19 +639,6 @@ export default function ConcursoDetalhe({
         </section>
       </div>
     </div>
-  );
-}
-
-function Badge({ children, tone = 'blue' }) {
-  const toneClasses = {
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
-    green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-  };
-
-  return (
-    <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${toneClasses[tone] || toneClasses.blue}`}>
-      {children}
-    </span>
   );
 }
 

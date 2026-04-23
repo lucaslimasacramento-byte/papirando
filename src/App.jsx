@@ -53,7 +53,6 @@ import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
 import { normalizeLead } from './lib/adminCrm';
-import { ADMIN_TAB_IDS } from './lib/adminTabIds';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from './lib/subjectCatalogUtils';
 import { buildCanonicalHistory, normalizeStudyRecord } from './lib/studyAnalytics';
 import { buildSmartStudyPlan, mergeDisciplinesByCanonical } from './lib/studyRecommendation';
@@ -81,12 +80,8 @@ import {
   resolveWellnessMediaUrl,
 } from './lib/wellnessLibrary';
 import {
-  WELLNESS_PAGE_CONFIG_STORAGE_KEY,
-  normalizeWellnessPageConfig,
-} from './lib/wellnessPageConfig';
-import {
   buildDefaultReferralCode,
-  captureReferralCodeFromWindow,
+  extractReferralCodeFromLocation,
   getStoredReferralCode,
   normalizeReferralCode,
   persistPendingReferralCode,
@@ -580,7 +575,6 @@ export default function App() {
     /QUADRIX/i,
   ];
 
-  /** E-mails com acesso admin se `profiles.role` ainda não for `admin` (bootstrap / contingência). Preferir `role` no banco. */
   const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
 
   const [loadingSession, setLoadingSession] = useState(true);
@@ -590,7 +584,7 @@ export default function App() {
   const [currentUserEmail, setCurrentUserEmail] = useState('');
   const [currentUserAccessToken, setCurrentUserAccessToken] = useState('');
   const [pendingReferralCode, setPendingReferralCode] = useState(() =>
-    normalizeReferralCode(captureReferralCodeFromWindow() || getStoredReferralCode())
+    normalizeReferralCode(extractReferralCodeFromLocation() || getStoredReferralCode())
   );
   const [activeTab, setActiveTab] = useState('home');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -598,20 +592,10 @@ export default function App() {
   const theme = { primary: '#1d4ed8', sidebarBg: '#ffffff', bg: '#f1f3f6' };
 
   useEffect(() => {
-    const syncReferralFromUrl = () => {
-      const code = normalizeReferralCode(captureReferralCodeFromWindow());
-      if (!code) return;
-      setPendingReferralCode(code);
-      persistPendingReferralCode(code);
-    };
-
-    syncReferralFromUrl();
-    window.addEventListener('popstate', syncReferralFromUrl);
-    window.addEventListener('hashchange', syncReferralFromUrl);
-    return () => {
-      window.removeEventListener('popstate', syncReferralFromUrl);
-      window.removeEventListener('hashchange', syncReferralFromUrl);
-    };
+    const referralFromLocation = normalizeReferralCode(extractReferralCodeFromLocation());
+    if (!referralFromLocation) return;
+    setPendingReferralCode(referralFromLocation);
+    persistPendingReferralCode(referralFromLocation);
   }, []);
 
   useEffect(() => {
@@ -646,67 +630,6 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  /** Vincula código pendente (link / localStorage) ao perfil após login, se ainda não houver indicador. */
-  useEffect(() => {
-    if (!isAuthenticated || !currentUserId) return undefined;
-
-    let cancelled = false;
-
-    (async () => {
-      const rawPending = normalizeReferralCode(
-        getStoredReferralCode() || captureReferralCodeFromWindow() || pendingReferralCode
-      );
-      if (!rawPending) return;
-
-      const { data: row, error } = await supabase
-        .from('profiles')
-        .select('referral_code, referred_by_code')
-        .eq('id', currentUserId)
-        .maybeSingle();
-
-      if (cancelled || error) return;
-
-      const existingBy = normalizeReferralCode(row?.referred_by_code || '');
-      if (existingBy) {
-        persistPendingReferralCode('');
-        setPendingReferralCode('');
-        return;
-      }
-
-      const ownCode = normalizeReferralCode(row?.referral_code || '');
-      if (ownCode && ownCode === rawPending) {
-        persistPendingReferralCode('');
-        setPendingReferralCode('');
-        return;
-      }
-
-      const { error: upErr } = await supabase
-        .from('profiles')
-        .update({ referred_by_code: rawPending })
-        .eq('id', currentUserId);
-
-      if (cancelled) return;
-
-      if (upErr) {
-        console.warn('Indicação pendente não aplicada ao perfil:', upErr.message || upErr);
-        return;
-      }
-
-      setCurrentProfile((prev) =>
-        prev && String(prev.id) === String(currentUserId)
-          ? { ...prev, referred_by_code: rawPending }
-          : prev
-      );
-
-      persistPendingReferralCode('');
-      setPendingReferralCode('');
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, currentUserId, pendingReferralCode]);
 
   const [temaAtivo, setTemaAtivo] = useState(() => {
     return localStorage.getItem('papirando_tema') || 'policial';
@@ -929,9 +852,9 @@ export default function App() {
     const saved = readJsonStorage('papirando_weekly_availability', null);
     return Array.isArray(saved) ? saved : buildDefaultWeeklyAvailability();
   });
+  const isAdmin = ADMIN_EMAILS.includes(String(currentUserEmail || '').toLowerCase());
   const [adminProfiles, setAdminProfiles] = useState([]);
   const [adminProfilesLoading, setAdminProfilesLoading] = useState(false);
-
   const [currentProfile, setCurrentProfile] = useState(null);
   const [adminLeads, setAdminLeads] = useState([]);
   const [profileOverrides, setProfileOverrides] = useState(() => {
@@ -973,10 +896,6 @@ export default function App() {
   const [wellnessLibrary, setWellnessLibrary] = useState(() => {
     const saved = readJsonStorage(WELLNESS_LIBRARY_STORAGE_KEY, null);
     return normalizeWellnessLibrary(saved);
-  });
-  const [wellnessPageConfig, setWellnessPageConfig] = useState(() => {
-    const saved = readJsonStorage(WELLNESS_PAGE_CONFIG_STORAGE_KEY, null);
-    return normalizeWellnessPageConfig(saved);
   });
   const [activeWellnessTrackId, setActiveWellnessTrackId] = useState(() => {
     const savedPlayer = readJsonStorage(WELLNESS_PLAYER_STORAGE_KEY, null);
@@ -1178,9 +1097,6 @@ export default function App() {
     localStorage.setItem(WELLNESS_LIBRARY_STORAGE_KEY, JSON.stringify(wellnessLibrary));
   }, [wellnessLibrary]);
   useEffect(() => {
-    localStorage.setItem(WELLNESS_PAGE_CONFIG_STORAGE_KEY, JSON.stringify(wellnessPageConfig));
-  }, [wellnessPageConfig]);
-  useEffect(() => {
     try {
       localStorage.setItem('papirando_community_state', JSON.stringify(normalizeCommunityState(communityState)));
     } catch (error) {
@@ -1322,20 +1238,6 @@ export default function App() {
               },
     };
   }, [currentProfile, profileOverrides, currentProfileKey, currentUserEmail]);
-
-  /** Admin: prioridade ao role no perfil (Supabase); fallback a e-mails bootstrap (primeiro deploy / contingência). */
-  const isAdmin = useMemo(() => {
-    const role = String(effectiveProfile?.role || '').toLowerCase();
-    if (role === 'admin') return true;
-    return ADMIN_EMAILS.includes(String(currentUserEmail || '').toLowerCase());
-  }, [effectiveProfile?.role, currentUserEmail]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    if (!ADMIN_TAB_IDS.includes(activeTab)) return;
-    if (isAdmin) return;
-    setActiveTab('home');
-  }, [isAuthenticated, isAdmin, activeTab]);
 
   const profileMetrics = useMemo(
     () => buildProfileMetrics(historicoReal, subjectCatalog, progressConfig.xp),
@@ -2912,61 +2814,67 @@ export default function App() {
     );
 
     if (!nome) {
-      return { ok: false, message: 'Digite o seu nome completo.' };
+      alert('Digite o seu nome completo.');
+      return { ok: false };
     }
 
     if (!username) {
-      return { ok: false, message: 'Digite um username para a sua conta.' };
+      alert('Digite um username para a sua conta.');
+      return { ok: false };
     }
 
     if (username.length < 3) {
-      return { ok: false, message: 'O username precisa ter pelo menos 3 caracteres.' };
+      alert('O username precisa ter pelo menos 3 caracteres.');
+      return { ok: false };
     }
 
     if (!/^[a-z0-9._]+$/.test(username)) {
-      return {
-        ok: false,
-        message: 'O username pode conter apenas letras minúsculas, números, ponto e underscore.',
-      };
+      alert('O username pode conter apenas letras minusculas, numeros, ponto e underscore.');
+      return { ok: false };
     }
 
     const usernameAvailable = await checkUsernameAvailability(username);
     if (!usernameAvailable) {
-      return { ok: false, message: 'Esse username já está em uso na plataforma. Escolha outro.' };
+      alert('Esse username ja esta em uso na plataforma. Escolha outro.');
+      return { ok: false };
     }
 
     if (!cpfDigits) {
-      return { ok: false, message: 'O CPF é obrigatório para vincular a conta.' };
+      alert('O CPF é obrigatório para vincular a conta.');
+      return { ok: false };
     }
 
     if (!isValidCpf(cpfDigits)) {
-      return { ok: false, message: 'Digite um CPF válido (verifique os dígitos).' };
+      alert('Digite um CPF válido.');
+      return { ok: false };
     }
 
     const cpfAvailable = await checkCpfAvailability(cpfDigits);
     if (!cpfAvailable) {
-      return { ok: false, message: 'Esse CPF já está vinculado a outra conta.' };
+      alert('Esse CPF já está vinculado a outra conta.');
+      return { ok: false };
     }
 
     if (rankingDisplayMode === 'codename') {
       if (!rankingCodename) {
-        return { ok: false, message: 'Digite um codinome para aparecer nos rankings.' };
+        alert('Digite um codinome para aparecer nos rankings.');
+        return { ok: false };
       }
 
       if (rankingCodename.length < 3) {
-        return { ok: false, message: 'O codinome precisa ter pelo menos 3 caracteres.' };
+        alert('O codinome precisa ter pelo menos 3 caracteres.');
+        return { ok: false };
       }
 
       if (containsBlockedCodenameWord(rankingCodename)) {
-        return {
-          ok: false,
-          message: 'Esse codinome não pode ser usado. Escolha um nome sem palavras ofensivas.',
-        };
+        alert('Esse codinome não pode ser usado. Escolha um nome sem palavras ofensivas.');
+        return { ok: false };
       }
 
       const codenameAvailable = await checkRankingCodenameAvailability(rankingCodename);
       if (!codenameAvailable) {
-        return { ok: false, message: 'Esse codinome já está em uso na plataforma. Escolha outro.' };
+        alert('Esse codinome já está em uso na plataforma. Escolha outro.');
+        return { ok: false };
       }
     }
 
@@ -3119,10 +3027,6 @@ export default function App() {
   };
   const handleSaveWellnessLibrary = (nextLibrary) => {
     setWellnessLibrary(normalizeWellnessLibrary(nextLibrary));
-  };
-
-  const handleSaveWellnessPageConfig = (nextConfig) => {
-    setWellnessPageConfig(normalizeWellnessPageConfig(nextConfig));
   };
 
   const handleSaveRedacaoExpertTips = async (nextItems) => {
@@ -3539,18 +3443,6 @@ export default function App() {
       setActiveWellnessTrackId('');
     }
   }, [wellnessLibrary, activeWellnessTrackId]);
-
-  const refreshSessionProfile = useCallback(async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.email) setCurrentUserEmail(session.user.email);
-      if (session?.user) setCurrentAuthUser(session.user);
-    } catch (error) {
-      console.warn('Sessão não atualizada:', error);
-    }
-  }, []);
 
   const handleLogout = async () => {
     try {
@@ -6049,10 +5941,8 @@ export default function App() {
     handleSaveProfile,
     handleAvatarChange,
     handleLogout,
-    refreshSessionProfile,
     isAdmin,
     wellnessLibrary,
-    wellnessPageConfig,
     activeWellnessTrackId,
     handleStartWellnessTrack,
     communityState,
@@ -6093,7 +5983,6 @@ export default function App() {
     setContestTrackers,
     targetContestId,
     adminProfiles,
-    adminProfilesLoading,
     adminExpenses,
     adminLeads,
     progressConfig,
@@ -6116,7 +6005,6 @@ export default function App() {
     saveAdminLead,
     deleteAdminLead,
     handleSaveWellnessLibrary,
-    handleSaveWellnessPageConfig,
     viewingDiscipline,
     setBancoDisciplinas,
     setViewingDiscipline,
@@ -6297,8 +6185,6 @@ export default function App() {
           ref={contentScrollRef}
           className={`scrollbar-thin relative min-h-0 flex-1 px-3 pt-2 sm:px-4 md:px-5 ${
             activeTab === 'historico' ||
-            activeTab === 'estatisticas' ||
-            activeTab === 'sessoes' ||
             activeTab === 'questoes' ||
             activeTab === 'comunidades'
               ? `flex flex-col overflow-hidden ${activeTab === 'comunidades' ? 'pb-2' : 'pb-6'}`
@@ -6352,7 +6238,6 @@ export default function App() {
               onSaveProfile={handleSaveProfile}
               onChangeAvatar={handleAvatarChange}
               onLogout={handleLogout}
-              onSessionRefresh={refreshSessionProfile}
             />
           )}
 
@@ -6363,7 +6248,6 @@ export default function App() {
           {activeTab === 'bem_estar' && (
             <BemEstar
               tracks={wellnessLibrary}
-              pageConfig={wellnessPageConfig}
               isAdmin={isAdmin}
               setActiveTab={setActiveTab}
               activeTrackId={activeWellnessTrackId}
@@ -6590,8 +6474,6 @@ export default function App() {
               onSaveProgressConfig={handleSaveProgressConfig}
               wellnessLibrary={wellnessLibrary}
               onSaveWellnessLibrary={handleSaveWellnessLibrary}
-              wellnessPageConfig={wellnessPageConfig}
-              onSaveWellnessPageConfig={handleSaveWellnessPageConfig}
               redacaoExpertTips={redacaoExpertTips}
               onSaveRedacaoExpertTips={handleSaveRedacaoExpertTips}
               redacaoThemeBankEffective={redacaoThemeBankEffective}

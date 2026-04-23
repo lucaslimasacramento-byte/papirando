@@ -2,7 +2,7 @@ import React from 'react';
 
 /** Padding e densidade alinhados ao cabeçalho de Disciplinas (padrão global). */
 const SHELL_BASE =
-  'page-head page-head-premium-dark relative px-4 py-4 sm:px-5 sm:py-4';
+  'page-head page-head-premium-dark relative w-full min-w-0 max-w-full box-border overflow-visible px-4 py-4 sm:px-5 sm:py-4';
 
 export function PageHeadPremiumShell({ children, className = '' }) {
   return <div className={`${SHELL_BASE} ${className}`.trim()}>{children}</div>;
@@ -11,7 +11,7 @@ export function PageHeadPremiumShell({ children, className = '' }) {
 export function PageHeadPremiumIconTile({ children, className = '' }) {
   return (
     <div
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-[0_10px_28px_rgba(37,99,235,0.4)] sm:h-12 sm:w-12 ${className}`}
+      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-[0_2px_10px_rgba(15,23,42,0.35)] ring-1 ring-white/15 sm:h-12 sm:w-12 ${className}`}
     >
       {children}
     </div>
@@ -20,12 +20,12 @@ export function PageHeadPremiumIconTile({ children, className = '' }) {
 
 export function PageHeadPremiumBadge({ icon: Icon, children, className = '' }) {
   return (
-    <div
-      className={`mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300 backdrop-blur-sm ${className}`}
+    <span
+      className={`mb-0.5 inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-300 backdrop-blur-sm ${className}`}
     >
       {Icon ? <Icon size={12} className="text-slate-400" /> : null}
       {children}
-    </div>
+    </span>
   );
 }
 
@@ -118,36 +118,39 @@ export default function PageHeadPremium({
   leadingClassName = '',
   /** Classes extras no wrapper do `trailing` (ex.: `xl:flex-1` para KPIs ocuparem o restante). */
   trailingClassName = '',
+  /** Classes extras no container externo do bloco `trailing/stats` (ex.: aumentar max-width no xl). */
+  trailingWrapClassName = '',
 }) {
   const statList = Array.isArray(stats) ? stats : [];
   const hasStats = statList.length > 0;
-  const wideSubtitle = !hasStats && !trailing;
+  const hasTrailing = Boolean(trailing);
+  const wideSubtitle = !hasStats && !hasTrailing;
 
   const defaultStatGrid =
     statList.length <= 1
-      ? 'grid shrink-0 grid-cols-1 gap-2 sm:gap-3'
+      ? 'grid min-w-0 grid-cols-1 gap-2 sm:gap-3'
       : statList.length === 2
-        ? 'grid shrink-0 grid-cols-2 gap-2 sm:gap-3'
+        ? 'grid min-w-0 grid-cols-2 gap-2 sm:gap-3'
         : statList.length === 3
-          ? 'grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:min-w-[380px]'
-          : 'grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 xl:min-w-[380px]';
+          ? 'grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3'
+          : 'grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3';
 
   return (
     <PageHeadPremiumShell
-      className={`flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between ${className}`}
+      className={`flex w-full min-w-0 max-w-full flex-col justify-center gap-3 sm:gap-4 sm:items-center xl:flex-row xl:flex-wrap xl:items-center xl:justify-between ${className}`}
     >
       <div
-        className={`relative z-10 flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5 ${leadingClassName}`.trim()}
+        className={`relative z-10 flex min-w-0 flex-1 basis-0 items-center gap-3 sm:min-h-0 sm:gap-3.5 ${leadingClassName}`.trim()}
       >
         <PageHeadPremiumIconTile>
           <Icon className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
         </PageHeadPremiumIconTile>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex flex-1 flex-col justify-center self-stretch sm:self-auto">
           {badge}
-          <TitleTag className="text-base font-semibold tracking-tight text-white sm:text-lg">{title}</TitleTag>
+          <TitleTag className="m-0 text-base font-semibold tracking-tight text-white sm:text-lg">{title}</TitleTag>
           {subtitle ? (
             <p
-              className={`mt-0.5 text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:text-[13px] sm:leading-relaxed ${wideSubtitle ? 'max-w-3xl' : 'max-w-xl sm:max-w-2xl'} ${subtitleClassName}`}
+              className={`mt-0.5 w-full min-w-0 text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:text-[13px] sm:leading-relaxed ${wideSubtitle ? 'max-w-3xl' : 'xl:max-w-none'} ${subtitleClassName}`}
             >
               {subtitle}
             </p>
@@ -155,17 +158,20 @@ export default function PageHeadPremium({
           {leadingExtra ? <div className="mt-2">{leadingExtra}</div> : null}
         </div>
       </div>
-      {hasStats ? (
-        <div className={`relative z-10 ${statGridClassName || defaultStatGrid}`}>
-          {statList.map((item, i) => (
-            <PageHeadPremiumStatCompact key={item.key ?? i} {...item} />
-          ))}
-        </div>
-      ) : trailing ? (
+      {hasStats || hasTrailing ? (
         <div
-          className={`relative z-10 w-full min-w-0 shrink-0 xl:w-auto ${trailingClassName}`.trim()}
+          className={`relative z-10 flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 sm:gap-4 xl:w-auto xl:min-w-0 xl:max-w-md xl:shrink xl:flex-row xl:items-center xl:justify-end ${hasStats && hasTrailing ? 'xl:gap-4' : ''} ${trailingWrapClassName}`.trim()}
         >
-          {trailing}
+          {hasStats ? (
+            <div className={`min-w-0 max-w-full ${statGridClassName || defaultStatGrid}`.trim()}>
+              {statList.map((item, i) => (
+                <PageHeadPremiumStatCompact key={item.key ?? i} {...item} />
+              ))}
+            </div>
+          ) : null}
+          {hasTrailing ? (
+            <div className={`w-full min-w-0 max-w-full shrink xl:w-auto ${trailingClassName}`.trim()}>{trailing}</div>
+          ) : null}
         </div>
       ) : null}
     </PageHeadPremiumShell>

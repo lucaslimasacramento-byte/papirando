@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
 import { supabase } from '../lib/supabase';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const DRAFT_STORAGE_KEY = 'papirando_admin_concurso_draft';
 
@@ -565,31 +566,30 @@ export default function AdminConcursos({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <div className="flex flex-col gap-5 rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-white p-6 shadow-sm lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">
-            <ShieldCheck size={13} />
-            Painel administrativo
+      <PageHeadPremium
+        icon={LibraryBig}
+        badge={
+          <PageHeadPremiumBadge icon={ShieldCheck}>Painel administrativo</PageHeadPremiumBadge>
+        }
+        title="Central de concursos"
+        subtitle="Organize a biblioteca por área, acompanhe pendências editoriais e mantenha os concursos prontos para importação."
+        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 sm:gap-2 [&>*]:min-w-0"
+        stats={[
+          { key: 'c', label: 'Concursos', value: String(stats.templates), icon: LibraryBig, accent: 'amber' },
+          { key: 'p', label: 'Publicados', value: String(stats.publicados), icon: BadgeCheck, accent: 'emerald' },
+          { key: 'r', label: 'Rascunhos', value: String(stats.rascunhos), icon: EyeOff, accent: 'orange' },
+          { key: 'd', label: 'Disciplinas', value: String(stats.disciplinas), icon: Database, accent: 'blue' },
+          { key: 't', label: 'Tópicos', value: String(stats.topicos), icon: Layers3, accent: 'indigo' },
+        ]}
+        trailingClassName="max-w-[14rem]"
+        trailing={(
+          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Admin ativo</p>
+            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
-          <h2 className="page-title mt-4 text-4xl font-semibold tracking-tight text-slate-900">Central de concursos</h2>
-          <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-            Organize a biblioteca por area, acompanhe pendencias editoriais e mantenha os concursos prontos para importacao.
-          </p>
-        </div>
-
-        <div className="rounded-[1.5rem] border border-amber-100 bg-white px-5 py-4 text-sm shadow-sm">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Admin ativo</p>
-          <p className="mt-2 font-semibold text-slate-900">{currentUserEmail}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-        <StatCard icon={LibraryBig} label="Concursos" value={stats.templates} />
-        <StatCard icon={BadgeCheck} label="Publicados" value={stats.publicados} />
-        <StatCard icon={EyeOff} label="Rascunhos" value={stats.rascunhos} />
-        <StatCard icon={Database} label="Disciplinas" value={stats.disciplinas} />
-        <StatCard icon={Layers3} label="Topicos" value={stats.topicos} />
-      </div>
+        )}
+        leadingClassName="min-w-0 flex-1"
+      />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
         <InsightCard title="Sem imagem" value={stats.semImagem} text="Concursos ainda sem capa visual." />
@@ -1226,18 +1226,6 @@ export default function AdminConcursos({
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-[1.8rem] border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
-        <Icon size={12} />
-        {label}
-      </div>
-      <p className="mt-4 text-3xl font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

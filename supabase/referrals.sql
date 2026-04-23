@@ -151,12 +151,20 @@ execute function public.prepare_profile_referral_fields();
 create or replace function public.award_referral_bonus_events(target_referrer_id uuid)
 returns void
 language plpgsql
+security definer
+set search_path = public
 as $$
 declare
   confirmed_total integer;
 begin
   if target_referrer_id is null then
     return;
+  end if;
+
+  -- Garante que o usuário autenticado só sincronize os próprios bônus.
+  if auth.uid() is null or auth.uid() <> target_referrer_id then
+    raise exception 'not allowed to award bonuses for another profile'
+      using errcode = '42501';
   end if;
 
   select count(*)
@@ -190,6 +198,9 @@ begin
   end if;
 end;
 $$;
+
+revoke all on function public.award_referral_bonus_events(uuid) from public;
+grant execute on function public.award_referral_bonus_events(uuid) to authenticated;
 
 create or replace function public.sync_profile_referral_program()
 returns trigger

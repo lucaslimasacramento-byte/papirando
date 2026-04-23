@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import { buildCrmSnapshot, CRM_STAGE_OPTIONS, normalizeLead } from '../lib/adminCrm';
 import { formatCurrency } from '../lib/adminFinance';
 
@@ -113,26 +114,22 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         </div>
       ) : null}
 
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
-              <Users size={13} />
-              CRM admin
-            </div>
-            <h2 className="page-title mt-5 text-4xl font-semibold tracking-tight text-slate-900">Leads e oportunidades</h2>
-            <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-gray-500">
-              Registre interessados, acompanhe o funil comercial e enxergue o potencial de receita que ainda não virou assinatura.
-            </p>
+      <PageHeadPremium
+        icon={Users}
+        badge={<PageHeadPremiumBadge icon={Users}>CRM admin</PageHeadPremiumBadge>}
+        title="Leads e oportunidades"
+        subtitle="Registre interessados, acompanhe o funil comercial e enxergue o potencial de receita que ainda não virou assinatura."
+        trailing={(
+          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
+            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
+        )}
+        leadingClassName="min-w-0 flex-1"
+      />
 
-          <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-5 py-4 text-sm shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Operando como</p>
-            <p className="mt-2 font-semibold text-slate-900">{currentUserEmail}</p>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-5">
+      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
+        <div className="grid gap-4 md:grid-cols-5">
           <SummaryCard icon={Users} label="Leads" value={crm.total} />
           <SummaryCard icon={MessageCircle} label="Em contato" value={crm.emContato} />
           <SummaryCard icon={Target} label="Propostas" value={crm.propostas} />

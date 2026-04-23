@@ -299,19 +299,20 @@ export default function ConcursosDisponiveis({
         titleAs="h1"
         title="Concursos disponíveis"
         subtitle="Encontre concursos por área, banca, cargo ou data de prova e importe os mais relevantes para o seu painel."
+        trailingClassName="xl:max-w-none xl:flex-none"
         trailing={
-          <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-200 sm:text-[13px]">
-            <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
+          <div className="flex w-full flex-wrap items-center justify-start gap-2 text-xs font-semibold text-slate-200 sm:w-auto sm:justify-end sm:text-[13px]">
+            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
               {totalPublicados} publicados
             </span>
-            <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
+            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
               {totalAreas} áreas
             </span>
           </div>
         }
       />
 
-      <section className="section-card rounded-2xl">
+      <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="relative max-w-xl flex-1">
@@ -425,7 +426,7 @@ export default function ConcursosDisponiveis({
       </section>
 
       {recommendationBuckets.length > 0 && (
-        <section className="section-card rounded-2xl">
+        <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Insights</p>

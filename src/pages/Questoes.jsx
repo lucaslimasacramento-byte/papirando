@@ -23,11 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import { buildCanonicalHistory, buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-} from '../components/PageHeadPremium';
+import PageHeadPremium from '../components/PageHeadPremium';
 import { loadExamBoardsFromSupabase } from '../lib/examBoardsApi';
 import { supabase } from '../lib/supabase';
 import { submitAnswer } from '../lib/questoesApi';
@@ -249,22 +245,19 @@ export default function Questoes({
 
   return (
     <div className="page-shell flex h-full min-h-0 flex-1 flex-col gap-2 overflow-hidden !pb-2 !pt-3 animate-in fade-in duration-500 lg:gap-2.5 sm:!pt-4">
-      <PageHeadPremiumShell className="!block shrink-0">
-        <div className="relative z-10 flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 shrink-0 gap-3 sm:gap-3.5">
-            <PageHeadPremiumIconTile>
-              <HelpCircle className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-            </PageHeadPremiumIconTile>
-            <div className="min-w-0">
-              <h2 className="text-base font-semibold tracking-tight text-white sm:text-lg">Banco de questões</h2>
-              <p className="mt-0.5 max-w-xl truncate text-xs font-normal leading-snug text-slate-400 sm:max-w-2xl sm:whitespace-normal sm:text-[13px] sm:leading-relaxed">
-                Prática alinhada ao catálogo da plataforma e ao seu histórico.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex min-w-0 flex-1 items-stretch lg:min-w-0">
-            <div className="scrollbar-thin flex min-w-0 w-full flex-1 items-stretch gap-1.5 overflow-x-auto pb-0.5 sm:gap-2 sm:overflow-visible sm:pb-0">
+      <PageHeadPremium
+        icon={HelpCircle}
+        title="Banco de questões"
+        subtitle="Prática alinhada ao catálogo da plataforma e ao seu histórico."
+        className="!flex-col gap-3 lg:!flex-row lg:items-center"
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[40%]"
+        trailingWrapClassName="xl:max-w-[64rem]"
+        trailing={(
+          <div className="min-w-0 flex-1 lg:min-w-0">
+            <div
+              className="grid min-w-0 w-full grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 xl:grid-cols-5"
+              aria-label="Resumo do banco"
+            >
               <TopStatCard
                 Icon={ListChecks}
                 iconWrap="bg-blue-50 text-blue-600"
@@ -324,8 +317,9 @@ export default function Questoes({
               />
             </div>
           </div>
-        </div>
-      </PageHeadPremiumShell>
+        )}
+        trailingClassName="w-full min-w-0 flex-1"
+      />
 
       <div className="section-card relative z-10 shrink-0 !p-2.5 sm:!p-3 flex flex-col gap-2">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -711,7 +705,7 @@ function TopStatCard({
 
   return (
     <div
-      className={`flex min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 max-sm:w-[9.25rem] max-sm:shrink-0 sm:flex-1 sm:basis-0 sm:gap-2.5 sm:rounded-xl sm:px-2.5 sm:py-2 ${shell}`}
+      className={`flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 sm:gap-2.5 sm:rounded-xl sm:px-2.5 sm:py-2 ${shell}`}
     >
       <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md sm:h-8 sm:w-8 sm:rounded-lg ${iconBox}`}>
         {React.createElement(Icon, { size: 15 })}
@@ -774,7 +768,7 @@ function StaticStatCard({
 
   return (
     <div
-      className={`flex min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 max-sm:w-[9.25rem] max-sm:shrink-0 sm:flex-1 sm:basis-0 sm:gap-2.5 sm:rounded-xl sm:px-2.5 sm:py-2 ${shell}`}
+      className={`flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 sm:gap-2.5 sm:rounded-xl sm:px-2.5 sm:py-2 ${shell}`}
     >
       <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md sm:h-8 sm:w-8 sm:rounded-lg ${mapIcon(iconWrap)}`}>
         {React.createElement(Icon, { size: 15 })}

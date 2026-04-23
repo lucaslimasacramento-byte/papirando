@@ -19,12 +19,7 @@ import {
   Crosshair,
   Layers,
 } from 'lucide-react';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumBadge,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-} from '../components/PageHeadPremium';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 /** Tom primário alinhado ao design system (`btn-primary` = blue-700). */
 const DISCIPLINE_ACCENT_FALLBACK = '#1d4ed8';
@@ -259,45 +254,34 @@ export default function Disciplinas({
 
   return (
     <div className="page-shell animate-in fade-in duration-500 pb-16 !pt-4 sm:!pt-5">
-      <PageHeadPremiumShell className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        {/* Esquerda: ícone + texto proporcionais ao bloco da direita */}
-        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5">
-          <PageHeadPremiumIconTile>
-            <Layers className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-          </PageHeadPremiumIconTile>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-base font-semibold tracking-tight text-white sm:text-lg">Disciplinas</h1>
-            <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-              Abra uma disciplina para editar a estrutura, adicionar tópicos e acompanhar a execução do edital por aqui.
-            </p>
+      <PageHeadPremium
+        icon={Layers}
+        badge={<PageHeadPremiumBadge icon={BarChart3}>Gestão do edital</PageHeadPremiumBadge>}
+        title="Disciplinas"
+        subtitle="Abra uma disciplina para editar a estrutura, adicionar tópicos e acompanhar a execução do edital por aqui."
+        trailing={(
+          <div className="flex w-full min-w-0 flex-col items-stretch gap-2.5 sm:w-auto sm:items-end">
+            <div className="flex flex-row flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setRegistroEstudoModalOpen && setRegistroEstudoModalOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]"
+              >
+                <Plus size={14} strokeWidth={2} />
+                Registrar estudo
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingDiscipline && setEditingDiscipline({})}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              >
+                <Edit3 size={14} strokeWidth={2} />
+                Nova disciplina
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Direita: badge no topo, botões lado a lado abaixo */}
-        <div className="flex w-full shrink-0 flex-col items-stretch justify-center gap-2.5 sm:w-auto sm:items-end sm:gap-3">
-          <PageHeadPremiumBadge icon={BarChart3} className="!mb-0 w-full justify-center sm:w-fit sm:self-end">
-            Gestão do edital
-          </PageHeadPremiumBadge>
-          <div className="flex flex-row flex-wrap items-center justify-center gap-2 sm:justify-end">
-            <button
-              type="button"
-              onClick={() => setRegistroEstudoModalOpen && setRegistroEstudoModalOpen(true)}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Plus size={14} strokeWidth={2} />
-              Registrar estudo
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditingDiscipline && setEditingDiscipline({})}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Edit3 size={14} strokeWidth={2} />
-              Nova disciplina
-            </button>
-          </div>
-        </div>
-      </PageHeadPremiumShell>
+        )}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Disciplinas" value={totalDisciplinas} sub="Base total organizada" accent="blue" icon={BookOpen} />

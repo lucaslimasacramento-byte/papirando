@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { loadProfile } from '../lib/profileApi';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const THEME_CONFIG = {
   policial: {
@@ -296,16 +297,27 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
 
   return (
     <div className="page-shell animate-in fade-in slide-in-from-bottom-6 mx-auto flex w-full max-w-[1320px] flex-col gap-8 pb-16 text-gray-800 duration-700">
-      <div className="flex flex-col items-center gap-4 mb-4 relative z-10">
-        <button
-          type="button"
-          onClick={() => setActiveTab('perfil')}
-          className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-blue-600"
-          aria-label="Voltar para o perfil"
-        >
-          ← Voltar para o Perfil
-        </button>
-      </div>
+      <PageHeadPremium
+        icon={ThemeIcon}
+        badge={
+          <PageHeadPremiumBadge icon={CreditCard}>Assinatura</PageHeadPremiumBadge>
+        }
+        title="Planos e cobrança"
+        titleAs="h1"
+        subtitle="Faça upgrade ou downgrade a qualquer momento. O valor é proporcionalizado automaticamente."
+        leadingExtra={(
+          <button
+            type="button"
+            onClick={() => setActiveTab('perfil')}
+            className="text-left text-sm font-semibold text-slate-300 hover:text-white"
+            aria-label="Voltar para o perfil"
+          >
+            ← Voltar para o Perfil
+          </button>
+        )}
+        leadingClassName="min-w-0 flex-1"
+        className="!overflow-hidden !rounded-[1.75rem] !border !border-white/10"
+      />
 
       {feedback ? (
         <div className="mx-auto w-full max-w-3xl rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-700">
@@ -379,14 +391,9 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         </div>
       )}
 
-      <div className="text-center space-y-4 max-w-3xl mx-auto mb-4">
-        <h2 className="page-title text-4xl font-semibold tracking-tight text-slate-900">
-          Conheça os outros <span className={theme.ui.accentText}>planos.</span>
-        </h2>
-        <p className="text-gray-500 font-medium text-lg">
-          Faça upgrade ou downgrade a qualquer momento. O valor é proporcionalizado automaticamente.
-        </p>
-      </div>
+      <h2 className="page-title text-center text-3xl font-semibold tracking-tight text-slate-900">
+        Conheça os outros <span className={theme.ui.accentText}>planos</span>
+      </h2>
 
       <div className="flex justify-center mb-4 relative z-10">
         <div

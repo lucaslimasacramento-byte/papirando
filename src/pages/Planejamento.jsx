@@ -772,14 +772,15 @@ function PlanejamentoContent({
         className={studyMode === 'fixo' ? 'mb-6' : 'mb-3'}
         icon={CalendarIcon}
         title="Planejamento"
+        trailingClassName="xl:max-w-none xl:flex-none"
         subtitle={
           studyMode === 'fixo'
             ? 'Planeje por ciclo ou agenda fixa, sem duplicar matérias equivalentes entre cursos.'
             : undefined
         }
         trailing={
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="flex items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
+          <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain sm:w-auto sm:justify-end sm:gap-3 sm:overflow-visible">
+            <div className="flex shrink-0 items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
               <button
                 type="button"
                 onClick={openWizard}
@@ -803,7 +804,7 @@ function PlanejamentoContent({
             </div>
 
             {studyMode === 'fixo' ? (
-              <div className="flex items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
+              <div className="flex shrink-0 items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
                 <button
                   type="button"
                   onClick={() => setAgendaViewMode('calendario')}

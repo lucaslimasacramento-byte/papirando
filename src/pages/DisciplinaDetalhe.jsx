@@ -6,10 +6,13 @@ import {
   Check,
   CheckCircle2,
   CircleDashed,
+  Clock3,
   Plus,
   Sparkles,
+  TrendingUp,
   X,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function DisciplinaDetalhe({
   viewingDiscipline,
@@ -60,64 +63,63 @@ export default function DisciplinaDetalhe({
 
   return (
     <div className="mx-auto flex min-h-full max-w-[1400px] flex-col gap-6 p-6 pb-24 animate-in slide-in-from-right-8 duration-500 lg:p-8">
-      <div className="relative overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
-        <div className="absolute right-0 top-0 h-72 w-72 bg-blue-50 opacity-60 blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-64 w-64 bg-emerald-50 opacity-40 blur-3xl" />
-
-        <div className="relative z-10 flex flex-col justify-between gap-6 xl:flex-row">
-          <div className="max-w-2xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-700">
-              <Sparkles size={12} />
-              Visão estratégica
+      <PageHeadPremium
+        icon={BookOpen}
+        badge={
+          <PageHeadPremiumBadge icon={Sparkles}>Visão estratégica</PageHeadPremiumBadge>
+        }
+        title={viewingDiscipline.nome}
+        subtitle={`Plano: ${viewingDiscipline.plano || 'Geral'}`}
+        titleAs="h2"
+        leadingClassName="min-w-0 flex-1"
+        leadingExtra={(
+          <div className="mt-2 max-w-xl">
+            <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+              <span>Progresso</span>
+              <span className="text-emerald-300">{progressoPercentual}%</span>
             </div>
-
-            <div className="flex items-center gap-3">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl text-white"
-                style={{ backgroundColor: viewingDiscipline.cor || '#2563EB' }}
-              >
-                <BookOpen size={20} />
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-semibold text-slate-900 lg:text-3xl">{viewingDiscipline.nome}</h2>
-                <p className="text-sm font-medium text-gray-500">Plano: {viewingDiscipline.plano || 'Geral'}</p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <div className="mb-2 flex justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                <span>Progresso</span>
-                <span className="text-blue-600">{progressoPercentual}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-blue-600" style={{ width: `${progressoPercentual}%` }} />
-              </div>
+            <div className="h-2 w-full rounded-full bg-white/10">
+              <div className="h-full rounded-full bg-emerald-400" style={{ width: `${progressoPercentual}%` }} />
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Kpi label="Tempo" value={tempoFormatado} color="blue" />
-            <Kpi label="Desempenho" value={`${desempenhoPercentual}%`} color="emerald" />
-            <Kpi label="Concluídos" value={topicosConcluidos} color="indigo" />
-            <Kpi label="Pendentes" value={topicosPendentes} color="orange" />
+        )}
+        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
+        stats={[
+          { key: 'tmp', label: 'Tempo', value: String(tempoFormatado), icon: Clock3, accent: 'blue' },
+          { key: 'd', label: 'Desempenho', value: `${desempenhoPercentual}%`, icon: TrendingUp, accent: 'emerald' },
+          { key: 'c', label: 'Concluídos', value: String(topicosConcluidos), icon: CheckCircle2, accent: 'indigo' },
+          { key: 'p', label: 'Pendentes', value: String(topicosPendentes), icon: CircleDashed, accent: 'orange' },
+        ]}
+        trailingClassName="w-full min-w-0 sm:max-w-[11rem] xl:shrink-0"
+        trailing={(
+          <div className="flex w-full min-w-0 flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => setEditingDiscipline?.(viewingDiscipline)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-400"
+            >
+              <Plus size={16} />
+              Adicionar tópico
+            </button>
+            <button
+              type="button"
+              onClick={() => setLinkModalOpen?.(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-100 transition hover:bg-white/10"
+            >
+              <Calculator size={16} />
+              Relacionar
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewingDiscipline(null)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-100 transition hover:bg-white/10"
+            >
+              <X size={16} />
+              Fechar
+            </button>
           </div>
-        </div>
-
-        <div className="relative z-10 mt-5 flex flex-wrap gap-3">
-          <Btn type="button" onClick={() => setEditingDiscipline?.(viewingDiscipline)} icon={Plus} primary>
-            Adicionar tópico
-          </Btn>
-
-          <Btn type="button" onClick={() => setLinkModalOpen?.(true)} icon={Calculator}>
-            Relacionar
-          </Btn>
-
-          <Btn type="button" onClick={() => setViewingDiscipline(null)} icon={X}>
-            Fechar
-          </Btn>
-        </div>
-      </div>
+        )}
+      />
 
       <div className="rounded-[2.5rem] bg-gradient-to-br from-[#1E3A5F] to-[#1A2F4D] p-6 text-white shadow-lg">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest">
@@ -227,40 +229,6 @@ export default function DisciplinaDetalhe({
         )}
       </div>
     </div>
-  );
-}
-
-function Kpi({ label, value, color }) {
-  const styles = {
-    blue: 'bg-blue-50 text-blue-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-    orange: 'bg-orange-50 text-orange-600',
-  };
-
-  return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
-      <div className={`inline-block rounded-full px-2 py-1 text-[10px] font-semibold ${styles[color]}`}>
-        {label}
-      </div>
-      <div className="mt-3 text-2xl font-semibold text-slate-900">{value}</div>
-    </div>
-  );
-}
-
-function Btn({ children, icon, primary, onClick, type = 'button' }) {
-  const IconComponent = icon;
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={`flex items-center gap-2 rounded-xl px-5 py-3 font-bold transition ${
-        primary ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-gray-200 bg-white hover:bg-gray-50'
-      }`}
-    >
-      <IconComponent size={16} />
-      {children}
-    </button>
   );
 }
 
