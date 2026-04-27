@@ -384,7 +384,7 @@ export default function EditalQuestao({
         : analytics.criticos.length > 0
         ? `${analytics.criticos.length} tópicos pedem ataque agora. Revisão curta mais prática e o fluxo mais forte.`
         : 'Boa leitura do edital. Agora vale sustentar frequência e revisar a base já concluída.',
-  }), [analytics, courseOptions.length, selectedCourse?.plan, selectedCourse?.origem]);
+  }), [analytics, courseOptions.length]);
 
   const nextCriticalTopic = analytics.criticos[0] || null;
 

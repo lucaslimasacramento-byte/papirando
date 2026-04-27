@@ -417,7 +417,7 @@ export default function MapasMentais({
     return seeded;
   };
 
-  const registerUsage = (map, action) => {
+  const registerUsage = useCallback((map, action) => {
     const timestamp = new Date().toISOString();
 
     setHistoricoUso((prev) =>
@@ -447,7 +447,7 @@ export default function MapasMentais({
         )
       );
     }
-  };
+  }, []);
 
   const openMap = (map) => {
     ensureMapsMaterialized();

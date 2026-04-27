@@ -26,9 +26,6 @@ import { supabase } from '../lib/supabase';
 export default function Sessoes({
   currentUserId = '',
   customFocusTime,
-  setCustomFocusTime,
-  customPauseTime,
-  setCustomPauseTime,
   startSpecificTimer,
   openTimerSetup,
   setRegistroEstudoModalOpen,
@@ -422,5 +419,4 @@ function MethodCard({ icon: Icon, iconWrap, glow, title, description, hoverClass
     </div>
   );
 }
-
 

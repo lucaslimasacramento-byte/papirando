@@ -110,16 +110,6 @@ const ADMIN_SECTION = {
 };
 
 /** Metadados para o admin editar rótulos (id estável, texto padrão, agrupamento). */
-export function getSidebarNavLabelSchema() {
-  return [...NAV_SECTIONS_BASE, ADMIN_SECTION].flatMap((section) =>
-    section.items.map((item) => ({
-      id: item.id,
-      defaultLabel: item.label,
-      sectionTitle: section.title,
-    }))
-  );
-}
-
 function SidebarBadge({ label, active = false }) {
   return (
     <span

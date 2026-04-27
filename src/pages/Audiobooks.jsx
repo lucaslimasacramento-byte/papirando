@@ -97,7 +97,6 @@ function resolveAccentStyles(accent) {
 export default function Audiobooks(props) {
   const {
     profile = {},
-    currentUserId = '',
     bancoDisciplinas = [],
     catalog = [],
     audiobookState = {},

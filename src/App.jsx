@@ -1,46 +1,7 @@
-﻿import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { isSupabaseDevProxyEnabled, supabase, supabaseAnonKey, supabaseBaseUrl, supabaseDirectUrl } from './lib/supabase';
 import { Target } from 'lucide-react';
-import Dashboard from './pages/Dashboard';
-import Estatisticas from './pages/Estatisticas';
-import Planejamento from './pages/Planejamento';
-import Assinatura from './pages/Assinatura';
-import BemEstar from './pages/BemEstar';
-import Aplicativos from './pages/Aplicativos';
-import ConvideGanhe from './pages/ConvideGanhe';
-import Perfil from './pages/Perfil';
-import Comunidades from './pages/Comunidades';
-import Esquadroes from './pages/Esquadroes';
-import Conciliador from './pages/Conciliador';
-import Redacoes from './pages/Redacoes';
-import Audiobooks from './pages/Audiobooks';
-import MapasMentais from './pages/MapasMentais';
-import Legislacao from './pages/Legislacao';
-import Flashcards from './pages/Flashcards';
-import Simulados from './pages/Simulados';
-import Edital from './pages/Edital';
-import Disciplinas from './pages/Disciplinas';
-import DisciplinaDetalhe from './pages/DisciplinaDetalhe';
-import Questoes from './pages/Questoes';
-import Planos from './pages/Planos';
-import ConcursosDisponiveis from './pages/ConcursosDisponiveis';
-import ConcursoDetalhe from './pages/ConcursoDetalhe';
-import LembretesCalendario from './pages/LembretesCalendario';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminConcursos from './pages/AdminConcursos';
-import AdminDisciplinasPadrao from './pages/AdminDisciplinasPadrao';
-import AdminUsuarios from './pages/AdminUsuarios';
-import AdminFinance from './pages/AdminFinance';
-import AdminCRM from './pages/AdminCRM';
-import AdminConfiguracoes from './pages/AdminConfiguracoes';
-import AdminAudiolivros from './pages/AdminAudiolivros';
-import AdminMindMapsGallery from './pages/AdminMindMapsGallery';
-import Sessoes from './pages/Sessoes';
-import Revisoes from './pages/Revisoes';
-import EditalQuestao from './pages/EditalQuestao';
-import Historico from './pages/Historico';
-import Login from './pages/Login';
 
 import AppOverlays from './components/AppOverlays';
 import AppTabContent from './components/AppTabContent';
@@ -133,6 +94,46 @@ import { saveStudySession, loadStudySessions, syncLocalToSupabase } from './lib/
 import { loadUserContests, addUserContest, setTargetContest, removeUserContest as _removeUserContest } from './lib/userContestsApi';
 import { loadSimulados, saveSimulado, fetchSimuladoStats } from './lib/simuladosApi';
 import { loadProfile, updateProfile, uploadAvatar, loadAllProfiles } from './lib/profileApi';
+
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Estatisticas = lazy(() => import('./pages/Estatisticas'));
+const Planejamento = lazy(() => import('./pages/Planejamento'));
+const Assinatura = lazy(() => import('./pages/Assinatura'));
+const BemEstar = lazy(() => import('./pages/BemEstar'));
+const Aplicativos = lazy(() => import('./pages/Aplicativos'));
+const ConvideGanhe = lazy(() => import('./pages/ConvideGanhe'));
+const Perfil = lazy(() => import('./pages/Perfil'));
+const Comunidades = lazy(() => import('./pages/Comunidades'));
+const Esquadroes = lazy(() => import('./pages/Esquadroes'));
+const Conciliador = lazy(() => import('./pages/Conciliador'));
+const Redacoes = lazy(() => import('./pages/Redacoes'));
+const Audiobooks = lazy(() => import('./pages/Audiobooks'));
+const MapasMentais = lazy(() => import('./pages/MapasMentais'));
+const Legislacao = lazy(() => import('./pages/Legislacao'));
+const Flashcards = lazy(() => import('./pages/Flashcards'));
+const Simulados = lazy(() => import('./pages/Simulados'));
+const Edital = lazy(() => import('./pages/Edital'));
+const Disciplinas = lazy(() => import('./pages/Disciplinas'));
+const DisciplinaDetalhe = lazy(() => import('./pages/DisciplinaDetalhe'));
+const Questoes = lazy(() => import('./pages/Questoes'));
+const Planos = lazy(() => import('./pages/Planos'));
+const ConcursosDisponiveis = lazy(() => import('./pages/ConcursosDisponiveis'));
+const ConcursoDetalhe = lazy(() => import('./pages/ConcursoDetalhe'));
+const LembretesCalendario = lazy(() => import('./pages/LembretesCalendario'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminConcursos = lazy(() => import('./pages/AdminConcursos'));
+const AdminDisciplinasPadrao = lazy(() => import('./pages/AdminDisciplinasPadrao'));
+const AdminUsuarios = lazy(() => import('./pages/AdminUsuarios'));
+const AdminFinance = lazy(() => import('./pages/AdminFinance'));
+const AdminCRM = lazy(() => import('./pages/AdminCRM'));
+const AdminConfiguracoes = lazy(() => import('./pages/AdminConfiguracoes'));
+const AdminAudiolivros = lazy(() => import('./pages/AdminAudiolivros'));
+const AdminMindMapsGallery = lazy(() => import('./pages/AdminMindMapsGallery'));
+const Sessoes = lazy(() => import('./pages/Sessoes'));
+const Revisoes = lazy(() => import('./pages/Revisoes'));
+const EditalQuestao = lazy(() => import('./pages/EditalQuestao'));
+const Historico = lazy(() => import('./pages/Historico'));
+const Login = lazy(() => import('./pages/Login'));
 
 function buildDistinctPastelCycleColor(index, total = 1) {
   const safeTotal = Math.max(1, Number(total || 1));
@@ -258,6 +259,16 @@ function distributeCycleBlockCounts(weightedDisciplines, totalBlockCount, minimu
   }
 
   return distribution;
+}
+
+const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
+
+function isAdminIdentity(profile, sessionEmail = '') {
+  const role = String(profile?.role || '').trim().toLowerCase();
+  const profileEmail = String(profile?.email || '').trim().toLowerCase();
+  const email = profileEmail || String(sessionEmail || '').trim().toLowerCase();
+
+  return role === 'admin' || email.endsWith('@papirando.com') || ADMIN_EMAILS.includes(email);
 }
 
 function buildCycleSequence(weightedDisciplines) {
@@ -575,8 +586,6 @@ export default function App() {
     /QUADRIX/i,
   ];
 
-  const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
-
   const [loadingSession, setLoadingSession] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentAuthUser, setCurrentAuthUser] = useState(null);
@@ -852,10 +861,10 @@ export default function App() {
     const saved = readJsonStorage('papirando_weekly_availability', null);
     return Array.isArray(saved) ? saved : buildDefaultWeeklyAvailability();
   });
-  const isAdmin = ADMIN_EMAILS.includes(String(currentUserEmail || '').toLowerCase());
   const [adminProfiles, setAdminProfiles] = useState([]);
   const [adminProfilesLoading, setAdminProfilesLoading] = useState(false);
   const [currentProfile, setCurrentProfile] = useState(null);
+  const isAdmin = isAdminIdentity(currentProfile, currentUserEmail);
   const [adminLeads, setAdminLeads] = useState([]);
   const [profileOverrides, setProfileOverrides] = useState(() => {
     const saved = readJsonStorage('papirando_profile_overrides', {});
@@ -1127,7 +1136,9 @@ export default function App() {
         const url = new URL(window.location.href);
         url.searchParams.delete('convite');
         window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
-      } catch (_) {}
+      } catch {
+        return;
+      }
     };
 
     const handledKey = `papirando_convite_ok_${code}`;
@@ -1136,7 +1147,9 @@ export default function App() {
         stripConviteParam();
         return;
       }
-    } catch (_) {}
+    } catch {
+      stripConviteParam();
+    }
 
     const localSquads = Array.isArray(communityState?.squads) ? communityState.squads : [];
     const localMatch = localSquads.find(
@@ -1158,7 +1171,9 @@ export default function App() {
       setActiveTab('esquadroes');
       try {
         sessionStorage.setItem(handledKey, '1');
-      } catch (_) {}
+      } catch {
+        stripConviteParam();
+      }
       stripConviteParam();
       return;
     }
@@ -1188,7 +1203,9 @@ export default function App() {
       setActiveTab('esquadroes');
       try {
         sessionStorage.setItem(handledKey, '1');
-      } catch (_) {}
+      } catch {
+        stripConviteParam();
+      }
       stripConviteParam();
     })();
 
@@ -5895,19 +5912,27 @@ export default function App() {
 
   if (!isAuthenticated) {
     return (
-      <Login
-        setIsAuthenticated={setIsAuthenticated}
-        initialReferralCode={pendingReferralCode}
-        onReferralCodeCaptured={(code) => {
-          const normalizedCode = normalizeReferralCode(code);
-          setPendingReferralCode(normalizedCode);
-          persistPendingReferralCode(normalizedCode);
-        }}
-        onReferralCodeConsumed={() => {
-          setPendingReferralCode('');
-          persistPendingReferralCode('');
-        }}
-      />
+      <Suspense
+        fallback={
+          <div className="flex h-screen items-center justify-center" style={{ backgroundColor: theme.bg }}>
+            <span className="text-sm font-semibold text-slate-400">Carregando login...</span>
+          </div>
+        }
+      >
+        <Login
+          setIsAuthenticated={setIsAuthenticated}
+          initialReferralCode={pendingReferralCode}
+          onReferralCodeCaptured={(code) => {
+            const normalizedCode = normalizeReferralCode(code);
+            setPendingReferralCode(normalizedCode);
+            persistPendingReferralCode(normalizedCode);
+          }}
+          onReferralCodeConsumed={() => {
+            setPendingReferralCode('');
+            persistPendingReferralCode('');
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -6191,7 +6216,17 @@ export default function App() {
               : `overflow-y-auto ${activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}
         >
-          <AppTabContent {...tabContentProps} />
+          <Suspense
+            fallback={
+              <div className="page-shell">
+                <div className="section-card flex min-h-[240px] items-center justify-center text-sm font-semibold text-slate-500">
+                  Carregando area...
+                </div>
+              </div>
+            }
+          >
+            <AppTabContent {...tabContentProps} />
+          </Suspense>
 
           {SHOULD_RENDER_LEGACY_TABS && (
             <>
@@ -6894,4 +6929,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-

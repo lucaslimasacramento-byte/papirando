@@ -11,52 +11,6 @@ function inputCls() {
   return 'mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-violet-500';
 }
 
-function stripLinkedFields(book) {
-  if (!book || typeof book !== 'object') return book;
-  const { linkedDiscipline, linkedTopic, ...rest } = book;
-  const tracks = (Array.isArray(rest.tracks) ? rest.tracks : []).map((t) => {
-    if (!t || typeof t !== 'object') return t;
-    const { disciplineId, ...tr } = t;
-    return tr;
-  });
-  return { ...rest, tracks };
-}
-
-/** @param {object[]} books */
-export function sanitizeAudiobooksForSave(books) {
-  if (!Array.isArray(books)) return [];
-  return books
-    .map((raw) => {
-      const b = stripLinkedFields(raw);
-      const id = String(b.id || '').trim();
-      const title = String(b.title || '').trim();
-      if (!id || !title) return null;
-      const tracks = (Array.isArray(b.tracks) ? b.tracks : [])
-        .map((t) => {
-          const tid = String(t.id || '').trim();
-          const ttitle = String(t.title || '').trim();
-          const durationLabel = String(t.durationLabel || '1 min').trim() || '1 min';
-          const audioUrl = String(t.audioUrl || '').trim();
-          if (!tid || !ttitle || !audioUrl) return null;
-          return { id: tid, title: ttitle, durationLabel, audioUrl };
-        })
-        .filter(Boolean);
-      if (!tracks.length) return null;
-      return {
-        id,
-        title,
-        subtitle: String(b.subtitle || '').trim(),
-        category: String(b.category || 'Geral').trim() || 'Geral',
-        accent: ['blue', 'indigo', 'emerald'].includes(b.accent) ? b.accent : 'blue',
-        disciplineName: String(b.disciplineName || '').trim(),
-        materialLabel: String(b.materialLabel || '').trim(),
-        description: String(b.description || '').trim(),
-        tracks,
-      };
-    })
-    .filter(Boolean);
-}
-
 /**
  * @param {object[]} props.draft
  * @param {(fn: (d: object[]) => object[]) => void} props.onDraftChange

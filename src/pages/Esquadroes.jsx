@@ -126,7 +126,6 @@ function dedupeById(list = []) {
 function buildDefaultRoster(squad) {
   const ownerName = String(squad?.owner || 'Professor responsável').trim();
   const teachers = Array.isArray(squad?.teachers) ? squad.teachers : [];
-  const teacherNames = new Set(teachers.map((teacher) => String(teacher?.name || '').trim()).filter(Boolean));
 
   return dedupeById([
     {
@@ -584,15 +583,18 @@ export default function Esquadroes({
     null;
 
   useEffect(() => {
-    if (!selectedSquad) return;
-    setAdminEdit({
-      name: String(selectedSquad.name || '').trim(),
-      focus: String(selectedSquad.focus || '').trim(),
-      description: String(selectedSquad.description || '').trim(),
-      inviteCode: String(selectedSquad.inviteCode || '').trim(),
-      visibility: String(selectedSquad.visibility || 'Privado').trim(),
+    if (!selectedSquad) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      setAdminEdit({
+        name: String(selectedSquad.name || '').trim(),
+        focus: String(selectedSquad.focus || '').trim(),
+        description: String(selectedSquad.description || '').trim(),
+        inviteCode: String(selectedSquad.inviteCode || '').trim(),
+        visibility: String(selectedSquad.visibility || 'Privado').trim(),
+      });
     });
-  }, [selectedSquad?.id, selectedSquad?.name, selectedSquad?.focus, selectedSquad?.description, selectedSquad?.inviteCode, selectedSquad?.visibility]);
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedSquad]);
 
   const isSquadOwner = Boolean(
     selectedSquad &&
@@ -668,9 +670,11 @@ export default function Esquadroes({
           pinned: false,
         },
       ];
-  const displayActivities = (selectedSquad?.activities || []).length
-    ? selectedSquad.activities
-    : [
+  const displayActivities = useMemo(
+    () =>
+      (selectedSquad?.activities || []).length
+        ? selectedSquad.activities
+        : [
         {
           id: 'demo-activity-1',
           title: 'Lista PF - Constitucional 04',
@@ -695,10 +699,14 @@ export default function Esquadroes({
           publishedAtLabel: 'Ontem',
           questionPackId: 'q-2',
         },
-      ];
-  const displaySimulados = (selectedSquad?.simulados || []).length
-    ? selectedSquad.simulados
-    : [
+        ],
+    [selectedSquad]
+  );
+  const displaySimulados = useMemo(
+    () =>
+      (selectedSquad?.simulados || []).length
+        ? selectedSquad.simulados
+        : [
         {
           id: 'demo-sim-1',
           title: 'Simulado PF 09',
@@ -719,7 +727,9 @@ export default function Esquadroes({
           publishedByAvatar: selectedSquad?.teachers?.[2]?.avatar || '',
           publishedAtLabel: 'Há 2 dias',
         },
-      ];
+        ],
+    [profileAvatarUrl, selectedSquad]
+  );
   const selectedSimulado =
     displaySimulados.find((item) => String(item.id) === String(selectedSimuladoId)) || null;
   const attemptActorId = String(currentUserId || displayName || '').trim().toLowerCase();
@@ -1194,8 +1204,6 @@ export default function Esquadroes({
 
   const pinnedPost = filteredForumPosts.find((post) => post.pinned) || filteredForumPosts[0] || null;
   const forumFocusedPost = filteredForumPosts.find((post) => post.id === forumFocusedPostId) || null;
-
-  const latestPosts = filteredForumPosts.filter((post) => post.id !== pinnedPost?.id).slice(0, 3);
 
   const forumPageSize = 4;
   const totalForumPages = Math.max(1, Math.ceil(filteredForumPosts.length / forumPageSize));

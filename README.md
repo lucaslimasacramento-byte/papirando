@@ -8,6 +8,8 @@ Toda conversa e entrega devem alinhar-se à pasta **`docs/`**:
 
 | Arquivo | Uso |
 |---------|-----|
+| [`docs/mvp-launch-checklist.md`](docs/mvp-launch-checklist.md) | Checklist do MVP para liberar uso real |
+| [`docs/vercel-deploy-runbook.md`](docs/vercel-deploy-runbook.md) | Passo a passo de deploy na Vercel + Supabase + IA |
 | [`docs/context.md`](docs/context.md) | Produto, stack, funcionalidades, estado macro |
 | [`docs/handoff.md`](docs/handoff.md) | **Última rodada + próximo passo** — leitura obrigatória ao abrir chat novo |
 | [`docs/ui-guidelines.md`](docs/ui-guidelines.md) | Identidade visual e padrões de UI |

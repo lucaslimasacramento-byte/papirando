@@ -31,7 +31,8 @@ import { REDACAO_BANCA_OPTIONS } from '../data/redacaoBancaGuides';
 import { mergeRedacaoKitBundle, sanitizeRedacaoKitForSave } from '../lib/redacaoKitMerge';
 import { AdminRedacaoKitEditor } from '../components/AdminRedacaoKitEditor';
 import { AdminRedacaoThemeBankEditor } from '../components/AdminRedacaoThemeBankEditor';
-import { AdminAudiobookCatalogEditor, sanitizeAudiobooksForSave } from '../components/AdminAudiobookCatalogEditor';
+import { AdminAudiobookCatalogEditor } from '../components/AdminAudiobookCatalogEditor';
+import { sanitizeAudiobooksForSave } from '../lib/audiobookCatalogAdmin';
 import { AdminSidebarLabelsEditor } from '../components/AdminSidebarLabelsEditor';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
@@ -57,10 +58,10 @@ function sanitizeThemeBankForSave(rows) {
 
 function stripAudiobookForDraft(book) {
   if (!book || typeof book !== 'object') return book;
-  const { linkedDiscipline, linkedTopic, ...rest } = book;
+  const { linkedDiscipline: _linkedDiscipline, linkedTopic: _linkedTopic, ...rest } = book;
   const tracks = (Array.isArray(rest.tracks) ? rest.tracks : []).map((t) => {
     if (!t || typeof t !== 'object') return t;
-    const { disciplineId, ...tr } = t;
+    const { disciplineId: _disciplineId, ...tr } = t;
     return tr;
   });
   return { ...rest, tracks };

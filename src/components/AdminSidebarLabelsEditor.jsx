@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { RotateCcw, Save } from 'lucide-react';
-import { getSidebarNavLabelSchema } from './Sidebar';
+import { getSidebarNavLabelSchema } from '../lib/sidebarNavLabels';
 
 /**
  * @param {Record<string, string> | null | undefined} props.sidebarLabelsOverride mapa gravado no Supabase (só diferenças)

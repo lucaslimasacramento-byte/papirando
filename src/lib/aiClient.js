@@ -11,6 +11,18 @@ function resolveBaseUrl() {
   return envBase || DEFAULT_BASE_URL;
 }
 
+function buildAiHeaders() {
+  const token =
+    typeof import.meta !== 'undefined' && import.meta?.env?.VITE_AI_SERVER_TOKEN
+      ? String(import.meta.env.VITE_AI_SERVER_TOKEN).trim()
+      : '';
+
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 async function parseJson(response) {
   return response.json().catch(() => ({}));
 }
@@ -18,9 +30,7 @@ async function parseJson(response) {
 async function postJson(path, payload) {
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: buildAiHeaders(),
     body: JSON.stringify(payload || {}),
   });
 
@@ -58,7 +68,9 @@ export async function explainQuestion({ enunciado, alternativas, gabarito, respo
 
 export async function checkAiHealth() {
   try {
-    const response = await fetch(`${resolveBaseUrl()}/api/health`);
+    const response = await fetch(`${resolveBaseUrl()}/api/health`, {
+      headers: buildAiHeaders(),
+    });
     const data = await parseJson(response);
 
     if (!response.ok) {

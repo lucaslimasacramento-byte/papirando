@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { BookMarked, Headphones, Save } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
-import { AdminAudiobookCatalogEditor, sanitizeAudiobooksForSave } from '../components/AdminAudiobookCatalogEditor';
+import { AdminAudiobookCatalogEditor } from '../components/AdminAudiobookCatalogEditor';
+import { sanitizeAudiobooksForSave } from '../lib/audiobookCatalogAdmin';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
 
 function stripAudiobookForDraft(book) {
   if (!book || typeof book !== 'object') return book;
-  const { linkedDiscipline, linkedTopic, ...rest } = book;
+  const { linkedDiscipline: _linkedDiscipline, linkedTopic: _linkedTopic, ...rest } = book;
   const tracks = (Array.isArray(rest.tracks) ? rest.tracks : []).map((t) => {
     if (!t || typeof t !== 'object') return t;
-    const { disciplineId, ...tr } = t;
+    const { disciplineId: _disciplineId, ...tr } = t;
     return tr;
   });
   return { ...rest, tracks };

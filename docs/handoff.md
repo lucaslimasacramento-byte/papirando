@@ -1,8 +1,15 @@
 # Handoff entre conversas
 
+## Rodada atual - finalizacao e deploy
+
+- Criados `docs/mvp-launch-checklist.md` e `docs/vercel-deploy-runbook.md` para guiar MVP, deploy Vercel, Supabase e IA.
+- `ai-server.mjs` passou a expor `POST /api/explain-question`, alinhando o backend ao cliente `src/lib/aiClient.js`.
+- A validacao completa ainda deve ser feita em pasta local fora do OneDrive/Drive, conforme `docs/production-test-handoff.md`.
+- Manual para o usuario: GitHub, Vercel, variaveis de ambiente, Supabase Auth/Redirect URLs, SQL/RLS remoto e hospedagem do `ai-server`.
+
 **Propósito:** memória curta e acionável. Ao **abrir um chat novo**, a IA deve ler este arquivo **depois** de `context.md`. Ao **finalizar uma rodada**, a IA deve **atualizar este arquivo** com o bloco da última rodada e o próximo passo explícito.
 
-*Última atualização: 2026-04-20 — **Pausa Esquadrões** (estado salvo abaixo); **Edital em questão:** cabeçalho em pausa — ver `docs/edital-questao-header.md`.*
+*Última atualização: 2026-04-23 — **Hardening pré-produção concluído no código; validação final adiada para máquina local do usuário**. Ler também `docs/production-test-handoff.md`.*
 
 **Pausa:** Editor com **coluna de esqueletos 4+7+7+4** (`redacaoEsqueletosMilimetricos.js`) + faixas separadoras; `REDACAO_KIT_MODELOS` reexporta os mesmos textos; admin JSON continua podendo sobrescrever `kit_json.modelos`.
 

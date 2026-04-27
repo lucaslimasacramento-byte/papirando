@@ -187,15 +187,18 @@ export default function SaudeMentalEFoco({
   const activeTrack =
     publicAudioTracks.find((item) => item.id === activeTrackId) || publicAudioTracks[0] || null;
   const firstBreath = cfg.breathingTechniques[0];
-  const activeTechniqueData =
-    breathingById[activeTechnique] || firstBreath || {
-      nome: "",
-      uso: "",
-      descricao: "",
-      comoFazer: "",
-      insight: "",
-      fases: [{ nome: "Inspire", segundos: 4 }],
-    };
+  const activeTechniqueData = useMemo(
+    () =>
+      breathingById[activeTechnique] || firstBreath || {
+        nome: "",
+        uso: "",
+        descricao: "",
+        comoFazer: "",
+        insight: "",
+        fases: [{ nome: "Inspire", segundos: 4 }],
+      },
+    [activeTechnique, breathingById, firstBreath]
+  );
   const currentPhase =
     activeTechniqueData.fases[breathingState.phaseIndex] || activeTechniqueData.fases[0];
   const fatigueScore = estimateFatigueScore(publicTracks);
@@ -239,7 +242,11 @@ export default function SaudeMentalEFoco({
   useEffect(() => {
     if (cfg.breathingTechniques.some((t) => t.id === activeTechnique)) return;
     const fallback = cfg.breathingTechniques[0]?.id;
-    if (fallback) setActiveTechnique(fallback);
+    if (!fallback) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      setActiveTechnique(fallback);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [cfg.breathingTechniques, activeTechnique]);
 
   useEffect(() => {

@@ -40,6 +40,13 @@ const OPENAI_MODEL = env.OPENAI_MODEL || 'gpt-4.1-mini';
 const GOOGLE_API_KEY = env.GOOGLE_API_KEY;
 const GOOGLE_MODEL = env.GOOGLE_MODEL || 'gemini-1.5-pro';
 const AI_FALLBACK_PROVIDER = String(env.AI_FALLBACK_PROVIDER || 'ollama').toLowerCase();
+const AI_SERVER_TOKEN = String(env.AI_SERVER_TOKEN || '').trim();
+const AI_ALLOWED_ORIGINS = String(
+  env.AI_ALLOWED_ORIGINS || 'http://127.0.0.1:5173,http://localhost:5173'
+)
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
 const GEMINI_MODEL_CANDIDATES = [
   GOOGLE_MODEL,
   'gemini-2.0-flash',
@@ -197,6 +204,22 @@ const ESSAY_ANALYSIS_SCHEMA = {
   },
 };
 
+const QUESTION_EXPLANATION_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['isCorrect', 'answer', 'explanation', 'keyConcepts', 'studyTip'],
+  properties: {
+    isCorrect: { type: 'boolean' },
+    answer: { type: 'string' },
+    explanation: { type: 'string' },
+    keyConcepts: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+    studyTip: { type: 'string' },
+  },
+};
+
 const SYSTEM_PROMPT = `You are an expert at reading Brazilian public exam notices ("editais") from PDF files.
 
 The user will provide the edital text extracted from a PDF. Your job is to analyze the document content and extract the main contest information with high precision.
@@ -305,14 +328,45 @@ Regras:
 - Se algo estiver ilegivel, use [ilegivel].
 - Nao invente palavras que nao aparecam na imagem.`;
 
-function jsonResponse(res, statusCode, payload) {
+const QUESTION_EXPLANATION_PROMPT = `Voce e um professor especialista em concursos publicos brasileiros.
+
+Explique uma questao objetiva de forma pedagogica, curta e acionavel.
+
+Regras:
+- Responda em portugues do Brasil.
+- Nao invente lei, artigo, jurisprudencia ou dado que nao esteja no enunciado.
+- Se houver gabarito, diga por que ele e o melhor.
+- Se houver resposta do aluno, compare com o gabarito.
+- Em "keyConcepts", liste de 2 a 5 conceitos para revisar.
+- Em "studyTip", traga uma acao concreta de revisao.
+- Responda apenas com JSON valido no schema solicitado.`;
+
+function resolveCorsOrigin(req) {
+  const origin = String(req.headers.origin || '').trim().replace(/\/+$/, '');
+  if (!origin) return AI_ALLOWED_ORIGINS[0] || 'http://127.0.0.1:5173';
+  return AI_ALLOWED_ORIGINS.includes(origin) ? origin : '';
+}
+
+function jsonResponse(req, res, statusCode, payload) {
+  const corsOrigin = resolveCorsOrigin(req);
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
+    ...(corsOrigin ? { 'Access-Control-Allow-Origin': corsOrigin } : {}),
+    'Vary': 'Origin',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-AI-Server-Token',
   });
   res.end(JSON.stringify(payload));
+}
+
+function isAuthorizedRequest(req) {
+  if (!AI_SERVER_TOKEN) return true;
+  const authHeader = String(req.headers.authorization || '').trim();
+  const bearerToken = authHeader.toLowerCase().startsWith('bearer ')
+    ? authHeader.slice(7).trim()
+    : '';
+  const explicitToken = String(req.headers['x-ai-server-token'] || '').trim();
+  return bearerToken === AI_SERVER_TOKEN || explicitToken === AI_SERVER_TOKEN;
 }
 
 function sanitizeValue(value, fallback = 'Nao encontrado') {
@@ -1383,6 +1437,252 @@ async function transcribeEssayImage(payload) {
   throw new Error(errors.join(' | '));
 }
 
+function normalizeQuestionAlternatives(alternativas = []) {
+  return (Array.isArray(alternativas) ? alternativas : [])
+    .map((item, index) => {
+      if (typeof item === 'string') {
+        return {
+          id: String.fromCharCode(65 + index),
+          label: item.trim(),
+          isCorrect: false,
+        };
+      }
+
+      return {
+        id: String(item?.id || item?.letter || String.fromCharCode(65 + index)).trim(),
+        label: String(item?.label || item?.text || item?.alternativa || '').trim(),
+        isCorrect: Boolean(item?.isCorrect || item?.correta),
+      };
+    })
+    .filter((item) => item.label);
+}
+
+function normalizeQuestionExplanation(raw = {}) {
+  const keyConcepts = Array.isArray(raw?.keyConcepts)
+    ? raw.keyConcepts.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+
+  return {
+    isCorrect: Boolean(raw?.isCorrect),
+    answer: String(raw?.answer || '').trim() || 'Resposta nao informada.',
+    explanation: String(raw?.explanation || '').trim() || 'Nao foi possivel gerar uma explicacao detalhada.',
+    keyConcepts: keyConcepts.slice(0, 5),
+    studyTip: String(raw?.studyTip || '').trim() || 'Revise o topico e refaca questoes semelhantes.',
+  };
+}
+
+function buildQuestionExplanationInput(payload = {}) {
+  const enunciado = String(payload?.enunciado || payload?.statement || '').trim();
+  const alternativas = normalizeQuestionAlternatives(payload?.alternativas || payload?.options || []);
+  const markedCorrect = alternativas.find((item) => item.isCorrect);
+  const gabarito = String(payload?.gabarito || payload?.answer || markedCorrect?.id || '').trim();
+  const respostaUsuario = String(payload?.resposta_usuario || payload?.userAnswer || '').trim();
+
+  return {
+    enunciado,
+    alternativas,
+    gabarito,
+    respostaUsuario,
+  };
+}
+
+function buildQuestionExplanationHeuristic(payload = {}) {
+  const input = buildQuestionExplanationInput(payload);
+  const correctOption =
+    input.alternativas.find((item) => item.id.toLowerCase() === input.gabarito.toLowerCase()) ||
+    input.alternativas.find((item) => item.isCorrect);
+  const userIsCorrect =
+    input.respostaUsuario && input.gabarito
+      ? input.respostaUsuario.toLowerCase() === input.gabarito.toLowerCase()
+      : Boolean(correctOption?.isCorrect);
+
+  const answer = correctOption
+    ? `${correctOption.id}: ${correctOption.label}`
+    : input.gabarito || 'Gabarito nao informado.';
+
+  return {
+    provider: 'heuristic',
+    source: 'heuristic',
+    sourceLabel: 'Analise local',
+    model: 'Heuristica Papirando',
+    ...normalizeQuestionExplanation({
+      isCorrect: userIsCorrect,
+      answer,
+      explanation: correctOption
+        ? `O gabarito indicado e ${answer}. Use o enunciado para identificar a regra cobrada e elimine as alternativas incompativeis com esse nucleo.`
+        : 'Sem gabarito estruturado, revise o enunciado, identifique o comando da questao e compare cada alternativa com a regra cobrada.',
+      keyConcepts: ['Comando da questao', 'Regra central do tema', 'Eliminacao de alternativas'],
+      studyTip: 'Anote o motivo do erro em uma frase e refaca 5 questoes do mesmo topico.',
+    }),
+  };
+}
+
+function buildQuestionExplanationPrompt(payload = {}) {
+  const input = buildQuestionExplanationInput(payload);
+
+  return `${QUESTION_EXPLANATION_PROMPT}
+
+Schema alvo:
+${JSON.stringify(QUESTION_EXPLANATION_SCHEMA)}
+
+Enunciado:
+${input.enunciado}
+
+Alternativas:
+${input.alternativas.map((item) => `${item.id}) ${item.label}`).join('\n') || 'Nao informadas'}
+
+Gabarito: ${input.gabarito || 'Nao informado'}
+Resposta do aluno: ${input.respostaUsuario || 'Nao informada'}`;
+}
+
+async function explainQuestionWithOllama(payload = {}) {
+  const availableModels = await listOllamaModels();
+  const candidates =
+    availableModels.length > 0
+      ? OLLAMA_MODEL_CANDIDATES.filter((candidate) => availableModels.includes(candidate))
+      : OLLAMA_MODEL_CANDIDATES;
+  const prompt = buildQuestionExplanationPrompt(payload);
+  const errors = [];
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetchJson(`${OLLAMA_BASE_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: candidate,
+          prompt,
+          stream: false,
+          format: 'json',
+          options: { temperature: 0.1 },
+        }),
+      });
+
+      return {
+        provider: 'ollama',
+        source: 'ollama',
+        sourceLabel: 'IA local',
+        model: response?.model || candidate,
+        ...normalizeQuestionExplanation(extractJsonFromText(response?.response)),
+      };
+    } catch (error) {
+      errors.push(`${candidate}: ${error.message}`);
+    }
+  }
+
+  throw new Error(`Falha ao explicar questao com Ollama. Tentativas: ${errors.join(' | ')}`);
+}
+
+async function explainQuestionWithOpenAI(payload = {}) {
+  if (!OPENAI_API_KEY) {
+    throw new Error('Defina OPENAI_API_KEY no arquivo .env para usar OpenAI.');
+  }
+
+  const response = await fetchJson('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.1,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'question_explanation',
+          strict: true,
+          schema: QUESTION_EXPLANATION_SCHEMA,
+        },
+      },
+      messages: [
+        { role: 'system', content: QUESTION_EXPLANATION_PROMPT },
+        { role: 'user', content: buildQuestionExplanationPrompt(payload) },
+      ],
+    }),
+  });
+
+  const content = response?.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('A OpenAI nao retornou conteudo para a questao.');
+  }
+
+  return {
+    provider: 'openai',
+    source: 'openai',
+    sourceLabel: 'IA real',
+    model: response?.model || OPENAI_MODEL,
+    ...normalizeQuestionExplanation(JSON.parse(content)),
+  };
+}
+
+async function explainQuestionWithGemini(payload = {}) {
+  if (!GOOGLE_API_KEY) {
+    throw new Error('Defina GOOGLE_API_KEY no .env para usar Gemini.');
+  }
+
+  const resolvedModel = await resolveGeminiModel();
+  const response = await fetchJson(
+    `https://generativelanguage.googleapis.com/v1beta/models/${resolvedModel}:generateContent?key=${GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: buildQuestionExplanationPrompt(payload) }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: 'application/json',
+        },
+      }),
+    }
+  );
+
+  const contentText = (response?.candidates?.[0]?.content?.parts || [])
+    .map((part) => part?.text || '')
+    .join('\n')
+    .trim();
+
+  if (!contentText) {
+    throw new Error('O Gemini nao retornou conteudo para a questao.');
+  }
+
+  return {
+    provider: 'gemini',
+    source: 'gemini',
+    sourceLabel: 'Gemini',
+    model: resolvedModel,
+    ...normalizeQuestionExplanation(extractJsonFromText(contentText)),
+  };
+}
+
+async function explainQuestion(payload = {}) {
+  const providers =
+    AI_PROVIDER === 'gemini'
+      ? ['gemini', 'openai', 'ollama', 'heuristic']
+      : AI_PROVIDER === 'openai'
+        ? ['openai', 'gemini', 'ollama', 'heuristic']
+        : ['ollama', 'openai', 'gemini', 'heuristic'];
+  const errors = [];
+
+  for (const provider of providers) {
+    try {
+      if (provider === 'gemini') return await explainQuestionWithGemini(payload);
+      if (provider === 'openai') return await explainQuestionWithOpenAI(payload);
+      if (provider === 'ollama') return await explainQuestionWithOllama(payload);
+      if (provider === 'heuristic') return buildQuestionExplanationHeuristic(payload);
+    } catch (error) {
+      errors.push(`${provider}: ${error.message}`);
+    }
+  }
+
+  throw new Error(errors.join(' | '));
+}
+
 function readBody(req) {
   return new Promise((resolveBody, rejectBody) => {
     let raw = '';
@@ -1666,11 +1966,19 @@ async function summarizeTopic({ text, topico = '', disciplina = '' }) {
 
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
-    return jsonResponse(res, 204, {});
+    return jsonResponse(req, res, 204, {});
+  }
+
+  if (!resolveCorsOrigin(req)) {
+    return jsonResponse(req, res, 403, { error: 'Origem nao autorizada para o servidor de IA.' });
+  }
+
+  if (!isAuthorizedRequest(req)) {
+    return jsonResponse(req, res, 401, { error: 'Token do servidor de IA ausente ou invalido.' });
   }
 
   if (req.method === 'GET' && req.url === '/api/health') {
-    return jsonResponse(res, 200, {
+    return jsonResponse(req, res, 200, {
       ok: true,
       service: 'edital-ai',
       provider: AI_PROVIDER,
@@ -1693,13 +2001,13 @@ const server = http.createServer(async (req, res) => {
       const editalText = String(body?.editalText || '').trim();
 
       if (!editalText) {
-        return jsonResponse(res, 400, { error: 'Cole ou envie um edital para analise.' });
+        return jsonResponse(req, res, 400, { error: 'Cole ou envie um edital para analise.' });
       }
 
       const result = await analyzeEdital(editalText);
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, {
+      return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao analisar o edital.',
       });
     }
@@ -1716,13 +2024,13 @@ const server = http.createServer(async (req, res) => {
       const banca = String(body?.banca || '').trim();
 
       if (!text) {
-        return jsonResponse(res, 400, { error: 'Envie o texto da redacao para correcao.' });
+        return jsonResponse(req, res, 400, { error: 'Envie o texto da redacao para correcao.' });
       }
 
       const result = await analyzeEssay({ text, tema, banca });
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, {
+      return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao corrigir a redacao.',
       });
     }
@@ -1735,7 +2043,7 @@ const server = http.createServer(async (req, res) => {
       const mimeType = String(body?.mimeType || '').trim();
 
       if (!dataUrl || !mimeType.startsWith('image/')) {
-        return jsonResponse(res, 400, { error: 'Envie uma imagem valida para transcricao.' });
+        return jsonResponse(req, res, 400, { error: 'Envie uma imagem valida para transcricao.' });
       }
 
       const result = await transcribeEssayImage({
@@ -1743,9 +2051,9 @@ const server = http.createServer(async (req, res) => {
         mimeType,
       });
 
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, {
+      return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao transcrever a imagem da redacao.',
       });
     }
@@ -1759,13 +2067,13 @@ const server = http.createServer(async (req, res) => {
       const maxCards = Math.min(Math.max(Number(body?.maxCards) || 10, 1), 30);
 
       if (!text) {
-        return jsonResponse(res, 400, { error: 'Envie o texto para gerar flashcards.' });
+        return jsonResponse(req, res, 400, { error: 'Envie o texto para gerar flashcards.' });
       }
 
       const result = await generateFlashcards({ text, disciplina, maxCards });
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, { error: error.message || 'Falha ao gerar flashcards.' });
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao gerar flashcards.' });
     }
   }
 
@@ -1777,17 +2085,33 @@ const server = http.createServer(async (req, res) => {
       const disciplina = String(body?.disciplina || '').trim();
 
       if (!text) {
-        return jsonResponse(res, 400, { error: 'Envie o texto para resumir.' });
+        return jsonResponse(req, res, 400, { error: 'Envie o texto para resumir.' });
       }
 
       const result = await summarizeTopic({ text, topico, disciplina });
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, { error: error.message || 'Falha ao resumir o topico.' });
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao resumir o topico.' });
     }
   }
 
-  return jsonResponse(res, 404, { error: 'Rota nao encontrada.' });
+  if (req.method === 'POST' && req.url === '/api/explain-question') {
+    try {
+      const body = await readBody(req);
+      const enunciado = String(body?.enunciado || body?.statement || '').trim();
+
+      if (!enunciado) {
+        return jsonResponse(req, res, 400, { error: 'Envie o enunciado da questao para explicar.' });
+      }
+
+      const result = await explainQuestion(body);
+      return jsonResponse(req, res, 200, result);
+    } catch (error) {
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao explicar a questao.' });
+    }
+  }
+
+  return jsonResponse(req, res, 404, { error: 'Rota nao encontrada.' });
 });
 
 server.listen(PORT, () => {
