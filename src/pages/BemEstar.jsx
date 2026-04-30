@@ -299,7 +299,7 @@ export default function SaudeMentalEFoco({
     <div className="w-full bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_25%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_18%),linear-gradient(180deg,#f8fbff_0%,#f3f7fc_100%)]">
       <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-4 sm:gap-6 sm:px-5 sm:py-5 lg:px-6 lg:py-6">
         <PageHeadPremium
-          className="shrink-0"
+          className="shrink-0 lg:!flex-row lg:!items-center lg:!justify-between"
           icon={Brain}
           badge={
             <PageHeadPremiumBadge icon={Brain} className="!normal-case sm:!text-[9px]">
@@ -309,7 +309,7 @@ export default function SaudeMentalEFoco({
           title={cfg.hero.title}
           titleAs="h1"
           subtitle={cfg.hero.subtitle}
-          leadingClassName="w-full xl:max-w-[min(100%,46rem)]"
+          leadingClassName="w-full items-center xl:max-w-[min(100%,46rem)]"
           leadingExtra={(
             <div className="mt-2 sm:mt-3">
               <p className="flex items-start gap-2 border-l-2 border-white/20 pl-2.5 text-[11px] font-medium leading-snug text-slate-300 sm:pl-3 sm:text-xs">

@@ -379,10 +379,12 @@ export default function Planos({
   return (
     <div className="page-shell animate-in fade-in duration-500 !pt-4 sm:!pt-5">
       <PageHeadPremium
-        className="mb-6"
+        className="mb-6 lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Book}
         title="Meus cursos"
         subtitle="Os cursos são a origem das disciplinas. Crie um curso personalizado ou escolha um concurso pronto da biblioteca."
+        leadingClassName="lg:max-w-[calc(100%-29rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[27rem] lg:self-center"
         trailing={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
             <button
@@ -946,5 +948,4 @@ function SecondaryButton({ children, onClick, disabled = false }) {
     </button>
   );
 }
-
 

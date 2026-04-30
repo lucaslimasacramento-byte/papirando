@@ -12,7 +12,11 @@ import {
   Target,
 } from 'lucide-react';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PageHeadPremiumBadge,
+  PageHeadPremiumCenterNote,
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+} from '../components/PageHeadPremium';
 
 export default function Dashboard({
   openTimerSetup,
@@ -43,8 +47,9 @@ export default function Dashboard({
     () => new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
     []
   );
-  const dailyMotivation =
-    'Você nunca sabe que resultados virão da sua ação. Mas se você não fizer nada, não existirão. — Mahatma Gandhi';
+  const heroQuote =
+    'Você nunca sabe que resultados virão da sua ação. Mas se você não fizer nada, não existirão.';
+  const heroAuthor = 'Mahatma Gandhi';
 
   const currentHour = new Date().getHours();
   const timeTone =
@@ -138,49 +143,33 @@ export default function Dashboard({
         };
   const cleanUserName = String(userDisplayName || '').trim();
   const greetingLine = cleanUserName ? `${timeTone.greeting}, ${cleanUserName}` : timeTone.greeting;
-  const heroDescription = primaryRecommendation
-    ? `${studySummaryTitle}. ${studySummaryDetail}`
-    : targetContest?.nome || 'Organize o dia a partir do próximo passo mais importante.';
-
   return (
     <div className="page-shell w-full min-w-0 max-w-full animate-in fade-in duration-500 !pt-5 sm:!pt-6">
       <PageHeadPremium
-        className="mt-0.5 !gap-4 !py-4 sm:mt-1 sm:!py-5 sm:!gap-4 md:!py-6"
+        className="mt-0.5 !gap-4 !py-4 sm:mt-1 sm:!gap-4 sm:!py-5 md:!py-6 lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Home}
         titleAs="h1"
         badge={
-          <PageHeadPremiumBadge icon={CalendarDays}>
+          <PageHeadPremiumBadge icon={CalendarDays} className="mb-1.5 text-[10px] tracking-[0.15em] text-slate-200/85">
             {timeTone.badge} · {dayContextLabel}
           </PageHeadPremiumBadge>
         }
         title={greetingLine}
-        subtitle={heroDescription}
+        leadingClassName="items-center lg:max-w-[calc(100%-17rem)] xl:max-w-[54rem]"
+        centerSlot={
+          <PageHeadPremiumCenterNote quote={heroQuote} author={heroAuthor} />
+        }
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[16rem] lg:self-center xl:flex-none"
         trailing={
-          <div className="flex w-full shrink-0 flex-col items-start justify-between gap-2 self-stretch sm:min-h-[5.4rem] sm:w-auto sm:items-end sm:justify-between">
-            <div className="w-full max-w-[34rem] rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[11px] font-medium leading-snug text-blue-100/90 backdrop-blur-sm sm:max-w-[30rem]">
-              {dailyMotivation}
-            </div>
-            <div className="mt-0.5 flex w-full flex-wrap items-center gap-2 sm:mt-1 sm:w-auto sm:justify-end sm:gap-2">
+          <div className="flex w-full min-w-0 items-center justify-stretch sm:w-auto sm:min-w-[15rem]">
             <button
               type="button"
               onClick={quickAction.onClick}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full`}
             >
               <Play size={14} fill="currentColor" className="opacity-95" />
               {quickAction.label}
             </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                targetContest?.id ? onOpenTargetContest?.(targetContest.id) : setActiveTab('planejamento')
-              }
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              {targetContest?.id ? 'Abrir alvo' : 'Abrir planejamento'}
-              <ArrowRight size={14} strokeWidth={2} />
-            </button>
-            </div>
           </div>
         }
       />
@@ -453,4 +442,3 @@ function EmptyState({ text, actionLabel = '', onAction = null }) {
     </div>
   );
 }
-

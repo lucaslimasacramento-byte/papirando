@@ -107,39 +107,44 @@ export default function Estatisticas({
         icon={PieChart}
         badge={<PageHeadPremiumBadge icon={PieChart}>Inteligência analítica</PageHeadPremiumBadge>}
         title="Estatísticas profundas"
-        subtitle="Painel consolidado para identificar padrões, gargalos e oportunidades por matéria canônica."
-        className="!flex-col !items-stretch gap-4 xl:!flex-row xl:items-center"
-        leadingClassName="min-w-0 shrink-0 xl:max-w-md"
-        trailing={(
-          <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-center gap-4 sm:grid-cols-2 sm:gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="flex min-w-0 items-center justify-center sm:px-0 xl:justify-self-center">
-              <div className="flex w-full max-w-[44rem] flex-col items-center justify-center">
-                <div className="mb-2.5 space-y-0.5 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-                  <div>Desempenho geral</div>
-                  <div className="text-base font-bold tracking-normal text-blue-300 tabular-nums">{percAcertos}%</div>
-                </div>
-                <div className="mx-auto h-2.5 w-full max-w-[28rem] overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${percAcertos}%` }} />
-                </div>
-              </div>
+        subtitle="Gargalos e oportunidades por matéria."
+        className="gap-4 lg:!flex-row lg:!items-center lg:!justify-between"
+        leadingClassName="min-w-0 shrink-0 items-center lg:max-w-[calc(100%-38rem)] xl:max-w-[28rem]"
+        centerSlot={
+          <div className="mx-auto flex w-full max-w-[16rem] min-w-0 flex-col items-center justify-center gap-2 px-1 text-center sm:px-0">
+            <div className="text-[1.1rem] font-semibold leading-none tracking-[-0.02em] text-sky-200/95 tabular-nums sm:text-[1.25rem]">
+              {percAcertos}%
             </div>
-            <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2">
-              <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-center text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
-                Matérias padronizadas
+            <div className="flex w-full flex-col gap-1">
+              <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400/85">
+                Desempenho geral
               </div>
-              <button
-                type="button"
-                onClick={() => setIsFilterPanelOpen?.(true)}
-                className="inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400/40 sm:w-auto sm:text-[13px]"
-              >
-                <Filter size={14} />
-                Filtros avançados
-              </button>
+              <div className="h-2.5 w-full overflow-hidden rounded-full border border-white/[0.06] bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.22)] transition-[width] duration-500 ease-out"
+                  style={{ width: `${percAcertos}%` }}
+                />
+              </div>
             </div>
           </div>
+        }
+        trailing={(
+          <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 xl:shrink-0">
+            <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-center text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
+              Matérias padronizadas
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFilterPanelOpen?.(true)}
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400/40 sm:w-auto sm:text-[13px]"
+            >
+              <Filter size={14} />
+              Filtros avançados
+            </button>
+          </div>
         )}
-        trailingClassName="w-full min-w-0 flex-1 xl:min-w-0"
-        trailingWrapClassName="xl:max-w-[56rem]"
+        trailingClassName="w-full min-w-0 xl:min-w-0"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[22rem] lg:self-center xl:max-w-[24rem]"
       />
 
       <div

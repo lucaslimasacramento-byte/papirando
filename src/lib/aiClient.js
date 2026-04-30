@@ -1,36 +1,24 @@
 import { analyzeEditalWithRealAI } from './editalAiClient';
-
-const DEFAULT_BASE_URL = 'http://127.0.0.1:8787';
-
-function resolveBaseUrl() {
-  const envBase =
-    typeof import.meta !== 'undefined' && import.meta?.env?.VITE_AI_SERVER_URL
-      ? String(import.meta.env.VITE_AI_SERVER_URL).trim()
-      : '';
-
-  return envBase || DEFAULT_BASE_URL;
-}
-
-function buildAiHeaders() {
-  const token =
-    typeof import.meta !== 'undefined' && import.meta?.env?.VITE_AI_SERVER_TOKEN
-      ? String(import.meta.env.VITE_AI_SERVER_TOKEN).trim()
-      : '';
-
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import {
+  DEV_LOCAL_AI_BASE_URL,
+  getAiUnavailableMessage,
+  resolveAiBaseUrl,
+  resolveAiHeaders,
+} from './aiRuntime';
 
 async function parseJson(response) {
   return response.json().catch(() => ({}));
 }
 
 async function postJson(path, payload) {
-  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+  const baseUrl = resolveAiBaseUrl();
+  if (!baseUrl) {
+    throw new Error(getAiUnavailableMessage());
+  }
+
+  const response = await fetch(`${baseUrl}${path}`, {
     method: 'POST',
-    headers: buildAiHeaders(),
+    headers: resolveAiHeaders(),
     body: JSON.stringify(payload || {}),
   });
 
@@ -67,9 +55,20 @@ export async function explainQuestion({ enunciado, alternativas, gabarito, respo
 }
 
 export async function checkAiHealth() {
+  const baseUrl = resolveAiBaseUrl();
+  if (!baseUrl) {
+    return {
+      ok: false,
+      provider: 'offline',
+      model: '',
+      status: 'offline',
+      ollamaUrl: '',
+    };
+  }
+
   try {
-    const response = await fetch(`${resolveBaseUrl()}/api/health`, {
-      headers: buildAiHeaders(),
+    const response = await fetch(`${baseUrl}/api/health`, {
+      headers: resolveAiHeaders(),
     });
     const data = await parseJson(response);
 
@@ -79,7 +78,7 @@ export async function checkAiHealth() {
         provider: 'offline',
         model: '',
         status: 'offline',
-        ollamaUrl: DEFAULT_BASE_URL,
+        ollamaUrl: '',
       };
     }
 
@@ -90,7 +89,7 @@ export async function checkAiHealth() {
       provider,
       model: String(data?.model || '').trim(),
       status: provider === 'offline' ? 'offline' : 'online',
-      ollamaUrl: provider === 'ollama' ? DEFAULT_BASE_URL : '',
+      ollamaUrl: provider === 'ollama' ? baseUrl || DEV_LOCAL_AI_BASE_URL : '',
     };
   } catch {
     return {
@@ -98,7 +97,7 @@ export async function checkAiHealth() {
       provider: 'offline',
       model: '',
       status: 'offline',
-      ollamaUrl: DEFAULT_BASE_URL,
+      ollamaUrl: '',
     };
   }
 }

@@ -352,10 +352,12 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   return (
     <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
       <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
+        className="shrink-0 lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Target}
         title="Metas semanais"
         subtitle="Horas por disciplina na semana. Metas do assistente de planejamento aparecem aqui automaticamente."
+        leadingClassName="items-center lg:max-w-[calc(100%-15rem)] xl:max-w-[50rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[14rem] lg:self-center"
         trailing={
           <div className="flex w-full min-w-0 flex-col items-start gap-1.5 sm:w-auto sm:items-end">
             <button

@@ -92,9 +92,11 @@ export default function Historico({
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
       <PageHeadPremium
         icon={History}
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
         badge={<PageHeadPremiumBadge icon={History}>Diário de bordo</PageHeadPremiumBadge>}
         title="Histórico de estudos"
         subtitle="Linha do tempo dos seus registros. Aqui você consulta o que foi feito; a leitura analítica fica na aba Estatísticas."
+        leadingClassName="items-center lg:max-w-[52rem]"
       />
 
       <div className="section-card flex shrink-0 flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-3">
@@ -226,4 +228,3 @@ function MiniMetric({ label, value, highlight = false, compact = false }) {
     </div>
   );
 }
-

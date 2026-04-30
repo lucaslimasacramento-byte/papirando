@@ -1105,7 +1105,8 @@ export default function Comunidades({
                   Conectado como <span className="font-semibold text-slate-200">{displayName}</span>
                 </span>
               }
-              className="!rounded-2xl"
+              className="!rounded-2xl lg:!flex-row lg:!items-center lg:!justify-between"
+              leadingClassName="items-center lg:max-w-[52rem]"
             />
           </div>
           <div className="shrink-0 space-y-2 border-b border-slate-200 bg-white px-2 py-2 lg:hidden">

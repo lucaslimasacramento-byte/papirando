@@ -15,7 +15,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 export default function Revisoes({
   setRegistroEstudoModalOpen,
@@ -292,7 +296,7 @@ export default function Revisoes({
   return (
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
       <PageHeadPremium
-        className="shrink-0"
+        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={CheckCircle2}
         badge={
           <PageHeadPremiumBadge icon={CalendarClock}>
@@ -300,8 +304,12 @@ export default function Revisoes({
           </PageHeadPremiumBadge>
         }
         title="Revisões priorizadas"
-        subtitle="A fila abaixo mistura revisão por disciplina, histórico real e flashcards vencidos no FSRS."
-        statGridClassName="grid w-full min-w-0 max-w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:ml-auto md:max-w-md"
+        subtitle="Fila por disciplina, histórico real e flashcards FSRS vencidos — detalhes na área abaixo."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statsStackBelowTrailing
+        statsDense
+        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,40rem)] xl:shrink-0"
         stats={[
           {
             key: 'urgent',
@@ -309,7 +317,7 @@ export default function Revisoes({
             label: 'Alta prioridade',
             value: `${urgentCount + flashcardState.overdue} itens`,
             accent: 'red',
-            valueClassName: 'text-red-200',
+            valueClassName: '!text-red-200',
           },
           {
             key: 'fila',
@@ -317,9 +325,29 @@ export default function Revisoes({
             label: 'Fila ativa',
             value: `${reviewHighlights.length} frentes`,
             accent: 'emerald',
-            valueClassName: 'text-emerald-200',
+            valueClassName: '!text-emerald-200',
           },
         ]}
+        trailing={(
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
+              Registrar estudo
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab?.('flashcards')}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <Layers3 size={14} aria-hidden />
+              Flashcards
+            </button>
+          </div>
+        )}
       />
 
       <div className="soft-accent shrink-0 rounded-2xl p-4 sm:p-5">

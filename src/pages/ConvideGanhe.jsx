@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import {
+  buildInviteUrl,
   buildDefaultReferralCode,
   formatReferralDate,
   getReferralGoalSummary,
@@ -25,7 +26,7 @@ import {
 } from '../lib/referrals';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
-const INVITE_ORIGIN = (import.meta.env.VITE_PUBLIC_APP_ORIGIN || 'https://papirando.app').replace(/\/$/, '');
+const INVITE_ORIGIN = String(import.meta.env.VITE_PUBLIC_APP_ORIGIN || '').trim();
 
 function mapReferralStatus(status) {
   return String(status || '').toLowerCase() === 'confirmed' ? 'Confirmado' : 'Pendente';
@@ -109,9 +110,16 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
       userId: profile?.id || currentUserId || '',
     });
   const inviteUrl = useMemo(
-    () => `${INVITE_ORIGIN}/entrar?ref=${encodeURIComponent(resolvedReferralCode)}`,
+    () => buildInviteUrl(resolvedReferralCode, INVITE_ORIGIN),
     [resolvedReferralCode]
   );
+  const inviteOriginLabel = useMemo(() => {
+    try {
+      return new URL(inviteUrl).origin;
+    } catch {
+      return INVITE_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : 'https://papirando.app');
+    }
+  }, [inviteUrl]);
 
   const loadReferralData = useCallback(async ({ silent = false } = {}) => {
       if (silent) {
@@ -368,7 +376,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
       <div className="page-shell !max-w-[1180px] gap-6 pb-16 pt-2 sm:pt-3">
         <PageHeadPremium
           icon={Gift}
-          className="!items-stretch overflow-hidden !rounded-[1.75rem] !border !border-white/10 !px-5 !py-6 sm:!px-7 sm:!py-8 lg:!flex-row"
+          className="!items-stretch overflow-hidden !rounded-[1.75rem] !border !border-white/10 !px-5 !py-6 sm:!px-7 sm:!py-8 lg:!flex-row lg:!items-center lg:!justify-between"
           badge={
             <PageHeadPremiumBadge icon={Gift}>Convide e ganhe</PageHeadPremiumBadge>
           }
@@ -383,7 +391,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
           )}
           titleAs="h1"
           subtitle="Seu código é único, fica salvo no perfil e o progresso das metas atualiza quando a indicação é confirmada."
-          leadingClassName="min-w-0 w-full flex-1 lg:max-w-none"
+          leadingClassName="min-w-0 w-full flex-1 items-center lg:max-w-none"
           leadingExtra={(
             <>
               {!isLoggedIn ? (
@@ -455,7 +463,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
 
                 <p className="mt-2 text-[11px] font-medium text-slate-500">
                   Quem abrir esse link já entra com seu código. Origem:{' '}
-                  <span className="font-semibold text-slate-400">{INVITE_ORIGIN}</span>
+                  <span className="font-semibold text-slate-400">{inviteOriginLabel}</span>
                 </p>
 
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">

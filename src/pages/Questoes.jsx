@@ -19,11 +19,14 @@ import {
   SlidersHorizontal,
   Target,
   Trophy,
-  HelpCircle,
   X,
 } from 'lucide-react';
 import { buildCanonicalHistory, buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import PageHeadPremium from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 import { loadExamBoardsFromSupabase } from '../lib/examBoardsApi';
 import { supabase } from '../lib/supabase';
 import { submitAnswer } from '../lib/questoesApi';
@@ -246,79 +249,99 @@ export default function Questoes({
   return (
     <div className="page-shell flex h-full min-h-0 flex-1 flex-col gap-2 overflow-hidden !pb-2 !pt-3 animate-in fade-in duration-500 lg:gap-2.5 sm:!pt-4">
       <PageHeadPremium
-        icon={HelpCircle}
+        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
+        icon={ListChecks}
+        badge={<PageHeadPremiumBadge icon={Target}>Banco inteligente</PageHeadPremiumBadge>}
         title="Banco de questões"
-        subtitle="Prática alinhada ao catálogo da plataforma e ao seu histórico."
-        className="!flex-col gap-3 lg:!flex-row lg:items-center"
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[40%]"
-        trailingWrapClassName="xl:max-w-[64rem]"
-        trailing={(
-          <div className="min-w-0 flex-1 lg:min-w-0">
-            <div
-              className="grid min-w-0 w-full grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 xl:grid-cols-5"
-              aria-label="Resumo do banco"
-            >
-              <TopStatCard
-                Icon={ListChecks}
-                iconWrap="bg-blue-50 text-blue-600"
-                label="Resolvidas"
-                mainValue={String(questionsToday)}
-                metaValue={metaDiariaQuestoes}
-                isEditingMeta={isEditingMeta}
-                setIsEditingMeta={setIsEditingMeta}
-                setMetaDiariaQuestoes={setMetaDiariaQuestoes}
-                tone="premium"
+        subtitle="Catálogo da plataforma, filtros e métricas do seu histórico — meta do dia ajustável abaixo."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        leadingExtra={(
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Meta do dia</span>
+            {isEditingMeta ? (
+              <input
+                type="number"
+                min={1}
+                autoFocus
+                className="w-16 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-sm font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40"
+                value={metaDiariaQuestoes}
+                onChange={(e) => setMetaDiariaQuestoes(Number(e.target.value))}
+                onBlur={() => setIsEditingMeta(false)}
+                onKeyDown={(e) => e.key === 'Enter' && setIsEditingMeta(false)}
               />
-
-              <StaticStatCard
-                Icon={BarChart2}
-                iconWrap="bg-emerald-50 text-emerald-500"
-                label="Taxa hoje"
-                value={String(questionAccuracy)}
-                suffix="%"
-                valueClass="text-emerald-600"
-                suffixClass="text-emerald-500"
-                tone="premium"
-                premiumValueClass="text-emerald-200"
-                premiumSuffixClass="text-emerald-300/90"
-              />
-
-              <StaticStatCard
-                Icon={Target}
-                iconWrap="bg-violet-50 text-violet-600"
-                label="No histórico"
-                value={String(historyOverview.totalQuestions)}
-                valueClass="text-slate-900"
-                tone="premium"
-                premiumValueClass="text-white"
-              />
-
-              <StaticStatCard
-                Icon={CheckCircle2}
-                iconWrap="bg-blue-50 text-blue-600"
-                label="Acurácia"
-                value={String(historyOverview.overallAccuracy)}
-                suffix="%"
-                valueClass="text-blue-700"
-                suffixClass="text-blue-500"
-                tone="premium"
-                premiumValueClass="text-blue-200"
-                premiumSuffixClass="text-blue-300/90"
-              />
-
-              <StaticStatCard
-                Icon={BarChart2}
-                iconWrap="bg-slate-100 text-slate-600"
-                label="Tempo"
-                value={historyOverview.totalMinutesLabel}
-                valueClass="text-slate-900"
-                tone="premium"
-                premiumValueClass="text-white"
-              />
-            </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsEditingMeta(true)}
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold text-slate-100 transition hover:bg-white/15"
+              >
+                <span className="tabular-nums">{questionsToday}</span>
+                <span className="text-slate-500">/</span>
+                <span className="tabular-nums">{metaDiariaQuestoes}</span>
+                <Edit3 size={12} className="text-slate-400" aria-hidden />
+              </button>
+            )}
+            <span className="text-[10px] text-slate-500">resolvidas · clique para editar a meta</span>
           </div>
         )}
-        trailingClassName="w-full min-w-0 flex-1"
+        statsStackBelowTrailing
+        statsDense
+        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,48rem)] xl:shrink-0"
+        stats={[
+          {
+            key: 'taxa',
+            icon: BarChart2,
+            label: 'Taxa hoje',
+            value: `${questionAccuracy}%`,
+            accent: 'emerald',
+            valueClassName: '!text-emerald-200',
+          },
+          {
+            key: 'hist',
+            icon: Target,
+            label: 'No histórico',
+            value: String(historyOverview.totalQuestions),
+            accent: 'indigo',
+          },
+          {
+            key: 'acc',
+            icon: CheckCircle2,
+            label: 'Acurácia',
+            value: `${historyOverview.overallAccuracy}%`,
+            accent: 'blue',
+            valueClassName: '!text-blue-200',
+          },
+          {
+            key: 'time',
+            icon: BarChart2,
+            label: 'Tempo estudo',
+            value: historyOverview.totalMinutesLabel,
+            accent: 'orange',
+          },
+        ]}
+        trailing={(
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
+              Registrar estudo
+            </button>
+            {questionsRecommendation ? (
+              <button
+                type="button"
+                onClick={() => onStartRecommendedSession?.(questionsRecommendation)}
+                className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
+              >
+                <Target size={14} aria-hidden />
+                Bloco sugerido
+              </button>
+            ) : null}
+          </div>
+        )}
       />
 
       <div className="section-card relative z-10 shrink-0 !p-2.5 sm:!p-3 flex flex-col gap-2">
@@ -673,112 +696,6 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
             {submitted ? 'Próxima questão' : 'Responder'}
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function TopStatCard({
-  Icon,
-  iconWrap,
-  label,
-  mainValue,
-  metaValue,
-  isEditingMeta,
-  setIsEditingMeta,
-  setMetaDiariaQuestoes,
-  tone = 'light',
-}) {
-  const isPremium = tone === 'premium';
-  const shell = isPremium
-    ? 'border border-white/10 bg-white/[0.06] shadow-none backdrop-blur-sm'
-    : 'border border-gray-100 bg-white shadow-sm';
-  const iconBox = isPremium ? 'bg-blue-500/20 text-blue-300' : iconWrap;
-  const labelCls = isPremium ? 'text-slate-500' : 'text-gray-400';
-  const mainCls = isPremium ? 'text-white' : 'text-slate-900';
-  const slashCls = isPremium ? 'text-slate-500' : 'text-gray-400';
-  const metaCls = isPremium ? 'text-slate-300 group-hover/meta:text-blue-300' : 'text-gray-400 group-hover/meta:text-blue-600';
-  const editIconCls = isPremium ? 'text-slate-500 group-hover/meta:text-blue-300' : 'text-gray-300 group-hover/meta:text-blue-600';
-  const inputCls = isPremium
-    ? 'mb-0.5 w-14 rounded-md border border-white/20 bg-white/10 px-1 text-sm font-semibold text-white outline-none'
-    : 'mb-0.5 w-14 rounded-md border border-blue-200 bg-blue-50 px-1 text-sm font-semibold text-blue-600 outline-none';
-
-  return (
-    <div
-      className={`flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 sm:gap-2.5 sm:rounded-xl sm:px-2.5 sm:py-2 ${shell}`}
-    >
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md sm:h-8 sm:w-8 sm:rounded-lg ${iconBox}`}>
-        {React.createElement(Icon, { size: 15 })}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className={`mb-0.5 text-[8px] font-semibold uppercase tracking-widest leading-none sm:text-[9px] ${labelCls}`}>{label}</p>
-        <div className="flex items-end gap-0.5">
-          <p className={`text-base font-semibold leading-none sm:text-lg ${mainCls}`}>
-            {mainValue} <span className={`text-[10px] font-bold sm:text-xs ${slashCls}`}>/</span>
-          </p>
-          {isEditingMeta ? (
-            <input
-              type="number"
-              autoFocus
-              className={inputCls}
-              value={metaValue}
-              onChange={(e) => setMetaDiariaQuestoes(Number(e.target.value))}
-              onBlur={() => setIsEditingMeta(false)}
-              onKeyDown={(e) => e.key === 'Enter' && setIsEditingMeta(false)}
-            />
-          ) : (
-            <div className="group/meta mb-0.5 flex cursor-pointer items-center gap-1" onClick={() => setIsEditingMeta(true)}>
-              <span className={`text-sm font-bold transition-colors ${metaCls}`}>{metaValue}</span>
-              <Edit3 size={12} className={`transition-colors ${editIconCls}`} />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StaticStatCard({
-  Icon,
-  iconWrap,
-  label,
-  value,
-  suffix,
-  valueClass,
-  suffixClass = 'text-gray-400',
-  tone = 'light',
-  premiumValueClass,
-  premiumSuffixClass,
-}) {
-  const isPremium = tone === 'premium';
-  const shell = isPremium
-    ? 'border border-white/10 bg-white/[0.06] shadow-none backdrop-blur-sm'
-    : 'border border-gray-100 bg-white shadow-sm';
-  const mapIcon = (wrap) => {
-    if (!isPremium) return wrap;
-    if (wrap.includes('emerald')) return 'bg-emerald-500/20 text-emerald-300';
-    if (wrap.includes('violet')) return 'bg-violet-500/20 text-violet-200';
-    if (wrap.includes('blue-50')) return 'bg-blue-500/20 text-blue-300';
-    return 'bg-white/15 text-slate-300';
-  };
-
-  const vClass = isPremium && premiumValueClass ? premiumValueClass : valueClass;
-  const sClass = isPremium && premiumSuffixClass ? premiumSuffixClass : suffixClass;
-  const labelCls = isPremium ? 'text-slate-500' : 'text-gray-400';
-
-  return (
-    <div
-      className={`flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 sm:gap-2.5 sm:rounded-xl sm:px-2.5 sm:py-2 ${shell}`}
-    >
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md sm:h-8 sm:w-8 sm:rounded-lg ${mapIcon(iconWrap)}`}>
-        {React.createElement(Icon, { size: 15 })}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className={`mb-0.5 text-[8px] font-semibold uppercase tracking-widest leading-none sm:text-[9px] ${labelCls}`}>{label}</p>
-        <p className={`truncate text-base font-semibold leading-none sm:text-lg ${vClass}`}>
-          {value}
-          <span className={`text-[10px] font-bold sm:text-xs ${sClass}`}>{suffix}</span>
-        </p>
       </div>
     </div>
   );

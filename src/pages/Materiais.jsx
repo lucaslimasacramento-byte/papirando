@@ -22,7 +22,10 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from '../lib/supabase';
 import { newCard } from '../lib/fsrs';
-import PageHeadPremium from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -872,15 +875,38 @@ export default function Materiais({ currentUserId }) {
   return (
     <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
       <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
+        className="shrink-0 rounded-none border-x-0 border-t-0 gap-4 lg:!px-6 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={FileText}
+        badge={<PageHeadPremiumBadge icon={BookOpen}>Biblioteca PDF</PageHeadPremiumBadge>}
         title="Materiais de estudo"
-        subtitle="PDFs com marcações salvas, highlight, anotações e flashcards via IA"
+        subtitle="PDFs com marcações, anotações e geração de flashcards para revisar trechos importantes."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statsStackBelowTrailing
+        statsDense
+        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-3 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,38rem)] xl:shrink-0"
+        stats={[
+          { key: 'files', icon: FileText, label: 'Materiais', value: String(materials.length), accent: 'blue' },
+          {
+            key: 'pages',
+            icon: BookOpen,
+            label: 'Páginas',
+            value: String(materials.reduce((acc, item) => acc + Number(item.page_count || 0), 0)),
+            accent: 'indigo',
+          },
+          {
+            key: 'resume',
+            icon: Bookmark,
+            label: 'Retomadas',
+            value: String(materials.filter((item) => Number(item.last_page || 0) > 1).length),
+            accent: 'emerald',
+          },
+        ]}
         trailing={
           <button
             type="button"
             onClick={() => { setUploadErr(''); setUploadModal(true); }}
-            className={`${PRIMARY_HEADER_BUTTON_CLASS} shrink-0 self-start sm:self-center`}
+            className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
           >
             <Upload size={14} />
             Enviar PDF

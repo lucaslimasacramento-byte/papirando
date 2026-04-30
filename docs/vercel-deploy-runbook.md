@@ -23,6 +23,7 @@ No `.env` local:
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+VITE_PUBLIC_APP_ORIGIN=
 VITE_AI_SERVER_URL=
 VITE_AI_SERVER_TOKEN=
 ```
@@ -31,6 +32,7 @@ Na Vercel, cadastre em `Settings > Environment Variables` para `Production` e `P
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_PUBLIC_APP_ORIGIN`, se quiser forcar links canonicos de convite para um dominio especifico
 - `VITE_AI_SERVER_URL`, se a IA estiver hospedada
 - `VITE_AI_SERVER_TOKEN`, se o servidor de IA exigir token
 
@@ -97,6 +99,8 @@ Depois de publicar o backend de IA, configure na Vercel:
 VITE_AI_SERVER_URL=https://URL-DO-SEU-AI-SERVER
 VITE_AI_SERVER_TOKEN=mesmo-token-do-ai-server
 ```
+
+Se `VITE_AI_SERVER_URL` nao for definido em Preview/Production, o frontend continua funcionando, mas as features de IA ficam offline por padrao.
 
 ## 6. Smoke test pos-deploy
 

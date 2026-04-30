@@ -16,7 +16,11 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import MindMapStudio from '../components/MindMapStudio';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 import {
   MIND_MAPS_HISTORY_STORAGE_KEY,
   MIND_MAPS_STORAGE_KEY,
@@ -552,7 +556,7 @@ export default function MapasMentais({
     <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
       <div className="app-main-shell mx-auto max-w-[1320px]">
         <PageHeadPremium
-          className="mb-6 shrink-0 animate-in fade-in duration-500"
+          className="mb-6 shrink-0 animate-in fade-in duration-500 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
           icon={Network}
           titleAs="h1"
           badge={
@@ -562,6 +566,7 @@ export default function MapasMentais({
           }
           title="Mapas mentais"
           subtitle="Biblioteca integrada com disciplinas, tópicos e concursos. Abra, filtre, favorite, navegue e reaproveite seus mapas no fluxo do Papirando."
+          leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
           leadingExtra={
             <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
               {galleryMaps.length > 0
@@ -569,7 +574,32 @@ export default function MapasMentais({
                 : 'Modelos prontos publicados pela equipe aparecem na área “Mapas da equipe” abaixo quando o admin os cadastra.'}
             </p>
           }
+          statsStackBelowTrailing
+          statsDense
           stats={mapasHeaderStats}
+          statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+          trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,44rem)] xl:shrink-0"
+          trailing={(
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+              <button
+                type="button"
+                onClick={handleGerarMapa}
+                disabled={!promptMapa.trim()}
+                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                <PlusSquare size={14} aria-hidden />
+                Criar mapa
+              </button>
+              <button
+                type="button"
+                onClick={handleImportClick}
+                className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
+              >
+                <UploadCloud size={14} aria-hidden />
+                Importar JSON
+              </button>
+            </div>
+          )}
         />
 
         <section

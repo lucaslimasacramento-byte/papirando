@@ -776,7 +776,7 @@ export default function Perfil(props) {
           <main className="space-y-6">
             <Card className="overflow-hidden p-0">
               <PageHeadPremium
-                className="!rounded-none"
+                className="!rounded-none lg:!flex-row lg:!items-center lg:!justify-between"
                 icon={User2}
                 badge={
                   <PageHeadPremiumBadge icon={ShieldCheck}>Perfil conectado</PageHeadPremiumBadge>
@@ -791,7 +791,8 @@ export default function Perfil(props) {
                   { key: 'lv', label: 'Level', value: heroStats[2].value, icon: Sparkles, accent: 'violet' },
                   { key: 'ab', label: 'Audiolivros', value: heroStats[3].value, icon: BookOpen, accent: 'emerald' },
                 ]}
-                leadingClassName="min-w-0 flex-1"
+                leadingClassName="min-w-0 flex-1 items-center lg:max-w-[calc(100%-34rem)] xl:max-w-[46rem]"
+                trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[33rem] lg:self-center"
               />
             </Card>
 
@@ -1421,5 +1422,4 @@ export default function Perfil(props) {
     </div>
   );
 }
-
 

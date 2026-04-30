@@ -295,10 +295,13 @@ export default function ConcursosDisponiveis({
   return (
     <div className="page-shell !pt-4 sm:!pt-5">
       <PageHeadPremium
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Compass}
         titleAs="h1"
         title="Concursos disponíveis"
         subtitle="Encontre concursos por área, banca, cargo ou data de prova e importe os mais relevantes para o seu painel."
+        leadingClassName="lg:max-w-[calc(100%-18rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[17rem] lg:self-center"
         trailingClassName="xl:max-w-none xl:flex-none"
         trailing={
           <div className="flex w-full flex-wrap items-center justify-start gap-2 text-xs font-semibold text-slate-200 sm:w-auto sm:justify-end sm:text-[13px]">
@@ -990,5 +993,4 @@ function DetailBox({ label, value }) {
     </div>
   );
 }
-
 

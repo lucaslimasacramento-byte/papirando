@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
 import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
   PageHeadPremiumBadge,
-  PageHeadPremiumStatCompact,
 } from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
 
@@ -98,19 +99,31 @@ export default function Sessoes({
   return (
     <div className="page-shell !h-auto flex flex-col !gap-3 !pb-8 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
       <PageHeadPremium
+        className="gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={Timer}
         badge={<PageHeadPremiumBadge icon={Zap}>Área de foco</PageHeadPremiumBadge>}
         title="Sessões de estudo"
-        subtitle="Timer global, progresso do dia e próxima ação — painéis abaixo rolam sem precisar rolar a página inteira."
-        statGridClassName="grid min-h-0 w-full shrink-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
+        subtitle="Métodos de foco, timer global e registro do que você estudou."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statGridClassName="mx-auto grid min-h-0 min-w-0 w-full max-w-[40rem] grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="md:!flex-row md:items-center md:justify-end md:gap-3 lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,52rem)] xl:shrink-0 xl:items-center"
+        trailingClassName="w-full shrink-0 lg:w-auto"
         stats={[
-          { key: 'streak', label: 'Streak', value: `${historyOverview.streakDays} dias`, icon: Zap, accent: 'orange' },
+          {
+            key: 'streak',
+            label: 'Streak',
+            value: `${historyOverview.streakDays} dias`,
+            icon: Zap,
+            accent: 'orange',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
+          },
           {
             key: 'avg',
             label: 'Média 7d',
             value: historyOverview.last7DaysAverageLabel,
             icon: Clock,
             accent: 'blue',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
           },
           {
             key: 'acc',
@@ -118,9 +131,37 @@ export default function Sessoes({
             value: `${historyOverview.overallAccuracy}%`,
             icon: Target,
             accent: 'emerald',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
           },
-          { key: 'rev', label: 'Revisões', value: `${urgentReviews}`, icon: CheckCircle2, accent: 'indigo' },
+          {
+            key: 'rev',
+            label: 'Revisões',
+            value: `${urgentReviews}`,
+            icon: CheckCircle2,
+            accent: 'indigo',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
+          },
         ]}
+        trailing={(
+          <div className="flex w-full shrink-0 flex-col gap-2 md:flex-row md:items-center md:justify-end md:gap-2 lg:w-auto">
+            <button
+              type="button"
+              onClick={() => openTimerSetup?.()}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full md:w-auto`}
+            >
+              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
+              Abrir timer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full md:w-auto`}
+            >
+              <BookOpen size={14} aria-hidden />
+              Registrar estudo
+            </button>
+          </div>
+        )}
       />
 
       <div className="grid items-start gap-3 xl:grid-cols-[1.2fr_0.8fr] xl:gap-4">

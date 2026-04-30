@@ -32,5 +32,7 @@ npm run ai:server # Servidor local de IA (opcional)
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_PUBLIC_APP_ORIGIN` (opcional; convites. Se ausente, usa a origem atual do browser)
+- `VITE_AI_SERVER_URL` / `VITE_AI_SERVER_TOKEN` (opcional; necessario para IA fora do ambiente local)
 
 Detalhes em [`docs/architecture.md`](docs/architecture.md).

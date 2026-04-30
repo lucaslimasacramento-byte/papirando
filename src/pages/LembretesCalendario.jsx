@@ -363,9 +363,12 @@ export default function LembretesCalendario({
   return (
     <div className="page-shell pb-10 !pt-4 sm:!pt-5">
       <PageHeadPremium
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
         icon={AlarmClock}
         title="Lembretes e calendário"
         subtitle="Visualize alertas, organize pendências e acompanhe provas no calendário unificado."
+        leadingClassName="lg:max-w-[calc(100%-21rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[20rem] lg:self-center"
         trailing={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">

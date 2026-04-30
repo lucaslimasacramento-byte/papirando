@@ -19,7 +19,12 @@ import { buildWeeklyStudyPlan, WEEKDAY_BLUEPRINT } from '../lib/weeklyPlanner';
 import { mergeDisciplinesByCanonical } from '../lib/studyRecommendation';
 import { supabase } from '../lib/supabase';
 import Ciclos from './Ciclos';
-import PageHeadPremium from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS,
+  PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS,
+  PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS,
+} from '../components/PageHeadPremium';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -769,9 +774,11 @@ function PlanejamentoContent({
       }`}
     >
       <PageHeadPremium
-        className={studyMode === 'fixo' ? 'mb-6' : 'mb-3'}
+        className={`${studyMode === 'fixo' ? 'mb-6' : 'mb-3'} lg:!flex-row lg:!items-center lg:!justify-between`}
         icon={CalendarIcon}
         title="Planejamento"
+        leadingClassName="items-center lg:max-w-[calc(100%-38rem)] xl:max-w-[50rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[37rem] lg:self-center"
         trailingClassName="xl:max-w-none xl:flex-none"
         subtitle={
           studyMode === 'fixo'
@@ -780,13 +787,15 @@ function PlanejamentoContent({
         }
         trailing={
           <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain sm:w-auto sm:justify-end sm:gap-3 sm:overflow-visible">
-            <div className="flex shrink-0 items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
+            <div className={PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS}>
               <button
                 type="button"
                 onClick={openWizard}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:text-[13px] ${
-                  studyMode === 'ciclo' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                }`}
+                className={
+                  studyMode === 'ciclo'
+                    ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
+                    : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
+                }
               >
                 <RotateCcw size={14} />
                 Ciclo flexível
@@ -794,9 +803,11 @@ function PlanejamentoContent({
               <button
                 type="button"
                 onClick={openWizard}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:text-[13px] ${
-                  studyMode === 'fixo' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                }`}
+                className={
+                  studyMode === 'fixo'
+                    ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
+                    : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
+                }
               >
                 <CalendarDays size={14} />
                 Planejamento fixo
@@ -804,13 +815,15 @@ function PlanejamentoContent({
             </div>
 
             {studyMode === 'fixo' ? (
-              <div className="flex shrink-0 items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
+              <div className={PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS}>
                 <button
                   type="button"
                   onClick={() => setAgendaViewMode('calendario')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-4 sm:text-[13px] ${
-                    agendaViewMode === 'calendario' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                  }`}
+                  className={
+                    agendaViewMode === 'calendario'
+                      ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
+                      : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
+                  }
                 >
                   <CalendarDays size={14} />
                   Calendário
@@ -818,9 +831,11 @@ function PlanejamentoContent({
                 <button
                   type="button"
                   onClick={() => setAgendaViewMode('kanban')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-4 sm:text-[13px] ${
-                    agendaViewMode === 'kanban' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                  }`}
+                  className={
+                    agendaViewMode === 'kanban'
+                      ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
+                      : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
+                  }
                 >
                   <Columns size={14} />
                   Kanban
@@ -836,7 +851,7 @@ function PlanejamentoContent({
           <div className="flex flex-col gap-5">
             <button
               onClick={openWizard}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#185FA5] py-3.5 text-base font-semibold text-white transition-colors hover:bg-[#0C447C]"
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full text-base`}
             >
               <Sparkles size={20} strokeWidth={3} />
               Editar planejamento

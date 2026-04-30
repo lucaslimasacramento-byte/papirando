@@ -97,17 +97,37 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 ### Header premium padrão (replicar em todas as páginas)
 
 - **Componente único:** usar `PageHeadPremium` (`src/components/PageHeadPremium.jsx`) como base oficial de cabeçalho.
-- **Estrutura fixa:** bloco esquerdo com ícone + chip de contexto + título/subtítulo; bloco direito com frase/estado curto e ações.
+- **Estrutura fixa:** bloco esquerdo com ícone + badge de contexto + título; centro opcional com nota/citação em vidro; bloco direito com ação principal ou grupo de ações.
 - **Container da página:** manter dentro de `.page-shell`; evitar headers paralelos fora desse shell.
 - **Tema do header:** `page-head page-head-premium-dark` (dark premium) com acento azul lateral.
 - **Badge/chips:** usar `PageHeadPremiumBadge`; visual padrão: `border-white/10`, `bg-white/[0.06]`, `backdrop-blur-sm`, tipografia compacta.
-- **Título/subtítulo:** título em branco (`font-semibold`, `tracking-tight`), subtítulo em `text-slate-400`; não usar `font-black` em massa.
+- **Ícone da página:** usar `PageHeadPremiumIconTile`; o símbolo deve ficar sempre centralizado verticalmente no card, sem subir ou descer conforme a quantidade de texto.
+- **Título/subtítulo:** título em branco com maior peso visual; só usar subtítulo quando ele realmente agrega. Se for frase genérica, remover.
+- **Centro opcional:** quando houver frase/citação, usar `centerSlot` com `PageHeadPremiumCenterNote`; a caixa deve ser compacta, elegante, com contraste alto e sem roubar a cena do título.
 - **CTA primário (header):** estilo premium azul (família `blue/indigo`), texto branco e contraste alto; evitar CTA dourado fora de contexto de plano/selo.
 - **CTA secundário:** variante vidro escuro (`bg-white/10`, borda translúcida, texto claro), mantendo hierarquia do primário.
-- **Posicionamento de conteúdo contextual:** frase motivacional/estado no topo do bloco direito; botões abaixo.
-- **Quebra de texto:** frases longas devem quebrar da esquerda para a direita (sem alinhamento forçado à direita e sem truncar por padrão).
-- **Densidade:** manter header compacto, conteúdo centralizado verticalmente, sem aumentar altura do card sem necessidade.
-- **Responsividade:** em mobile empilhar (`flex-col`), em desktop distribuir esquerda/direita com `justify-between`.
+- **Posicionamento das ações:** o CTA principal deve ficar ancorado à direita do card em desktop; evitar colunas extras e evitar badges como “Planejamento do dia” se não forem essenciais.
+- **Quebra de texto:** frases longas devem quebrar de forma balanceada e nunca vazar do header.
+- **Densidade:** manter header compacto, conteúdo centrado verticalmente e sem aumentar altura do card sem necessidade.
+- **Responsividade:** em mobile empilhar (`flex-col`); em desktop distribuir esquerda/direita com ação ancorada à direita.
+
+#### Nomes oficiais dos padrões
+
+- **Padrão Atlas:** cabeçalho premium com centro narrativo. Usa bloco central de citação/nota em vidro (`centerSlot` + `PageHeadPremiumCenterNote`), ação principal única à direita e composição mais editorial. Referência atual: [Dashboard](../../src/pages/Dashboard.jsx).
+- **Padrão Biblioteca:** cabeçalho premium operacional com foco em ações. Sem bloco central, texto mais direto à esquerda e dois CTAs lado a lado à direita. Referência atual: [Planos](../../src/pages/Planos.jsx), seção `Meus cursos`.
+
+#### Como pedir durante a execução
+
+- “Aplique **Atlas** nesta página” = hero premium com citação/nota central e CTA único.
+- “Aplique **Biblioteca** nesta página” = hero premium sem centro narrativo, com ações operacionais na direita.
+
+#### Checklist de aplicação página por página
+
+- Remover subtítulos genéricos antes de estilizar.
+- Substituir botões inline do header por `PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS` e `PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS`; ações **Gerar com IA** (ou equivalente) usam `PAGE_HEAD_PREMIUM_IA_ACTION_CLASS`.
+- Substituir grupos segmentados por `PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS` e variantes de botão.
+- Garantir que o ícone use sempre `PageHeadPremiumIconTile` sem overrides visuais locais.
+- Se a página precisar de frase central, usar `PageHeadPremiumCenterNote`; caso contrário, deixar o centro vazio.
 
 ### Cartões
 
@@ -119,7 +139,8 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 
 - **Primário:** `.btn-primary` — azul sólido (`blue-700` / `--accent`), **texto e ícone brancos**, `rounded-lg`, sombra leve; hover `blue-800`. Único padrão para CTAs principais (ex.: “Registrar estudo”, “+ Novo lembrete”), **incluindo** sobre `.soft-accent` quando quiser o mesmo destaque da captura de referência.
 - **Secundário:** `.btn-secondary` (branco, borda slate).
-- **Estados de foco:** usar `focus-visible` padrão do `index.css` (ring azul suave).
+- **IA (gerar / sugerir com modelo):** exceção à regra “um acento só” — gradiente **fúcsia → violeta → índigo**, texto claro. No **header premium escuro**, usar `PAGE_HEAD_PREMIUM_IA_ACTION_CLASS` (`PageHeadPremium.jsx` + regras em `index.css` em `.page-head-premium-action-ia`). No **canvas claro** (toolbar de deck, cartões, modais), usar a classe **`.btn-ia`** (mesma família cromática, foco com ring fúcsia). Reservar para rotulos do tipo “Gerar com IA”, não para CTAs genéricos.
+- **Estados de foco:** usar `focus-visible` padrão do `index.css` (ring azul suave nos botões comuns; `.btn-ia` usa ring fúcsia).
 
 ### Badges
 

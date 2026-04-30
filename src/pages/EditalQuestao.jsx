@@ -581,7 +581,7 @@ function HeroSection({ computed, selectedCourse }) {
 
   return (
     <PageHeadPremium
-      className="!gap-2 !py-3 shrink-0 animate-in fade-in duration-500 sm:!gap-3 sm:!py-3.5"
+      className="shrink-0 animate-in fade-in duration-500 gap-4 lg:!flex-row lg:!items-center lg:!justify-between"
       icon={FileSearch}
       titleAs="h1"
       badge={
@@ -591,13 +591,15 @@ function HeroSection({ computed, selectedCourse }) {
       }
       title="Painel tático do edital: o que cobrar, revisar e atacar primeiro."
       subtitle="Cada tópico do seu curso é cruzado com histórico de estudo e desempenho em questões — gargalos, revisões e prioridades em um só lugar."
+      leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
       leadingExtra={
         <p className="truncate text-[11px] font-medium text-slate-500 sm:text-xs" title={planHint}>
           Curso em análise: <span className="font-semibold text-slate-400">{planHint}</span>
         </p>
       }
+      statsDense
       stats={editalHeaderStats}
-      statGridClassName="grid shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 xl:min-w-0 xl:max-w-[420px]"
+      statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch xl:min-w-0 xl:max-w-[440px]"
     />
   );
 }

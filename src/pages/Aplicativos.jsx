@@ -49,6 +49,9 @@ export default function Aplicativos() {
         }
         titleAs="h2"
         subtitle="A mesma potência da plataforma web, agora otimizada para iOS e Android. Baixe seus materiais e estude offline."
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
+        leadingClassName="items-center lg:max-w-[calc(100%-28rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[27rem] lg:self-center"
         trailing={(
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
             <TopPill icon={Cloud} text="Sincronização em nuvem" />

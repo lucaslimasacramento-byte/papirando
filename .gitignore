@@ -62,3 +62,5 @@ supabase/.temp/
 
 # Pastas temporárias de sincronização (ex.: Drive)
 .tmp.driveupload/
+
+.vercel

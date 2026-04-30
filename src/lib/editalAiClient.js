@@ -1,9 +1,14 @@
+import { getAiUnavailableMessage, resolveAiBaseUrl, resolveAiHeaders } from './aiRuntime';
+
 export async function analyzeEditalWithRealAI(editalText) {
-  const response = await fetch('/api/analyze-edital', {
+  const baseUrl = resolveAiBaseUrl();
+  if (!baseUrl) {
+    throw new Error(getAiUnavailableMessage());
+  }
+
+  const response = await fetch(`${baseUrl}/api/analyze-edital`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: resolveAiHeaders(),
     body: JSON.stringify({ editalText }),
   });
 
