@@ -294,9 +294,9 @@ export default function Revisoes({
   ]);
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
+    <div className="page-shell flex flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
       <PageHeadPremium
-        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
+        className="shrink-0 gap-4"
         icon={CheckCircle2}
         badge={
           <PageHeadPremiumBadge icon={CalendarClock}>
@@ -306,10 +306,8 @@ export default function Revisoes({
         title="Revisões priorizadas"
         subtitle="Fila por disciplina, histórico real e flashcards FSRS vencidos — detalhes na área abaixo."
         leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statsStackBelowTrailing
-        statsDense
-        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
-        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,40rem)] xl:shrink-0"
+        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-2 gap-2 sm:max-w-[24rem] sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[9rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
         stats={[
           {
             key: 'urgent',
@@ -318,6 +316,7 @@ export default function Revisoes({
             value: `${urgentCount + flashcardState.overdue} itens`,
             accent: 'red',
             valueClassName: '!text-red-200',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
           },
           {
             key: 'fila',
@@ -326,6 +325,7 @@ export default function Revisoes({
             value: `${reviewHighlights.length} frentes`,
             accent: 'emerald',
             valueClassName: '!text-emerald-200',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
           },
         ]}
         trailing={(
@@ -450,8 +450,8 @@ export default function Revisoes({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 overflow-hidden xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="custom-scrollbar min-h-0 overflow-y-auto pr-1">
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="min-w-0 pr-1">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
               <ListOrdered size={18} className="text-blue-600" />
@@ -487,7 +487,7 @@ export default function Revisoes({
           )}
         </div>
 
-        <div className="section-card custom-scrollbar min-h-0 overflow-y-auto p-4 sm:p-5">
+        <div className="section-card p-4 sm:p-5">
           <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
             <BookOpenCheck size={13} className="text-[#185FA5]" />
             Decks em revisão

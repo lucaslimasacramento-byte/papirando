@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import MindMapStudio from '../components/MindMapStudio';
 import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_IA_ACTION_CLASS,
   PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
   PageHeadPremiumBadge,
 } from '../components/PageHeadPremium';
@@ -568,11 +568,11 @@ export default function MapasMentais({
           subtitle="Biblioteca integrada com disciplinas, tópicos e concursos. Abra, filtre, favorite, navegue e reaproveite seus mapas no fluxo do Papirando."
           leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
           leadingExtra={
-            <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
-              {galleryMaps.length > 0
-                ? `${galleryMaps.length} modelo(s) da equipe disponível(is) abaixo — copie para editar na sua biblioteca.`
-                : 'Modelos prontos publicados pela equipe aparecem na área “Mapas da equipe” abaixo quando o admin os cadastra.'}
-            </p>
+            galleryMaps.length > 0 ? (
+              <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
+                {`${galleryMaps.length} modelo(s) da equipe disponível(is) abaixo — copie para editar na sua biblioteca.`}
+              </p>
+            ) : null
           }
           statsStackBelowTrailing
           statsDense
@@ -585,9 +585,9 @@ export default function MapasMentais({
                 type="button"
                 onClick={handleGerarMapa}
                 disabled={!promptMapa.trim()}
-                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60`}
+                className={`${PAGE_HEAD_PREMIUM_IA_ACTION_CLASS} w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60`}
               >
-                <PlusSquare size={14} aria-hidden />
+                <Sparkles size={14} aria-hidden />
                 Criar mapa
               </button>
               <button

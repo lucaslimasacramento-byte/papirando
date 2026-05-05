@@ -8,6 +8,7 @@ import AppTabContent from './components/AppTabContent';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import BetaWelcomeBanner from './components/BetaWelcomeBanner';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
@@ -6204,6 +6205,7 @@ export default function App() {
           onOpenMobileNav={() => setMobileNavOpen(true)}
           subscriptionPlan={String(effectiveProfile?.subscription_plan || 'gratuito').toLowerCase()}
           onOpenAssinatura={() => setActiveTab('assinatura')}
+          onOpenTimer={() => openTimerSetup?.()}
         />
 
         <div
@@ -6216,11 +6218,13 @@ export default function App() {
               : `overflow-y-auto ${activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}
         >
+          <BetaWelcomeBanner />
+
           <Suspense
             fallback={
               <div className="page-shell">
                 <div className="section-card flex min-h-[240px] items-center justify-center text-sm font-semibold text-slate-500">
-                  Carregando area...
+                  Carregando área...
                 </div>
               </div>
             }

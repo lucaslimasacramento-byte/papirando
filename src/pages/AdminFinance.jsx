@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -20,7 +20,7 @@ import {
   normalizeExpense,
   PLAN_PRICES,
 } from '../lib/adminFinance';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const CATEGORY_OPTIONS = [
   { value: 'operacao', label: 'Operação' },
@@ -137,48 +137,27 @@ export default function AdminFinance({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <PageHeadPremium
+      <AdminPageHeader
         icon={WalletCards}
-        badge={<PageHeadPremiumBadge icon={WalletCards}>Financeiro admin</PageHeadPremiumBadge>}
+        badgeIcon={WalletCards}
+        badge="Financeiro admin"
         title="Receita, custos e saldo"
-        subtitle="Acompanhe a receita recorrente estimada pelas assinaturas, despesas do site e o saldo operacional do mês."
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3"
+        subtitle="Acompanhe a receita recorrente estimada pelas assinaturas, as despesas do site e o saldo operacional do mês."
         stats={[
           { key: 'mrr', label: 'MRR estimado', value: formatCurrency(finance.receitaRecorrente), icon: TrendingUp, accent: 'emerald' },
           { key: 'des', label: 'Despesas pagas', value: formatCurrency(finance.despesasPagasMes), icon: TrendingDown, accent: 'orange' },
           { key: 'sal', label: 'Saldo do mês', value: formatCurrency(finance.saldoEstimado), icon: DollarSign, accent: 'blue' },
+          { key: 'pot', label: 'Receita potencial', value: formatCurrency(finance.receitaPotencial), icon: ArrowUpRight, accent: 'cyan' },
           { key: 'sub', label: 'Assinaturas ativas', value: String(finance.activeSubscribers), icon: BadgeCheck, accent: 'indigo' },
         ]}
-        trailingClassName="max-w-md"
-        trailing={(
-          <div className="space-y-3">
-            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-200">
-              <ShieldCheck size={12} />
-              Visão executiva
-            </div>
-            <FinanceInsight
-              title="Receita potencial"
-              value={formatCurrency(finance.receitaPotencial)}
-              text="Inclui assinaturas ativas e usuários em trial com plano pago configurado."
-            />
-            <FinanceInsight
-              title="Despesas previstas"
-              value={formatCurrency(finance.despesasPrevistasMes)}
-              text="Tudo o que já foi lançado para a competência atual, pago ou previsto."
-            />
-            <FinanceInsight
-              title="Assinaturas em risco"
-              value={String(finance.riskSubscribers)}
-              text="Perfis pausados ou cancelados que merecem atenção comercial."
-            />
-            <div className="rounded-[1.5rem] border border-white/15 bg-white/10 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
-              <p className="mt-2 min-w-0 break-all text-sm font-semibold text-white">{currentUserEmail}</p>
-            </div>
+        trailingClassName="xl:max-w-[16rem]"
+        trailing={
+          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
+            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
-        )}
+        }
       />
-
       <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
@@ -285,7 +264,7 @@ export default function AdminFinance({
               <div key={item.plan} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{item.plan}</p>
                 <p className="mt-2 text-2xl font-semibold text-slate-900">{item.count}</p>
-                <p className="mt-1 text-sm font-semibold text-gray-500">{item.price > 0 ? `${formatCurrency(item.price)}/mes` : 'Plano sem cobranca'}</p>
+                <p className="mt-1 text-sm font-semibold text-gray-500">{item.price > 0 ? `${formatCurrency(item.price)}/mês` : 'Plano sem cobrança'}</p>
               </div>
             ))}
           </div>
@@ -320,7 +299,7 @@ export default function AdminFinance({
 
           <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-600">
             <CalendarDays size={13} className="text-blue-600" />
-            Competencia atual {finance.currentMonth}
+            Competência atual {finance.currentMonth}
           </div>
         </div>
 
@@ -392,3 +371,5 @@ function FinanceInsight({ title, value, text }) {
     </div>
   );
 }
+
+

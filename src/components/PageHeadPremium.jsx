@@ -37,20 +37,27 @@ export function PageHeadPremiumCenterNote({
 
   return (
     <div
-      className={`mx-auto w-full max-w-[29rem] rounded-[1.2rem] border border-white/14 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))] px-5 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_14px_34px_rgba(8,15,30,0.22)] backdrop-blur-xl xl:px-6 xl:py-3.5 ${className}`.trim()}
+      className={`mx-auto w-full max-w-[24rem] rounded-[1rem] border border-white/14 bg-[linear-gradient(180deg,rgba(255,255,255,0.13),rgba(255,255,255,0.06))] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_26px_rgba(8,15,30,0.18)] backdrop-blur-xl xl:px-4.5 xl:py-3 ${className}`.trim()}
     >
-      <p
-        className={`text-[14px] font-medium leading-[1.55] tracking-[-0.015em] text-white [text-shadow:0_1px_10px_rgba(15,23,42,0.35)] [text-wrap:balance] ${quoteClassName}`.trim()}
-      >
-        {quote}
-      </p>
-      {author ? (
-        <p
-          className={`mt-2 text-[10px] font-bold uppercase tracking-[0.24em] text-blue-50 [text-shadow:0_1px_8px_rgba(15,23,42,0.3)] ${authorClassName}`.trim()}
-        >
-          {author}
-        </p>
-      ) : null}
+      <div className="flex items-start gap-3 text-left">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.1] text-[15px] font-semibold leading-none text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          "
+        </span>
+        <div className="min-w-0 flex-1">
+          <p
+            className={`text-[13px] font-medium leading-[1.45] tracking-[-0.01em] text-white [text-shadow:0_1px_10px_rgba(15,23,42,0.24)] [text-wrap:balance] ${quoteClassName}`.trim()}
+          >
+            {quote}
+          </p>
+          {author ? (
+            <p
+              className={`mt-1.5 text-[9px] font-bold uppercase tracking-[0.22em] text-blue-50/90 ${authorClassName}`.trim()}
+            >
+              {author}
+            </p>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
@@ -156,12 +163,16 @@ export function PageHeadPremiumStatCompact({
   }
 
   return (
-    <div className={`${shell} p-2.5 sm:p-3 ${className}`}>
-      <div className={`mb-1.5 flex h-7 w-7 items-center justify-center rounded-lg sm:h-8 sm:w-8 ${wrap}`}>
+    <div className={`${shell} flex flex-col items-center p-2.5 text-center sm:p-3 ${className}`}>
+      <div className={`mb-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg sm:h-8 sm:w-8 ${wrap}`}>
         <Icon size={14} strokeWidth={2} aria-hidden />
       </div>
-      <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400/90">{label}</p>
-      <p className={`truncate text-base font-bold tabular-nums leading-none text-white sm:text-lg ${valueClassName}`}>
+      <p className="mb-1 w-full min-w-0 text-[9px] font-semibold uppercase leading-tight tracking-[0.16em] text-slate-400/90">
+        {label}
+      </p>
+      <p
+        className={`w-full max-w-full truncate text-center text-base font-bold tabular-nums leading-none text-white sm:text-lg ${valueClassName}`}
+      >
         {value}
       </p>
     </div>
@@ -204,6 +215,8 @@ export default function PageHeadPremium({
   const hasTrailing = Boolean(trailing);
   const wideSubtitle = !hasStats && !hasTrailing;
   const stackStatsBelow = Boolean(statsStackBelowTrailing) && hasStats && hasTrailing;
+  /** Três colunas no desktop: título | KPIs centralizados | ações (evita esmagar os KPIs). */
+  const headerGridLayout = hasStats && hasTrailing && !stackStatsBelow && !centerSlot;
 
   const defaultStatGrid =
     statList.length <= 1
@@ -216,10 +229,10 @@ export default function PageHeadPremium({
 
   return (
     <PageHeadPremiumShell
-      className={`flex w-full min-w-0 max-w-full flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between ${className}`}
+      className={`flex w-full min-w-0 max-w-full flex-col gap-3 sm:gap-4 ${headerGridLayout ? 'lg:!grid lg:!grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-3 lg:gap-y-3 2xl:gap-x-5' : 'xl:flex-row xl:items-center xl:justify-between'} ${className}`}
     >
       <div
-        className={`relative z-10 flex min-w-0 flex-1 basis-0 items-center gap-3 sm:min-h-0 sm:gap-3.5 ${leadingClassName}`.trim()}
+        className={`relative z-10 flex min-w-0 items-center gap-3 sm:min-h-0 sm:gap-3.5 ${headerGridLayout ? 'shrink-0' : 'flex-1 basis-0'} ${leadingClassName}`.trim()}
       >
         <PageHeadPremiumIconTile>
           <Icon className={`${PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} block shrink-0`} strokeWidth={2} aria-hidden />
@@ -242,7 +255,25 @@ export default function PageHeadPremium({
           {centerSlot}
         </div>
       ) : null}
-      {hasStats || hasTrailing ? (
+      {headerGridLayout && hasStats ? (
+        <div className="relative z-10 flex min-h-0 min-w-0 w-full max-w-full items-center justify-center justify-self-center px-0.5 sm:px-2">
+          <div className={`min-w-0 ${statGridClassName || defaultStatGrid}`.trim()}>
+            {statList.map((item, i) => (
+              <PageHeadPremiumStatCompact
+                key={item.key ?? i}
+                {...item}
+                dense={statsDense || item.dense}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {headerGridLayout && hasTrailing ? (
+        <div className={`page-head-premium-actions relative z-10 min-w-0 max-w-full shrink-0 self-center justify-self-end ${trailingClassName}`.trim()}>
+          {trailing}
+        </div>
+      ) : null}
+      {!headerGridLayout && (hasStats || hasTrailing) ? (
         <div
           className={`page-head-premium-trailing relative z-10 flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 sm:gap-4 xl:min-w-0 xl:shrink-0 ${stackStatsBelow ? 'xl:!flex-col xl:items-end xl:justify-start xl:gap-2.5 xl:w-auto' : 'xl:w-auto xl:max-w-md xl:flex-row xl:items-center xl:justify-end'} ${hasStats && hasTrailing && !stackStatsBelow ? 'xl:gap-4' : ''} ${trailingWrapClassName}`.trim()}
         >

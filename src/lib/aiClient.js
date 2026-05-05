@@ -6,6 +6,9 @@ import {
   resolveAiHeaders,
 } from './aiRuntime';
 
+export const AI_ENABLED = import.meta.env.VITE_AI_ENABLED === 'true';
+const ERR_DISABLED = 'Funcionalidade de IA desabilitada neste ambiente.';
+
 async function parseJson(response) {
   return response.json().catch(() => ({}));
 }
@@ -31,10 +34,12 @@ async function postJson(path, payload) {
 }
 
 export async function analyzeEdital(editalText) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
   return analyzeEditalWithRealAI(editalText);
 }
 
 export async function generateFlashcards({ disciplina, topico, conteudo = '', quantidade = 10 }) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
   return postJson('/api/generate-flashcards', {
     disciplina,
     topico,
@@ -46,6 +51,7 @@ export async function generateFlashcards({ disciplina, topico, conteudo = '', qu
 }
 
 export async function explainQuestion({ enunciado, alternativas, gabarito, resposta_usuario }) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
   return postJson('/api/explain-question', {
     enunciado,
     alternativas,
@@ -55,6 +61,7 @@ export async function explainQuestion({ enunciado, alternativas, gabarito, respo
 }
 
 export async function checkAiHealth() {
+  if (!AI_ENABLED) return { ok: false, provider: 'disabled', model: '', status: 'disabled' };
   const baseUrl = resolveAiBaseUrl();
   if (!baseUrl) {
     return {

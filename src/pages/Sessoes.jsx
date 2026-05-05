@@ -99,15 +99,14 @@ export default function Sessoes({
   return (
     <div className="page-shell !h-auto flex flex-col !gap-3 !pb-8 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
       <PageHeadPremium
-        className="gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
+        className="gap-4"
         icon={Timer}
         badge={<PageHeadPremiumBadge icon={Zap}>Área de foco</PageHeadPremiumBadge>}
         title="Sessões de estudo"
         subtitle="Métodos de foco, timer global e registro do que você estudou."
         leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statGridClassName="mx-auto grid min-h-0 min-w-0 w-full max-w-[40rem] grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3 [&>*]:min-w-0 [&>*]:self-stretch"
-        trailingWrapClassName="md:!flex-row md:items-center md:justify-end md:gap-3 lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,52rem)] xl:shrink-0 xl:items-center"
-        trailingClassName="w-full shrink-0 lg:w-auto"
+        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-2 gap-2.5 sm:max-w-[38rem] sm:grid-cols-4 sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[7.25rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
         stats={[
           {
             key: 'streak',

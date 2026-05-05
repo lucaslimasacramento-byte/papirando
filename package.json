@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node --max-http-header-size=65536 ./node_modules/vite/bin/vite.js",
+    "dev": "node --max-http-header-size=1048576 ./node_modules/vite/bin/vite.js",
     "ai:server": "node ai-server.mjs",
     "build": "vite build",
     "lint": "eslint .",
@@ -20,6 +20,7 @@
     "vercel:prod": "npx --yes vercel --prod"
   },
   "dependencies": {
+    "@sentry/react": "^10.51.0",
     "@supabase/supabase-js": "^2.100.0",
     "lucide-react": "^0.577.0",
     "pdfjs-dist": "^5.5.207",

@@ -146,8 +146,8 @@ export default function AdminMindMapsGallery({
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto max-w-[900px] space-y-6">
+    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <PageHeadPremium
           icon={Network}
           titleAs="h1"
@@ -157,15 +157,10 @@ export default function AdminMindMapsGallery({
             </PageHeadPremiumBadge>
           }
           title="Galeria de mapas mentais"
-          subtitle="Publique JSON exportado no app. Os modelos aparecem na faixa “Mapas da equipe” em Mapas mentais; o estudante copia para a biblioteca e edita no estúdio."
-          leadingExtra={
-            <ol className="list-decimal space-y-1.5 pl-4 text-[11px] font-medium leading-relaxed text-slate-400 sm:text-xs">
-              <li>Monte ou escolha um mapa na sua biblioteca (Mapas mentais) e use Exportar JSON.</li>
-              <li>Suba o arquivo aqui com “Subir JSON”. Ajuste título e ordem; exclusão remove da galeria pública.</li>
-              <li>Garanta que a tabela e RLS existem: rode <code className="rounded bg-white/10 px-1 py-0.5 text-[10px] text-slate-200">supabase/mind_map_gallery.sql</code>.</li>
-            </ol>
+          subtitle={
+            'Publique JSON exportado no app. Os modelos aparecem em Mapas mentais para todos os estudantes.' +
+            (loading ? '' : ' ' + rows.length + (rows.length !== 1 ? ' modelos publicados.' : ' modelo publicado.'))
           }
-          stats={headStats}
         />
 
         <div className="section-card flex flex-wrap items-center justify-between gap-3">

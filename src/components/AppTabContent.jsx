@@ -36,6 +36,8 @@ const AdminConfiguracoes = lazy(() => import('../pages/AdminConfiguracoes'));
 const AdminAudiolivros = lazy(() => import('../pages/AdminAudiolivros'));
 const AdminMindMapsGallery = lazy(() => import('../pages/AdminMindMapsGallery'));
 const AdminLegislacao = lazy(() => import('../pages/AdminLegislacao'));
+const AdminBetaConvites = lazy(() => import('../pages/AdminBetaConvites'));
+const AdminBetaFeedback = lazy(() => import('../pages/AdminBetaFeedback'));
 const AdminQuestoes = lazy(() => import('../pages/AdminQuestoes'));
 const Sessoes = lazy(() => import('../pages/Sessoes'));
 const Revisoes = lazy(() => import('../pages/Revisoes'));
@@ -61,6 +63,8 @@ const KNOWN_TABS = [
   'admin_audiolivros',
   'admin_mapas_mentais',
   'admin_legislacao',
+  'admin_beta_convites',
+  'admin_beta_feedback',
   'planos',
   'disciplinas',
   'assinatura',
@@ -627,6 +631,14 @@ export default function AppTabContent(props) {
 
   if (activeTab === 'admin_legislacao' && isAdmin) {
     return <AdminLegislacao currentUserId={currentUserId} />;
+  }
+
+  if (activeTab === 'admin_beta_convites' && isAdmin) {
+    return <AdminBetaConvites />;
+  }
+
+  if (activeTab === 'admin_beta_feedback' && isAdmin) {
+    return <AdminBetaFeedback />;
   }
 
   if (activeTab === 'admin_configuracoes' && isAdmin) {

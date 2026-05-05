@@ -185,10 +185,13 @@ export default function Simulados({
   const displayAverage = realStats.mediaDesempenho > 0 ? realStats.mediaDesempenho : summary.averageScore;
   const displayBest = realStats.melhorDesempenho > 0 ? realStats.melhorDesempenho : summary.best?.accuracy || 0;
 
+  const headStatTileClass =
+    '!h-full !min-h-0 !justify-center !gap-1.5 !px-2.5 !py-2.5 sm:!gap-2 sm:!px-3 sm:!py-3 [&>div:first-child]:!mb-0 [&>div:first-child]:h-6 [&>div:first-child]:w-6 [&>p]:!mb-0 sm:[&>div:first-child]:h-7 sm:[&>div:first-child]:w-7';
+
   return (
     <div className="page-shell flex animate-in fade-in duration-500 flex-col gap-4 !pt-4 sm:!pt-5 lg:gap-5">
       <PageHeadPremium
-        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
+        className="shrink-0 gap-4"
         icon={ListChecks}
         badge={
           <PageHeadPremiumBadge icon={PieChart}>
@@ -198,10 +201,8 @@ export default function Simulados({
         title="Simulados"
         subtitle="Registre provas externas, use o caderno inteligente e acompanhe média e melhor desempenho."
         leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statsStackBelowTrailing
-        statsDense
-        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-3 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
-        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,44rem)] xl:shrink-0"
+        statGridClassName="mx-auto grid w-fit max-w-full grid-cols-3 items-stretch gap-2 sm:gap-2.5 [&>*]:min-w-0 [&>*]:w-[6.35rem] [&>*]:min-h-[7.1rem] sm:[&>*]:w-[6.85rem] sm:[&>*]:min-h-[7.6rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
         stats={[
           {
             key: 'tot',
@@ -209,6 +210,8 @@ export default function Simulados({
             label: 'Realizados',
             value: String(displayTotal),
             accent: 'blue',
+            className: headStatTileClass,
+            valueClassName: '!text-sm !leading-normal sm:!text-base',
           },
           {
             key: 'avg',
@@ -216,7 +219,8 @@ export default function Simulados({
             label: 'Média geral',
             value: `${displayAverage}%`,
             accent: 'emerald',
-            valueClassName: '!text-emerald-200',
+            valueClassName: '!text-emerald-200 !text-sm !leading-normal sm:!text-base',
+            className: headStatTileClass,
           },
           {
             key: 'best',
@@ -224,41 +228,26 @@ export default function Simulados({
             label: 'Melhor nota',
             value: `${displayBest}%`,
             accent: 'amber',
-            valueClassName: '!text-amber-200',
+            valueClassName: '!text-amber-200 !text-sm !leading-normal sm:!text-base',
+            className: headStatTileClass,
           },
         ]}
         trailing={(
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2">
+          <div className="grid w-full grid-cols-2 gap-x-2 gap-y-2 sm:w-auto sm:min-w-[17.5rem] sm:max-w-[22rem]">
             <button
               type="button"
               onClick={() => openSimuladoReviewModal?.('novo')}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full min-w-0`}
             >
               <PlusSquare size={14} strokeWidth={2.2} aria-hidden />
               Registrar resultado
             </button>
             <button
               type="button"
-              onClick={() => setIsCadernoModalOpen(true)}
-              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
-            >
-              <Settings size={14} strokeWidth={2.2} aria-hidden />
-              Montar no caderno
-            </button>
-            <button
-              type="button"
-              onClick={() => openHistoricoWithFilter?.('simulados')}
-              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
-            >
-              <History size={14} strokeWidth={2.2} aria-hidden />
-              Ver no histórico
-            </button>
-            <button
-              type="button"
               onClick={() => setRankingOpen(true)}
-              className="group relative inline-flex w-full animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45 sm:w-auto"
+              className="group relative inline-flex min-h-[2.75rem] w-full min-w-0 animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45"
             >
-              <span className="relative flex w-full min-h-[2.9rem] items-center justify-center gap-2 overflow-hidden rounded-[11px] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-5 py-2.5 sm:gap-2.5 sm:rounded-[11px] sm:px-6 sm:py-3">
+              <span className="relative flex h-full min-h-[2.65rem] w-full items-center justify-center gap-1.5 overflow-hidden rounded-[11px] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-3 py-2 sm:min-h-[2.9rem] sm:gap-2 sm:rounded-[11px] sm:px-4 sm:py-2.5">
                 <span
                   className="pointer-events-none absolute inset-y-0 left-0 w-[45%] -translate-x-full skew-x-[-16deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-90 animate-rankingCtaShimmer"
                   aria-hidden
@@ -267,11 +256,27 @@ export default function Simulados({
                   className="relative z-10 size-4 shrink-0 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:size-[18px]"
                   strokeWidth={2}
                 />
-                <span className="relative z-10 text-sm font-semibold tracking-wide text-white sm:text-[15px]">Ranking</span>
-                <span className="relative z-10 inline-flex rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-100/95 sm:px-2 sm:text-[9px]">
+                <span className="relative z-10 text-xs font-semibold tracking-wide text-white sm:text-sm sm:text-[15px]">Ranking</span>
+                <span className="relative z-10 inline-flex shrink-0 rounded-md border border-white/20 bg-white/10 px-1 py-0.5 text-[7px] font-bold uppercase tracking-[0.14em] text-amber-100/95 sm:px-1.5 sm:text-[9px]">
                   Top
                 </span>
               </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsCadernoModalOpen(true)}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full min-w-0`}
+            >
+              <Settings size={14} strokeWidth={2.2} aria-hidden />
+              Montar no caderno
+            </button>
+            <button
+              type="button"
+              onClick={() => openHistoricoWithFilter?.('simulados')}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full min-w-0`}
+            >
+              <History size={14} strokeWidth={2.2} aria-hidden />
+              Ver no histórico
             </button>
           </div>
         )}

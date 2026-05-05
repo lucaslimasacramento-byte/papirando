@@ -20,7 +20,7 @@ import {
 import { buildFinanceSnapshot, formatCurrency } from '../lib/adminFinance';
 import { buildCrmSnapshot } from '../lib/adminCrm';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const STATUS_LABELS = {
   confirmado: 'Confirmado',
@@ -175,12 +175,13 @@ export default function AdminDashboard({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <PageHeadPremium
+      <AdminPageHeader
         icon={Crown}
-        badge={<PageHeadPremiumBadge icon={Crown}>Comando do site</PageHeadPremiumBadge>}
+        badgeIcon={Crown}
+        badge="Comando do site"
         title="Dashboard admin"
         subtitle="Resumo do produto, da biblioteca, da operação e dos gargalos principais para o lançamento."
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3"
+        statsClassName="xl:grid-cols-5"
         stats={[
           {
             key: 'u',
@@ -210,24 +211,14 @@ export default function AdminDashboard({
             icon: Layers3,
             accent: 'emerald',
           },
+          {
+            key: 'h',
+            label: 'Saúde editorial',
+            value: `${metrics.healthScore}%`,
+            icon: Sparkles,
+            accent: 'emerald',
+          },
         ]}
-        trailingClassName="max-w-sm xl:max-w-xs"
-        trailing={(
-          <div className="rounded-2xl border border-white/15 bg-white/[0.07] p-4 text-white sm:p-5">
-            <div className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-              <Sparkles size={12} />
-              Saúde editorial
-            </div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Score geral</p>
-            <p className="mt-1 text-4xl font-semibold leading-none tabular-nums sm:text-5xl">{metrics.healthScore}%</p>
-            <p className="mt-2 text-xs font-medium leading-relaxed text-slate-300 sm:text-sm">
-              Imagem, edital e data da prova (maturidade do catálogo).
-            </p>
-            <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full rounded-full bg-emerald-400" style={{ width: `${metrics.healthScore}%` }} />
-            </div>
-          </div>
-        )}
       />
 
       <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
@@ -428,3 +419,5 @@ function EmptyState({ text }) {
     </div>
   );
 }
+
+

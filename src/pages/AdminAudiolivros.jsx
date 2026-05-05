@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { BookMarked, Headphones, Save } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BookMarked, Headphones, LibraryBig, Save } from 'lucide-react';
+import AdminPageHeader from '../components/AdminPageHeader';
 import { AdminAudiobookCatalogEditor } from '../components/AdminAudiobookCatalogEditor';
 import { sanitizeAudiobooksForSave } from '../lib/audiobookCatalogAdmin';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
@@ -8,10 +8,10 @@ import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
 function stripAudiobookForDraft(book) {
   if (!book || typeof book !== 'object') return book;
   const { linkedDiscipline: _linkedDiscipline, linkedTopic: _linkedTopic, ...rest } = book;
-  const tracks = (Array.isArray(rest.tracks) ? rest.tracks : []).map((t) => {
-    if (!t || typeof t !== 'object') return t;
-    const { disciplineId: _disciplineId, ...tr } = t;
-    return tr;
+  const tracks = (Array.isArray(rest.tracks) ? rest.tracks : []).map((track) => {
+    if (!track || typeof track !== 'object') return track;
+    const { disciplineId: _disciplineId, ...cleanTrack } = track;
+    return cleanTrack;
   });
   return { ...rest, tracks };
 }
@@ -26,29 +26,27 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
   const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
-    const ab = audiobookCatalogOverride?.length ? audiobookCatalogOverride : buildDefaultAudiobookCatalog();
-    setDraft(JSON.parse(JSON.stringify(ab)).map(stripAudiobookForDraft));
+    const audiobooks = audiobookCatalogOverride?.length ? audiobookCatalogOverride : buildDefaultAudiobookCatalog();
+    setDraft(JSON.parse(JSON.stringify(audiobooks)).map(stripAudiobookForDraft));
   }, [audiobookCatalogOverride]);
 
+  const totalTracks = useMemo(
+    () => draft.reduce((total, book) => total + (Array.isArray(book?.tracks) ? book.tracks.length : 0), 0),
+    [draft]
+  );
+
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1100px] flex-col gap-6 p-6">
-      <PageHeadPremium
+    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+      <AdminPageHeader
         icon={Headphones}
-        badge={
-          <PageHeadPremiumBadge icon={BookMarked}>Admin · conteúdo</PageHeadPremiumBadge>
-        }
+        badgeIcon={BookMarked}
+        badge="Admin de conteúdo"
         title="Catálogo de audiolivros"
-        titleAs="h2"
-        subtitle={(
-          <span>
-            Cadastre obras e faixas com URL de áudio. Os dados são gravados na tabela{' '}
-            <code className="rounded bg-white/10 px-1 text-[11px]">redacao_site_content</code>, coluna{' '}
-            <code className="rounded bg-white/10 px-1 text-[11px]">audiobook_catalog_json</code> — use o script{' '}
-            <code className="rounded bg-white/10 px-1 text-[11px]">supabase/redacao_site_content_audiobooks.sql</code> se ainda
-            não existir. Sem obras válidas após salvar, a aba de audiolivros ficará vazia.
-          </span>
-        )}
-        leadingClassName="min-w-0 flex-1"
+        subtitle="Cadastre uma obra por vez e mantenha a biblioteca editorial organizada para o app."
+        stats={[
+          { key: 'books', label: 'Obras no catálogo', value: String(draft.length), icon: LibraryBig, accent: 'violet' },
+          { key: 'tracks', label: 'Faixas cadastradas', value: String(totalTracks), icon: Headphones, accent: 'blue' },
+        ]}
       />
 
       <section className="rounded-[2rem] border border-violet-100 bg-white p-6 shadow-sm">
@@ -68,18 +66,18 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
               if (!onSaveAudiolivrosContent) return;
               const parsed = sanitizeAudiobooksForSave(draft);
               if (parsed.length === 0) {
-                setFeedback('Inclua ao menos uma obra com faixas válidas (id, título e URL de áudio em cada faixa).');
+                setFeedback('Inclua ao menos uma obra com faixas válidas: ID, título e URL de áudio em cada faixa.');
                 window.setTimeout(() => setFeedback(''), 4500);
                 return;
               }
               setSaving(true);
               setFeedback('');
               try {
-                const r = await onSaveAudiolivrosContent(parsed);
-                setFeedback(r?.ok ? 'Catálogo de audiolivros salvo no Supabase.' : `Erro: ${r?.error || 'falha'}`);
+                const result = await onSaveAudiolivrosContent(parsed);
+                setFeedback(result?.ok ? 'Catálogo de audiolivros salvo no Supabase.' : `Erro: ${result?.error || 'falha'}`);
                 window.setTimeout(() => setFeedback(''), 3200);
-              } catch (e) {
-                setFeedback(String(e?.message || e));
+              } catch (error) {
+                setFeedback(String(error?.message || error));
               } finally {
                 setSaving(false);
               }
@@ -87,7 +85,7 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
             className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-5 py-2.5 text-sm font-bold text-violet-900 disabled:opacity-50"
           >
             <Save size={16} />
-            {saving ? 'Salvando…' : 'Salvar catálogo de audiolivros'}
+            {saving ? 'Salvando...' : 'Salvar catálogo de audiolivros'}
           </button>
         </div>
       </section>

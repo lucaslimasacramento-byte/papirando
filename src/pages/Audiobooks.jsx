@@ -523,9 +523,9 @@ export default function Audiobooks(props) {
         ]}
         statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
         trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,40rem)] xl:shrink-0"
-        trailing={(
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-            {activeBook?.linkedDiscipline ? (
+        trailing={
+          activeBook?.linkedDiscipline ? (
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
               <button
                 type="button"
                 onClick={() => onOpenDiscipline?.(activeBook.linkedDiscipline)}
@@ -534,17 +534,9 @@ export default function Audiobooks(props) {
                 <BookOpen size={14} aria-hidden />
                 Abrir disciplina
               </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => onOpenProfile?.()}
-              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
-            >
-              <User2 size={14} aria-hidden />
-              Perfil
-            </button>
-          </div>
-        )}
+            </div>
+          ) : null
+        }
       />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">

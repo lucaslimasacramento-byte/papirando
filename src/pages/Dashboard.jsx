@@ -11,11 +11,11 @@ import {
   Sparkles,
   Target,
 } from 'lucide-react';
+import { getDashboardDailyNote } from '../data/dashboardDailyNotes';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
 import PageHeadPremium, {
   PageHeadPremiumBadge,
   PageHeadPremiumCenterNote,
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
 } from '../components/PageHeadPremium';
 
 export default function Dashboard({
@@ -50,6 +50,10 @@ export default function Dashboard({
   const heroQuote =
     'Você nunca sabe que resultados virão da sua ação. Mas se você não fizer nada, não existirão.';
   const heroAuthor = 'Mahatma Gandhi';
+  const dailyNote = useMemo(
+    () => getDashboardDailyNote() || { quote: heroQuote, author: heroAuthor },
+    []
+  );
 
   const currentHour = new Date().getHours();
   const timeTone =
@@ -155,21 +159,15 @@ export default function Dashboard({
           </PageHeadPremiumBadge>
         }
         title={greetingLine}
-        leadingClassName="items-center lg:max-w-[calc(100%-17rem)] xl:max-w-[54rem]"
-        centerSlot={
-          <PageHeadPremiumCenterNote quote={heroQuote} author={heroAuthor} />
-        }
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[16rem] lg:self-center xl:flex-none"
+        leadingClassName="items-center lg:max-w-[calc(100%-24rem)] xl:max-w-[50rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[24rem] lg:self-center xl:max-w-[26rem] xl:flex-none"
         trailing={
-          <div className="flex w-full min-w-0 items-center justify-stretch sm:w-auto sm:min-w-[15rem]">
-            <button
-              type="button"
-              onClick={quickAction.onClick}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full`}
-            >
-              <Play size={14} fill="currentColor" className="opacity-95" />
-              {quickAction.label}
-            </button>
+          <div className="w-full min-w-0">
+            <PageHeadPremiumCenterNote
+              quote={dailyNote.quote}
+              author={dailyNote.author}
+              className="mx-0 ml-auto max-w-none"
+            />
           </div>
         }
       />

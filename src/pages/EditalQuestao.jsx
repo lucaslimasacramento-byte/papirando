@@ -561,46 +561,55 @@ function SidebarPanel({ computed, currentCourseStats, nextCriticalTopic }) {
 }
 
 function HeroSection({ computed, selectedCourse }) {
-  const editalHeaderStats = useMemo(
+  const planHint = selectedCourse?.nome || selectedCourse?.plan || 'Cadastre um curso em Planos';
+
+  const kpis = useMemo(
     () => [
-      { key: 'cov', icon: TrendingUp, label: 'Cobertura', value: `${computed.cobertura}%`, accent: 'emerald' },
-      { key: 'med', icon: BarChart3, label: 'Precisão média', value: `${computed.media}%`, accent: 'blue' },
+      { icon: TrendingUp, label: 'Cobertura', value: `${computed.cobertura}%`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+      { icon: BarChart3, label: 'Precisao media', value: `${computed.media}%`, color: 'text-blue-600', bg: 'bg-blue-50' },
       {
-        key: 'q',
         icon: Layers3,
-        label: 'Questões',
+        label: 'Questoes',
         value: String(computed.totalQuestoes),
-        accent: computed.totalQuestoes === 0 ? 'orange' : 'indigo',
+        color: computed.totalQuestoes === 0 ? 'text-orange-600' : 'text-indigo-600',
+        bg: computed.totalQuestoes === 0 ? 'bg-orange-50' : 'bg-indigo-50',
       },
-      { key: 't', icon: Clock3, label: 'Tempo líquido', value: formatMinutes(computed.totalMinutes), accent: 'violet' },
+      { icon: Clock3, label: 'Tempo liquido', value: formatMinutes(computed.totalMinutes), color: 'text-violet-600', bg: 'bg-violet-50' },
     ],
     [computed.cobertura, computed.media, computed.totalQuestoes, computed.totalMinutes]
   );
 
-  const planHint = selectedCourse?.nome || selectedCourse?.plan || 'Cadastre um curso em Planos';
-
   return (
-    <PageHeadPremium
-      className="shrink-0 animate-in fade-in duration-500 gap-4 lg:!flex-row lg:!items-center lg:!justify-between"
-      icon={FileSearch}
-      titleAs="h1"
-      badge={
-        <PageHeadPremiumBadge icon={BookOpen}>
-          Análise de edital
-        </PageHeadPremiumBadge>
-      }
-      title="Painel tático do edital: o que cobrar, revisar e atacar primeiro."
-      subtitle="Cada tópico do seu curso é cruzado com histórico de estudo e desempenho em questões — gargalos, revisões e prioridades em um só lugar."
-      leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-      leadingExtra={
-        <p className="truncate text-[11px] font-medium text-slate-500 sm:text-xs" title={planHint}>
-          Curso em análise: <span className="font-semibold text-slate-400">{planHint}</span>
-        </p>
-      }
-      statsDense
-      stats={editalHeaderStats}
-      statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch xl:min-w-0 xl:max-w-[440px]"
-    />
+    <div className="flex shrink-0 flex-col gap-4 animate-in fade-in duration-500">
+      <PageHeadPremium
+        icon={FileSearch}
+        titleAs="h1"
+        badge={
+          <PageHeadPremiumBadge icon={BookOpen}>
+            Analise de edital
+          </PageHeadPremiumBadge>
+        }
+        title="Painel tatico do edital"
+        subtitle={
+          'Topicos cruzados com historico de estudo e desempenho em questoes — gargalos, revisoes e prioridades em um so lugar. Curso: ' +
+          planHint
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {kpis.map(({ icon: Icon, label, value, color, bg }) => (
+          <div key={label} className="section-card flex items-center gap-3 py-3">
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${bg}`}>
+              <Icon size={18} className={color} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">{label}</p>
+              <p className={`mt-0.5 text-lg font-bold leading-none ${color}`}>{value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

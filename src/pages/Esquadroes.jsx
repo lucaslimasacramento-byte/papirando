@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AlertCircle,
   ArrowLeft,
@@ -41,6 +42,10 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { shapeSquadFromCommunityPost, splitSquadForCommunityPostUpdate } from '../lib/squadRemote';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 const EMPTY_FORM = {
   name: '',
@@ -484,6 +489,8 @@ export default function Esquadroes({
   const [remoteSquads, setRemoteSquads] = useState([]);
   const forumComposerRef = useRef(null);
   const squadSwitcherWrapRef = useRef(null);
+  const squadSwitcherMenuRef = useRef(null);
+  const [squadSwitcherMenuBox, setSquadSwitcherMenuBox] = useState(null);
 
   const displayName = useMemo(() => {
     if (String(profile?.nome || '').trim()) return String(profile.nome).trim();
@@ -838,12 +845,55 @@ export default function Esquadroes({
     onSelectSquad?.(accessibleSquads[0]?.id || '');
   }, [accessibleSquads, onSelectSquad, selectedSquadId]);
 
+  useLayoutEffect(() => {
+    if (!showSquadSwitcher) {
+      setSquadSwitcherMenuBox(null);
+      return undefined;
+    }
+    const wrap = squadSwitcherWrapRef.current;
+    if (!wrap) return undefined;
+
+    function getScrollParent(el) {
+      let p = el.parentElement;
+      while (p) {
+        const oy = window.getComputedStyle(p).overflowY;
+        if (oy === 'auto' || oy === 'scroll' || oy === 'overlay') return p;
+        p = p.parentElement;
+      }
+      return document.documentElement;
+    }
+
+    function updateMenuBox() {
+      const r = wrap.getBoundingClientRect();
+      const margin = 16;
+      const width = Math.min(320, window.innerWidth - margin * 2);
+      const left = Math.min(Math.max(margin, r.right - width), window.innerWidth - width - margin);
+      setSquadSwitcherMenuBox({
+        position: 'fixed',
+        top: r.bottom + 8,
+        left,
+        width,
+        maxHeight: 'min(22rem, 70vh)',
+        zIndex: 200,
+      });
+    }
+
+    updateMenuBox();
+    const scrollParent = getScrollParent(wrap);
+    scrollParent.addEventListener('scroll', updateMenuBox, { passive: true });
+    window.addEventListener('resize', updateMenuBox);
+    return () => {
+      scrollParent.removeEventListener('scroll', updateMenuBox);
+      window.removeEventListener('resize', updateMenuBox);
+    };
+  }, [showSquadSwitcher]);
+
   useEffect(() => {
     if (!showSquadSwitcher) return;
     function handlePointerDown(e) {
-      if (squadSwitcherWrapRef.current && !squadSwitcherWrapRef.current.contains(e.target)) {
-        setShowSquadSwitcher(false);
-      }
+      const inWrap = squadSwitcherWrapRef.current?.contains(e.target);
+      const inMenu = squadSwitcherMenuRef.current?.contains(e.target);
+      if (!inWrap && !inMenu) setShowSquadSwitcher(false);
     }
     document.addEventListener('mousedown', handlePointerDown);
     return () => document.removeEventListener('mousedown', handlePointerDown);
@@ -1982,125 +2032,142 @@ export default function Esquadroes({
 
   return (
     <div className="page-shell animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-gray-200 pb-3 md:flex-row md:items-center">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-            <Shield size={14} strokeWidth={3} /> Ecossistema Privado
-          </div>
-          <h2 className="page-title text-xl sm:text-2xl lg:text-3xl">Esquadrões</h2>
-          <p className="max-w-2xl text-base font-medium text-gray-500">
-            Fórum interno, mural, simulados, atividades e gestão privada do cursinho.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <div className="relative" ref={squadSwitcherWrapRef}>
-            <button
-              type="button"
-              onClick={() => setShowSquadSwitcher((prev) => !prev)}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm ring-1 ring-slate-100 transition hover:border-indigo-200 hover:shadow-md"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 text-indigo-600">
-                <Users size={20} />
-              </div>
-              <div className="text-left">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Seus esquadrões</p>
-                <p className="text-xl font-semibold leading-none text-slate-900">{accessibleSquads.length}</p>
-              </div>
-              {showSquadSwitcher ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
-            </button>
-
-            {showSquadSwitcher ? (
-              <div className="absolute right-0 top-full z-50 mt-2 max-h-[min(22rem,70vh)] w-[min(100vw-2rem,20rem)] overflow-y-auto rounded-xl border border-slate-200 bg-white py-2 shadow-xl shadow-slate-900/10 ring-1 ring-slate-100">
-                <div className="flex items-center justify-between border-b border-slate-100 px-3 pb-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Trocar esquadrão</p>
-                  <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
-                    {accessibleSquads.length} ativos
-                  </span>
+      <PageHeadPremium
+        className="!overflow-visible shrink-0 gap-4 lg:!flex-row lg:!items-center lg:!justify-between"
+        icon={ShieldCheck}
+        titleAs="h2"
+        badge={
+          <PageHeadPremiumBadge icon={Shield}>
+            Ecossistema privado
+          </PageHeadPremiumBadge>
+        }
+        title="Esquadrões"
+        subtitle="Fórum interno, mural, simulados, atividades e gestão privada do cursinho."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[min(100%,28rem)] xl:max-w-[32rem]"
+        trailingWrapClassName="!overflow-visible"
+        trailingClassName="!overflow-visible w-full shrink-0 lg:w-auto lg:max-w-none lg:justify-end"
+        trailing={(
+          <div className="flex w-full flex-row flex-wrap items-center justify-end gap-2 overflow-visible sm:gap-3 lg:flex-nowrap">
+            <div className="relative z-[120] min-w-0 shrink-0 overflow-visible" ref={squadSwitcherWrapRef}>
+              <button
+                type="button"
+                onClick={() => setShowSquadSwitcher((prev) => !prev)}
+                className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3 py-2.5 shadow-sm ring-1 ring-white/10 backdrop-blur-sm transition hover:border-white/25 hover:bg-white/[0.12]"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/90 to-indigo-600/90 text-white shadow-md shadow-blue-900/30">
+                  <Users size={20} />
                 </div>
-                <div className="space-y-0.5 px-2 pt-1">
-                  {accessibleSquads.map((squad) => {
-                    const active = selectedSquad?.id === squad.id;
-                    return (
-                      <button
-                        key={squad.id}
-                        type="button"
-                        onClick={() => {
-                          handleSelectSquad(squad.id);
-                          setShowSquadSwitcher(false);
-                        }}
-                        className={`flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
-                          active
-                            ? 'border-indigo-200 bg-indigo-50 font-semibold text-indigo-900'
-                            : 'border-transparent text-slate-800 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate">{squad.name}</p>
-                          <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-400">{squad.focus}</p>
-                        </div>
-                        <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
-                          {squad.members}
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="text-left">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Seus esquadrões</p>
+                  <p className="text-xl font-semibold leading-none text-white">{accessibleSquads.length}</p>
                 </div>
+                {showSquadSwitcher ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+              </button>
+            </div>
+
+            {showSquadSwitcher && squadSwitcherMenuBox && typeof document !== 'undefined'
+              ? createPortal(
+                  <div
+                    ref={squadSwitcherMenuRef}
+                    style={squadSwitcherMenuBox}
+                    className="box-border max-h-[min(22rem,70vh)] min-h-[4.5rem] overflow-y-auto rounded-xl border border-slate-200 bg-white py-2 shadow-xl shadow-slate-900/20 ring-1 ring-slate-100"
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-100 px-3 pb-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Trocar esquadrão</p>
+                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
+                        {accessibleSquads.length} ativos
+                      </span>
+                    </div>
+                    <div className="space-y-0.5 px-2 pt-1">
+                      {accessibleSquads.map((squad) => {
+                        const active = selectedSquad?.id === squad.id;
+                        return (
+                          <button
+                            key={squad.id}
+                            type="button"
+                            onClick={() => {
+                              handleSelectSquad(squad.id);
+                              setShowSquadSwitcher(false);
+                            }}
+                            className={`flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
+                              active
+                                ? 'border-indigo-200 bg-indigo-50 font-semibold text-indigo-900'
+                                : 'border-transparent text-slate-800 hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate">{squad.name}</p>
+                              <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-400">{squad.focus}</p>
+                            </div>
+                            <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                              {squad.members}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>,
+                  document.body
+                )
+              : null}
+
+            <div className="flex shrink-0 items-center gap-3 rounded-xl border border-amber-400/35 bg-amber-500/10 px-3 py-2.5 text-amber-50 shadow-sm ring-1 ring-amber-400/20 backdrop-blur-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400/20">
+                <Star size={18} fill="currentColor" className="text-amber-200" />
               </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-200/90">Criação</p>
+                <p className="text-xl font-semibold leading-none text-white">{isElite ? 'Liberada' : 'Fechada'}</p>
+              </div>
+            </div>
+
+            {isElite ? (
+              <button
+                type="button"
+                onClick={() => setShowCreateSquad(true)}
+                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} shrink-0`}
+              >
+                <Plus size={14} strokeWidth={2.5} aria-hidden />
+                Novo esquadrão
+              </button>
             ) : null}
           </div>
-
-          <div className="flex items-center gap-3 rounded-xl border border-yellow-200 bg-yellow-50 px-3 py-2.5 text-yellow-800 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/60">
-              <Star size={18} fill="currentColor" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-yellow-700">Criação</p>
-              <p className="text-xl font-semibold leading-none">{isElite ? 'Liberada' : 'Fechada'}</p>
-            </div>
-          </div>
-
-          {isElite ? (
-            <button
-              type="button"
-              onClick={() => setShowCreateSquad(true)}
-              className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
-            >
-              + Novo esquadrão
-            </button>
-          ) : null}
-        </div>
-      </div>
+        )}
+      />
 
       {selectedSquad ? (
-        <div className="relative overflow-visible rounded-2xl border border-indigo-200/70 bg-gradient-to-br from-slate-50 via-white to-indigo-50/60 p-5 shadow-md shadow-indigo-950/5 ring-1 ring-indigo-100 md:p-6">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_55%_at_15%_-25%,rgba(99,102,241,0.14),transparent_55%)]" />
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-indigo-600 via-blue-500 to-amber-400" />
+        <div className="relative shrink-0 rounded-2xl border border-[rgba(218,195,140,0.14)] border-t-white/[0.12] bg-[linear-gradient(158deg,#05080f_0%,#080d18_32%,#0b1426_58%,#0f1a2e_100%)] p-5 shadow-[0_24px_56px_-16px_rgba(2,4,12,0.72),0_0_0_1px_rgba(255,255,255,0.03)_inset] ring-1 ring-black/40 md:p-6">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_78%_52%_at_94%_-8%,rgba(115,108,255,0.11),transparent_50%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_48%_36%_at_6%_102%,rgba(196,163,90,0.055),transparent_54%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,transparent_22%,transparent_78%,rgba(0,0,0,0.18)_100%)]" />
+            <div className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-[linear-gradient(180deg,#8b8cfb_0%,#6d28d9_42%,#a16207_100%)] opacity-[0.92] shadow-[0_0_20px_rgba(109,40,217,0.22)]" />
+          </div>
           <div className="relative flex flex-col gap-5 pl-4 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-4">
               {selectedSquad.coverUrl ? (
                 <img
                   src={selectedSquad.coverUrl}
                   alt={selectedSquad.name}
-                  className="h-14 w-14 shrink-0 rounded-2xl border border-white object-cover shadow-md shadow-slate-900/10 ring-1 ring-indigo-100"
+                  className="h-14 w-14 shrink-0 rounded-2xl border border-[rgba(218,195,140,0.22)] object-cover shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.08]"
                 />
               ) : (
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-100 to-blue-50 text-indigo-700 shadow-inner ring-1 ring-white/80">
-                  <Users size={22} />
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/[0.12] bg-[linear-gradient(145deg,#1a2f52_0%,#0c1424_55%,#0a1628_100%)] text-[#c9d4e8] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(0,0,0,0.4)] ring-1 ring-[rgba(218,195,140,0.15)]">
+                  <Users size={22} className="text-[#b8c9e8]" />
                 </div>
               )}
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-100 to-yellow-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-950 shadow-sm">
-                  <ShieldCheck size={12} strokeWidth={2.5} className="text-amber-700" /> Esquadrão privado ativo
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(212,175,55,0.28)] bg-[linear-gradient(135deg,rgba(255,251,235,0.09),rgba(180,150,90,0.05))] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#ede4d4] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-[rgba(212,175,55,0.12)] backdrop-blur-sm">
+                  <ShieldCheck size={12} strokeWidth={2.5} className="text-[#d4af37]" /> Esquadrão privado ativo
                 </span>
-                <h3 className="mt-2 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-xl font-semibold tracking-tight text-transparent md:text-2xl">
+                <h3 className="mt-2 bg-gradient-to-br from-white via-[#eef2f8] to-[#9fb0c9] bg-clip-text text-xl font-semibold tracking-tight text-transparent md:text-2xl">
                   {selectedSquad.name}
                 </h3>
-                <p className="mt-1 text-sm font-medium text-slate-600">
-                  <span className="font-semibold text-slate-800">{selectedSquad.owner}</span>
-                  <span className="text-slate-400"> · </span>
+                <p className="mt-1 text-sm font-medium text-[#8b9ab5]">
+                  <span className="font-semibold text-[#d1dae9]">{selectedSquad.owner}</span>
+                  <span className="text-[#5c6b82]"> · </span>
                   Foco:{' '}
-                  <span className="font-semibold text-indigo-600 underline decoration-indigo-200 decoration-2 underline-offset-2">
+                  <span className="font-semibold text-[#b4c5eb] underline decoration-[rgba(139,92,246,0.35)] decoration-2 underline-offset-2">
                     {selectedSquad.focus}
                   </span>
                 </p>
@@ -2115,7 +2182,7 @@ export default function Esquadroes({
                 <button
                   type="button"
                   onClick={() => setActiveSection('admin')}
-                  className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
+                  className="rounded-xl border border-[rgba(218,195,140,0.22)] bg-[linear-gradient(180deg,rgba(255,255,255,0.09)_0%,rgba(255,255,255,0.03)_100%)] px-4 py-3 text-sm font-semibold text-[#f4f2eb] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/[0.05] backdrop-blur-sm transition hover:border-[rgba(212,175,55,0.38)] hover:bg-[linear-gradient(180deg,rgba(212,175,55,0.12)_0%,rgba(255,255,255,0.05)_100%)]"
                 >
                   ADM do esquadrão
                 </button>
@@ -3386,18 +3453,24 @@ export default function Esquadroes({
 }
 
 function MiniHeroStat({ label, value, accent = 'slate' }) {
-  const tone =
+  const surface =
     accent === 'amber'
-      ? 'border-amber-200/80 bg-amber-50/90'
+      ? 'border-[rgba(212,175,55,0.22)] bg-[linear-gradient(165deg,rgba(255,251,235,0.07)_0%,rgba(120,90,40,0.06)_100%)]'
       : accent === 'indigo'
-        ? 'border-indigo-200/80 bg-indigo-50/90'
-        : 'border-slate-200 bg-slate-50';
+        ? 'border-[rgba(129,140,248,0.18)] bg-[linear-gradient(165deg,rgba(99,102,241,0.1)_0%,rgba(15,23,42,0.35)_100%)]'
+        : 'border-white/[0.09] bg-[linear-gradient(165deg,rgba(248,250,252,0.06)_0%,rgba(15,23,42,0.28)_100%)]';
   const labelTone =
-    accent === 'amber' ? 'text-amber-800/90' : accent === 'indigo' ? 'text-indigo-800/90' : 'text-slate-500';
+    accent === 'amber'
+      ? 'text-[#e8d5b0]'
+      : accent === 'indigo'
+        ? 'text-[#b4b9fc]'
+        : 'text-[#94a3b8]';
   return (
-    <div className={`min-w-[7.5rem] rounded-xl border px-4 py-3 shadow-sm ring-1 ring-white/60 ${tone}`}>
-      <p className={`text-[10px] font-semibold uppercase tracking-widest ${labelTone}`}>{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    <div
+      className={`min-w-[7.5rem] max-w-[14rem] rounded-xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_8px_24px_rgba(0,0,0,0.2)] ring-1 ring-black/20 backdrop-blur-md ${surface}`}
+    >
+      <p className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${labelTone}`}>{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold leading-snug tracking-tight text-[#f4f6fa]">{value}</p>
     </div>
   );
 }

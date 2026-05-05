@@ -723,20 +723,39 @@ export default function Flashcards({ currentUserId }) {
   return (
     <div className="page-shell flex h-full min-h-0 flex-col gap-0 overflow-hidden p-0">
       <PageHeadPremium
-        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
+        className="shrink-0 gap-4"
         icon={Layers3}
         badge={<PageHeadPremiumBadge icon={Sparkles}>Repetição espaçada · FSRS</PageHeadPremiumBadge>}
         title="Flashcards"
         subtitle="Crie decks, estude com FSRS-4.5 e gere cartas com IA quando precisar."
         leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statsStackBelowTrailing
-        statsDense
-        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-3 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
-        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,40rem)] xl:shrink-0"
+        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-3 gap-2 sm:max-w-[34rem] sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[7.5rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
         stats={[
-          { key: 'decks', label: 'Decks', value: String(deckStats.totalDecks), icon: Layers3, accent: 'blue' },
-          { key: 'cards', label: 'Cards', value: String(deckStats.totalCards), icon: BookOpen, accent: 'emerald' },
-          { key: 'rev', label: 'Revisados', value: String(deckStats.totalReviewed), icon: Check, accent: 'indigo' },
+          {
+            key: 'decks',
+            label: 'Decks',
+            value: String(deckStats.totalDecks),
+            icon: Layers3,
+            accent: 'blue',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
+          },
+          {
+            key: 'cards',
+            label: 'Cards',
+            value: String(deckStats.totalCards),
+            icon: BookOpen,
+            accent: 'emerald',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
+          },
+          {
+            key: 'rev',
+            label: 'Revisados',
+            value: String(deckStats.totalReviewed),
+            icon: Check,
+            accent: 'indigo',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
+          },
         ]}
         trailing={(
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">

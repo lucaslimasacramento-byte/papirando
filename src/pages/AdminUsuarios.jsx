@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { BadgeCheck, Crown, Search, ShieldCheck, UserRound, WalletCards, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const PLAN_OPTIONS = [
   { value: 'gratuito', label: 'Gratuito' },
@@ -76,25 +76,24 @@ export default function AdminUsuarios({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <PageHeadPremium
+      <AdminPageHeader
         icon={Users}
-        badge={
-          <PageHeadPremiumBadge icon={ShieldCheck}>Gestão de contas</PageHeadPremiumBadge>
-        }
+        badgeIcon={ShieldCheck}
+        badge="Gestão de contas"
         title="Usuários e assinaturas"
         subtitle="Controle administrativo dos perfis, plano do usuário, papel administrativo e limite de cursos disponíveis."
-        trailing={(
+        trailingClassName="xl:max-w-[16rem]"
+        trailing={
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Gerindo como</p>
             <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
-        )}
-        leadingClassName="min-w-0 flex-1"
+        }
       />
 
       <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
         <div className="grid gap-4 md:grid-cols-4">
-          <SummaryCard icon={UserRound} label="Usuarios" value={summary.total} />
+          <SummaryCard icon={UserRound} label="Usuários" value={summary.total} />
           <SummaryCard icon={ShieldCheck} label="Admins" value={summary.admins} />
           <SummaryCard icon={Crown} label="Plano elite" value={summary.elite} />
           <SummaryCard icon={BadgeCheck} label="Assinaturas ativas" value={summary.active} />
@@ -247,3 +246,5 @@ function SelectCell({ value, options, onChange, disabled }) {
     </select>
   );
 }
+
+

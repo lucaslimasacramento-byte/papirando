@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PageHeadPremium, {
   PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
   PageHeadPremiumBadge,
 } from '../components/PageHeadPremium';
 import {
@@ -492,7 +491,6 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
             </PageHeadPremiumBadge>
           }
           title="Legislação · Vade Mecum"
-          subtitle="Leitor por bloco, busca no texto do PDF, favoritos, anotações e marcações — sincronizados na sua conta quando você estiver logado."
           leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
           leadingExtra={
             <div className="max-w-md">
@@ -517,33 +515,15 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
           trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,44rem)] xl:shrink-0"
           trailing={(
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2">
-              <button
-                type="button"
-                onClick={() => setFocusMode(true)}
-                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
-              >
-                <Focus size={14} aria-hidden />
-                Modo foco
-              </button>
               <a
                 href={fullReaderUrl}
                 target="_blank"
                 rel="noreferrer"
-                className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
+                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
               >
                 <DownloadCloud size={14} aria-hidden />
                 Leitor completo
               </a>
-              {isAdmin && typeof onOpenAdminLegislacao === 'function' ? (
-                <button
-                  type="button"
-                  onClick={onOpenAdminLegislacao}
-                  className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
-                >
-                  <Settings size={14} aria-hidden />
-                  Lançamentos
-                </button>
-              ) : null}
             </div>
           )}
         />

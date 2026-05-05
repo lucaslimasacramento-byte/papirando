@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   BadgeCheck,
   CalendarDays,
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const DRAFT_STORAGE_KEY = 'papirando_admin_concurso_draft';
 
@@ -55,7 +55,7 @@ const ETAPA_OPTIONS = [
   { value: 'curso_formacao', label: 'Curso de formação' },
 ];
 
-const AREA_OPTIONS = ['Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educacao', 'Saude', 'Geral'];
+const AREA_OPTIONS = ['Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
 
 const EMPTY_SUBJECT = { nome: '', cor: '', topicosTexto: '' };
 const QUESTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
@@ -391,7 +391,9 @@ export default function AdminConcursos({
     setIsSaving(true);
 
     try {
-      if (payload.id) {
+      if (selectedTemplate?.storage !== 'supabase') {
+        await onPromoteTemplate?.({ ...payload, id: null });
+      } else if (payload.id) {
         await onUpdateTemplate?.(payload);
       } else {
         await onCreateTemplate?.(payload);
@@ -566,14 +568,12 @@ export default function AdminConcursos({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <PageHeadPremium
+      <AdminPageHeader
         icon={LibraryBig}
-        badge={
-          <PageHeadPremiumBadge icon={ShieldCheck}>Painel administrativo</PageHeadPremiumBadge>
-        }
+        badgeIcon={ShieldCheck}
+        badge="Painel administrativo"
         title="Central de concursos"
         subtitle="Organize a biblioteca por área, acompanhe pendências editoriais e mantenha os concursos prontos para importação."
-        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 sm:gap-2 [&>*]:min-w-0"
         stats={[
           { key: 'c', label: 'Concursos', value: String(stats.templates), icon: LibraryBig, accent: 'amber' },
           { key: 'p', label: 'Publicados', value: String(stats.publicados), icon: BadgeCheck, accent: 'emerald' },
@@ -581,21 +581,21 @@ export default function AdminConcursos({
           { key: 'd', label: 'Disciplinas', value: String(stats.disciplinas), icon: Database, accent: 'blue' },
           { key: 't', label: 'Tópicos', value: String(stats.topicos), icon: Layers3, accent: 'indigo' },
         ]}
-        trailingClassName="max-w-[14rem]"
-        trailing={(
+        statsClassName="[&>*]:min-w-0 xl:grid-cols-5"
+        trailingClassName="xl:max-w-[16rem]"
+        trailing={
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Admin ativo</p>
             <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
-        )}
-        leadingClassName="min-w-0 flex-1"
+        }
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
         <InsightCard title="Sem imagem" value={stats.semImagem} text="Concursos ainda sem capa visual." />
         <InsightCard title="Sem edital" value={stats.semEdital} text="Itens sem PDF oficial publicado." />
         <InsightCard title="Sem prova" value={stats.semProva} text="Concursos sem data definida." />
-        <InsightCard title="Sem topicos" value={stats.semTopicos} text="Disciplinas ainda superficiais." />
+        <InsightCard title="Sem tópicos" value={stats.semTopicos} text="Disciplinas ainda superficiais." />
       </div>
 
       <div className="rounded-[1.6rem] border border-gray-200 bg-white p-2 shadow-sm">
@@ -721,8 +721,8 @@ export default function AdminConcursos({
               </h3>
               <p className="mt-2 text-sm font-semibold text-gray-500">
                 {form.id
-                  ? 'As acoes principais ficam aqui em cima: salvar, duplicar ou excluir.'
-                  : 'Preencha os dados principais e depois monte as disciplinas e topicos.'}
+                  ? 'As ações principais ficam aqui em cima: salvar, duplicar ou excluir.'
+                  : 'Preencha os dados principais e depois monte as disciplinas e tópicos.'}
               </p>
             </div>
 
@@ -731,16 +731,6 @@ export default function AdminConcursos({
               <StatusPill value={form.status_concurso} />
               {selectedTemplate && (
                 <StorageBadge storage={selectedTemplate.storage} />
-              )}
-              {selectedTemplate?.storage !== 'supabase' && (
-                <button
-                  type="button"
-                  onClick={() => onPromoteTemplate?.(selectedTemplate)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700"
-                >
-                  <Database size={15} />
-                  Trazer para Supabase
-                </button>
               )}
               {selectedTemplate && (
                 <button
@@ -767,7 +757,7 @@ export default function AdminConcursos({
 
           <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
             <div className="space-y-4 rounded-[1.6rem] border border-gray-200 bg-gray-50/70 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Midia do concurso</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Mídia do concurso</p>
 
               <div className="overflow-hidden rounded-[1.4rem] border border-gray-200 bg-white">
                 {form.imagem_url ? (
@@ -839,22 +829,22 @@ export default function AdminConcursos({
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
                 <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
-                <TextField label="Concurso / orgao" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
-                <SelectField label="Area" value={form.area} onChange={(value) => updateFormField('area', value)} options={AREA_OPTIONS.map((value) => ({ value, label: value }))} />
+                <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
+                <SelectField label="Área" value={form.area} onChange={(value) => updateFormField('area', value)} options={AREA_OPTIONS.map((value) => ({ value, label: value }))} />
                 <TextField label="Cargo" value={form.cargo} onChange={(value) => updateFormField('cargo', value)} />
                 <TextField label="Banca" value={form.banca} onChange={(value) => updateFormField('banca', value)} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
-                <TextField label="Salario" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
-                <TextField label="Valor da inscricao" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
+                <TextField label="Salário" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
+                <TextField label="Valor da inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
                 <SelectField label="Escolaridade" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} options={ESCOLARIDADE_OPTIONS} icon={GraduationCap} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
                 <TextField label="Vagas" value={form.vagas} onChange={(value) => updateFormField('vagas', value)} placeholder="Ex: 500 vagas + CR" />
-                <TextField label="Lotacao" value={form.lotacao} onChange={(value) => updateFormField('lotacao', value)} placeholder="Ex: Alagoas" />
-                <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicologico" />
+                <TextField label="Lotação" value={form.lotacao} onChange={(value) => updateFormField('lotacao', value)} placeholder="Ex: Alagoas" />
+                <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicológico" />
               </div>
 
               <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
@@ -932,7 +922,7 @@ export default function AdminConcursos({
 
               <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div>
-                  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Descricao curta</label>
+                  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Descrição curta</label>
                   <textarea
                     rows={4}
                     value={form.descricao}
@@ -944,12 +934,12 @@ export default function AdminConcursos({
                 <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Checklist editorial</p>
                   <div className="mt-4 space-y-3 text-sm font-semibold text-gray-600">
-                    <ChecklistRow ok={Boolean(form.area)} label="Area definida" />
+                    <ChecklistRow ok={Boolean(form.area)} label="Área definida" />
                     <ChecklistRow ok={Boolean(form.cargo)} label="Cargo identificado" />
                     <ChecklistRow ok={Boolean(form.prova_data)} label="Data da prova preenchida" />
                     <ChecklistRow ok={Boolean(form.imagem_url)} label="Imagem publicada" />
                     <ChecklistRow ok={Boolean(form.edital_url)} label="PDF do edital publicado" />
-                    <ChecklistRow ok={form.disciplinas.some((subject) => subject.topicosTexto.trim())} label="Topicos cadastrados" />
+                    <ChecklistRow ok={form.disciplinas.some((subject) => subject.topicosTexto.trim())} label="Tópicos cadastrados" />
                   </div>
                 </div>
               </div>
@@ -957,8 +947,8 @@ export default function AdminConcursos({
               <div>
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Conteudo programatico</p>
-                    <h4 className="mt-1 text-lg font-semibold text-slate-900">Disciplinas e topicos</h4>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Conteúdo programático</p>
+                    <h4 className="mt-1 text-lg font-semibold text-slate-900">Disciplinas e tópicos</h4>
                   </div>
 
                   <button type="button" onClick={addSubject} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
@@ -987,7 +977,7 @@ export default function AdminConcursos({
                             label="Nome da disciplina"
                             value={subject.nome}
                             onChange={(value) => updateSubjectField(index, 'nome', value)}
-                            placeholder="Ex: Lingua Portuguesa"
+                              placeholder="Ex: Língua Portuguesa"
                             listId={`subject-catalog-${index}`}
                           />
                           <datalist id={`subject-catalog-${index}`}>
@@ -997,20 +987,20 @@ export default function AdminConcursos({
                           </datalist>
                           <p className="mt-2 text-xs font-semibold text-gray-500">
                             {matchedSubject
-                              ? `Padrao encontrado: ${matchedSubject.nome}`
-                              : 'Sem correspondencia no banco padrao. Se necessario, cadastre em Admin > Banco de disciplinas.'}
+                              ? `Padrão encontrado: ${matchedSubject.nome}`
+                              : 'Sem correspondência no banco padrão. Se necessário, cadastre em Admin > Banco de disciplinas.'}
                           </p>
                         </div>
                         <ColorField compact value={subject.cor || '#2563EB'} onChange={(value) => updateSubjectField(index, 'cor', value)} />
                       </div>
 
                       <div className="mt-4">
-                        <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Topicos da disciplina</label>
+                        <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Tópicos da disciplina</label>
                         <textarea
                           rows={6}
                           value={subject.topicosTexto}
                           onChange={(e) => updateSubjectField(index, 'topicosTexto', e.target.value)}
-                          placeholder={`Um topico por linha\nConceitos iniciais\nPoder de policia\nAtos administrativos`}
+                          placeholder={`Um tópico por linha\nConceitos iniciais\nPoder de polícia\nAtos administrativos`}
                           className="w-full rounded-[1.4rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                         />
                       </div>
@@ -1021,33 +1011,15 @@ export default function AdminConcursos({
                   ))}
                 </div>
 
-                <div className="mt-4 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={addSubject}
-                    className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700"
-                  >
-                    <PlusCircle size={16} />
-                    Nova disciplina
-                  </button>
-                </div>
               </div>
             </div>
           </div>
 
-          <div className="sticky bottom-0 mt-6 border-t border-gray-200 bg-white/95 pt-4 backdrop-blur">
+          <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex flex-wrap justify-end gap-3">
-              <button
-                type="button"
-                onClick={addSubject}
-                className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-bold text-blue-700"
-              >
-                <PlusCircle size={16} />
-                Nova disciplina
-              </button>
               {form.id && (
                 <button type="button" onClick={resetForm} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
-                  Cancelar edicao
+                  Cancelar edição
                 </button>
               )}
               {selectedTemplate && (
@@ -1354,3 +1326,5 @@ function ChecklistRow({ ok, label }) {
     </div>
   );
 }
+
+
