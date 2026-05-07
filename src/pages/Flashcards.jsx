@@ -324,7 +324,7 @@ export default function Flashcards({ currentUserId }) {
       setAiForm({ disciplina: '', topico: '', quantidade: 10 });
     } catch (error) {
       console.warn('[Flashcards] generateFlashcards error:', error?.message || error);
-      setAiErr('IA local não disponível. Verifique se o ai-server está rodando.');
+      setAiErr(error?.message || 'A IA de produção não respondeu agora. Tente novamente em instantes.');
     } finally {
       setAiLoading(false);
     }

@@ -109,6 +109,7 @@ const ADMIN_SECTION = {
     { id: 'admin_legislacao', icon: BookOpen, label: 'Legislação', badge: 'Admin' },
     { id: 'admin_beta_convites', icon: Mail, label: 'Convites beta', badge: 'Admin' },
     { id: 'admin_beta_feedback', icon: MessageSquare, label: 'Feedback beta', badge: 'Admin' },
+    { id: 'admin_assinaturas', icon: WalletCards, label: 'Assinaturas', badge: 'Admin' },
     { id: 'admin_configuracoes', icon: Compass, label: 'Configurações', badge: 'Admin' },
   ],
 };

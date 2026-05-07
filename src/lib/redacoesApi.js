@@ -1,6 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from './supabase';
+import { resolveAiHeaders } from './aiRuntime';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -381,11 +382,9 @@ export async function extractTextFromPlainFile(file) {
 
 export async function transcribeEssayImageWithAI(file) {
   const dataUrl = await fileToDataUrl(file);
-  const response = await fetch('/api/redacoes/transcribe', {
+  const response = await fetch('/api/ai/transcribe-essay', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: await resolveAiHeaders(),
     body: JSON.stringify({
       fileName: file.name,
       mimeType: file.type,
@@ -408,11 +407,9 @@ export async function transcribeEssayImageWithAI(file) {
 }
 
 export async function analyzeRedacaoWithRealAI({ text, tema, banca }) {
-  const response = await fetch('/api/redacoes/analyze', {
+  const response = await fetch('/api/ai/analyze-essay', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: await resolveAiHeaders(),
     body: JSON.stringify({ text, tema, banca }),
   });
 

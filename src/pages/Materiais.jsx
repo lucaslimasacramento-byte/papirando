@@ -21,6 +21,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from '../lib/supabase';
+import { resolveAiHeaders } from '../lib/aiRuntime';
 import { newCard } from '../lib/fsrs';
 import PageHeadPremium, {
   PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
@@ -359,9 +360,9 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
     setAiErr('');
 
     try {
-      const res = await fetch('/api/generate-flashcards', {
+      const res = await fetch('/api/ai/generate-flashcards', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await resolveAiHeaders(),
         body: JSON.stringify({ text: aiText, maxCards: 5 }),
       });
       const data = await res.json();

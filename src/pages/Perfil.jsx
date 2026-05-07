@@ -689,36 +689,27 @@ export default function Perfil(props) {
               </div>
 
               <div className="p-4">
-                <div className="rounded-[26px] border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      {profileData?.avatar_url ? (
-                        <img src={profileData.avatar_url} alt={profileData?.nome || profileData?.name || 'Avatar'} className="h-16 w-16 rounded-[22px] object-cover" />
-                      ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-slate-950 via-blue-900 to-indigo-700 text-xl font-bold text-white">
-                          {avatarInitials}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={avatarBusy}
-                        className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-2xl border border-white bg-white shadow-md disabled:opacity-60"
-                      >
-                        <Camera className="h-3.5 w-3.5 text-slate-900" />
-                      </button>
+                <div className="relative h-44 overflow-hidden rounded-[26px] border border-slate-200 bg-slate-100 shadow-sm sm:h-52 lg:h-48">
+                  {profileData?.avatar_url ? (
+                    <img
+                      src={profileData.avatar_url}
+                      alt={profileData?.nome || profileData?.name || 'Avatar'}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-900 to-indigo-700 text-5xl font-bold text-white">
+                      {avatarInitials}
                     </div>
-
-                    <div className="min-w-0">
-                      <p className="truncate text-lg font-bold text-slate-950">{profileData?.nome || profileData?.name || currentUserEmail || 'Perfil sem nome'}</p>
-                      <p className="mt-1 text-sm text-slate-600">Plano {planLabel.toLowerCase()} · Conta {subscriptionStatus.toLowerCase()}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Badge tone={planLabel === 'Elite' ? 'gold' : planLabel === 'Tático' ? 'blue' : 'neutral'}>{planLabel}</Badge>
-                    <Badge tone={profileHasValidCpf ? 'green' : 'red'}>{profileHasValidCpf ? 'CPF validado' : 'CPF pendente'}</Badge>
-                  </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarBusy}
+                    className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/80 bg-white/95 shadow-lg backdrop-blur disabled:opacity-60"
+                    aria-label="Alterar foto do perfil"
+                  >
+                    <Camera className="h-4 w-4 text-slate-900" />
+                  </button>
                 </div>
 
                 <nav className="mt-4 space-y-2">
@@ -1422,4 +1413,3 @@ export default function Perfil(props) {
     </div>
   );
 }
-

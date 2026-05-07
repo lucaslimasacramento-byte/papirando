@@ -9,6 +9,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import BetaWelcomeBanner from './components/BetaWelcomeBanner';
+import CheckoutResultBanner from './components/CheckoutResultBanner';
+import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
@@ -1292,8 +1294,22 @@ export default function App() {
     () => wellnessLibrary.find((item) => item.id === activeWellnessTrackId) || null,
     [wellnessLibrary, activeWellnessTrackId]
   );
-  const isElitePlan = String(effectiveProfile?.subscription_plan || '').toLowerCase() === 'elite';
-  const isPremiumPlan = ['elite', 'tatico'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase()) || isAdmin;
+  // Assinatura via tabela subscriptions (Stripe) — fonte de verdade para premium
+  const {
+    planName: stripePlanName,
+    isPremium: isStripeActive,
+    refresh: refreshSubscription,
+  } = useSubscription(currentUserId);
+
+  // isElitePlan / isPremiumPlan: tabela Stripe tem prioridade; fallback para profile (beta manual)
+  const isElitePlan =
+    (isStripeActive && stripePlanName === 'elite') ||
+    (!isStripeActive && String(effectiveProfile?.subscription_plan || '').toLowerCase() === 'elite');
+
+  const isPremiumPlan =
+    isAdmin ||
+    isStripeActive ||
+    ['elite', 'tatico'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase());
 
   const selectedContestDetail =
     contestLibrary.find((item) => item.id === selectedContestDetailId) || null;
@@ -6218,7 +6234,11 @@ export default function App() {
               : `overflow-y-auto ${activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}
         >
-          <BetaWelcomeBanner />
+          <CheckoutResultBanner onSuccess={refreshSubscription} />
+          <BetaWelcomeBanner
+            onSendFeedback={() => setActiveTab('perfil')}
+            onStart={() => setActiveTab('home')}
+          />
 
           <Suspense
             fallback={

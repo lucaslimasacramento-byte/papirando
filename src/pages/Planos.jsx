@@ -239,7 +239,7 @@ export default function Planos({
 
         setAnalysisResult(heuristicAnalysis);
         applyAnalysisToForm(heuristicAnalysis, options);
-        setAnalysisError(realAiError.message || 'A IA real não respondeu; o app exibiu a análise local.');
+        setAnalysisError(realAiError.message || 'A IA de produção não respondeu; o app exibiu a análise interna.');
         return heuristicAnalysis;
       } catch {
         setAnalysisResult(null);
@@ -948,4 +948,3 @@ function SecondaryButton({ children, onClick, disabled = false }) {
     </button>
   );
 }
-

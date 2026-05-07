@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
+import { registerFreeAccount } from '../lib/registerApi';
+import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpfAlgorithm';
 import {
   Target,
   BrainCircuit,
@@ -23,6 +25,8 @@ import {
   Loader2,
   Smartphone,
   AlertCircle,
+  CalendarDays,
+  IdCard,
 } from 'lucide-react';
 
 const LOGIN_FEATURES = [
@@ -88,6 +92,8 @@ export default function Login({
 
   const [nome, setNome] = useState('');
   const [celular, setCelular] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -116,6 +122,8 @@ export default function Login({
   const resetForm = () => {
     setNome('');
     setCelular('');
+    setCpf('');
+    setBirthDate('');
     setEmail('');
     setPassword('');
     setConfirmPassword('');
@@ -183,6 +191,16 @@ export default function Login({
         return false;
       }
 
+      if (!isValidCpf(cpf)) {
+        setError('Digite um CPF válido.');
+        return false;
+      }
+
+      if (!birthDate) {
+        setError('Informe sua data de nascimento.');
+        return false;
+      }
+
       if (password.length < 6) {
         setError('A senha deve ter pelo menos 6 caracteres.');
         return false;
@@ -242,52 +260,40 @@ export default function Login({
 
     try {
       if (isLoginMode) {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (signInError) throw signInError;
 
-        console.log('✅ Logado:', data);
         setIsAuthenticated(true);
         return;
       }
 
       const normalizedReferralCode = normalizeReferralCode(referralCode);
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const result = await registerFreeAccount({
+        fullName: nome,
+        cpf: normalizeCpf(cpf),
+        birthDate,
         email,
         password,
-        options: {
-          data: {
-            nome: nome || '',
-            celular: celular || '',
-            referred_by_code: normalizedReferralCode || '',
-          },
-        },
+        celular,
+        referralCode: normalizedReferralCode,
       });
 
-      if (signUpError) throw signUpError;
-
-      if (data?.user?.id) {
-        const { error: profileError } = await supabase.from('profiles').upsert({
-          id: data.user.id,
-          nome: nome || '',
-          email: data.user.email,
-          celular: celular || '',
-          referred_by_code: normalizedReferralCode || null,
-        });
-
-        if (profileError) {
-          console.error('Erro ao criar perfil:', profileError.message);
-        }
+      if (!result.success) {
+        const firstFieldError = result.fieldErrors ? Object.values(result.fieldErrors).find(Boolean) : '';
+        throw new Error(firstFieldError || result.message || 'Não foi possível criar a conta.');
       }
 
-      setSuccessMsg('Conta criada! Verifique o seu email para ativar o acesso.');
+      setSuccessMsg(result.message || 'Cadastro realizado! Verifique seu email para ativar o acesso.');
       if (normalizedReferralCode) {
         onReferralCodeConsumed?.();
       }
       setIsLoginMode(true);
+      setCpf('');
+      setBirthDate('');
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
@@ -457,6 +463,25 @@ export default function Login({
                     onChange={(e) => setCelular(formatPhone(e.target.value))}
                   />
                   <InputField
+                    label="CPF"
+                    type="text"
+                    placeholder="000.000.000-00"
+                    icon={IdCard}
+                    value={cpf}
+                    onChange={(e) => setCpf(formatCpf(e.target.value))}
+                    inputMode="numeric"
+                    maxLength={14}
+                  />
+                  <InputField
+                    label="Data de nascimento"
+                    type="date"
+                    placeholder=""
+                    icon={CalendarDays}
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    max={new Date().toISOString().slice(0, 10)}
+                  />
+                  <InputField
                     label="Código de convite"
                     type="text"
                     placeholder="Opcional"
@@ -558,7 +583,18 @@ export default function Login({
   );
 }
 
-function InputField({ label, type, placeholder, icon: Icon, value, onChange, required = true }) {
+function InputField({
+  label,
+  type,
+  placeholder,
+  icon: Icon,
+  value,
+  onChange,
+  required = true,
+  inputMode,
+  maxLength,
+  max,
+}) {
   return (
     <div>
       <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">
@@ -572,6 +608,9 @@ function InputField({ label, type, placeholder, icon: Icon, value, onChange, req
           required={required}
           value={value}
           onChange={onChange}
+          inputMode={inputMode}
+          maxLength={maxLength}
+          max={max}
           className="w-full bg-gray-50 border-2 border-gray-200 text-gray-800 font-semibold rounded-xl py-3.5 pl-12 pr-4 focus:ring-4 focus:ring-blue-500/20 focus:border-[#2563EB] focus:bg-white outline-none transition-all"
         />
       </div>

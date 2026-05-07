@@ -8,6 +8,8 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores([
     'dist/**',
+    '.vercel/**',
+    '**/.vercel/**',
     '.claude/**',
     '**/.claude/**',
     '.claude/worktrees/**',
@@ -47,7 +49,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['vite.config.js', 'ai-server.mjs'],
+    files: ['vite.config.js', 'ai-server.mjs', 'api/**/*.js'],
     languageOptions: {
       globals: globals.node,
     },

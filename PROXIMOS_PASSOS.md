@@ -1,4 +1,4 @@
-# Papirando — Próximos passos (atualizado: 2026-05-04)
+# Papirando — Próximos passos (atualizado: 2026-05-07)
 
 ## ✅ Concluído
 
@@ -11,71 +11,75 @@
 | 5 | Redesign Hero Edital em Questão | Novo layout hero section |
 | 6 | Gate IA (VITE_AI_ENABLED) | Todos os entry points protegidos; produção segura sem a env var |
 | 7 | Sentry | Inicializa apenas com VITE_SENTRY_DSN; DSN configurado no .env.local |
-| 8 | Sistema de feedback beta | Tabela beta_feedback no Supabase (RLS), botão no Header, modal inline, página Admin · Feedback beta |
-| 9 | Lançamento beta fechado | Tabela beta_invites, AdminBetaConvites (geração de links), AdminBetaFeedback, BetaWelcomeBanner (first-run) |
+| 8 | Sistema de feedback beta | Tabela beta_feedback, botão Header, modal, AdminBetaFeedback |
+| 9 | Lançamento beta fechado | Tabela beta_invites, AdminBetaConvites, BetaWelcomeBanner (first-run) |
+| 10 | Gateway de pagamento | Edge Functions Stripe (checkout + webhook), tabela subscriptions, useSubscription hook, AdminAssinaturas, Assinatura.jsx com checkout real |
 
 ---
 
-## ⚠️ Ação manual necessária — Supabase
+## ⚠️ SQLs pendentes no Supabase (rodar no SQL Editor)
 
-Antes de usar AdminBetaConvites, rodar no SQL Editor do Supabase:
+Arquivos criados localmente que precisam ser executados no Supabase:
 
-```
-supabase/beta_invites.sql
-```
-
-Isso cria a tabela `beta_invites` + RLS + função `mark_beta_invite_used()`.
-
----
-
-## 🔜 Pendente
-
-### Passo 10 — Gateway de pagamento (pós-beta)
-- Escolher provider: **Stripe** (recomendado) ou PagSeguro / Iugu
-- Criar tabela `subscriptions` no Supabase (+ webhook handler)
-- Implementar webhook pagamento → atualizar `subscription_plan` do usuário
-- Liberar features premium no `SubscriptionPlanSeal` e guards de conteúdo
+| Arquivo | Status | Descrição |
+|---------|--------|-----------|
+| `supabase/beta_invites.sql` | ✅ Rodado | Convites beta + RPC mark_beta_invite_used |
+| `supabase/subscriptions.sql` | ⏳ Pendente | Tabela subscriptions + RLS + get_my_subscription() |
+| `supabase/admin_user_helpers.sql` | ⏳ Pendente | get_user_id_by_email() e get_email_by_user_id() |
 
 ---
 
-## Fluxo operacional — beta fechado
+## ⚠️ Stripe — configuração pendente (durante conta em aprovação)
 
-1. Admin entra em **Admin → Convites beta** (`/admin_beta_convites`)
-2. Clica em "Convidar" → preenche e-mail + nome
-3. Copia o link gerado → envia por WhatsApp / e-mail
-4. Usuário abre o link, se cadastra e vê o `BetaWelcomeBanner` no primeiro acesso
-5. Admin acompanha quem acessou na mesma tela (badge "Acessou" / "Pendente")
-6. Feedbacks aparecem em **Admin → Feedback beta** (`/admin_beta_feedback`)
-7. Erros em produção aparecem no Sentry
+1. Conta Stripe aprovada → criar produtos (Tatico mensal/anual, Elite mensal/anual)
+2. Supabase CLI: `supabase secrets set STRIPE_SECRET_KEY=...` (ver `supabase/STRIPE_SETUP.md`)
+3. Deploy Edge Functions: `supabase functions deploy create-checkout-session` + `stripe-webhook`
+4. Configurar webhook no Stripe Dashboard (eventos: checkout.session.completed, subscription.updated, subscription.deleted, invoice.payment_failed)
+
+Guia completo: `supabase/STRIPE_SETUP.md`
 
 ---
 
-## Arquitetura atual — referência rápida
+## 🔜 Próximas etapas (pós-beta)
 
-| Item | Detalhe |
-|------|---------|
-| Framework | React 19 + Vite 8 SPA |
-| Banco | Supabase (PostgreSQL + RLS) |
-| Auth | Supabase Auth |
-| IA | Gemini (opt-in via VITE_AI_ENABLED=true) |
-| Observabilidade | Sentry (opt-in via VITE_SENTRY_DSN) |
-| Hosting | Vercel |
-| Dev server | `C:\Users\lucas\Desktop\App_Estudos\papirando` (projeto principal, NÃO o worktree) |
+### Alta prioridade
+- **E-mail de convite automático** — ao criar convite em AdminBetaConvites, enviar e-mail com link via Resend (https://resend.com) ou Supabase SMTP. Criar Edge Function `send-beta-invite`.
+- **Feature gates reais** — usar `isPremiumPlan` já conectado ao Stripe para bloquear funcionalidades (ex: limite de questões/dia no plano gratuito, IA gates)
+- **Portal do cliente Stripe** — botão "Gerenciar assinatura" em Assinatura.jsx que redireciona para `https://billing.stripe.com` com o customer ID
 
-## Arquivos-chave
+### Média prioridade
+- **Admin: mostrar e-mail na tabela de assinaturas** — `AdminAssinaturas.jsx` hoje mostra `user_id`. Conectar `get_email_by_user_id()` para mostrar o e-mail
+- **Onboarding** — wizard de configuração inicial (concurso alvo, horário de estudo) para usuários novos
+- **Notificações push** — alertas de revisão e metas atrasadas
 
-| Arquivo | Finalidade |
+### Baixa prioridade (após crescimento)
+- Programa de afiliados / referral bônus real
+- App mobile (React Native / Expo)
+- Integrações: Google Calendar, Notion
+
+---
+
+## 🏗️ Arquitetura — referência rápida
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Frontend | React 19 + Vite 8, TailwindCSS |
+| Backend | Supabase (PostgreSQL + Auth + RLS + Edge Functions Deno) |
+| IA | Gemini 1.5 Pro (produção), Ollama local (dev), OpenAI fallback |
+| Pagamentos | Stripe Billing + Checkout + Webhooks |
+| Monitoramento | Sentry (VITE_SENTRY_DSN) |
+| Deploy | Vercel (frontend) + Supabase Cloud (backend) |
+
+---
+
+## 📁 Arquivos críticos
+
+| Arquivo | Propósito |
 |---------|-----------|
-| `src/App.jsx` | Roteamento central (activeTab switch) |
-| `src/components/Header.jsx` | Header: feedback inline, cronômetro, notificações |
-| `src/components/Sidebar.jsx` | Navegação lateral (NAV_SECTIONS_BASE + ADMIN_SECTION) |
-| `src/components/BetaWelcomeBanner.jsx` | Banner first-run para usuários beta |
-| `src/lib/adminTabIds.js` | IDs e títulos das abas admin |
-| `src/lib/aiClient.js` | Gate VITE_AI_ENABLED |
-| `src/lib/betaFeedbackApi.js` | CRUD da tabela beta_feedback |
-| `src/lib/betaInvitesApi.js` | CRUD da tabela beta_invites + buildInviteUrl |
-| `src/pages/AdminBetaConvites.jsx` | Gestão dos 50 convites (geração de links, status) |
-| `src/pages/AdminBetaFeedback.jsx` | Visualização e exclusão dos feedbacks |
-| `src/main.jsx` | Sentry init (gated em VITE_SENTRY_DSN) |
-| `supabase/beta_feedback.sql` | Schema + RLS da tabela de feedback |
-| `supabase/beta_invites.sql` | Schema + RLS + função da tabela de convites |
+| `src/components/AppTabContent.jsx` | **Hub de roteamento** — TODA rota nova vai aqui |
+| `src/lib/subscriptionApi.js` | Hook `useSubscription()` + checkout Stripe |
+| `src/lib/betaInvitesApi.js` | CRUD convites beta |
+| `src/lib/adminTabIds.js` | Lista de abas admin + títulos |
+| `src/components/Sidebar.jsx` | Menu lateral — itens admin aqui |
+| `src/App.jsx` | `isPremiumPlan` e `isElitePlan` agora leem tabela Stripe |
+| `supabase/STRIPE_SETUP.md` | Guia de configuração Stripe passo a passo |

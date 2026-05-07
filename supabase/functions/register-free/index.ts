@@ -37,6 +37,14 @@ function sanitizeName(raw: string): string {
   return raw.replace(/[\u0000-\u001F\u007F]/g, '').trim();
 }
 
+function sanitizePhone(raw: string): string {
+  const digits = String(raw || '').replace(/\D/g, '').slice(0, 11);
+  if (!digits) return '';
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 function validateBirthDate(iso: string): { ok: true } | { ok: false; code: string; message: string } {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
     return { ok: false, code: 'BIRTH_INVALID', message: 'Data de nascimento inválida.' };
@@ -214,6 +222,7 @@ Deno.serve(async (req) => {
   const email = String(body.email ?? '').trim().toLowerCase();
   const password = String(body.password ?? '');
   const birthDate = String(body.birthDate ?? '').trim();
+  const celular = sanitizePhone(String(body.celular ?? body.phone ?? ''));
   const referralCode = String(body.referralCode ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   const cpfRaw = String(body.cpf ?? '');
 
@@ -331,6 +340,7 @@ Deno.serve(async (req) => {
     email_confirm: false,
     user_metadata: {
       nome: fullName,
+      celular,
       birth_date: birthDate,
       referred_by_code: referralCode || '',
     },
@@ -370,6 +380,7 @@ Deno.serve(async (req) => {
     .update({
       nome: fullName,
       email,
+      celular,
       cpf: cpfDigits,
       birth_date: birthDate,
       referred_by_code: referralCode || null,

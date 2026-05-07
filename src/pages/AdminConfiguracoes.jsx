@@ -255,10 +255,10 @@ export default function AdminConfiguracoes({
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Inteligência Artificial</p>
             <h3 className="mt-2 text-2xl font-semibold text-slate-900">Status do motor de IA</h3>
             <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Para usar IA local sem custo: inicie o Ollama e configure AI_PROVIDER=ollama no .env
+              A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
             </p>
             <p className="mt-1 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Para produção: configure GOOGLE_API_KEY ou OPENAI_API_KEY e ajuste AI_PROVIDER.
+              Configure AI_PROVIDER, AI_FALLBACK_PROVIDER e as chaves dos provedores nas variáveis de ambiente da Vercel.
             </p>
           </div>
 
@@ -281,8 +281,8 @@ export default function AdminConfiguracoes({
             dotTone={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'bg-emerald-500' : 'bg-slate-400'}
           />
           <AiStatusCard
-            label="URL do Ollama"
-            value={aiStatus?.provider === 'ollama' ? aiStatus?.ollamaUrl || 'http://127.0.0.1:8787' : 'Não aplicável'}
+            label="Gateway"
+            value="/api/ai"
           />
         </div>
       </section>
@@ -1111,7 +1111,8 @@ function ConfigTab({ active, onClick, label }) {
 
 function formatProviderLabel(provider) {
   const raw = String(provider || '').toLowerCase();
-  if (raw === 'ollama') return 'Ollama';
+  if (raw === 'openrouter') return 'OpenRouter';
+  if (raw === 'groq') return 'Groq';
   if (raw === 'openai') return 'OpenAI';
   if (raw === 'gemini') return 'Gemini';
   if (raw === 'offline') return 'Offline';

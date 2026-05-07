@@ -1977,7 +1977,7 @@ const server = http.createServer(async (req, res) => {
     return jsonResponse(req, res, 401, { error: 'Token do servidor de IA ausente ou invalido.' });
   }
 
-  if (req.method === 'GET' && req.url === '/api/health') {
+  if (req.method === 'GET' && (req.url === '/api/health' || req.url === '/api/ai/health')) {
     return jsonResponse(req, res, 200, {
       ok: true,
       service: 'edital-ai',
@@ -1995,7 +1995,7 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  if (req.method === 'POST' && req.url === '/api/analyze-edital') {
+  if (req.method === 'POST' && (req.url === '/api/analyze-edital' || req.url === '/api/ai/analyze-edital')) {
     try {
       const body = await readBody(req);
       const editalText = String(body?.editalText || '').trim();
@@ -2015,7 +2015,7 @@ const server = http.createServer(async (req, res) => {
 
   if (
     req.method === 'POST' &&
-    (req.url === '/api/redacoes/analyze' || req.url === '/api/analyze-essay')
+    (req.url === '/api/redacoes/analyze' || req.url === '/api/analyze-essay' || req.url === '/api/ai/analyze-essay')
   ) {
     try {
       const body = await readBody(req);
@@ -2036,7 +2036,10 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/redacoes/transcribe') {
+  if (
+    req.method === 'POST' &&
+    (req.url === '/api/redacoes/transcribe' || req.url === '/api/ai/transcribe-essay')
+  ) {
     try {
       const body = await readBody(req);
       const dataUrl = String(body?.dataUrl || '').trim();
@@ -2059,7 +2062,10 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/generate-flashcards') {
+  if (
+    req.method === 'POST' &&
+    (req.url === '/api/generate-flashcards' || req.url === '/api/ai/generate-flashcards')
+  ) {
     try {
       const body = await readBody(req);
       const text = String(body?.text || '').trim();
@@ -2077,7 +2083,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/summarize-topic') {
+  if (req.method === 'POST' && (req.url === '/api/summarize-topic' || req.url === '/api/ai/summarize-topic')) {
     try {
       const body = await readBody(req);
       const text = String(body?.text || '').trim();
@@ -2095,7 +2101,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/explain-question') {
+  if (req.method === 'POST' && (req.url === '/api/explain-question' || req.url === '/api/ai/explain-question')) {
     try {
       const body = await readBody(req);
       const enunciado = String(body?.enunciado || body?.statement || '').trim();

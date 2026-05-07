@@ -1,10 +1,5 @@
 import { analyzeEditalWithRealAI } from './editalAiClient';
-import {
-  DEV_LOCAL_AI_BASE_URL,
-  getAiUnavailableMessage,
-  resolveAiBaseUrl,
-  resolveAiHeaders,
-} from './aiRuntime';
+import { resolveAiBaseUrl, resolveAiHeaders } from './aiRuntime';
 
 export const AI_ENABLED = import.meta.env.VITE_AI_ENABLED === 'true';
 const ERR_DISABLED = 'Funcionalidade de IA desabilitada neste ambiente.';
@@ -15,13 +10,10 @@ async function parseJson(response) {
 
 async function postJson(path, payload) {
   const baseUrl = resolveAiBaseUrl();
-  if (!baseUrl) {
-    throw new Error(getAiUnavailableMessage());
-  }
 
   const response = await fetch(`${baseUrl}${path}`, {
     method: 'POST',
-    headers: resolveAiHeaders(),
+    headers: await resolveAiHeaders(),
     body: JSON.stringify(payload || {}),
   });
 
@@ -40,7 +32,7 @@ export async function analyzeEdital(editalText) {
 
 export async function generateFlashcards({ disciplina, topico, conteudo = '', quantidade = 10 }) {
   if (!AI_ENABLED) throw new Error(ERR_DISABLED);
-  return postJson('/api/generate-flashcards', {
+  return postJson('/api/ai/generate-flashcards', {
     disciplina,
     topico,
     conteudo,
@@ -52,7 +44,7 @@ export async function generateFlashcards({ disciplina, topico, conteudo = '', qu
 
 export async function explainQuestion({ enunciado, alternativas, gabarito, resposta_usuario }) {
   if (!AI_ENABLED) throw new Error(ERR_DISABLED);
-  return postJson('/api/explain-question', {
+  return postJson('/api/ai/explain-question', {
     enunciado,
     alternativas,
     gabarito,
@@ -63,19 +55,10 @@ export async function explainQuestion({ enunciado, alternativas, gabarito, respo
 export async function checkAiHealth() {
   if (!AI_ENABLED) return { ok: false, provider: 'disabled', model: '', status: 'disabled' };
   const baseUrl = resolveAiBaseUrl();
-  if (!baseUrl) {
-    return {
-      ok: false,
-      provider: 'offline',
-      model: '',
-      status: 'offline',
-      ollamaUrl: '',
-    };
-  }
 
   try {
-    const response = await fetch(`${baseUrl}/api/health`, {
-      headers: resolveAiHeaders(),
+    const response = await fetch(`${baseUrl}/api/ai/health`, {
+      headers: await resolveAiHeaders(),
     });
     const data = await parseJson(response);
 
@@ -85,7 +68,6 @@ export async function checkAiHealth() {
         provider: 'offline',
         model: '',
         status: 'offline',
-        ollamaUrl: '',
       };
     }
 
@@ -96,7 +78,6 @@ export async function checkAiHealth() {
       provider,
       model: String(data?.model || '').trim(),
       status: provider === 'offline' ? 'offline' : 'online',
-      ollamaUrl: provider === 'ollama' ? baseUrl || DEV_LOCAL_AI_BASE_URL : '',
     };
   } catch {
     return {
@@ -104,7 +85,6 @@ export async function checkAiHealth() {
       provider: 'offline',
       model: '',
       status: 'offline',
-      ollamaUrl: '',
     };
   }
 }

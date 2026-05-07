@@ -1,4 +1,4 @@
-const DEV_LOCAL_AI_BASE_URL = 'http://127.0.0.1:8787';
+import { supabase } from './supabase';
 
 export function resolveAiBaseUrl() {
   const envBase =
@@ -7,15 +7,27 @@ export function resolveAiBaseUrl() {
       : '';
 
   if (envBase) return envBase.replace(/\/+$/, '');
-  if (typeof import.meta !== 'undefined' && import.meta?.env?.DEV) return DEV_LOCAL_AI_BASE_URL;
   return '';
 }
 
-export function resolveAiHeaders() {
-  const token =
+async function resolveAiBearerToken() {
+  const staticToken =
     typeof import.meta !== 'undefined' && import.meta?.env?.VITE_AI_SERVER_TOKEN
       ? String(import.meta.env.VITE_AI_SERVER_TOKEN).trim()
       : '';
+
+  if (staticToken) return staticToken;
+
+  try {
+    const { data } = await supabase.auth.getSession();
+    return String(data?.session?.access_token || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+export async function resolveAiHeaders() {
+  const token = await resolveAiBearerToken();
 
   return {
     'Content-Type': 'application/json',
@@ -24,7 +36,5 @@ export function resolveAiHeaders() {
 }
 
 export function getAiUnavailableMessage() {
-  return 'Servidor de IA não configurado neste ambiente. Defina VITE_AI_SERVER_URL para Preview/Production.';
+  return 'Servidor de IA nao configurado neste ambiente.';
 }
-
-export { DEV_LOCAL_AI_BASE_URL };

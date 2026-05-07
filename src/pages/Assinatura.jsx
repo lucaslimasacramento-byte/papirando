@@ -12,10 +12,11 @@ import {
   CreditCard,
   Calendar,
   AlertTriangle,
+  Loader2,
+  ExternalLink,
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { loadProfile } from '../lib/profileApi';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import { useSubscription, startStripeCheckout } from '../lib/subscriptionApi';
 
 const THEME_CONFIG = {
   policial: {
@@ -110,17 +111,19 @@ const THEME_CONFIG = {
   },
 };
 
-const USER_SUBSCRIPTION = {
-  plan: 'elite', // gratuito | tatico | elite
-  billingCycle: 'anual',
-  nextChargeDate: '15 de Dezembro, 2026',
-  paymentMethod: 'Mastercard final 4321',
-};
+function formatPeriodEnd(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
 
 export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = '', currentProfile = null, onProfileUpdate }) {
   const [planoAnual, setPlanoAnual] = useState(true);
   const [loadingPlan, setLoadingPlan] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [checkoutError, setCheckoutError] = useState('');
+
+  // Assinatura real do Supabase
+  const { subscription, planName: realPlanName, loading: subLoading } = useSubscription(currentUserId);
 
   const theme = THEME_CONFIG[temaAtivo] || THEME_CONFIG.policial;
   const ThemeIcon = theme.icon;
@@ -195,7 +198,10 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
     [nomePlano1, nomePlano2, nomePlano3, theme.ui]
   );
 
-  const activePlanId = String(currentProfile?.subscription_plan || USER_SUBSCRIPTION.plan || 'gratuito').toLowerCase();
+  // planId ativo: prioriza a tabela subscriptions, fallback para profile
+  const activePlanId = subLoading
+    ? String(currentProfile?.subscription_plan || 'gratuito').toLowerCase()
+    : realPlanName;
 
   function getCurrentPlanName() {
     if (activePlanId === 'elite') return nomePlano3;
@@ -209,39 +215,32 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
   }
 
   function handleCancelSubscription() {
-    window.alert('Abrir modal de retenção / cancelamento');
+    window.alert('Para cancelar sua assinatura, acesse o portal do cliente Stripe ou entre em contato pelo suporte.');
   }
 
   async function handleActivatePlan(planId) {
     if (!currentUserId || planId === activePlanId) return;
 
+    // Plano gratuito: não precisa de checkout
+    if (planId === 'gratuito') {
+      setFeedback('Voce ja tem acesso ao plano gratuito.');
+      return;
+    }
+
     setLoadingPlan(planId);
     setFeedback('');
+    setCheckoutError('');
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          subscription_plan: planId,
-          subscription_status: 'active',
-        })
-        .eq('id', currentUserId);
-
-      if (error) throw error;
-
-      setFeedback('Plano atualizado!');
-
-      if (typeof onProfileUpdate === 'function') {
-        await onProfileUpdate({
-          ...(currentProfile || {}),
-          subscription_plan: planId,
-          subscription_status: 'active',
-        });
-      } else {
-        await loadProfile(currentUserId);
-      }
-    } catch (error) {
-      console.warn('[Assinatura] update plan error:', error?.message || error);
+      const url = await startStripeCheckout({
+        planId,
+        billing: planoAnual ? 'annual' : 'monthly',
+      });
+      // Redireciona para o Stripe Checkout
+      window.location.href = url;
+    } catch (err) {
+      console.warn('[Assinatura] checkout error:', err?.message || err);
+      setCheckoutError(err?.message || 'Nao foi possivel abrir o checkout. Tente novamente.');
     } finally {
       setLoadingPlan('');
     }
@@ -325,6 +324,12 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         </div>
       ) : null}
 
+      {checkoutError ? (
+        <div className="mx-auto w-full max-w-3xl rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-semibold text-red-700">
+          {checkoutError}
+        </div>
+      ) : null}
+
       {activePlanId !== 'gratuito' && (
         <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm p-8 lg:p-10 mb-4 flex flex-col lg:flex-row gap-8 justify-between items-center">
           <div className="flex items-center gap-6 w-full lg:w-auto">
@@ -343,7 +348,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
               <p className="text-sm font-semibold text-gray-500">
                 Ciclo de faturamento:{' '}
                 <span className="text-gray-800">
-                  {USER_SUBSCRIPTION.billingCycle === 'anual' ? 'Anual' : 'Mensal'}
+                  {subscription?.billing_cycle === 'annual' ? 'Anual' : 'Mensal'}
                 </span>
               </p>
             </div>
@@ -355,20 +360,30 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
             <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
               <Calendar size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
               Próxima cobrança:{' '}
-              <span className="text-gray-800">{USER_SUBSCRIPTION.nextChargeDate}</span>
+              <span className="text-gray-800">
+                {subscription?.current_period_end ? formatPeriodEnd(subscription.current_period_end) : '—'}
+              </span>
             </div>
 
             <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
               <CreditCard size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
-              Método: <span className="text-gray-800">{USER_SUBSCRIPTION.paymentMethod}</span>
+              Provedor:{' '}
+              <span className="text-gray-800">
+                {subscription?.provider === 'manual' ? 'Acesso beta' : 'Stripe'}
+              </span>
             </div>
 
-            <button
-              type="button"
-              className="mt-1 text-left text-xs font-semibold text-blue-600 underline hover:text-blue-800"
-            >
-              Atualizar método de pagamento
-            </button>
+            {subscription?.provider !== 'manual' && (
+              <a
+                href="https://billing.stripe.com/p/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 text-left text-xs font-semibold text-blue-600 underline hover:text-blue-800"
+              >
+                Portal de pagamento
+                <ExternalLink size={11} />
+              </a>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 w-full lg:w-auto shrink-0">
@@ -530,7 +545,14 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
                 className={action.className}
                 aria-label={action.label}
               >
-                {loadingPlan === plano.id ? 'Atualizando...' : (<>{action.icon}{action.label}</>)}
+                {loadingPlan === plano.id ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" />
+                  Aguarde...
+                </span>
+              ) : (
+                <>{action.icon}{action.label}</>
+              )}
               </button>
 
               <div
