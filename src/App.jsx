@@ -50,6 +50,7 @@ import {
   normalizeReferralCode,
   persistPendingReferralCode,
 } from './lib/referrals';
+import { extractBetaInviteTokenFromLocation, normalizeBetaInviteToken } from './lib/betaInvitesApi';
 import {
   buildCommunityProfileMetrics,
   buildCommunityRankings,
@@ -598,6 +599,9 @@ export default function App() {
   const [pendingReferralCode, setPendingReferralCode] = useState(() =>
     normalizeReferralCode(extractReferralCodeFromLocation() || getStoredReferralCode())
   );
+  const [pendingBetaInviteToken, setPendingBetaInviteToken] = useState(() =>
+    normalizeBetaInviteToken(extractBetaInviteTokenFromLocation())
+  );
   const [activeTab, setActiveTab] = useState('home');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -608,6 +612,12 @@ export default function App() {
     if (!referralFromLocation) return;
     setPendingReferralCode(referralFromLocation);
     persistPendingReferralCode(referralFromLocation);
+  }, []);
+
+  useEffect(() => {
+    const betaInviteFromLocation = normalizeBetaInviteToken(extractBetaInviteTokenFromLocation());
+    if (!betaInviteFromLocation) return;
+    setPendingBetaInviteToken(betaInviteFromLocation);
   }, []);
 
   useEffect(() => {
@@ -1304,12 +1314,12 @@ export default function App() {
   // isElitePlan / isPremiumPlan: tabela Stripe tem prioridade; fallback para profile (beta manual)
   const isElitePlan =
     (isStripeActive && stripePlanName === 'elite') ||
-    (!isStripeActive && String(effectiveProfile?.subscription_plan || '').toLowerCase() === 'elite');
+    (!isStripeActive && ['elite', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase()));
 
   const isPremiumPlan =
     isAdmin ||
     isStripeActive ||
-    ['elite', 'tatico'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase());
+    ['elite', 'tatico', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase());
 
   const selectedContestDetail =
     contestLibrary.find((item) => item.id === selectedContestDetailId) || null;
@@ -5939,6 +5949,7 @@ export default function App() {
         <Login
           setIsAuthenticated={setIsAuthenticated}
           initialReferralCode={pendingReferralCode}
+          initialBetaInviteToken={pendingBetaInviteToken}
           onReferralCodeCaptured={(code) => {
             const normalizedCode = normalizeReferralCode(code);
             setPendingReferralCode(normalizedCode);
@@ -5947,6 +5958,9 @@ export default function App() {
           onReferralCodeConsumed={() => {
             setPendingReferralCode('');
             persistPendingReferralCode('');
+          }}
+          onBetaInviteConsumed={() => {
+            setPendingBetaInviteToken('');
           }}
         />
       </Suspense>

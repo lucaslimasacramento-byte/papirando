@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Sparkles, Circle } from 'lucide-react';
+import { Crown, Sparkles, Circle, FlaskConical } from 'lucide-react';
 
 /**
  * Selo de assinatura alinhado a `profiles.subscription_plan` (gratuito | tatico | elite).
@@ -23,6 +23,15 @@ const PLAN_CONFIG = {
     wrapper:
       'border-blue-400/60 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 text-white shadow-md shadow-blue-900/25 ring-2 ring-blue-400/35 seal-plan-tatico hover:brightness-[1.06] hover:shadow-lg py-1.5 pl-2.5 pr-3 gap-1.5 text-xs font-bold',
     iconClass: 'text-blue-100',
+  },
+  beta: {
+    label: 'Beta 3 meses',
+    title: 'Acesso beta completo por 3 meses',
+    icon: FlaskConical,
+    iconSize: 14,
+    wrapper:
+      'border-cyan-300/80 bg-gradient-to-r from-cyan-700 via-blue-700 to-indigo-700 text-white shadow-md shadow-blue-900/25 ring-2 ring-cyan-300/40 hover:brightness-[1.06] py-1.5 pl-2.5 pr-3 gap-1.5 text-[10px] font-extrabold tracking-wide',
+    iconClass: 'text-cyan-100',
   },
   elite: {
     label: 'Elite',

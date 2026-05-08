@@ -279,6 +279,7 @@ export default function ConcursoDetalhe({
   return (
     <div className="page-shell flex flex-col gap-6">
       <PageHeadPremium
+        className="!py-5 sm:!py-6"
         icon={LibraryBig}
         badge={
           <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
@@ -307,16 +308,18 @@ export default function ConcursoDetalhe({
             </div>
           </div>
         )}
-        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
+        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 xl:min-w-[30rem] 2xl:min-w-[34rem] [&>*]:min-w-0"
         stats={[
-          { key: 'pr', label: 'Prova', value: formatDateBR(contest.prova_data), icon: CalendarDays, accent: 'blue' },
+          { key: 'pr', label: 'Prova', value: formatDateBR(contest.prova_data), icon: CalendarDays, accent: 'blue', valueClassName: '!text-sm sm:!text-base' },
           { key: 'sl', label: 'Salário', value: formatCurrencyBR(contest.salario), icon: DollarSign, accent: 'emerald' },
           { key: 'di', label: 'Disciplinas', value: String(contest.disciplinas?.length || 0), icon: Layers3, accent: 'indigo' },
           { key: 'tp', label: 'Tópicos', value: String(topicosCount), icon: BadgeCheck, accent: 'violet' },
         ]}
-        trailingClassName="max-w-full xl:max-w-md"
+        trailingClassName="max-w-full"
+        trailingWrapClassName="xl:max-w-[52rem] 2xl:max-w-[58rem]"
+        statsStackBelowTrailing
         trailing={(
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
             <button
               type="button"
               onClick={() => onToggleFavorite?.(contest.id)}

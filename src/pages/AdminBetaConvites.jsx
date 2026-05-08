@@ -116,6 +116,45 @@ export default function AdminBetaConvites() {
           }
         />
 
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="section-card overflow-hidden p-0">
+            <div className="bg-[linear-gradient(135deg,#0f2a4f,#1d4ed8)] px-6 py-6 text-white">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-100">
+                <ShieldCheck size={13} />
+                Experiência do convidado
+              </div>
+              <h2 className="text-2xl font-black tracking-tight">O convite libera 3 meses de acesso completo.</h2>
+              <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-blue-100">
+                Quem entrar pelo link beta não fica como gratuito: a conta recebe o estado Beta 3 meses e pode testar todos os recursos da plataforma.
+              </p>
+            </div>
+            <div className="grid gap-3 p-5 sm:grid-cols-3">
+              {[
+                'IA, redações, flashcards, simulados e audiolivros liberados',
+                'Mensagem de boas-vindas acolhedora logo no cadastro',
+                'Feedbacks acumulam descontos para o fim do período de testes',
+              ].map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                  <Check size={16} className="mb-3 text-emerald-600" />
+                  <p className="text-sm font-semibold leading-relaxed text-slate-700">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="section-card space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Texto sugerido
+            </p>
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm font-semibold leading-relaxed text-blue-950">
+              Você recebeu um convite para testar o Papirando por 3 meses com acesso completo. Use tudo, mande feedbacks sinceros e acumule descontos para continuar quando o beta terminar.
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-slate-500">
+              O link gerado abaixo já leva a pessoa para a apresentação do beta e valida o e-mail no cadastro.
+            </p>
+          </div>
+        </section>
+
         {/* Progress bar */}
         <div className="section-card space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-500">

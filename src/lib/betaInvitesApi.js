@@ -1,35 +1,49 @@
 import { supabase } from './supabase';
 
-const COLS = 'id, email, token, nome, observacao, invited_at, used_at, used_by_user_id';
-
-/** Retorna todos os convites (admin only via RLS) */
-export async function loadBetaInvites() {
-  const { data, error } = await supabase
-    .from('beta_invites')
-    .select(COLS)
-    .order('invited_at', { ascending: false })
-    .limit(300);
-
-  if (error) throw new Error(error.message || String(error));
-  return data || [];
+async function getSessionToken() {
+  const { data } = await supabase.auth.getSession();
+  return String(data?.session?.access_token || '').trim();
 }
 
-/** Cria um convite para o e-mail informado (admin only via RLS) */
-export async function createBetaInvite({ email, nome = '', observacao = '' }) {
-  const { data, error } = await supabase
-    .from('beta_invites')
-    .insert({ email: email.toLowerCase().trim(), nome, observacao })
-    .select(COLS)
-    .single();
+async function fetchInviteApi(path = '', { method = 'GET', body } = {}) {
+  const token = await getSessionToken();
+  if (!token) throw new Error('Sessao admin invalida. Faca login novamente.');
 
-  if (error) throw new Error(error.message || String(error));
+  const response = await fetch(`/api/beta-invites${path}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data?.message || data?.error || 'Nao foi possivel acessar os convites beta.';
+    throw new Error(message);
+  }
+
   return data;
 }
 
-/** Remove um convite (admin only via RLS) */
+/** Retorna todos os convites (admin only via API/RPC) */
+export async function loadBetaInvites() {
+  const data = await fetchInviteApi();
+  return Array.isArray(data) ? data : [];
+}
+
+/** Cria um convite para o e-mail informado (admin only via API/RPC) */
+export async function createBetaInvite({ email, nome = '', observacao = '' }) {
+  return fetchInviteApi('', {
+    method: 'POST',
+    body: { email: email.toLowerCase().trim(), nome, observacao },
+  });
+}
+
+/** Remove um convite (admin only via API/RPC) */
 export async function deleteBetaInvite(id) {
-  const { error } = await supabase.from('beta_invites').delete().eq('id', id);
-  if (error) throw new Error(error.message || String(error));
+  await fetchInviteApi(`?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 /** Verifica se o e-mail do usuário logado está na lista de convidados */
@@ -54,4 +68,30 @@ export async function markMyInviteUsed() {
 export function buildInviteUrl(token) {
   const base = typeof window !== 'undefined' ? window.location.origin : '';
   return `${base}/?beta=${token}`;
+}
+
+export function normalizeBetaInviteToken(value) {
+  return String(value || '').trim().replace(/[^a-fA-F0-9]/g, '').slice(0, 64).toLowerCase();
+}
+
+export function extractBetaInviteTokenFromLocation(locationLike = null) {
+  const source =
+    locationLike ||
+    (typeof window !== 'undefined'
+      ? { search: window.location.search, hash: window.location.hash }
+      : null);
+  if (!source) return '';
+
+  const searchParams = new URLSearchParams(String(source.search || ''));
+  const byQuery = normalizeBetaInviteToken(searchParams.get('beta') || searchParams.get('betaInvite'));
+  if (byQuery) return byQuery;
+
+  const hash = String(source.hash || '');
+  const hashQueryPart = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '';
+  if (hashQueryPart) {
+    const hp = new URLSearchParams(hashQueryPart);
+    return normalizeBetaInviteToken(hp.get('beta') || hp.get('betaInvite'));
+  }
+
+  return '';
 }

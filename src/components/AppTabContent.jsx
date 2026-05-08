@@ -306,9 +306,9 @@ export default function AppTabContent(props) {
     if (!text) return '';
     return text.charAt(0).toUpperCase() + text.slice(1);
   };
-  const fullName = String(effectiveProfile?.full_name || '').trim();
+  const fullName = String(effectiveProfile?.nome || effectiveProfile?.name || effectiveProfile?.full_name || '').trim();
   const firstName = normalizeName(fullName.split(/\s+/).filter(Boolean)[0] || '');
-  const username = normalizeName(String(effectiveProfile?.username || '').trim());
+  const username = String(effectiveProfile?.username || effectiveProfile?.user_name || '').trim();
   const emailPrefix = normalizeName(
     String(currentUserEmail || '').includes('@') ? String(currentUserEmail || '').split('@')[0] : ''
   );

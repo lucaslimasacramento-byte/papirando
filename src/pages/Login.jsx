@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
+import { normalizeBetaInviteToken } from '../lib/betaInvitesApi';
 import { registerFreeAccount } from '../lib/registerApi';
 import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpfAlgorithm';
 import {
@@ -81,10 +82,12 @@ const QUICK_STATS = [
 export default function Login({
   setIsAuthenticated,
   initialReferralCode = '',
+  initialBetaInviteToken = '',
   onReferralCodeCaptured,
   onReferralCodeConsumed,
+  onBetaInviteConsumed,
 }) {
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoginMode, setIsLoginMode] = useState(() => !normalizeBetaInviteToken(initialBetaInviteToken));
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loginSlide, setLoginSlide] = useState(0);
@@ -98,12 +101,14 @@ export default function Login({
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referralCode, setReferralCode] = useState(() => normalizeReferralCode(initialReferralCode));
+  const [betaInviteToken, setBetaInviteToken] = useState(() => normalizeBetaInviteToken(initialBetaInviteToken));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   const activeFeature = useMemo(() => LOGIN_FEATURES[loginSlide], [loginSlide]);
+  const hasBetaInvite = Boolean(betaInviteToken);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -119,6 +124,13 @@ export default function Login({
     setReferralCode((prev) => prev || normalizedInitialCode);
   }, [initialReferralCode]);
 
+  useEffect(() => {
+    const normalizedToken = normalizeBetaInviteToken(initialBetaInviteToken);
+    if (!normalizedToken) return;
+    setBetaInviteToken(normalizedToken);
+    setIsLoginMode(false);
+  }, [initialBetaInviteToken]);
+
   const resetForm = () => {
     setNome('');
     setCelular('');
@@ -128,6 +140,7 @@ export default function Login({
     setPassword('');
     setConfirmPassword('');
     setReferralCode(normalizeReferralCode(initialReferralCode));
+    setBetaInviteToken(normalizeBetaInviteToken(initialBetaInviteToken));
     setShowPassword(false);
     setShowConfirmPassword(false);
   };
@@ -280,6 +293,7 @@ export default function Login({
         password,
         celular,
         referralCode: normalizedReferralCode,
+        betaInviteToken,
       });
 
       if (!result.success) {
@@ -290,6 +304,9 @@ export default function Login({
       setSuccessMsg(result.message || 'Cadastro realizado! Verifique seu email para ativar o acesso.');
       if (normalizedReferralCode) {
         onReferralCodeConsumed?.();
+      }
+      if (betaInviteToken) {
+        onBetaInviteConsumed?.();
       }
       setIsLoginMode(true);
       setCpf('');
@@ -398,7 +415,7 @@ export default function Login({
             disabled={loading}
             className="ml-2 text-[#2563EB] hover:underline disabled:opacity-60"
           >
-            {isLoginMode ? 'Registre-se grátis' : 'Fazer login'}
+            {isLoginMode ? (hasBetaInvite ? 'Ativar convite' : 'Registre-se grátis') : 'Fazer login'}
           </button>
         </div>
 
@@ -414,18 +431,22 @@ export default function Login({
 
             <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100 mb-4">
               <Stars size={12} />
-              {isLoginMode ? 'Acesso rápido' : 'Criação imediata'}
+              {hasBetaInvite && !isLoginMode ? 'Convite beta liberado' : isLoginMode ? 'Acesso rápido' : 'Criação imediata'}
             </div>
 
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">
-              {isLoginMode ? 'Bem-vindo(a) de volta!' : 'Crie a sua conta'}
+              {hasBetaInvite && !isLoginMode ? 'Seu acesso beta chegou' : isLoginMode ? 'Bem-vindo(a) de volta!' : 'Crie a sua conta'}
             </h2>
             <p className="text-gray-500 font-medium leading-relaxed">
-              {isLoginMode
+              {hasBetaInvite && !isLoginMode
+                ? 'Entre com o mesmo e-mail que recebeu o convite e ative 3 meses de testes com todos os recursos.'
+                : isLoginMode
                 ? 'Insira suas credenciais para acessar o painel.'
                 : 'Junte-se à elite dos concurseiros hoje.'}
             </p>
           </div>
+
+          {hasBetaInvite && !isLoginMode ? <BetaInviteWelcome /> : null}
 
           {successMsg && (
             <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
@@ -482,17 +503,19 @@ export default function Login({
                     max={new Date().toISOString().slice(0, 10)}
                   />
                   <InputField
-                    label="Código de convite"
+                    label={hasBetaInvite ? 'Convite beta' : 'Código de convite'}
                     type="text"
-                    placeholder="Opcional"
+                    placeholder={hasBetaInvite ? 'Acesso completo por 3 meses' : 'Opcional'}
                     icon={Stars}
-                    value={referralCode}
+                    value={hasBetaInvite ? 'BETA 3 MESES - TODOS OS RECURSOS' : referralCode}
                     onChange={(e) => {
+                      if (hasBetaInvite) return;
                       const nextCode = normalizeReferralCode(e.target.value);
                       setReferralCode(nextCode);
                       onReferralCodeCaptured?.(nextCode);
                     }}
                     required={false}
+                    readOnly={hasBetaInvite}
                   />
                 </>
               )}
@@ -570,7 +593,7 @@ export default function Login({
                   </>
                 ) : (
                   <>
-                    {isLoginMode ? 'Entrar na Plataforma' : 'Criar Conta Grátis'}
+                    {isLoginMode ? 'Entrar na Plataforma' : hasBetaInvite ? 'Ativar meu beta de 3 meses' : 'Criar Conta Grátis'}
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -580,6 +603,43 @@ export default function Login({
         </div>
       </div>
     </div>
+  );
+}
+
+function BetaInviteWelcome() {
+  const benefits = [
+    '3 meses de testes com acesso completo à plataforma.',
+    'Recursos de IA, redações, flashcards, simulados, ciclos, estatísticas e audiolivros liberados.',
+    'Quanto mais feedbacks úteis você enviar durante o beta, mais descontos acumula para usar ao fim do período de testes.',
+  ];
+
+  return (
+    <section className="overflow-hidden rounded-[28px] border border-blue-100 bg-white shadow-[0_18px_45px_rgba(37,99,235,0.12)]">
+      <div className="bg-[linear-gradient(135deg,#0f2a4f,#1d4ed8)] px-5 py-5 text-white">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-100">
+          <ShieldCheck size={13} />
+          Beta fechado
+        </div>
+        <h3 className="text-xl font-black tracking-tight">Você foi escolhido para testar o Papirando por dentro.</h3>
+        <p className="mt-2 text-sm font-medium leading-relaxed text-blue-100">
+          A ideia é simples: use tudo, explore com calma e conte o que funcionou, o que travou e o que faria sua rotina ficar melhor.
+        </p>
+      </div>
+
+      <div className="space-y-3 px-5 py-5">
+        {benefits.map((item) => (
+          <div key={item} className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3">
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              <CheckCircle2 size={14} />
+            </span>
+            <p className="text-sm font-semibold leading-relaxed text-slate-700">{item}</p>
+          </div>
+        ))}
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-900">
+          Seu feedback vira moeda de desconto: bugs bem descritos, sugestões claras e relatos reais ajudam a moldar a plataforma e podem reduzir o valor quando os testes terminarem.
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -594,6 +654,7 @@ function InputField({
   inputMode,
   maxLength,
   max,
+  readOnly = false,
 }) {
   return (
     <div>
@@ -611,7 +672,12 @@ function InputField({
           inputMode={inputMode}
           maxLength={maxLength}
           max={max}
-          className="w-full bg-gray-50 border-2 border-gray-200 text-gray-800 font-semibold rounded-xl py-3.5 pl-12 pr-4 focus:ring-4 focus:ring-blue-500/20 focus:border-[#2563EB] focus:bg-white outline-none transition-all"
+          readOnly={readOnly}
+          className={`w-full border-2 border-gray-200 text-gray-800 font-semibold rounded-xl py-3.5 pl-12 pr-4 outline-none transition-all ${
+            readOnly
+              ? 'bg-blue-50 text-blue-900'
+              : 'bg-gray-50 focus:ring-4 focus:ring-blue-500/20 focus:border-[#2563EB] focus:bg-white'
+          }`}
         />
       </div>
     </div>

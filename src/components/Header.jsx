@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Bell, CheckCircle2, Cpu, Loader2, LogOut, Menu, MessageSquarePlus, ShieldAlert, Timer, UserCircle2, X } from 'lucide-react';
-import { AI_ENABLED, checkAiHealth } from '../lib/aiClient';
+import React, { useMemo, useState } from 'react';
+import { Bell, CheckCircle2, Loader2, LogOut, Menu, MessageSquarePlus, ShieldAlert, Timer, UserCircle2, X } from 'lucide-react';
 import { submitBetaFeedback } from '../lib/betaFeedbackApi';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
@@ -44,34 +43,20 @@ export default function Header({
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackDone, setFeedbackDone] = useState(false);
   const [feedbackError, setFeedbackError] = useState('');
-  const [aiStatus, setAiStatus] = useState({ provider: 'offline', status: 'offline' });
+  const [readNotificationIds, setReadNotificationIds] = useState(() => new Set());
 
   const displayName = useMemo(() => {
-    const capitalizeFirst = (value = '') => {
-      const text = String(value || '').trim();
-      if (!text) return '';
-      return text.charAt(0).toUpperCase() + text.slice(1);
-    };
-    if (String(currentUsername || '').trim()) return capitalizeFirst(currentUsername);
+    const username = String(currentUsername || '').trim();
+    if (username) return username;
     const raw = String(currentUserEmail || '').trim();
     if (!raw) return 'Minha conta';
-    return capitalizeFirst(raw.split('@')[0]);
+    return raw.split('@')[0];
   }, [currentUserEmail, currentUsername]);
 
-  useEffect(() => {
-    if (!AI_ENABLED) return;
-    let ignore = false;
-    const refreshStatus = async () => {
-      const status = await checkAiHealth();
-      if (!ignore) setAiStatus(status);
-    };
-    refreshStatus();
-    const intervalId = window.setInterval(refreshStatus, 60000);
-    return () => { ignore = true; window.clearInterval(intervalId); };
-  }, []);
-
-  const aiOnline = aiStatus?.provider && aiStatus.provider !== 'offline';
-  const aiTooltip = aiOnline ? 'Servico de IA disponivel' : 'Servico de IA indisponivel';
+  const unreadNotificationCount = useMemo(
+    () => notifications.filter((item) => !readNotificationIds.has(String(item?.id || ''))).length,
+    [notifications, readNotificationIds]
+  );
 
   const openFeedback = () => {
     setFeedbackTipo('geral');
@@ -138,17 +123,6 @@ export default function Header({
       </div>
 
       <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
-        {AI_ENABLED ? (
-          <div
-            title={aiTooltip}
-            className="hidden items-center gap-1 rounded-md border border-slate-200/90 bg-slate-50/90 px-2 py-1.5 text-2xs font-medium text-slate-600 md:inline-flex"
-          >
-            <Cpu size={13} strokeWidth={2} className="shrink-0 text-slate-400" />
-            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${aiOnline ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-            <span className="hidden lg:inline">{aiOnline ? 'IA ativa' : 'IA off'}</span>
-          </div>
-        ) : null}
-
         {/* 1. Feedback */}
         <button
           type="button"
@@ -181,9 +155,9 @@ export default function Header({
           aria-expanded={isNotificationsOpen}
           aria-label="Notificacoes"
         >
-          {notifications.length > 0 ? (
+          {unreadNotificationCount > 0 ? (
             <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-blue-700 px-1 text-[9px] font-semibold text-white">
-              {notifications.length}
+              {unreadNotificationCount}
             </span>
           ) : null}
           <Bell size={17} strokeWidth={2} />
@@ -319,7 +293,11 @@ export default function Header({
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => { setIsNotificationsOpen(false); onOpenNotification?.(item.contestId); }}
+                    onClick={() => {
+                      setReadNotificationIds((prev) => new Set(prev).add(String(item.id || '')));
+                      setIsNotificationsOpen(false);
+                      onOpenNotification?.(item.contestId);
+                    }}
                     className="w-full rounded-lg border border-slate-100 bg-white px-3 py-2.5 text-left text-sm transition hover:border-slate-200 hover:bg-slate-50"
                   >
                     <div className="flex items-start justify-between gap-3">

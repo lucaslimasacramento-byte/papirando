@@ -204,6 +204,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
     : realPlanName;
 
   function getCurrentPlanName() {
+    if (activePlanId === 'beta') return 'Beta 3 meses';
     if (activePlanId === 'elite') return nomePlano3;
     if (activePlanId === 'tatico') return nomePlano2;
     return nomePlano1;
@@ -594,5 +595,4 @@ function Feature({ text, available, color = 'text-green-500' }) {
     </div>
   );
 }
-
 

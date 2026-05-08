@@ -1,5 +1,3 @@
-const INVITE_COLUMNS = 'id, email, token, nome, observacao, invited_at, used_at, used_by_user_id';
-
 function sendJson(res, status, payload) {
   res.statusCode = status;
   res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -92,6 +90,19 @@ async function supabaseRest(path, { method = 'GET', body, authorization } = {}) 
   return payload;
 }
 
+function normalizeInviteRow(row) {
+  return {
+    id: row?.id || '',
+    email: row?.email || '',
+    token: row?.token || '',
+    nome: row?.nome || '',
+    observacao: row?.observacao || '',
+    invited_at: row?.invited_at || '',
+    used_at: row?.used_at || null,
+    used_by_user_id: row?.used_by_user_id || null,
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.statusCode = 204;
@@ -104,10 +115,17 @@ export default async function handler(req, res) {
     const authorization = normalizeBearerAuthorization(req.headers.authorization);
 
     if (req.method === 'GET') {
-      const data = await supabaseRest(
-        `beta_invites?select=${encodeURIComponent(INVITE_COLUMNS)}&order=invited_at.desc&limit=300`
-      );
-      sendJson(res, 200, data || []);
+      if (!authorization) {
+        sendJson(res, 401, { message: 'Sessao admin invalida. Faca login novamente e tente de novo.' });
+        return;
+      }
+
+      const data = await supabaseRest('rpc/admin_get_beta_invites', {
+        method: 'POST',
+        authorization,
+        body: {},
+      });
+      sendJson(res, 200, (Array.isArray(data) ? data : []).map(normalizeInviteRow));
       return;
     }
 
@@ -118,12 +136,17 @@ export default async function handler(req, res) {
       }
 
       const body = await readJsonBody(req);
-      const data = await supabaseRest(`beta_invites?select=${encodeURIComponent(INVITE_COLUMNS)}`, {
+      const data = await supabaseRest('rpc/admin_insert_beta_invite', {
         method: 'POST',
         authorization,
-        body,
+        body: {
+          p_email: String(body?.email || '').trim().toLowerCase(),
+          p_nome: String(body?.nome || '').trim(),
+          p_observacao: String(body?.observacao || '').trim(),
+        },
       });
-      sendJson(res, 200, data);
+      const row = Array.isArray(data) ? data[0] : data;
+      sendJson(res, 200, normalizeInviteRow(row));
       return;
     }
 
@@ -139,9 +162,10 @@ export default async function handler(req, res) {
         return;
       }
 
-      await supabaseRest(`beta_invites?id=eq.${encodeURIComponent(id)}`, {
-        method: 'DELETE',
+      await supabaseRest('rpc/admin_delete_beta_invite', {
+        method: 'POST',
         authorization,
+        body: { p_id: id },
       });
       sendJson(res, 200, { ok: true });
       return;
