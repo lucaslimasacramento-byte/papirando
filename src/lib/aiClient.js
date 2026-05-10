@@ -67,6 +67,11 @@ export async function analyzeContestForm(payload = {}) {
   return postJson('/api/ai/contest-form', payload);
 }
 
+export async function analyzeContestPdf(pdfBase64 = '') {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
+  return postJson('/api/ai/contest-form-pdf', { pdfBase64 });
+}
+
 export async function explainQuestion({ enunciado, alternativas, gabarito, resposta_usuario }) {
   if (!AI_ENABLED) throw new Error(ERR_DISABLED);
   return postJson('/api/ai/explain-question', {

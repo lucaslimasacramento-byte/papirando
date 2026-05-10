@@ -27,7 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
-import { analyzeContestForm } from '../lib/aiClient';
+import { analyzeContestForm, analyzeContestPdf } from '../lib/aiClient';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
 
@@ -465,6 +465,9 @@ export default function AdminConcursos({
   const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
   const [aiFormText, setAiFormText] = useState('');
+  const [aiInputMode, setAiInputMode] = useState('text'); // 'text' | 'pdf'
+  const [aiPdfFile, setAiPdfFile] = useState(null);
+  const [aiPdfBase64, setAiPdfBase64] = useState('');
   const [isParsingContestForm, setIsParsingContestForm] = useState(false);
   const [contestFormImportStatus, setContestFormImportStatus] = useState('');
   const [contestFormOptions, setContestFormOptions] = useState([]);
@@ -704,30 +707,65 @@ export default function AdminConcursos({
     );
   };
 
-  const handleFillFromContestForm = async () => {
-    const source = aiFormText.trim();
-    if (!source) {
-      alert('Cole o formulario analisado antes de preencher.');
+  const handlePdfFileSelect = (file) => {
+    if (!file) return;
+    const MAX_MB = 18;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      alert(`O PDF selecionado tem ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é ${MAX_MB} MB.`);
       return;
     }
+    setAiPdfFile(file);
+    setAiPdfBase64('');
+    setContestFormImportStatus('');
+    setContestFormOptions([]);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = String(event.target?.result || '').split(',')[1] || '';
+      setAiPdfBase64(base64);
+    };
+    reader.readAsDataURL(file);
+  };
 
+  const handleFillFromContestForm = async () => {
     setIsParsingContestForm(true);
     setContestFormImportStatus('');
     setContestFormOptions([]);
 
     try {
-      const result = await analyzeContestForm({ text: source });
+      let result;
+      if (aiInputMode === 'pdf') {
+        if (!aiPdfBase64) {
+          alert('Aguarde o PDF carregar ou selecione um arquivo PDF.');
+          return;
+        }
+        result = await analyzeContestPdf(aiPdfBase64);
+      } else {
+        const source = aiFormText.trim();
+        if (!source) {
+          alert('Cole o formulario analisado antes de preencher.');
+          return;
+        }
+        result = await analyzeContestForm({ text: source });
+      }
+
       const templates = Array.isArray(result.templates) && result.templates.length > 0 ? result.templates : [];
       setContestFormOptions(templates);
       applyContestFormTemplate(result);
     } catch (error) {
-      console.warn('Falha na IA ao interpretar formulario de concurso; usando leitura local.', error);
-      const fallback = parseContestFormLocally(source);
-      setContestFormOptions(Array.isArray(fallback.templates) ? fallback.templates : []);
-      applyContestFormTemplate(fallback);
-      setContestFormImportStatus((prev) =>
-        `${prev} A IA nao respondeu agora, entao usei a leitura local do formulario.`
-      );
+      console.warn('Falha na IA ao interpretar concurso.', error);
+      if (aiInputMode === 'text') {
+        const source = aiFormText.trim();
+        if (source) {
+          const fallback = parseContestFormLocally(source);
+          setContestFormOptions(Array.isArray(fallback.templates) ? fallback.templates : []);
+          applyContestFormTemplate(fallback);
+          setContestFormImportStatus((prev) =>
+            `${prev} A IA nao respondeu agora, entao usei a leitura local do formulario.`
+          );
+          return;
+        }
+      }
+      setContestFormImportStatus(`Erro: ${error?.message || 'Falha ao analisar.'}`);
     } finally {
       setIsParsingContestForm(false);
     }
@@ -1204,25 +1242,106 @@ export default function AdminConcursos({
               <button
                 type="button"
                 onClick={handleFillFromContestForm}
-                disabled={isParsingContestForm || !aiFormText.trim()}
+                disabled={
+                  isParsingContestForm ||
+                  (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfBase64)
+                }
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
               >
                 {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                {isParsingContestForm ? 'Preenchendo...' : 'Preencher rascunho'}
+                {isParsingContestForm ? 'Analisando...' : 'Preencher rascunho'}
               </button>
             </div>
 
-            <textarea
-              rows={7}
-              value={aiFormText}
-              onChange={(event) => {
-                setAiFormText(event.target.value);
-                setContestFormImportStatus('');
-                setContestFormOptions([]);
-              }}
-              placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
-              className="mt-4 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
-            />
+            {/* Mode tabs */}
+            <div className="mt-4 flex gap-1 rounded-2xl bg-indigo-50 p-1">
+              <button
+                type="button"
+                onClick={() => { setAiInputMode('text'); setContestFormImportStatus(''); setContestFormOptions([]); }}
+                className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
+                  aiInputMode === 'text'
+                    ? 'bg-white text-indigo-700 shadow-sm'
+                    : 'text-indigo-400 hover:text-indigo-600'
+                }`}
+              >
+                Colar texto
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAiInputMode('pdf'); setContestFormImportStatus(''); setContestFormOptions([]); }}
+                className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
+                  aiInputMode === 'pdf'
+                    ? 'bg-white text-indigo-700 shadow-sm'
+                    : 'text-indigo-400 hover:text-indigo-600'
+                }`}
+              >
+                Enviar PDF
+              </button>
+            </div>
+
+            {aiInputMode === 'text' ? (
+              <textarea
+                rows={7}
+                value={aiFormText}
+                onChange={(event) => {
+                  setAiFormText(event.target.value);
+                  setContestFormImportStatus('');
+                  setContestFormOptions([]);
+                }}
+                placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
+                className="mt-2 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+              />
+            ) : (
+              <div className="mt-2">
+                <label
+                  htmlFor="ai-pdf-upload"
+                  className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.4rem] border-2 border-dashed px-6 py-8 transition-colors ${
+                    aiPdfFile
+                      ? 'border-indigo-300 bg-indigo-50'
+                      : 'border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50'
+                  }`}
+                >
+                  {aiPdfFile ? (
+                    <>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                        <span className="text-lg">📄</span>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-indigo-700">{aiPdfFile.name}</p>
+                        <p className="mt-0.5 text-xs text-indigo-500">
+                          {(aiPdfFile.size / 1024 / 1024).toFixed(1)} MB
+                          {aiPdfBase64 ? ' · pronto para análise' : ' · carregando...'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setAiPdfFile(null); setAiPdfBase64(''); }}
+                        className="text-xs font-semibold text-indigo-400 hover:text-indigo-600"
+                      >
+                        Trocar arquivo
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                        <span className="text-lg">📎</span>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-indigo-700">Clique para selecionar o PDF do edital</p>
+                        <p className="mt-0.5 text-xs text-indigo-500">Máximo 18 MB · somente PDF</p>
+                      </div>
+                    </>
+                  )}
+                  <input
+                    id="ai-pdf-upload"
+                    type="file"
+                    accept="application/pdf"
+                    className="sr-only"
+                    onChange={(e) => handlePdfFileSelect(e.target.files?.[0] || null)}
+                  />
+                </label>
+              </div>
+            )}
 
             {contestFormImportStatus && (
               <p className="mt-3 rounded-2xl border border-indigo-100 bg-white px-4 py-3 text-sm font-semibold text-indigo-700">

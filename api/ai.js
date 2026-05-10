@@ -3,6 +3,7 @@ import {
   analyzeEssay,
   analyzeContestCompatibility,
   analyzeContestForm,
+  analyzeContestPdf,
   analyzeStudyStats,
   explainQuestion,
   generateDailyNote,
@@ -17,6 +18,15 @@ import {
   summarizeTopic,
   transcribeEssayImage,
 } from './_ai.js';
+
+// PDFs enviados como base64 podem chegar a ~18 MB — aumenta o limite do body parser.
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '25mb',
+    },
+  },
+};
 
 function routeFromRequest(req) {
   const url = new URL(req.url || '/api/ai', 'http://127.0.0.1');
@@ -68,6 +78,10 @@ export default async function handler(req, res) {
 
     if (route === 'contest-form') {
       return sendJson(res, 200, await analyzeContestForm(body));
+    }
+
+    if (route === 'contest-form-pdf') {
+      return sendJson(res, 200, await analyzeContestPdf(body));
     }
 
     if (route === 'analyze-edital') {

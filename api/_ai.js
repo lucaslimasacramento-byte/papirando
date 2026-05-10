@@ -329,6 +329,32 @@ async function runGeminiJson(prompt) {
   return { provider: 'gemini', model: config.googleModel, json: extractJson(content) };
 }
 
+async function runGeminiWithPdf(prompt, pdfBase64) {
+  const config = getAiConfig();
+  if (!config.googleKey) throw new Error('GOOGLE_API_KEY/GEMINI_API_KEY nao configurada. PDF requer Gemini.');
+
+  const payload = await fetchJson(
+    `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [
+            { inlineData: { mimeType: 'application/pdf', data: pdfBase64 } },
+            { text: `${prompt}\n\nResponda somente com JSON valido.` },
+          ],
+        }],
+        generationConfig: { temperature: 0.25, responseMimeType: 'application/json' },
+      }),
+    }
+  );
+
+  const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
+  return { provider: 'gemini', model: config.googleModel, json: extractJson(content) };
+}
+
 async function runJson(prompt, options = {}) {
   const errors = [];
 
@@ -616,48 +642,13 @@ JSON esperado:
   };
 }
 
-export async function analyzeContestForm({ text = '', formText = '' } = {}) {
-  const source = String(text || formText || '').trim();
-  if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
-
-  const prompt = `Transforme este formulario analisado de edital em templates de concurso para cadastro no Papirando.
-Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
-Nao invente cor, imagem ou URL direta de PDF.
-Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
-Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
-Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
-Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
-
-Regras de preenchimento direto:
-- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
-- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
-- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
-- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
-- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
-- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
-- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
-- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
-- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
-- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
-
-Campos aceitos:
-- area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
-- status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
-- prova_data deve ser YYYY-MM-DD quando houver data clara.
-- etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
-
-JSON esperado:
-{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
-
-Formulario:
-${source.slice(0, 30000)}`;
-
-  const result = await runJson(prompt, { schemaName: 'contest_form_template' });
+// Shared post-processing for contest form results (text or PDF path).
+function buildContestFormResponse(result) {
   const isUncertain = (value = '') => /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o localizei|incerto|equivalente/i.test(String(value || ''));
   const normalizeCargoKey = (value = '') =>
     String(value || '')
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[̀-ͯ]/g, '')
       .toLowerCase();
   const extractMoney = (value = '') => {
     const matches = String(value || '').match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g);
@@ -668,7 +659,6 @@ ${source.slice(0, 30000)}`;
     const text = String(salary || '');
     const values = extractMoney(text);
     if (values.length <= 1) return values[0] || text.trim();
-
     const key = normalizeCargoKey(cargo);
     const lines = text.split(/\r?\n|\*/).map((line) => line.trim()).filter(Boolean);
     const matchedLine = lines.find((line) => {
@@ -714,16 +704,10 @@ ${source.slice(0, 30000)}`;
       topicos: clampList(subject?.topicos || subject?.topics, 160),
     };
   };
-  const rawTemplates = Array.isArray(result.json?.templates)
-    ? result.json.templates
-    : result.json?.template
-      ? [result.json.template]
-      : [result.json || {}];
   const normalizeTemplate = (template = {}) => {
     const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
       .map((subject) => normalizeSubject(subject))
       .filter((subject) => subject?.nome);
-
     return {
       nome: String(template.nome || '').trim(),
       plano: String(template.plano || '').trim(),
@@ -746,8 +730,14 @@ ${source.slice(0, 30000)}`;
       disciplinas,
     };
   };
-  const templates = rawTemplates.map((template) => normalizeTemplate(template)).filter((template) => template.nome || template.cargo || template.disciplinas.length);
-
+  const rawTemplates = Array.isArray(result.json?.templates)
+    ? result.json.templates
+    : result.json?.template
+      ? [result.json.template]
+      : [result.json || {}];
+  const templates = rawTemplates
+    .map((t) => normalizeTemplate(t))
+    .filter((t) => t.nome || t.cargo || t.disciplinas.length);
   return {
     provider: result.provider,
     source: result.provider,
@@ -759,6 +749,91 @@ ${source.slice(0, 30000)}`;
   };
 }
 
+// Shared prompt body for both text and PDF analysis.
+function contestFormPrompt(sourceBlock = '') {
+  return `Transforme este formulario analisado de edital em templates de concurso para cadastro no Papirando.
+Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
+Nao invente cor, imagem ou URL direta de PDF.
+Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
+Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
+Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
+Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
+
+Regras de preenchimento direto:
+- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
+- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
+- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
+- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
+- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
+- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
+- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
+- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
+- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
+- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
+
+Campos aceitos:
+- area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
+- status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
+- prova_data deve ser YYYY-MM-DD quando houver data clara.
+- etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
+
+JSON esperado:
+{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
+${sourceBlock}`;
+}
+
+export async function analyzeContestForm({ text = '', formText = '' } = {}) {
+  const source = String(text || formText || '').trim();
+  if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
+
+  const prompt = `Transforme este formulario analisado de edital em templates de concurso para cadastro no Papirando.
+Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
+Nao invente cor, imagem ou URL direta de PDF.
+Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
+Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
+Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
+Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
+
+Regras de preenchimento direto:
+- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
+- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
+- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
+- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
+- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
+- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
+- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
+- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
+- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
+- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
+
+Campos aceitos:
+- area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
+- status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
+- prova_data deve ser YYYY-MM-DD quando houver data clara.
+- etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
+
+JSON esperado:
+{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
+
+Formulario:
+${source.slice(0, 30000)}`;
+
+  const prompt = contestFormPrompt('
+Formulario:
+' + source.slice(0, 30000));
+  return buildContestFormResponse(await runJson(prompt, { schemaName: 'contest_form_template' }));
+}
+
+export async function analyzeContestPdf({ pdfBase64 = '' } = {}) {
+  if (!pdfBase64) throw new Error('Envie um PDF do edital para analise.');
+  const sizeBytes = Math.ceil((pdfBase64.length * 3) / 4);
+  if (sizeBytes > 18 * 1024 * 1024) throw new Error('PDF muito grande. O limite e de 18 MB por envio.');
+
+  const prompt = contestFormPrompt('
+O edital esta no PDF em anexo. Extraia todas as informacoes diretamente do documento.');
+  const result = await runGeminiWithPdf(prompt, pdfBase64);
+  return buildContestFormResponse(result);
+}
 export async function analyzeEdital(editalText = '') {
   const text = String(editalText || '').trim();
   if (!text) throw new Error('Cole ou envie um edital para analise.');
