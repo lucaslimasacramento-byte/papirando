@@ -19,6 +19,7 @@ import {
   Pencil,
   Plus,
   PlusCircle,
+  Search,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -385,6 +386,8 @@ export default function AdminConcursos({
   const [isParsingContestForm, setIsParsingContestForm] = useState(false);
   const [contestFormImportStatus, setContestFormImportStatus] = useState('');
   const [contestFormOptions, setContestFormOptions] = useState([]);
+  const [contestQuery, setContestQuery] = useState('');
+  const [contestAreaFilter, setContestAreaFilter] = useState('Todos');
 
   useEffect(() => {
     try {
@@ -442,8 +445,26 @@ export default function AdminConcursos({
     };
   }, [concursoCatalog]);
 
+  const contestAreaOptions = useMemo(
+    () => ['Todos', ...Array.from(new Set(concursoCatalog.map((template) => template.area || 'Geral'))).sort((a, b) => a.localeCompare(b, 'pt-BR'))],
+    [concursoCatalog]
+  );
+  const selectedContestAreaFilter = contestAreaOptions.includes(contestAreaFilter) ? contestAreaFilter : 'Todos';
+
+  const filteredContestCatalog = useMemo(() => {
+    const query = contestQuery.trim().toLowerCase();
+
+    return concursoCatalog.filter((template) => {
+      const matchArea = selectedContestAreaFilter === 'Todos' || (template.area || 'Geral') === selectedContestAreaFilter;
+      const haystack = [template.nome, template.concurso, template.cargo, template.banca, template.area]
+        .join(' ')
+        .toLowerCase();
+      return matchArea && (!query || haystack.includes(query));
+    });
+  }, [concursoCatalog, selectedContestAreaFilter, contestQuery]);
+
   const contestSections = useMemo(() => {
-    const grouped = concursoCatalog.reduce((acc, template) => {
+    const grouped = filteredContestCatalog.reduce((acc, template) => {
       const area = template.area || 'Geral';
       if (!acc[area]) acc[area] = [];
       acc[area].push(template);
@@ -456,7 +477,7 @@ export default function AdminConcursos({
         area,
         templates.sort((first, second) => first.nome.localeCompare(second.nome, 'pt-BR')),
       ]);
-  }, [concursoCatalog]);
+  }, [filteredContestCatalog]);
 
   const selectedTemplate = useMemo(
     () => concursoCatalog.find((template) => template.id === selectedTemplateId) || null,
@@ -657,10 +678,9 @@ export default function AdminConcursos({
 
   const subjectSuggestions = useMemo(
     () =>
-      subjectCatalog
-        .map((entry) => entry.nome)
-        .filter(Boolean)
-        .sort((first, second) => first.localeCompare(second, 'pt-BR')),
+      Array.from(new Set(subjectCatalog.map((entry) => entry.nome).filter(Boolean))).sort((first, second) =>
+        first.localeCompare(second, 'pt-BR')
+      ),
     [subjectCatalog]
   );
 
@@ -931,92 +951,106 @@ export default function AdminConcursos({
       </div>
 
       {activePanel === 'concursos' ? (
-      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-3">
+      <div className="space-y-6">
+        <div className="rounded-[1.6rem] border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Biblioteca</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Por area</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Biblioteca de concursos</p>
+              <h3 className="mt-1 text-xl font-semibold text-slate-900">Buscar e editar cadastro existente</h3>
             </div>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600"
-            >
-              Novo
-            </button>
-          </div>
 
-          <div className="space-y-5">
-            {contestSections.map(([area, templates]) => (
-              <div key={area}>
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">{area}</p>
-                  <span className="text-xs font-bold text-gray-400">{templates.length}</span>
-                </div>
-
-                <div className="space-y-2">
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      className={`rounded-[1.3rem] border transition-all ${
-                        selectedTemplateId === template.id
-                          ? 'border-blue-200 bg-blue-50 shadow-sm'
-                          : 'border-gray-200 bg-gray-50/70 hover:bg-gray-100'
-                      }`}
-                    >
-                      <div className="flex items-start gap-2 p-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEditTemplate(template)}
-                          className="min-w-0 flex-1 rounded-[1rem] px-2 py-2 text-left"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-900">{template.nome}</p>
-                              <p className="mt-1 truncate text-xs font-semibold text-gray-500">
-                                {template.cargo || template.concurso}
-                              </p>
-                              <div className="mt-2 flex flex-wrap gap-2">
-                                <span
-                                  className={`rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${
-                                    template.storage === 'supabase'
-                                      ? 'bg-blue-100 text-blue-700'
-                                      : 'bg-amber-100 text-amber-700'
-                                  }`}
-                                >
-                                  {template.storage === 'supabase' ? 'Supabase' : 'Local'}
-                                </span>
-                              </div>
-                            </div>
-                            <span
-                              className={`rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${
-                                template.is_public ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                              }`}
-                            >
-                              {template.is_public ? 'On' : 'Draft'}
-                            </span>
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteSelected(template)}
-                          className="shrink-0 rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                          title={`Excluir ${template.nome}`}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            <div className="grid gap-3 md:grid-cols-[minmax(240px,360px)_190px_auto]">
+              <div>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Busca</label>
+                <div className="relative">
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={contestQuery}
+                    onChange={(event) => setContestQuery(event.target.value)}
+                    placeholder="Nome, cargo, órgão ou banca"
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  />
                 </div>
               </div>
-            ))}
+
+              <SelectField
+                label="Área"
+                value={selectedContestAreaFilter}
+                onChange={setContestAreaFilter}
+                options={contestAreaOptions.map((area) => ({ value: area, label: area }))}
+              />
+
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-2xl bg-[#1A365D] px-4 text-sm font-bold text-white transition-colors hover:bg-[#142a49]"
+                >
+                  <Plus size={16} />
+                  Novo concurso
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 max-h-[360px] overflow-y-auto rounded-[1.3rem] border border-gray-200">
+            {filteredContestCatalog.length === 0 ? (
+              <div className="px-5 py-10 text-center text-sm font-semibold text-gray-500">
+                Nenhum concurso encontrado com os filtros atuais.
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {contestSections.map(([area, templates]) => (
+                  <div key={area}>
+                    <div className="sticky top-0 z-10 flex items-center justify-between bg-gray-50/95 px-4 py-2 backdrop-blur">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">{area}</p>
+                      <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-gray-500 shadow-sm">
+                        {templates.length}
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-gray-100">
+                      {templates.map((template) => (
+                        <div
+                          key={template.id}
+                          className={`grid gap-3 px-4 py-3 transition-colors lg:grid-cols-[minmax(0,1.7fr)_minmax(160px,0.8fr)_150px_110px_44px] lg:items-center ${
+                            selectedTemplateId === template.id ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleEditTemplate(template)}
+                            className="min-w-0 text-left"
+                          >
+                            <p className="truncate text-sm font-bold text-slate-900">{template.nome}</p>
+                            <p className="mt-1 truncate text-xs font-semibold text-gray-500">{template.concurso}</p>
+                          </button>
+                          <p className="truncate text-sm font-semibold text-gray-600">{template.cargo || 'Cargo a definir'}</p>
+                          <p className="truncate text-sm font-semibold text-gray-500">{template.banca || 'A definir'}</p>
+                          <div className="flex flex-wrap gap-2">
+                            <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${template.is_public ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {template.is_public ? 'Publicado' : 'Rascunho'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSelected(template)}
+                            className="h-10 w-10 rounded-xl text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            title={`Excluir ${template.nome}`}
+                          >
+                            <Trash2 size={15} className="mx-auto" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-[1.8rem] border border-gray-200 bg-white p-4 shadow-sm md:p-6">
           <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor do concurso</p>
@@ -1132,96 +1166,112 @@ export default function AdminConcursos({
             )}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-            <div className="space-y-4 rounded-[1.6rem] border border-gray-200 bg-gray-50/70 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Mídia do concurso</p>
+          <div className="space-y-5">
+            <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Mídia e arquivos</p>
+                  <h4 className="mt-1 text-base font-semibold text-slate-900">Capa e edital oficial</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {form.imagem_url && (
+                    <button type="button" onClick={() => window.open(form.imagem_url, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600">
+                      Abrir imagem
+                    </button>
+                  )}
+                  {form.edital_url && (
+                    <button type="button" onClick={() => window.open(form.edital_url, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600">
+                      Abrir edital
+                    </button>
+                  )}
+                </div>
+              </div>
 
-              <div className="overflow-hidden rounded-[1.4rem] border border-gray-200 bg-white">
+              <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
+                <div className="overflow-hidden rounded-[1.2rem] border border-gray-200 bg-white">
                 {form.imagem_url ? (
-                  <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-44 w-full object-cover" />
+                  <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-36 w-full object-cover" />
                 ) : (
                   <div
-                    className="flex h-44 w-full items-center justify-center text-white"
+                    className="flex h-36 w-full items-center justify-center text-white"
                     style={{ background: `linear-gradient(135deg, ${form.cor || '#2563EB'} 0%, #1A365D 100%)` }}
                   >
                     <ImageIcon size={36} />
                   </div>
                 )}
-              </div>
+                </div>
 
-              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-100">
-                {isUploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                {isUploadingImage ? 'Enviando imagem...' : 'Upload de imagem'}
-                <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0])} />
-              </label>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
+                      {isUploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                      {isUploadingImage ? 'Enviando imagem...' : 'Upload de imagem'}
+                      <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0])} />
+                    </label>
+                    <input
+                      value={form.imagem_url}
+                      onChange={(e) => updateFormField('imagem_url', e.target.value)}
+                      className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      placeholder="URL final da imagem"
+                    />
+                    {form.imagem_url && (
+                      <button type="button" onClick={handleRemoveImage} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-600">
+                        Remover imagem
+                      </button>
+                    )}
+                  </div>
 
-              <input
-                value={form.imagem_url}
-                onChange={(e) => updateFormField('imagem_url', e.target.value)}
-                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                placeholder="URL final da imagem"
-              />
-
-              <div className="flex gap-2">
-                {form.imagem_url && (
-                  <button type="button" onClick={() => window.open(form.imagem_url, '_blank', 'noopener,noreferrer')} className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600">
-                    Abrir imagem
-                  </button>
-                )}
-                {form.imagem_url && (
-                  <button type="button" onClick={handleRemoveImage} className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
-                    Remover
-                  </button>
-                )}
-              </div>
-
-              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-100">
-                {isUploadingEdital ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
-                {isUploadingEdital ? 'Enviando edital...' : 'Upload de PDF'}
-                <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handleEditalUpload(e.target.files?.[0])} />
-              </label>
-
-              <input
-                value={form.edital_url}
-                onChange={(e) => updateFormField('edital_url', e.target.value)}
-                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                placeholder="URL final do edital PDF"
-              />
-
-              <div className="flex gap-2">
-                {form.edital_url && (
-                  <button type="button" onClick={() => window.open(form.edital_url, '_blank', 'noopener,noreferrer')} className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600">
-                    Abrir edital
-                  </button>
-                )}
-                {form.edital_url && (
-                  <button type="button" onClick={handleRemoveEdital} className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
-                    Remover
-                  </button>
-                )}
+                  <div className="space-y-3">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-50">
+                      {isUploadingEdital ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+                      {isUploadingEdital ? 'Enviando edital...' : 'Upload de PDF'}
+                      <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handleEditalUpload(e.target.files?.[0])} />
+                    </label>
+                    <input
+                      value={form.edital_url}
+                      onChange={(e) => updateFormField('edital_url', e.target.value)}
+                      className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      placeholder="URL final do edital PDF"
+                    />
+                    {form.edital_url && (
+                      <button type="button" onClick={handleRemoveEdital} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-600">
+                        Remover edital
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
-                <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
-                <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
-                <SelectField label="Área" value={form.area} onChange={(value) => updateFormField('area', value)} options={AREA_OPTIONS.map((value) => ({ value, label: value }))} />
-                <TextField label="Cargo" value={form.cargo} onChange={(value) => updateFormField('cargo', value)} />
-                <TextField label="Banca" value={form.banca} onChange={(value) => updateFormField('banca', value)} />
-              </div>
+              <div className="rounded-[1.5rem] border border-gray-200 bg-white p-4">
+                <div className="mb-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Dados principais</p>
+                  <h4 className="mt-1 text-base font-semibold text-slate-900">Identificação e vitrine</h4>
+                </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <TextField label="Salário" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
-                <TextField label="Valor da inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
-                <SelectField label="Escolaridade" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} options={ESCOLARIDADE_OPTIONS} icon={GraduationCap} />
-              </div>
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
+                    <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
+                    <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
+                    <SelectField label="Área" value={form.area} onChange={(value) => updateFormField('area', value)} options={AREA_OPTIONS.map((value) => ({ value, label: value }))} />
+                    <TextField label="Cargo" value={form.cargo} onChange={(value) => updateFormField('cargo', value)} />
+                    <TextField label="Banca" value={form.banca} onChange={(value) => updateFormField('banca', value)} />
+                  </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <TextField label="Vagas" value={form.vagas} onChange={(value) => updateFormField('vagas', value)} placeholder="Ex: 500 vagas + CR" />
-                <TextField label="Lotação" value={form.lotacao} onChange={(value) => updateFormField('lotacao', value)} placeholder="Ex: Alagoas" />
-                <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicológico" />
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <TextField label="Salário" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
+                    <TextField label="Valor da inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
+                    <SelectField label="Escolaridade" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} options={ESCOLARIDADE_OPTIONS} icon={GraduationCap} />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <TextField label="Vagas" value={form.vagas} onChange={(value) => updateFormField('vagas', value)} placeholder="Ex: 500 vagas + CR" />
+                    <TextField label="Lotação" value={form.lotacao} onChange={(value) => updateFormField('lotacao', value)} placeholder="Ex: Alagoas" />
+                    <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicológico" />
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
