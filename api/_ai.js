@@ -130,7 +130,7 @@ export async function readJson(req) {
     let raw = '';
     req.on('data', (chunk) => {
       raw += chunk;
-      if (raw.length > 2 * 1024 * 1024) {
+      if (raw.length > 20 * 1024 * 1024) {
         const error = httpError(413, 'Payload de IA muito grande.', 'Entrada muito grande para IA.');
         reject(error);
         req.destroy();
@@ -751,73 +751,57 @@ function buildContestFormResponse(result) {
 
 // Shared prompt body for both text and PDF analysis.
 function contestFormPrompt(sourceBlock = '') {
-  return `Transforme este formulario analisado de edital em templates de concurso para cadastro no Papirando.
-Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
-Nao invente cor, imagem ou URL direta de PDF.
-Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
-Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
-Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
-Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
+  return `Voce e um especialista em editais de concursos publicos brasileiros. Analise o edital e gere templates de concurso para o Papirando.
 
-Regras de preenchimento direto:
-- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
-- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
-- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
-- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
-- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
-- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
-- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
-- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
-- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
-- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
+REGRAS FUNDAMENTAIS:
+1. Use SOMENTE as informacoes do edital. Nao invente dados, URLs, cores ou imagens.
+2. Se um campo nao constar no edital, deixe-o vazio (nao use textos como "Nao encontrado").
+3. Preserve TODOS os topicos e disciplinas encontrados no conteudo programatico.
 
-Campos aceitos:
-- area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
-- status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
-- prova_data deve ser YYYY-MM-DD quando houver data clara.
-- etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
+IDENTIFICACAO DE MULTIPLOS CONCURSOS/CARGOS/AREAS:
+- Crie um template separado para cada FUNCAO + AREA DE ATUACAO com conteudo de prova diferente.
+- Quando o mesmo cargo aparece em multiplas cidades com o MESMO conteudo de prova, crie UM UNICO template e informe "Diversas cidades/UF" em lotacao. Nao crie um template por cidade.
+- Quando o edital tem "Niveis" diferentes (Superior, Medio, Fundamental), cada nivel e um template separado.
+- Quando ha disciplinas especificas para determinada area (ex: Ciencias Juridicas, Administracao), crie templates separados mesmo que o cargo-base seja o mesmo.
+- Disciplines/conteudos descritos como "COMUNS A TODOS OS CARGOS" ou "CONHECIMENTOS BASICOS" devem ser incluidas em TODOS os templates do mesmo nivel.
+
+EXEMPLOS DE SEPARACAO CORRETA:
+- "Tecnico de Nivel Superior - Administracao" → 1 template
+- "Tecnico de Nivel Superior - Ciencias Juridicas" → 1 template (conteudo diferente)
+- "Tecnico de Nivel Superior - Atendente em Salvador, Alagoinhas e Juazeiro" → 1 template (mesmo conteudo, locacoes diferentes)
+- "Tecnico de Nivel Medio - Atendente" → template separado do nivel superior
+
+SELECAO DE ESTAGIOS E PROCESSOS SIMPLIFICADOS:
+- Para selecao de estagiarios ou REDA (Regime Especial), o cargo field deve ter o titulo exato.
+- Se nao houver prova objetiva/discursiva (so analise curricular ou titulos), use etapas_tags: ["avaliacao_curricular"] e coloque os criterios avaliados em uma disciplina "Avaliacao Curricular".
+
+Regras de preenchimento de campos:
+- nome: "Orgao — Processo/Edital — Area/Cargo especifico". Ex: "DETRAN-BA — REDA 01/2026 — Tecnico Superior Administracao".
+- plano: orgao + area/cargo. Ex: "DETRAN-BA — Tecnico de Nivel Superior — Administracao".
+- concurso: apenas o nome do orgao/concurso, sem duplicar area/cargo.
+- cargo: o cargo/funcao exato do template. Ex: "Tecnico de Nivel Superior — Administracao".
+- escolaridade: APENAS "Nivel medio" ou "Nivel superior" (derivado do requisito do cargo especifico).
+- salario: somente o valor total do cargo especifico, formato "R$ 3.810,40". Sem beneficios ou outros cargos.
+- vagas: total de vagas do cargo/area especifico. Ex: "10", "500 + CR". Para multiplas cidades, some o total.
+- lotacao: cidade/estado principal. Se multiplas cidades, use "Diversas cidades/BA" ou o estado.
+- etapas: uma frase curta descrevendo as fases. Ex: "Prova objetiva e avaliacao de titulos."
+- disciplinas: SOMENTE o que a pessoa precisa ESTUDAR para passar na prova. Nao inclua "Requisitos" ou "Atribuicoes" como disciplina de estudo.
+
+Campos de valores controlados:
+- area: Policial | Agropecuaria | Tribunais | Fiscal | Controle | Legislativo | Administrativa | Educacao | Saude | Geral. Juridico/Direito = Tribunais.
+- status_concurso: confirmado | previsto | suspeito | suspenso | encerrado.
+- prova_data: YYYY-MM-DD (so quando a data estiver claramente informada).
+- etapas_tags: prova_objetiva | prova_discursiva | redacao | taf | avaliacao_psicologica | investigacao_social | exames_medicos | toxicologico | heteroidentificacao | curso_formacao | avaliacao_curricular.
 
 JSON esperado:
-{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
+{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo da incerteza"],"notes":["observacao importante para revisao"]}
 ${sourceBlock}`;
 }
+
 
 export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
   if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
-
-  const prompt = `Transforme este formulario analisado de edital em templates de concurso para cadastro no Papirando.
-Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
-Nao invente cor, imagem ou URL direta de PDF.
-Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
-Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
-Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
-Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
-
-Regras de preenchimento direto:
-- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
-- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
-- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
-- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
-- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
-- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
-- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
-- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
-- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
-- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
-
-Campos aceitos:
-- area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
-- status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
-- prova_data deve ser YYYY-MM-DD quando houver data clara.
-- etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
-
-JSON esperado:
-{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
-
-Formulario:
-${source.slice(0, 30000)}`;
-
   const prompt = contestFormPrompt('
 Formulario:
 ' + source.slice(0, 30000));
