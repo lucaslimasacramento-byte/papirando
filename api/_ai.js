@@ -357,8 +357,16 @@ async function runGeminiWithPdf(prompt, pdfBase64) {
 
 async function runJson(prompt, options = {}) {
   const errors = [];
+  const config = getAiConfig();
+  let order = providerOrder(config);
 
-  for (const provider of providerOrder()) {
+  // preferFast: put Groq first (1-2s response), then others.
+  // Used for time-sensitive endpoints (e.g. Vercel 10s hobby limit).
+  if (options.preferFast && config.groqKey) {
+    order = ['groq', ...order.filter((p) => p !== 'groq')];
+  }
+
+  for (const provider of order) {
     try {
       if (provider === 'openrouter') return await runOpenRouterJson(prompt, options);
       if (provider === 'groq') return await runGroqJson(prompt, options);
@@ -802,8 +810,8 @@ ${sourceBlock}`;
 export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
   if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
-  const prompt = contestFormPrompt('\nFormulario:\n' + source.slice(0, 30000));
-  return buildContestFormResponse(await runJson(prompt, { schemaName: 'contest_form_template' }));
+  const prompt = contestFormPrompt('\nFormulario:\n' + source.slice(0, 20000));
+  return buildContestFormResponse(await runJson(prompt, { schemaName: 'contest_form_template', preferFast: true }));
 }
 
 export async function analyzeContestPdf({ pdfBase64 = '' } = {}) {

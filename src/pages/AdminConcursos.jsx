@@ -742,7 +742,7 @@ export default function AdminConcursos({
           throw new Error('O PDF parece estar vazio ou nao contem texto selecionavel. Use a opcao "Colar texto".');
         }
         setContestFormImportStatus('Analisando edital com IA...');
-        result = await analyzeContestForm({ text: pdfText.slice(0, 60000) });
+        result = await analyzeContestForm({ text: pdfText.slice(0, 20000) });
       } else {
         const source = aiFormText.trim();
         if (!source) {
