@@ -802,9 +802,7 @@ ${sourceBlock}`;
 export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
   if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
-  const prompt = contestFormPrompt('
-Formulario:
-' + source.slice(0, 30000));
+  const prompt = contestFormPrompt('\nFormulario:\n' + source.slice(0, 30000));
   return buildContestFormResponse(await runJson(prompt, { schemaName: 'contest_form_template' }));
 }
 
@@ -813,8 +811,7 @@ export async function analyzeContestPdf({ pdfBase64 = '' } = {}) {
   const sizeBytes = Math.ceil((pdfBase64.length * 3) / 4);
   if (sizeBytes > 18 * 1024 * 1024) throw new Error('PDF muito grande. O limite e de 18 MB por envio.');
 
-  const prompt = contestFormPrompt('
-O edital esta no PDF em anexo. Extraia todas as informacoes diretamente do documento.');
+  const prompt = contestFormPrompt('\nO edital esta no PDF em anexo. Extraia todas as informacoes diretamente do documento.');
   const result = await runGeminiWithPdf(prompt, pdfBase64);
   return buildContestFormResponse(result);
 }
