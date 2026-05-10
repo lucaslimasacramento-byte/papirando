@@ -1,9 +1,14 @@
 import {
   analyzeEdital,
   analyzeEssay,
+  analyzeContestCompatibility,
+  analyzeContestForm,
+  analyzeStudyStats,
   explainQuestion,
+  generateDailyNote,
   generateFlashcards,
-  getHealth,
+  generateMindMap,
+  getPublicHealth,
   handleOptions,
   enforceAiRateLimit,
   readJson,
@@ -28,7 +33,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET' && route === 'health') {
-      return sendJson(res, 200, await getHealth());
+      return sendJson(res, 200, await getPublicHealth());
     }
 
     if (req.method !== 'POST') {
@@ -36,12 +41,33 @@ export default async function handler(req, res) {
     }
 
     enforceAiRateLimit(req, route);
-    await requireAiAuth(req);
+    const user = await requireAiAuth(req);
+    if (user?.id) enforceAiRateLimit(req, route, `user:${user.id}`);
 
     const body = await readJson(req);
 
     if (route === 'generate-flashcards') {
       return sendJson(res, 200, await generateFlashcards(body));
+    }
+
+    if (route === 'daily-note') {
+      return sendJson(res, 200, await generateDailyNote(body));
+    }
+
+    if (route === 'study-stats-insight') {
+      return sendJson(res, 200, await analyzeStudyStats(body));
+    }
+
+    if (route === 'generate-mind-map') {
+      return sendJson(res, 200, await generateMindMap(body));
+    }
+
+    if (route === 'contest-compatibility') {
+      return sendJson(res, 200, await analyzeContestCompatibility(body));
+    }
+
+    if (route === 'contest-form') {
+      return sendJson(res, 200, await analyzeContestForm(body));
     }
 
     if (route === 'analyze-edital') {

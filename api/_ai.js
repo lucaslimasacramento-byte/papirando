@@ -92,14 +92,17 @@ export async function requireAiAuth(req) {
   return user;
 }
 
-export function enforceAiRateLimit(req, route = '') {
+export function enforceAiRateLimit(req, route = '', identity = '') {
   if (!envFlag('AI_RATE_LIMIT_ENABLED', true)) return;
 
   const windowMs = Math.max(60_000, Number(env('AI_RATE_LIMIT_WINDOW_MS')) || DEFAULT_AI_RATE_WINDOW_MS);
-  const routeLimit = route === 'transcribe-essay' ? 8 : DEFAULT_AI_RATE_LIMIT;
-  const limit = Math.max(1, Number(env('AI_RATE_LIMIT_MAX')) || routeLimit);
+  const globalLimit = Math.max(1, Number(env('AI_RATE_LIMIT_MAX')) || DEFAULT_AI_RATE_LIMIT);
+  const routeLimit = route === 'transcribe-essay'
+    ? Math.max(1, Number(env('AI_TRANSCRIBE_RATE_LIMIT_MAX')) || 8)
+    : globalLimit;
+  const limit = Math.max(1, Math.min(globalLimit, routeLimit));
   const now = Date.now();
-  const key = `${getClientIp(req)}:${route || 'ai'}`;
+  const key = `${identity || `ip:${getClientIp(req)}`}:${route || 'ai'}`;
   const store = (globalThis.__papirandoAiRateLimit ||= new Map());
   const current = store.get(key);
 
@@ -128,7 +131,8 @@ export async function readJson(req) {
     req.on('data', (chunk) => {
       raw += chunk;
       if (raw.length > 2 * 1024 * 1024) {
-        reject(new Error('Payload muito grande.'));
+        const error = httpError(413, 'Payload de IA muito grande.', 'Entrada muito grande para IA.');
+        reject(error);
         req.destroy();
       }
     });
@@ -141,7 +145,7 @@ export async function readJson(req) {
       try {
         resolve(JSON.parse(raw));
       } catch {
-        reject(new Error('JSON invalido.'));
+        reject(httpError(400, 'JSON invalido.', 'Payload invalido.'));
       }
     });
     req.on('error', reject);
@@ -369,6 +373,17 @@ export async function getHealth() {
   };
 }
 
+export async function getPublicHealth() {
+  const health = await getHealth();
+  return {
+    ok: Boolean(health.ok),
+    service: health.service,
+    status: health.ok ? 'online' : 'offline',
+    authRequired: Boolean(health.authRequired),
+    rateLimitEnabled: Boolean(health.rateLimitEnabled),
+  };
+}
+
 export async function generateFlashcards({
   text = '',
   conteudo = '',
@@ -477,6 +492,190 @@ ${source.slice(0, 8000)}`;
   };
 }
 
+export async function generateDailyNote({ date = '', focus = '', targetContest = '', history = {} } = {}) {
+  const prompt = `Crie uma frase diaria curta para um aluno de concurso publico.
+Use tom acolhedor, premium e direto. Nao cite autores reais.
+
+Contexto:
+- Data local: ${date || new Date().toISOString().slice(0, 10)}
+- Foco do aluno: ${focus || 'rotina de estudos'}
+- Concurso alvo: ${targetContest || 'nao informado'}
+- Minutos estudados na semana: ${Number(history?.weeklyMinutes || history?.minutes || 0)}
+- Acuracia recente: ${Number(history?.accuracy || 0)}%
+
+JSON esperado:
+{"quote":"frase de ate 110 caracteres","author":"Papirando IA"}`;
+
+  const result = await runJson(prompt, { schemaName: 'daily_note' });
+  return {
+    provider: result.provider,
+    model: result.model,
+    quote: String(result.json?.quote || '').trim().slice(0, 160),
+    author: String(result.json?.author || 'Papirando IA').trim().slice(0, 40) || 'Papirando IA',
+  };
+}
+
+export async function analyzeStudyStats({
+  stats = {},
+  bestDiscipline = null,
+  weakestDiscipline = null,
+  topicRows = [],
+  redacaoSummary = {},
+} = {}) {
+  const prompt = `Leia as estatisticas de um aluno de concurso e devolva um diagnostico estrategico.
+Se houver poucos dados, explique isso sem inventar desempenho.
+
+Dados:
+${JSON.stringify({ stats, bestDiscipline, weakestDiscipline, topicRows: topicRows.slice(0, 8), redacaoSummary }).slice(0, 9000)}
+
+JSON esperado:
+{"headline":"titulo curto","summary":"diagnostico em ate 2 frases","strong":"o que esta forte","attack":"o que pede reforco","nextMove":"proxima acao pratica","potential":"+valor percentual ou texto curto"}`;
+
+  const result = await runJson(prompt, { schemaName: 'study_stats_insight' });
+  return {
+    provider: result.provider,
+    model: result.model,
+    headline: String(result.json?.headline || 'Diagnostico estrategico').trim(),
+    summary: String(result.json?.summary || '').trim(),
+    strong: String(result.json?.strong || '').trim(),
+    attack: String(result.json?.attack || '').trim(),
+    nextMove: String(result.json?.nextMove || '').trim(),
+    potential: String(result.json?.potential || '').trim(),
+  };
+}
+
+export async function generateMindMap({ course = '', disciplina = '', topico = '', topics = [], context = '' } = {}) {
+  const source = String(`${course}\n${disciplina}\n${topico}\n${context}`).trim();
+  if (!source) throw new Error('Selecione curso, disciplina ou topico para criar o mapa mental.');
+
+  const prompt = `Monte um mapa mental para estudo de concurso publico.
+Curso: ${course || 'Geral'}
+Disciplina: ${disciplina || 'Nao informada'}
+Topico central: ${topico || disciplina || course || 'Tema'}
+Topicos disponiveis no app: ${JSON.stringify((Array.isArray(topics) ? topics : []).slice(0, 40))}
+
+Regras:
+- Nomes curtos, úteis para revisão visual.
+- Inclua conceitos, excecoes, pegadinhas e uma trilha de revisao.
+- Nao crie questoes; crie ramos de estudo.
+
+JSON esperado:
+{"title":"titulo do mapa","category":"categoria","branches":[{"label":"ramo principal","children":["subramo 1","subramo 2"]}]}`;
+
+  const result = await runJson(prompt, { schemaName: 'mind_map' });
+  const branches = (Array.isArray(result.json?.branches) ? result.json.branches : [])
+    .map((branch, index) => ({
+      id: `ai-branch-${index + 1}`,
+      label: String(branch?.label || branch?.title || '').trim(),
+      children: clampList(branch?.children, 6),
+    }))
+    .filter((branch) => branch.label)
+    .slice(0, 8);
+
+  if (branches.length === 0) throw new Error('A IA nao retornou ramos validos para o mapa.');
+
+  return {
+    provider: result.provider,
+    model: result.model,
+    title: String(result.json?.title || topico || disciplina || course || 'Mapa mental').trim(),
+    category: String(result.json?.category || disciplina || 'Geral').trim(),
+    branches,
+  };
+}
+
+export async function analyzeContestCompatibility({
+  baseContest = {},
+  targetContests = [],
+  comparison = {},
+  userReadiness = {},
+} = {}) {
+  const targets = Array.isArray(targetContests) ? targetContests.slice(0, 2) : [];
+  if (!baseContest?.nome || targets.length === 0) {
+    throw new Error('Selecione os concursos para gerar o parecer de compatibilidade.');
+  }
+
+  const prompt = `Compare concursos para decidir se vale conciliar estudos.
+Use os dados enviados; nao invente edital ausente.
+
+Dados:
+${JSON.stringify({ baseContest, targetContests: targets, comparison, userReadiness }).slice(0, 14000)}
+
+JSON esperado:
+{"headline":"veredito curto","summary":"analise executiva","advantages":["ganho"],"risks":["risco"],"plan":["acao pratica"],"decision":"vale conciliar|vale com cautela|nao conciliar agora"}`;
+
+  const result = await runJson(prompt, { schemaName: 'contest_compatibility' });
+  return {
+    provider: result.provider,
+    model: result.model,
+    headline: String(result.json?.headline || '').trim(),
+    summary: String(result.json?.summary || '').trim(),
+    advantages: clampList(result.json?.advantages, 5),
+    risks: clampList(result.json?.risks, 5),
+    plan: clampList(result.json?.plan, 6),
+    decision: String(result.json?.decision || '').trim(),
+  };
+}
+
+export async function analyzeContestForm({ text = '', formText = '' } = {}) {
+  const source = String(text || formText || '').trim();
+  if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
+
+  const prompt = `Transforme este formulario analisado de edital em um template de concurso para cadastro no Papirando.
+Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
+Nao invente cor, imagem ou URL direta de PDF.
+Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
+
+Campos aceitos:
+- area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
+- status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
+- prova_data deve ser YYYY-MM-DD quando houver data clara.
+- etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
+
+JSON esperado:
+{"template":{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]},"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
+
+Formulario:
+${source.slice(0, 30000)}`;
+
+  const result = await runJson(prompt, { schemaName: 'contest_form_template' });
+  const template = result.json?.template || result.json || {};
+  const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+    .map((subject) => ({
+      nome: String(subject?.nome || subject?.name || '').trim(),
+      topicos: clampList(subject?.topicos || subject?.topics, 160),
+    }))
+    .filter((subject) => subject.nome);
+
+  return {
+    provider: result.provider,
+    source: result.provider,
+    model: result.model,
+    template: {
+      nome: String(template.nome || '').trim(),
+      plano: String(template.plano || '').trim(),
+      concurso: String(template.concurso || '').trim(),
+      area: String(template.area || 'Geral').trim(),
+      cargo: String(template.cargo || '').trim(),
+      banca: String(template.banca || '').trim(),
+      salario: String(template.salario || '').trim(),
+      inscricao_valor: String(template.inscricao_valor || '').trim(),
+      escolaridade: String(template.escolaridade || '').trim(),
+      vagas: String(template.vagas || '').trim(),
+      lotacao: String(template.lotacao || '').trim(),
+      etapas: String(template.etapas || '').trim(),
+      etapas_tags: clampList(template.etapas_tags, 12),
+      taf_itens: clampList(template.taf_itens, 20),
+      descricao: String(template.descricao || '').trim(),
+      status_concurso: String(template.status_concurso || 'suspeito').trim(),
+      prova_data: String(template.prova_data || '').trim(),
+      edital_url: String(template.edital_url || '').trim(),
+      disciplinas,
+    },
+    uncertainties: clampList(result.json?.uncertainties, 40),
+    notes: clampList(result.json?.notes, 20),
+  };
+}
+
 export async function analyzeEdital(editalText = '') {
   const text = String(editalText || '').trim();
   if (!text) throw new Error('Cole ou envie um edital para analise.');
@@ -536,7 +735,7 @@ Tema: ${tema || 'Nao informado'}
 Banca: ${banca || 'Nao informada'}
 
 JSON esperado:
-{"analysis":{"overallScore":0,"criteria":{"gramatica":{"score":0,"maxScore":2.5,"note":"..."},"coesao":{"score":0,"maxScore":2.5,"note":"..."},"tema":{"score":0,"maxScore":2.5,"note":"..."},"estrutura":{"score":0,"maxScore":2.5,"note":"..."}},"summary":"...","strengths":["..."],"improvements":["..."],"grammarFeedback":[{"excerpt":"...","replacement":"...","reason":"..."}]}}
+{"analysis":{"overallScore":0,"criteria":{"gramatica":{"score":0,"maxScore":2.5,"note":"..."},"coesao":{"score":0,"maxScore":2.5,"note":"..."},"tema":{"score":0,"maxScore":2.5,"note":"..."},"estrutura":{"score":0,"maxScore":2.5,"note":"..."}},"summary":"parecer completo","strengths":["..."],"improvements":["..."],"priorityFixes":["..."],"actionPlan":["..."],"bancaFit":"como aproximar da banca","lineDiagnosis":"leitura de estrutura e linhas","grammarFeedback":[{"excerpt":"...","replacement":"...","reason":"..."}]}}
 
 Redacao:
 ${source.slice(0, 12000)}`;
@@ -546,8 +745,16 @@ ${source.slice(0, 12000)}`;
 }
 
 export async function transcribeEssayImage({ dataUrl = '', mimeType = '' } = {}) {
-  if (!dataUrl || !String(mimeType).startsWith('image/')) {
+  const safeMimeType = String(mimeType || '').toLowerCase();
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(safeMimeType)) {
     throw new Error('Envie uma imagem valida para transcricao.');
+  }
+  if (!String(dataUrl || '').startsWith(`data:${safeMimeType};base64,`)) {
+    throw new Error('Formato de imagem invalido.');
+  }
+  const base64 = String(dataUrl).split(',')[1] || '';
+  if (!base64 || base64.length > 1_500_000) {
+    throw new Error('Imagem muito grande para transcricao.');
   }
 
   const config = getAiConfig();
@@ -591,7 +798,6 @@ export async function transcribeEssayImage({ dataUrl = '', mimeType = '' } = {})
     throw new Error('Transcricao de imagem requer GOOGLE_API_KEY/GEMINI_API_KEY configurada.');
   }
 
-  const base64 = String(dataUrl).split(',')[1] || '';
   const payload = await fetchJson(
     `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
     {

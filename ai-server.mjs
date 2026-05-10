@@ -1964,6 +1964,152 @@ async function summarizeTopic({ text, topico = '', disciplina = '' }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+function normalizeContestFormTemplate(parsed = {}, provider = 'ai', model = '') {
+  const template = parsed?.template || parsed || {};
+  const toList = (items, max = 80) =>
+    (Array.isArray(items) ? items : [])
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .slice(0, max);
+
+  return {
+    provider,
+    source: provider,
+    model,
+    template: {
+      nome: sanitizeValue(template.nome, ''),
+      plano: sanitizeValue(template.plano, ''),
+      concurso: sanitizeValue(template.concurso, ''),
+      area: sanitizeValue(template.area, 'Geral'),
+      cargo: sanitizeValue(template.cargo, ''),
+      banca: sanitizeValue(template.banca, ''),
+      salario: sanitizeValue(template.salario, ''),
+      inscricao_valor: sanitizeValue(template.inscricao_valor, ''),
+      escolaridade: sanitizeValue(template.escolaridade, ''),
+      vagas: sanitizeValue(template.vagas, ''),
+      lotacao: sanitizeValue(template.lotacao, ''),
+      etapas: sanitizeValue(template.etapas, ''),
+      etapas_tags: toList(template.etapas_tags, 12),
+      taf_itens: toList(template.taf_itens, 20),
+      descricao: sanitizeValue(template.descricao, ''),
+      status_concurso: sanitizeValue(template.status_concurso, 'suspeito'),
+      prova_data: sanitizeValue(template.prova_data, ''),
+      edital_url: sanitizeValue(template.edital_url, ''),
+      disciplinas: (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+        .map((subject) => ({
+          nome: sanitizeValue(subject?.nome || subject?.name, ''),
+          topicos: toList(subject?.topicos || subject?.topics, 160),
+        }))
+        .filter((subject) => subject.nome),
+    },
+    uncertainties: toList(parsed?.uncertainties, 40),
+    notes: toList(parsed?.notes, 20),
+  };
+}
+
+function buildContestFormPrompt(text) {
+  return `Transforme este formulario analisado de edital em JSON de template para cadastro no Papirando.
+Use somente as informacoes enviadas. Nao invente cor, imagem ou URL direta de PDF.
+Se um campo estiver incerto, ausente ou vier como "Nao tenho certeza", deixe vazio quando for campo simples e registre em uncertainties.
+Preserve todas as disciplinas e todos os topicos por disciplina.
+
+Campos:
+- area: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude ou Geral. Juridica/Direito = Tribunais.
+- status_concurso: confirmado, previsto, suspeito, suspenso ou encerrado.
+- prova_data: YYYY-MM-DD.
+- etapas_tags: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
+
+Responda SOMENTE com JSON:
+{"template":{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]},"uncertainties":[""],"notes":[""]}
+
+Formulario:
+${String(text || '').slice(0, 30000)}`;
+}
+
+async function analyzeContestFormWithOpenAI(text) {
+  if (!OPENAI_API_KEY) throw new Error('Defina OPENAI_API_KEY no .env para usar OpenAI.');
+  const payload = await fetchJson('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'user', content: buildContestFormPrompt(text) }],
+    }),
+  });
+
+  const content = payload?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('OpenAI nao retornou conteudo.');
+  return normalizeContestFormTemplate(extractJsonFromText(content), 'openai', payload.model || OPENAI_MODEL);
+}
+
+async function analyzeContestFormWithGemini(text) {
+  if (!GOOGLE_API_KEY) throw new Error('Defina GOOGLE_API_KEY no .env para usar Gemini.');
+  const resolvedModel = await resolveGeminiModel();
+  const payload = await fetchJson(
+    `https://generativelanguage.googleapis.com/v1beta/models/${resolvedModel}:generateContent?key=${GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: buildContestFormPrompt(text) }] }],
+        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
+      }),
+    }
+  );
+
+  const contentText = (payload?.candidates?.[0]?.content?.parts || [])
+    .map((p) => p?.text || '').join('\n').trim();
+  if (!contentText) throw new Error('Gemini nao retornou conteudo.');
+  return normalizeContestFormTemplate(extractJsonFromText(contentText), 'gemini', resolvedModel);
+}
+
+async function analyzeContestFormWithOllama(text) {
+  const availableModels = await listOllamaModels();
+  const candidates = availableModels.length > 0
+    ? OLLAMA_MODEL_CANDIDATES.filter((c) => availableModels.includes(c))
+    : OLLAMA_MODEL_CANDIDATES;
+
+  const errors = [];
+  for (const candidate of candidates) {
+    try {
+      const payload = await fetchJson(`${OLLAMA_BASE_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: candidate, prompt: buildContestFormPrompt(text), stream: false, format: 'json' }),
+      });
+      return normalizeContestFormTemplate(extractJsonFromText(payload?.response), 'ollama', candidate);
+    } catch (e) {
+      errors.push(`${candidate}: ${e.message}`);
+    }
+  }
+  throw new Error(`Falha ao analisar formulario com Ollama. Tentativas: ${errors.join(' | ')}`);
+}
+
+async function analyzeContestForm({ text = '', formText = '' } = {}) {
+  const source = String(text || formText || '').trim();
+  if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
+
+  const providers = AI_PROVIDER === 'gemini'
+    ? ['gemini', AI_FALLBACK_PROVIDER]
+    : AI_PROVIDER === 'openai'
+      ? ['openai', AI_FALLBACK_PROVIDER]
+      : ['ollama', AI_FALLBACK_PROVIDER];
+
+  const errors = [];
+  for (const provider of [...new Set(providers)]) {
+    try {
+      if (provider === 'gemini') return await analyzeContestFormWithGemini(source);
+      if (provider === 'openai') return await analyzeContestFormWithOpenAI(source);
+      if (provider === 'ollama') return await analyzeContestFormWithOllama(source);
+    } catch (e) {
+      errors.push(`[${provider}] ${e.message}`);
+    }
+  }
+  throw new Error(`Nao foi possivel analisar o formulario do concurso. Erros: ${errors.join(' | ')}`);
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     return jsonResponse(req, res, 204, {});
@@ -2009,6 +2155,24 @@ const server = http.createServer(async (req, res) => {
     } catch (error) {
       return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao analisar o edital.',
+      });
+    }
+  }
+
+  if (req.method === 'POST' && (req.url === '/api/contest-form' || req.url === '/api/ai/contest-form')) {
+    try {
+      const body = await readBody(req);
+      const text = String(body?.text || body?.formText || '').trim();
+
+      if (!text) {
+        return jsonResponse(req, res, 400, { error: 'Cole o formulario analisado do concurso.' });
+      }
+
+      const result = await analyzeContestForm({ text });
+      return jsonResponse(req, res, 200, result);
+    } catch (error) {
+      return jsonResponse(req, res, 500, {
+        error: error.message || 'Falha interna ao analisar o formulario do concurso.',
       });
     }
   }

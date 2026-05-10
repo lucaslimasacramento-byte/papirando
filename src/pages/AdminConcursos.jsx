@@ -2,6 +2,7 @@
 import {
   BadgeCheck,
   CalendarDays,
+  AlertTriangle,
   Copy,
   Crown,
   Database,
@@ -19,11 +20,13 @@ import {
   Plus,
   PlusCircle,
   ShieldCheck,
+  Sparkles,
   Trash2,
   Upload,
   X,
 } from 'lucide-react';
 import { resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
+import { analyzeContestForm } from '../lib/aiClient';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
 
@@ -58,6 +61,7 @@ const ETAPA_OPTIONS = [
 const AREA_OPTIONS = ['Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
 
 const EMPTY_SUBJECT = { nome: '', cor: '', topicosTexto: '' };
+const UNCERTAIN_PATTERN = /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o informado|ausente/i;
 const QUESTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
 const EMPTY_QUESTION_FORM = {
   banca: '',
@@ -95,6 +99,157 @@ const EMPTY_FORM = {
   edital_url: '',
   disciplinas: [EMPTY_SUBJECT],
 };
+
+function cleanImportedValue(value = '') {
+  const text = String(value || '')
+    .replace(/^\*\*|\*\*$/g, '')
+    .replace(/^[-*]\s*/, '')
+    .trim();
+
+  return UNCERTAIN_PATTERN.test(text) ? '' : text;
+}
+
+function normalizeImportedArea(value = '') {
+  const raw = String(value || '').trim();
+  const normalized = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+  if (/policial|seguranca/.test(normalized)) return 'Policial';
+  if (/agro/.test(normalized)) return 'Agropecuária';
+  if (/jurid|direito|tribunal|justica/.test(normalized)) return 'Tribunais';
+  if (/fiscal|tribut/.test(normalized)) return 'Fiscal';
+  if (/controle|contas|auditor/.test(normalized)) return 'Controle';
+  if (/legisl/.test(normalized)) return 'Legislativo';
+  if (/admin/.test(normalized)) return 'Administrativa';
+  if (/educ/.test(normalized)) return 'Educação';
+  if (/saude/.test(normalized)) return 'Saúde';
+  return AREA_OPTIONS.includes(raw) ? raw : 'Geral';
+}
+
+function normalizeImportedStatus(value = '') {
+  const normalized = String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+  if (/suspens/.test(normalized)) return 'suspenso';
+  if (/encerr/.test(normalized)) return 'encerrado';
+  if (/previst/.test(normalized)) return 'previsto';
+  if (/confirm|abert|publicad/.test(normalized)) return 'confirmado';
+  return 'suspeito';
+}
+
+function normalizeImportedDate(value = '') {
+  const text = cleanImportedValue(value);
+  const iso = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  if (iso) return iso[0];
+
+  const br = text.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+  if (br) return `${br[3]}-${br[2].padStart(2, '0')}-${br[1].padStart(2, '0')}`;
+
+  return '';
+}
+
+function extractMarkdownField(text, label) {
+  const source = String(text || '');
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`(?:\\*\\*)?${escaped}(?:\\*\\*)?\\s*:\\s*([\\s\\S]*?)(?=\\n\\s*(?:\\*\\*)?[A-ZÁÉÍÓÚÂÊÔÃÕÇ][^:\\n]{1,80}(?:\\*\\*)?\\s*:|\\n\\s*##\\s|$)`, 'i');
+  const match = source.match(pattern);
+  return cleanImportedValue(match?.[1] || '');
+}
+
+function parseEtapaTagsFromText(text = '') {
+  const source = String(text || '').toLowerCase();
+  const tags = [];
+  const add = (pattern, tag) => {
+    if (pattern.test(source) && !tags.includes(tag)) tags.push(tag);
+  };
+
+  add(/prova objetiva.+sim|prova objetiva|objetiva on-line|objetiva online/, 'prova_objetiva');
+  add(/prova discursiva.+sim|prova discursiva/, 'prova_discursiva');
+  add(/reda[cç][aã]o.+sim|reda[cç][aã]o/, 'redacao');
+  add(/\btaf\b.+sim|\btaf\b|teste de aptid[aã]o f[ií]sica/, 'taf');
+  add(/avalia[cç][aã]o psicol[oó]gica.+sim|avalia[cç][aã]o psicol[oó]gica/, 'avaliacao_psicologica');
+  add(/investiga[cç][aã]o social.+sim|investiga[cç][aã]o social/, 'investigacao_social');
+  add(/exames m[eé]dicos.+sim|exames m[eé]dicos/, 'exames_medicos');
+  add(/toxicol[oó]gico.+sim|toxicol[oó]gico/, 'toxicologico');
+  add(/heteroidentifica[cç][aã]o.+sim|heteroidentifica[cç][aã]o/, 'heteroidentificacao');
+  add(/curso de forma[cç][aã]o.+sim|curso de forma[cç][aã]o/, 'curso_formacao');
+
+  return tags;
+}
+
+function parseSubjectsFromContestForm(text = '') {
+  const section = String(text || '').split(/##\s*5\.\s*Conte[uú]do program[aá]tico/i)[1] || String(text || '');
+  const lines = section.split(/\r?\n/);
+  const subjects = [];
+  let current = null;
+  let collectingTopics = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^##\s*[67]\./.test(trimmed)) break;
+
+    const subjectMatch = trimmed.match(/^\*{0,2}Disciplina\*{0,2}\s*:\s*(.+)$/i);
+    if (subjectMatch) {
+      current = { nome: cleanImportedValue(subjectMatch[1]), topicos: [] };
+      if (current.nome) subjects.push(current);
+      collectingTopics = false;
+      continue;
+    }
+
+    if (/^\*{0,2}T[oó]picos\*{0,2}\s*:/i.test(trimmed)) {
+      collectingTopics = true;
+      continue;
+    }
+
+    if (!current || !collectingTopics) continue;
+
+    const topic = cleanImportedValue(trimmed.replace(/^[-*•]\s*/, ''));
+    if (topic && !/^cargo\/curso/i.test(topic) && !/^disciplina/i.test(topic)) {
+      current.topicos.push(topic);
+    }
+  }
+
+  return subjects;
+}
+
+function parseContestFormLocally(text = '') {
+  const source = String(text || '');
+  const etapas = extractMarkdownField(source, 'Resumo das etapas');
+  const tafSection = source.match(/Itens do TAF[\s\S]*?(?=##\s*5\.|$)/i)?.[0] || '';
+
+  return {
+    template: {
+      nome: extractMarkdownField(source, 'Nome do concurso'),
+      plano: extractMarkdownField(source, 'Plano interno'),
+      concurso: extractMarkdownField(source, 'Concurso / órgão') || extractMarkdownField(source, 'Concurso / orgão'),
+      area: normalizeImportedArea(extractMarkdownField(source, 'Área')),
+      cargo: extractMarkdownField(source, 'Cargo'),
+      banca: extractMarkdownField(source, 'Banca'),
+      salario: extractMarkdownField(source, 'Salário'),
+      inscricao_valor: extractMarkdownField(source, 'Valor da inscrição'),
+      escolaridade: extractMarkdownField(source, 'Escolaridade'),
+      vagas: extractMarkdownField(source, 'Vagas'),
+      lotacao: extractMarkdownField(source, 'Lotação'),
+      etapas,
+      etapas_tags: parseEtapaTagsFromText(source),
+      taf_itens: tafSection
+        .split(/\r?\n/)
+        .map((line) => cleanImportedValue(line.replace(/^[-*•]\s*/, '')))
+        .filter((line) => line && !/itens do taf|n[aã]o h[aá] taf/i.test(line)),
+      descricao: extractMarkdownField(source, 'Descrição curta'),
+      status_concurso: normalizeImportedStatus(extractMarkdownField(source, 'Status do concurso') || extractMarkdownField(source, 'Publicado?')),
+      prova_data: normalizeImportedDate(extractMarkdownField(source, 'Data da prova')),
+      edital_url: extractMarkdownField(source, 'URL do edital PDF'),
+      disciplinas: parseSubjectsFromContestForm(source),
+    },
+    uncertainties: (source.match(/^\s*[-*]\s*\*\*[^:\n]+:\*\*.*$/gim) || []).filter((line) => UNCERTAIN_PATTERN.test(line)),
+    notes: ['Preenchido por leitura local do formulário. Revise antes de publicar.'],
+  };
+}
 
 function truncateQuestionText(value = '', maxLength = 80) {
   const text = String(value || '').trim();
@@ -176,6 +331,12 @@ export default function AdminConcursos({
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [questionsSaving, setQuestionsSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
+  const [deleteTemplateError, setDeleteTemplateError] = useState('');
+  const [aiFormText, setAiFormText] = useState('');
+  const [isParsingContestForm, setIsParsingContestForm] = useState(false);
+  const [contestFormImportStatus, setContestFormImportStatus] = useState('');
 
   useEffect(() => {
     try {
@@ -323,6 +484,81 @@ export default function AdminConcursos({
       ...prev,
       disciplinas: prev.disciplinas.length === 1 ? [{ ...EMPTY_SUBJECT }] : prev.disciplinas.filter((_, i) => i !== index),
     }));
+  };
+
+  const applyContestFormTemplate = (result = {}) => {
+    const template = result.template || {};
+    const importedSubjects = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+      .map((subject) => ({
+        nome: String(subject?.nome || subject?.name || '').trim(),
+        cor: '',
+        topicosTexto: (Array.isArray(subject?.topicos) ? subject.topicos : subject?.topics || [])
+          .map((topic) => String(topic || '').trim())
+          .filter(Boolean)
+          .join('\n'),
+      }))
+      .filter((subject) => subject.nome);
+
+    setForm((prev) => ({
+      ...prev,
+      slug: prev.slug,
+      nome: cleanImportedValue(template.nome) || prev.nome,
+      plano: cleanImportedValue(template.plano) || cleanImportedValue(template.nome) || prev.plano,
+      concurso: cleanImportedValue(template.concurso) || cleanImportedValue(template.nome) || prev.concurso,
+      area: normalizeImportedArea(template.area || prev.area),
+      cargo: cleanImportedValue(template.cargo) || prev.cargo,
+      banca: cleanImportedValue(template.banca) || prev.banca,
+      salario: cleanImportedValue(template.salario) || prev.salario,
+      inscricao_valor: cleanImportedValue(template.inscricao_valor) || prev.inscricao_valor,
+      escolaridade: cleanImportedValue(template.escolaridade) || prev.escolaridade,
+      vagas: cleanImportedValue(template.vagas) || prev.vagas,
+      lotacao: cleanImportedValue(template.lotacao) || prev.lotacao,
+      etapas: cleanImportedValue(template.etapas) || prev.etapas,
+      etapas_tags: Array.isArray(template.etapas_tags) && template.etapas_tags.length > 0 ? template.etapas_tags : prev.etapas_tags,
+      taf_itens: Array.isArray(template.taf_itens) && template.taf_itens.length > 0 ? template.taf_itens : prev.taf_itens,
+      descricao: cleanImportedValue(template.descricao) || prev.descricao,
+      status_concurso: normalizeImportedStatus(template.status_concurso || prev.status_concurso),
+      prova_data: normalizeImportedDate(template.prova_data) || prev.prova_data,
+      edital_url: cleanImportedValue(template.edital_url) || prev.edital_url,
+      disciplinas: importedSubjects.length > 0 ? importedSubjects : prev.disciplinas,
+    }));
+
+    const uncertaintyCount = Array.isArray(result.uncertainties) ? result.uncertainties.length : 0;
+    const subjectCount = importedSubjects.length;
+    const topicCount = importedSubjects.reduce(
+      (acc, subject) => acc + subject.topicosTexto.split('\n').filter(Boolean).length,
+      0
+    );
+    setContestFormImportStatus(
+      `Rascunho preenchido com ${subjectCount} disciplina(s) e ${topicCount} topico(s). ${
+        uncertaintyCount ? `${uncertaintyCount} incerteza(s) foram mantidas para revisao.` : 'Sem incertezas destacadas.'
+      }`
+    );
+  };
+
+  const handleFillFromContestForm = async () => {
+    const source = aiFormText.trim();
+    if (!source) {
+      alert('Cole o formulario analisado antes de preencher.');
+      return;
+    }
+
+    setIsParsingContestForm(true);
+    setContestFormImportStatus('');
+
+    try {
+      const result = await analyzeContestForm({ text: source });
+      applyContestFormTemplate(result);
+    } catch (error) {
+      console.warn('Falha na IA ao interpretar formulario de concurso; usando leitura local.', error);
+      const fallback = parseContestFormLocally(source);
+      applyContestFormTemplate(fallback);
+      setContestFormImportStatus((prev) =>
+        `${prev} A IA nao respondeu agora, entao usei a leitura local do formulario.`
+      );
+    } finally {
+      setIsParsingContestForm(false);
+    }
   };
 
   const normalizeDraftToPayload = () => ({
@@ -473,14 +709,25 @@ export default function AdminConcursos({
   const handleDeleteSelected = async (template = null) => {
     const target = template || selectedTemplate;
     if (!target) return;
+    setDeleteTemplateError('');
+    setDeleteTarget(target);
+  };
 
+  const handleConfirmDeleteTemplate = async () => {
+    const target = deleteTarget;
+    if (!target) return;
+    setIsDeletingTemplate(true);
+    setDeleteTemplateError('');
     try {
       await onDeleteTemplate?.(target);
       if (target.id === selectedTemplateId) {
         resetForm();
       }
+      setDeleteTarget(null);
     } catch (error) {
-      alert(error.message || 'Não foi possível excluir o concurso.');
+      setDeleteTemplateError(error.message || 'Não foi possível excluir o concurso.');
+    } finally {
+      setIsDeletingTemplate(false);
     }
   };
 
@@ -532,12 +779,16 @@ export default function AdminConcursos({
         banca: String(questionForm.banca || '').trim(),
         disciplina: String(questionForm.disciplina || '').trim(),
         enunciado: String(questionForm.enunciado || '').trim(),
-        alternativas: questionForm.alternativas.map((item) => String(item || '').trim()),
+        alternativas: questionForm.alternativas.map((item, index) => ({
+          id: QUESTION_LABELS[index],
+          label: String(item || '').trim(),
+          isCorrect: QUESTION_LABELS[index] === questionForm.gabarito,
+        })),
         gabarito: questionForm.gabarito,
-        comentario: String(questionForm.comentario || '').trim(),
-        nivel: questionForm.nivel,
+        explicacao: String(questionForm.comentario || '').trim(),
+        dificuldade: normalizeQuestionNivel(questionForm.nivel),
         tipo: questionForm.tipo,
-        is_active: true,
+        is_public: true,
       };
 
       const { error } = await supabase.from('questions').insert(payload);
@@ -556,7 +807,7 @@ export default function AdminConcursos({
     try {
       const { error } = await supabase
         .from('questions')
-        .update({ is_active: false })
+        .delete()
         .eq('id', questionId);
 
       if (error) throw error;
@@ -753,6 +1004,45 @@ export default function AdminConcursos({
                 </button>
               )}
             </div>
+          </div>
+
+          <div className="mb-6 rounded-[1.6rem] border border-indigo-100 bg-indigo-50/60 p-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Preencher com IA</p>
+                <h4 className="mt-1 text-lg font-semibold text-slate-900">Colar formulário analisado do edital</h4>
+                <p className="mt-1 text-sm font-semibold text-gray-500">
+                  Use o formulário estruturado que veio da análise do edital. A IA organiza os campos, disciplinas e tópicos no rascunho.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleFillFromContestForm}
+                disabled={isParsingContestForm || !aiFormText.trim()}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+              >
+                {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                {isParsingContestForm ? 'Preenchendo...' : 'Preencher rascunho'}
+              </button>
+            </div>
+
+            <textarea
+              rows={7}
+              value={aiFormText}
+              onChange={(event) => {
+                setAiFormText(event.target.value);
+                setContestFormImportStatus('');
+              }}
+              placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
+              className="mt-4 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+            />
+
+            {contestFormImportStatus && (
+              <p className="mt-3 rounded-2xl border border-indigo-100 bg-white px-4 py-3 text-sm font-semibold text-indigo-700">
+                {contestFormImportStatus}
+              </p>
+            )}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -1181,7 +1471,7 @@ export default function AdminConcursos({
                       <span>{question.banca || '-'}</span>
                       <span>{question.disciplina || '-'}</span>
                       <span className="text-gray-600">{truncateQuestionText(question.enunciado, 80)}</span>
-                      <span>{normalizeQuestionNivel(question.nivel)}</span>
+                      <span>{normalizeQuestionNivel(question.dificuldade || question.nivel)}</span>
                       <button
                         type="button"
                         onClick={() => handleDeleteQuestion(question.id)}
@@ -1198,6 +1488,90 @@ export default function AdminConcursos({
           </div>
         </div>
       )}
+
+      {deleteTarget ? (
+        <DeleteContestModal
+          template={deleteTarget}
+          isDeleting={isDeletingTemplate}
+          error={deleteTemplateError}
+          onCancel={() => {
+            if (isDeletingTemplate) return;
+            setDeleteTarget(null);
+            setDeleteTemplateError('');
+          }}
+          onConfirm={handleConfirmDeleteTemplate}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }) {
+  const isLocal = template?.storage !== 'supabase';
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-sm">
+      <div className="w-full max-w-xl overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-2xl">
+        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-6 text-white">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/15 text-red-200 ring-1 ring-red-300/30">
+              <Trash2 size={22} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-red-200">Excluir concurso</p>
+              <h3 className="mt-2 text-xl font-bold leading-tight">{template?.nome || 'Concurso selecionado'}</h3>
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">
+                Esse item sai da biblioteca pública e deixa de aparecer para importação dos alunos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4 px-6 py-5">
+          {isLocal ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-900">
+              Este concurso ainda veio do catálogo local. O app vai sincronizar esse item com o Supabase antes de remover.
+            </div>
+          ) : null}
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Resumo</p>
+            <div className="mt-2 grid gap-2 text-sm font-semibold text-slate-700 sm:grid-cols-2">
+              <span>Área: {template?.area || 'Geral'}</span>
+              <span>Banca: {template?.banca || 'A definir'}</span>
+              <span>Disciplinas: {template?.disciplinas?.length || 0}</span>
+              <span>Status: {template?.is_public ? 'Publicado' : 'Rascunho'}</span>
+            </div>
+          </div>
+
+          {error ? (
+            <div role="alert" className="flex gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          ) : null}
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isDeleting}
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 text-sm font-bold text-white shadow-lg shadow-red-900/20 transition hover:bg-red-700 disabled:opacity-70"
+            >
+              {isDeleting ? <Loader2 size={17} className="animate-spin" /> : <Trash2 size={17} />}
+              {isDeleting ? 'Excluindo...' : 'Excluir definitivamente'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

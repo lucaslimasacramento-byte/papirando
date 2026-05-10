@@ -42,6 +42,31 @@ export async function generateFlashcards({ disciplina, topico, conteudo = '', qu
   });
 }
 
+export async function generateDailyNote(payload = {}) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
+  return postJson('/api/ai/daily-note', payload);
+}
+
+export async function analyzeStudyStats(payload = {}) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
+  return postJson('/api/ai/study-stats-insight', payload);
+}
+
+export async function generateMindMap(payload = {}) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
+  return postJson('/api/ai/generate-mind-map', payload);
+}
+
+export async function analyzeContestCompatibility(payload = {}) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
+  return postJson('/api/ai/contest-compatibility', payload);
+}
+
+export async function analyzeContestForm(payload = {}) {
+  if (!AI_ENABLED) throw new Error(ERR_DISABLED);
+  return postJson('/api/ai/contest-form', payload);
+}
+
 export async function explainQuestion({ enunciado, alternativas, gabarito, resposta_usuario }) {
   if (!AI_ENABLED) throw new Error(ERR_DISABLED);
   return postJson('/api/ai/explain-question', {
@@ -71,13 +96,14 @@ export async function checkAiHealth() {
       };
     }
 
-    const provider = String(data?.provider || 'offline').toLowerCase();
+    const status = String(data?.status || (data?.ok ? 'online' : 'offline')).toLowerCase();
+    const provider = String(data?.provider || (status === 'online' ? 'gateway' : 'offline')).toLowerCase();
     return {
       ...data,
       ok: Boolean(data?.ok ?? true),
       provider,
       model: String(data?.model || '').trim(),
-      status: provider === 'offline' ? 'offline' : 'online',
+      status: status === 'online' ? 'online' : 'offline',
     };
   } catch {
     return {
