@@ -27,7 +27,8 @@ import {
   X,
 } from 'lucide-react';
 import { resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
-import { analyzeContestForm, analyzeContestPdf } from '../lib/aiClient';
+import { analyzeContestForm } from '../lib/aiClient';
+import { extractTextFromPdf } from '../lib/redacoesApi';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
 
@@ -467,7 +468,6 @@ export default function AdminConcursos({
   const [aiFormText, setAiFormText] = useState('');
   const [aiInputMode, setAiInputMode] = useState('text'); // 'text' | 'pdf'
   const [aiPdfFile, setAiPdfFile] = useState(null);
-  const [aiPdfBase64, setAiPdfBase64] = useState('');
   const [isParsingContestForm, setIsParsingContestForm] = useState(false);
   const [contestFormImportStatus, setContestFormImportStatus] = useState('');
   const [contestFormOptions, setContestFormOptions] = useState([]);
@@ -709,21 +709,14 @@ export default function AdminConcursos({
 
   const handlePdfFileSelect = (file) => {
     if (!file) return;
-    const MAX_MB = 18;
+    const MAX_MB = 50;
     if (file.size > MAX_MB * 1024 * 1024) {
       alert(`O PDF selecionado tem ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é ${MAX_MB} MB.`);
       return;
     }
     setAiPdfFile(file);
-    setAiPdfBase64('');
     setContestFormImportStatus('');
     setContestFormOptions([]);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = String(event.target?.result || '').split(',')[1] || '';
-      setAiPdfBase64(base64);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleFillFromContestForm = async () => {
@@ -734,11 +727,22 @@ export default function AdminConcursos({
     try {
       let result;
       if (aiInputMode === 'pdf') {
-        if (!aiPdfBase64) {
-          alert('Aguarde o PDF carregar ou selecione um arquivo PDF.');
+        if (!aiPdfFile) {
+          alert('Selecione um arquivo PDF antes de preencher.');
           return;
         }
-        result = await analyzeContestPdf(aiPdfBase64);
+        setContestFormImportStatus('Extraindo texto do PDF...');
+        let pdfText;
+        try {
+          pdfText = await extractTextFromPdf(aiPdfFile);
+        } catch {
+          throw new Error('Nao foi possivel extrair texto deste PDF. Tente copiar o texto manualmente.');
+        }
+        if (!pdfText || pdfText.trim().length < 100) {
+          throw new Error('O PDF parece estar vazio ou nao contem texto selecionavel. Use a opcao "Colar texto".');
+        }
+        setContestFormImportStatus('Analisando edital com IA...');
+        result = await analyzeContestForm({ text: pdfText.slice(0, 60000) });
       } else {
         const source = aiFormText.trim();
         if (!source) {
@@ -1244,12 +1248,14 @@ export default function AdminConcursos({
                 onClick={handleFillFromContestForm}
                 disabled={
                   isParsingContestForm ||
-                  (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfBase64)
+                  (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfFile)
                 }
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
               >
                 {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                {isParsingContestForm ? 'Analisando...' : 'Preencher rascunho'}
+                {isParsingContestForm
+                  ? (contestFormImportStatus.startsWith('Extraindo') ? 'Extraindo PDF...' : 'Analisando...')
+                  : 'Preencher rascunho'}
               </button>
             </div>
 
@@ -1310,12 +1316,12 @@ export default function AdminConcursos({
                         <p className="text-sm font-bold text-indigo-700">{aiPdfFile.name}</p>
                         <p className="mt-0.5 text-xs text-indigo-500">
                           {(aiPdfFile.size / 1024 / 1024).toFixed(1)} MB
-                          {aiPdfBase64 ? ' · pronto para análise' : ' · carregando...'}
+                          {' · pronto para análise'}
                         </p>
                       </div>
                       <button
                         type="button"
-                        onClick={(e) => { e.preventDefault(); setAiPdfFile(null); setAiPdfBase64(''); }}
+                        onClick={(e) => { e.preventDefault(); setAiPdfFile(null); }}
                         className="text-xs font-semibold text-indigo-400 hover:text-indigo-600"
                       >
                         Trocar arquivo
