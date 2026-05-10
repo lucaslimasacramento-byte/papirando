@@ -181,8 +181,8 @@ function parseEtapaTagsFromText(text = '') {
   return tags;
 }
 
-function parseSubjectsFromContestForm(text = '') {
-  const section = String(text || '').split(/##\s*5\.\s*Conte[uú]do program[aá]tico/i)[1] || String(text || '');
+function parseSubjectsFromTextBlock(text = '') {
+  const section = String(text || '');
   const lines = section.split(/\r?\n/);
   const subjects = [];
   let current = null;
@@ -216,36 +216,83 @@ function parseSubjectsFromContestForm(text = '') {
   return subjects;
 }
 
+function parseSubjectsFromContestForm(text = '') {
+  const section = String(text || '').split(/##\s*5\.\s*Conte[uú]do program[aá]tico/i)[1] || String(text || '');
+  return parseSubjectsFromTextBlock(section);
+}
+
+function parseCargoBlocksFromContestForm(text = '') {
+  const section = String(text || '').split(/##\s*5\.\s*Conte[uú]do program[aá]tico/i)[1] || '';
+  const chunks = section
+    .split(/(?=^\s*\*{0,2}Cargo\/curso\*{0,2}\s*:)/gim)
+    .map((chunk) => chunk.trim())
+    .filter((chunk) => /^\*{0,2}Cargo\/curso\*{0,2}\s*:/i.test(chunk));
+
+  return chunks
+    .map((chunk) => {
+      const cargo = cleanImportedValue(chunk.match(/^\s*\*{0,2}Cargo\/curso\*{0,2}\s*:\s*(.+)$/im)?.[1] || '');
+      return {
+        cargo,
+        disciplinas: parseSubjectsFromTextBlock(chunk),
+      };
+    })
+    .filter((block) => block.cargo || block.disciplinas.length > 0);
+}
+
 function parseContestFormLocally(text = '') {
   const source = String(text || '');
   const etapas = extractMarkdownField(source, 'Resumo das etapas');
   const tafSection = source.match(/Itens do TAF[\s\S]*?(?=##\s*5\.|$)/i)?.[0] || '';
+  const baseTemplate = {
+    nome: extractMarkdownField(source, 'Nome do concurso'),
+    plano: extractMarkdownField(source, 'Plano interno'),
+    concurso: extractMarkdownField(source, 'Concurso / órgão') || extractMarkdownField(source, 'Concurso / orgão'),
+    area: normalizeImportedArea(extractMarkdownField(source, 'Área')),
+    cargo: extractMarkdownField(source, 'Cargo'),
+    banca: extractMarkdownField(source, 'Banca'),
+    salario: extractMarkdownField(source, 'Salário'),
+    inscricao_valor: extractMarkdownField(source, 'Valor da inscrição'),
+    escolaridade: extractMarkdownField(source, 'Escolaridade'),
+    vagas: extractMarkdownField(source, 'Vagas'),
+    lotacao: extractMarkdownField(source, 'Lotação'),
+    etapas,
+    etapas_tags: parseEtapaTagsFromText(source),
+    taf_itens: tafSection
+      .split(/\r?\n/)
+      .map((line) => cleanImportedValue(line.replace(/^[-*•]\s*/, '')))
+      .filter((line) => line && !/itens do taf|n[aã]o h[aá] taf/i.test(line)),
+    descricao: extractMarkdownField(source, 'Descrição curta'),
+    status_concurso: normalizeImportedStatus(extractMarkdownField(source, 'Status do concurso') || extractMarkdownField(source, 'Publicado?')),
+    prova_data: normalizeImportedDate(extractMarkdownField(source, 'Data da prova')),
+    edital_url: extractMarkdownField(source, 'URL do edital PDF'),
+  };
+  const cargoBlocks = parseCargoBlocksFromContestForm(source);
+  const commonSubjects = cargoBlocks
+    .filter((block) => /todos os cargos|todos os cursos|todas as fun/i.test(block.cargo))
+    .flatMap((block) => block.disciplinas);
+  const specificBlocks = cargoBlocks.filter((block) => !/todos os cargos|todos os cursos|todas as fun/i.test(block.cargo));
+  const templates =
+    specificBlocks.length > 0
+      ? specificBlocks.map((block) => {
+          const shortCargo = block.cargo.replace(/^Técnico de Nível Superior\s*[—-]\s*/i, '').trim();
+          return {
+            ...baseTemplate,
+            nome: `${baseTemplate.nome}${shortCargo ? ` — ${shortCargo}` : ''}`,
+            plano: `${baseTemplate.concurso || baseTemplate.nome}${shortCargo ? ` — ${shortCargo}` : ''}`,
+            cargo: block.cargo || baseTemplate.cargo,
+            disciplinas: [...commonSubjects, ...block.disciplinas],
+          };
+        })
+      : [
+          {
+            ...baseTemplate,
+            disciplinas: parseSubjectsFromContestForm(source),
+          },
+        ];
 
   return {
-    template: {
-      nome: extractMarkdownField(source, 'Nome do concurso'),
-      plano: extractMarkdownField(source, 'Plano interno'),
-      concurso: extractMarkdownField(source, 'Concurso / órgão') || extractMarkdownField(source, 'Concurso / orgão'),
-      area: normalizeImportedArea(extractMarkdownField(source, 'Área')),
-      cargo: extractMarkdownField(source, 'Cargo'),
-      banca: extractMarkdownField(source, 'Banca'),
-      salario: extractMarkdownField(source, 'Salário'),
-      inscricao_valor: extractMarkdownField(source, 'Valor da inscrição'),
-      escolaridade: extractMarkdownField(source, 'Escolaridade'),
-      vagas: extractMarkdownField(source, 'Vagas'),
-      lotacao: extractMarkdownField(source, 'Lotação'),
-      etapas,
-      etapas_tags: parseEtapaTagsFromText(source),
-      taf_itens: tafSection
-        .split(/\r?\n/)
-        .map((line) => cleanImportedValue(line.replace(/^[-*•]\s*/, '')))
-        .filter((line) => line && !/itens do taf|n[aã]o h[aá] taf/i.test(line)),
-      descricao: extractMarkdownField(source, 'Descrição curta'),
-      status_concurso: normalizeImportedStatus(extractMarkdownField(source, 'Status do concurso') || extractMarkdownField(source, 'Publicado?')),
-      prova_data: normalizeImportedDate(extractMarkdownField(source, 'Data da prova')),
-      edital_url: extractMarkdownField(source, 'URL do edital PDF'),
-      disciplinas: parseSubjectsFromContestForm(source),
-    },
+    template: templates[0] || { ...baseTemplate, disciplinas: [] },
+    templates,
     uncertainties: (source.match(/^\s*[-*]\s*\*\*[^:\n]+:\*\*.*$/gim) || []).filter((line) => UNCERTAIN_PATTERN.test(line)),
     notes: ['Preenchido por leitura local do formulário. Revise antes de publicar.'],
   };
@@ -337,6 +384,7 @@ export default function AdminConcursos({
   const [aiFormText, setAiFormText] = useState('');
   const [isParsingContestForm, setIsParsingContestForm] = useState(false);
   const [contestFormImportStatus, setContestFormImportStatus] = useState('');
+  const [contestFormOptions, setContestFormOptions] = useState([]);
 
   useEffect(() => {
     try {
@@ -486,8 +534,9 @@ export default function AdminConcursos({
     }));
   };
 
-  const applyContestFormTemplate = (result = {}) => {
-    const template = result.template || {};
+  const applyContestFormTemplate = (result = {}, optionIndex = 0) => {
+    const templates = Array.isArray(result.templates) && result.templates.length > 0 ? result.templates : [];
+    const template = templates[optionIndex] || result.template || {};
     const importedSubjects = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
       .map((subject) => ({
         nome: String(subject?.nome || subject?.name || '').trim(),
@@ -532,7 +581,7 @@ export default function AdminConcursos({
     setContestFormImportStatus(
       `Rascunho preenchido com ${subjectCount} disciplina(s) e ${topicCount} topico(s). ${
         uncertaintyCount ? `${uncertaintyCount} incerteza(s) foram mantidas para revisao.` : 'Sem incertezas destacadas.'
-      }`
+      }${templates.length > 1 ? ` ${templates.length} opcoes separadas foram identificadas.` : ''}`
     );
   };
 
@@ -545,13 +594,17 @@ export default function AdminConcursos({
 
     setIsParsingContestForm(true);
     setContestFormImportStatus('');
+    setContestFormOptions([]);
 
     try {
       const result = await analyzeContestForm({ text: source });
+      const templates = Array.isArray(result.templates) && result.templates.length > 0 ? result.templates : [];
+      setContestFormOptions(templates);
       applyContestFormTemplate(result);
     } catch (error) {
       console.warn('Falha na IA ao interpretar formulario de concurso; usando leitura local.', error);
       const fallback = parseContestFormLocally(source);
+      setContestFormOptions(Array.isArray(fallback.templates) ? fallback.templates : []);
       applyContestFormTemplate(fallback);
       setContestFormImportStatus((prev) =>
         `${prev} A IA nao respondeu agora, entao usei a leitura local do formulario.`
@@ -1033,6 +1086,7 @@ export default function AdminConcursos({
               onChange={(event) => {
                 setAiFormText(event.target.value);
                 setContestFormImportStatus('');
+                setContestFormOptions([]);
               }}
               placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
               className="mt-4 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
@@ -1042,6 +1096,39 @@ export default function AdminConcursos({
               <p className="mt-3 rounded-2xl border border-indigo-100 bg-white px-4 py-3 text-sm font-semibold text-indigo-700">
                 {contestFormImportStatus}
               </p>
+            )}
+
+            {contestFormOptions.length > 1 && (
+              <div className="mt-4 rounded-[1.4rem] border border-indigo-100 bg-white p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">
+                  Opções separadas encontradas
+                </p>
+                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {contestFormOptions.map((option, optionIndex) => {
+                    const subjectCount = Array.isArray(option.disciplinas) ? option.disciplinas.length : 0;
+                    const topicCount = (option.disciplinas || []).reduce(
+                      (acc, subject) => acc + (subject.topicos?.length || subject.topics?.length || 0),
+                      0
+                    );
+
+                    return (
+                      <button
+                        key={`${option.nome || option.cargo || 'opcao'}-${optionIndex}`}
+                        type="button"
+                        onClick={() => applyContestFormTemplate({ templates: contestFormOptions }, optionIndex)}
+                        className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50"
+                      >
+                        <span className="line-clamp-2 text-sm font-bold text-slate-900">
+                          {option.nome || option.cargo || `Opção ${optionIndex + 1}`}
+                        </span>
+                        <span className="mt-2 block text-xs font-semibold text-gray-500">
+                          {subjectCount} disciplina(s) · {topicCount} tópico(s)
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 

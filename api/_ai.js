@@ -620,10 +620,13 @@ export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
   if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
 
-  const prompt = `Transforme este formulario analisado de edital em um template de concurso para cadastro no Papirando.
+  const prompt = `Transforme este formulario analisado de edital em templates de concurso para cadastro no Papirando.
 Use somente as informacoes enviadas. Se um campo vier como "Nao tenho certeza", "Nao consta", "Nao encontrado" ou equivalente, mantenha vazio quando for um campo simples ou coloque a observacao em uncertainties.
 Nao invente cor, imagem ou URL direta de PDF.
 Preserve todas as disciplinas e todos os topicos encontrados. Concursos podem ter muitas disciplinas e muitos topicos por disciplina.
+Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
+Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
+Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
 
 Campos aceitos:
 - area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
@@ -632,25 +635,26 @@ Campos aceitos:
 - etapas_tags pode conter: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
 
 JSON esperado:
-{"template":{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]},"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
+{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo"],"notes":["observacao para revisao"]}
 
 Formulario:
 ${source.slice(0, 30000)}`;
 
   const result = await runJson(prompt, { schemaName: 'contest_form_template' });
-  const template = result.json?.template || result.json || {};
-  const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
-    .map((subject) => ({
-      nome: String(subject?.nome || subject?.name || '').trim(),
-      topicos: clampList(subject?.topicos || subject?.topics, 160),
-    }))
-    .filter((subject) => subject.nome);
+  const rawTemplates = Array.isArray(result.json?.templates)
+    ? result.json.templates
+    : result.json?.template
+      ? [result.json.template]
+      : [result.json || {}];
+  const normalizeTemplate = (template = {}) => {
+    const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+      .map((subject) => ({
+        nome: String(subject?.nome || subject?.name || '').trim(),
+        topicos: clampList(subject?.topicos || subject?.topics, 160),
+      }))
+      .filter((subject) => subject.nome);
 
-  return {
-    provider: result.provider,
-    source: result.provider,
-    model: result.model,
-    template: {
+    return {
       nome: String(template.nome || '').trim(),
       plano: String(template.plano || '').trim(),
       concurso: String(template.concurso || '').trim(),
@@ -670,7 +674,16 @@ ${source.slice(0, 30000)}`;
       prova_data: String(template.prova_data || '').trim(),
       edital_url: String(template.edital_url || '').trim(),
       disciplinas,
-    },
+    };
+  };
+  const templates = rawTemplates.map((template) => normalizeTemplate(template)).filter((template) => template.nome || template.cargo || template.disciplinas.length);
+
+  return {
+    provider: result.provider,
+    source: result.provider,
+    model: result.model,
+    template: templates[0] || normalizeTemplate({}),
+    templates,
     uncertainties: clampList(result.json?.uncertainties, 40),
     notes: clampList(result.json?.notes, 20),
   };

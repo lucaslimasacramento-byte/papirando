@@ -1965,53 +1965,65 @@ async function summarizeTopic({ text, topico = '', disciplina = '' }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function normalizeContestFormTemplate(parsed = {}, provider = 'ai', model = '') {
-  const template = parsed?.template || parsed || {};
   const toList = (items, max = 80) =>
     (Array.isArray(items) ? items : [])
       .map((item) => String(item || '').trim())
       .filter(Boolean)
       .slice(0, max);
+  const rawTemplates = Array.isArray(parsed?.templates)
+    ? parsed.templates
+    : parsed?.template
+      ? [parsed.template]
+      : [parsed || {}];
+  const normalizeTemplate = (template = {}) => ({
+    nome: sanitizeValue(template.nome, ''),
+    plano: sanitizeValue(template.plano, ''),
+    concurso: sanitizeValue(template.concurso, ''),
+    area: sanitizeValue(template.area, 'Geral'),
+    cargo: sanitizeValue(template.cargo, ''),
+    banca: sanitizeValue(template.banca, ''),
+    salario: sanitizeValue(template.salario, ''),
+    inscricao_valor: sanitizeValue(template.inscricao_valor, ''),
+    escolaridade: sanitizeValue(template.escolaridade, ''),
+    vagas: sanitizeValue(template.vagas, ''),
+    lotacao: sanitizeValue(template.lotacao, ''),
+    etapas: sanitizeValue(template.etapas, ''),
+    etapas_tags: toList(template.etapas_tags, 12),
+    taf_itens: toList(template.taf_itens, 20),
+    descricao: sanitizeValue(template.descricao, ''),
+    status_concurso: sanitizeValue(template.status_concurso, 'suspeito'),
+    prova_data: sanitizeValue(template.prova_data, ''),
+    edital_url: sanitizeValue(template.edital_url, ''),
+    disciplinas: (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+      .map((subject) => ({
+        nome: sanitizeValue(subject?.nome || subject?.name, ''),
+        topicos: toList(subject?.topicos || subject?.topics, 160),
+      }))
+      .filter((subject) => subject.nome),
+  });
+  const templates = rawTemplates
+    .map((template) => normalizeTemplate(template))
+    .filter((template) => template.nome || template.cargo || template.disciplinas.length);
 
   return {
     provider,
     source: provider,
     model,
-    template: {
-      nome: sanitizeValue(template.nome, ''),
-      plano: sanitizeValue(template.plano, ''),
-      concurso: sanitizeValue(template.concurso, ''),
-      area: sanitizeValue(template.area, 'Geral'),
-      cargo: sanitizeValue(template.cargo, ''),
-      banca: sanitizeValue(template.banca, ''),
-      salario: sanitizeValue(template.salario, ''),
-      inscricao_valor: sanitizeValue(template.inscricao_valor, ''),
-      escolaridade: sanitizeValue(template.escolaridade, ''),
-      vagas: sanitizeValue(template.vagas, ''),
-      lotacao: sanitizeValue(template.lotacao, ''),
-      etapas: sanitizeValue(template.etapas, ''),
-      etapas_tags: toList(template.etapas_tags, 12),
-      taf_itens: toList(template.taf_itens, 20),
-      descricao: sanitizeValue(template.descricao, ''),
-      status_concurso: sanitizeValue(template.status_concurso, 'suspeito'),
-      prova_data: sanitizeValue(template.prova_data, ''),
-      edital_url: sanitizeValue(template.edital_url, ''),
-      disciplinas: (Array.isArray(template.disciplinas) ? template.disciplinas : [])
-        .map((subject) => ({
-          nome: sanitizeValue(subject?.nome || subject?.name, ''),
-          topicos: toList(subject?.topicos || subject?.topics, 160),
-        }))
-        .filter((subject) => subject.nome),
-    },
+    template: templates[0] || normalizeTemplate({}),
+    templates,
     uncertainties: toList(parsed?.uncertainties, 40),
     notes: toList(parsed?.notes, 20),
   };
 }
 
 function buildContestFormPrompt(text) {
-  return `Transforme este formulario analisado de edital em JSON de template para cadastro no Papirando.
+  return `Transforme este formulario analisado de edital em JSON de templates para cadastro no Papirando.
 Use somente as informacoes enviadas. Nao invente cor, imagem ou URL direta de PDF.
 Se um campo estiver incerto, ausente ou vier como "Nao tenho certeza", deixe vazio quando for campo simples e registre em uncertainties.
 Preserve todas as disciplinas e todos os topicos por disciplina.
+Se houver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
+Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
+Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
 
 Campos:
 - area: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude ou Geral. Juridica/Direito = Tribunais.
@@ -2020,7 +2032,7 @@ Campos:
 - etapas_tags: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
 
 Responda SOMENTE com JSON:
-{"template":{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]},"uncertainties":[""],"notes":[""]}
+{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":[""],"notes":[""]}
 
 Formulario:
 ${String(text || '').slice(0, 30000)}`;
