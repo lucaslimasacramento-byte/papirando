@@ -11,15 +11,30 @@ async function parseJson(response) {
 async function postJson(path, payload) {
   const baseUrl = resolveAiBaseUrl();
 
-  const response = await fetch(`${baseUrl}${path}`, {
-    method: 'POST',
-    headers: await resolveAiHeaders(),
-    body: JSON.stringify(payload || {}),
-  });
+  let response;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 55_000); // 55s client timeout
+    try {
+      response = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: await resolveAiHeaders(),
+        body: JSON.stringify(payload || {}),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (networkErr) {
+    if (networkErr?.name === 'AbortError') {
+      throw new Error('A analise demorou demais. Tente um PDF menor ou use a opcao de colar texto.');
+    }
+    throw new Error(`Sem conexao com o servidor de IA (${networkErr?.message || 'network error'}).`);
+  }
 
   const data = await parseJson(response);
   if (!response.ok) {
-    throw new Error(data?.error || 'Falha ao conectar com o servidor de IA.');
+    throw new Error(data?.error || `Erro ${response.status} no servidor de IA.`);
   }
 
   return data;

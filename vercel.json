@@ -24,6 +24,11 @@
       ]
     }
   ],
+  "functions": {
+    "api/ai.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     { "source": "/api/ai/(.*)", "destination": "/api/ai?route=$1" },
     { "source": "/api/generate-flashcards", "destination": "/api/ai?route=generate-flashcards" },
