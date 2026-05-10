@@ -14,6 +14,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
+import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
 import { normalizeLead } from './lib/adminCrm';
@@ -4363,6 +4364,17 @@ export default function App() {
 
   const saveContestTemplate = async (templateData, existingTemplate = null) => {
     await ensureAdminSession();
+
+    try {
+      const saved = await saveContestTemplateAdmin({
+        templateData,
+        existingId: existingTemplate?.id || null,
+      });
+      await refreshContestLibrary();
+      return saved;
+    } catch (apiError) {
+      console.warn('[contest_templates] Falha ao salvar pela API administrativa; tentando Supabase direto:', apiError?.message || apiError);
+    }
 
     const slug = buildTemplateSlug(templateData.slug || templateData.nome) || `template-${Date.now()}`;
     const isPublished = Boolean(templateData.is_public);

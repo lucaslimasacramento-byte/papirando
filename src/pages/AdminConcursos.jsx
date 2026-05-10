@@ -58,6 +58,7 @@ const ETAPA_OPTIONS = [
   { value: 'heteroidentificacao', label: 'Heteroidentificação' },
   { value: 'curso_formacao', label: 'Curso de formação' },
 ];
+const ETAPA_OPTION_VALUES = ETAPA_OPTIONS.map((option) => option.value);
 
 const AREA_OPTIONS = ['Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
 
@@ -469,6 +470,7 @@ export default function AdminConcursos({
   const [contestFormOptions, setContestFormOptions] = useState([]);
   const [contestQuery, setContestQuery] = useState('');
   const [contestAreaFilter, setContestAreaFilter] = useState('Todos');
+  const [customEtapaText, setCustomEtapaText] = useState('');
 
   useEffect(() => {
     try {
@@ -590,6 +592,21 @@ export default function AdminConcursos({
         taf_itens: etapasTags.includes('taf') ? prev.taf_itens : ['Corrida'],
       };
     });
+  };
+
+  const addCustomEtapa = () => {
+    const label = customEtapaText.trim();
+    if (!label) return;
+
+    setForm((prev) => {
+      const alreadyExists = prev.etapas_tags.some((item) => item.toLowerCase() === label.toLowerCase());
+      return {
+        ...prev,
+        etapas_tags: alreadyExists ? prev.etapas_tags : [...prev.etapas_tags, label],
+        etapas: prev.etapas || label,
+      };
+    });
+    setCustomEtapaText('');
   };
 
   const updateTafItem = (index, value) => {
@@ -1356,7 +1373,10 @@ export default function AdminConcursos({
               </div>
 
               <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas do concurso</p>
+                <div className="flex flex-col gap-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas do concurso</p>
+                  <p className="text-xs font-semibold text-gray-500">Marque as etapas comuns ou adicione uma etapa específica do edital.</p>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {ETAPA_OPTIONS.map((option) => {
                     const active = form.etapas_tags.includes(option.value);
@@ -1374,6 +1394,48 @@ export default function AdminConcursos({
                     );
                   })}
                 </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(240px,1fr)_auto]">
+                  <input
+                    value={customEtapaText}
+                    onChange={(event) => setCustomEtapaText(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        addCustomEtapa();
+                      }
+                    }}
+                    placeholder="Ex.: Avaliação curricular, prova prática, títulos, perícia médica"
+                    className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomEtapa}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50"
+                  >
+                    <Plus size={16} />
+                    Adicionar etapa
+                  </button>
+                </div>
+
+                {form.etapas_tags.some((tag) => !ETAPA_OPTION_VALUES.includes(tag)) && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {form.etapas_tags
+                      .filter((tag) => !ETAPA_OPTION_VALUES.includes(tag))
+                      .map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleEtapaTag(tag)}
+                          className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-700"
+                          title="Remover etapa"
+                        >
+                          {tag}
+                          <X size={14} />
+                        </button>
+                      ))}
+                  </div>
+                )}
 
                 {form.etapas_tags.includes('taf') && (
                   <div className="mt-5 rounded-[1.2rem] border border-blue-100 bg-blue-50/60 p-4">
