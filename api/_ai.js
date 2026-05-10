@@ -628,6 +628,18 @@ Se o formulario tiver multiplos cargos, funcoes, areas de atuacao ou blocos "Car
 Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
 Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
 
+Regras de preenchimento direto:
+- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
+- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
+- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
+- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
+- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
+- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
+- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
+- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
+- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
+- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
+
 Campos aceitos:
 - area deve ser uma destas quando possivel: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude, Geral. Se a area for juridica/direito, use Tribunais.
 - status_concurso deve ser: confirmado, previsto, suspeito, suspenso ou encerrado.
@@ -641,6 +653,67 @@ Formulario:
 ${source.slice(0, 30000)}`;
 
   const result = await runJson(prompt, { schemaName: 'contest_form_template' });
+  const isUncertain = (value = '') => /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o localizei|incerto|equivalente/i.test(String(value || ''));
+  const normalizeCargoKey = (value = '') =>
+    String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  const extractMoney = (value = '') => {
+    const matches = String(value || '').match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g);
+    return matches || [];
+  };
+  const pickSalaryForCargo = (salary = '', cargo = '') => {
+    if (isUncertain(salary)) return '';
+    const text = String(salary || '');
+    const values = extractMoney(text);
+    if (values.length <= 1) return values[0] || text.trim();
+
+    const key = normalizeCargoKey(cargo);
+    const lines = text.split(/\r?\n|\*/).map((line) => line.trim()).filter(Boolean);
+    const matchedLine = lines.find((line) => {
+      const normalized = normalizeCargoKey(line);
+      if (!extractMoney(line).length) return false;
+      if (/nivel superior|superior/.test(key) && /nivel superior|superior/.test(normalized)) return true;
+      if (/nivel medio|medio|atendente/.test(key) && /nivel medio|medio|atendente/.test(normalized)) return true;
+      return key.split(/[\s—-]+/).filter((part) => part.length > 4).some((part) => normalized.includes(part));
+    });
+    return extractMoney(matchedLine || '')[0] || values[0] || '';
+  };
+  const normalizeEducationForCargo = (education = '', cargo = '') => {
+    const key = normalizeCargoKey(`${cargo} ${education}`);
+    if (/nivel superior|superior|bacharel|diploma de curso superior/.test(key)) return 'Nível superior';
+    if (/nivel medio|medio|ensino medio|atendente/.test(key)) return 'Nível médio';
+    return isUncertain(education) ? '' : String(education || '').trim();
+  };
+  const normalizeVacancies = (value = '') => {
+    if (isUncertain(value)) return '';
+    const text = String(value || '').trim();
+    const total = text.match(/\b(\d{1,5})\s+vagas?\s+totais?\b/i);
+    if (total) return total[1];
+    const firstNumber = text.match(/\b\d{1,5}\b/);
+    return firstNumber ? firstNumber[0] : text;
+  };
+  const normalizeLocationForCargo = (location = '', cargo = '') => {
+    if (isUncertain(location)) return '';
+    const text = String(location || '').replace(/\s+/g, ' ').trim();
+    const key = normalizeCargoKey(cargo);
+    const normalized = normalizeCargoKey(text);
+    if (/nivel superior|superior/.test(key) && /para nivel superior[^.]*salvador/.test(normalized)) return 'Salvador-BA';
+    if (/salvador/.test(normalized) && /nivel superior|superior/.test(key)) return 'Salvador-BA';
+    const firstSentence = text.split(/\.\s+/)[0]?.trim();
+    return firstSentence || text;
+  };
+  const normalizeSubject = (subject = {}) => {
+    const name = String(subject?.nome || subject?.name || '').trim();
+    const normalizedName = normalizeCargoKey(name);
+    if (/requisitos?|atribuicoes?|atribuições?|funcao|função/.test(normalizedName)) return null;
+    const fallbackName = /nao se aplica|não se aplica/.test(normalizedName) ? 'Avaliação Curricular' : name;
+    return {
+      nome: fallbackName,
+      topicos: clampList(subject?.topicos || subject?.topics, 160),
+    };
+  };
   const rawTemplates = Array.isArray(result.json?.templates)
     ? result.json.templates
     : result.json?.template
@@ -648,11 +721,8 @@ ${source.slice(0, 30000)}`;
       : [result.json || {}];
   const normalizeTemplate = (template = {}) => {
     const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
-      .map((subject) => ({
-        nome: String(subject?.nome || subject?.name || '').trim(),
-        topicos: clampList(subject?.topicos || subject?.topics, 160),
-      }))
-      .filter((subject) => subject.nome);
+      .map((subject) => normalizeSubject(subject))
+      .filter((subject) => subject?.nome);
 
     return {
       nome: String(template.nome || '').trim(),
@@ -661,11 +731,11 @@ ${source.slice(0, 30000)}`;
       area: String(template.area || 'Geral').trim(),
       cargo: String(template.cargo || '').trim(),
       banca: String(template.banca || '').trim(),
-      salario: String(template.salario || '').trim(),
+      salario: pickSalaryForCargo(template.salario, template.cargo),
       inscricao_valor: String(template.inscricao_valor || '').trim(),
-      escolaridade: String(template.escolaridade || '').trim(),
-      vagas: String(template.vagas || '').trim(),
-      lotacao: String(template.lotacao || '').trim(),
+      escolaridade: normalizeEducationForCargo(template.escolaridade, template.cargo),
+      vagas: normalizeVacancies(template.vagas),
+      lotacao: normalizeLocationForCargo(template.lotacao, template.cargo),
       etapas: String(template.etapas || '').trim(),
       etapas_tags: clampList(template.etapas_tags, 12),
       taf_itens: clampList(template.taf_itens, 20),

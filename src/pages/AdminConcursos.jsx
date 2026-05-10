@@ -153,6 +153,62 @@ function normalizeImportedDate(value = '') {
   return '';
 }
 
+function normalizeCargoKey(value = '') {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function extractMoneyValues(value = '') {
+  return String(value || '').match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g) || [];
+}
+
+function pickImportedSalaryForCargo(salary = '', cargo = '') {
+  if (UNCERTAIN_PATTERN.test(String(salary || ''))) return '';
+  const text = cleanImportedValue(salary);
+  const values = extractMoneyValues(text);
+  if (values.length <= 1) return values[0] || text;
+
+  const cargoKey = normalizeCargoKey(cargo);
+  const lines = text.split(/\r?\n|\*/).map((line) => line.trim()).filter(Boolean);
+  const matchedLine = lines.find((line) => {
+    const lineKey = normalizeCargoKey(line);
+    if (!extractMoneyValues(line).length) return false;
+    if (/nivel superior|superior/.test(cargoKey) && /nivel superior|superior/.test(lineKey)) return true;
+    if (/nivel medio|medio|atendente/.test(cargoKey) && /nivel medio|medio|atendente/.test(lineKey)) return true;
+    return cargoKey.split(/[\s—-]+/).filter((part) => part.length > 4).some((part) => lineKey.includes(part));
+  });
+
+  return extractMoneyValues(matchedLine || '')[0] || values[0] || '';
+}
+
+function normalizeImportedEducationForCargo(education = '', cargo = '') {
+  const key = normalizeCargoKey(`${cargo} ${education}`);
+  if (/nivel superior|superior|bacharel|diploma de curso superior/.test(key)) return 'Nível superior';
+  if (/nivel medio|medio|ensino medio|atendente/.test(key)) return 'Nível médio';
+  return UNCERTAIN_PATTERN.test(String(education || '')) ? '' : cleanImportedValue(education);
+}
+
+function normalizeImportedVacancies(value = '') {
+  if (UNCERTAIN_PATTERN.test(String(value || ''))) return '';
+  const text = cleanImportedValue(value);
+  const total = text.match(/\b(\d{1,5})\s+vagas?\s+totais?\b/i);
+  if (total) return total[1];
+  const firstNumber = text.match(/\b\d{1,5}\b/);
+  return firstNumber ? firstNumber[0] : text;
+}
+
+function normalizeImportedLocationForCargo(location = '', cargo = '') {
+  if (UNCERTAIN_PATTERN.test(String(location || ''))) return '';
+  const text = cleanImportedValue(location).replace(/\s+/g, ' ');
+  const cargoKey = normalizeCargoKey(cargo);
+  const locationKey = normalizeCargoKey(text);
+  if (/nivel superior|superior/.test(cargoKey) && /para nivel superior[^.]*salvador/.test(locationKey)) return 'Salvador-BA';
+  if (/nivel superior|superior/.test(cargoKey) && /salvador/.test(locationKey)) return 'Salvador-BA';
+  return text.split(/\.\s+/)[0]?.trim() || text;
+}
+
 function extractMarkdownField(text, label) {
   const source = String(text || '');
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -217,9 +273,23 @@ function parseSubjectsFromTextBlock(text = '') {
   return subjects;
 }
 
+function normalizeImportedSubjects(subjects = []) {
+  return subjects
+    .map((subject) => {
+      const name = cleanImportedValue(subject.nome);
+      const nameKey = normalizeCargoKey(name);
+      if (/requisitos?|atribuicoes?|atribuições?|funcao|função/.test(nameKey)) return null;
+      return {
+        ...subject,
+        nome: /nao se aplica|não se aplica/.test(nameKey) ? 'Avaliação Curricular' : name,
+      };
+    })
+    .filter((subject) => subject?.nome);
+}
+
 function parseSubjectsFromContestForm(text = '') {
   const section = String(text || '').split(/##\s*5\.\s*Conte[uú]do program[aá]tico/i)[1] || String(text || '');
-  return parseSubjectsFromTextBlock(section);
+  return normalizeImportedSubjects(parseSubjectsFromTextBlock(section));
 }
 
 function parseCargoBlocksFromContestForm(text = '') {
@@ -234,7 +304,7 @@ function parseCargoBlocksFromContestForm(text = '') {
       const cargo = cleanImportedValue(chunk.match(/^\s*\*{0,2}Cargo\/curso\*{0,2}\s*:\s*(.+)$/im)?.[1] || '');
       return {
         cargo,
-        disciplinas: parseSubjectsFromTextBlock(chunk),
+        disciplinas: normalizeImportedSubjects(parseSubjectsFromTextBlock(chunk)),
       };
     })
     .filter((block) => block.cargo || block.disciplinas.length > 0);
@@ -242,7 +312,9 @@ function parseCargoBlocksFromContestForm(text = '') {
 
 function parseContestFormLocally(text = '') {
   const source = String(text || '');
-  const etapas = extractMarkdownField(source, 'Resumo das etapas');
+  const etapas =
+    extractMarkdownField(source, 'Resumo das etapas') ||
+    (/avalia[cç][aã]o curricular/i.test(source) ? 'Avaliação curricular, de caráter eliminatório e classificatório.' : '');
   const tafSection = source.match(/Itens do TAF[\s\S]*?(?=##\s*5\.|$)/i)?.[0] || '';
   const baseTemplate = {
     nome: extractMarkdownField(source, 'Nome do concurso'),
@@ -276,17 +348,26 @@ function parseContestFormLocally(text = '') {
     specificBlocks.length > 0
       ? specificBlocks.map((block) => {
           const shortCargo = block.cargo.replace(/^Técnico de Nível Superior\s*[—-]\s*/i, '').trim();
+          const cargo = block.cargo || baseTemplate.cargo;
           return {
             ...baseTemplate,
             nome: `${baseTemplate.nome}${shortCargo ? ` — ${shortCargo}` : ''}`,
             plano: `${baseTemplate.concurso || baseTemplate.nome}${shortCargo ? ` — ${shortCargo}` : ''}`,
-            cargo: block.cargo || baseTemplate.cargo,
+            cargo,
+            salario: pickImportedSalaryForCargo(baseTemplate.salario, cargo),
+            escolaridade: normalizeImportedEducationForCargo(baseTemplate.escolaridade, cargo),
+            vagas: normalizeImportedVacancies(baseTemplate.vagas),
+            lotacao: normalizeImportedLocationForCargo(baseTemplate.lotacao, cargo),
             disciplinas: [...commonSubjects, ...block.disciplinas],
           };
         })
       : [
           {
             ...baseTemplate,
+            salario: pickImportedSalaryForCargo(baseTemplate.salario, baseTemplate.cargo),
+            escolaridade: normalizeImportedEducationForCargo(baseTemplate.escolaridade, baseTemplate.cargo),
+            vagas: normalizeImportedVacancies(baseTemplate.vagas),
+            lotacao: normalizeImportedLocationForCargo(baseTemplate.lotacao, baseTemplate.cargo),
             disciplinas: parseSubjectsFromContestForm(source),
           },
         ];
