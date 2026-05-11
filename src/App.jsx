@@ -22,6 +22,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
+import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
@@ -4379,7 +4380,7 @@ export default function App() {
   };
 
   const uploadContestAsset = async ({ file, bucket, folder, existingUrl = '' }) => {
-    await ensureAdminSession();
+    const adminSession = await ensureAdminSession();
 
     if (!file) throw new Error('Selecione um arquivo antes de enviar.');
 
@@ -4401,36 +4402,12 @@ export default function App() {
       if (size > 25 * 1024 * 1024) throw new Error('O PDF deve ter no maximo 25 MB.');
     }
 
-    const safeBaseName = String(file.name || 'arquivo')
-      .replace(/\.[^/.]+$/, '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 60);
-
-    const filePath = `${folder}/${Date.now()}-${safeBaseName || 'arquivo'}.${extension}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file, {
-        upsert: false,
-        contentType: file.type || undefined,
-      });
-
-    if (uploadError) throw uploadError;
-
-    const oldPath = getStoragePathFromUrl(existingUrl, bucket);
-    if (oldPath) {
-      const { error: removeError } = await supabase.storage.from(bucket).remove([oldPath]);
-      if (removeError) {
-        console.warn('Nao foi possivel remover o arquivo antigo do bucket:', removeError);
-      }
-    }
-
-    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-    return data.publicUrl;
+    return uploadContestAssetAdmin({
+      file,
+      kind: isImageBucket ? 'image' : 'edital',
+      existingUrl,
+      adminEmail: adminSession?.user?.email || currentUserEmail || currentProfile?.email || '',
+    });
   };
 
   const saveContestTemplate = async (templateData, existingTemplate = null) => {
