@@ -62,6 +62,20 @@ export function _setGlobalToastAdd(fn) {
   _globalAdd = fn;
 }
 
+// Override window.alert as early as possible (module load time).
+// This covers alerts triggered before React mounts or in catch blocks
+// that run synchronously before useEffect fires.
+if (typeof window !== 'undefined') {
+  const _nativeAlert = window.alert.bind(window);
+  window.alert = (msg) => {
+    if (_globalAdd) {
+      _globalAdd({ variant: 'warning', message: String(msg || '') });
+    } else {
+      _nativeAlert(msg);
+    }
+  };
+}
+
 // ─── Single Toast Item ────────────────────────────────────────────────────────
 
 function ToastItem({ id, variant = 'info', title, message, duration = DEFAULT_DURATION, onDismiss }) {
@@ -195,18 +209,7 @@ export function ToastProvider({ children }) {
     return () => _setGlobalToastAdd(null);
   }, [add]);
 
-  // Override window.alert globally
-  useEffect(() => {
-    const original = window.alert;
-    window.alert = (msg) => {
-      if (_globalAdd) {
-        _globalAdd({ variant: 'warning', message: String(msg || '') });
-      } else {
-        original(msg);
-      }
-    };
-    return () => { window.alert = original; };
-  }, []);
+  // No need to override here — already done at module load time above.
 
   return (
     <ToastContext.Provider value={add}>

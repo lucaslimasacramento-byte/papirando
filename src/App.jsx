@@ -4345,7 +4345,16 @@ export default function App() {
     }
 
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) throw sessionError;
+    if (sessionError) {
+      // JWT corrompido no storage local → limpa e pede novo login
+      const msg = String(sessionError?.message || '').toLowerCase();
+      if (msg.includes('claim') || msg.includes('jwt') || msg.includes('token') || msg.includes('sub')) {
+        clearInvalidSupabaseAuthStorage();
+        syncAuthSessionState(null);
+        throw new Error('Sua sessao expirou ou ficou corrompida. Saia e entre novamente para continuar.');
+      }
+      throw sessionError;
+    }
 
     let session = sessionData?.session || null;
     if (!session?.access_token) {
