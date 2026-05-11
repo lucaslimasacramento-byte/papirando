@@ -308,7 +308,7 @@ export default function ConcursoDetalhe({
             </div>
           </div>
         )}
-        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 xl:min-w-[30rem] 2xl:min-w-[34rem] [&>*]:min-w-0"
+        statGridClassName="hidden"
         stats={[
           { key: 'pr', label: 'Prova', value: formatDateBR(contest.prova_data), icon: CalendarDays, accent: 'blue', valueClassName: '!text-sm sm:!text-base' },
           { key: 'sl', label: 'Salário', value: formatCurrencyBR(contest.salario), icon: DollarSign, accent: 'emerald' },
@@ -316,8 +316,7 @@ export default function ConcursoDetalhe({
           { key: 'tp', label: 'Tópicos', value: String(topicosCount), icon: BadgeCheck, accent: 'violet' },
         ]}
         trailingClassName="max-w-full"
-        trailingWrapClassName="xl:max-w-[52rem] 2xl:max-w-[58rem]"
-        statsStackBelowTrailing
+        trailingWrapClassName="xl:max-w-[42rem]"
         trailing={(
           <div className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
             <button

@@ -501,21 +501,21 @@ export default function ConcursosDisponiveis({
                         onClick={() => handleOpenContest(contest)}
                         className="block w-full text-left"
                       >
-                        <div className="flex h-40 items-center justify-center border-b border-slate-100 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 p-5">
+                        <div className="flex h-48 items-center justify-center overflow-hidden border-b border-slate-100 bg-white">
                           {contest.imagem_url ? (
                             <img
                               src={contest.imagem_url}
                               alt={contest.nome}
-                              className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-[1.04]"
+                              className="h-full w-full object-contain transition-transform duration-300 scale-[1.18] group-hover:scale-[1.24]"
                             />
                           ) : (
                             <div
-                              className="flex h-24 w-24 items-center justify-center rounded-[1.25rem] text-white shadow-lg"
+                              className="flex h-full w-full items-center justify-center text-white"
                               style={{
                                 background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e40af 100%)`,
                               }}
                             >
-                              <LibraryBig size={42} />
+                              <LibraryBig size={56} />
                             </div>
                           )}
                         </div>
