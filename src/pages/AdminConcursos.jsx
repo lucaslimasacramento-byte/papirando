@@ -369,6 +369,47 @@ function parseLooseJsonObject(text = '') {
   return null;
 }
 
+function parseLooseJsonFields(text = '') {
+  const source = String(text || '').trim();
+  if (!source) return null;
+
+  const fields = [
+    'nome',
+    'plano',
+    'concurso',
+    'area',
+    'cargo',
+    'banca',
+    'salario',
+    'inscricao_valor',
+    'escolaridade',
+    'vagas',
+    'lotacao',
+    'etapas',
+    'descricao',
+    'status_concurso',
+    'prova_data',
+    'edital_url',
+  ];
+  const draft = {};
+
+  fields.forEach((field) => {
+    const pattern = new RegExp(`["']${field}["']\\s*:\\s*["']([^"']*)["']`, 'i');
+    const match = source.match(pattern);
+    if (match) draft[field] = match[1].trim();
+  });
+
+  const tagsBlock = source.match(/["']etapas_tags["']\s*:\s*\[([\s\S]*?)(?:\]|$)/i)?.[1] || '';
+  const tags = [...tagsBlock.matchAll(/["']([^"']+)["']/g)].map((match) => match[1].trim()).filter(Boolean);
+  if (tags.length > 0) draft.etapas_tags = tags;
+
+  const tafBlock = source.match(/["']taf_itens["']\s*:\s*\[([\s\S]*?)(?:\]|$)/i)?.[1] || '';
+  const tafItens = [...tafBlock.matchAll(/["']([^"']+)["']/g)].map((match) => match[1].trim()).filter(Boolean);
+  if (tafItens.length > 0) draft.taf_itens = tafItens;
+
+  return Object.keys(draft).length > 0 ? draft : null;
+}
+
 function normalizeTopicDraft(topic) {
   if (typeof topic === 'string') return topic.trim();
   return String(topic?.nome || topic?.name || topic?.titulo || topic?.title || '').trim();
@@ -416,7 +457,7 @@ function normalizeJsonContestTemplate(raw = {}) {
 }
 
 function parseContestJsonLocally(text = '') {
-  const parsed = parseLooseJsonObject(text);
+  const parsed = parseLooseJsonObject(text) || parseLooseJsonFields(text);
   if (!parsed) return null;
 
   const rawTemplates = Array.isArray(parsed)
