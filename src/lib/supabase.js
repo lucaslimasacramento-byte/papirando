@@ -17,13 +17,56 @@ function getProjectRefFromUrl(value) {
   }
 }
 
-function getProjectRefFromJwt(value) {
+function decodeJwtPayload(value) {
   try {
-    const payload = JSON.parse(atob(String(value || '').split('.')[1] || ''))
-    return String(payload?.ref || '').trim()
+    const encoded = String(value || '').split('.')[1] || ''
+    if (!encoded) return null
+    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(encoded.length / 4) * 4, '=')
+    return JSON.parse(atob(base64))
+  } catch {
+    return null
+  }
+}
+
+function getProjectRefFromJwt(value) {
+  const payload = decodeJwtPayload(value)
+  return String(payload?.ref || '').trim()
+}
+
+function getProjectRefFromIssuer(value) {
+  const issuer = String(value || '').trim()
+  const match = issuer.match(/^https:\/\/([a-z0-9-]+)\.supabase\.(?:co|in)\/auth\/v1$/i)
+  return match?.[1] || ''
+}
+
+function isCurrentProjectJwt(payload) {
+  if (!payload) return false
+  const tokenRef = String(payload.ref || getProjectRefFromIssuer(payload.iss)).trim()
+  return !supabaseProjectRefFromUrl || !tokenRef || tokenRef === supabaseProjectRefFromUrl
+}
+
+export function isUsableSupabaseAccessToken(value) {
+  const token = String(value || '').trim()
+  if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) return false
+
+  const payload = decodeJwtPayload(token)
+  if (!payload?.sub) return false
+  if (!isCurrentProjectJwt(payload)) return false
+
+  return true
+}
+
+function readStoredAccessToken(value) {
+  try {
+    const parsed = JSON.parse(String(value || ''))
+    return String(parsed?.access_token || '').trim()
   } catch {
     return ''
   }
+}
+
+export function isUsableSupabaseStoredSession(value) {
+  return isUsableSupabaseAccessToken(readStoredAccessToken(value))
 }
 
 export const supabaseDirectUrl = String(rawSupabaseUrl || '').trim().replace(/\/+$/, '')
@@ -71,8 +114,20 @@ export function supabaseFetch(input, init = {}) {
   })
 }
 
+export function clearInvalidSupabaseAuthStorage() {
+  if (!supabaseAuthStorageKey || typeof window === 'undefined' || !window.localStorage) return false
+
+  const storedSession = window.localStorage.getItem(supabaseAuthStorageKey)
+  if (!storedSession || isUsableSupabaseStoredSession(storedSession)) return false
+
+  window.localStorage.removeItem(supabaseAuthStorageKey)
+  console.warn('[Supabase] Sessao local invalida removida. Faca login novamente.')
+  return true
+}
+
 function migrateSupabaseAuthStorage() {
   if (!supabaseAuthStorageKey || typeof window === 'undefined' || !window.localStorage) return
+  clearInvalidSupabaseAuthStorage()
   if (window.localStorage.getItem(supabaseAuthStorageKey)) return
 
   for (let index = 0; index < window.localStorage.length; index += 1) {
@@ -80,7 +135,7 @@ function migrateSupabaseAuthStorage() {
     if (!key || key === supabaseAuthStorageKey || !/^sb-.+-auth-token$/.test(key)) continue
 
     const value = window.localStorage.getItem(key)
-    if (!value || !value.includes('access_token')) continue
+    if (!value || !isUsableSupabaseStoredSession(value)) continue
 
     window.localStorage.setItem(supabaseAuthStorageKey, value)
     console.info(`[Supabase] Sessao migrada de ${key} para ${supabaseAuthStorageKey}.`)
