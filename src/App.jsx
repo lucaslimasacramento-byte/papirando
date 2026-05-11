@@ -1,6 +1,13 @@
 ﻿import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { isSupabaseDevProxyEnabled, supabase, supabaseAnonKey, supabaseBaseUrl, supabaseDirectUrl } from './lib/supabase';
+import {
+  clearInvalidSupabaseAuthStorage,
+  isSupabaseDevProxyEnabled,
+  supabase,
+  supabaseAnonKey,
+  supabaseBaseUrl,
+  supabaseDirectUrl,
+} from './lib/supabase';
 import { Target } from 'lucide-react';
 
 import AppOverlays from './components/AppOverlays';
@@ -8,6 +15,7 @@ import AppTabContent from './components/AppTabContent';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import { ToastProvider } from './lib/toast';
 import BetaWelcomeBanner from './components/BetaWelcomeBanner';
 import CheckoutResultBanner from './components/CheckoutResultBanner';
 import { useSubscription } from './lib/subscriptionApi';
@@ -273,7 +281,7 @@ function isAdminIdentity(profile, sessionEmail = '') {
   const profileEmail = String(profile?.email || '').trim().toLowerCase();
   const email = profileEmail || String(sessionEmail || '').trim().toLowerCase();
 
-  return role === 'admin' || email.endsWith('@papirando.com') || ADMIN_EMAILS.includes(email);
+  return ['admin', 'admin_master', 'master'].includes(role) || email.endsWith('@papirando.com') || ADMIN_EMAILS.includes(email);
 }
 
 function buildCycleSequence(weightedDisciplines) {
@@ -4311,17 +4319,51 @@ export default function App() {
     }
   };
 
+  const syncAuthSessionState = (session = null) => {
+    const user = session?.user || null;
+    setIsAuthenticated(Boolean(session && user));
+    setCurrentAuthUser(user);
+    setCurrentUserId(user?.id || '');
+    setCurrentUserEmail(user?.email || '');
+    setCurrentUserAccessToken(session?.access_token || '');
+  };
+
+  const refreshAuthSessionForAction = async (session = null) => {
+    if (!session?.refresh_token) return null;
+
+    const { data, error } = await supabase.auth.refreshSession(session);
+    if (error || !data?.session?.access_token) return null;
+
+    syncAuthSessionState(data.session);
+    return data.session;
+  };
+
   const ensureAdminSession = async () => {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const sessionEmail = currentAuthUser?.email || currentUserEmail || currentProfile?.email || '';
+    if (!isAdmin && !isAdminIdentity(currentProfile, sessionEmail)) {
+      throw new Error('Apenas administradores podem cadastrar concursos.');
+    }
 
-    if (userError) throw userError;
-    if (!user) throw new Error('Sessao expirada. Faca login novamente.');
-    if (!isAdmin) throw new Error('Apenas administradores podem cadastrar concursos.');
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
 
-    return user;
+    let session = sessionData?.session || null;
+    if (!session?.access_token) {
+      session = await refreshAuthSessionForAction(session);
+    }
+
+    if (session?.access_token) {
+      syncAuthSessionState(session);
+      return session.user || currentAuthUser || { id: currentUserId, email: sessionEmail };
+    }
+
+    if (currentAuthUser?.id || currentUserId) {
+      return currentAuthUser || { id: currentUserId, email: sessionEmail };
+    }
+
+    clearInvalidSupabaseAuthStorage();
+    syncAuthSessionState(null);
+    throw new Error('Sessao expirada. Faca login novamente para continuar.');
   };
 
   const uploadContestAsset = async ({ file, bucket, folder, existingUrl = '' }) => {
@@ -4330,6 +4372,23 @@ export default function App() {
     if (!file) throw new Error('Selecione um arquivo antes de enviar.');
 
     const extension = file.name.split('.').pop()?.toLowerCase() || 'bin';
+    const type = String(file.type || '').toLowerCase();
+    const size = Number(file.size || 0);
+    const isImageBucket = bucket === 'contest-images';
+    const allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp'];
+
+    if (isImageBucket) {
+      if (!allowedImageTypes.includes(type) || !['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
+        throw new Error('Envie uma imagem PNG, JPG ou WebP.');
+      }
+      if (size > 3 * 1024 * 1024) throw new Error('A imagem deve ter no maximo 3 MB.');
+    } else {
+      if (type !== 'application/pdf' || extension !== 'pdf') {
+        throw new Error('Envie um arquivo PDF valido.');
+      }
+      if (size > 25 * 1024 * 1024) throw new Error('O PDF deve ter no maximo 25 MB.');
+    }
+
     const safeBaseName = String(file.name || 'arquivo')
       .replace(/\.[^/.]+$/, '')
       .toLowerCase()
@@ -4771,12 +4830,6 @@ export default function App() {
     await ensureAdminSession();
 
     if (template.storage !== 'supabase') {
-      const shouldPromote = window.confirm(
-        `O concurso "${template.nome}" ainda esta vindo do catalogo local. Deseja primeiro trazer esse item para o Supabase para conseguir gerenciar e excluir por aqui?`
-      );
-
-      if (!shouldPromote) return;
-
       const promoted = await promoteContestTemplate(template);
       if (!promoted?.id) {
         throw new Error('Nao foi possivel migrar esse concurso para o Supabase antes da exclusao.');
@@ -4785,14 +4838,41 @@ export default function App() {
       template = { ...template, ...promoted, storage: 'supabase' };
     }
 
-    const confirmar = window.confirm(
-      `Excluir o concurso "${template.nome}" da biblioteca publica? Os alunos nao poderao mais importar essa estrutura.`
-    );
-
-    if (!confirmar) return;
-
-    const { error } = await supabase.from('contest_templates').delete().eq('id', template.id);
+    const { data: deletedRows, error } = await supabase
+      .from('contest_templates')
+      .delete()
+      .eq('id', template.id)
+      .select('id, slug');
     if (error) throw error;
+
+    let removedRows = Array.isArray(deletedRows) ? deletedRows : [];
+
+    if (removedRows.length === 0) {
+      const rpcPayload = {
+        p_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          String(template.id || '')
+        )
+          ? template.id
+          : null,
+        p_slug: template.slug || null,
+      };
+
+      const { data: rpcRows, error: rpcError } = await supabase.rpc('admin_delete_contest_template', rpcPayload);
+      if (rpcError) throw rpcError;
+      removedRows = Array.isArray(rpcRows) ? rpcRows : [];
+    }
+
+    if (removedRows.length === 0) {
+      throw new Error('O concurso não foi removido. Recarregue a lista e confira se ele ainda existe no Supabase.');
+    }
+
+    setContestLibrary((prev) =>
+      prev.filter(
+        (item) =>
+          String(item.id || '') !== String(template.id || '') &&
+          String(item.slug || '') !== String(template.slug || '')
+      )
+    );
 
     await refreshContestLibrary();
   };
@@ -6189,6 +6269,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <ToastProvider>
       <div
         className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
         style={{ backgroundColor: theme.bg }}
@@ -6703,7 +6784,9 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'flashcards' && <Flashcards currentUserId={currentUserId} />}
+          {activeTab === 'flashcards' && (
+            <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} />
+          )}
           {activeTab === 'revisoes' && (
             <Revisoes
               setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
@@ -6976,6 +7059,7 @@ export default function App() {
         setIsFilterPanelOpen={setIsFilterPanelOpen}
       />
     </div>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

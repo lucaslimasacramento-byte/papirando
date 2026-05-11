@@ -31,6 +31,7 @@ import { analyzeContestForm } from '../lib/aiClient';
 import { extractTextFromPdf } from '../lib/redacoesApi';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
+import { useToast } from '../lib/toast';
 
 const DRAFT_STORAGE_KEY = 'papirando_admin_concurso_draft';
 
@@ -452,6 +453,7 @@ export default function AdminConcursos({
   onRemoveImage,
   onRemoveEdital,
 }) {
+  const { success, error: toastError, warning, info } = useToast();
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -711,7 +713,7 @@ export default function AdminConcursos({
     if (!file) return;
     const MAX_MB = 50;
     if (file.size > MAX_MB * 1024 * 1024) {
-      alert(`O PDF selecionado tem ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é ${MAX_MB} MB.`);
+      warning(`O PDF selecionado tem ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é ${MAX_MB} MB.`);
       return;
     }
     setAiPdfFile(file);
@@ -728,7 +730,7 @@ export default function AdminConcursos({
       let result;
       if (aiInputMode === 'pdf') {
         if (!aiPdfFile) {
-          alert('Selecione um arquivo PDF antes de preencher.');
+          warning('Selecione um arquivo PDF antes de preencher.');
           return;
         }
         setContestFormImportStatus('Extraindo texto do PDF...');
@@ -746,7 +748,7 @@ export default function AdminConcursos({
       } else {
         const source = aiFormText.trim();
         if (!source) {
-          alert('Cole o formulario analisado antes de preencher.');
+          warning('Cole o formulario analisado antes de preencher.');
           return;
         }
         result = await analyzeContestForm({ text: source });
@@ -828,12 +830,12 @@ export default function AdminConcursos({
     const payload = normalizeDraftToPayload();
 
     if (!payload.nome) {
-      alert('Digite o nome do concurso.');
+      warning('Digite o nome do concurso.');
       return;
     }
 
     if (payload.disciplinas.length === 0) {
-      alert('Cadastre ao menos uma disciplina.');
+      warning('Cadastre ao menos uma disciplina.');
       return;
     }
 
@@ -850,7 +852,7 @@ export default function AdminConcursos({
 
       resetForm();
     } catch (error) {
-      alert(error.message || 'Não foi possível salvar o concurso.');
+      toastError(error.message || 'Não foi possível salvar o concurso.', 'Erro ao salvar');
     } finally {
       setIsSaving(false);
     }
@@ -865,7 +867,7 @@ export default function AdminConcursos({
   const handleImageUpload = async (file) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('Envie uma imagem PNG, JPG ou WEBP.');
+      warning('Envie uma imagem PNG, JPG ou WEBP.');
       return;
     }
 
@@ -874,7 +876,7 @@ export default function AdminConcursos({
       const url = await onUploadImage?.({ file, currentUrl: form.imagem_url });
       if (url) updateFormField('imagem_url', url);
     } catch (error) {
-      alert(error.message || 'Não foi possível enviar a imagem.');
+      toastError(error.message || 'Não foi possível enviar a imagem.', 'Erro no upload');
     } finally {
       setIsUploadingImage(false);
     }
@@ -884,7 +886,7 @@ export default function AdminConcursos({
     if (!file) return;
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     if (!isPdf) {
-      alert('Envie um arquivo PDF.');
+      warning('Envie um arquivo PDF.');
       return;
     }
 
@@ -893,7 +895,7 @@ export default function AdminConcursos({
       const url = await onUploadEdital?.({ file, currentUrl: form.edital_url });
       if (url) updateFormField('edital_url', url);
     } catch (error) {
-      alert(error.message || 'Não foi possível enviar o edital.');
+      toastError(error.message || 'Não foi possível enviar o edital.', 'Erro no upload');
     } finally {
       setIsUploadingEdital(false);
     }
@@ -905,7 +907,7 @@ export default function AdminConcursos({
       await onRemoveImage?.({ url: form.imagem_url });
       updateFormField('imagem_url', '');
     } catch (error) {
-      alert(error.message || 'Não foi possível remover a imagem.');
+      toastError(error.message || 'Não foi possível remover a imagem.', 'Erro ao remover');
     }
   };
 
@@ -915,7 +917,7 @@ export default function AdminConcursos({
       await onRemoveEdital?.({ url: form.edital_url });
       updateFormField('edital_url', '');
     } catch (error) {
-      alert(error.message || 'Não foi possível remover o edital.');
+      toastError(error.message || 'Não foi possível remover o edital.', 'Erro ao remover');
     }
   };
 
@@ -976,12 +978,12 @@ export default function AdminConcursos({
 
   const handleSaveQuestion = async () => {
     if (!String(questionForm.enunciado || '').trim()) {
-      alert('Preencha o enunciado da questão.');
+      warning('Preencha o enunciado da questão.');
       return;
     }
 
     if (questionForm.alternativas.some((item) => !String(item || '').trim())) {
-      alert('Preencha todas as 5 alternativas.');
+      warning('Preencha todas as 5 alternativas.');
       return;
     }
 
@@ -1010,7 +1012,7 @@ export default function AdminConcursos({
       setQuestionForm(EMPTY_QUESTION_FORM);
       await loadQuestions();
     } catch (error) {
-      alert(error.message || 'Não foi possível salvar a questão.');
+      toastError(error.message || 'Não foi possível salvar a questão.', 'Erro ao salvar');
     } finally {
       setQuestionsSaving(false);
     }
@@ -1026,7 +1028,7 @@ export default function AdminConcursos({
       if (error) throw error;
       await loadQuestions();
     } catch (error) {
-      alert(error.message || 'Não foi possível excluir a questão.');
+      toastError(error.message || 'Não foi possível excluir a questão.', 'Erro ao excluir');
     }
   };
 
