@@ -810,6 +810,18 @@ ${sourceBlock}`;
 export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
   if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
+
+  // Se o usuario colou diretamente o JSON ja formatado (ex: saida de outra IA),
+  // processa direto sem chamar IA novamente — sem timeout, resposta instantanea.
+  try {
+    const parsed = JSON.parse(source);
+    if (Array.isArray(parsed?.templates) && parsed.templates.length > 0) {
+      return buildContestFormResponse({ provider: 'passthrough', model: 'json-direct', json: parsed });
+    }
+  } catch {
+    // nao e JSON valido, continua fluxo normal
+  }
+
   const prompt = contestFormPrompt('\nFormulario:\n' + source.slice(0, 20000));
   return buildContestFormResponse(await runJson(prompt, { schemaName: 'contest_form_template', preferFast: true }));
 }
