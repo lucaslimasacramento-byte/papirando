@@ -279,7 +279,7 @@ export default function ConcursoDetalhe({
   return (
     <div className="page-shell flex flex-col gap-6">
       <PageHeadPremium
-        className="!py-5 sm:!py-6"
+        className="!overflow-visible !py-7 sm:!py-8"
         icon={LibraryBig}
         badge={
           <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
@@ -287,9 +287,9 @@ export default function ConcursoDetalhe({
         title={contest.nome}
         titleAs="h1"
         subtitle={`${contest.cargo || contest.concurso} · ${contest.banca || 'Banca a definir'}`}
-        leadingClassName="min-w-0 flex-1"
+        leadingClassName="min-w-0 flex-1 xl:flex-[1.2]"
         leadingExtra={(
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <button
               type="button"
               onClick={onBack}
