@@ -64,7 +64,7 @@ const ETAPA_OPTIONS = [
 ];
 const ETAPA_OPTION_VALUES = ETAPA_OPTIONS.map((option) => option.value);
 
-const AREA_OPTIONS = ['Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
+const AREA_OPTIONS = ['Militar', 'Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
 
 const EMPTY_SUBJECT = { nome: '', cor: '', topicosTexto: '' };
 const UNCERTAIN_PATTERN = /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o informado|ausente/i;
@@ -122,6 +122,7 @@ function normalizeImportedArea(value = '') {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
+  if (/militar|exercito|marinha|aeronautica|espcex|esa|afa|efomm|ime|ita/.test(normalized)) return 'Militar';
   if (/policial|seguranca/.test(normalized)) return 'Policial';
   if (/agro/.test(normalized)) return 'Agropecuária';
   if (/jurid|direito|tribunal|justica/.test(normalized)) return 'Tribunais';
@@ -776,6 +777,19 @@ export default function AdminConcursos({
   const contestAreaOptions = useMemo(
     () => ['Todos', ...Array.from(new Set(concursoCatalog.map((template) => template.area || 'Geral'))).sort((a, b) => a.localeCompare(b, 'pt-BR'))],
     [concursoCatalog]
+  );
+  const manageableAreaOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...AREA_OPTIONS,
+          ...concursoCatalog
+            .map((template) => String(template.area || '').trim())
+            .filter(Boolean),
+          form.area,
+        ])
+      ).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [concursoCatalog, form.area]
   );
   const selectedContestAreaFilter = contestAreaOptions.includes(contestAreaFilter) ? contestAreaFilter : 'Todos';
 
@@ -1734,7 +1748,18 @@ export default function AdminConcursos({
                     <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
                     <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
                     <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
-                    <SelectField label="Área" value={form.area} onChange={(value) => updateFormField('area', value)} options={AREA_OPTIONS.map((value) => ({ value, label: value }))} />
+                    <TextField
+                      label="Área"
+                      value={form.area}
+                      onChange={(value) => updateFormField('area', value)}
+                      placeholder="Ex: Militar"
+                      listId="contest-area-options"
+                    />
+                    <datalist id="contest-area-options">
+                      {manageableAreaOptions.map((area) => (
+                        <option key={area} value={area} />
+                      ))}
+                    </datalist>
                     <TextField label="Cargo" value={form.cargo} onChange={(value) => updateFormField('cargo', value)} />
                     <TextField label="Banca" value={form.banca} onChange={(value) => updateFormField('banca', value)} />
                   </div>

@@ -494,54 +494,56 @@ export default function ConcursosDisponiveis({
                   return (
                     <article
                       key={contest.id}
-                      className="surface-card overflow-hidden rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg"
+                      className="group overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
                     >
                       <button
                         type="button"
                         onClick={() => handleOpenContest(contest)}
                         className="block w-full text-left"
                       >
-                        <div className="h-24 overflow-hidden border-b border-slate-200 bg-slate-50">
+                        <div className="flex h-40 items-center justify-center border-b border-slate-100 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 p-5">
                           {contest.imagem_url ? (
                             <img
                               src={contest.imagem_url}
                               alt={contest.nome}
-                              className="h-full w-full object-contain bg-white p-2"
+                              className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-[1.04]"
                             />
                           ) : (
                             <div
-                              className="flex h-full w-full items-center justify-center text-white"
+                              className="flex h-24 w-24 items-center justify-center rounded-[1.25rem] text-white shadow-lg"
                               style={{
                                 background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e40af 100%)`,
                               }}
                             >
-                              <LibraryBig size={32} />
+                              <LibraryBig size={42} />
                             </div>
                           )}
                         </div>
 
                         <div className="p-4">
-                          <div className="mb-3 flex flex-wrap gap-2">
+                          <div className="mb-3 flex flex-wrap items-center gap-2">
                             <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
                             <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
                           </div>
 
-                          <h4 className="text-lg font-semibold tracking-tight text-slate-900">{contest.nome}</h4>
+                          <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-slate-950">
+                            {contest.nome}
+                          </h4>
                           <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-gray-500">
                             {contest.cargo || contest.concurso}
                           </p>
-                          <p className="mt-1 text-sm font-medium text-gray-500">
+                          <p className="mt-2 truncate text-sm font-bold text-slate-600">
                             {contest.banca || 'Banca a definir'}
                           </p>
 
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <QuickTag tone="blue">{formatDateBR(contest.prova_data)}</QuickTag>
-                            <QuickTag tone="green">{formatCurrencyBR(contest.salario)}</QuickTag>
-                            <QuickTag tone="amber">{formatCurrencyBR(contest.inscricao_valor)}</QuickTag>
-                            <QuickTag tone="blue">{contest.escolaridade || 'Nível a definir'}</QuickTag>
+                          <div className="mt-4 grid grid-cols-2 gap-2">
+                            <QuickInfo label="Prova" value={formatDateBR(contest.prova_data)} />
+                            <QuickInfo label="Salário" value={formatCurrencyBR(contest.salario)} tone="green" />
+                            <QuickInfo label="Inscrição" value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" />
+                            <QuickInfo label="Nível" value={contest.escolaridade || 'A definir'} />
                           </div>
 
-                          <div className="mt-4 grid grid-cols-2 gap-2">
+                          <div className="mt-3 grid grid-cols-2 gap-2">
                             <MetaCounter label="Disciplinas" value={contest.disciplinas?.length || 0} />
                             <MetaCounter label="Tópicos" value={topicosCount} />
                           </div>
@@ -553,7 +555,7 @@ export default function ConcursosDisponiveis({
                           <button
                             type="button"
                             onClick={() => handleOpenContest(contest)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600"
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
                           >
                             Ver detalhes
                           </button>
@@ -561,7 +563,7 @@ export default function ConcursosDisponiveis({
                             type="button"
                             onClick={() => handleImport(contest)}
                             disabled={importingId === contest.id || limiteAtingido}
-                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
+                            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
                           >
                             {limiteAtingido
                               ? 'Limite atingido'
@@ -708,9 +710,24 @@ function InfoPill({ icon: Icon, label }) {
 
 function MetaCounter({ label, value }) {
   return (
-    <div className="rounded-[14px] border border-gray-200 bg-gray-50 px-3 py-2.5">
+    <div className="rounded-[14px] border border-gray-200 bg-slate-50 px-3 py-2.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
       <p className="mt-1 text-base font-semibold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function QuickInfo({ label, value, tone = 'blue' }) {
+  const toneClasses = {
+    blue: 'text-blue-700',
+    amber: 'text-amber-700',
+    green: 'text-emerald-700',
+  };
+
+  return (
+    <div className="min-w-0 rounded-[14px] border border-slate-200 bg-slate-50/80 px-3 py-2">
+      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
+      <p className={`mt-1 truncate text-xs font-bold ${toneClasses[tone] || toneClasses.blue}`}>{value}</p>
     </div>
   );
 }
@@ -993,4 +1010,3 @@ function DetailBox({ label, value }) {
     </div>
   );
 }
-

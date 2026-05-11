@@ -801,7 +801,7 @@ Regras de preenchimento de campos:
 - disciplinas: SOMENTE o que a pessoa precisa ESTUDAR para passar na prova. Nao inclua "Requisitos" ou "Atribuicoes" como disciplina de estudo.
 
 Campos de valores controlados:
-- area: Policial | Agropecuaria | Tribunais | Fiscal | Controle | Legislativo | Administrativa | Educacao | Saude | Geral. Juridico/Direito = Tribunais.
+- area: Militar | Policial | Agropecuaria | Tribunais | Fiscal | Controle | Legislativo | Administrativa | Educacao | Saude | Geral. Escolas militares, Exercito, Marinha, Aeronautica, ESA, EsPCEx, AFA, EFOMM, IME e ITA = Militar. Juridico/Direito = Tribunais.
 - status_concurso: confirmado | previsto | suspeito | suspenso | encerrado.
 - prova_data: YYYY-MM-DD (so quando a data estiver claramente informada).
 - etapas_tags: prova_objetiva | prova_discursiva | redacao | taf | avaliacao_psicologica | investigacao_social | exames_medicos | toxicologico | heteroidentificacao | curso_formacao | avaliacao_curricular.
