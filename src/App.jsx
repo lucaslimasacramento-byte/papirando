@@ -4442,6 +4442,7 @@ export default function App() {
         templateData,
         existingId: existingTemplate?.id || null,
         accessToken: adminSession?.access_token || currentUserAccessToken,
+        adminEmail: adminSession?.user?.email || currentUserEmail || currentProfile?.email || '',
       });
       await refreshContestLibrary();
       return saved;

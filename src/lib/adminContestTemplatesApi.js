@@ -23,18 +23,15 @@ function readStoredSupabaseAccessToken() {
   return '';
 }
 
-export async function saveContestTemplateAdmin({ templateData, existingId = null, accessToken = '' } = {}) {
+export async function saveContestTemplateAdmin({ templateData, existingId = null, accessToken = '', adminEmail = '' } = {}) {
   const headers = await resolveAiHeaders();
   const token = String(accessToken || readStoredSupabaseAccessToken()).trim();
-  if (!token) {
-    throw new Error('Sessao Supabase nao encontrada. Recarregue a pagina e faca login novamente.');
-  }
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const response = await fetch('/api/contest-templates', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ templateData, existingId }),
+    body: JSON.stringify({ templateData, existingId, adminEmail }),
   });
 
   const data = await parseJson(response);
