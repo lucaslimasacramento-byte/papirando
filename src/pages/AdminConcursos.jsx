@@ -165,6 +165,59 @@ function normalizeCargoKey(value = '') {
     .toLowerCase();
 }
 
+function normalizeDashSpacing(value = '') {
+  return String(value || '')
+    .replace(/\s*[-–—]\s*/g, ' — ')
+    .replace(/\s+/g, ' ')
+    .replace(/(?:\s+—){2,}/g, ' —')
+    .trim();
+}
+
+function compactAgencyName(value = '') {
+  const text = normalizeDashSpacing(value);
+  const acronymMatch = text.match(/\b[A-Z]{2,}(?:-[A-Z]{2})?\b/);
+  if (acronymMatch) return acronymMatch[0];
+  return text.split(' — ')[0]?.trim() || text;
+}
+
+function cleanStudyLabel(value = '') {
+  return normalizeDashSpacing(value)
+    .replace(/\bT[eé]cnico de N[ií]vel Superior\s+[-–—]\s*/i, 'Técnico de Nível Superior — ')
+    .replace(/\bT[eé]cnico de N[ií]vel M[eé]dio\s+[-–—]\s*/i, 'Técnico de Nível Médio — ')
+    .replace(/\s*\/\s*/g, ' / ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function buildContestDisplayNames(template = {}) {
+  const rawNome = cleanImportedValue(template.nome);
+  const rawPlano = cleanImportedValue(template.plano);
+  const rawConcurso = cleanImportedValue(template.concurso);
+  const rawCargo = cleanImportedValue(template.cargo);
+  const rawEscolaridade = cleanImportedValue(template.escolaridade);
+  const rawArea = cleanImportedValue(template.area);
+
+  const concurso = normalizeDashSpacing(rawConcurso || rawNome);
+  const orgao = compactAgencyName(concurso || rawNome || rawPlano);
+  const cargo = cleanStudyLabel(rawCargo);
+  const fallbackFocus = cargo || rawArea || rawEscolaridade || 'Plano de estudos';
+  const publicName = normalizeDashSpacing(
+    rawNome && !/area diversa|área diversa/i.test(rawNome)
+      ? rawNome
+      : [concurso || orgao, fallbackFocus].filter(Boolean).join(' — ')
+  );
+  const studentPlan = normalizeDashSpacing(
+    rawPlano && /trilha|estudo|prepara/i.test(rawPlano) && !/area diversa|área diversa/i.test(rawPlano)
+      ? rawPlano
+      : [orgao || concurso, fallbackFocus, 'trilha de estudos'].filter(Boolean).join(' — ')
+  );
+
+  return {
+    nome: publicName,
+    plano: studentPlan,
+  };
+}
+
 function extractMoneyValues(value = '') {
   return String(value || '').match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g) || [];
 }
@@ -291,10 +344,11 @@ function normalizeJsonContestTemplate(raw = {}) {
   const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
     .map((subject) => normalizeSubjectDraft(subject))
     .filter((subject) => subject.nome);
+  const names = buildContestDisplayNames(template);
 
   return {
-    nome: cleanImportedValue(template.nome || template.name || ''),
-    plano: cleanImportedValue(template.plano || ''),
+    nome: names.nome || cleanImportedValue(template.nome || template.name || ''),
+    plano: names.plano || cleanImportedValue(template.plano || ''),
     concurso: cleanImportedValue(template.concurso || template.orgao || template['concurso / órgão'] || ''),
     area: normalizeImportedArea(template.area || ''),
     cargo: cleanImportedValue(template.cargo || ''),
@@ -682,6 +736,12 @@ export default function AdminConcursos({
     localStorage.removeItem(DRAFT_STORAGE_KEY);
   };
 
+  const clearContestDraft = () => {
+    resetForm();
+    setContestFormImportStatus('');
+    setContestFormOptions([]);
+  };
+
   const updateFormField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -760,6 +820,7 @@ export default function AdminConcursos({
   const applyContestFormTemplate = (result = {}, optionIndex = 0) => {
     const templates = Array.isArray(result.templates) && result.templates.length > 0 ? result.templates : [];
     const template = templates[optionIndex] || result.template || {};
+    const names = buildContestDisplayNames(template);
     const importedSubjects = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
       .map((subject) => ({
         nome: String(subject?.nome || subject?.name || '').trim(),
@@ -774,8 +835,8 @@ export default function AdminConcursos({
     setForm((prev) => ({
       ...prev,
       slug: prev.slug,
-      nome: cleanImportedValue(template.nome) || prev.nome,
-      plano: cleanImportedValue(template.plano) || cleanImportedValue(template.nome) || prev.plano,
+      nome: names.nome || cleanImportedValue(template.nome) || prev.nome,
+      plano: names.plano || cleanImportedValue(template.plano) || cleanImportedValue(template.nome) || prev.plano,
       concurso: cleanImportedValue(template.concurso) || cleanImportedValue(template.nome) || prev.concurso,
       area: normalizeImportedArea(template.area || prev.area),
       cargo: cleanImportedValue(template.cargo) || prev.cargo,
@@ -1341,20 +1402,30 @@ export default function AdminConcursos({
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={handleFillFromContestForm}
-                disabled={
-                  isParsingContestForm ||
-                  (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfFile)
-                }
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
-              >
-                {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                {isParsingContestForm
-                  ? (contestFormImportStatus.startsWith('Extraindo') ? 'Extraindo PDF...' : 'Analisando...')
-                  : 'Preencher rascunho'}
-              </button>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={clearContestDraft}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition-colors hover:bg-indigo-50"
+                >
+                  <X size={16} />
+                  Limpar preenchimento
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFillFromContestForm}
+                  disabled={
+                    isParsingContestForm ||
+                    (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfFile)
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                >
+                  {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  {isParsingContestForm
+                    ? (contestFormImportStatus.startsWith('Extraindo') ? 'Extraindo PDF...' : 'Analisando...')
+                    : 'Preencher rascunho'}
+                </button>
+              </div>
             </div>
 
             {/* Mode tabs */}
