@@ -506,7 +506,7 @@ export default function ConcursosDisponiveis({
                             <img
                               src={contest.imagem_url}
                               alt={contest.nome}
-                              className="h-full w-full object-contain transition-transform duration-300 scale-[1.18] group-hover:scale-[1.24]"
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                             />
                           ) : (
                             <div
