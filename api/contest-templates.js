@@ -245,7 +245,7 @@ export default async function handler(req, res) {
   try {
     const config = getSupabaseConfig();
     if (!config.url || !config.anonKey || !config.serviceKey) {
-      return sendJson(res, 500, { error: 'Supabase administrativo nao configurado.' });
+      return sendJson(res, 500, { error: 'Supabase administrativo nao configurado (faltam env vars no Vercel).' });
     }
 
     const supabaseAdmin = createClient(config.url, config.serviceKey, {
@@ -258,6 +258,19 @@ export default async function handler(req, res) {
     return sendJson(res, 200, { template });
   } catch (error) {
     const status = Number(error.status || 500);
-    return sendJson(res, status, { error: error.message || 'Nao foi possivel salvar o concurso.' });
+    const message = error.message || 'Nao foi possivel salvar o concurso.';
+    console.error('[contest-templates]', {
+      status,
+      message,
+      details: error?.details,
+      code: error?.code,
+      hint: error?.hint,
+    });
+    return sendJson(res, status, {
+      error: message,
+      details: error?.details || undefined,
+      code: error?.code || undefined,
+      hint: error?.hint || undefined,
+    });
   }
 }

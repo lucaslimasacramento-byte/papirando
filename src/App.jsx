@@ -4363,11 +4363,14 @@ export default function App() {
 
     if (session?.access_token) {
       syncAuthSessionState(session);
-      return session.user || currentAuthUser || { id: currentUserId, email: sessionEmail };
+      return session;
     }
 
-    if (currentAuthUser?.id || currentUserId) {
-      return currentAuthUser || { id: currentUserId, email: sessionEmail };
+    if (currentUserAccessToken && (currentAuthUser?.id || currentUserId)) {
+      return {
+        access_token: currentUserAccessToken,
+        user: currentAuthUser || { id: currentUserId, email: sessionEmail },
+      };
     }
 
     clearInvalidSupabaseAuthStorage();
@@ -4431,165 +4434,23 @@ export default function App() {
   };
 
   const saveContestTemplate = async (templateData, existingTemplate = null) => {
-    await ensureAdminSession();
+    const adminSession = await ensureAdminSession();
 
+    // Caminho preferido: API administrativa com service_role (bypassa RLS).
     try {
       const saved = await saveContestTemplateAdmin({
         templateData,
         existingId: existingTemplate?.id || null,
+        accessToken: adminSession?.access_token || currentUserAccessToken,
       });
       await refreshContestLibrary();
       return saved;
     } catch (apiError) {
-      console.warn('[contest_templates] Falha ao salvar pela API administrativa; tentando Supabase direto:', apiError?.message || apiError);
+      console.error('[contest_templates] API admin falhou:', apiError?.message || apiError);
+      // Propaga o erro real — nao tenta Supabase direto (sempre cai em RLS).
+      throw new Error(apiError?.message || 'Nao foi possivel salvar o concurso pela API administrativa.');
     }
 
-    const slug = buildTemplateSlug(templateData.slug || templateData.nome) || `template-${Date.now()}`;
-    const isPublished = Boolean(templateData.is_public);
-    const status = isPublished ? 'ativo' : 'rascunho';
-
-    const basePayload = {
-      slug,
-      nome: templateData.nome,
-      plano: templateData.plano || templateData.nome,
-      concurso: templateData.concurso || templateData.nome,
-      area: templateData.area || 'Geral',
-      cargo: templateData.cargo || '',
-      banca: templateData.banca || 'A definir',
-      salario: templateData.salario || null,
-      inscricao_valor: templateData.inscricao_valor || null,
-      escolaridade: templateData.escolaridade || null,
-      vagas: templateData.vagas || null,
-      lotacao: templateData.lotacao || null,
-      etapas: templateData.etapas || null,
-      etapas_tags: templateData.etapas_tags || [],
-      taf_itens: templateData.taf_itens || [],
-      cor: templateData.cor || '#2563EB',
-      origem: 'catalogo',
-      status,
-      is_public: isPublished,
-      descricao: templateData.descricao || null,
-      imagem_url: templateData.imagem_url || null,
-      edital_url: templateData.edital_url || null,
-      prova_data: templateData.prova_data || null,
-      status_concurso: templateData.status_concurso || 'em_analise',
-      updated_at: new Date().toISOString(),
-    };
-
-    let template = null;
-
-    if (existingTemplate?.id) {
-      const { data, error } = await supabase
-        .from('contest_templates')
-        .update(basePayload)
-        .eq('id', existingTemplate.id)
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      template = data;
-    } else {
-      const { data, error } = await supabase
-        .from('contest_templates')
-        .insert({
-          ...basePayload,
-          slug,
-          created_at: new Date().toISOString(),
-        })
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      template = data;
-    }
-
-    if (!template?.id) {
-      throw new Error('Nao foi possivel salvar o concurso.');
-    }
-
-    if (existingTemplate?.id) {
-      const { data: existingSubjects, error: existingSubjectsError } = await supabase
-        .from('contest_template_subjects')
-        .select('id')
-        .eq('template_id', existingTemplate.id);
-
-      if (existingSubjectsError) throw existingSubjectsError;
-
-      const existingSubjectIds = (existingSubjects || []).map((item) => item.id);
-
-      if (existingSubjectIds.length > 0) {
-        const { error: topicsDeleteError } = await supabase
-          .from('contest_template_topics')
-          .delete()
-          .in('subject_id', existingSubjectIds);
-
-        if (topicsDeleteError) throw topicsDeleteError;
-      }
-
-      const { error: subjectsDeleteError } = await supabase
-        .from('contest_template_subjects')
-        .delete()
-        .eq('template_id', existingTemplate.id);
-
-      if (subjectsDeleteError) throw subjectsDeleteError;
-    }
-
-    const disciplinasNormalizadas = (templateData.disciplinas || []).map((disciplina, index) => ({
-      nome: canonicalizeSubjectName(
-        typeof disciplina === 'string' ? disciplina : disciplina.nome,
-        subjectCatalog
-      ),
-      subject_catalog_id: resolveSubjectCatalogIdForApp(
-        typeof disciplina === 'string' ? disciplina : disciplina.nome
-      ),
-      cor: typeof disciplina === 'string' ? null : disciplina.cor || null,
-      ordem: Number(typeof disciplina === 'string' ? index : disciplina.ordem ?? index),
-      topicos: typeof disciplina === 'string' ? [] : disciplina.topicos || [],
-    }));
-
-    let insertedSubjects = [];
-
-    if (disciplinasNormalizadas.length > 0) {
-      let subjectInsertPayload = disciplinasNormalizadas.map((disciplina) => ({
-        template_id: template.id,
-        nome: disciplina.nome,
-        subject_catalog_id: disciplina.subject_catalog_id || null,
-        cor: disciplina.cor,
-        ordem: disciplina.ordem,
-      }));
-
-      let { data, error } = await supabase
-        .from('contest_template_subjects')
-        .insert(subjectInsertPayload)
-        .select('*');
-
-      if (error && shouldRetryWithoutSubjectCatalogId(error)) {
-        ({ data, error } = await supabase
-          .from('contest_template_subjects')
-          .insert(stripSubjectCatalogId(subjectInsertPayload))
-          .select('*'));
-      }
-
-      if (error) throw error;
-      insertedSubjects = data || [];
-    }
-
-    const topicPayload = insertedSubjects.flatMap((subject, subjectIndex) => {
-      const disciplina = disciplinasNormalizadas[subjectIndex];
-      return (disciplina?.topicos || []).map((topico, topicIndex) => ({
-        subject_id: subject.id,
-        nome: typeof topico === 'string' ? topico : topico.nome,
-        ordem: Number(typeof topico === 'string' ? topicIndex : topico.ordem ?? topicIndex),
-      }));
-    });
-
-    if (topicPayload.length > 0) {
-      const { error: topicsError } = await supabase.from('contest_template_topics').insert(topicPayload);
-      if (topicsError) throw topicsError;
-    }
-
-    await refreshContestLibrary();
-    return template;
   };
 
   const createContestTemplate = async (templateData) => {
