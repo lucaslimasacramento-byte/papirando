@@ -784,6 +784,8 @@ SELECAO DE ESTAGIOS E PROCESSOS SIMPLIFICADOS:
 - Se nao houver prova objetiva/discursiva (so analise curricular ou titulos), use etapas_tags: ["avaliacao_curricular"] e coloque os criterios avaliados em uma disciplina "Avaliacao Curricular".
 
 Regras de preenchimento de campos:
+- Para a tela do Papirando, prefira nomes curtos para aluno: "DETRAN-BA - Tecnico Administrativo", "DETRAN-BA - Tecnico Juridico", "DETRAN-BA - Atendente". Nao use "Geral" como nome nem como plano.
+- concurso deve ser SOMENTE o orgao limpo, sem edital/processo/ano/cargo. Ex: "DETRAN-BA", "AGU", "TRT-5".
 - IMPORTANTE sobre nome/plano: "nome" e o nome publico do cadastro; deve ser claro e especifico: "Orgao — Processo/Edital — Cargo — Especialidade/Area". Ex: "DETRAN-BA — REDA 01/2026 — Tecnico de Nivel Superior — Administracao".
 - IMPORTANTE sobre plano: "plano" e o nome interno para o aluno se guiar nos estudos; deve ser amigavel, com foco do cargo/area, e pode dispensar numero de edital quando isso deixar o plano mais claro. Ex: "DETRAN-BA — Tecnico de Nivel Superior — Administracao — trilha de estudos".
 - Nunca use "Area Diversa" no nome/plano se o edital indicar a especialidade real. Use a especialidade real: Administracao, Ciencias Juridicas, Ciencias Contabeis, Jornalismo, Psicologia, Engenharia Civil, Arquitetura etc.

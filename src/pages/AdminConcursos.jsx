@@ -167,7 +167,8 @@ function normalizeCargoKey(value = '') {
 
 function normalizeDashSpacing(value = '') {
   return String(value || '')
-    .replace(/\s*[-–—]\s*/g, ' — ')
+    .replace(/\s*[–—]\s*/g, ' — ')
+    .replace(/\s+-\s+/g, ' - ')
     .replace(/\s+/g, ' ')
     .replace(/(?:\s+—){2,}/g, ' —')
     .trim();
@@ -189,32 +190,77 @@ function cleanStudyLabel(value = '') {
     .trim();
 }
 
+function isGenericContestLabel(value = '') {
+  return /^(geral|area diversa|área diversa|plano de estudos|trilha de estudos)$/i.test(String(value || '').trim());
+}
+
+function extractAgencyOnly(...values) {
+  const source = values
+    .map((value) => cleanImportedValue(value))
+    .filter(Boolean)
+    .join(' — ');
+  const acronym = source.match(/\b[A-Z]{2,}(?:-[A-Z]{2})?\b/);
+  if (acronym) return acronym[0];
+
+  return normalizeDashSpacing(source)
+    .replace(/\b(REDA|Processo Seletivo|Edital|Concurso)\b.*$/i, '')
+    .split(' — ')[0]
+    ?.trim();
+}
+
+function prettifySpecialtyForStudent(value = '') {
+  const key = normalizeCargoKey(value);
+  if (/administra/.test(key)) return 'Administrativo';
+  if (/jurid|direito/.test(key)) return 'Jurídico';
+  if (/contab/.test(key)) return 'Contábil';
+  if (/jornalismo|comunic/.test(key)) return 'Jornalismo';
+  if (/psicolog/.test(key)) return 'Psicologia';
+  if (/engenharia civil/.test(key)) return 'Engenharia Civil';
+  if (/arquitet/.test(key)) return 'Arquitetura';
+  if (/atendente|atendimento/.test(key)) return 'Atendente';
+  return '';
+}
+
+function extractCargoSpecialty(template = {}) {
+  const source = [
+    template.cargo,
+    template.nome,
+    template.plano,
+    template.area && !isGenericContestLabel(template.area) ? template.area : '',
+  ]
+    .map((value) => cleanImportedValue(value))
+    .filter(Boolean)
+    .join(' — ');
+
+  return prettifySpecialtyForStudent(source);
+}
+
+function buildStudentCargo(template = {}) {
+  const source = cleanStudyLabel([template.cargo, template.nome, template.plano].filter(Boolean).join(' — '));
+  const specialty = extractCargoSpecialty(template);
+  const key = normalizeCargoKey(source);
+
+  if (/tecnico|técnico/.test(key) && specialty) return `Técnico ${specialty}`;
+  if (/tecnico|técnico/.test(key)) return 'Técnico';
+  if (specialty) return specialty;
+  if (source && !isGenericContestLabel(source)) return source;
+  return 'Concurso';
+}
+
 function buildContestDisplayNames(template = {}) {
   const rawNome = cleanImportedValue(template.nome);
   const rawPlano = cleanImportedValue(template.plano);
   const rawConcurso = cleanImportedValue(template.concurso);
   const rawCargo = cleanImportedValue(template.cargo);
-  const rawEscolaridade = cleanImportedValue(template.escolaridade);
-  const rawArea = cleanImportedValue(template.area);
-
-  const concurso = normalizeDashSpacing(rawConcurso || rawNome);
-  const orgao = compactAgencyName(concurso || rawNome || rawPlano);
-  const cargo = cleanStudyLabel(rawCargo);
-  const fallbackFocus = cargo || rawArea || rawEscolaridade || 'Plano de estudos';
-  const publicName = normalizeDashSpacing(
-    rawNome && !/area diversa|área diversa/i.test(rawNome)
-      ? rawNome
-      : [concurso || orgao, fallbackFocus].filter(Boolean).join(' — ')
-  );
-  const studentPlan = normalizeDashSpacing(
-    rawPlano && /trilha|estudo|prepara/i.test(rawPlano) && !/area diversa|área diversa/i.test(rawPlano)
-      ? rawPlano
-      : [orgao || concurso, fallbackFocus, 'trilha de estudos'].filter(Boolean).join(' — ')
-  );
+  const orgao = extractAgencyOnly(rawConcurso, rawNome, rawPlano) || compactAgencyName(rawConcurso || rawNome || rawPlano);
+  const studentCargo = buildStudentCargo({ ...template, nome: rawNome, plano: rawPlano, cargo: rawCargo });
+  const publicName = normalizeDashSpacing([orgao, studentCargo].filter(Boolean).join(' - '));
+  const studentPlan = normalizeDashSpacing([orgao, studentCargo, 'trilha de estudos'].filter(Boolean).join(' - '));
 
   return {
     nome: publicName,
     plano: studentPlan,
+    concurso: orgao,
   };
 }
 
@@ -349,7 +395,7 @@ function normalizeJsonContestTemplate(raw = {}) {
   return {
     nome: names.nome || cleanImportedValue(template.nome || template.name || ''),
     plano: names.plano || cleanImportedValue(template.plano || ''),
-    concurso: cleanImportedValue(template.concurso || template.orgao || template['concurso / órgão'] || ''),
+    concurso: names.concurso || cleanImportedValue(template.concurso || template.orgao || template['concurso / órgão'] || ''),
     area: normalizeImportedArea(template.area || ''),
     cargo: cleanImportedValue(template.cargo || ''),
     banca: cleanImportedValue(template.banca || ''),
@@ -837,7 +883,7 @@ export default function AdminConcursos({
       slug: prev.slug,
       nome: names.nome || cleanImportedValue(template.nome) || prev.nome,
       plano: names.plano || cleanImportedValue(template.plano) || cleanImportedValue(template.nome) || prev.plano,
-      concurso: cleanImportedValue(template.concurso) || cleanImportedValue(template.nome) || prev.concurso,
+      concurso: names.concurso || cleanImportedValue(template.concurso) || cleanImportedValue(template.nome) || prev.concurso,
       area: normalizeImportedArea(template.area || prev.area),
       cargo: cleanImportedValue(template.cargo) || prev.cargo,
       banca: cleanImportedValue(template.banca) || prev.banca,
