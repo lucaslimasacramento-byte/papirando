@@ -279,7 +279,7 @@ export default function ConcursoDetalhe({
   return (
     <div className="page-shell flex flex-col gap-6">
       <PageHeadPremium
-        className="!overflow-visible !py-7 sm:!py-8"
+        className="!min-h-[190px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[205px] sm:!pb-16 sm:!pt-9"
         icon={LibraryBig}
         badge={
           <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
