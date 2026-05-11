@@ -20,6 +20,15 @@ function normalizeBearerToken(value = '') {
 }
 
 async function readJson(req) {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+    return req.body;
+  }
+
+  if (typeof req.body === 'string') {
+    const rawBody = req.body.trim();
+    return rawBody ? JSON.parse(rawBody) : {};
+  }
+
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
   const raw = Buffer.concat(chunks).toString('utf8');

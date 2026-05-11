@@ -44,6 +44,7 @@ const STATUS_OPTIONS = [
 ];
 
 const ESCOLARIDADE_OPTIONS = [
+  { value: '', label: 'Selecione' },
   { value: 'Nível médio', label: 'Nível médio' },
   { value: 'Nível superior', label: 'Nível superior' },
 ];
@@ -52,6 +53,7 @@ const ETAPA_OPTIONS = [
   { value: 'prova_objetiva', label: 'Prova objetiva' },
   { value: 'prova_discursiva', label: 'Prova discursiva' },
   { value: 'redacao', label: 'Redação' },
+  { value: 'avaliacao_curricular', label: 'Avaliação curricular' },
   { value: 'taf', label: 'TAF' },
   { value: 'avaliacao_psicologica', label: 'Avaliação psicológica' },
   { value: 'investigacao_social', label: 'Investigação social' },
@@ -230,6 +232,7 @@ function parseEtapaTagsFromText(text = '') {
   add(/prova objetiva.+sim|prova objetiva|objetiva on-line|objetiva online/, 'prova_objetiva');
   add(/prova discursiva.+sim|prova discursiva/, 'prova_discursiva');
   add(/reda[cç][aã]o.+sim|reda[cç][aã]o/, 'redacao');
+  add(/avalia[cç][aã]o curricular/, 'avaliacao_curricular');
   add(/\btaf\b.+sim|\btaf\b|teste de aptid[aã]o f[ií]sica/, 'taf');
   add(/avalia[cç][aã]o psicol[oó]gica.+sim|avalia[cç][aã]o psicol[oó]gica/, 'avaliacao_psicologica');
   add(/investiga[cç][aã]o social.+sim|investiga[cç][aã]o social/, 'investigacao_social');
@@ -239,6 +242,102 @@ function parseEtapaTagsFromText(text = '') {
   add(/curso de forma[cç][aã]o.+sim|curso de forma[cç][aã]o/, 'curso_formacao');
 
   return tags;
+}
+
+function parseLooseJsonObject(text = '') {
+  const source = String(text || '')
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/i, '')
+    .trim()
+    .replace(/^[\w$]+\s*=\s*/, '')
+    .replace(/;$/, '')
+    .trim();
+
+  if (!source) return null;
+
+  const candidates = [source];
+  if (!source.startsWith('{') && !source.startsWith('[')) candidates.push(`{${source}}`);
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+      // Try the next candidate.
+    }
+  }
+
+  return null;
+}
+
+function normalizeTopicDraft(topic) {
+  if (typeof topic === 'string') return topic.trim();
+  return String(topic?.nome || topic?.name || topic?.titulo || topic?.title || '').trim();
+}
+
+function normalizeSubjectDraft(subject = {}) {
+  if (typeof subject === 'string') return { nome: subject.trim(), topicos: [] };
+  return {
+    nome: String(subject?.nome || subject?.name || subject?.disciplina || '').trim(),
+    cor: subject?.cor || '',
+    topicos: (Array.isArray(subject?.topicos) ? subject.topicos : subject?.topics || [])
+      .map((topic) => normalizeTopicDraft(topic))
+      .filter(Boolean),
+  };
+}
+
+function normalizeJsonContestTemplate(raw = {}) {
+  const template = raw.template && typeof raw.template === 'object' ? raw.template : raw;
+  const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+    .map((subject) => normalizeSubjectDraft(subject))
+    .filter((subject) => subject.nome);
+
+  return {
+    nome: cleanImportedValue(template.nome || template.name || ''),
+    plano: cleanImportedValue(template.plano || ''),
+    concurso: cleanImportedValue(template.concurso || template.orgao || template['concurso / órgão'] || ''),
+    area: normalizeImportedArea(template.area || ''),
+    cargo: cleanImportedValue(template.cargo || ''),
+    banca: cleanImportedValue(template.banca || ''),
+    salario: pickImportedSalaryForCargo(template.salario || '', template.cargo || ''),
+    inscricao_valor: cleanImportedValue(template.inscricao_valor || template.valor_inscricao || ''),
+    escolaridade: normalizeImportedEducationForCargo(template.escolaridade || '', template.cargo || ''),
+    vagas: normalizeImportedVacancies(template.vagas || ''),
+    lotacao: normalizeImportedLocationForCargo(template.lotacao || '', template.cargo || ''),
+    etapas: cleanImportedValue(template.etapas || ''),
+    etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : parseEtapaTagsFromText(template.etapas || ''),
+    taf_itens: Array.isArray(template.taf_itens) ? template.taf_itens : [],
+    descricao: cleanImportedValue(template.descricao || template.descricao_curta || ''),
+    status_concurso: normalizeImportedStatus(template.status_concurso || ''),
+    prova_data: normalizeImportedDate(template.prova_data || template.data_prova || ''),
+    edital_url: cleanImportedValue(template.edital_url || template.url_edital_pdf || ''),
+    disciplinas,
+  };
+}
+
+function parseContestJsonLocally(text = '') {
+  const parsed = parseLooseJsonObject(text);
+  if (!parsed) return null;
+
+  const rawTemplates = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed.templates)
+      ? parsed.templates
+      : Array.isArray(parsed.contests)
+        ? parsed.contests
+        : Array.isArray(parsed.concursos)
+          ? parsed.concursos
+          : [parsed];
+
+  const templates = rawTemplates.map((item) => normalizeJsonContestTemplate(item)).filter((item) => item.nome || item.cargo);
+  if (templates.length === 0) return null;
+
+  return {
+    template: templates[0],
+    templates,
+    uncertainties: [],
+    notes: ['Preenchido por JSON colado no rascunho.'],
+  };
 }
 
 function parseSubjectsFromTextBlock(text = '') {
@@ -666,7 +765,7 @@ export default function AdminConcursos({
         nome: String(subject?.nome || subject?.name || '').trim(),
         cor: '',
         topicosTexto: (Array.isArray(subject?.topicos) ? subject.topicos : subject?.topics || [])
-          .map((topic) => String(topic || '').trim())
+          .map((topic) => normalizeTopicDraft(topic))
           .filter(Boolean)
           .join('\n'),
       }))
@@ -751,7 +850,9 @@ export default function AdminConcursos({
           warning('Cole o formulario analisado antes de preencher.');
           return;
         }
-        result = await analyzeContestForm({ text: source });
+
+        const localJsonResult = parseContestJsonLocally(source);
+        result = localJsonResult || (await analyzeContestForm({ text: source }));
       }
 
       const templates = Array.isArray(result.templates) && result.templates.length > 0 ? result.templates : [];
@@ -831,11 +932,6 @@ export default function AdminConcursos({
 
     if (!payload.nome) {
       warning('Digite o nome do concurso.');
-      return;
-    }
-
-    if (payload.disciplinas.length === 0) {
-      warning('Cadastre ao menos uma disciplina.');
       return;
     }
 
@@ -2107,5 +2203,3 @@ function ChecklistRow({ ok, label }) {
     </div>
   );
 }
-
-
