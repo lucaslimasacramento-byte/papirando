@@ -377,13 +377,24 @@ export default function Conciliador({
 
   const catalogSource = useMemo(() => {
     const merged = [];
-    const seen = new Set();
+    const seen = new Map();
     const publicCatalog = remoteContests.length > 0 ? remoteContests : concursoCatalog;
 
     [...(Array.isArray(myContests) ? myContests : []), ...(Array.isArray(publicCatalog) ? publicCatalog : [])].forEach((contest) => {
       const id = String(contest?.id || '').trim();
-      if (!id || seen.has(id)) return;
-      seen.add(id);
+      if (!id) return;
+      const existingIndex = seen.get(id);
+      if (existingIndex !== undefined) {
+        const existing = merged[existingIndex];
+        merged[existingIndex] = {
+          ...contest,
+          ...existing,
+          imagem_url: existing?.imagem_url || contest?.imagem_url || '',
+          edital_url: existing?.edital_url || contest?.edital_url || '',
+        };
+        return;
+      }
+      seen.set(id, merged.length);
       merged.push(contest);
     });
 
@@ -1746,6 +1757,8 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
   const palette = accents[accent] || accents.blue;
   const skip = new Set((excludeIds || []).map((id) => String(id)));
   const filtered = options.filter((option) => !skip.has(String(option.id)));
+  const selectedOption = filtered.find((option) => option.id === value) || null;
+  const selectedImage = selectedOption?.contest?.imagem_url || '';
 
   return (
     <div className={`flex min-h-[40px] min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border ${palette.wrap}`}>
@@ -1758,6 +1771,13 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
         </span>
       </div>
       <div className="flex min-w-0 flex-1 items-center bg-slate-50/40">
+        <div className="ml-2 flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white">
+          {selectedImage ? (
+            <img src={selectedImage} alt={selectedOption?.contest?.nome || selectedOption?.label || micro} className="h-full w-full object-cover" />
+          ) : (
+            <Icon size={16} className="text-slate-300" />
+          )}
+        </div>
         <select
           value={filtered.some((o) => o.id === value) ? value : ''}
           onChange={(event) => onChange(event.target.value)}
