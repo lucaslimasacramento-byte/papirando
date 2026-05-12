@@ -571,6 +571,43 @@ export default function App() {
     }
   };
 
+  const normalizeLegacyCourseText = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const isLegacyDemoCourse = (course = {}) => {
+    const text = normalizeLegacyCourseText([course.id, course.nome, course.plano, course.concurso, course.cargo].join(' '));
+    return (
+      text.includes('curso-pmba-soldado-2026') ||
+      (text.includes('pmba') && text.includes('soldado')) ||
+      (text.includes('policia militar do estado da bahia') && text.includes('soldado')) ||
+      (text.includes('adab 2026') && text.includes('fiscal estadual agropecuario'))
+    );
+  };
+
+  const sanitizeStoredCourses = (courses) => {
+    if (!Array.isArray(courses)) return [];
+
+    const seen = new Set();
+    return courses.filter((course) => {
+      if (!course || isLegacyDemoCourse(course)) return false;
+
+      const key = [course.plano, course.nome, course.concurso]
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+        .join('|');
+
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   const GENERIC_EDITAL_HEADINGS = [
     'CONTEUDO PROGRAMATICO',
     'CONTEÚDO PROGRAMÁTICO',
@@ -815,21 +852,10 @@ export default function App() {
   const [cursos, setCursos] = useState(() => {
     const cursosSalvos = readJsonStorage('papirando_cursos', null);
     if (Array.isArray(cursosSalvos)) {
-      return cursosSalvos;
+      return sanitizeStoredCourses(cursosSalvos);
     }
 
-    return [
-      {
-        id: 'curso-pmba-soldado-2026',
-        nome: 'PMBA - Soldado (2026)',
-        plano: 'PMBA - Soldado',
-        concurso: 'Polícia Militar do Estado da Bahia',
-        banca: 'FCC',
-        status: 'ativo',
-        origem: 'manual',
-        cor: '#2563EB',
-      },
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -2306,7 +2332,7 @@ export default function App() {
       ...new Set(
         (bancoDisciplinas || [])
           .map((disciplina) => disciplina?.plano)
-          .filter((plano) => plano && plano !== 'Geral')
+          .filter((plano) => plano && plano !== 'Geral' && !isLegacyDemoCourse({ plano }))
       ),
     ];
 
@@ -2354,18 +2380,9 @@ export default function App() {
       });
 
       const cleaned = next.filter((curso) => {
-        if (curso.id !== 'curso-pmba-soldado-2026') return true;
-
-        const hasLinkedDiscipline = bancoDisciplinas.some(
-          (disciplina) => String(disciplina.plano || '').trim() === String(curso.plano || '').trim()
-        );
-
-        if (!hasLinkedDiscipline) {
-          changed = true;
-          return false;
-        }
-
-        return true;
+        if (!isLegacyDemoCourse(curso)) return true;
+        changed = true;
+        return false;
       });
 
       return changed ? cleaned : prev;
