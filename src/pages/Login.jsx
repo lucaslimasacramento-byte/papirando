@@ -302,30 +302,30 @@ export default function Login({
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-[#F8FAFC] font-sans text-slate-900 animate-in fade-in duration-500 lg:flex">
-      <section className="relative flex min-h-[520px] w-full flex-col justify-center overflow-hidden bg-[radial-gradient(circle_at_18%_10%,rgba(96,165,250,0.28),transparent_28%),radial-gradient(circle_at_82%_78%,rgba(37,99,235,0.38),transparent_34%),linear-gradient(135deg,#081a3b_0%,#102A56_44%,#1D4ED8_100%)] px-6 py-10 sm:px-10 lg:min-h-screen lg:w-[55%] lg:px-12 xl:px-16">
+    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] font-sans text-slate-900 animate-in fade-in duration-500 lg:flex">
+      <section className="relative flex h-[42vh] min-h-[340px] w-full flex-col justify-center overflow-hidden bg-[radial-gradient(circle_at_18%_10%,rgba(96,165,250,0.28),transparent_28%),radial-gradient(circle_at_82%_78%,rgba(37,99,235,0.38),transparent_34%),linear-gradient(135deg,#081a3b_0%,#102A56_44%,#1D4ED8_100%)] px-6 py-6 sm:px-10 lg:h-screen lg:w-[55%] lg:px-10 lg:py-6 xl:px-14">
         <div className="pointer-events-none absolute inset-0 opacity-[0.12] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
         <div className="pointer-events-none absolute -left-28 top-16 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 right-0 h-[34rem] w-[34rem] rounded-full bg-blue-500/45 blur-3xl" />
         <div className="pointer-events-none absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-white/8 blur-3xl" />
 
-        <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col overflow-hidden">
-          <div className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-blue-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-md">
+        <div className="relative z-10 mx-auto flex max-h-full w-full max-w-3xl flex-col overflow-hidden">
+          <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-blue-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-md lg:mb-5">
             <ShieldCheck size={14} />
             Plataforma premium de aprovação
           </div>
 
-          <div className="mb-8 rounded-[2rem] border border-white/12 bg-white/[0.08] p-5 shadow-[0_24px_70px_rgba(2,8,23,0.28)] backdrop-blur-xl sm:p-6">
-            <div className="flex flex-col gap-4">
+          <div className="mb-4 rounded-[2rem] border border-white/12 bg-white/[0.08] p-4 shadow-[0_24px_70px_rgba(2,8,23,0.28)] backdrop-blur-xl sm:p-5 lg:mb-5">
+            <div className="flex flex-col gap-3">
               <div className="inline-flex w-fit rounded-2xl border border-white/12 bg-white/8 px-5 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-sm">
                 <h1
-                  className="bg-[linear-gradient(92deg,#ffffff_8%,#dbeafe_45%,#93c5fd_100%)] bg-clip-text text-4xl font-extrabold leading-none tracking-tight text-transparent drop-shadow-[0_0_18px_rgba(147,197,253,0.35)] sm:text-5xl"
+                  className="bg-[linear-gradient(92deg,#ffffff_8%,#dbeafe_45%,#93c5fd_100%)] bg-clip-text text-3xl font-extrabold leading-none tracking-tight text-transparent drop-shadow-[0_0_18px_rgba(147,197,253,0.35)] sm:text-4xl xl:text-5xl"
                   style={{ fontFamily: 'Poppins, "Plus Jakarta Sans", "Segoe UI", sans-serif' }}
                 >
                   Papirando
                 </h1>
               </div>
-              <p className="max-w-xl break-words text-xl font-semibold leading-snug text-blue-100 sm:text-2xl">
+              <p className="max-w-xl break-words text-lg font-semibold leading-snug text-blue-100 sm:text-xl xl:text-2xl">
                 Estude com <span className="text-sky-300">estratégia</span>.{' '}
                 <span className="block sm:inline">
                   Aprove com <span className="text-sky-300">constância</span>.
@@ -334,28 +334,28 @@ export default function Login({
             </div>
           </div>
 
-          <div className="mb-8 flex w-full gap-3 overflow-x-auto pb-2 [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <div className="mb-4 flex w-full gap-3 overflow-x-auto pb-1 [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible lg:mb-5 [&::-webkit-scrollbar]:hidden">
             {QUICK_STATS.map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.label}
-                  className="w-[160px] shrink-0 rounded-[1.4rem] border border-white/12 bg-white/[0.09] p-4 shadow-[0_18px_45px_rgba(2,8,23,0.18)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.12] sm:w-auto"
+                  className="w-[150px] shrink-0 rounded-[1.4rem] border border-white/12 bg-white/[0.09] p-3.5 shadow-[0_18px_45px_rgba(2,8,23,0.18)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.12] sm:w-auto xl:p-4"
                 >
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-400/15 text-sky-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-400/15 text-sky-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] xl:h-10 xl:w-10">
                     <Icon size={20} />
                   </div>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200">{item.label}</p>
-                  <p className="mt-1 text-3xl font-black tracking-tight text-white">{item.value}</p>
+                  <p className="mt-1 text-2xl font-black tracking-tight text-white xl:text-3xl">{item.value}</p>
                   <p className="mt-1 text-xs font-semibold text-blue-100/75">{item.helper}</p>
                 </div>
               );
             })}
           </div>
 
-          <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] border border-white/14 bg-white/[0.09] p-6 shadow-[0_28px_80px_rgba(2,8,23,0.32)] backdrop-blur-xl sm:p-8">
+          <div className="relative hidden min-h-[230px] overflow-hidden rounded-[2rem] border border-white/14 bg-white/[0.09] p-6 shadow-[0_28px_80px_rgba(2,8,23,0.32)] backdrop-blur-xl sm:block xl:min-h-[285px] xl:p-8">
             <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-blue-300/20 blur-3xl" />
-            <div className="absolute bottom-0 right-4 hidden h-48 w-72 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(15,42,95,0.92),rgba(37,99,235,0.55))] p-4 shadow-2xl sm:block">
+            <div className="absolute bottom-0 right-4 hidden h-40 w-60 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(15,42,95,0.92),rgba(37,99,235,0.55))] p-4 shadow-2xl xl:block xl:h-48 xl:w-72">
               <div className="mb-4 flex gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-sky-300/80" />
                 <span className="h-2 w-2 rounded-full bg-white/25" />
@@ -365,7 +365,7 @@ export default function Login({
                 <div className="h-4 w-3/4 rounded-full bg-white/18" />
                 <div className="h-4 w-1/2 rounded-full bg-white/12" />
                 <div className="mt-6 flex items-center gap-4">
-                  <div className="grid h-20 w-20 place-items-center rounded-full border-4 border-sky-400/70 text-sm font-black text-sky-100">87%</div>
+                  <div className="grid h-16 w-16 place-items-center rounded-full border-4 border-sky-400/70 text-sm font-black text-sky-100 xl:h-20 xl:w-20">87%</div>
                   <div className="flex-1 space-y-2">
                     <div className="h-3 rounded-full bg-sky-300/45" />
                     <div className="h-3 w-2/3 rounded-full bg-white/12" />
@@ -375,15 +375,15 @@ export default function Login({
             </div>
 
             <div key={activeFeature.title} className="absolute inset-0 flex animate-in fade-in slide-in-from-bottom-4 duration-500 flex-col justify-center px-6 sm:px-8">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/14 bg-white/12 text-sky-300 shadow-lg backdrop-blur-md">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/14 bg-white/12 text-sky-300 shadow-lg backdrop-blur-md xl:mb-6 xl:h-16 xl:w-16">
                 <ActiveFeatureIcon size={32} />
               </div>
-              <h2 className="max-w-[16rem] text-2xl font-black tracking-tight text-white sm:max-w-sm sm:text-3xl">{activeFeature.title}</h2>
+              <h2 className="max-w-[16rem] text-2xl font-black tracking-tight text-white sm:max-w-sm xl:text-3xl">{activeFeature.title}</h2>
               <p className="mt-3 max-w-[16rem] text-base font-medium leading-relaxed text-blue-100/80 sm:max-w-sm">{activeFeature.desc}</p>
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-2">
+          <div className="mt-4 hidden items-center justify-center gap-2 sm:flex xl:mt-5">
             {LOGIN_FEATURES.map((feature, idx) => (
               <button
                 key={feature.title}
@@ -397,7 +397,7 @@ export default function Login({
             ))}
           </div>
 
-          <div className="mt-8 grid gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-4 text-sm text-blue-100/85 shadow-[0_18px_45px_rgba(2,8,23,0.18)] backdrop-blur-xl sm:grid-cols-3">
+          <div className="mt-4 hidden gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-3 text-sm text-blue-100/85 shadow-[0_18px_45px_rgba(2,8,23,0.18)] backdrop-blur-xl lg:grid lg:grid-cols-3 xl:mt-5 xl:p-4">
             <TrustItem icon={ShieldCheck} title="Ambiente seguro" text="Dados protegidos" />
             <TrustItem icon={Timer} title="Alta performance" text="Plataforma leve" />
             <TrustItem icon={BrainCircuit} title="Feito para aprovados" text="Metodologia comprovada" />
@@ -405,11 +405,11 @@ export default function Login({
         </div>
       </section>
 
-      <section className="relative flex w-full flex-col items-center justify-center overflow-hidden px-5 py-8 sm:px-8 lg:w-[45%] lg:px-10">
+      <section className="relative flex h-[58vh] w-full flex-col items-center justify-center overflow-hidden px-5 py-5 sm:px-8 lg:h-screen lg:w-[45%] lg:px-10">
         <div className="pointer-events-none absolute -top-24 left-0 h-80 w-80 rounded-full bg-blue-100/80 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-sky-100/70 blur-3xl" />
         <div className="pointer-events-none absolute right-16 top-1/4 h-40 w-40 rounded-full border border-blue-100/60" />
-        <div className="relative z-10 mb-8 flex w-full max-w-xl justify-center lg:absolute lg:right-8 lg:top-8 lg:mb-0 lg:max-w-none lg:justify-end">
+        <div className="relative z-10 mb-4 flex w-full max-w-xl justify-center lg:absolute lg:right-8 lg:top-8 lg:mb-0 lg:max-w-none lg:justify-end">
           <div className="rounded-full border border-slate-200/80 bg-white/85 px-4 py-2 text-sm font-bold text-slate-500 shadow-[0_14px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             {isLoginMode ? 'Ainda não tem conta?' : 'Já possui conta?'}
             <button
@@ -424,17 +424,17 @@ export default function Login({
           </div>
         </div>
 
-        <div className="relative z-10 w-full max-w-xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="relative z-10 w-full max-w-xl space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 lg:space-y-5">
           <div className="text-center lg:text-left">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-blue-700 shadow-sm">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-blue-700 shadow-sm lg:mb-4">
               <Stars size={13} />
               {hasBetaInvite && !isLoginMode ? 'Convite beta liberado' : isLoginMode ? 'Acesso rápido' : 'Criação imediata'}
             </div>
 
-            <h2 className="text-4xl font-black tracking-tight text-[#0F172A]">
+            <h2 className="text-3xl font-black tracking-tight text-[#0F172A] xl:text-4xl">
               {hasBetaInvite && !isLoginMode ? 'Seu acesso beta chegou' : isLoginMode ? 'Bem-vindo(a) de volta!' : 'Crie a sua conta'}
             </h2>
-            <p className="mt-3 text-base font-medium leading-relaxed text-[#64748B]">
+            <p className="mt-2 text-sm font-medium leading-relaxed text-[#64748B] xl:text-base">
               {hasBetaInvite && !isLoginMode
                 ? 'Entre com o mesmo e-mail que recebeu o convite e ative 3 meses de testes com todos os recursos.'
                 : isLoginMode
@@ -459,8 +459,8 @@ export default function Login({
             </div>
           )}
 
-          <div className="rounded-[2rem] border border-[#E2E8F0] bg-white/90 p-6 shadow-[0_26px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-8">
-            <form onSubmit={handleAuth} className="space-y-5">
+          <div className="rounded-[2rem] border border-[#E2E8F0] bg-white/90 p-5 shadow-[0_26px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-6 xl:p-8">
+            <form onSubmit={handleAuth} className="space-y-4 xl:space-y-5">
               {!isLoginMode && (
                 <>
                   <InputField
@@ -581,7 +581,7 @@ export default function Login({
               <button
                 type="submit"
                 disabled={loading}
-                className="group mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#2563EB,#1D4ED8)] py-4 text-sm font-black text-white shadow-[0_18px_36px_rgba(37,99,235,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(37,99,235,0.38)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                className="group mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#2563EB,#1D4ED8)] py-3.5 text-sm font-black text-white shadow-[0_18px_36px_rgba(37,99,235,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(37,99,235,0.38)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 xl:mt-4 xl:py-4"
               >
                 {loading ? (
                   <>
@@ -598,7 +598,7 @@ export default function Login({
             </form>
           </div>
 
-          <p className="flex items-center justify-center gap-2 text-center text-xs font-semibold text-slate-500">
+          <p className="hidden items-center justify-center gap-2 text-center text-xs font-semibold text-slate-500 sm:flex">
             <Lock size={14} className="text-slate-400" />
             Seus dados estão protegidos com criptografia de ponta.
           </p>
@@ -689,7 +689,7 @@ function InputField({
           maxLength={maxLength}
           max={max}
           readOnly={readOnly}
-          className={`h-[60px] w-full rounded-2xl border border-[#E2E8F0] py-4 pl-12 pr-4 text-base font-semibold text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
+          className={`h-[52px] w-full rounded-2xl border border-[#E2E8F0] py-3 pl-12 pr-4 text-base font-semibold text-slate-800 outline-none transition-all placeholder:text-slate-400 xl:h-[60px] xl:py-4 ${
             readOnly
               ? 'bg-blue-50 text-blue-900'
               : 'bg-slate-50/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-blue-500/15'
@@ -738,7 +738,7 @@ function PasswordField({
           required
           value={value}
           onChange={onChange}
-          className="h-[60px] w-full rounded-2xl border border-[#E2E8F0] bg-slate-50/80 py-4 pl-12 pr-12 text-base font-semibold text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-blue-500/15"
+          className="h-[52px] w-full rounded-2xl border border-[#E2E8F0] bg-slate-50/80 py-3 pl-12 pr-12 text-base font-semibold text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-blue-500/15 xl:h-[60px] xl:py-4"
         />
         <button
           type="button"
