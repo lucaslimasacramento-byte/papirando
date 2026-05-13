@@ -397,21 +397,22 @@ export default function ConcursoDetalhe({
       />
 
       {roles.length > 1 && (
-        <section className="section-card p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="relative z-10 overflow-visible rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
+          <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent" />
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cargos do concurso</p>
-              <h2 className="mt-1 text-xl font-semibold text-slate-900">Escolha o cargo para ver o edital correto</h2>
-              <p className="mt-1 text-sm font-semibold text-gray-500">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Escolha o cargo para ver o edital correto</h2>
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-gray-500">
                 Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
               </p>
             </div>
-            <span className="w-fit rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
+            <span className="w-fit shrink-0 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
               {roles.length} cargos cadastrados
             </span>
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {roles.map((role) => {
               const selected = activeRole?.id === role.id;
               return (
@@ -419,17 +420,21 @@ export default function ConcursoDetalhe({
                   key={role.id}
                   type="button"
                   onClick={() => setSelectedRoleId(role.id)}
-                  className={`rounded-2xl border p-4 text-left transition-all ${
+                  className={`min-h-[155px] rounded-[1.25rem] border p-4 text-left transition-all ${
                     selected
-                      ? 'border-blue-300 bg-blue-50 shadow-[0_12px_30px_rgba(37,99,235,0.12)]'
-                      : 'border-slate-200 bg-white hover:border-blue-200'
+                      ? 'border-blue-300 bg-blue-50 shadow-[0_16px_34px_rgba(37,99,235,0.14)]'
+                      : 'border-slate-200 bg-slate-50/60 hover:border-blue-200 hover:bg-white'
                   }`}
                 >
-                  <p className="line-clamp-2 text-sm font-bold text-slate-900">{role.nome}</p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
-                    {role.vagas && <span className="rounded-full bg-white px-2.5 py-1 text-slate-600">{role.vagas} vaga(s)</span>}
-                    {role.salario && <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700">{role.salario}</span>}
-                    {role.escolaridade && <span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">{role.escolaridade}</span>}
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-base font-bold leading-snug text-slate-950">{role.nome}</p>
+                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-blue-600' : 'bg-slate-300'}`} />
+                  </div>
+                  <div className="mt-4 grid gap-2 text-[11px] font-bold sm:grid-cols-2">
+                    {role.salario && <CargoInfo label="Salário" value={role.salario} tone="green" />}
+                    {role.vagas && <CargoInfo label="Vagas" value={role.vagas} />}
+                    {role.escolaridade && <CargoInfo label="Nível" value={role.escolaridade} tone="blue" />}
+                    {role.lotacao && <CargoInfo label="Lotação" value={role.lotacao} />}
                   </div>
                 </button>
               );
@@ -700,6 +705,21 @@ export default function ConcursoDetalhe({
           )}
         </section>
       </div>
+    </div>
+  );
+}
+
+function CargoInfo({ label, value, tone = 'slate' }) {
+  const toneClasses = {
+    green: 'bg-emerald-50 text-emerald-700',
+    blue: 'bg-blue-50 text-blue-700',
+    slate: 'bg-white text-slate-700',
+  };
+
+  return (
+    <div className={`rounded-xl px-3 py-2 ${toneClasses[tone] || toneClasses.slate}`}>
+      <p className="text-[9px] font-black uppercase tracking-[0.16em] opacity-60">{label}</p>
+      <p className="mt-1 break-words text-xs font-black leading-snug">{value}</p>
     </div>
   );
 }

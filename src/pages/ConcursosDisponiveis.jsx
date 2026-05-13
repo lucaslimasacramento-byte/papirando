@@ -574,8 +574,8 @@ export default function ConcursosDisponiveis({
 
                           <div className="mt-4 grid grid-cols-2 gap-2">
                             <QuickInfo label="Prova" value={formatDateBR(contest.prova_data)} />
-                            <QuickInfo label={hasMultipleRoles ? 'Salários' : 'Salário'} value={formatCurrencyBR(contest.salario)} tone="green" />
-                            <QuickInfo label={hasMultipleRoles ? 'Inscrições' : 'Inscrição'} value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" />
+                            <QuickInfo label={hasMultipleRoles ? 'Salários' : 'Salário'} value={formatCurrencyBR(contest.salario)} tone="green" wide={hasMultipleRoles} />
+                            <QuickInfo label={hasMultipleRoles ? 'Inscrições' : 'Inscrição'} value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" wide={hasMultipleRoles} />
                             <QuickInfo label="Nível" value={contest.escolaridade || 'A definir'} />
                             <QuickInfo label={hasMultipleRoles ? 'Vagas totais' : 'Vagas'} value={contest.vagas || 'A definir'} />
                           </div>
@@ -756,7 +756,7 @@ function MetaCounter({ label, value }) {
   );
 }
 
-function QuickInfo({ label, value, tone = 'blue' }) {
+function QuickInfo({ label, value, tone = 'blue', wide = false }) {
   const toneClasses = {
     blue: 'text-blue-700',
     amber: 'text-amber-700',
@@ -764,9 +764,9 @@ function QuickInfo({ label, value, tone = 'blue' }) {
   };
 
   return (
-    <div className="min-w-0 rounded-[14px] border border-slate-200 bg-slate-50/80 px-3 py-2">
+    <div className={`min-w-0 rounded-[14px] border border-slate-200 bg-slate-50/80 px-3 py-2 ${wide ? 'col-span-2' : ''}`}>
       <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
-      <p className={`mt-1 truncate text-xs font-bold ${toneClasses[tone] || toneClasses.blue}`}>{value}</p>
+      <p className={`mt-1 break-words text-xs font-black leading-snug ${toneClasses[tone] || toneClasses.blue}`}>{value}</p>
     </div>
   );
 }
