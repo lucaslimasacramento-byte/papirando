@@ -22,6 +22,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { analyzeEdital } from '../lib/aiClient';
+import { buildContestForRole, getContestRoles, groupContestTemplates } from '../lib/contestGrouping';
 import PageHeadPremium from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -117,7 +118,8 @@ export default function Planos({
   }, [bancoDisciplinas, cursos]);
 
   const contestSections = useMemo(() => {
-    const grouped = concursoCatalog.reduce((acc, template) => {
+    const groupedCatalog = groupContestTemplates(concursoCatalog);
+    const grouped = groupedCatalog.reduce((acc, template) => {
       const area = template.area || 'Geral';
       if (!acc[area]) acc[area] = [];
       acc[area].push(template);
@@ -293,10 +295,17 @@ export default function Planos({
   };
 
   const handleImportCatalog = async (template) => {
+    const roles = getContestRoles(template);
+    if (roles.length > 1) {
+      onOpenContestDetail?.(template.id);
+      closeMode();
+      return;
+    }
+
     setIsImportingCatalog(true);
 
     try {
-      await onImportCatalogCourse?.(template);
+      await onImportCatalogCourse?.(buildContestForRole(template, roles[0]));
       closeMode();
     } catch (error) {
       alert(error.message || 'Não foi possível importar esse concurso.');

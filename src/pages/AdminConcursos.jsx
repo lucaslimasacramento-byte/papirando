@@ -453,6 +453,7 @@ function normalizeJsonContestTemplate(raw = {}) {
     status_concurso: normalizeImportedStatus(template.status_concurso || ''),
     prova_data: normalizeImportedDate(template.prova_data || template.data_prova || ''),
     edital_url: cleanImportedValue(template.edital_url || template.url_edital_pdf || ''),
+    imagem_url: cleanImportedValue(template.imagem_url || template.image_url || template.capa_url || ''),
     disciplinas,
   };
 }
@@ -460,6 +461,28 @@ function normalizeJsonContestTemplate(raw = {}) {
 function parseContestJsonLocally(text = '') {
   const parsed = parseLooseJsonObject(text) || parseLooseJsonFields(text);
   if (!parsed) return null;
+
+  const expandContestWithRoles = (item) => {
+    const cargos = Array.isArray(item?.cargos) ? item.cargos : Array.isArray(item?.cargos_opcoes) ? item.cargos_opcoes : null;
+    if (!cargos || cargos.length === 0) return [item];
+
+    const { cargos: _ignoredCargos, cargos_opcoes: _ignoredCargosOpcoes, disciplinas: commonDisciplinas, ...base } = item;
+    return cargos.map((cargo) => ({
+      ...base,
+      ...cargo,
+      nome: cargo.nome || [base.nome || base.concurso, cargo.nome_curto || cargo.cargo].filter(Boolean).join(' - '),
+      plano: cargo.plano || [base.concurso || base.nome, cargo.nome_curto || cargo.cargo, 'trilha de estudos'].filter(Boolean).join(' - '),
+      concurso: base.concurso || base.orgao || item.concurso,
+      area: cargo.area || base.area,
+      banca: cargo.banca || base.banca,
+      inscricao_valor: cargo.inscricao_valor || base.inscricao_valor,
+      status_concurso: cargo.status_concurso || base.status_concurso,
+      prova_data: cargo.prova_data || base.prova_data,
+      edital_url: cargo.edital_url || base.edital_url,
+      imagem_url: cargo.imagem_url || base.imagem_url,
+      disciplinas: Array.isArray(cargo.disciplinas) && cargo.disciplinas.length > 0 ? cargo.disciplinas : commonDisciplinas || [],
+    }));
+  };
 
   const rawTemplates = Array.isArray(parsed)
     ? parsed
@@ -471,7 +494,10 @@ function parseContestJsonLocally(text = '') {
           ? parsed.concursos
           : [parsed];
 
-  const templates = rawTemplates.map((item) => normalizeJsonContestTemplate(item)).filter((item) => item.nome || item.cargo);
+  const templates = rawTemplates
+    .flatMap((item) => expandContestWithRoles(item))
+    .map((item) => normalizeJsonContestTemplate(item))
+    .filter((item) => item.nome || item.cargo);
   if (templates.length === 0) return null;
 
   return {
@@ -954,6 +980,7 @@ export default function AdminConcursos({
       status_concurso: normalizeImportedStatus(template.status_concurso || prev.status_concurso),
       prova_data: normalizeImportedDate(template.prova_data) || prev.prova_data,
       edital_url: cleanImportedValue(template.edital_url) || prev.edital_url,
+      imagem_url: cleanImportedValue(template.imagem_url) || prev.imagem_url,
       disciplinas: importedSubjects.length > 0 ? importedSubjects : prev.disciplinas,
     }));
 
@@ -1081,6 +1108,46 @@ export default function AdminConcursos({
       .filter((subject) => subject.nome),
   });
 
+  const normalizeImportedTemplateToPayload = (template, index = 0) => {
+    const normalized = normalizeJsonContestTemplate(template);
+    const names = buildContestDisplayNames(normalized);
+
+    return {
+      id: null,
+      slug: '',
+      nome: names.nome || normalized.nome || normalized.cargo || `Concurso ${index + 1}`,
+      plano: names.plano || normalized.plano || normalized.nome || `Plano ${index + 1}`,
+      concurso: names.concurso || normalized.concurso || form.concurso || normalized.nome || '',
+      area: normalizeImportedArea(normalized.area || form.area),
+      cargo: cleanImportedValue(normalized.cargo || ''),
+      banca: cleanImportedValue(normalized.banca || form.banca) || 'A definir',
+      salario: cleanImportedValue(normalized.salario || ''),
+      inscricao_valor: cleanImportedValue(normalized.inscricao_valor || form.inscricao_valor),
+      escolaridade: cleanImportedValue(normalized.escolaridade || ''),
+      vagas: cleanImportedValue(normalized.vagas || ''),
+      lotacao: cleanImportedValue(normalized.lotacao || ''),
+      etapas: cleanImportedValue(normalized.etapas || form.etapas),
+      etapas_tags: Array.isArray(normalized.etapas_tags) && normalized.etapas_tags.length > 0 ? normalized.etapas_tags : form.etapas_tags,
+      taf_itens: Array.isArray(normalized.taf_itens) ? normalized.taf_itens : [],
+      cor: form.cor || '#2563EB',
+      descricao: cleanImportedValue(normalized.descricao || form.descricao),
+      is_public: form.is_public,
+      status_concurso: normalizeImportedStatus(normalized.status_concurso || form.status_concurso),
+      prova_data: normalizeImportedDate(normalized.prova_data || form.prova_data),
+      imagem_url: cleanImportedValue(normalized.imagem_url || form.imagem_url),
+      edital_url: cleanImportedValue(normalized.edital_url || form.edital_url),
+      disciplinas: (normalized.disciplinas || []).map((subject, subjectIndex) => ({
+        nome: subject.nome,
+        ordem: subjectIndex,
+        cor: subject.cor || '',
+        topicos: (subject.topicos || []).map((topic, topicIndex) => ({
+          nome: typeof topic === 'string' ? topic : topic.nome,
+          ordem: topicIndex,
+        })).filter((topic) => topic.nome),
+      })),
+    };
+  };
+
   const subjectSuggestions = useMemo(
     () =>
       Array.from(new Set(subjectCatalog.map((entry) => entry.nome).filter(Boolean))).sort((first, second) =>
@@ -1111,6 +1178,28 @@ export default function AdminConcursos({
       resetForm();
     } catch (error) {
       toastError(error.message || 'Não foi possível salvar o concurso.', 'Erro ao salvar');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAllContestOptions = async () => {
+    if (contestFormOptions.length <= 1) return;
+    setIsSaving(true);
+
+    try {
+      for (const [index, template] of contestFormOptions.entries()) {
+        const payload = normalizeImportedTemplateToPayload(template, index);
+        if (!payload.nome) continue;
+        await onCreateTemplate?.(payload);
+      }
+
+      success(`${contestFormOptions.length} cargo(s) salvos no catálogo. Eles aparecerão agrupados por concurso para os alunos.`);
+      resetForm();
+      setContestFormOptions([]);
+      setContestFormImportStatus('');
+    } catch (error) {
+      toastError(error.message || 'Não foi possível salvar todos os cargos.', 'Erro ao salvar');
     } finally {
       setIsSaving(false);
     }
@@ -1630,6 +1719,20 @@ export default function AdminConcursos({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">
                   Opções separadas encontradas
                 </p>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+                  <p className="text-sm font-semibold text-blue-800">
+                    Salve todos os cargos de uma vez. Na vitrine do aluno eles ficam em um único card do concurso.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleSaveAllContestOptions}
+                    disabled={isSaving}
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-70"
+                  >
+                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <PlusCircle size={16} />}
+                    Salvar todos
+                  </button>
+                </div>
                 <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {contestFormOptions.map((option, optionIndex) => {
                     const subjectCount = Array.isArray(option.disciplinas) ? option.disciplinas.length : 0;

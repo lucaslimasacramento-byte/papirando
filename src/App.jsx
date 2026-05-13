@@ -22,6 +22,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
+import { findGroupedContestById } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
@@ -1357,8 +1358,7 @@ export default function App() {
     isStripeActive ||
     ['elite', 'tatico', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase());
 
-  const selectedContestDetail =
-    contestLibrary.find((item) => item.id === selectedContestDetailId) || null;
+  const selectedContestDetail = findGroupedContestById(contestLibrary, selectedContestDetailId);
   const communityRankings = useMemo(
     () =>
       buildCommunityRankings({

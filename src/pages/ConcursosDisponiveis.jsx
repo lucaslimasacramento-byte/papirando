@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import PageHeadPremium from '../components/PageHeadPremium';
+import { buildContestForRole, getContestRoles, groupContestTemplates } from '../lib/contestGrouping';
 
 const STATUS_LABELS = {
   confirmado: 'Confirmado',
@@ -59,6 +60,7 @@ export default function ConcursosDisponiveis({
   const [selectedContest, setSelectedContest] = useState(null);
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
+  const groupedCatalog = useMemo(() => groupContestTemplates(concursoCatalog), [concursoCatalog]);
 
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
@@ -81,8 +83,8 @@ export default function ConcursosDisponiveis({
   };
 
   const areas = useMemo(
-    () => ['Todas', ...Array.from(new Set(concursoCatalog.map((item) => item.area || 'Geral')))],
-    [concursoCatalog]
+    () => ['Todas', ...Array.from(new Set(groupedCatalog.map((item) => item.area || 'Geral')))],
+    [groupedCatalog]
   );
 
   useEffect(() => {
@@ -100,8 +102,9 @@ export default function ConcursosDisponiveis({
       return Number.isFinite(numeric) ? numeric : 0;
     };
 
-    const filtered = concursoCatalog.filter((contest) => {
-      const haystack = [contest.nome, contest.concurso, contest.cargo, contest.banca, contest.area]
+    const filtered = groupedCatalog.filter((contest) => {
+      const roleText = getContestRoles(contest).map((role) => role.nome || role.cargo).join(' ');
+      const haystack = [contest.nome, contest.concurso, contest.cargo, contest.banca, contest.area, roleText]
         .join(' ')
         .toLowerCase();
 
@@ -151,7 +154,7 @@ export default function ConcursosDisponiveis({
 
       return score(second, secondImported) - score(first, firstImported);
     });
-  }, [areasSelecionadas, concursoCatalog, cursos, favoriteContestIds, interestedContestIds, query, sortMode, statusFiltro]);
+  }, [areasSelecionadas, groupedCatalog, cursos, favoriteContestIds, interestedContestIds, query, sortMode, statusFiltro]);
 
   const smartSections = useMemo(() => {
     const enriched = concursosFiltrados
@@ -211,10 +214,10 @@ export default function ConcursosDisponiveis({
       area,
       total:
         area === 'Todas'
-          ? concursoCatalog.filter((item) => item.is_public !== false).length
-          : concursoCatalog.filter((item) => (item.area || 'Geral') === area && item.is_public !== false).length,
+          ? groupedCatalog.filter((item) => item.is_public !== false).length
+          : groupedCatalog.filter((item) => (item.area || 'Geral') === area && item.is_public !== false).length,
     }));
-  }, [areas, concursoCatalog]);
+  }, [areas, groupedCatalog]);
 
   const displayedGroups = useMemo(() => {
     if (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas')) {
@@ -224,12 +227,12 @@ export default function ConcursosDisponiveis({
     return grouped;
   }, [areasSelecionadas, grouped]);
   const totalPublicados = useMemo(
-    () => concursoCatalog.filter((item) => item.is_public !== false).length,
-    [concursoCatalog]
+    () => groupedCatalog.filter((item) => item.is_public !== false).length,
+    [groupedCatalog]
   );
   const totalAreas = useMemo(
-    () => new Set(concursoCatalog.map((item) => item.area || 'Geral')).size,
-    [concursoCatalog]
+    () => new Set(groupedCatalog.map((item) => item.area || 'Geral')).size,
+    [groupedCatalog]
   );
   const recommendationBuckets = useMemo(() => {
     const buckets = [];
@@ -274,9 +277,16 @@ export default function ConcursosDisponiveis({
   };
 
   const handleImport = async (contest) => {
-    setImportingId(contest.id);
+    const roles = getContestRoles(contest);
+    if (roles.length > 1) {
+      handleOpenContest(contest);
+      return;
+    }
+
+    const importTemplate = buildContestForRole(contest, roles[0]);
+    setImportingId(importTemplate.id || contest.id);
     try {
-      await onImportCatalogCourse?.(contest);
+      await onImportCatalogCourse?.(importTemplate);
       setActiveTab?.('planos');
     } finally {
       setImportingId('');
@@ -463,7 +473,7 @@ export default function ConcursosDisponiveis({
       )}
 
       <div className="space-y-8">
-        {concursoCatalog.length === 0 ? (
+        {groupedCatalog.length === 0 ? (
           <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
             Nenhum concurso disponível no momento. Aguarde a equipe adicionar novos editais.
           </section>
@@ -486,10 +496,10 @@ export default function ConcursosDisponiveis({
             {viewMode === 'vitrine' ? (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {contests.map((contest) => {
-                  const topicosCount = (contest.disciplinas || []).reduce(
-                    (acc, subject) => acc + (subject.topicos?.length || 0),
-                    0
-                  );
+                  const cargos = getContestRoles(contest);
+                  const hasMultipleRoles = cargos.length > 1;
+                  const allSubjects = cargos.flatMap((cargo) => cargo.disciplinas || []);
+                  const topicosCount = allSubjects.reduce((acc, subject) => acc + (subject.topicos?.length || 0), 0);
 
                   return (
                     <article
@@ -532,6 +542,23 @@ export default function ConcursosDisponiveis({
                           <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-gray-500">
                             {contest.cargo || contest.concurso}
                           </p>
+                          {hasMultipleRoles && (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {cargos.slice(0, 3).map((cargo) => (
+                                <span
+                                  key={cargo.id}
+                                  className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-600"
+                                >
+                                  {cargo.nome}
+                                </span>
+                              ))}
+                              {cargos.length > 3 && (
+                                <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">
+                                  +{cargos.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <p className="mt-2 truncate text-sm font-bold text-slate-600">
                             {contest.banca || 'Banca a definir'}
                           </p>
@@ -544,7 +571,7 @@ export default function ConcursosDisponiveis({
                           </div>
 
                           <div className="mt-3 grid grid-cols-2 gap-2">
-                            <MetaCounter label="Disciplinas" value={contest.disciplinas?.length || 0} />
+                            <MetaCounter label={hasMultipleRoles ? 'Cargos' : 'Disciplinas'} value={hasMultipleRoles ? cargos.length : contest.disciplinas?.length || 0} />
                             <MetaCounter label="Tópicos" value={topicosCount} />
                           </div>
                         </div>
@@ -569,7 +596,9 @@ export default function ConcursosDisponiveis({
                               ? 'Limite atingido'
                               : importingId === contest.id
                                 ? 'Importando...'
-                                : 'Adicionar aos meus cursos'}
+                                : hasMultipleRoles
+                                  ? 'Escolher cargo'
+                                  : 'Adicionar aos meus cursos'}
                             <ArrowRight size={16} />
                           </button>
                         </div>
@@ -635,7 +664,7 @@ export default function ConcursosDisponiveis({
           </section>
         ))}
 
-        {concursoCatalog.length > 0 && displayedGroups.length === 0 && (
+        {groupedCatalog.length > 0 && displayedGroups.length === 0 && (
           <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
             Nenhum concurso encontrado com esses filtros.
           </section>

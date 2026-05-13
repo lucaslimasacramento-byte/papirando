@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import { buildContestForRole, getContestRoles, getPrimaryContestRole } from '../lib/contestGrouping';
 
 const STATUS_LABELS = {
   confirmado: 'Confirmado',
@@ -28,6 +29,7 @@ const STATUS_LABELS = {
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
   prova_discursiva: 'Prova discursiva',
+  avaliacao_curricular: 'AvaliaÃ§Ã£o curricular',
   redacao: 'Redação',
   taf: 'TAF',
   avaliacao_psicologica: 'Avaliação psicológica',
@@ -39,7 +41,7 @@ const STAGE_LABELS = {
 };
 
 export default function ConcursoDetalhe({
-  contest,
+  contest: rawContest,
   onBack,
   onImport,
   onToggleFavorite,
@@ -58,6 +60,21 @@ export default function ConcursoDetalhe({
 }) {
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [imageError, setImageError] = useState(false);
+  const roles = useMemo(() => getContestRoles(rawContest || {}), [rawContest]);
+  const [selectedRoleId, setSelectedRoleId] = useState('');
+  const activeRole = useMemo(
+    () => roles.find((role) => role.id === selectedRoleId) || getPrimaryContestRole(rawContest || {}),
+    [roles, selectedRoleId, rawContest]
+  );
+  const contest = useMemo(() => {
+    if (!rawContest) return null;
+    return buildContestForRole(rawContest, activeRole);
+  }, [rawContest, activeRole]);
+
+  useEffect(() => {
+    setSelectedRoleId(getPrimaryContestRole(rawContest || {})?.id || '');
+    setExpandedSubjects({});
+  }, [rawContest?.id]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -377,6 +394,48 @@ export default function ConcursoDetalhe({
           </div>
         )}
       />
+
+      {roles.length > 1 && (
+        <section className="section-card p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cargos do concurso</p>
+              <h2 className="mt-1 text-xl font-semibold text-slate-900">Escolha o cargo para ver o edital correto</h2>
+              <p className="mt-1 text-sm font-semibold text-gray-500">
+                Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
+              </p>
+            </div>
+            <span className="w-fit rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
+              {roles.length} cargos cadastrados
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {roles.map((role) => {
+              const selected = activeRole?.id === role.id;
+              return (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => setSelectedRoleId(role.id)}
+                  className={`rounded-2xl border p-4 text-left transition-all ${
+                    selected
+                      ? 'border-blue-300 bg-blue-50 shadow-[0_12px_30px_rgba(37,99,235,0.12)]'
+                      : 'border-slate-200 bg-white hover:border-blue-200'
+                  }`}
+                >
+                  <p className="line-clamp-2 text-sm font-bold text-slate-900">{role.nome}</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
+                    {role.vagas && <span className="rounded-full bg-white px-2.5 py-1 text-slate-600">{role.vagas} vaga(s)</span>}
+                    {role.salario && <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700">{role.salario}</span>}
+                    {role.escolaridade && <span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">{role.escolaridade}</span>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="section-card overflow-hidden p-0">
         <div className="grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
