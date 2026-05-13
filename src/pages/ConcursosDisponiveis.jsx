@@ -72,6 +72,7 @@ export default function ConcursosDisponiveis({
   const formatCurrencyBR = (value) => {
     const cleaned = String(value || '').trim();
     if (!cleaned) return 'A definir';
+    if (/\s+a\s+R\$/i.test(cleaned)) return cleaned;
 
     const numeric = Number(cleaned.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) return 'A definir';
@@ -573,14 +574,15 @@ export default function ConcursosDisponiveis({
 
                           <div className="mt-4 grid grid-cols-2 gap-2">
                             <QuickInfo label="Prova" value={formatDateBR(contest.prova_data)} />
-                            <QuickInfo label="Salário" value={formatCurrencyBR(contest.salario)} tone="green" />
-                            <QuickInfo label="Inscrição" value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" />
+                            <QuickInfo label={hasMultipleRoles ? 'Salários' : 'Salário'} value={formatCurrencyBR(contest.salario)} tone="green" />
+                            <QuickInfo label={hasMultipleRoles ? 'Inscrições' : 'Inscrição'} value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" />
                             <QuickInfo label="Nível" value={contest.escolaridade || 'A definir'} />
+                            <QuickInfo label={hasMultipleRoles ? 'Vagas totais' : 'Vagas'} value={contest.vagas || 'A definir'} />
                           </div>
 
                           <div className="mt-3 grid grid-cols-2 gap-2">
                             <MetaCounter label={hasMultipleRoles ? 'Cargos' : 'Disciplinas'} value={hasMultipleRoles ? cargos.length : contest.disciplinas?.length || 0} />
-                            <MetaCounter label="Tópicos" value={topicosCount} />
+                            <MetaCounter label={hasMultipleRoles ? 'Tópicos gerais' : 'Tópicos'} value={topicosCount} />
                           </div>
                         </div>
                       </button>

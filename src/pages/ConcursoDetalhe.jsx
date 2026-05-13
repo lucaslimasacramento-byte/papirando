@@ -208,6 +208,7 @@ export default function ConcursoDetalhe({
   const formatCurrencyBR = (value) => {
     const cleaned = String(value || '').trim();
     if (!cleaned) return 'A definir';
+    if (/\s+a\s+R\$/i.test(cleaned)) return cleaned;
 
     const numeric = Number(cleaned.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) return 'A definir';

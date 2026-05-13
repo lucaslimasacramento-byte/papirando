@@ -7,6 +7,44 @@ function normalizeKey(value = '') {
     .replace(/^-+|-+$/g, '');
 }
 
+function parseMoney(value = '') {
+  const match = String(value || '').match(/(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})/);
+  if (!match) return null;
+  const amount = Number(match[1].replace(/\./g, '').replace(',', '.'));
+  return Number.isFinite(amount) ? amount : null;
+}
+
+function formatMoney(value) {
+  return Number(value).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+}
+
+function buildMoneyRange(values = []) {
+  const numbers = values.map((value) => parseMoney(value)).filter((value) => value !== null);
+  if (numbers.length === 0) return '';
+  const min = Math.min(...numbers);
+  const max = Math.max(...numbers);
+  return min === max ? formatMoney(min) : `${formatMoney(min)} a ${formatMoney(max)}`;
+}
+
+function buildUniqueSummary(values = [], fallback = '') {
+  const unique = Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
+  if (unique.length === 0) return fallback;
+  if (unique.length === 1) return unique[0];
+  return unique.length <= 2 ? unique.join(' / ') : 'Varia por cargo';
+}
+
+function buildVacancySummary(values = []) {
+  const cleaned = values.map((value) => String(value || '').trim()).filter(Boolean);
+  const numbers = cleaned.map((value) => Number(value.match(/\d+/)?.[0] || NaN));
+  if (numbers.length > 0 && numbers.every(Number.isFinite)) {
+    return String(numbers.reduce((acc, value) => acc + value, 0));
+  }
+  return buildUniqueSummary(cleaned, '');
+}
+
 function readableRoleLabel(template = {}) {
   return String(template.cargo || template.nome || template.plano || 'Cargo').trim();
 }
@@ -14,12 +52,13 @@ function readableRoleLabel(template = {}) {
 function groupTitle(template = {}) {
   const nome = String(template.nome || '').trim();
   const cargo = String(template.cargo || '').trim();
+  const dashPattern = '[\\u2013\\u2014-]';
   const withoutCargo = cargo && nome.toLowerCase().includes(cargo.toLowerCase())
-    ? nome.replace(new RegExp(`\\s+[—-]\\s+${cargo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'), '').trim()
+    ? nome.replace(new RegExp(`\\s+${dashPattern}\\s+${cargo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'), '').trim()
     : nome;
 
   return String(withoutCargo || template.concurso || '')
-    .replace(/\s+[—-]\s+.+$/g, '')
+    .replace(new RegExp(`\\s+${dashPattern}\\s+.+$`, 'g'), '')
     .trim() || template.nome || 'Concurso';
 }
 
@@ -108,6 +147,7 @@ export function groupContestTemplates(templates = []) {
     if (!group.edital_url && template.edital_url) group.edital_url = template.edital_url;
     if (!group.prova_data && template.prova_data) group.prova_data = template.prova_data;
     if (!group.salario && template.salario) group.salario = template.salario;
+    if (!group.inscricao_valor && template.inscricao_valor) group.inscricao_valor = template.inscricao_valor;
     if (!group.escolaridade && template.escolaridade) group.escolaridade = template.escolaridade;
     if (!group.vagas && template.vagas) group.vagas = template.vagas;
     if (!group.lotacao && template.lotacao) group.lotacao = template.lotacao;
@@ -125,19 +165,29 @@ export function groupContestTemplates(templates = []) {
       };
     }
 
+    const allDisciplines = group.cargos.flatMap((role) => role.disciplinas || []);
+
     return {
       ...group,
-      cargo: group.cargos.length > 1 ? `${group.cargos.length} cargos disponíveis` : primary.cargo,
-      disciplinas: primary.disciplinas || [],
+      cargo: `${group.cargos.length} cargos disponíveis`,
+      salario: buildMoneyRange(group.cargos.map((role) => role.salario)) || group.salario,
+      inscricao_valor: buildMoneyRange(group.cargos.map((role) => role.inscricao_valor)) || group.inscricao_valor,
+      escolaridade: buildUniqueSummary(group.cargos.map((role) => role.escolaridade), group.escolaridade),
+      vagas: buildVacancySummary(group.cargos.map((role) => role.vagas)) || group.vagas,
+      lotacao: buildUniqueSummary(group.cargos.map((role) => role.lotacao), group.lotacao),
+      disciplinas: allDisciplines.length > 0 ? allDisciplines : primary.disciplinas || [],
     };
   });
 }
 
 export function findGroupedContestById(templates = [], id = '') {
+  const grouped = groupContestTemplates(templates).find(
+    (group) => group.id === id || group.sourceIds?.includes(id)
+  );
+  if (grouped) return grouped;
+
   const raw = templates.find((item) => item.id === id);
   if (raw) return raw;
 
-  return groupContestTemplates(templates).find(
-    (group) => group.id === id || group.sourceIds?.includes(id)
-  ) || null;
+  return null;
 }
