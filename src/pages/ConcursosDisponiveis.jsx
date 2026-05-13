@@ -511,18 +511,26 @@ export default function ConcursosDisponiveis({
                         onClick={() => handleOpenContest(contest)}
                         className="block w-full text-left"
                       >
-                        <div className="flex h-48 items-center justify-center overflow-hidden border-b border-slate-100 bg-white">
+                        <div
+                          className="relative flex h-48 items-center justify-center overflow-hidden border-b border-slate-100"
+                          style={{
+                            background: `radial-gradient(circle at 50% 48%, ${contest.cor || '#2563eb'}55 0%, transparent 34%), linear-gradient(135deg, #062b3a 0%, #0f3a4b 48%, #082434 100%)`,
+                          }}
+                        >
+                          <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
+                          <div className="pointer-events-none absolute -right-8 bottom-2 h-24 w-24 rounded-full bg-emerald-300/10" />
+                          <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 rounded-bl-full border-b border-l border-amber-200/30" />
                           {contest.imagem_url ? (
                             <img
                               src={contest.imagem_url}
                               alt={contest.nome}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                              className="relative z-10 max-h-[74%] max-w-[62%] object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.32)] transition-transform duration-300 group-hover:scale-[1.06]"
                             />
                           ) : (
                             <div
-                              className="flex h-full w-full items-center justify-center text-white"
+                              className="relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-xl backdrop-blur"
                               style={{
-                                background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e40af 100%)`,
+                                color: '#fff',
                               }}
                             >
                               <LibraryBig size={56} />
@@ -859,13 +867,23 @@ function ContestPreviewModal({
 
         <div className="grid gap-6 p-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-[1.6rem] border border-gray-200 bg-gray-50">
+            <div
+              className="relative flex h-48 items-center justify-center overflow-hidden rounded-[1.6rem] border border-gray-200"
+              style={{
+                background: `radial-gradient(circle at 50% 48%, ${contest.cor || '#2563eb'}55 0%, transparent 34%), linear-gradient(135deg, #062b3a 0%, #0f3a4b 48%, #082434 100%)`,
+              }}
+            >
+              <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
+              <div className="pointer-events-none absolute -right-8 bottom-2 h-24 w-24 rounded-full bg-emerald-300/10" />
               {contest.imagem_url ? (
-                <img src={contest.imagem_url} alt={contest.nome} className="h-48 w-full object-contain bg-white p-4" />
+                <img
+                  src={contest.imagem_url}
+                  alt={contest.nome}
+                  className="relative z-10 max-h-[74%] max-w-[62%] object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.32)]"
+                />
               ) : (
                 <div
-                  className="flex h-48 w-full items-center justify-center text-white"
-                  style={{ background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e3a8a 100%)` }}
+                  className="relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-xl backdrop-blur"
                 >
                   <LibraryBig size={42} />
                 </div>
