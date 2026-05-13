@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Circle,
   Crown,
-  CreditCard,
   KeyRound,
   LogOut,
   Mail,
@@ -34,7 +33,6 @@ const PAGE_BG = 'bg-[var(--bg-canvas)]';
 const navItems = [
   { id: 'overview', label: 'Visão geral', icon: User2 },
   { id: 'achievements', label: 'Conquistas', icon: Trophy },
-  { id: 'assinatura', label: 'Assinatura', icon: CreditCard },
   { id: 'security', label: 'Segurança', icon: ShieldCheck },
 ];
 
@@ -434,7 +432,7 @@ export default function Perfil(props) {
 
   const heroStats = [
     { label: 'Perfil', value: `${completionPercent}% completo` },
-    { label: 'Plano', value: planLabel },
+    { label: 'Selos', value: formatNumber(unlockedBadges.length) },
     { label: 'Level', value: `Lv ${formatNumber(xpSummary.level || 1)}` },
     { label: 'Audiolivros', value: `${formatNumber(audiobookSummary.inProgress || 0)} em curso` },
   ];
@@ -465,9 +463,9 @@ export default function Perfil(props) {
       icon: Medal,
     },
     {
-      title: 'XP e assinatura',
-      text: `${formatNumber(xpSummary.xpTotal)} XP acumulado com assinatura ${planLabel.toLowerCase()}.`,
-      tone: planLabel === 'Elite' ? 'gold' : planLabel === 'Tático' ? 'blue' : 'green',
+      title: 'XP acumulado',
+      text: `${formatNumber(xpSummary.xpTotal)} XP acumulado na plataforma.`,
+      tone: xpSummary.xpTotal > 0 ? 'blue' : 'green',
       icon: Crown,
     },
     {
@@ -775,11 +773,11 @@ export default function Perfil(props) {
                 }
                 title="Controle real da sua conta e da sua presença na plataforma"
                 titleAs="h2"
-                subtitle="Username, codinome, CPF, XP, selos, assinatura e esquadrões alimentados pelos dados reais do app."
+                subtitle="Username, codinome, CPF, XP, selos e esquadrões alimentados pelos dados reais do app."
                 statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
                 stats={[
                   { key: 'p', label: 'Perfil', value: heroStats[0].value, icon: User2, accent: 'blue' },
-                  { key: 'pl', label: 'Plano', value: heroStats[1].value, icon: Crown, accent: 'amber' },
+                  { key: 'sl', label: 'Selos', value: heroStats[1].value, icon: Medal, accent: 'amber' },
                   { key: 'lv', label: 'Level', value: heroStats[2].value, icon: Sparkles, accent: 'violet' },
                   { key: 'ab', label: 'Audiolivros', value: heroStats[3].value, icon: BookOpen, accent: 'emerald' },
                 ]}
@@ -972,7 +970,7 @@ export default function Perfil(props) {
                 <Card className="p-6">
                   <SectionHeader
                     eyebrow="Vinculos"
-                    title="Esquadrões, selos, XP e assinatura"
+                    title="Esquadrões, selos e XP"
                     subtitle="Resumo funcional do que a conta ja possui dentro da plataforma."
                   />
 
@@ -1075,7 +1073,7 @@ export default function Perfil(props) {
               </div>
             )}
 
-            {activeTab === 'assinatura' && (
+            {false && activeTab === 'assinatura' && (
               <div className="space-y-6">
                 <SectionHeader
                   eyebrow="Planos Papirando"
@@ -1255,18 +1253,9 @@ export default function Perfil(props) {
             {activeTab === 'security' && (
               <div className="space-y-6">
                 <SectionHeader
-                  eyebrow="Segurança e assinatura"
+                  eyebrow="Segurança"
                   title="Dados sensiveis e acessos"
                   subtitle="Sem botões mortos: tudo abaixo executa alguma ação real ou mostra o estado atual da conta."
-                  action={
-                    <button
-                      type="button"
-                      onClick={() => setActiveTabState('assinatura')}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
-                    >
-                      Ver planos no perfil <ChevronRight className="h-4 w-4" />
-                    </button>
-                  }
                 />
 
                 <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
@@ -1280,9 +1269,8 @@ export default function Perfil(props) {
                   </Card>
 
                   <Card className="p-6">
-                    <SectionHeader eyebrow="Assinatura" title="Status do plano" subtitle="Resumo do vinculo da conta com o plano atual." />
+                    <SectionHeader eyebrow="Conta" title="Status e indicações" subtitle="Resumo operacional da conta no app." />
                     <div className="mt-5 space-y-4">
-                      <SecurityRow icon={Crown} label="Plano" value={planLabel} helper={`Status: ${subscriptionStatus}`} />
                       <SecurityRow icon={RefreshCw} label="XP total" value={formatNumber(xpSummary.xpTotal)} helper={`Level ${formatNumber(xpSummary.level || 1)}`} />
                       <SecurityRow
                         icon={BadgeCheck}
@@ -1391,7 +1379,7 @@ export default function Perfil(props) {
                       {[
                         { label: 'Foto do perfil', value: profileData?.avatar_url ? 'Persistida' : 'Sem foto', tone: profileData?.avatar_url ? 'green' : 'red' },
                         { label: 'Username', value: profileData?.username || 'Não informado', tone: profileData?.username ? 'blue' : 'red' },
-                        { label: 'Assinatura', value: `${planLabel} · ${subscriptionStatus}`, tone: planLabel === 'Elite' ? 'gold' : 'blue' },
+                        { label: 'Referral code', value: profileData?.referral_code || 'Não gerado', tone: profileData?.referral_code ? 'green' : 'red' },
                       ].map((item) => (
                         <div key={item.label} className="rounded-[22px] border border-slate-200 bg-white p-4">
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
