@@ -169,7 +169,7 @@ async function saveContestTemplate(supabaseAdmin, templateData = {}, existingId 
     imagem_url: templateData.imagem_url || null,
     edital_url: templateData.edital_url || null,
     prova_data: templateData.prova_data || null,
-    status_concurso: templateData.status_concurso || 'em_analise',
+    status_concurso: templateData.status_concurso || 'edital_publicado',
     updated_at: now,
   };
 

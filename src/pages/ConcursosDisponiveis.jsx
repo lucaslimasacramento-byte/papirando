@@ -15,15 +15,10 @@ import {
   X,
 } from 'lucide-react';
 import PageHeadPremium from '../components/PageHeadPremium';
-import { buildContestForRole, getContestRoles, groupContestTemplates } from '../lib/contestGrouping';
+import { buildContestForRole, CONTEST_STATUS_LABELS, CONTEST_STATUS_OPTIONS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
 
-const STATUS_LABELS = {
-  confirmado: 'Confirmado',
-  previsto: 'Previsto',
-  suspeito: 'Em análise',
-  suspenso: 'Suspenso',
-  encerrado: 'Encerrado',
-};
+const STATUS_LABELS = CONTEST_STATUS_LABELS;
+const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
 
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
@@ -114,7 +109,7 @@ export default function ConcursosDisponiveis({
         areasSelecionadas.length === 0 ||
         areasSelecionadas.includes('Todas') ||
         areasSelecionadas.includes(contest.area || 'Geral');
-      const matchStatus = statusFiltro === 'Todos' || (contest.status_concurso || 'suspeito') === statusFiltro;
+      const matchStatus = statusFiltro === 'Todos' || normalizeContestStatus(contest.status_concurso) === statusFiltro;
 
       return matchQuery && matchArea && matchStatus && contest.is_public !== false;
     });
@@ -149,7 +144,7 @@ export default function ConcursosDisponiveis({
         (favoriteContestIds.includes(contest.id) ? 45 : 0) +
         (interestedContestIds.includes(contest.id) ? 30 : 0) +
         (imported ? 25 : 0) +
-        (contest.status_concurso === 'confirmado' ? 15 : 0) +
+        (['inscricoes_abertas', 'prova_marcada', 'edital_publicado'].includes(normalizeContestStatus(contest.status_concurso)) ? 15 : 0) +
         (contest.prova_data ? 10 : 0) +
         (contest.salario ? 5 : 0);
 
@@ -375,7 +370,7 @@ export default function ConcursosDisponiveis({
               <FilterSelect
                 value={statusFiltro}
                 onChange={setStatusFiltro}
-                options={['Todos', 'confirmado', 'previsto', 'suspeito', 'suspenso', 'encerrado']}
+                options={STATUS_FILTER_OPTIONS}
                 renderLabel={(value) => (value === 'Todos' ? 'Todos os status' : STATUS_LABELS[value] || value)}
               />
               {(query || statusFiltro !== 'Todos' || (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas'))) && (
@@ -542,7 +537,7 @@ export default function ConcursosDisponiveis({
                         <div className="p-4">
                           <div className="mb-3 flex flex-wrap items-center gap-2">
                             <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-                            <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
+                            <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
                           </div>
 
                           <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-slate-950">
@@ -643,7 +638,7 @@ export default function ConcursosDisponiveis({
                       <div className="text-sm font-semibold text-gray-600">{contest.banca || 'A definir'}</div>
                       <div className="flex flex-wrap gap-2">
                         <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-                        <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
+                        <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
                       </div>
                       <div className="text-sm font-semibold text-emerald-700">{formatCurrencyBR(contest.salario)}</div>
                       <div className="text-sm font-semibold text-amber-700">{formatCurrencyBR(contest.inscricao_valor)}</div>
@@ -894,7 +889,7 @@ function ContestPreviewModal({
 
             <div className="flex flex-wrap gap-2">
               <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-              <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
+              <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
             </div>
 
             <div className="grid gap-2">

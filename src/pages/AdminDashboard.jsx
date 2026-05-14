@@ -21,14 +21,9 @@ import { buildFinanceSnapshot, formatCurrency } from '../lib/adminFinance';
 import { buildCrmSnapshot } from '../lib/adminCrm';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
+import { CONTEST_STATUS_LABELS, normalizeContestStatus } from '../lib/contestGrouping';
 
-const STATUS_LABELS = {
-  confirmado: 'Confirmado',
-  previsto: 'Previsto',
-  suspeito: 'Em análise',
-  suspenso: 'Suspenso',
-  encerrado: 'Encerrado',
-};
+const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
 export default function AdminDashboard({
   contestLibrary = [],
@@ -359,7 +354,7 @@ export default function AdminDashboard({
                   <div>
                     <p className="font-semibold text-slate-900">{contest.nome}</p>
                     <p className="mt-1 text-sm font-semibold text-gray-500">
-                      {STATUS_LABELS[contest.status_concurso] || 'Confirmado'} · {contest.prova_data || 'Sem data'}
+                      {STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'} · {contest.prova_data || 'Sem data'}
                     </p>
                   </div>
                   <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-gray-500">

@@ -16,15 +16,16 @@ import {
   Users,
 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
-import { buildContestForRole, getContestRoles, getPrimaryContestRole } from '../lib/contestGrouping';
+import {
+  buildContestForRole,
+  CONTEST_STATUS_LABELS,
+  findRelatedContests,
+  getContestRoles,
+  getPrimaryContestRole,
+  normalizeContestStatus,
+} from '../lib/contestGrouping';
 
-const STATUS_LABELS = {
-  confirmado: 'Confirmado',
-  previsto: 'Previsto',
-  suspeito: 'Em análise',
-  suspenso: 'Suspenso',
-  encerrado: 'Encerrado',
-};
+const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
@@ -47,6 +48,7 @@ export default function ConcursoDetalhe({
   onToggleFavorite,
   onToggleInterested,
   onOpenDisciplinas,
+  onOpenRelatedContest,
   contestTracker = {},
   onToggleContestTask,
   isTargetContest = false,
@@ -54,6 +56,7 @@ export default function ConcursoDetalhe({
   importingId = '',
   limiteAtingido = false,
   cursos = [],
+  concursoCatalog = [],
   bancoDisciplinas = [],
   isFavorite = false,
   isInterested = false,
@@ -70,6 +73,11 @@ export default function ConcursoDetalhe({
     if (!rawContest) return null;
     return buildContestForRole(rawContest, activeRole);
   }, [rawContest, activeRole]);
+  const normalizedStatus = normalizeContestStatus(contest?.status_concurso);
+  const relatedContests = useMemo(
+    () => findRelatedContests(concursoCatalog, rawContest || {}),
+    [concursoCatalog, rawContest]
+  );
 
   useEffect(() => {
     setSelectedRoleId(getPrimaryContestRole(rawContest || {})?.id || '');
@@ -117,19 +125,19 @@ export default function ConcursoDetalhe({
   const contestMoment = useMemo(() => {
     if (!contest) return null;
 
-    if (contest.status_concurso === 'suspenso') {
+    if (normalizedStatus === 'homologado') {
       return {
-        title: 'Concurso suspenso',
-        text: 'Esse edital está suspenso no momento. Vale acompanhar atualizações antes de montar um plano pesado.',
-        tone: 'amber',
+        title: 'Concurso homologado',
+        text: 'Esse concurso já teve resultado final homologado e hoje serve mais como referência de estrutura e histórico.',
+        tone: 'gray',
       };
     }
 
-    if (contest.status_concurso === 'encerrado') {
+    if (['inscricoes_abertas', 'prova_marcada', 'em_andamento'].includes(normalizedStatus)) {
       return {
-        title: 'Concurso encerrado',
-        text: 'Esse concurso está encerrado e hoje serve mais como referência de estrutura e histórico.',
-        tone: 'gray',
+        title: 'Concurso ativo',
+        text: 'Esse concurso já exige atenção a prazos, prova e execução do plano de estudos.',
+        tone: 'blue',
       };
     }
 
@@ -152,18 +160,18 @@ export default function ConcursoDetalhe({
       text: 'Esse concurso parece estar em uma fase útil para planejamento, estruturação das disciplinas e montagem do ciclo.',
       tone: 'blue',
     };
-  }, [contest]);
+  }, [contest, normalizedStatus]);
 
   const contestAlerts = useMemo(() => {
     if (!contest) return [];
 
     const alerts = [];
 
-    if (contest.status_concurso === 'suspenso') {
+    if (['previsto', 'autorizado', 'comissao_formada', 'banca_em_definicao', 'banca_definida', 'edital_iminente'].includes(normalizedStatus)) {
       alerts.push({
-        title: 'Edital suspenso',
-        text: 'Acompanhe retificações e novas publicações antes de acelerar o planejamento.',
-        tone: 'amber',
+        title: STATUS_LABELS[normalizedStatus] || 'Fase inicial',
+        text: 'Use essa fase para construir base e acompanhar as próximas publicações do órgão.',
+        tone: 'blue',
       });
     }
 
@@ -196,7 +204,7 @@ export default function ConcursoDetalhe({
     }
 
     return alerts.slice(0, 3);
-  }, [contest]);
+  }, [contest, normalizedStatus]);
 
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
@@ -222,7 +230,7 @@ export default function ConcursoDetalhe({
   const agendaItems = [
     {
       label: 'Status do concurso',
-      value: STATUS_LABELS[contest?.status_concurso] || 'Em análise',
+      value: STATUS_LABELS[normalizedStatus] || 'Previsto',
     },
     {
       label: 'Data da prova',
@@ -321,7 +329,7 @@ export default function ConcursoDetalhe({
                 {contest.area || 'Geral'}
               </span>
               <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-                {STATUS_LABELS[contest.status_concurso] || 'Em análise'}
+                {STATUS_LABELS[normalizedStatus] || 'Previsto'}
               </span>
             </div>
           </div>
@@ -439,6 +447,34 @@ export default function ConcursoDetalhe({
                 </button>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {relatedContests.length > 0 && (
+        <section className="relative z-10 rounded-[1.5rem] border border-blue-100 bg-blue-50/50 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Concursos relacionados</p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Outros editais da mesma instituição</h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              Assim Oficial, Praça, PM e Bombeiros ficam vinculados, mas sem virar cargo um do outro.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {relatedContests.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onOpenRelatedContest?.(item)}
+                className="rounded-2xl border border-blue-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+              >
+                <p className="line-clamp-2 text-sm font-bold text-slate-950">{item.nome}</p>
+                <p className="mt-2 text-xs font-semibold text-slate-500">{item.cargo || item.banca || 'Concurso relacionado'}</p>
+                <span className="mt-3 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                  {STATUS_LABELS[normalizeContestStatus(item.status_concurso)] || 'Previsto'}
+                </span>
+              </button>
+            ))}
           </div>
         </section>
       )}

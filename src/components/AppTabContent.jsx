@@ -406,6 +406,7 @@ export default function AppTabContent(props) {
         progGeralEdital={progGeralEdital}
         setActiveTab={setActiveTab}
         cursos={cursos}
+        concursoCatalog={contestLibrary}
         bancoDisciplinas={bancoDisciplinas}
         myContests={myContests}
         targetContest={targetContestSummary}
@@ -509,6 +510,10 @@ export default function AppTabContent(props) {
         onOpenDisciplinas={(contest) => {
           setSelectedCoursePlan(contest?.plano || contest?.nome || 'Todos');
           setActiveTab('disciplinas');
+        }}
+        onOpenRelatedContest={(contest) => {
+          setSelectedContestDetailId(contest?.id);
+          setActiveTab('concurso_detalhe');
         }}
         contestTracker={contestTrackers[selectedContestDetail?.id] || {}}
         onToggleContestTask={(contestId, taskKey) =>

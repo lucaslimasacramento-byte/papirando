@@ -32,16 +32,11 @@ import { extractTextFromPdf } from '../lib/redacoesApi';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
 import { useToast } from '../lib/toast';
+import { CONTEST_STATUS_OPTIONS, normalizeContestStatus } from '../lib/contestGrouping';
 
 const DRAFT_STORAGE_KEY = 'papirando_admin_concurso_draft';
 
-const STATUS_OPTIONS = [
-  { value: 'confirmado', label: 'Confirmado' },
-  { value: 'previsto', label: 'Previsto' },
-  { value: 'suspeito', label: 'Em análise' },
-  { value: 'suspenso', label: 'Suspenso' },
-  { value: 'encerrado', label: 'Encerrado' },
-];
+const STATUS_OPTIONS = CONTEST_STATUS_OPTIONS;
 
 const ESCOLARIDADE_OPTIONS = [
   { value: '', label: 'Selecione' },
@@ -99,7 +94,7 @@ const EMPTY_FORM = {
   cor: '#2563EB',
   descricao: '',
   is_public: true,
-  status_concurso: 'confirmado',
+  status_concurso: 'edital_publicado',
   prova_data: '',
   imagem_url: '',
   edital_url: '',
@@ -136,16 +131,7 @@ function normalizeImportedArea(value = '') {
 }
 
 function normalizeImportedStatus(value = '') {
-  const normalized = String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-
-  if (/suspens/.test(normalized)) return 'suspenso';
-  if (/encerr/.test(normalized)) return 'encerrado';
-  if (/previst/.test(normalized)) return 'previsto';
-  if (/confirm|abert|publicad/.test(normalized)) return 'confirmado';
-  return 'suspeito';
+  return normalizeContestStatus(value);
 }
 
 function normalizeImportedDate(value = '') {
@@ -467,11 +453,12 @@ function parseContestJsonLocally(text = '') {
     if (!cargos || cargos.length === 0) return [item];
 
     const { cargos: _ignoredCargos, cargos_opcoes: _ignoredCargosOpcoes, disciplinas: commonDisciplinas, ...base } = item;
+    const groupName = base.nome_grupo || base.nome || base.concurso || base.orgao || '';
     return cargos.map((cargo) => ({
       ...base,
       ...cargo,
-      nome: cargo.nome || [base.nome || base.concurso, cargo.nome_curto || cargo.cargo].filter(Boolean).join(' - '),
-      plano: cargo.plano || [base.concurso || base.nome, cargo.nome_curto || cargo.cargo, 'trilha de estudos'].filter(Boolean).join(' - '),
+      nome: cargo.nome || [groupName, cargo.nome_curto || cargo.cargo].filter(Boolean).join(' - '),
+      plano: cargo.plano || [base.concurso || base.orgao || groupName, cargo.nome_curto || cargo.cargo, 'trilha de estudos'].filter(Boolean).join(' - '),
       concurso: base.concurso || base.orgao || item.concurso,
       area: cargo.area || base.area,
       banca: cargo.banca || base.banca,
@@ -492,6 +479,8 @@ function parseContestJsonLocally(text = '') {
         ? parsed.contests
         : Array.isArray(parsed.concursos)
           ? parsed.concursos
+          : Array.isArray(parsed.editais)
+            ? parsed.editais
           : [parsed];
 
   const templates = rawTemplates
@@ -695,7 +684,7 @@ function buildFormFromTemplate(template) {
     cor: template.cor || '#2563EB',
     descricao: template.descricao || '',
     is_public: template.is_public !== false,
-    status_concurso: template.status_concurso || 'confirmado',
+    status_concurso: normalizeImportedStatus(template.status_concurso || 'edital_publicado'),
     prova_data: template.prova_data || '',
     imagem_url: template.imagem_url || '',
     edital_url: template.edital_url || '',
@@ -2462,7 +2451,7 @@ function StatusPill({ value }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
       <BadgeCheck size={14} />
-      {option?.label || 'Em análise'}
+      {option?.label || 'Previsto'}
     </div>
   );
 }

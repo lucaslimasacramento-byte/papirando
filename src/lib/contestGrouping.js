@@ -7,6 +7,54 @@ function normalizeKey(value = '') {
     .replace(/^-+|-+$/g, '');
 }
 
+export const CONTEST_STATUS_OPTIONS = [
+  { value: 'previsto', label: 'Previsto' },
+  { value: 'autorizado', label: 'Autorizado' },
+  { value: 'comissao_formada', label: 'Comissão formada' },
+  { value: 'banca_em_definicao', label: 'Banca em definição' },
+  { value: 'banca_definida', label: 'Banca definida' },
+  { value: 'edital_iminente', label: 'Edital iminente' },
+  { value: 'edital_publicado', label: 'Edital publicado' },
+  { value: 'inscricoes_abertas', label: 'Inscrições abertas' },
+  { value: 'prova_marcada', label: 'Prova marcada' },
+  { value: 'em_andamento', label: 'Em andamento' },
+  { value: 'homologado', label: 'Homologado' },
+];
+
+export const CONTEST_STATUS_LABELS = CONTEST_STATUS_OPTIONS.reduce(
+  (acc, option) => ({ ...acc, [option.value]: option.label }),
+  {
+    confirmado: 'Edital publicado',
+    suspeito: 'Previsto',
+    suspenso: 'Suspenso',
+    encerrado: 'Homologado',
+    em_analise: 'Previsto',
+  }
+);
+
+export function normalizeContestStatus(value = '') {
+  const normalized = String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  if (!normalized) return 'edital_publicado';
+  if (/inscric|abert/.test(normalized)) return 'inscricoes_abertas';
+  if (/prova|data_marcada|marcad/.test(normalized)) return 'prova_marcada';
+  if (/homolog|encerr/.test(normalized)) return 'homologado';
+  if (/andamento|curso/.test(normalized)) return 'em_andamento';
+  if (/iminente/.test(normalized)) return 'edital_iminente';
+  if (/publicad|confirm/.test(normalized)) return 'edital_publicado';
+  if (/banca.*defin|defin.*banca|contratad/.test(normalized)) return 'banca_definida';
+  if (/banca/.test(normalized)) return 'banca_em_definicao';
+  if (/comissao/.test(normalized)) return 'comissao_formada';
+  if (/autoriz/.test(normalized)) return 'autorizado';
+  if (/previst|suspeit|analise/.test(normalized)) return 'previsto';
+  return CONTEST_STATUS_LABELS[normalized] ? normalized : 'previsto';
+}
+
 function parseMoney(value = '') {
   const match = String(value || '').match(/(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})/);
   if (!match) return null;
@@ -60,6 +108,20 @@ function groupTitle(template = {}) {
   return String(withoutCargo || template.concurso || '')
     .replace(new RegExp(`\\s+${dashPattern}\\s+.+$`, 'g'), '')
     .trim() || template.nome || 'Concurso';
+}
+
+function groupSignature(template = {}, title = '') {
+  const edital = normalizeKey(template.edital_url || '');
+  const prova = normalizeKey(template.prova_data || '');
+  const editalOrDate = edital || prova;
+  if (editalOrDate) return `${normalizeKey(title)}|${editalOrDate}`;
+  return normalizeKey(template.nome || title || template.concurso || template.id || '');
+}
+
+function relatedInstitutionKey(template = {}) {
+  const source = String(template.concurso || template.nome || template.plano || '').trim();
+  const acronym = source.match(/\b[A-Z]{2,}(?:-[A-Z]{2})?\b/)?.[0];
+  return normalizeKey(acronym || source);
 }
 
 function roleFromTemplate(template = {}, index = 0) {
@@ -124,12 +186,14 @@ export function groupContestTemplates(templates = []) {
   templates.forEach((template, index) => {
     if (template?.is_public === false) return;
     const title = groupTitle(template);
-    const key = normalizeKey(title || template.concurso || template.nome || template.id || index);
+    const key = groupSignature(template, title) || normalizeKey(title || template.concurso || template.nome || template.id || index);
 
     if (!groups.has(key)) {
       groups.set(key, {
         ...template,
         id: `group-${key}`,
+        groupKey: key,
+        relatedKey: relatedInstitutionKey(template),
         sourceIds: [],
         nome: title,
         concurso: title,
@@ -142,6 +206,7 @@ export function groupContestTemplates(templates = []) {
     const group = groups.get(key);
     group.sourceIds.push(template.id);
     group.cargos.push(roleFromTemplate(template, group.cargos.length));
+    group.relatedKey = group.relatedKey || relatedInstitutionKey(template);
 
     if (!group.imagem_url && template.imagem_url) group.imagem_url = template.imagem_url;
     if (!group.edital_url && template.edital_url) group.edital_url = template.edital_url;
@@ -190,4 +255,19 @@ export function findGroupedContestById(templates = [], id = '') {
   if (raw) return raw;
 
   return null;
+}
+
+export function findRelatedContests(templates = [], contest = {}) {
+  const grouped = groupContestTemplates(templates);
+  const currentIds = new Set([contest.id, ...(contest.sourceIds || [])].filter(Boolean));
+  const key = contest.relatedKey || relatedInstitutionKey(contest);
+  if (!key) return [];
+
+  return grouped
+    .filter((item) => {
+      if (!item || item.id === contest.id) return false;
+      if (item.sourceIds?.some((sourceId) => currentIds.has(sourceId))) return false;
+      return (item.relatedKey || relatedInstitutionKey(item)) === key;
+    })
+    .slice(0, 4);
 }

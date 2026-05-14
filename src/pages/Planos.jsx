@@ -22,7 +22,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { analyzeEdital } from '../lib/aiClient';
-import { buildContestForRole, getContestRoles, groupContestTemplates } from '../lib/contestGrouping';
+import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
 import PageHeadPremium from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -36,20 +36,7 @@ const EMPTY_COURSE_FORM = {
 };
 
 const formatStatusLabel = (value) => {
-  const raw = String(value || '').trim().toLowerCase();
-  if (!raw) return 'Em análise';
-
-  const labels = {
-    em_analise: 'Em análise',
-    aberto: 'Aberto',
-    autorizado: 'Autorizado',
-    previsto: 'Previsto',
-    publicado: 'Publicado',
-    suspenso: 'Suspenso',
-    confirmado: 'Confirmado',
-  };
-
-  return labels[raw] || raw.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return CONTEST_STATUS_LABELS[normalizeContestStatus(value)] || 'Previsto';
 };
 
 const formatDateDisplay = (value) => {
@@ -743,7 +730,7 @@ export default function Planos({
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
                               <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                                {formatStatusLabel(template.status_concurso || 'em_analise')}
+                                {formatStatusLabel(template.status_concurso || 'edital_publicado')}
                               </span>
                               <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
                                 {template.disciplinas.length} disciplinas

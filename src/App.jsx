@@ -22,7 +22,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
-import { findGroupedContestById } from './lib/contestGrouping';
+import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
@@ -1394,14 +1394,14 @@ export default function App() {
 
         const reminders = [];
 
-        if (contest.status_concurso === 'suspenso') {
+        if (normalizeContestStatus(contest.status_concurso) === 'homologado') {
           reminders.push({
-            id: `${contest.id}-suspenso`,
+            id: `${contest.id}-homologado`,
             contestId: contest.id,
             contestName: contest.nome,
             type: 'status',
-            title: 'Concurso suspenso',
-            text: `${contest.nome} está suspenso. Vale acompanhar novas publicações antes de avançar.`,
+            title: 'Concurso homologado',
+            text: `${contest.nome} já está homologado e serve como referência histórica.`,
             date: null,
             priority: 100,
           });
@@ -4165,7 +4165,7 @@ export default function App() {
       etapas: courseData.etapas || '',
       etapas_tags: courseData.etapas_tags || [],
       taf_itens: courseData.taf_itens || [],
-      status_concurso: courseData.status_concurso || 'em_analise',
+      status_concurso: normalizeContestStatus(courseData.status_concurso || 'edital_publicado'),
       prova_data: courseData.prova_data || '',
       imagem_url: courseData.imagem_url || '',
       edital_url: courseData.edital_url || '',
@@ -4475,7 +4475,7 @@ export default function App() {
         imagem_url: templateData.imagem_url || null,
         edital_url: templateData.edital_url || null,
         prova_data: templateData.prova_data || null,
-        status_concurso: templateData.status_concurso || 'em_analise',
+        status_concurso: normalizeContestStatus(templateData.status_concurso || 'edital_publicado'),
         is_public: templateData.is_public,
         disciplinas: templateData.disciplinas || [],
         slug: templateData.slug,
@@ -4494,7 +4494,7 @@ export default function App() {
       nome: `${templateData.nome} (Copia)`,
       plano: `${templateData.plano || templateData.nome} - Copia`,
       is_public: false,
-      status_concurso: templateData.status_concurso || 'em_analise',
+      status_concurso: normalizeContestStatus(templateData.status_concurso || 'edital_publicado'),
       disciplinas: (templateData.disciplinas || []).map((subject) => ({
         nome: subject.nome,
         cor: subject.cor || '',
@@ -4540,7 +4540,7 @@ export default function App() {
         imagem_url: templateData.imagem_url || null,
         edital_url: templateData.edital_url || null,
         prova_data: templateData.prova_data || null,
-        status_concurso: templateData.status_concurso || 'em_analise',
+        status_concurso: normalizeContestStatus(templateData.status_concurso || 'edital_publicado'),
         is_public: templateData.is_public,
         disciplinas: templateData.disciplinas || [],
         slug,
@@ -6299,6 +6299,7 @@ export default function App() {
               progGeralEdital={progGeralEdital}
               setActiveTab={setActiveTab}
               cursos={cursos}
+              concursoCatalog={contestLibrary}
               bancoDisciplinas={bancoDisciplinas}
               myContests={myContests}
               targetContest={targetContestSummary}
@@ -6396,6 +6397,10 @@ export default function App() {
               onOpenDisciplinas={(contest) => {
                 setSelectedCoursePlan(contest?.plano || contest?.nome || 'Todos');
                 setActiveTab('disciplinas');
+              }}
+              onOpenRelatedContest={(contest) => {
+                setSelectedContestDetailId(contest?.id);
+                setActiveTab('concurso_detalhe');
               }}
               contestTracker={contestTrackers[selectedContestDetail?.id] || {}}
               onToggleContestTask={(contestId, taskKey) =>

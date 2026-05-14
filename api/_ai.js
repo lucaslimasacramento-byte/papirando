@@ -702,6 +702,27 @@ function buildContestFormResponse(result) {
     const firstSentence = text.split(/\.\s+/)[0]?.trim();
     return firstSentence || text;
   };
+  const normalizeStatus = (value = '') => {
+    const normalized = String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    if (!normalized) return 'edital_publicado';
+    if (/inscric|abert/.test(normalized)) return 'inscricoes_abertas';
+    if (/prova|marcad/.test(normalized)) return 'prova_marcada';
+    if (/homolog|encerr/.test(normalized)) return 'homologado';
+    if (/andamento|curso/.test(normalized)) return 'em_andamento';
+    if (/iminente/.test(normalized)) return 'edital_iminente';
+    if (/publicad|confirm/.test(normalized)) return 'edital_publicado';
+    if (/banca.*defin|defin.*banca|contratad/.test(normalized)) return 'banca_definida';
+    if (/banca/.test(normalized)) return 'banca_em_definicao';
+    if (/comissao/.test(normalized)) return 'comissao_formada';
+    if (/autoriz/.test(normalized)) return 'autorizado';
+    if (/previst|suspeit|analise/.test(normalized)) return 'previsto';
+    return normalized;
+  };
   const normalizeSubject = (subject = {}) => {
     const name = String(subject?.nome || subject?.name || '').trim();
     const normalizedName = normalizeCargoKey(name);
@@ -732,18 +753,43 @@ function buildContestFormResponse(result) {
       etapas_tags: clampList(template.etapas_tags, 12),
       taf_itens: clampList(template.taf_itens, 20),
       descricao: String(template.descricao || '').trim(),
-      status_concurso: String(template.status_concurso || 'suspeito').trim(),
+      status_concurso: normalizeStatus(template.status_concurso),
       prova_data: String(template.prova_data || '').trim(),
       edital_url: String(template.edital_url || '').trim(),
       disciplinas,
     };
   };
+  const expandContestWithRoles = (item = {}) => {
+    const cargos = Array.isArray(item.cargos) ? item.cargos : Array.isArray(item.cargos_opcoes) ? item.cargos_opcoes : null;
+    if (!cargos || cargos.length === 0) return [item];
+    const { cargos: _cargos, cargos_opcoes: _cargosOpcoes, disciplinas: commonDisciplinas, ...base } = item;
+    const groupName = base.nome_grupo || base.nome || base.concurso || base.orgao || '';
+    return cargos.map((cargo) => ({
+      ...base,
+      ...cargo,
+      nome: cargo.nome || [groupName, cargo.nome_curto || cargo.cargo].filter(Boolean).join(' - '),
+      plano: cargo.plano || [base.concurso || base.orgao || groupName, cargo.nome_curto || cargo.cargo, 'trilha de estudos'].filter(Boolean).join(' - '),
+      concurso: base.concurso || base.orgao || cargo.concurso,
+      area: cargo.area || base.area,
+      banca: cargo.banca || base.banca,
+      inscricao_valor: cargo.inscricao_valor || base.inscricao_valor,
+      status_concurso: cargo.status_concurso || base.status_concurso,
+      prova_data: cargo.prova_data || base.prova_data,
+      edital_url: cargo.edital_url || base.edital_url,
+      disciplinas: Array.isArray(cargo.disciplinas) && cargo.disciplinas.length > 0 ? cargo.disciplinas : commonDisciplinas || [],
+    }));
+  };
   const rawTemplates = Array.isArray(result.json?.templates)
     ? result.json.templates
-    : result.json?.template
-      ? [result.json.template]
-      : [result.json || {}];
+    : Array.isArray(result.json?.concursos)
+      ? result.json.concursos
+      : Array.isArray(result.json?.editais)
+        ? result.json.editais
+        : result.json?.template
+          ? [result.json.template]
+          : [result.json || {}];
   const templates = rawTemplates
+    .flatMap((t) => expandContestWithRoles(t))
     .map((t) => normalizeTemplate(t))
     .filter((t) => t.nome || t.cargo || t.disciplinas.length);
   return {
@@ -767,7 +813,10 @@ REGRAS FUNDAMENTAIS:
 3. Preserve TODOS os topicos e disciplinas encontrados no conteudo programatico.
 
 IDENTIFICACAO DE MULTIPLOS CONCURSOS/CARGOS/AREAS:
-- Crie um template separado para cada FUNCAO + AREA DE ATUACAO com conteudo de prova diferente.
+- Se o MESMO PDF tiver concursos de ORGAOS/INSTITUICOES diferentes, retorne no formato {"concursos":[...]} com um objeto para cada concurso. Ex: PMBA e CBMBA no mesmo edital = dois concursos separados, nao dois cargos.
+- Dentro de cada concurso, use "cargos":[...] apenas quando forem cargos/opcoes do MESMO orgao, MESMO edital e MESMA carreira geral. Ex: PCBA com Delegado, Escrivao e Investigador no mesmo edital.
+- Se for o mesmo orgao, mas edital/carreira claramente separado (ex: PMBA Soldado/Praca e PMBA Oficial em edital separado), gere outro concurso separado. Eles serao relacionados pela plataforma pelo campo "concurso"/orgao.
+- Crie um cargo separado para cada FUNCAO + AREA DE ATUACAO com conteudo de prova diferente.
 - Quando o mesmo cargo aparece em multiplas cidades com o MESMO conteudo de prova, crie UM UNICO template e informe "Diversas cidades/UF" em lotacao. Nao crie um template por cidade.
 - Quando o edital tem "Niveis" diferentes (Superior, Medio, Fundamental), cada nivel e um template separado.
 - Quando ha disciplinas especificas para determinada area (ex: Ciencias Juridicas, Administracao), crie templates separados mesmo que o cargo-base seja o mesmo.
@@ -802,12 +851,13 @@ Regras de preenchimento de campos:
 
 Campos de valores controlados:
 - area: Militar | Policial | Agropecuaria | Tribunais | Fiscal | Controle | Legislativo | Administrativa | Educacao | Saude | Geral. Escolas militares, Exercito, Marinha, Aeronautica, ESA, EsPCEx, AFA, EFOMM, IME e ITA = Militar. Juridico/Direito = Tribunais.
-- status_concurso: confirmado | previsto | suspeito | suspenso | encerrado.
+- status_concurso: previsto | autorizado | comissao_formada | banca_em_definicao | banca_definida | edital_iminente | edital_publicado | inscricoes_abertas | prova_marcada | em_andamento | homologado.
 - prova_data: YYYY-MM-DD (so quando a data estiver claramente informada).
 - etapas_tags: prova_objetiva | prova_discursiva | redacao | taf | avaliacao_psicologica | investigacao_social | exames_medicos | toxicologico | heteroidentificacao | curso_formacao | avaliacao_curricular.
 
 JSON esperado:
-{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo da incerteza"],"notes":["observacao importante para revisao"]}
+Para edital com um unico concurso: {"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":["campo e motivo da incerteza"],"notes":["observacao importante para revisao"]}
+Para edital com varios concursos reais: {"concursos":[{"nome_grupo":"","concurso":"","orgao":"","area":"","banca":"","status_concurso":"","prova_data":"","edital_url":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","cargos":[{"nome":"","plano":"","cargo":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","disciplinas":[{"nome":"","topicos":[""]}]}]}],"uncertainties":["campo e motivo da incerteza"],"notes":["observacao importante para revisao"]}
 ${sourceBlock}`;
 }
 
@@ -820,7 +870,11 @@ export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   // processa direto sem chamar IA novamente — sem timeout, resposta instantanea.
   try {
     const parsed = JSON.parse(source);
-    if (Array.isArray(parsed?.templates) && parsed.templates.length > 0) {
+    if (
+      (Array.isArray(parsed?.templates) && parsed.templates.length > 0) ||
+      (Array.isArray(parsed?.concursos) && parsed.concursos.length > 0) ||
+      (Array.isArray(parsed?.editais) && parsed.editais.length > 0)
+    ) {
       return buildContestFormResponse({ provider: 'passthrough', model: 'json-direct', json: parsed });
     }
   } catch {
