@@ -86,6 +86,7 @@ Gerar o JSON para cadastro de concursos na plataforma Papirando.
 12. Se o edital antigo for usado como base para um novo concurso ainda sem prova publicada, deixe "prova_data" vazio.
 13. "edital_url" deve ser URL pura. Nunca use link Markdown como "[https://...](https://...)".
 14. Dentro de cada cargo, "nome" e "plano" sao obrigatorios. Nunca deixe vazio e nunca use valores genericos como "Concurso", "Geral" ou "trilha de estudos".
+15. Nao coloque referencias, citacoes, notas de rodape ou links numerados depois do JSON. A resposta deve terminar exatamente no ultimo "}".
 
 ## Como separar concurso e cargo
 
@@ -545,11 +546,22 @@ function parseEtapaTagsFromText(text = '') {
   return tags;
 }
 
+function extractJsonPayload(value = '') {
+  const source = String(value || '').trim();
+  const firstObject = source.indexOf('{');
+  const firstArray = source.indexOf('[');
+  const startsWithObject = firstObject >= 0 && (firstArray < 0 || firstObject < firstArray);
+  const start = startsWithObject ? firstObject : firstArray;
+  const end = startsWithObject ? source.lastIndexOf('}') : source.lastIndexOf(']');
+
+  if (start >= 0 && end > start) return source.slice(start, end + 1).trim();
+  return source;
+}
+
 function parseLooseJsonObject(text = '') {
   const source = String(text || '')
     .replace(/^```(?:json)?/i, '')
     .replace(/```$/i, '')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$2')
     .trim()
     .replace(/^[\w$]+\s*=\s*/, '')
     .replace(/;$/, '')
@@ -557,7 +569,8 @@ function parseLooseJsonObject(text = '') {
 
   if (!source) return null;
 
-  const candidates = [source];
+  const extracted = extractJsonPayload(source);
+  const candidates = [...new Set([source, extracted].filter(Boolean))];
   if (!source.startsWith('{') && !source.startsWith('[')) candidates.push(`{${source}}`);
   const repairedCandidates = candidates.map((candidate) => repairJsonLikeText(candidate));
 

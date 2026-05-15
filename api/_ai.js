@@ -848,6 +848,7 @@ REGRAS FUNDAMENTAIS:
 4. Se o edital enviado for antigo e estiver sendo usado como base de conteudo para um novo concurso, pesquise a situacao atual do concurso na internet antes de preencher status_concurso. Use a fonte oficial do orgao, da banca, do governo ou noticias recentes confiaveis.
 5. Nao reaproveite data de prova antiga como data do novo concurso. Se o concurso atual ainda nao tiver data de prova publicada, deixe prova_data vazio.
 6. edital_url deve ser URL pura. Nunca use link Markdown como "[https://...](https://...)".
+7. Nao coloque referencias, citacoes, notas de rodape ou links numerados depois do JSON. A resposta deve terminar exatamente no ultimo "}".
 
 IDENTIFICACAO DE MULTIPLOS CONCURSOS/CARGOS/AREAS:
 - Se o MESMO PDF tiver concursos de ORGAOS/INSTITUICOES diferentes, retorne no formato {"concursos":[...]} com um objeto para cada concurso. Ex: PMBA e CBMBA no mesmo edital = dois concursos separados, nao dois cargos.
@@ -954,6 +955,21 @@ function repairJsonLikeText(value = '') {
   return repaired;
 }
 
+function extractJsonPayload(value = '') {
+  const source = String(value || '')
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/i, '')
+    .trim();
+  const firstObject = source.indexOf('{');
+  const firstArray = source.indexOf('[');
+  const startsWithObject = firstObject >= 0 && (firstArray < 0 || firstObject < firstArray);
+  const start = startsWithObject ? firstObject : firstArray;
+  const end = startsWithObject ? source.lastIndexOf('}') : source.lastIndexOf(']');
+
+  if (start >= 0 && end > start) return source.slice(start, end + 1).trim();
+  return source;
+}
+
 
 export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
@@ -963,10 +979,11 @@ export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   // processa direto sem chamar IA novamente — sem timeout, resposta instantanea.
   try {
     let parsed;
+    const jsonSource = extractJsonPayload(source);
     try {
-      parsed = JSON.parse(source);
+      parsed = JSON.parse(jsonSource);
     } catch {
-      parsed = JSON.parse(repairJsonLikeText(source));
+      parsed = JSON.parse(repairJsonLikeText(jsonSource));
     }
     if (
       (Array.isArray(parsed?.templates) && parsed.templates.length > 0) ||
