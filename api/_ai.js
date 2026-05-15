@@ -861,6 +861,53 @@ Para edital com varios concursos reais: {"concursos":[{"nome_grupo":"","concurso
 ${sourceBlock}`;
 }
 
+function repairJsonLikeText(value = '') {
+  const source = String(value || '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+  let repaired = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (!inString) {
+      repaired += char;
+      if (char === '"') inString = true;
+      continue;
+    }
+
+    if (escaped) {
+      repaired += char;
+      escaped = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      repaired += char;
+      escaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      const rest = source.slice(index + 1);
+      const next = rest.match(/\S/)?.[0] || '';
+      if (!next || [',', '}', ']', ':'].includes(next)) {
+        repaired += char;
+        inString = false;
+      } else {
+        repaired += '\\"';
+      }
+      continue;
+    }
+
+    repaired += char;
+  }
+
+  return repaired;
+}
+
 
 export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   const source = String(text || formText || '').trim();
@@ -869,7 +916,12 @@ export async function analyzeContestForm({ text = '', formText = '' } = {}) {
   // Se o usuario colou diretamente o JSON ja formatado (ex: saida de outra IA),
   // processa direto sem chamar IA novamente — sem timeout, resposta instantanea.
   try {
-    const parsed = JSON.parse(source);
+    let parsed;
+    try {
+      parsed = JSON.parse(source);
+    } catch {
+      parsed = JSON.parse(repairJsonLikeText(source));
+    }
     if (
       (Array.isArray(parsed?.templates) && parsed.templates.length > 0) ||
       (Array.isArray(parsed?.concursos) && parsed.concursos.length > 0) ||

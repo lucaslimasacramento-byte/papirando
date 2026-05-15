@@ -343,8 +343,9 @@ function parseLooseJsonObject(text = '') {
 
   const candidates = [source];
   if (!source.startsWith('{') && !source.startsWith('[')) candidates.push(`{${source}}`);
+  const repairedCandidates = candidates.map((candidate) => repairJsonLikeText(candidate));
 
-  for (const candidate of candidates) {
+  for (const candidate of [...candidates, ...repairedCandidates]) {
     try {
       const parsed = JSON.parse(candidate);
       return parsed && typeof parsed === 'object' ? parsed : null;
@@ -354,6 +355,53 @@ function parseLooseJsonObject(text = '') {
   }
 
   return null;
+}
+
+function repairJsonLikeText(value = '') {
+  const source = String(value || '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+  let repaired = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (!inString) {
+      repaired += char;
+      if (char === '"') inString = true;
+      continue;
+    }
+
+    if (escaped) {
+      repaired += char;
+      escaped = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      repaired += char;
+      escaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      const rest = source.slice(index + 1);
+      const next = rest.match(/\S/)?.[0] || '';
+      if (!next || [',', '}', ']', ':'].includes(next)) {
+        repaired += char;
+        inString = false;
+      } else {
+        repaired += '\\"';
+      }
+      continue;
+    }
+
+    repaired += char;
+  }
+
+  return repaired;
 }
 
 function parseLooseJsonFields(text = '') {
