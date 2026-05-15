@@ -6,6 +6,7 @@ import {
   Copy,
   Crown,
   Database,
+  Download,
   DollarSign,
   Eye,
   EyeOff,
@@ -60,6 +61,167 @@ const ETAPA_OPTIONS = [
 const ETAPA_OPTION_VALUES = ETAPA_OPTIONS.map((option) => option.value);
 
 const AREA_OPTIONS = ['Militar', 'Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
+const CONTEST_JSON_PROMPT_MD = `# Prompt para extrair JSON de concurso - Papirando
+
+Analise o edital anexado e me devolva SOMENTE um JSON valido, sem markdown, sem explicacoes e sem texto antes ou depois.
+
+## Objetivo
+
+Gerar o JSON para cadastro de concursos na plataforma Papirando.
+
+## Regras obrigatorias
+
+1. Use somente informacoes presentes no edital e, quando o edital for antigo/base de conteudo, pesquise a situacao atual do concurso na internet.
+2. Para status atual, priorize site oficial do orgao, banca, governo estadual/federal ou noticias recentes confiaveis.
+3. Se nao encontrar uma informacao com seguranca, deixe o campo como string vazia "".
+4. Nao invente banca, datas, URLs, salarios, vagas, lotacao, imagem ou etapas.
+5. Nao use "nao informado", "nao consta" ou "nao tenho certeza" dentro dos campos.
+6. O JSON precisa ser valido e completo.
+7. Preserve todos os conteudos programaticos que a pessoa precisa estudar.
+8. Nao inclua atribuicoes do cargo, requisitos, documentos, idade minima ou CNH como disciplina de estudo.
+9. Quando houver aspas dentro de textos, escape corretamente com barra invertida.
+   Exemplo correto: "Constituicao do Estado da Bahia, Cap. XXIII \\"Do Negro\\""
+10. Nunca use aspas comuns soltas dentro de strings.
+11. "prova_data" deve vir obrigatoriamente no formato YYYY-MM-DD. Exemplo: "2023-01-22".
+12. Se o edital antigo for usado como base para um novo concurso ainda sem prova publicada, deixe "prova_data" vazio.
+
+## Como separar concurso e cargo
+
+- Se o mesmo edital tiver concursos de orgaos/instituicoes diferentes, use "concursos" com um objeto para cada concurso.
+  Exemplo: PMBA e CBMBA no mesmo edital = dois concursos separados.
+- Se o mesmo concurso tiver varios cargos no mesmo edital, coloque esses cargos dentro de "cargos".
+  Exemplo: PCBA com Delegado, Escrivao e Investigador = um concurso com tres cargos.
+- Se for o mesmo orgao, mas editais/carreiras diferentes, separe em concursos diferentes.
+  Exemplo: PMBA Soldado/Praca e PMBA Oficial = concursos separados, nao cargos do mesmo concurso.
+- Cada cargo deve ter suas proprias vagas, salario, escolaridade, lotacao e disciplinas quando houver diferenca.
+
+## Status permitidos
+
+Use somente um destes valores em "status_concurso":
+
+- "previsto"
+- "autorizado"
+- "comissao_formada"
+- "banca_em_definicao"
+- "banca_definida"
+- "edital_iminente"
+- "edital_publicado"
+- "inscricoes_abertas"
+- "prova_marcada"
+- "em_andamento"
+- "homologado"
+
+### Regra de status atual
+
+- O status deve refletir a fase atual do concurso, nao apenas a frase do edital antigo.
+- Se houver fala recente de governador, comandante, secretario, orgao ou banca dizendo que o edital vai sair em breve/final do ano, use "edital_iminente" ou "previsto".
+- Se o edital antigo ja teve prova e resultado, mas existe novo concurso anunciado, NAO use "homologado" para o cadastro atual; use o status do novo concurso.
+- Se nao houver noticia atual de novo concurso e o edital antigo ja terminou, use "homologado".
+- Se o concurso atual ainda nao tiver data de prova publicada, deixe "prova_data": "".
+
+## Etapas permitidas em "etapas_tags"
+
+- "prova_objetiva"
+- "prova_discursiva"
+- "redacao"
+- "avaliacao_curricular"
+- "taf"
+- "avaliacao_psicologica"
+- "investigacao_social"
+- "exames_medicos"
+- "toxicologico"
+- "heteroidentificacao"
+- "curso_formacao"
+
+## Areas permitidas
+
+- "Militar"
+- "Policial"
+- "Agropecuaria"
+- "Tribunais"
+- "Fiscal"
+- "Controle"
+- "Legislativo"
+- "Administrativa"
+- "Educacao"
+- "Saude"
+- "Geral"
+
+PM, Policia Civil, Policia Penal e Guarda Municipal geralmente sao "Policial".
+Bombeiros, Exercito, Marinha, Aeronautica, ESA, EsPCEx, AFA, EFOMM, IME e ITA geralmente sao "Militar".
+
+## Formato obrigatorio
+
+\`\`\`json
+{
+  "concursos": [
+    {
+      "nome_grupo": "",
+      "concurso": "",
+      "orgao": "",
+      "area": "",
+      "banca": "",
+      "status_concurso": "",
+      "prova_data": "",
+      "edital_url": "",
+      "etapas": "",
+      "etapas_tags": [],
+      "taf_itens": [],
+      "descricao": "",
+      "cargos": [
+        {
+          "nome": "",
+          "plano": "",
+          "cargo": "",
+          "salario": "",
+          "inscricao_valor": "",
+          "escolaridade": "",
+          "vagas": "",
+          "lotacao": "",
+          "disciplinas": [
+            {
+              "nome": "",
+              "topicos": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "uncertainties": [],
+  "notes": []
+}
+\`\`\`
+
+## Como preencher campos
+
+- "nome_grupo": nome curto agrupador. Exemplos: "PCBA", "PMBA - Soldado", "CBMBA - Soldado", "PMBA - Oficial", "EsPCEx".
+- "concurso": sigla limpa, sem cargo, edital ou ano. Exemplos: "PCBA", "PMBA", "CBMBA", "DETRAN-BA", "AGU".
+- "orgao": nome completo do orgao/instituicao.
+- "nome": nome publico do cargo dentro do concurso. Exemplos: "PCBA - Delegado", "PMBA - Soldado".
+- "plano": nome amigavel para o aluno. Exemplos: "PCBA - Delegado - trilha de estudos", "PMBA - Soldado - trilha de estudos".
+- "cargo": cargo exato do edital.
+- "salario": somente salario/remuneracao do cargo especifico, formato "R$ 0.000,00". Nao coloque beneficios junto.
+- "inscricao_valor": somente valor da inscricao, formato "R$ 000,00".
+- "escolaridade": use "Nivel medio", "Nivel superior" ou deixe vazio.
+- "vagas": somente numero ou expressao curta. Exemplos: "150", "500 + CR".
+- "lotacao": local especifico do cargo. Se forem muitas cidades, use "Diversas cidades/UF".
+- "etapas": resumo curto das etapas.
+- "disciplinas": somente materias e topicos que caem na prova.
+
+Se o concurso nao tiver prova e for somente avaliacao curricular:
+- use "etapas_tags": ["avaliacao_curricular"]
+- crie uma disciplina chamada "Avaliacao Curricular"
+- nos topicos, coloque os criterios avaliados no edital.
+
+## Casos importantes
+
+- Se PMBA e CBMBA estiverem no mesmo edital, NAO coloque como dois cargos do mesmo concurso. Crie dois objetos dentro de "concursos".
+- Se PCBA tiver Delegado, Escrivao e Investigador no mesmo edital, coloque como UM concurso "PCBA" com tres objetos dentro de "cargos".
+- Se estiver usando edital antigo da PMBA como base de conteudo e houver noticia atual de novo concurso no fim do ano, preencha o status atual como "edital_iminente" ou "previsto" e deixe "prova_data" vazio.
+
+Agora analise o edital anexado e retorne somente o JSON.
+`;
 
 const EMPTY_SUBJECT = { nome: '', cor: '', topicosTexto: '' };
 const UNCERTAIN_PATTERN = /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o informado|ausente/i;
@@ -1152,6 +1314,18 @@ export default function AdminConcursos({
     }
   };
 
+  const handleDownloadContestPrompt = () => {
+    const blob = new Blob([CONTEST_JSON_PROMPT_MD], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'prompt-json-concurso-papirando.md';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const normalizeDraftToPayload = () => ({
     id: form.id,
     slug: form.slug,
@@ -1682,6 +1856,14 @@ export default function AdminConcursos({
               </div>
 
               <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadContestPrompt}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition-colors hover:bg-indigo-50"
+                >
+                  <Download size={16} />
+                  Baixar prompt
+                </button>
                 <button
                   type="button"
                   onClick={clearContestDraft}
