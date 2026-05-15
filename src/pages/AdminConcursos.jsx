@@ -162,6 +162,21 @@ function resolveContestStatusByDate(status = '', provaData = '') {
   return normalizedStatus;
 }
 
+function resolveContestDateByStatus(status = '', provaData = '') {
+  if (!provaData) return '';
+  const normalizedStatus = normalizeImportedStatus(status);
+  const prova = new Date(`${provaData}T00:00:00`);
+  if (Number.isNaN(prova.getTime())) return provaData;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isPastDate = prova.getTime() < today.getTime();
+  const preNoticeStatuses = ['previsto', 'autorizado', 'comissao_formada', 'banca_em_definicao', 'banca_definida', 'edital_iminente'];
+
+  if (isPastDate && preNoticeStatuses.includes(normalizedStatus)) return '';
+  return provaData;
+}
+
 function normalizeCargoKey(value = '') {
   return String(value || '')
     .normalize('NFD')
@@ -261,8 +276,9 @@ function buildContestDisplayNames(template = {}) {
   const publicName = normalizeDashSpacing([orgao, studentCargo].filter(Boolean).join(' - '));
   const studentPlan = normalizeDashSpacing([orgao, studentCargo, 'trilha de estudos'].filter(Boolean).join(' - '));
 
-  const provaData = normalizeImportedDate(template.prova_data || template.data_prova || '');
-  const statusConcurso = resolveContestStatusByDate(template.status_concurso || '', provaData);
+  const rawProvaData = normalizeImportedDate(template.prova_data || template.data_prova || '');
+  const statusConcurso = resolveContestStatusByDate(template.status_concurso || '', rawProvaData);
+  const provaData = resolveContestDateByStatus(statusConcurso, rawProvaData);
 
   return {
     nome: publicName,
@@ -1023,8 +1039,9 @@ export default function AdminConcursos({
       .filter((subject) => subject.nome);
 
     setForm((prev) => {
-      const provaData = normalizeImportedDate(template.prova_data) || prev.prova_data;
-      const statusConcurso = resolveContestStatusByDate(template.status_concurso || prev.status_concurso, provaData);
+      const rawProvaData = normalizeImportedDate(template.prova_data) || prev.prova_data;
+      const statusConcurso = resolveContestStatusByDate(template.status_concurso || prev.status_concurso, rawProvaData);
+      const provaData = resolveContestDateByStatus(statusConcurso, rawProvaData);
 
       return {
         ...prev,
@@ -1180,8 +1197,9 @@ export default function AdminConcursos({
     const normalized = normalizeJsonContestTemplate(template);
     const names = buildContestDisplayNames(normalized);
 
-    const provaData = normalizeImportedDate(normalized.prova_data || form.prova_data);
-    const statusConcurso = resolveContestStatusByDate(normalized.status_concurso || form.status_concurso, provaData);
+    const rawProvaData = normalizeImportedDate(normalized.prova_data || form.prova_data);
+    const statusConcurso = resolveContestStatusByDate(normalized.status_concurso || form.status_concurso, rawProvaData);
+    const provaData = resolveContestDateByStatus(statusConcurso, rawProvaData);
 
     return {
       id: null,

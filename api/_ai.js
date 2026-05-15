@@ -738,13 +738,27 @@ function buildContestFormResponse(result) {
     if (daysAfterExam >= 0 && ['edital_publicado', 'inscricoes_abertas'].includes(normalizedStatus)) return 'prova_marcada';
     return normalizedStatus;
   };
+  const resolveDateByStatus = (status = '', provaData = '') => {
+    if (!provaData) return '';
+    const normalizedStatus = normalizeStatus(status);
+    const prova = new Date(`${provaData}T00:00:00`);
+    if (Number.isNaN(prova.getTime())) return provaData;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const preNoticeStatuses = ['previsto', 'autorizado', 'comissao_formada', 'banca_em_definicao', 'banca_definida', 'edital_iminente'];
+
+    if (prova.getTime() < today.getTime() && preNoticeStatuses.includes(normalizedStatus)) return '';
+    return provaData;
+  };
   const normalizeSubject = (subject = {}) => {
     const name = String(subject?.nome || subject?.name || '').trim();
     const normalizedName = normalizeCargoKey(name);
     if (/requisitos?|atribuicoes?|atribuições?|funcao|função/.test(normalizedName)) return null;
     const fallbackName = /nao se aplica|não se aplica/.test(normalizedName) ? 'Avaliação Curricular' : name;
-    const provaData = String(template.prova_data || '').trim();
-    const statusConcurso = resolveStatusByDate(template.status_concurso, provaData);
+    const rawProvaData = String(template.prova_data || '').trim();
+    const statusConcurso = resolveStatusByDate(template.status_concurso, rawProvaData);
+    const provaData = resolveDateByStatus(statusConcurso, rawProvaData);
 
     return {
       nome: fallbackName,
@@ -832,6 +846,8 @@ REGRAS FUNDAMENTAIS:
 1. Use SOMENTE as informacoes do edital. Nao invente dados, URLs, cores ou imagens.
 2. Se um campo nao constar no edital, deixe-o vazio (nao use textos como "Nao encontrado").
 3. Preserve TODOS os topicos e disciplinas encontrados no conteudo programatico.
+4. Se o edital enviado for antigo e estiver sendo usado como base de conteudo para um novo concurso, pesquise a situacao atual do concurso na internet antes de preencher status_concurso. Use a fonte oficial do orgao, da banca, do governo ou noticias recentes confiaveis.
+5. Nao reaproveite data de prova antiga como data do novo concurso. Se o concurso atual ainda nao tiver data de prova publicada, deixe prova_data vazio.
 
 IDENTIFICACAO DE MULTIPLOS CONCURSOS/CARGOS/AREAS:
 - Se o MESMO PDF tiver concursos de ORGAOS/INSTITUICOES diferentes, retorne no formato {"concursos":[...]} com um objeto para cada concurso. Ex: PMBA e CBMBA no mesmo edital = dois concursos separados, nao dois cargos.
@@ -874,6 +890,7 @@ Campos de valores controlados:
 - area: Militar | Policial | Agropecuaria | Tribunais | Fiscal | Controle | Legislativo | Administrativa | Educacao | Saude | Geral. Escolas militares, Exercito, Marinha, Aeronautica, ESA, EsPCEx, AFA, EFOMM, IME e ITA = Militar. Juridico/Direito = Tribunais.
 - status_concurso: previsto | autorizado | comissao_formada | banca_em_definicao | banca_definida | edital_iminente | edital_publicado | inscricoes_abertas | prova_marcada | em_andamento | homologado.
 - Status deve refletir a fase ATUAL do concurso, nao apenas a frase do edital. Se voce tiver acesso a busca na web, confirme no site oficial do orgao/banca. Se nao tiver acesso a web e a data da prova estiver ha mais de 180 dias da DATA ATUAL, use "homologado" quando nao houver indicio de suspensao/cancelamento. Se a prova ja passou recentemente, use "em_andamento" ou "prova_marcada" conforme o edital.
+- Para concurso antigo que tera nova selecao anunciada por governador, comandante, orgao ou banca, use "previsto" ou "edital_iminente" conforme a noticia atual. Exemplo: se ha fala recente de autoridade dizendo que o edital sai no fim do ano, use "edital_iminente" ou "previsto" e deixe prova_data vazio.
 - prova_data: YYYY-MM-DD (so quando a data estiver claramente informada).
 - etapas_tags: prova_objetiva | prova_discursiva | redacao | taf | avaliacao_psicologica | investigacao_social | exames_medicos | toxicologico | heteroidentificacao | curso_formacao | avaliacao_curricular.
 
