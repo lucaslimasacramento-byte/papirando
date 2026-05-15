@@ -145,6 +145,23 @@ function normalizeImportedDate(value = '') {
   return '';
 }
 
+function resolveContestStatusByDate(status = '', provaData = '') {
+  const normalizedStatus = normalizeImportedStatus(status);
+  if (!provaData) return normalizedStatus;
+
+  const prova = new Date(`${provaData}T00:00:00`);
+  if (Number.isNaN(prova.getTime())) return normalizedStatus;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const daysAfterExam = Math.floor((today.getTime() - prova.getTime()) / 86400000);
+  const activeStatuses = ['edital_publicado', 'inscricoes_abertas', 'prova_marcada', 'em_andamento'];
+
+  if (daysAfterExam > 180 && activeStatuses.includes(normalizedStatus)) return 'homologado';
+  if (daysAfterExam >= 0 && ['edital_publicado', 'inscricoes_abertas'].includes(normalizedStatus)) return 'prova_marcada';
+  return normalizedStatus;
+}
+
 function normalizeCargoKey(value = '') {
   return String(value || '')
     .normalize('NFD')
@@ -243,6 +260,9 @@ function buildContestDisplayNames(template = {}) {
   const studentCargo = buildStudentCargo({ ...template, nome: rawNome, plano: rawPlano, cargo: rawCargo });
   const publicName = normalizeDashSpacing([orgao, studentCargo].filter(Boolean).join(' - '));
   const studentPlan = normalizeDashSpacing([orgao, studentCargo, 'trilha de estudos'].filter(Boolean).join(' - '));
+
+  const provaData = normalizeImportedDate(template.prova_data || template.data_prova || '');
+  const statusConcurso = resolveContestStatusByDate(template.status_concurso || '', provaData);
 
   return {
     nome: publicName,
@@ -489,8 +509,8 @@ function normalizeJsonContestTemplate(raw = {}) {
     etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : parseEtapaTagsFromText(template.etapas || ''),
     taf_itens: Array.isArray(template.taf_itens) ? template.taf_itens : [],
     descricao: cleanImportedValue(template.descricao || template.descricao_curta || ''),
-    status_concurso: normalizeImportedStatus(template.status_concurso || ''),
-    prova_data: normalizeImportedDate(template.prova_data || template.data_prova || ''),
+    status_concurso: statusConcurso,
+    prova_data: provaData,
     edital_url: cleanImportedValue(template.edital_url || template.url_edital_pdf || ''),
     imagem_url: cleanImportedValue(template.imagem_url || template.image_url || template.capa_url || ''),
     disciplinas,
@@ -651,6 +671,7 @@ function parseContestFormLocally(text = '') {
     prova_data: normalizeImportedDate(extractMarkdownField(source, 'Data da prova')),
     edital_url: extractMarkdownField(source, 'URL do edital PDF'),
   };
+  baseTemplate.status_concurso = resolveContestStatusByDate(baseTemplate.status_concurso, baseTemplate.prova_data);
   const cargoBlocks = parseCargoBlocksFromContestForm(source);
   const commonSubjects = cargoBlocks
     .filter((block) => /todos os cargos|todos os cursos|todas as fun/i.test(block.cargo))
@@ -1001,8 +1022,12 @@ export default function AdminConcursos({
       }))
       .filter((subject) => subject.nome);
 
-    setForm((prev) => ({
-      ...prev,
+    setForm((prev) => {
+      const provaData = normalizeImportedDate(template.prova_data) || prev.prova_data;
+      const statusConcurso = resolveContestStatusByDate(template.status_concurso || prev.status_concurso, provaData);
+
+      return {
+        ...prev,
       slug: prev.slug,
       nome: names.nome || cleanImportedValue(template.nome) || prev.nome,
       plano: names.plano || cleanImportedValue(template.plano) || cleanImportedValue(template.nome) || prev.plano,
@@ -1019,12 +1044,13 @@ export default function AdminConcursos({
       etapas_tags: Array.isArray(template.etapas_tags) && template.etapas_tags.length > 0 ? template.etapas_tags : prev.etapas_tags,
       taf_itens: Array.isArray(template.taf_itens) && template.taf_itens.length > 0 ? template.taf_itens : prev.taf_itens,
       descricao: cleanImportedValue(template.descricao) || prev.descricao,
-      status_concurso: normalizeImportedStatus(template.status_concurso || prev.status_concurso),
-      prova_data: normalizeImportedDate(template.prova_data) || prev.prova_data,
+      status_concurso: statusConcurso,
+      prova_data: provaData,
       edital_url: cleanImportedValue(template.edital_url) || prev.edital_url,
       imagem_url: cleanImportedValue(template.imagem_url) || prev.imagem_url,
       disciplinas: importedSubjects.length > 0 ? importedSubjects : prev.disciplinas,
-    }));
+      };
+    });
 
     const uncertaintyCount = Array.isArray(result.uncertainties) ? result.uncertainties.length : 0;
     const subjectCount = importedSubjects.length;
@@ -1154,6 +1180,9 @@ export default function AdminConcursos({
     const normalized = normalizeJsonContestTemplate(template);
     const names = buildContestDisplayNames(normalized);
 
+    const provaData = normalizeImportedDate(normalized.prova_data || form.prova_data);
+    const statusConcurso = resolveContestStatusByDate(normalized.status_concurso || form.status_concurso, provaData);
+
     return {
       id: null,
       slug: '',
@@ -1174,8 +1203,8 @@ export default function AdminConcursos({
       cor: form.cor || '#2563EB',
       descricao: cleanImportedValue(normalized.descricao || form.descricao),
       is_public: form.is_public,
-      status_concurso: normalizeImportedStatus(normalized.status_concurso || form.status_concurso),
-      prova_data: normalizeImportedDate(normalized.prova_data || form.prova_data),
+      status_concurso: statusConcurso,
+      prova_data: provaData,
       imagem_url: cleanImportedValue(normalized.imagem_url || form.imagem_url),
       edital_url: cleanImportedValue(normalized.edital_url || form.edital_url),
       disciplinas: (normalized.disciplinas || []).map((subject, subjectIndex) => ({

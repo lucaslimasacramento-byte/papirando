@@ -723,11 +723,29 @@ function buildContestFormResponse(result) {
     if (/previst|suspeit|analise/.test(normalized)) return 'previsto';
     return normalized;
   };
+  const resolveStatusByDate = (status = '', provaData = '') => {
+    const normalizedStatus = normalizeStatus(status);
+    if (!provaData) return normalizedStatus;
+    const prova = new Date(`${provaData}T00:00:00`);
+    if (Number.isNaN(prova.getTime())) return normalizedStatus;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysAfterExam = Math.floor((today.getTime() - prova.getTime()) / 86400000);
+    const activeStatuses = ['edital_publicado', 'inscricoes_abertas', 'prova_marcada', 'em_andamento'];
+
+    if (daysAfterExam > 180 && activeStatuses.includes(normalizedStatus)) return 'homologado';
+    if (daysAfterExam >= 0 && ['edital_publicado', 'inscricoes_abertas'].includes(normalizedStatus)) return 'prova_marcada';
+    return normalizedStatus;
+  };
   const normalizeSubject = (subject = {}) => {
     const name = String(subject?.nome || subject?.name || '').trim();
     const normalizedName = normalizeCargoKey(name);
     if (/requisitos?|atribuicoes?|atribuições?|funcao|função/.test(normalizedName)) return null;
     const fallbackName = /nao se aplica|não se aplica/.test(normalizedName) ? 'Avaliação Curricular' : name;
+    const provaData = String(template.prova_data || '').trim();
+    const statusConcurso = resolveStatusByDate(template.status_concurso, provaData);
+
     return {
       nome: fallbackName,
       topicos: clampList(subject?.topicos || subject?.topics, 160),
@@ -753,8 +771,8 @@ function buildContestFormResponse(result) {
       etapas_tags: clampList(template.etapas_tags, 12),
       taf_itens: clampList(template.taf_itens, 20),
       descricao: String(template.descricao || '').trim(),
-      status_concurso: normalizeStatus(template.status_concurso),
-      prova_data: String(template.prova_data || '').trim(),
+      status_concurso: statusConcurso,
+      prova_data: provaData,
       edital_url: String(template.edital_url || '').trim(),
       disciplinas,
     };
@@ -805,7 +823,10 @@ function buildContestFormResponse(result) {
 
 // Shared prompt body for both text and PDF analysis.
 function contestFormPrompt(sourceBlock = '') {
+  const today = new Date().toISOString().slice(0, 10);
   return `Voce e um especialista em editais de concursos publicos brasileiros. Analise o edital e gere templates de concurso para o Papirando.
+
+DATA ATUAL PARA DEFINIR STATUS: ${today}.
 
 REGRAS FUNDAMENTAIS:
 1. Use SOMENTE as informacoes do edital. Nao invente dados, URLs, cores ou imagens.
@@ -852,6 +873,7 @@ Regras de preenchimento de campos:
 Campos de valores controlados:
 - area: Militar | Policial | Agropecuaria | Tribunais | Fiscal | Controle | Legislativo | Administrativa | Educacao | Saude | Geral. Escolas militares, Exercito, Marinha, Aeronautica, ESA, EsPCEx, AFA, EFOMM, IME e ITA = Militar. Juridico/Direito = Tribunais.
 - status_concurso: previsto | autorizado | comissao_formada | banca_em_definicao | banca_definida | edital_iminente | edital_publicado | inscricoes_abertas | prova_marcada | em_andamento | homologado.
+- Status deve refletir a fase ATUAL do concurso, nao apenas a frase do edital. Se voce tiver acesso a busca na web, confirme no site oficial do orgao/banca. Se nao tiver acesso a web e a data da prova estiver ha mais de 180 dias da DATA ATUAL, use "homologado" quando nao houver indicio de suspensao/cancelamento. Se a prova ja passou recentemente, use "em_andamento" ou "prova_marcada" conforme o edital.
 - prova_data: YYYY-MM-DD (so quando a data estiver claramente informada).
 - etapas_tags: prova_objetiva | prova_discursiva | redacao | taf | avaliacao_psicologica | investigacao_social | exames_medicos | toxicologico | heteroidentificacao | curso_formacao | avaliacao_curricular.
 
