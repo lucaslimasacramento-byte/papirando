@@ -891,6 +891,11 @@ function repairJsonLikeText(value = '') {
     }
 
     if (char === '"') {
+      if (source[index + 1] === '"' && [',', '}', ']'].includes(source.slice(index + 2).match(/\S/)?.[0] || '')) {
+        repaired += '\\"';
+        continue;
+      }
+
       const rest = source.slice(index + 1);
       const next = rest.match(/\S/)?.[0] || '';
       if (!next || [',', '}', ']', ':'].includes(next)) {

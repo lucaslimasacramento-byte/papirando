@@ -387,6 +387,11 @@ function repairJsonLikeText(value = '') {
     }
 
     if (char === '"') {
+      if (source[index + 1] === '"' && [',', '}', ']'].includes(source.slice(index + 2).match(/\S/)?.[0] || '')) {
+        repaired += '\\"';
+        continue;
+      }
+
       const rest = source.slice(index + 1);
       const next = rest.match(/\S/)?.[0] || '';
       if (!next || [',', '}', ']', ':'].includes(next)) {
@@ -1231,7 +1236,7 @@ export default function AdminConcursos({
         await onCreateTemplate?.(payload);
       }
 
-      success(`${contestFormOptions.length} cargo(s) salvos no catálogo. Eles aparecerão agrupados por concurso para os alunos.`);
+      success(`${contestFormOptions.length} cadastro(s) salvos no catálogo. Concursos diferentes ficam separados; cargos do mesmo concurso ficam agrupados.`);
       resetForm();
       setContestFormOptions([]);
       setContestFormImportStatus('');
@@ -1758,7 +1763,7 @@ export default function AdminConcursos({
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
                   <p className="text-sm font-semibold text-blue-800">
-                    Salve todos os cargos de uma vez. Na vitrine do aluno eles ficam em um único card do concurso.
+                    Salve tudo de uma vez. Concursos diferentes ficam em cards separados; cargos do mesmo concurso ficam dentro do card correto.
                   </p>
                   <button
                     type="button"
