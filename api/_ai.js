@@ -756,10 +756,6 @@ function buildContestFormResponse(result) {
     const normalizedName = normalizeCargoKey(name);
     if (/requisitos?|atribuicoes?|atribuições?|funcao|função/.test(normalizedName)) return null;
     const fallbackName = /nao se aplica|não se aplica/.test(normalizedName) ? 'Avaliação Curricular' : name;
-    const rawProvaData = String(template.prova_data || '').trim();
-    const statusConcurso = resolveStatusByDate(template.status_concurso, rawProvaData);
-    const provaData = resolveDateByStatus(statusConcurso, rawProvaData);
-
     return {
       nome: fallbackName,
       topicos: clampList(subject?.topicos || subject?.topics, 160),
@@ -769,6 +765,9 @@ function buildContestFormResponse(result) {
     const disciplinas = (Array.isArray(template.disciplinas) ? template.disciplinas : [])
       .map((subject) => normalizeSubject(subject))
       .filter((subject) => subject?.nome);
+    const rawProvaData = String(template.prova_data || '').trim();
+    const statusConcurso = resolveStatusByDate(template.status_concurso, rawProvaData);
+    const provaData = resolveDateByStatus(statusConcurso, rawProvaData);
     return {
       nome: String(template.nome || '').trim(),
       plano: String(template.plano || '').trim(),
@@ -787,7 +786,7 @@ function buildContestFormResponse(result) {
       descricao: String(template.descricao || '').trim(),
       status_concurso: statusConcurso,
       prova_data: provaData,
-      edital_url: String(template.edital_url || '').trim(),
+      edital_url: String(template.edital_url || '').replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$2').trim(),
       disciplinas,
     };
   };
@@ -848,6 +847,7 @@ REGRAS FUNDAMENTAIS:
 3. Preserve TODOS os topicos e disciplinas encontrados no conteudo programatico.
 4. Se o edital enviado for antigo e estiver sendo usado como base de conteudo para um novo concurso, pesquise a situacao atual do concurso na internet antes de preencher status_concurso. Use a fonte oficial do orgao, da banca, do governo ou noticias recentes confiaveis.
 5. Nao reaproveite data de prova antiga como data do novo concurso. Se o concurso atual ainda nao tiver data de prova publicada, deixe prova_data vazio.
+6. edital_url deve ser URL pura. Nunca use link Markdown como "[https://...](https://...)".
 
 IDENTIFICACAO DE MULTIPLOS CONCURSOS/CARGOS/AREAS:
 - Se o MESMO PDF tiver concursos de ORGAOS/INSTITUICOES diferentes, retorne no formato {"concursos":[...]} com um objeto para cada concurso. Ex: PMBA e CBMBA no mesmo edital = dois concursos separados, nao dois cargos.
@@ -872,6 +872,8 @@ SELECAO DE ESTAGIOS E PROCESSOS SIMPLIFICADOS:
 Regras de preenchimento de campos:
 - Para a tela do Papirando, prefira nomes curtos para aluno: "DETRAN-BA - Tecnico Administrativo", "DETRAN-BA - Tecnico Juridico", "DETRAN-BA - Atendente". Nao use "Geral" como nome nem como plano.
 - concurso deve ser SOMENTE o orgao limpo, sem edital/processo/ano/cargo. Ex: "DETRAN-BA", "AGU", "TRT-5".
+- Em cada cargo, os campos "nome" e "plano" sao obrigatorios. Nunca retorne "Concurso", "Geral", "Area Diversa" ou apenas "trilha de estudos" nesses campos.
+- Para concursos com cargos agrupados, use "nome" curto no cargo: "PMBA - Soldado", "CBMBA - Soldado", "PCBA - Delegado", "PCBA - Escrivao". Use "plano" amigavel: "PMBA - Soldado - trilha de estudos".
 - IMPORTANTE sobre nome/plano: "nome" e o nome publico do cadastro; deve ser claro e especifico: "Orgao — Processo/Edital — Cargo — Especialidade/Area". Ex: "DETRAN-BA — REDA 01/2026 — Tecnico de Nivel Superior — Administracao".
 - IMPORTANTE sobre plano: "plano" e o nome interno para o aluno se guiar nos estudos; deve ser amigavel, com foco do cargo/area, e pode dispensar numero de edital quando isso deixar o plano mais claro. Ex: "DETRAN-BA — Tecnico de Nivel Superior — Administracao — trilha de estudos".
 - Nunca use "Area Diversa" no nome/plano se o edital indicar a especialidade real. Use a especialidade real: Administracao, Ciencias Juridicas, Ciencias Contabeis, Jornalismo, Psicologia, Engenharia Civil, Arquitetura etc.

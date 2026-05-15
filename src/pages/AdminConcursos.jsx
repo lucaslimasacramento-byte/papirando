@@ -84,6 +84,8 @@ Gerar o JSON para cadastro de concursos na plataforma Papirando.
 10. Nunca use aspas comuns soltas dentro de strings.
 11. "prova_data" deve vir obrigatoriamente no formato YYYY-MM-DD. Exemplo: "2023-01-22".
 12. Se o edital antigo for usado como base para um novo concurso ainda sem prova publicada, deixe "prova_data" vazio.
+13. "edital_url" deve ser URL pura. Nunca use link Markdown como "[https://...](https://...)".
+14. Dentro de cada cargo, "nome" e "plano" sao obrigatorios. Nunca deixe vazio e nunca use valores genericos como "Concurso", "Geral" ou "trilha de estudos".
 
 ## Como separar concurso e cargo
 
@@ -198,8 +200,8 @@ Bombeiros, Exercito, Marinha, Aeronautica, ESA, EsPCEx, AFA, EFOMM, IME e ITA ge
 - "nome_grupo": nome curto agrupador. Exemplos: "PCBA", "PMBA - Soldado", "CBMBA - Soldado", "PMBA - Oficial", "EsPCEx".
 - "concurso": sigla limpa, sem cargo, edital ou ano. Exemplos: "PCBA", "PMBA", "CBMBA", "DETRAN-BA", "AGU".
 - "orgao": nome completo do orgao/instituicao.
-- "nome": nome publico do cargo dentro do concurso. Exemplos: "PCBA - Delegado", "PMBA - Soldado".
-- "plano": nome amigavel para o aluno. Exemplos: "PCBA - Delegado - trilha de estudos", "PMBA - Soldado - trilha de estudos".
+- "nome": nome publico do cargo dentro do concurso, curto e especifico. Formato recomendado: "SIGLA - Cargo curto". Exemplos: "PCBA - Delegado", "PCBA - Escrivao", "PMBA - Soldado", "CBMBA - Soldado".
+- "plano": nome amigavel para o aluno se guiar nos estudos. Formato recomendado: "SIGLA - Cargo curto - trilha de estudos". Exemplos: "PCBA - Delegado - trilha de estudos", "PMBA - Soldado - trilha de estudos".
 - "cargo": cargo exato do edital.
 - "salario": somente salario/remuneracao do cargo especifico, formato "R$ 0.000,00". Nao coloque beneficios junto.
 - "inscricao_valor": somente valor da inscricao, formato "R$ 000,00".
@@ -265,6 +267,7 @@ const EMPTY_FORM = {
 
 function cleanImportedValue(value = '') {
   const text = String(value || '')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$2')
     .replace(/^\*\*|\*\*$/g, '')
     .replace(/^[-*]\s*/, '')
     .trim();
@@ -372,7 +375,12 @@ function cleanStudyLabel(value = '') {
 }
 
 function isGenericContestLabel(value = '') {
-  return /^(geral|area diversa|área diversa|plano de estudos|trilha de estudos)$/i.test(String(value || '').trim());
+  return /^(concurso|geral|area diversa|área diversa|plano de estudos|trilha de estudos|concurso\s*-\s*trilha de estudos)$/i.test(String(value || '').trim());
+}
+
+function hasUsefulContestLabel(value = '') {
+  const text = cleanImportedValue(value);
+  return Boolean(text && !isGenericContestLabel(text));
 }
 
 function extractAgencyOnly(...values) {
@@ -421,6 +429,12 @@ function buildStudentCargo(template = {}) {
   const specialty = extractCargoSpecialty(template);
   const key = normalizeCargoKey(source);
 
+  if (/soldado/.test(key)) return 'Soldado';
+  if (/delegado/.test(key)) return 'Delegado';
+  if (/investigador/.test(key)) return 'Investigador';
+  if (/escriv/.test(key)) return 'Escrivão';
+  if (/oficial/.test(key)) return 'Oficial';
+  if (/cadete/.test(key)) return 'Cadete';
   if (/tecnico|técnico/.test(key) && specialty) return `Técnico ${specialty}`;
   if (/tecnico|técnico/.test(key)) return 'Técnico';
   if (specialty) return specialty;
@@ -429,22 +443,25 @@ function buildStudentCargo(template = {}) {
 }
 
 function buildContestDisplayNames(template = {}) {
-  const rawNome = cleanImportedValue(template.nome);
+  const rawNome = cleanImportedValue(template.nome || template.name);
   const rawPlano = cleanImportedValue(template.plano);
   const rawConcurso = cleanImportedValue(template.concurso);
   const rawCargo = cleanImportedValue(template.cargo);
-  const orgao = extractAgencyOnly(rawConcurso, rawNome, rawPlano) || compactAgencyName(rawConcurso || rawNome || rawPlano);
-  const studentCargo = buildStudentCargo({ ...template, nome: rawNome, plano: rawPlano, cargo: rawCargo });
+  const rawGrupo = cleanImportedValue(template.nome_grupo || template.grupo);
+  const rawOrgao = cleanImportedValue(template.orgao || template['concurso / órgão']);
+  const orgao = extractAgencyOnly(rawConcurso, rawOrgao, rawGrupo, rawNome, rawPlano) || compactAgencyName(rawConcurso || rawOrgao || rawGrupo || rawNome || rawPlano);
+  const studentCargo = buildStudentCargo({
+    ...template,
+    nome: hasUsefulContestLabel(rawNome) ? rawNome : rawGrupo,
+    plano: hasUsefulContestLabel(rawPlano) ? rawPlano : '',
+    cargo: rawCargo,
+  });
   const publicName = normalizeDashSpacing([orgao, studentCargo].filter(Boolean).join(' - '));
   const studentPlan = normalizeDashSpacing([orgao, studentCargo, 'trilha de estudos'].filter(Boolean).join(' - '));
 
-  const rawProvaData = normalizeImportedDate(template.prova_data || template.data_prova || '');
-  const statusConcurso = resolveContestStatusByDate(template.status_concurso || '', rawProvaData);
-  const provaData = resolveContestDateByStatus(statusConcurso, rawProvaData);
-
   return {
-    nome: publicName,
-    plano: studentPlan,
+    nome: hasUsefulContestLabel(rawNome) ? normalizeDashSpacing(rawNome) : publicName,
+    plano: hasUsefulContestLabel(rawPlano) ? normalizeDashSpacing(rawPlano) : studentPlan,
     concurso: orgao,
   };
 }
@@ -532,6 +549,7 @@ function parseLooseJsonObject(text = '') {
   const source = String(text || '')
     .replace(/^```(?:json)?/i, '')
     .replace(/```$/i, '')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$2')
     .trim()
     .replace(/^[\w$]+\s*=\s*/, '')
     .replace(/;$/, '')
@@ -670,6 +688,9 @@ function normalizeJsonContestTemplate(raw = {}) {
     .map((subject) => normalizeSubjectDraft(subject))
     .filter((subject) => subject.nome);
   const names = buildContestDisplayNames(template);
+  const rawProvaData = normalizeImportedDate(template.prova_data || template.data_prova || '');
+  const statusConcurso = resolveContestStatusByDate(template.status_concurso || '', rawProvaData);
+  const provaData = resolveContestDateByStatus(statusConcurso, rawProvaData);
 
   return {
     nome: names.nome || cleanImportedValue(template.nome || template.name || ''),
