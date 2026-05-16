@@ -12,6 +12,7 @@ import {
   Heart,
   Layers3,
   LibraryBig,
+  Pencil,
   Plus,
   Users,
 } from 'lucide-react';
@@ -59,8 +60,10 @@ export default function ConcursoDetalhe({
   cursos = [],
   concursoCatalog = [],
   bancoDisciplinas = [],
+  isAdmin = false,
   isFavorite = false,
   isInterested = false,
+  onEditContest,
 }) {
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [imageError, setImageError] = useState(false);
@@ -314,10 +317,10 @@ export default function ConcursoDetalhe({
   return (
     <div className="page-shell flex flex-col gap-6">
       <PageHeadPremium
-        className="!min-h-[210px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[225px] sm:!pb-16 sm:!pt-9"
+        className="!min-h-[230px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[245px] sm:!pb-16 sm:!pt-9"
         style={headStyle}
         icon={LibraryBig}
-        iconTileClassName={contest.imagem_url && !imageError ? '!h-24 !w-24 !rounded-none !border-transparent !bg-transparent !p-0 !shadow-none !ring-0 sm:!h-28 sm:!w-28' : '!h-16 !w-16 sm:!h-[4.5rem] sm:!w-[4.5rem]'}
+        iconTileClassName={contest.imagem_url && !imageError ? '!h-32 !w-32 !rounded-none !border-transparent !bg-transparent !p-0 !shadow-none !ring-0 sm:!h-40 sm:!w-40 lg:!h-44 lg:!w-44' : '!h-16 !w-16 sm:!h-[4.5rem] sm:!w-[4.5rem]'}
         iconSlot={contest.imagem_url && !imageError ? (
           <img
             src={contest.imagem_url}
@@ -377,6 +380,16 @@ export default function ConcursoDetalhe({
               <Heart size={14} className={isFavorite ? 'fill-current' : ''} />
               {isFavorite ? 'Favoritado' : 'Favoritar'}
             </button>
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onEditContest?.(rawContest || contest)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-red-300/60 bg-red-500/18 px-3 py-2 text-xs font-bold text-red-100 shadow-[0_12px_26px_rgba(220,38,38,0.16)] transition-colors hover:bg-red-500/28 sm:text-sm"
+              >
+                <Pencil size={14} />
+                Editar concurso
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => onToggleInterested?.(contest.id)}

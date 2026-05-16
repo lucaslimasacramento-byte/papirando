@@ -40,6 +40,7 @@ const AdminBetaConvites = lazy(() => import('../pages/AdminBetaConvites'));
 const AdminBetaFeedback = lazy(() => import('../pages/AdminBetaFeedback'));
 const AdminAssinaturas = lazy(() => import('../pages/AdminAssinaturas'));
 const AdminQuestoes = lazy(() => import('../pages/AdminQuestoes'));
+const QuestionImportPage = lazy(() => import('../pages/admin/QuestionImportPage'));
 const Sessoes = lazy(() => import('../pages/Sessoes'));
 const Revisoes = lazy(() => import('../pages/Revisoes'));
 const EditalQuestao = lazy(() => import('../pages/EditalQuestao'));
@@ -56,6 +57,7 @@ const KNOWN_TABS = [
   'admin_dashboard',
   'admin_concursos',
   'admin_questoes',
+  'admin_questoes_import',
   'admin_disciplinas',
   'admin_usuarios',
   'admin_finance',
@@ -495,6 +497,7 @@ export default function AppTabContent(props) {
         limiteAtingido={!isAdmin && remainingCourseSlots <= 0}
         cursos={cursos}
         bancoDisciplinas={bancoDisciplinas}
+        isAdmin={isAdmin}
         isFavorite={favoriteContestIds.includes(selectedContestDetail?.id)}
         isInterested={interestedContestIds.includes(selectedContestDetail?.id)}
         onToggleFavorite={(contestId) =>
@@ -527,6 +530,10 @@ export default function AppTabContent(props) {
         }
         isTargetContest={selectedContestDetail?.id === targetContestId}
         onSetTargetContest={setTargetContestId}
+        onEditContest={(contest) => {
+          if (contest?.id) localStorage.setItem('papirando_admin_edit_contest_id', contest.id);
+          setActiveTab('admin_concursos');
+        }}
       />
     );
   }
@@ -571,6 +578,10 @@ export default function AppTabContent(props) {
     return (
       <AdminQuestoes currentUserEmail={currentUserEmail} />
     );
+  }
+
+  if (activeTab === 'admin_questoes_import' && isAdmin) {
+    return <QuestionImportPage />;
   }
 
   if (activeTab === 'admin_disciplinas' && isAdmin) {
@@ -840,7 +851,9 @@ export default function AppTabContent(props) {
     );
   }
 
-  if (activeTab === 'flashcards') return <Flashcards currentUserId={currentUserId} />;
+  if (activeTab === 'flashcards') {
+    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} />;
+  }
 
   if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} />;
 
@@ -876,6 +889,7 @@ export default function AppTabContent(props) {
         subjectCatalog={subjectCatalog}
         studyRecommendation={smartStudyPlan}
         onStartRecommendedSession={startRecommendedStudySession}
+        isAdmin={isAdmin}
         setActiveTab={setActiveTab}
       />
     );

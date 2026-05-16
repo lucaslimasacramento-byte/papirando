@@ -37,6 +37,7 @@ import { useToast } from '../lib/toast';
 import { CONTEST_STATUS_OPTIONS, normalizeContestStatus } from '../lib/contestGrouping';
 
 const DRAFT_STORAGE_KEY = 'papirando_admin_concurso_draft';
+const EDIT_TEMPLATE_STORAGE_KEY = 'papirando_admin_edit_contest_id';
 
 const STATUS_OPTIONS = CONTEST_STATUS_OPTIONS;
 
@@ -1022,6 +1023,18 @@ export default function AdminConcursos({
 
   useEffect(() => {
     try {
+      const editTemplateId = localStorage.getItem(EDIT_TEMPLATE_STORAGE_KEY);
+      if (editTemplateId) {
+        localStorage.removeItem(EDIT_TEMPLATE_STORAGE_KEY);
+        const template = concursoCatalog.find((item) => item.id === editTemplateId);
+        if (template) {
+          setSelectedTemplateId(template.id);
+          setForm(buildFormFromTemplate(template));
+          localStorage.removeItem(DRAFT_STORAGE_KEY);
+          return;
+        }
+      }
+
       const storedDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (!storedDraft) return;
       const parsed = JSON.parse(storedDraft);
@@ -1030,7 +1043,7 @@ export default function AdminConcursos({
     } catch {
       // ignore broken draft
     }
-  }, []);
+  }, [concursoCatalog]);
 
   useEffect(() => {
     if (selectedTemplateId) return;
