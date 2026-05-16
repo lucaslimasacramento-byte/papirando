@@ -188,6 +188,8 @@ export const PageHeadPremiumStat = PageHeadPremiumStatCompact;
  */
 export default function PageHeadPremium({
   icon: Icon,
+  iconSlot = null,
+  iconTileClassName = '',
   badge = null,
   title,
   titleAs: TitleTag = 'h2',
@@ -234,8 +236,8 @@ export default function PageHeadPremium({
       <div
         className={`relative z-10 flex min-w-0 items-center gap-3 sm:min-h-0 sm:gap-3.5 ${headerGridLayout ? 'shrink-0' : 'flex-1 basis-0'} ${leadingClassName}`.trim()}
       >
-        <PageHeadPremiumIconTile>
-          <Icon className={`${PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} block shrink-0`} strokeWidth={2} aria-hidden />
+        <PageHeadPremiumIconTile className={iconTileClassName}>
+          {iconSlot || (Icon ? <Icon className={`${PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} block shrink-0`} strokeWidth={2} aria-hidden /> : null)}
         </PageHeadPremiumIconTile>
         <div className="min-w-0 flex flex-1 flex-col justify-center self-stretch sm:self-auto">
           {badge}

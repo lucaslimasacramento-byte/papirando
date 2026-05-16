@@ -307,6 +307,16 @@ export default function ConcursoDetalhe({
       <PageHeadPremium
         className="!min-h-[190px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[205px] sm:!pb-16 sm:!pt-9"
         icon={LibraryBig}
+        iconTileClassName={contest.imagem_url && !imageError ? '!h-14 !w-14 !rounded-2xl !border-white/15 !bg-white !p-1 !shadow-[0_14px_34px_rgba(15,23,42,0.28)] sm:!h-16 sm:!w-16' : ''}
+        iconSlot={contest.imagem_url && !imageError ? (
+          <img
+            src={contest.imagem_url}
+            alt=""
+            onError={() => setImageError(true)}
+            className="h-full w-full rounded-[0.85rem] object-contain"
+            aria-hidden
+          />
+        ) : null}
         badge={
           <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
         }
