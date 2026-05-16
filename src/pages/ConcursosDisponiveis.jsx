@@ -253,23 +253,11 @@ export default function ConcursosDisponiveis({
 
   const toggleArea = (area) => {
     if (area === 'Todas') {
-      const allAreas = areas.filter((item) => item !== 'Todas');
-      const isAllSelected =
-        areasSelecionadas.includes('Todas') ||
-        (allAreas.length > 0 && allAreas.every((item) => areasSelecionadas.includes(item)));
-
-      setAreasSelecionadas(isAllSelected ? [] : ['Todas']);
+      setAreasSelecionadas(['Todas']);
       return;
     }
 
-    setAreasSelecionadas((prev) => {
-      const withoutTodas = prev.filter((item) => item !== 'Todas');
-      if (withoutTodas.includes(area)) {
-        return withoutTodas.filter((item) => item !== area);
-      }
-
-      return [...withoutTodas, area];
-    });
+    setAreasSelecionadas((prev) => (prev.includes(area) ? ['Todas'] : [area]));
   };
 
   const handleImport = async (contest) => {
