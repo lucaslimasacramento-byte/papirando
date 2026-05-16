@@ -20,6 +20,7 @@ import {
   Pencil,
   Plus,
   PlusCircle,
+  Save,
   Search,
   ShieldCheck,
   Sparkles,
@@ -1856,6 +1857,15 @@ export default function AdminConcursos({
               {selectedTemplate && (
                 <StorageBadge storage={selectedTemplate.storage} />
               )}
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+                {isSaving ? 'Salvando...' : form.id ? 'Salvar concurso' : 'Criar concurso'}
+              </button>
               {selectedTemplate && (
                 <button
                   type="button"
