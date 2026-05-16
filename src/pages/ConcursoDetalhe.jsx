@@ -24,6 +24,7 @@ import {
   getPrimaryContestRole,
   normalizeContestStatus,
 } from '../lib/contestGrouping';
+import { getContestAreaTheme } from '../lib/contestAreaTheme';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
@@ -74,6 +75,14 @@ export default function ConcursoDetalhe({
     return buildContestForRole(rawContest, activeRole);
   }, [rawContest, activeRole]);
   const normalizedStatus = normalizeContestStatus(contest?.status_concurso);
+  const areaTheme = useMemo(() => getContestAreaTheme(contest?.area || 'Geral'), [contest?.area]);
+  const headStyle = useMemo(() => ({
+    '--page-head-accent-start': areaTheme.accentStart,
+    '--page-head-accent-end': areaTheme.accentEnd,
+    '--page-head-accent-shadow': areaTheme.accentShadow,
+    '--page-head-dark': areaTheme.dark,
+    '--page-head-dark-soft': areaTheme.darkSoft,
+  }), [areaTheme]);
   const relatedContests = useMemo(
     () => findRelatedContests(concursoCatalog, rawContest || {}),
     [concursoCatalog, rawContest]
@@ -305,15 +314,16 @@ export default function ConcursoDetalhe({
   return (
     <div className="page-shell flex flex-col gap-6">
       <PageHeadPremium
-        className="!min-h-[190px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[205px] sm:!pb-16 sm:!pt-9"
+        className="!min-h-[210px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[225px] sm:!pb-16 sm:!pt-9"
+        style={headStyle}
         icon={LibraryBig}
-        iconTileClassName={contest.imagem_url && !imageError ? '!h-14 !w-14 !rounded-2xl !border-white/15 !bg-white !p-1 !shadow-[0_14px_34px_rgba(15,23,42,0.28)] sm:!h-16 sm:!w-16' : ''}
+        iconTileClassName={contest.imagem_url && !imageError ? '!h-24 !w-24 !rounded-none !border-transparent !bg-transparent !p-0 !shadow-none !ring-0 sm:!h-28 sm:!w-28' : '!h-16 !w-16 sm:!h-[4.5rem] sm:!w-[4.5rem]'}
         iconSlot={contest.imagem_url && !imageError ? (
           <img
             src={contest.imagem_url}
             alt=""
             onError={() => setImageError(true)}
-            className="h-full w-full rounded-[0.85rem] object-contain"
+            className="h-full w-full object-contain drop-shadow-[0_18px_26px_rgba(0,0,0,0.38)]"
             aria-hidden
           />
         ) : null}

@@ -62,8 +62,8 @@ export function PageHeadPremiumCenterNote({
   );
 }
 
-export function PageHeadPremiumShell({ children, className = '' }) {
-  return <div className={`${SHELL_BASE} ${className}`.trim()}>{children}</div>;
+export function PageHeadPremiumShell({ children, className = '', style = undefined }) {
+  return <div className={`${SHELL_BASE} ${className}`.trim()} style={style}>{children}</div>;
 }
 
 export function PageHeadPremiumIconTile({ children, className = '' }) {
@@ -211,6 +211,7 @@ export default function PageHeadPremium({
   statsStackBelowTrailing = false,
   /** KPIs mais baixos quando usar `statsStackBelowTrailing` ou telas estreitas. */
   statsDense = false,
+  style = undefined,
 }) {
   const statList = Array.isArray(stats) ? stats : [];
   const hasStats = statList.length > 0;
@@ -232,6 +233,7 @@ export default function PageHeadPremium({
   return (
     <PageHeadPremiumShell
       className={`flex w-full min-w-0 max-w-full flex-col gap-3 sm:gap-4 ${headerGridLayout ? 'lg:!grid lg:!grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-3 lg:gap-y-3 2xl:gap-x-5' : 'xl:flex-row xl:items-center xl:justify-between'} ${className}`}
+      style={style}
     >
       <div
         className={`relative z-10 flex min-w-0 items-center gap-3 sm:min-h-0 sm:gap-3.5 ${headerGridLayout ? 'shrink-0' : 'flex-1 basis-0'} ${leadingClassName}`.trim()}

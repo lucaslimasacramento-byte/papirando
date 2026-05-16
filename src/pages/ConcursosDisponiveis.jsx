@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import PageHeadPremium from '../components/PageHeadPremium';
 import { buildContestForRole, CONTEST_STATUS_LABELS, CONTEST_STATUS_OPTIONS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
+import { getContestAreaBackground } from '../lib/contestAreaTheme';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
@@ -498,7 +499,7 @@ export default function ConcursosDisponiveis({
                         <div
                           className="relative flex h-48 items-center justify-center overflow-hidden border-b border-slate-100"
                           style={{
-                            background: `radial-gradient(circle at 50% 48%, ${contest.cor || '#2563eb'}55 0%, transparent 34%), linear-gradient(135deg, #062b3a 0%, #0f3a4b 48%, #082434 100%)`,
+                            background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
                           }}
                         >
                           <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
@@ -855,7 +856,7 @@ function ContestPreviewModal({
             <div
               className="relative flex h-48 items-center justify-center overflow-hidden rounded-[1.6rem] border border-gray-200"
               style={{
-                background: `radial-gradient(circle at 50% 48%, ${contest.cor || '#2563eb'}55 0%, transparent 34%), linear-gradient(135deg, #062b3a 0%, #0f3a4b 48%, #082434 100%)`,
+                background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
               }}
             >
               <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
