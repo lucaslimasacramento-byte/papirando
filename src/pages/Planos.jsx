@@ -11,8 +11,8 @@ import {
   LibraryBig,
   Loader2,
   PenTool,
+  Play,
   Plus,
-  ShieldCheck,
   Sparkles,
   Target,
   Trash2,
@@ -23,7 +23,6 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { analyzeEdital } from '../lib/aiClient';
 import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -331,324 +330,69 @@ export default function Planos({
     }
   };
   const buildCourseMetaChips = (curso) => {
-    const chips = [];
-    chips.push({
-      key: 'status',
-      className: 'rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-600',
-      label: formatStatusLabel(curso.status_concurso),
-    });
-    if (curso.prova_data) {
-      chips.push({
-        key: 'prova',
-        className:
-          'rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700',
-        label: `Prova ${formatDateDisplay(curso.prova_data)}`,
-      });
-    }
-    if (curso.salario) {
-      chips.push({
-        key: 'salario',
-        className:
-          'rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700',
-        label: curso.salario,
-      });
-    }
-    if (curso.escolaridade) {
-      chips.push({
-        key: 'escolaridade',
-        className:
-          'rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700',
-        label: curso.escolaridade,
-      });
-    }
-    if (curso.inscricao_valor) {
-      chips.push({
-        key: 'inscricao',
-        className:
-          'rounded-full border border-amber-100 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-700',
-        label: `Inscrição ${curso.inscricao_valor}`,
-      });
-    }
+    const chips = [{ key: 'status', tone: 'accent', label: formatStatusLabel(curso.status_concurso) }];
+    if (curso.prova_data) chips.push({ key: 'prova', tone: 'highlight', label: `Prova ${formatDateDisplay(curso.prova_data)}` });
+    if (curso.salario) chips.push({ key: 'salario', tone: 'success', label: curso.salario });
+    if (curso.escolaridade) chips.push({ key: 'escolaridade', tone: '', label: curso.escolaridade });
+    if (curso.inscricao_valor) chips.push({ key: 'inscricao', tone: 'warn', label: `Inscricao ${curso.inscricao_valor}` });
     return chips;
   };
 
   return (
-    <div className="page-shell animate-in fade-in duration-500 !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        className="mb-6 lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={Book}
-        title="Meus cursos"
-        subtitle="Os cursos são a origem das disciplinas. Crie um curso personalizado ou escolha um concurso pronto da biblioteca."
-        leadingClassName="lg:max-w-[calc(100%-29rem)] xl:max-w-[52rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[27rem] lg:self-center"
-        trailing={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-            <button
-              onClick={() => openMode('manual')}
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:w-auto sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Plus size={14} />
-              Criar curso
-            </button>
-            <button
-              onClick={() => openMode('catalog')}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:w-auto sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <LibraryBig size={14} />
-              Biblioteca de concursos
-            </button>
-          </div>
-        }
-      />
-
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <CreatePlanCard
-          icon={PenTool}
-          iconWrap="bg-blue-50 text-[#2563EB]"
-          title="Curso personalizado"
-          text="Cadastre o curso do seu jeito e depois vincule todas as disciplinas a ele."
-          onClick={() => openMode('manual')}
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px', border: 0, outline: 0 }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 24, margin: 0 }}>
+        <PlanosHeader
+          onCriarCurso={() => openMode('manual')}
+          onAbrirBiblioteca={() => openMode('catalog')}
+          onImportarIA={() => openMode('ia')}
         />
 
-        <CreatePlanCard
-          icon={LibraryBig}
-          iconWrap="bg-blue-50 text-[#2563EB]"
-          title="Biblioteca de concursos"
-          text="Selecione um concurso pré-cadastrado e carregue a estrutura base automaticamente."
-          decorated
-          onClick={() => openMode('catalog')}
-        />
+        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.35fr) minmax(360px, 1fr)', gap: 16 }}>
+          <ConcursoAlvoCard
+            target={targetContest}
+            onTrocar={() => setActiveTab('concursos')}
+            onAbrir={() => targetContest?.id && onOpenContestDetail?.(targetContest.id)}
+          />
+          <ConcursosAcompanhadosCard
+            items={myContests}
+            onDefinirAlvo={onSetTargetContest}
+            onAbrir={onOpenContestDetail}
+          />
+        </section>
 
-        <CreatePlanCard
-          icon={Copy}
-          iconWrap="bg-indigo-50 text-indigo-600"
-          title="Ir para disciplinas"
-          text="Revise rapidamente a estrutura criada e continue o refinamento na aba de disciplinas."
-          onClick={() => setActiveTab('disciplinas')}
-        />
-      </div>
+        <section>
+          <SectionHeader
+            eyebrow="Seus cursos"
+            title={`${cursoStats.length} curso${cursoStats.length !== 1 ? 's' : ''} cadastrado${cursoStats.length !== 1 ? 's' : ''}`}
+            meta={`${Math.max(remainingCourseSlots, 0)} vaga${remainingCourseSlots === 1 ? '' : 's'} disponive${remainingCourseSlots === 1 ? 'l' : 'is'}`}
+            cta={{ label: 'Ir para disciplinas', onClick: () => setActiveTab('disciplinas') }}
+          />
 
-      {myContests.length > 0 && (
-        <div className="mb-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="soft-accent rounded-2xl border border-blue-100 p-6 text-slate-900">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">Concurso alvo</p>
-            {targetContest ? (
-              <>
-                <h3 className="mt-3 text-2xl font-semibold text-blue-900">{targetContest.nome}</h3>
-                <p className="mt-2 text-sm font-semibold text-slate-600">
-                  {targetContest.cargo || targetContest.concurso}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <span className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700">
-                    {targetContest.prova_data ? `Prova ${formatDateDisplay(targetContest.prova_data)}` : 'Sem prova definida'}
-                  </span>
-                  <span className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700">
-                    {targetContest.diasParaProva !== null ? `Faltam ${targetContest.diasParaProva} dia(s)` : 'Sem contagem disponível'}
-                  </span>
-                </div>
-                <button
-                  onClick={() => onOpenContestDetail?.(targetContest.id)}
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-900"
-                >
-                  Abrir concurso alvo
-                  <ArrowRight size={15} />
-                </button>
-              </>
-            ) : (
-              <>
-                <h3 className="mt-3 text-2xl font-semibold text-blue-900">Defina seu concurso principal</h3>
-                <p className="mt-2 text-sm font-semibold text-slate-600">
-                  Escolha abaixo o concurso que vai guiar sua prioridade, contagem regressiva e foco diário.
-                </p>
-              </>
-            )}
-          </div>
-
-          <div className="section-card p-6">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Memória do aluno</p>
-                <h3 className="mt-2 text-xl font-semibold text-slate-900">Concursos acompanhados</h3>
-              </div>
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500">
-                {myContests.length} itens
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {myContests.slice(0, 4).map((contest) => (
-                <div key={contest.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                  <div className="flex flex-wrap gap-2">
-                    {contest.isTarget && (
-                      <span className="rounded-full border border-yellow-100 bg-yellow-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-yellow-700">
-                        Alvo
-                      </span>
-                    )}
-                    {contest.imported && (
-                      <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-                        Importado
-                      </span>
-                    )}
-                    {contest.favorite && (
-                      <span className="rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-700">
-                        Favorito
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-3 text-base font-semibold text-slate-900">{contest.nome}</p>
-                  <p className="mt-1 text-sm font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
-
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() => onSetTargetContest?.(contest.id)}
-                      className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-                        contest.isTarget
-                          ? 'border border-yellow-200 bg-yellow-50 text-yellow-700'
-                          : 'border border-slate-200 bg-white text-slate-600'
-                      }`}
-                    >
-                      {contest.isTarget ? 'Alvo atual' : 'Definir como alvo'}
-                    </button>
-                    <button
-                      onClick={() => onOpenContestDetail?.(contest.id)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-900"
-                    >
-                      Abrir concurso
-                      <ArrowRight size={15} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-        {cursoStats.map((curso) => (
-          <div
-            key={curso.id}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-          >
-            <div
-              className="relative flex h-32 items-start justify-between overflow-hidden p-6"
-              style={{ background: `linear-gradient(135deg, ${curso.cor || '#2563eb'} 0%, #1e40af 100%)` }}
-            >
-              <div className="absolute -right-10 -top-10 text-white/10 transition-transform duration-500 group-hover:scale-110">
-                <Target size={150} />
-              </div>
-
-              <span className="relative z-10 rounded-full bg-white/15 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white">
-                {curso.origem === 'catalogo' ? 'Biblioteca' : curso.origem === 'ia' ? 'Importado por IA' : 'Personalizado'}
-              </span>
-            </div>
-
-            <div className="-mt-8 flex flex-1 flex-col p-6 relative">
-              <button
-                onClick={() => {
-                  if (window.confirm(`Excluir o curso "${curso.nome}"? Essa ação não pode ser desfeita.`)) {
-                    onDeleteCourse?.(curso);
-                  }
-                }}
-                className="absolute right-0 top-0 rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                title="Excluir curso"
-              >
-                <Trash2 size={16} />
-              </button>
-
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-md">
-                {curso.imagem_url ? (
-                  <img src={curso.imagem_url} alt={curso.nome} className="h-full w-full rounded-2xl object-cover" />
-                ) : (
-                  <Book size={28} className="text-[#2563EB]" />
-                )}
-              </div>
-
-              <div className="mb-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  {curso.area || 'Geral'}
-                </span>
-              </div>
-
-              <h3 className="mb-1 text-xl font-extrabold tracking-tight text-gray-800">{curso.nome}</h3>
-              <p className="mb-6 text-xs font-medium text-gray-500">
-                {curso.cargo || curso.concurso || 'Curso cadastrado'} • {curso.banca || 'Banca a definir'}
-              </p>
-
-              <div className="mb-4 flex flex-wrap gap-2">
-                {buildCourseMetaChips(curso)
-                  .slice(0, 3)
-                  .map((chip) => (
-                    <span key={chip.key} className={chip.className}>
-                      {chip.label}
-                    </span>
-                  ))}
-                {buildCourseMetaChips(curso).length > 3 ? (
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-                    +{buildCourseMetaChips(curso).length - 3}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mb-6 grid grid-cols-2 gap-3">
-                <MetricMiniCard label="Disciplinas" value={String(curso.disciplinasCount)} />
-                <MetricMiniCard label="Tópicos" value={String(curso.topicosCount)} />
-              </div>
-
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Progresso do edital</span>
-                <span className="text-sm font-semibold text-blue-700">{curso.progresso}%</span>
-              </div>
-
-              <div className="mb-6 h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-blue-700" style={{ width: `${curso.progresso}%` }} />
-              </div>
-
-              <button
-                onClick={() => {
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, marginTop: 14 }}>
+            {cursoStats.map((curso) => (
+              <CursoTile
+                key={curso.id}
+                curso={curso}
+                chips={buildCourseMetaChips(curso)}
+                isTarget={curso.plano && targetContest?.plano && curso.plano === targetContest.plano}
+                onAbrir={() => {
                   setSelectedCoursePlan?.(curso.plano || 'Todos');
                   setActiveTab('disciplinas');
                 }}
-                className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 py-3 font-semibold text-white transition-colors hover:bg-blue-900"
-              >
-                Abrir disciplinas
-                <ArrowRight size={16} />
-              </button>
-            </div>
+                onApagar={() => {
+                  if (window.confirm(`Excluir o curso "${curso.nome}"? Essa acao nao pode ser desfeita.`)) {
+                    onDeleteCourse?.(curso);
+                  }
+                }}
+                onMarcarAlvo={() => {
+                  const contest = myContests.find((item) => item.plano === curso.plano || item.nome === curso.nome);
+                  if (contest?.id) onSetTargetContest?.(contest.id);
+                }}
+              />
+            ))}
           </div>
-        ))}
+        </section>
 
-        {isAdmin && (
-          <div className="flex min-h-[360px] flex-col justify-between rounded-2xl border border-rose-200 bg-[linear-gradient(180deg,rgba(244,63,94,0.08),rgba(244,63,94,0.03))] p-8 shadow-sm">
-            <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-700 shadow-sm">
-                <LibraryBig size={12} />
-                Painel da biblioteca
-              </div>
-              <h4 className="mb-3 text-xl font-semibold text-rose-900">Gerencie a base de concursos</h4>
-              <p className="max-w-sm text-sm font-medium leading-relaxed text-rose-800/80">
-                Esse bloco é administrativo. Use-o para alimentar a biblioteca com concursos-base e deixar a importação dos alunos mais rápida.
-              </p>
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <div className="rounded-2xl border border-rose-100 bg-white/90 p-4 shadow-sm">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-500">Próximo passo</p>
-                <p className="mt-2 text-sm font-semibold text-rose-800/80">
-                  Hoje o catálogo ainda é local. Depois, migramos a gestão para o Supabase com cadastro administrativo dedicado.
-                </p>
-              </div>
-              <button
-                onClick={() => openMode('catalog')}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-3 font-semibold text-white transition-colors hover:bg-rose-800"
-              >
-                Abrir biblioteca
-                <ArrowRight size={16} />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {mode === 'manual' && (
@@ -763,7 +507,7 @@ export default function Planos({
       {mode === 'ia' && (
         <ModalShell
           title="Importar edital com IA"
-          subtitle="Ferramenta beta e agora mais escondida. Vamos voltar nela depois que a biblioteca de concursos estiver mais madura."
+          subtitle="Cole o texto do edital ou envie o PDF e a IA gera automaticamente disciplinas, tópicos e estrutura de estudo."
           onClose={closeMode}
         >
           <div className="grid gap-5 md:grid-cols-2">
@@ -863,13 +607,277 @@ export default function Planos({
   );
 }
 
-function CreatePlanCard({ icon: Icon, iconWrap, title, text, decorated = false, onClick }) {
+function PlanosHeader({ onCriarCurso, onAbrirBiblioteca, onImportarIA }) {
+  return (
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+        <div className="pl-eyebrow">Cursos</div>
+        <h1 className="pl-display" style={{ margin: '10px 0 0', fontSize: 56, color: 'var(--pl-ink)' }}>
+          Meus cursos<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h1>
+        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
+          Cursos sao a origem das disciplinas. Cadastre do seu jeito, escolha um concurso pronto da biblioteca,
+          ou cole um edital e a gente <span className="pl-mark-text">papira</span> a estrutura pra voce.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+        <button className="pl-btn pl-btn-primary" onClick={onCriarCurso}>
+          <Play size={11} fill="currentColor" /> Criar curso
+        </button>
+        <button className="pl-btn" onClick={onAbrirBiblioteca}>
+          <LibraryBig size={13} /> Biblioteca
+        </button>
+        <button className="pl-btn pl-btn-ai" style={{ position: 'relative' }} onClick={onImportarIA}>
+          <Sparkles size={12} /> Importar com IA
+          <span style={{
+            position: 'absolute',
+            top: -6,
+            right: -6,
+            fontSize: 8.5,
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            padding: '2px 5px',
+            borderRadius: 3,
+            background: '#fbe9a0',
+            color: '#8a6d10',
+          }}>
+            BETA
+          </span>
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function ConcursoAlvoCard({ target, onTrocar, onAbrir }) {
+  return (
+    <div style={{
+      background: 'var(--pl-surface)',
+      border: '1px solid var(--pl-rule-2)',
+      borderLeft: '4px solid var(--pl-ink)',
+      borderRadius: 10,
+      padding: '22px 26px',
+      minHeight: 188,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <Target size={13} strokeWidth={2.5} style={{ color: 'var(--pl-ink-3)', flexShrink: 0 }} />
+        <span className="pl-eyebrow">Concurso-alvo</span>
+      </div>
+
+      {target ? (
+        <>
+          <h2 style={{ margin: '10px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
+            <span className="pl-mark-text">{target.nome}</span>
+          </h2>
+          <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+            {[target.banca, target.cargo || target.concurso].filter(Boolean).join(' — ') || 'Alvo principal definido'}
+          </p>
+          <p style={{ margin: '12px 0 0', maxWidth: 720, fontSize: 13.5, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
+            Esse curso orienta prioridade, revisões e a contagem regressiva do seu estudo.
+          </p>
+          <div style={{ display: 'flex', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>
+            <button className="pl-btn" onClick={onTrocar}>Trocar alvo</button>
+            <button className="pl-btn pl-btn-primary" onClick={onAbrir} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>Abrir curso <ArrowRight size={13} /></button>
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 style={{ margin: '10px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 28, color: 'var(--pl-ink)' }}>
+            Defina seu concurso principal
+          </h2>
+          <p style={{ margin: '10px 0 0', maxWidth: 680, fontSize: 13.5, lineHeight: 1.6, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
+            Escolha um dos cursos abaixo como alvo principal para guiar prioridade, contagem regressiva e foco diário.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ConcursosAcompanhadosCard({ items = [], onDefinirAlvo, onAbrir }) {
+  const visible = items.slice(0, 3);
+  return (
+    <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 10, padding: '18px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <div className="pl-eyebrow">Memoria do aluno</div>
+          <h3 style={{ margin: '7px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 23, color: 'var(--pl-ink)' }}>
+            Concursos acompanhados
+          </h3>
+        </div>
+        <span className="pl-tag">{items.length} itens</span>
+      </div>
+
+      {visible.length === 0 ? (
+        <p style={{ margin: '18px 0 0', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+          Importe um concurso da biblioteca para acompanhar alvo, cargo e progresso por aqui.
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
+          {visible.map((contest) => (
+            <div key={contest.id} style={{ padding: 12, border: '1px solid var(--pl-rule-2)', borderRadius: 6, background: 'var(--pl-surface-2)' }}>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {contest.isTarget && <span className="pl-tag pl-tag-highlight">Alvo</span>}
+                <span className="pl-tag">{contest.imported ? 'Importado' : contest.favorite ? 'Favorito' : 'Acompanhado'}</span>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 14.5, fontWeight: 800, color: 'var(--pl-ink)' }}>{contest.nome}</div>
+              <div style={{ marginTop: 2, fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-3)' }}>{contest.cargo || contest.concurso || 'Cargo a definir'}</div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <button className="pl-btn pl-btn-sm" onClick={() => onDefinirAlvo?.(contest.id)}>
+                  {contest.isTarget ? 'Alvo atual' : 'Definir como alvo'}
+                </button>
+                <button className="pl-btn pl-btn-sm pl-btn-primary" onClick={() => onAbrir?.(contest.id)}>
+                  Abrir concurso
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SectionHeader({ eyebrow, title, meta, cta }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+      <div>
+        <div className="pl-eyebrow">{eyebrow}</div>
+        <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, color: 'var(--pl-ink)' }}>
+          {title}
+        </h2>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {meta && <span className="pl-tag pl-tag-highlight">{meta}</span>}
+        {cta && (
+          <button className="pl-btn-link" onClick={cta.onClick}>
+            {cta.label} <ArrowRight size={12} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlvo }) {
+  const isLibrary = curso.origem === 'catalogo' || curso.origem === 'biblioteca';
+  const tipoLabel = isLibrary ? 'Biblioteca' : curso.origem === 'ia' ? 'Importado por IA' : 'Personalizado';
+  const secondaryTag = curso.cargo || curso.status_concurso || curso.area || 'Geral';
+  const visibleChips = chips.slice(0, 3);
+
+  return (
+    <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 392 }}>
+      <div style={{ position: 'relative', padding: '18px 22px 36px', minHeight: 116, borderBottom: '1px solid var(--pl-rule)', background: isLibrary ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, background: 'var(--pl-bg-deep)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <span className={`pl-tag ${isLibrary ? '' : 'pl-tag-highlight'}`} style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {tipoLabel}
+            </span>
+            {isTarget && <span className="pl-tag pl-tag-warn">Alvo</span>}
+          </div>
+          <button onClick={onApagar} title="Excluir curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
+            <Trash2 size={15} />
+          </button>
+        </div>
+        {secondaryTag && <div style={{ marginTop: 12 }}><span className="pl-tag">{secondaryTag}</span></div>}
+        <div style={{
+          position: 'absolute',
+          left: 22,
+          bottom: -22,
+          width: 56,
+          height: 56,
+          borderRadius: 8,
+          background: 'var(--pl-surface)',
+          border: '1px solid var(--pl-rule-2)',
+          boxShadow: 'var(--pl-sh-low)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}>
+          {curso.imagem_url ? (
+            <img src={curso.imagem_url} alt={curso.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <PlCrestIcon label={curso.nome} />
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: '32px 22px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <h3 style={{ margin: 0, fontSize: 19, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}>{curso.nome}</h3>
+        <p style={{ margin: '5px 0 0', fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
+          {[curso.cargo || curso.concurso || 'Curso cadastrado', curso.banca || 'Banca a definir'].filter(Boolean).join(' - ')}
+        </p>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 14 }}>
+          {visibleChips.map((chip) => (
+            <span key={chip.key} className={`pl-tag${chip.tone ? ` pl-tag-${chip.tone}` : ''}`}>
+              {chip.label}
+            </span>
+          ))}
+          {chips.length > visibleChips.length && <span className="pl-tag">+{chips.length - visibleChips.length}</span>}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 16 }}>
+          <EditorialMetric label="Disciplinas" value={String(curso.disciplinasCount)} />
+          <EditorialMetric label="Topicos" value={String(curso.topicosCount)} />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso do edital</span>
+            <span className="pl-num" style={{ fontSize: 17, color: 'var(--pl-ink-2)' }}>{curso.progresso}%</span>
+          </div>
+          <div className="pl-progress" style={{ marginTop: 7 }}>
+            <div className="fill" style={{ width: `${Math.min(Math.max(curso.progresso, 0), 100)}%`, background: 'var(--pl-ink)' }} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 18 }}>
+          {!isTarget && onMarcarAlvo && (
+            <button className="pl-btn pl-btn-sm" onClick={onMarcarAlvo}>Marcar alvo</button>
+          )}
+          <button className="pl-btn pl-btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={onAbrir}>
+            Abrir disciplinas <ArrowRight size={14} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditorialMetric({ label, value }) {
+  return (
+    <div style={{ padding: '10px 12px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</div>
+      <div className="pl-num" style={{ marginTop: 3, fontSize: 24, color: 'var(--pl-ink)', lineHeight: 1 }}>{value}</div>
+    </div>
+  );
+}
+
+function PlCrestIcon({ label }) {
+  const initial = String(label || 'P').trim().charAt(0).toUpperCase() || 'P';
+  return (
+    <div style={{ width: 42, height: 42, borderRadius: 7, background: 'var(--pl-ink)', color: 'var(--pl-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 24 }}>
+      {initial}
+    </div>
+  );
+}
+
+function CreatePlanCard({ icon: Icon, iconWrap, title, text, badge, decorated = false, onClick }) {
   return (
     <button
       onClick={onClick}
       className="group relative flex flex-col items-center overflow-hidden rounded-[2rem] border border-gray-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
     >
       {decorated && <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[100px] bg-indigo-100 opacity-60" />}
+      {badge && (
+        <span className="absolute right-4 top-4 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-700">
+          {badge}
+        </span>
+      )}
       <div className={`relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition-transform group-hover:scale-110 ${iconWrap}`}>
         <Icon size={28} />
       </div>
