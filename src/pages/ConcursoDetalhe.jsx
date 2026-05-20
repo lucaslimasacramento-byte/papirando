@@ -439,7 +439,7 @@ export default function ConcursoDetalhe({
 
       {roles.length > 1 && (
         <section className="relative z-10 overflow-visible rounded-[1.5rem] border border-ink-200 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
-          <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-brand-500/30 via-brand-500/10 to-transparent" />
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Cargos do concurso</p>
@@ -448,7 +448,7 @@ export default function ConcursoDetalhe({
                 Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
               </p>
             </div>
-            <span className="w-fit shrink-0 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
+            <span className="w-fit shrink-0 rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-sm font-bold text-brand-700">
               {roles.length} cargos cadastrados
             </span>
           </div>
@@ -463,13 +463,13 @@ export default function ConcursoDetalhe({
                   onClick={() => setSelectedRoleId(role.id)}
                   className={`min-h-[155px] rounded-[1.25rem] border p-4 text-left transition-all ${
                     selected
-                      ? 'border-blue-300 bg-blue-50 shadow-[0_16px_34px_rgba(37,99,235,0.14)]'
-                      : 'border-ink-200 bg-ink-50/60 hover:border-blue-200 hover:bg-white'
+                      ? 'border-brand-300 bg-brand-50 shadow-[0_16px_34px_rgba(37,99,235,0.14)]'
+                      : 'border-ink-200 bg-ink-50/60 hover:border-brand-200 hover:bg-white'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-base font-bold leading-snug text-ink-950">{role.nome}</p>
-                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-blue-600' : 'bg-ink-300'}`} />
+                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-brand-600' : 'bg-ink-300'}`} />
                   </div>
                   <div className="mt-4 grid gap-2 text-[11px] font-bold sm:grid-cols-2">
                     {role.salario && <CargoInfo label="Salário" value={role.salario} tone="green" />}
@@ -485,9 +485,9 @@ export default function ConcursoDetalhe({
       )}
 
       {relatedContests.length > 0 && (
-        <section className="relative z-10 rounded-[1.5rem] border border-blue-100 bg-blue-50/50 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
+        <section className="relative z-10 rounded-[1.5rem] border border-brand-100 bg-brand-50/50 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Concursos relacionados</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-500">Concursos relacionados</p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink-950">Outros editais da mesma instituição</h2>
             <p className="mt-1 text-sm font-semibold text-ink-500">
               Assim Oficial, Praça, PM e Bombeiros ficam vinculados, mas sem virar cargo um do outro.
@@ -499,11 +499,11 @@ export default function ConcursoDetalhe({
                 key={item.id}
                 type="button"
                 onClick={() => onOpenRelatedContest?.(item)}
-                className="rounded-2xl border border-blue-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                className="rounded-2xl border border-brand-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
               >
                 <p className="line-clamp-2 text-sm font-bold text-ink-950">{item.nome}</p>
                 <p className="mt-2 text-xs font-semibold text-ink-500">{item.cargo || item.banca || 'Concurso relacionado'}</p>
-                <span className="mt-3 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                <span className="mt-3 inline-flex rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-700">
                   {STATUS_LABELS[normalizeContestStatus(item.status_concurso)] || 'Previsto'}
                 </span>
               </button>
@@ -700,7 +700,7 @@ export default function ConcursoDetalhe({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Próximos passos</p>
                 <p className="mt-2 text-lg font-semibold text-ink-900">Checklist de acompanhamento</p>
               </div>
-              <span className="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+              <span className="rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700">
                 {checklistDoneCount}/{actionChecklist.length} concluído(s)
               </span>
             </div>
@@ -714,7 +714,7 @@ export default function ConcursoDetalhe({
                   className={`flex w-full items-start justify-between gap-4 rounded-xl border px-4 py-4 text-left transition-all ${
                     item.done
                       ? 'border-emerald-100 bg-emerald-50'
-                      : 'border-ink-200 bg-ink-50/70 hover:border-blue-200 hover:bg-blue-50/60'
+                      : 'border-ink-200 bg-ink-50/70 hover:border-brand-200 hover:bg-brand-50/60'
                   }`}
                 >
                   <div>
@@ -747,7 +747,7 @@ export default function ConcursoDetalhe({
                   {contest.etapas_tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700"
+                      className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700"
                     >
                       {STAGE_LABELS[tag] || tag}
                     </span>
@@ -756,8 +756,8 @@ export default function ConcursoDetalhe({
               )}
 
               {contest.taf_itens?.length > 0 && (
-                <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Itens do TAF</p>
+                <div className="mt-4 rounded-xl border border-brand-100 bg-brand-50/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Itens do TAF</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {contest.taf_itens.map((item) => (
                       <span
@@ -781,7 +781,7 @@ export default function ConcursoDetalhe({
 function CargoInfo({ label, value, tone = 'slate' }) {
   const toneClasses = {
     green: 'bg-emerald-50 text-emerald-700',
-    blue: 'bg-blue-50 text-blue-700',
+    blue: 'bg-brand-50 text-brand-700',
     slate: 'bg-white text-ink-700',
   };
 
@@ -817,7 +817,7 @@ function InfoCard({ label, value }) {
 function StatusPanel({ label, value, tone = 'gray' }) {
   const toneClasses = {
     gray: 'border-ink-200 bg-ink-50 text-ink-700',
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
+    blue: 'border-brand-100 bg-brand-50 text-brand-700',
     green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
     amber: 'border-amber-100 bg-amber-50 text-amber-700',
   };
@@ -831,7 +831,7 @@ function StatusPanel({ label, value, tone = 'gray' }) {
 }
 
 const momentToneClasses = {
-  blue: 'border-blue-100 bg-blue-50 text-blue-700',
+  blue: 'border-brand-100 bg-brand-50 text-brand-700',
   amber: 'border-amber-100 bg-amber-50 text-amber-700',
   red: 'border-red-100 bg-red-50 text-red-700',
   green: 'border-emerald-100 bg-emerald-50 text-emerald-700',

@@ -305,9 +305,9 @@ export default function AdminConfiguracoes({
             <button
               type="button"
               onClick={() => setActiveSection('sidebar-menu')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-5 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
+              className="flex flex-col items-start gap-2 rounded-2xl border border-brand-100 bg-brand-50/60 p-5 text-left transition hover:border-brand-200 hover:bg-brand-50"
             >
-              <PanelLeft className="text-indigo-700" size={22} />
+              <PanelLeft className="text-brand-700" size={22} />
               <span className="text-sm font-bold text-ink-900">Menu lateral</span>
               <span className="text-xs font-medium leading-relaxed text-ink-600">
                 Nomes das páginas exibidos no menu (Início, Disciplinas, Audiolivros, etc.).
@@ -354,9 +354,9 @@ export default function AdminConfiguracoes({
             <button
               type="button"
               onClick={() => setActiveSection('badges')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-violet-100 bg-violet-50/60 p-5 text-left transition hover:border-violet-200 hover:bg-violet-50"
+              className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-ink-50/60 p-5 text-left transition hover:border-ink-200 hover:bg-ink-50"
             >
-              <Trophy className="text-violet-700" size={22} />
+              <Trophy className="text-ink-700" size={22} />
               <span className="text-sm font-bold text-ink-900">Selos</span>
               <span className="text-xs font-medium leading-relaxed text-ink-600">Conquistas e metas por métrica.</span>
             </button>
@@ -365,9 +365,9 @@ export default function AdminConfiguracoes({
       ) : null}
 
       {activeSection === 'sidebar-menu' ? (
-        <section className="rounded-[2rem] border border-indigo-100 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-brand-100 bg-white p-6 shadow-sm">
           <div className="mb-5">
-            <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
+            <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-600">
               <PanelLeft size={14} />
               Navegação
             </p>
@@ -459,13 +459,13 @@ export default function AdminConfiguracoes({
                         type="text"
                         value={rule.name || ''}
                         onChange={(event) => updateXpRule(rule.id, { name: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                         placeholder="Nome da regra"
                       />
                       <select
                         value={rule.metric || 'minutes'}
                         onChange={(event) => updateXpRule(rule.id, { metric: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       >
                         {PROGRESS_METRIC_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>{option.label}</option>
@@ -477,7 +477,7 @@ export default function AdminConfiguracoes({
                         step="1"
                         value={rule.multiplier ?? 1}
                         onChange={(event) => updateXpRule(rule.id, { multiplier: Number(event.target.value || 0) }, setXpDraft)}
-                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                         placeholder="XP"
                       />
                     </div>
@@ -486,7 +486,7 @@ export default function AdminConfiguracoes({
                       <select
                         value={rule.plan || ''}
                         onChange={(event) => updateXpRule(rule.id, { plan: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       >
                         <option value="">Todos os concursos</option>
                         {planOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
@@ -494,7 +494,7 @@ export default function AdminConfiguracoes({
                       <select
                         value={rule.subject || ''}
                         onChange={(event) => updateXpRule(rule.id, { subject: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       >
                         <option value="">Todas as disciplinas</option>
                         {subjectOptions.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
@@ -503,7 +503,7 @@ export default function AdminConfiguracoes({
                         type="text"
                         value={rule.topic || ''}
                         onChange={(event) => updateXpRule(rule.id, { topic: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                         placeholder="Tópico contém..."
                       />
                     </div>
@@ -575,13 +575,13 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={badge.nome || ''}
                       onChange={(event) => updateBadge(badge.id, { nome: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Nome do selo"
                     />
                     <select
                       value={badge.metric || 'sessions'}
                       onChange={(event) => updateBadge(badge.id, { metric: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                     >
                       {PROGRESS_METRIC_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>{option.label}</option>
@@ -593,21 +593,21 @@ export default function AdminConfiguracoes({
                       step="1"
                       value={badge.target ?? 1}
                       onChange={(event) => updateBadge(badge.id, { target: Number(event.target.value || 1) }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                     />
                   </div>
                   <textarea
                     rows="2"
                     value={badge.descricao || ''}
                     onChange={(event) => updateBadge(badge.id, { descricao: event.target.value }, setBadgeDraft)}
-                    className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-600 outline-none focus:border-blue-600"
+                    className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-600 outline-none focus:border-brand-600"
                     placeholder="Descrição do selo"
                   />
                   <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     <select
                       value={badge.plan || ''}
                       onChange={(event) => updateBadge(badge.id, { plan: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                     >
                       <option value="">Todos os concursos</option>
                       {planOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
@@ -615,7 +615,7 @@ export default function AdminConfiguracoes({
                     <select
                       value={badge.subject || ''}
                       onChange={(event) => updateBadge(badge.id, { subject: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                     >
                       <option value="">Todas as disciplinas</option>
                       {subjectOptions.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
@@ -624,14 +624,14 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={badge.topic || ''}
                       onChange={(event) => updateBadge(badge.id, { topic: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Tópico contém..."
                     />
                     <input
                       type="text"
                       value={badge.color || ''}
                       onChange={(event) => updateBadge(badge.id, { color: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Cor"
                     />
                   </div>
@@ -737,13 +737,13 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.title || ''}
                       onChange={(event) => updateTrack(track.id, { title: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Título"
                     />
                     <select
                       value={track.mediaType || 'audio'}
                       onChange={(event) => updateTrack(track.id, { mediaType: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                     >
                       <option value="audio">Audio</option>
                       <option value="video">Video</option>
@@ -752,7 +752,7 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.category || ''}
                       onChange={(event) => updateTrack(track.id, { category: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Categoria"
                     />
                   </div>
@@ -760,7 +760,7 @@ export default function AdminConfiguracoes({
                     rows="2"
                     value={track.description || ''}
                     onChange={(event) => updateTrack(track.id, { description: event.target.value }, setWellnessDraft)}
-                    className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-600 outline-none focus:border-blue-600"
+                    className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-600 outline-none focus:border-brand-600"
                     placeholder="Descrição"
                   />
                   <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -768,7 +768,7 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.durationLabel || ''}
                       onChange={(event) => updateTrack(track.id, { durationLabel: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Duração"
                     />
                     <input
@@ -783,21 +783,21 @@ export default function AdminConfiguracoes({
                           setWellnessDraft
                         )
                       }
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder={track.mediaType === 'video' ? 'https://.../video.mp4 ou embed' : '/assets/wellness/arquivo.mp3'}
                     />
                     <input
                       type="text"
                       value={track.coverUrl || ''}
                       onChange={(event) => updateTrack(track.id, { coverUrl: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="/assets/wellness/capa.jpg"
                     />
                     <input
                       type="text"
                       value={track.credits || ''}
                       onChange={(event) => updateTrack(track.id, { credits: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                       placeholder="Créditos"
                     />
                   </div>
@@ -901,7 +901,7 @@ export default function AdminConfiguracoes({
                     const v = e.target.value;
                     setRedacaoTipsDraft((prev) => prev.map((t) => (t.id === tip.id ? { ...t, title: v } : t)));
                   }}
-                  className="mb-2 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                  className="mb-2 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
                   placeholder="Título ex.: Padrão CESPE — dissertação"
                 />
                 <textarea
@@ -911,7 +911,7 @@ export default function AdminConfiguracoes({
                     const v = e.target.value;
                     setRedacaoTipsDraft((prev) => prev.map((t) => (t.id === tip.id ? { ...t, body: v } : t)));
                   }}
-                  className="w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium leading-relaxed text-ink-700 outline-none focus:border-blue-600"
+                  className="w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium leading-relaxed text-ink-700 outline-none focus:border-brand-600"
                   placeholder="Texto completo: estrutura de parágrafos, conectivos, avisos da banca..."
                 />
               </div>
@@ -986,10 +986,10 @@ export default function AdminConfiguracoes({
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-violet-100 bg-violet-50/50 p-4 sm:p-5">
+          <div className="mt-8 rounded-2xl border border-ink-100 bg-ink-50/50 p-4 sm:p-5">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Headphones className="text-violet-700" size={18} />
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-700">Catálogo de audiolivros</p>
+              <Headphones className="text-ink-700" size={18} />
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-700">Catálogo de audiolivros</p>
             </div>
             <p className="text-xs font-medium leading-relaxed text-ink-600">
               Se você ainda não gravou nada no Supabase, o app mostra o catálogo de demonstração embutido no código (
@@ -1102,7 +1102,7 @@ function ConfigTab({ active, onClick, label }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${active ? 'bg-white text-blue-700 shadow-sm' : 'text-ink-500'}`}
+      className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${active ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-500'}`}
     >
       {label}
     </button>
@@ -1141,7 +1141,7 @@ function NumberField({ label, value, onChange }) {
         step="1"
         value={value}
         onChange={(event) => onChange(Number(event.target.value || 0))}
-        className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+        className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
       />
     </label>
   );

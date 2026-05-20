@@ -43,7 +43,7 @@ export default function Aplicativos() {
         title={
           (
             <>
-              O Papirando no <span className="bg-gradient-to-r from-sky-200 to-indigo-200 bg-clip-text text-transparent">seu bolso</span>
+              O Papirando no <span className="bg-gradient-to-r from-sky-200 to-brand-200 bg-clip-text text-transparent">seu bolso</span>
             </>
           )
         }
@@ -61,14 +61,14 @@ export default function Aplicativos() {
         trailingClassName="w-full min-w-0 sm:w-auto"
       />
 
-      <div className="group relative flex flex-col items-center justify-between gap-14 overflow-hidden rounded-[3.5rem] bg-gradient-to-br from-ink-900 via-ink-800 to-blue-900 p-8 text-white shadow-2xl md:p-10 lg:flex-row lg:p-16">
-        <div className="pointer-events-none absolute -mr-20 -mt-20 h-[520px] w-[520px] rounded-full bg-blue-400/20 blur-[110px]" />
+      <div className="group relative flex flex-col items-center justify-between gap-14 overflow-hidden rounded-[3.5rem] bg-gradient-to-br from-ink-900 via-ink-800 to-brand-900 p-8 text-white shadow-2xl md:p-10 lg:flex-row lg:p-16">
+        <div className="pointer-events-none absolute -mr-20 -mt-20 h-[520px] w-[520px] rounded-full bg-brand-400/20 blur-[110px]" />
         <div className="pointer-events-none absolute -mb-10 -ml-10 bottom-0 left-0 h-[320px] w-[320px] rounded-full bg-cyan-400/10 blur-[100px]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:34px_34px] opacity-[0.08]" />
         <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-[#14110d]/50 to-transparent" />
 
         <div className="relative z-10 flex-1 text-center lg:text-left">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-100 backdrop-blur-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-100 backdrop-blur-sm">
             <Sparkles size={12} />
             experiência mobile
           </div>
@@ -77,7 +77,7 @@ export default function Aplicativos() {
             A sua aprovação não tira férias.
           </h3>
 
-          <p className="mx-auto mb-10 max-w-xl text-lg font-medium leading-relaxed text-blue-100 lg:mx-0 lg:text-xl">
+          <p className="mx-auto mb-10 max-w-xl text-lg font-medium leading-relaxed text-brand-100 lg:mx-0 lg:text-xl">
             Sincronize seu progresso na nuvem. Resolva questões no ônibus, ouça as leis enquanto treina e receba lembretes para não perder o ritmo.
           </p>
 
@@ -108,15 +108,15 @@ export default function Aplicativos() {
 
         <div className="relative z-10 shrink-0">
           <div className="relative">
-            <div className="absolute inset-0 scale-110 rounded-full bg-blue-500/20 blur-3xl" />
+            <div className="absolute inset-0 scale-110 rounded-full bg-brand-500/20 blur-3xl" />
 
             <div className="relative h-[600px] w-[300px] overflow-hidden rounded-[3.7rem] border-[12px] border-ink-800 bg-neutral-950 shadow-[0_35px_70px_rgba(0,0,0,0.65)] transition-transform duration-700 group-hover:-translate-y-4 lg:-rotate-6 lg:hover:rotate-0">
               <div className="absolute left-1/2 top-2 z-30 flex h-7 w-28 -translate-x-1/2 items-center justify-end rounded-full bg-black px-3 shadow-inner">
-                <div className="h-2 w-2 rounded-full bg-blue-950/60" />
+                <div className="h-2 w-2 rounded-full bg-brand-950/60" />
               </div>
 
               <div className="absolute inset-0 z-10 flex flex-col bg-[#F4F6F9]">
-                <div className="relative overflow-hidden rounded-b-[2.2rem] bg-gradient-to-br from-[#1d4ed8] to-blue-700 px-6 pb-6 pt-12 shadow-sm">
+                <div className="relative overflow-hidden rounded-b-[2.2rem] bg-gradient-to-br from-[#1d4ed8] to-brand-700 px-6 pb-6 pt-12 shadow-sm">
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
                   <div className="relative z-10 mb-4 flex items-center justify-between text-white">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
@@ -125,7 +125,7 @@ export default function Aplicativos() {
                     <Bell size={20} />
                   </div>
                   <h4 className="relative z-10 text-xl font-semibold text-white">Olá, estudante!</h4>
-                  <p className="relative z-10 mt-1 text-xs font-bold uppercase tracking-widest text-blue-100">
+                  <p className="relative z-10 mt-1 text-xs font-bold uppercase tracking-widest text-brand-100">
                     Meta diária: 80%
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export default function Aplicativos() {
                 <div className="flex-1 space-y-4 overflow-hidden p-5">
                   <div className="rounded-2xl border border-ink-100 bg-white p-4 shadow-sm">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="rounded bg-blue-50 px-2 py-1 text-[9px] font-semibold uppercase text-blue-600">
+                      <span className="rounded bg-brand-50 px-2 py-1 text-[9px] font-semibold uppercase text-brand-600">
                         Q1520
                       </span>
                       <span className="text-[9px] font-semibold uppercase text-ink-400">CESPE</span>
@@ -152,7 +152,7 @@ export default function Aplicativos() {
                       <Mic2 size={16} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-blue-300">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-brand-300">
                         Em reprodução
                       </p>
                       <p className="truncate text-xs font-semibold">Código Penal</p>
@@ -172,7 +172,7 @@ export default function Aplicativos() {
                 </div>
 
                 <div className="flex h-16 items-center justify-around border-t border-ink-100 bg-white px-4 pb-2">
-                  <div className="flex flex-col items-center text-blue-600">
+                  <div className="flex flex-col items-center text-brand-600">
                     <Home size={20} />
                     <span className="mt-1 text-[8px] font-semibold">Início</span>
                   </div>
@@ -219,10 +219,10 @@ export default function Aplicativos() {
       </div>
 
       <div className="relative flex flex-col items-center justify-between gap-10 overflow-hidden rounded-[2.5rem] border border-ink-100 bg-white p-8 shadow-sm md:flex-row lg:p-12">
-        <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-blue-100/40 blur-3xl" />
+        <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-brand-100/40 blur-3xl" />
 
         <div className="relative z-10 flex-1 text-center md:text-left">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-700">
             <QrCode size={12} />
             Emparelhamento instantâneo
           </div>
@@ -237,7 +237,7 @@ export default function Aplicativos() {
 
           <LinkOrStaticButton
             href={APLICATIVOS_LINKS.syncInstructions}
-            className="mt-6 inline-flex items-center gap-2 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            className="mt-6 inline-flex items-center gap-2 font-semibold text-brand-600 transition-colors hover:text-brand-700"
           >
             Ver instruções de sincronização
             <ArrowUpRight size={16} />
@@ -249,7 +249,7 @@ export default function Aplicativos() {
             <QrCode size={126} className="text-ink-800" />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="rounded-xl border border-ink-100 bg-white p-1.5 shadow-sm">
-                <Target size={24} className="text-blue-600" />
+                <Target size={24} className="text-brand-600" />
               </div>
             </div>
           </div>
@@ -283,7 +283,7 @@ function LinkOrStaticButton({ href, className, children, ...rest }) {
 function TopPill({ icon: Icon, text }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-600 shadow-sm">
-      <Icon size={14} className="text-blue-600" />
+      <Icon size={14} className="text-brand-600" />
       {text}
     </div>
   );
@@ -291,7 +291,7 @@ function TopPill({ icon: Icon, text }) {
 
 function MiniHeroPill({ icon: Icon, text }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-blue-100 backdrop-blur-sm">
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-brand-100 backdrop-blur-sm">
       <Icon size={14} className="text-white" />
       {text}
     </div>
@@ -300,7 +300,7 @@ function MiniHeroPill({ icon: Icon, text }) {
 
 function FeatureCard({ icon: Icon, iconClass, title, text }) {
   return (
-    <div className="group flex flex-col items-start rounded-[2rem] border border-ink-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:border-blue-300 hover:shadow-md">
+    <div className="group flex flex-col items-start rounded-[2rem] border border-ink-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:border-brand-300 hover:shadow-md">
       <div
         className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${iconClass}`}
       >

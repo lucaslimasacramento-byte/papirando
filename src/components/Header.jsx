@@ -128,7 +128,7 @@ export default function Header({
           type="button"
           onClick={openFeedback}
           title="Enviar feedback"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 bg-white text-ink-500 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 bg-white text-ink-500 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
           aria-label="Feedback beta"
         >
           <MessageSquarePlus size={16} strokeWidth={2} />
@@ -156,7 +156,7 @@ export default function Header({
           aria-label="Notificacoes"
         >
           {unreadNotificationCount > 0 ? (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-blue-700 px-1 text-[9px] font-semibold text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-700 px-1 text-[9px] font-semibold text-white">
               {unreadNotificationCount}
             </span>
           ) : null}
@@ -225,7 +225,7 @@ export default function Header({
                         onClick={() => setFeedbackTipo(t.id)}
                         className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                           feedbackTipo === t.id
-                            ? 'border-blue-600 bg-blue-600 text-white'
+                            ? 'border-brand-600 bg-brand-600 text-white'
                             : 'border-ink-200 bg-white text-ink-700 hover:border-ink-300 hover:bg-ink-50'
                         }`}
                       >
@@ -246,7 +246,7 @@ export default function Header({
                     rows={4}
                     maxLength={2000}
                     placeholder="Descreva o que encontrou ou o que poderia melhorar..."
-                    className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm text-ink-800 placeholder-ink-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm text-ink-800 placeholder-ink-400 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
                   />
                   <p className="mt-1 text-right text-[10px] text-ink-400">{feedbackMsg.length}/2000</p>
                 </div>

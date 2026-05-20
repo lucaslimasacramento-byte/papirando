@@ -437,7 +437,7 @@ export default function Planos({
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-ink-50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[#1d4ed8]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-[#1d4ed8]">
                       <LibraryBig size={18} />
                     </div>
                     <div>
@@ -476,11 +476,11 @@ export default function Planos({
                               <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-600">
                                 {formatStatusLabel(template.status_concurso || 'edital_publicado')}
                               </span>
-                              <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+                              <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">
                                 {template.disciplinas.length} disciplinas
                               </span>
                               {template.prova_data && (
-                                <span className="rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700">
+                                <span className="rounded-full border border-ink-100 bg-ink-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-700">
                                   Prova {formatDateDisplay(template.prova_data)}
                                 </span>
                               )}
@@ -519,7 +519,7 @@ export default function Planos({
 
           <div className="mt-5">
             <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-ink-400">PDF do edital</label>
-            <label className="mb-4 flex cursor-pointer items-center justify-center gap-3 rounded-[1.75rem] border-2 border-dashed border-blue-200 bg-blue-50/50 px-5 py-5 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
+            <label className="mb-4 flex cursor-pointer items-center justify-center gap-3 rounded-[1.75rem] border-2 border-dashed border-brand-200 bg-brand-50/50 px-5 py-5 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-50">
               <Upload size={18} />
               {isAnalyzing ? 'Lendo PDF e analisando com IA...' : uploadedFileName ? `PDF carregado: ${uploadedFileName}` : 'Selecionar PDF'}
               <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handlePdfUpload(e.target.files?.[0])} />
@@ -534,7 +534,7 @@ export default function Planos({
                 setIaForm((prev) => ({ ...prev, editalText: value }));
                 setAnalysisError('');
               }}
-              className="w-full rounded-[1.75rem] border border-ink-200 bg-ink-50/60 px-5 py-4 text-sm font-medium text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              className="w-full rounded-[1.75rem] border border-ink-200 bg-ink-50/60 px-5 py-4 text-sm font-medium text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
             />
             <div className="mt-3 flex justify-end">
               <SecondaryButton onClick={() => runAnalysis(iaForm.editalText, { overwriteFields: true })} disabled={isAnalyzing}>
@@ -550,9 +550,9 @@ export default function Planos({
           )}
 
           {analysisResult && (
-            <div className="mt-5 rounded-[1.5rem] border border-blue-100 bg-blue-50/60 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">{analysisResult.sourceLabel || 'Leitura da IA'}</p>
-              <p className="mt-2 text-sm font-semibold text-blue-800">
+            <div className="mt-5 rounded-[1.5rem] border border-brand-100 bg-brand-50/60 p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">{analysisResult.sourceLabel || 'Leitura da IA'}</p>
+              <p className="mt-2 text-sm font-semibold text-brand-800">
                 Banca detectada: {analysisResult.banca}. Concursos detectados: {analysisResult.detectedContests}. Motor: {analysisResult.model}.
               </p>
 
@@ -561,7 +561,7 @@ export default function Planos({
                 <select
                   value={selectedContestId}
                   onChange={(e) => applyAnalysisToForm(analysisResult, { overwriteFields: true, preferredContestId: e.target.value })}
-                  className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 >
                   {analysisResult.contests.map((contest) => (
                     <option key={contest.id} value={contest.id}>
@@ -872,9 +872,9 @@ function CreatePlanCard({ icon: Icon, iconWrap, title, text, badge, decorated = 
       onClick={onClick}
       className="group relative flex flex-col items-center overflow-hidden rounded-[2rem] border border-ink-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
     >
-      {decorated && <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[100px] bg-indigo-100 opacity-60" />}
+      {decorated && <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[100px] bg-brand-100 opacity-60" />}
       {badge && (
-        <span className="absolute right-4 top-4 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-700">
+        <span className="absolute right-4 top-4 rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink-700">
           {badge}
         </span>
       )}
@@ -923,7 +923,7 @@ function InputField({ label, value, onChange, placeholder = '' }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-ink-200 bg-ink-50/60 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+        className="w-full rounded-2xl border border-ink-200 bg-ink-50/60 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
       />
     </div>
   );

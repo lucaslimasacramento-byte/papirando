@@ -11,7 +11,7 @@ const EIXO_OPTIONS = [
 ];
 
 function inputCls() {
-  return 'mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-blue-500';
+  return 'mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-brand-500';
 }
 
 /**

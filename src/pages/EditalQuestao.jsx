@@ -532,7 +532,7 @@ function SidebarPanel({ computed, currentCourseStats, nextCriticalTopic }) {
     <>
       <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
             <ShieldCheck size={20} />
           </span>
           <div className="min-w-0">
@@ -566,15 +566,15 @@ function HeroSection({ computed, selectedCourse }) {
   const kpis = useMemo(
     () => [
       { icon: TrendingUp, label: 'Cobertura', value: `${computed.cobertura}%`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-      { icon: BarChart3, label: 'Precisao media', value: `${computed.media}%`, color: 'text-blue-600', bg: 'bg-blue-50' },
+      { icon: BarChart3, label: 'Precisao media', value: `${computed.media}%`, color: 'text-brand-600', bg: 'bg-brand-50' },
       {
         icon: Layers3,
         label: 'Questoes',
         value: String(computed.totalQuestoes),
-        color: computed.totalQuestoes === 0 ? 'text-orange-600' : 'text-indigo-600',
-        bg: computed.totalQuestoes === 0 ? 'bg-orange-50' : 'bg-indigo-50',
+        color: computed.totalQuestoes === 0 ? 'text-orange-600' : 'text-brand-600',
+        bg: computed.totalQuestoes === 0 ? 'bg-orange-50' : 'bg-brand-50',
       },
-      { icon: Clock3, label: 'Tempo liquido', value: formatMinutes(computed.totalMinutes), color: 'text-violet-600', bg: 'bg-violet-50' },
+      { icon: Clock3, label: 'Tempo liquido', value: formatMinutes(computed.totalMinutes), color: 'text-ink-600', bg: 'bg-ink-50' },
     ],
     [computed.cobertura, computed.media, computed.totalQuestoes, computed.totalMinutes]
   );
@@ -647,7 +647,7 @@ function EditalNavBlock({
               type="button"
               onClick={() => setActiveTab(item.id)}
               className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-2 text-[11px] font-bold transition sm:gap-2 sm:px-3 sm:text-xs md:text-sm ${
-                isActive ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-ink-200 bg-ink-50/80 text-ink-600 hover:border-blue-100 hover:bg-blue-50/50 hover:text-blue-700'
+                isActive ? 'border-brand-200 bg-brand-50 text-brand-700' : 'border-ink-200 bg-ink-50/80 text-ink-600 hover:border-brand-100 hover:bg-brand-50/50 hover:text-brand-700'
               }`}
             >
               <Icon size={15} className="shrink-0 opacity-90 sm:h-4 sm:w-4" />
@@ -675,7 +675,7 @@ function EditalNavBlock({
                 value={courseOptions.length === 0 ? '' : selectedPlan}
                 onChange={(event) => setSelectedPlan(event.target.value)}
                 disabled={courseOptions.length === 0}
-                className="w-full cursor-pointer appearance-none rounded-xl border border-blue-100 bg-blue-50/90 py-2 pl-3 pr-9 text-xs font-bold text-ink-800 shadow-sm outline-none transition hover:border-blue-200 hover:bg-blue-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
+                className="w-full cursor-pointer appearance-none rounded-xl border border-brand-100 bg-brand-50/90 py-2 pl-3 pr-9 text-xs font-bold text-ink-800 shadow-sm outline-none transition hover:border-brand-200 hover:bg-brand-50 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
                 aria-label="Selecionar curso cadastrado em Planos"
               >
                 {courseOptions.length === 0 ? (
@@ -702,7 +702,7 @@ function EditalNavBlock({
                 href={selectedCourse.editalUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-[10px] font-bold text-ink-600 shadow-sm hover:border-blue-200 hover:text-blue-700 sm:text-xs"
+                className="inline-flex items-center gap-1 rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-[10px] font-bold text-ink-600 shadow-sm hover:border-brand-200 hover:text-brand-700 sm:text-xs"
               >
                 <ExternalLink size={12} className="shrink-0 sm:h-3.5 sm:w-3.5" />
                 PDF
@@ -715,7 +715,7 @@ function EditalNavBlock({
           <button
             type="button"
             onClick={onAttack}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-[11px] font-bold text-white shadow-sm transition hover:bg-blue-700 sm:gap-2 sm:px-3.5 sm:text-sm"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-[11px] font-bold text-white shadow-sm transition hover:bg-brand-700 sm:gap-2 sm:px-3.5 sm:text-sm"
           >
             <PlayCircle size={15} className="shrink-0 sm:h-[17px] sm:w-[17px]" />
             {attackLabel}
@@ -723,7 +723,7 @@ function EditalNavBlock({
           <button
             type="button"
             onClick={onReviewStructure}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-[11px] font-bold text-ink-700 transition hover:border-blue-200 hover:bg-blue-50/80 hover:text-blue-800 sm:gap-2 sm:text-sm"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-[11px] font-bold text-ink-700 transition hover:border-brand-200 hover:bg-brand-50/80 hover:text-brand-800 sm:gap-2 sm:text-sm"
           >
             <Layers3 size={15} className="shrink-0 sm:h-[17px] sm:w-[17px]" />
             Estrutura
@@ -750,7 +750,7 @@ function Toolbar({ searchTerm, setSearchTerm, priorityFilter, setPriorityFilter,
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Buscar disciplina, tópico ou ponto vulnerável"
-            className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition focus:border-blue-600 focus:bg-white"
+            className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition focus:border-brand-600 focus:bg-white"
           />
         </div>
 
@@ -916,7 +916,7 @@ function DisciplinasSection({ disciplinas, expandedDiscipline, setExpandedDiscip
                               <div className="w-full sm:w-[180px]">
                                 <ProgressBar value={topic.percentual} tone={danger ? 'red' : topic.percentual >= 75 ? 'green' : 'blue'} />
                               </div>
-                              <button type="button" onClick={() => onPracticeTopic(topic)} className={`rounded-[1rem] px-4 py-2.5 text-sm font-semibold ${danger ? 'bg-red-600 text-white' : 'border border-blue-100 bg-blue-50 text-blue-700'}`}>
+                              <button type="button" onClick={() => onPracticeTopic(topic)} className={`rounded-[1rem] px-4 py-2.5 text-sm font-semibold ${danger ? 'bg-red-600 text-white' : 'border border-brand-100 bg-brand-50 text-brand-700'}`}>
                                 {danger ? 'Atacar ponto' : 'Praticar'}
                               </button>
                             </div>
@@ -998,7 +998,7 @@ function ProgressoSection({ computed, disciplinas }) {
                     <h4 className="text-sm font-semibold text-ink-900">{disciplina.nome}</h4>
                     <p className="text-xs font-bold text-ink-500">{disciplina.concluidosDisciplina}/{disciplina.topicos.length} concluídos • {disciplina.totalQuestoes} questões • {disciplina.minutesLabel}</p>
                   </div>
-                  <span className="text-sm font-semibold text-blue-700">{disciplina.coberturaDisciplina}%</span>
+                  <span className="text-sm font-semibold text-brand-700">{disciplina.coberturaDisciplina}%</span>
                 </div>
                 <ProgressBar value={disciplina.coberturaDisciplina} tone={disciplina.coberturaDisciplina >= 70 ? 'green' : disciplina.coberturaDisciplina >= 45 ? 'blue' : 'red'} />
               </div>
@@ -1120,7 +1120,7 @@ function EmptyState({ selectedCourse, hasEnrolledCourses, onOpenPlanos }) {
             href={selectedCourse.editalUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-800"
+            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:border-brand-200 hover:bg-brand-50/60 hover:text-brand-800"
           >
             <ExternalLink size={16} />
             Abrir edital (PDF)
@@ -1152,7 +1152,7 @@ function SummaryCard({ eyebrow, title, subtitle, icon, danger, success }) {
     <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">{eyebrow}</p>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${danger ? 'bg-red-50 text-red-600' : success ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-700'}`}>{icon}</span>
+        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${danger ? 'bg-red-50 text-red-600' : success ? 'bg-emerald-50 text-emerald-600' : 'bg-brand-50 text-brand-700'}`}>{icon}</span>
       </div>
       <h3 className={`mt-3 text-3xl font-semibold tabular-nums tracking-tight ${danger ? 'text-red-600' : 'text-ink-900'}`}>{title}</h3>
       <p className="mt-1.5 text-sm font-medium text-ink-500">{subtitle}</p>
@@ -1161,7 +1161,7 @@ function SummaryCard({ eyebrow, title, subtitle, icon, danger, success }) {
 }
 
 function FeatureSquare({ title, value, description, accent }) {
-  const tone = accent === 'red' ? 'border-red-100 bg-red-50/70 text-red-600' : accent === 'green' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-600' : accent === 'gold' ? 'border-amber-100 bg-amber-50/70 text-amber-700' : 'border-blue-100 bg-blue-50/70 text-blue-600';
+  const tone = accent === 'red' ? 'border-red-100 bg-red-50/70 text-red-600' : accent === 'green' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-600' : accent === 'gold' ? 'border-amber-100 bg-amber-50/70 text-amber-700' : 'border-brand-100 bg-brand-50/70 text-brand-600';
   return (
     <div className={`rounded-[1.4rem] border p-4 ${tone}`}>
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{title}</p>
@@ -1186,7 +1186,7 @@ function SidebarMiniMetric({ label, value, hint }) {
 function QuickStep({ icon: Icon, title, description }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl border border-ink-200 bg-ink-50/90 px-3 py-2.5">
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-700 shadow-sm"><Icon size={16} /></span>
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-sm"><Icon size={16} /></span>
       <div>
         <p className="text-sm font-semibold text-ink-900">{title}</p>
         <p className="mt-1 text-xs font-semibold leading-relaxed text-ink-500">{description}</p>
@@ -1196,7 +1196,7 @@ function QuickStep({ icon: Icon, title, description }) {
 }
 
 function PriorityBadge({ value, small }) {
-  const tone = value === 'altissima' ? 'border-red-200 bg-red-50 text-red-600' : value === 'alta' ? 'border-amber-200 bg-amber-50 text-amber-700' : value === 'media' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700';
+  const tone = value === 'altissima' ? 'border-red-200 bg-red-50 text-red-600' : value === 'alta' ? 'border-amber-200 bg-amber-50 text-amber-700' : value === 'media' ? 'border-brand-200 bg-brand-50 text-brand-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700';
   return <span className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] ${small ? 'text-[10px]' : 'text-[11px]'} ${tone}`}>{priorityLabel(value)}</span>;
 }
 
@@ -1210,7 +1210,7 @@ function MiniInfo({ label, value }) {
 }
 
 function ProgressBar({ value, tone = 'blue' }) {
-  const color = tone === 'red' ? 'bg-red-500' : tone === 'green' ? 'bg-emerald-500' : 'bg-blue-600';
+  const color = tone === 'red' ? 'bg-red-500' : tone === 'green' ? 'bg-emerald-500' : 'bg-brand-600';
   return <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-200"><div className={`h-full rounded-full ${color}`} style={{ width: `${clampPercent(value)}%` }} /></div>;
 }
 
@@ -1250,7 +1250,7 @@ function GuideStep({ step, title, description }) {
 }
 
 function InterpretationCard({ label, value, description, tone }) {
-  const styles = tone === 'green' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-700' : tone === 'red' ? 'border-red-100 bg-red-50/70 text-red-600' : tone === 'gold' ? 'border-amber-100 bg-amber-50/70 text-amber-700' : 'border-blue-100 bg-blue-50/70 text-blue-700';
+  const styles = tone === 'green' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-700' : tone === 'red' ? 'border-red-100 bg-red-50/70 text-red-600' : tone === 'gold' ? 'border-amber-100 bg-amber-50/70 text-amber-700' : 'border-brand-100 bg-brand-50/70 text-brand-700';
   return (
     <div className={`rounded-[1.3rem] border p-4 ${styles}`}>
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</p>
@@ -1270,7 +1270,7 @@ function SpecRow({ title, text }) {
 }
 
 function AchievementCard({ title, description, tone, unlocked }) {
-  const styles = unlocked ? tone === 'green' ? 'border-emerald-100 bg-emerald-50/80' : tone === 'gold' ? 'border-amber-100 bg-amber-50/80' : 'border-blue-100 bg-blue-50/80' : 'border-ink-200 bg-ink-50/80';
+  const styles = unlocked ? tone === 'green' ? 'border-emerald-100 bg-emerald-50/80' : tone === 'gold' ? 'border-amber-100 bg-amber-50/80' : 'border-brand-100 bg-brand-50/80' : 'border-ink-200 bg-ink-50/80';
   return (
     <div className={`rounded-[1.4rem] border p-4 ${styles}`}>
       <div className="flex items-center justify-between gap-3">

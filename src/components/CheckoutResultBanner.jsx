@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Loader2, X } from 'lucide-react';
 
 /**
@@ -49,9 +49,9 @@ export default function CheckoutResultBanner({ onSuccess }) {
 
   const configs = {
     loading: {
-      icon: <Loader2 size={18} className="animate-spin text-blue-600" />,
-      bg: 'border-blue-200 bg-blue-50',
-      text: 'text-blue-700',
+      icon: <Loader2 size={18} className="animate-spin text-brand-600" />,
+      bg: 'border-brand-200 bg-brand-50',
+      text: 'text-brand-700',
       title: 'Processando seu pagamento…',
       body: 'Isso leva só alguns segundos. Sua assinatura será ativada em instantes!',
     },

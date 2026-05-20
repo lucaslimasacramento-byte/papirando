@@ -195,7 +195,7 @@ export default function AdminMindMapsGallery({
 
           {loading ? (
             <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
-              <Loader2 size={18} className="animate-spin text-blue-700" />
+              <Loader2 size={18} className="animate-spin text-brand-700" />
               Carregando…
             </div>
           ) : rows.length === 0 ? (
@@ -221,7 +221,7 @@ export default function AdminMindMapsGallery({
                             data-gallery-titulo={row.id}
                             defaultValue={row.titulo}
                             key={`${row.id}-${row.updated_at}`}
-                            className="min-w-[200px] flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                            className="min-w-[200px] flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
                             placeholder="Titulo publico"
                           />
                           <button

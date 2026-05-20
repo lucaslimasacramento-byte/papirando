@@ -31,7 +31,7 @@ export default function TimerOverlay({
              <div className="mb-6 text-center">
                <div className="w-16 h-16 bg-[#1d4ed8] rounded-2xl flex items-center justify-center mx-auto mb-4 text-white"><Timer size={32}/></div>
                <h2 className="text-2xl font-black text-white mb-2">Configurar Sessão</h2>
-               <p className="text-blue-200 text-sm font-medium">Escolha o seu método de estudo e foque no objetivo.</p>
+               <p className="text-brand-200 text-sm font-medium">Escolha o seu método de estudo e foque no objetivo.</p>
              </div>
              <div className="mb-6 space-y-3">
                <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(25*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 25*60 ? 'border-[#1d4ed8] bg-[#1d4ed8]/20 text-white' : 'border-white/10 bg-white/5 text-ink-300 hover:bg-white/10'}`}>

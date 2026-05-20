@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+﻿import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Info, X, XCircle, Zap } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -33,19 +33,19 @@ const VARIANTS = {
   },
   info: {
     icon: Info,
-    bar: 'bg-indigo-500',
-    iconColor: 'text-indigo-500',
+    bar: 'bg-brand-500',
+    iconColor: 'text-brand-500',
     bg: 'bg-white dark:bg-zinc-900',
-    border: 'border-indigo-200 dark:border-indigo-800',
+    border: 'border-brand-200 dark:border-brand-800',
     title: 'text-zinc-800 dark:text-zinc-100',
     body: 'text-zinc-500 dark:text-zinc-400',
   },
   ai: {
     icon: Zap,
-    bar: 'bg-violet-500',
-    iconColor: 'text-violet-500',
+    bar: 'bg-ink-500',
+    iconColor: 'text-ink-500',
     bg: 'bg-white dark:bg-zinc-900',
-    border: 'border-violet-200 dark:border-violet-800',
+    border: 'border-ink-200 dark:border-ink-800',
     title: 'text-zinc-800 dark:text-zinc-100',
     body: 'text-zinc-500 dark:text-zinc-400',
   },

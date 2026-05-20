@@ -1,9 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 
 const VARIANT_STYLES = {
   success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   error: 'border-rose-200 bg-rose-50 text-rose-700',
-  info: 'border-blue-200 bg-blue-50 text-blue-700',
+  info: 'border-brand-200 bg-brand-50 text-brand-700',
 };
 
 export default function AppToast({ message = '', variant = 'success', className = '' }) {

@@ -21,8 +21,8 @@ const PLAN_CONFIG = {
     icon: Sparkles,
     iconSize: 14,
     wrapper:
-      'border-blue-400/60 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 text-white shadow-md shadow-blue-900/25 ring-2 ring-blue-400/35 seal-plan-tatico hover:brightness-[1.06] hover:shadow-lg py-1.5 pl-2.5 pr-3 gap-1.5 text-xs font-bold',
-    iconClass: 'text-blue-100',
+      'border-brand-400/60 bg-gradient-to-r from-brand-900 via-brand-700 to-brand-600 text-white shadow-md shadow-brand-900/25 ring-2 ring-brand-400/35 seal-plan-tatico hover:brightness-[1.06] hover:shadow-lg py-1.5 pl-2.5 pr-3 gap-1.5 text-xs font-bold',
+    iconClass: 'text-brand-100',
   },
   beta: {
     label: 'Beta 3 meses',
@@ -30,7 +30,7 @@ const PLAN_CONFIG = {
     icon: FlaskConical,
     iconSize: 14,
     wrapper:
-      'border-cyan-300/80 bg-gradient-to-r from-cyan-700 via-blue-700 to-indigo-700 text-white shadow-md shadow-blue-900/25 ring-2 ring-cyan-300/40 hover:brightness-[1.06] py-1.5 pl-2.5 pr-3 gap-1.5 text-[10px] font-extrabold tracking-wide',
+      'border-cyan-300/80 bg-gradient-to-r from-cyan-700 via-brand-700 to-brand-700 text-white shadow-md shadow-brand-900/25 ring-2 ring-cyan-300/40 hover:brightness-[1.06] py-1.5 pl-2.5 pr-3 gap-1.5 text-[10px] font-extrabold tracking-wide',
     iconClass: 'text-cyan-100',
   },
   elite: {

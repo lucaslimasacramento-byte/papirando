@@ -24,11 +24,11 @@ import {
 } from '../lib/mindMapGraph';
 
 const COLORS = {
-  indigo: 'from-indigo-600 to-violet-600 ring-indigo-200',
-  sky: 'from-sky-500 to-blue-600 ring-sky-200',
+  indigo: 'from-brand-600 to-ink-600 ring-brand-200',
+  sky: 'from-sky-500 to-brand-600 ring-sky-200',
   emerald: 'from-emerald-500 to-teal-600 ring-emerald-200',
   amber: 'from-amber-500 to-orange-600 ring-amber-200',
-  violet: 'from-violet-500 to-purple-600 ring-violet-200',
+  violet: 'from-ink-500 to-purple-600 ring-ink-200',
 };
 
 function clamp(n, a, b) {
@@ -251,7 +251,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
 
       <div className="rounded-2xl border border-ink-200 bg-gradient-to-b from-ink-50 to-white p-3 shadow-inner">
         <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-ink-500">
-          <Sparkles size={14} className="text-indigo-500" />
+          <Sparkles size={14} className="text-brand-500" />
           {readOnly
             ? 'Mapa oficial (somente leitura). Use Copiar na biblioteca para editar o seu.'
             : 'Arraste o fundo para mover a vista; arraste os cartões para reorganizar. Clique para selecionar. Duplo clique para renomear.'}
@@ -352,7 +352,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                       onKeyDown={(ev) => {
                         if (ev.key === 'Enter' || ev.key === 'Escape') ev.target.blur();
                       }}
-                      className="min-w-[140px] max-w-[260px] rounded-xl border-2 border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-ink-800 shadow-lg outline-none"
+                      className="min-w-[140px] max-w-[260px] rounded-xl border-2 border-brand-400 bg-white px-3 py-2 text-sm font-semibold text-ink-800 shadow-lg outline-none"
                     />
                   ) : (
                     <div

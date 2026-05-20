@@ -70,7 +70,7 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
                     type="text"
                     value={draftById[row.id] ?? ''}
                     onChange={(e) => setDraftById((prev) => ({ ...prev, [row.id]: e.target.value }))}
-                    className="w-full min-w-[140px] rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-ink-800 outline-none focus:border-blue-500"
+                    className="w-full min-w-[140px] rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-ink-800 outline-none focus:border-brand-500"
                     aria-label={`Nome no menu para ${row.id}`}
                   />
                 </td>
@@ -114,7 +114,7 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
               setSaving(false);
             }
           }}
-          className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2.5 text-sm font-bold text-indigo-900 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-5 py-2.5 text-sm font-bold text-brand-900 disabled:opacity-50"
         >
           <Save size={16} />
           {saving ? 'Salvando…' : 'Salvar rótulos do menu'}

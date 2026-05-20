@@ -603,12 +603,12 @@ export default function MapasMentais({
         />
 
         <section
-          className="mb-6 rounded-2xl border border-indigo-200/90 bg-gradient-to-br from-indigo-50 via-white to-violet-50/90 p-4 shadow-[0_12px_36px_rgba(79,70,229,0.08)] md:p-6"
+          className="mb-6 rounded-2xl border border-brand-200/90 bg-gradient-to-br from-brand-50 via-white to-ink-50/90 p-4 shadow-[0_12px_36px_rgba(79,70,229,0.08)] md:p-6"
           aria-label="Mapas mentais disponibilizados pela equipe"
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-700">Mapas da equipe · Papirando</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-700">Mapas da equipe · Papirando</p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight text-ink-900 md:text-xl">
                 Prontos para quem não quer montar do zero
               </h2>
@@ -621,16 +621,16 @@ export default function MapasMentais({
               <button
                 type="button"
                 onClick={onOpenAdminMindMaps}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-indigo-300 bg-white px-4 py-2.5 text-sm font-semibold text-indigo-900 shadow-sm transition hover:bg-indigo-50"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-300 bg-white px-4 py-2.5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
               >
-                <ShieldCheck size={18} className="text-indigo-600" />
+                <ShieldCheck size={18} className="text-brand-600" />
                 Publicar modelos (admin)
               </button>
             ) : null}
           </div>
 
           {galeriaFiltrada.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-indigo-200 bg-white/70 px-4 py-8 text-center">
+            <div className="mt-5 rounded-xl border border-dashed border-brand-200 bg-white/70 px-4 py-8 text-center">
               <p className="text-sm font-semibold text-ink-700">
                 {galleryMaps.length === 0
                   ? 'Nenhum mapa da equipe publicado ainda. Quando o admin subir modelos na galeria, eles aparecem aqui para todos.'
@@ -644,10 +644,10 @@ export default function MapasMentais({
                 return (
                   <div
                     key={mapa.id}
-                    className={`flex flex-col rounded-2xl border p-4 transition ${ativo ? 'border-indigo-400 bg-white shadow-md ring-2 ring-indigo-200' : 'border-indigo-100 bg-white/90 hover:border-indigo-200'}`}
+                    className={`flex flex-col rounded-2xl border p-4 transition ${ativo ? 'border-brand-400 bg-white shadow-md ring-2 ring-brand-200' : 'border-brand-100 bg-white/90 hover:border-brand-200'}`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-600">Equipe · {mapa.categoria || 'Geral'}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-600">Equipe · {mapa.categoria || 'Geral'}</p>
                       <h3 className="mt-1 line-clamp-2 text-base font-semibold text-ink-900">{mapa.titulo}</h3>
                     </div>
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -662,7 +662,7 @@ export default function MapasMentais({
                       <button
                         type="button"
                         onClick={() => copyGalleryToMyLibrary(mapa)}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-600 py-2.5 text-xs font-bold text-white transition hover:bg-indigo-700"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-600 py-2.5 text-xs font-bold text-white transition hover:bg-brand-700"
                       >
                         <Copy size={14} />
                         Copiar e editar
@@ -712,7 +712,7 @@ export default function MapasMentais({
                     <button
                       type="button"
                       onClick={handleGerarMapa}
-                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-blue-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900"
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-brand-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-900"
                     >
                       Gerar mapa
                       <ArrowRight size={16} />
@@ -732,14 +732,14 @@ export default function MapasMentais({
               ) : null}
 
               {isGalleryView ? (
-                <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-indigo-200 bg-indigo-50/90 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-indigo-950">
+                <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-brand-200 bg-brand-50/90 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm font-semibold text-brand-950">
                     Modelo oficial da equipe. Copie para sua biblioteca para editar nos seus mapas.
                   </p>
                   <button
                     type="button"
                     onClick={() => copyGalleryToMyLibrary(mapaAtivo)}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-blue-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-900"
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-brand-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900"
                   >
                     <Copy size={16} />
                     Copiar para minha biblioteca
@@ -787,7 +787,7 @@ export default function MapasMentais({
                   value={filters.query}
                   onChange={(event) => setFilters((prev) => ({ ...prev, query: event.target.value }))}
                   placeholder="Buscar mapas, categorias, topicos ou concursos"
-                  className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition focus:border-blue-500"
+                  className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition focus:border-brand-500"
                 />
               </div>
 
@@ -841,7 +841,7 @@ export default function MapasMentais({
                 <button
                   type="button"
                   onClick={() => setFilters((prev) => ({ ...prev, category: 'Todas' }))}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === 'Todas' ? 'border-blue-200 bg-blue-50' : 'border-ink-200 bg-ink-50 hover:border-ink-300 hover:bg-ink-100'}`}
+                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === 'Todas' ? 'border-brand-200 bg-brand-50' : 'border-ink-200 bg-ink-50 hover:border-ink-300 hover:bg-ink-100'}`}
                 >
                   <span className="text-sm font-semibold text-ink-700">Todas</span>
                   <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-400 shadow-sm">{syncedMaps.length}</span>
@@ -852,7 +852,7 @@ export default function MapasMentais({
                     key={categoria.nome}
                     type="button"
                     onClick={() => setFilters((prev) => ({ ...prev, category: categoria.nome }))}
-                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === categoria.nome ? 'border-blue-200 bg-blue-50' : 'border-ink-200 bg-ink-50 hover:border-ink-300 hover:bg-ink-100'}`}
+                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === categoria.nome ? 'border-brand-200 bg-brand-50' : 'border-ink-200 bg-ink-50 hover:border-ink-300 hover:bg-ink-100'}`}
                   >
                     <span className="text-sm font-semibold text-ink-700">{categoria.nome}</span>
                     <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-400 shadow-sm">{categoria.quantidade}</span>
@@ -875,8 +875,8 @@ export default function MapasMentais({
               {galeriaFiltrada.length > 0 ? (
                 <div className="mb-6 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">Modelos da equipe (atalho)</p>
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">{galeriaFiltrada.length}</span>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-600">Modelos da equipe (atalho)</p>
+                    <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">{galeriaFiltrada.length}</span>
                   </div>
                   <p className="text-[11px] font-medium text-ink-500">A lista completa com cards está na faixa roxa acima.</p>
                   {galeriaFiltrada.map((mapa) => {
@@ -884,18 +884,18 @@ export default function MapasMentais({
                     return (
                       <div
                         key={mapa.id}
-                        className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-indigo-300 bg-indigo-50' : 'border-ink-200 bg-white hover:border-indigo-200 hover:bg-ink-50'}`}
+                        className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-brand-300 bg-brand-50' : 'border-ink-200 bg-white hover:border-brand-200 hover:bg-ink-50'}`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <button type="button" onClick={() => openGalleryMap(mapa)} className="min-w-0 flex-1 text-left">
-                            <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-indigo-950' : 'text-ink-800'}`}>{mapa.titulo}</h4>
-                            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-indigo-600/90">Oficial · {mapa.categoria}</p>
+                            <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-brand-950' : 'text-ink-800'}`}>{mapa.titulo}</h4>
+                            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600/90">Oficial · {mapa.categoria}</p>
                           </button>
                         </div>
                         <button
                           type="button"
                           onClick={() => copyGalleryToMyLibrary(mapa)}
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white py-2.5 text-xs font-bold text-indigo-800 transition hover:bg-indigo-50"
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white py-2.5 text-xs font-bold text-brand-800 transition hover:bg-brand-50"
                         >
                           <Copy size={14} />
                           Copiar e editar
@@ -912,11 +912,11 @@ export default function MapasMentais({
                   const ativo = mapa.id === mapaAtivo?.id && !isGalleryView;
 
                   return (
-                    <div key={mapa.id} className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-blue-200 bg-blue-50' : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50'}`}>
+                    <div key={mapa.id} className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-brand-200 bg-brand-50' : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50'}`}>
                       <div className="flex items-start justify-between gap-3">
                         <button type="button" onClick={() => openMap(mapa)} className="min-w-0 flex-1 text-left">
-                          <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-blue-950' : 'text-ink-800'}`}>{mapa.titulo}</h4>
-                          <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${ativo ? 'text-blue-600/80' : 'text-ink-400'}`}>{mapa.categoria}</p>
+                          <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-brand-950' : 'text-ink-800'}`}>{mapa.titulo}</h4>
+                          <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${ativo ? 'text-brand-600/80' : 'text-ink-400'}`}>{mapa.categoria}</p>
                           <p className="mt-2 text-xs font-semibold text-ink-500">{mapa.plano || 'Geral'} · {Math.max(0, Number(mapa.totalAberturas || 0))} abertura(s)</p>
                         </button>
 
@@ -925,8 +925,8 @@ export default function MapasMentais({
                         </button>
                       </div>
 
-                      <button type="button" onClick={() => openMap(mapa)} className={`mt-3 flex h-14 w-full items-center justify-center rounded-2xl border ${ativo ? 'border-blue-100 bg-white' : 'border-ink-200 bg-ink-50'}`}>
-                        <Network size={22} className={ativo ? 'text-blue-300' : 'text-ink-300'} />
+                      <button type="button" onClick={() => openMap(mapa)} className={`mt-3 flex h-14 w-full items-center justify-center rounded-2xl border ${ativo ? 'border-brand-100 bg-white' : 'border-ink-200 bg-ink-50'}`}>
+                        <Network size={22} className={ativo ? 'text-brand-300' : 'text-ink-300'} />
                       </button>
                     </div>
                   );
@@ -957,7 +957,7 @@ export default function MapasMentais({
                           key={node.id}
                           type="button"
                           onClick={() => node.topicId && mapaAtivo.disciplinaId && onOpenDiscipline?.(activeDiscipline || { id: mapaAtivo.disciplinaId }, node.topicId)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-bold ${node.topicId ? 'border-blue-100 bg-blue-50 text-blue-700' : 'border-ink-200 bg-ink-50 text-ink-500'}`}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-bold ${node.topicId ? 'border-brand-100 bg-brand-50 text-brand-700' : 'border-ink-200 bg-ink-50 text-ink-500'}`}
                         >
                           {node.label}
                         </button>
@@ -988,7 +988,7 @@ export default function MapasMentais({
                     <button
                       type="button"
                       onClick={() => onOpenStudyRegister?.(activeDiscipline || { id: mapaAtivo.disciplinaId })}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-900"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-900"
                     >
                       Registrar estudo com este mapa
                       <ArrowRight size={15} />
@@ -1034,7 +1034,7 @@ function ActionButton({ icon, text, primary = false, onClick, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${primary ? 'bg-blue-800 text-white hover:bg-blue-900' : 'border border-ink-200 bg-white text-ink-700 hover:bg-ink-50'} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${primary ? 'bg-brand-800 text-white hover:bg-brand-900' : 'border border-ink-200 bg-white text-ink-700 hover:bg-ink-50'} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
     >
       <IconComponent size={16} />
       {text}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FSRS-4.5 — Free Spaced Repetition Scheduler
  * Implementação baseada no algoritmo de Jarrett Ye (open source)
  * 20-40% mais eficiente que o SM-2 (Anki padrão)
@@ -41,7 +41,7 @@ export const RATING_LABELS = {
   1: { label: 'Errei', color: 'bg-red-100 text-red-700 border-red-200', emoji: '✕' },
   2: { label: 'Difícil', color: 'bg-orange-100 text-orange-700 border-orange-200', emoji: '~' },
   3: { label: 'Lembrei', color: 'bg-green-100 text-green-700 border-green-200', emoji: '✓' },
-  4: { label: 'Fácil', color: 'bg-blue-100 text-blue-700 border-blue-200', emoji: '⚡' },
+  4: { label: 'Fácil', color: 'bg-brand-100 text-brand-700 border-brand-200', emoji: '⚡' },
 };
 
 // Card padrão (novo)

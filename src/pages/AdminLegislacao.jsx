@@ -175,7 +175,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
                     href={doc?.pdfUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-800"
+                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
                   >
                     Abrir PDF atual
                     <ExternalLink size={14} />
@@ -213,7 +213,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
               />
             </label>
             <label className="block text-xs font-semibold text-ink-600">
@@ -221,7 +221,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
               <input
                 value={edition}
                 onChange={(e) => setEdition(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
               />
             </label>
             <label className="block text-xs font-semibold text-ink-600">
@@ -229,7 +229,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
               <input
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
               />
             </label>
             <label className="block text-xs font-semibold text-ink-600">
@@ -238,7 +238,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
                 value={updatedLabel}
                 onChange={(e) => setUpdatedLabel(e.target.value)}
                 placeholder="ex: 18/04/2026"
-                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
               />
             </label>
           </div>
@@ -246,7 +246,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-semibold text-ink-600">Mapa de páginas por bloco (JSON)</label>
-              <button type="button" onClick={fillDefaultMap} className="text-xs font-bold text-blue-700 hover:text-blue-800">
+              <button type="button" onClick={fillDefaultMap} className="text-xs font-bold text-brand-700 hover:text-brand-800">
                 Preencher padrão Senado 2ed
               </button>
             </div>
@@ -255,7 +255,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
               onChange={(e) => setSectionMapJson(e.target.value)}
               rows={14}
               spellCheck={false}
-              className="mt-2 w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-3 font-mono text-xs leading-relaxed text-ink-800 outline-none focus:border-blue-600"
+              className="mt-2 w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-3 font-mono text-xs leading-relaxed text-ink-800 outline-none focus:border-brand-600"
             />
             <p className="mt-2 text-xs text-ink-500">
               Chaves = nome do bloco (igual aos chips na tela Legislação). Valores = número da página inicial daquele bloco no PDF.

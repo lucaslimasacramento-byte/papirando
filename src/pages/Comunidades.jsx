@@ -270,7 +270,7 @@ function PostCard({
                 post.savedByCurrentUser
                   ? rd
                     ? 'text-[#93b4ff]'
-                    : 'text-blue-600'
+                    : 'text-brand-600'
                   : rd
                     ? 'text-[#8e8675] hover:bg-[#211c16] hover:text-[#ece4d2]'
                     : 'text-ink-400 hover:bg-ink-100 hover:text-ink-600'
@@ -374,7 +374,7 @@ function PostCard({
               onClick={() => onToggleSave(post, !post.savedByCurrentUser)}
               className={cx(
                 'ml-auto inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition',
-                post.savedByCurrentUser ? 'text-blue-700' : 'text-ink-500 hover:text-ink-700'
+                post.savedByCurrentUser ? 'text-brand-700' : 'text-ink-500 hover:text-ink-700'
               )}
             >
               <Bookmark size={15} />
@@ -423,7 +423,7 @@ function PostCard({
                     'w-full resize-none rounded-xl border p-3 text-sm outline-none transition',
                     rd
                       ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] placeholder:text-[#8e8675] focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]/40'
-                      : 'border-ink-200 bg-ink-50 text-ink-700 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100'
+                      : 'border-ink-200 bg-ink-50 text-ink-700 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100'
                   )}
                 />
                 <div className="mt-2 flex items-center justify-end">
@@ -1021,8 +1021,8 @@ export default function Comunidades({
               <span className="font-semibold text-ink-800">{displayName}</span>
               {communitySchemaReady ? ' · nuvem' : ' · local'}
             </p>
-            <div className="mt-3 flex items-center gap-3 rounded-md bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-100 text-blue-700">
+            <div className="mt-3 flex items-center gap-3 rounded-md bg-brand-50 px-3 py-2.5 text-sm font-semibold text-brand-700">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-100 text-brand-700">
                 <MessageCircle size={17} />
               </span>
               <span className="min-w-0 flex-1 truncate">Discussões</span>
@@ -1073,7 +1073,7 @@ export default function Comunidades({
                   onClick={() => setActiveTag(tag)}
                   className={cx(
                     'mr-1 inline-block rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition',
-                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-transparent bg-ink-100 text-ink-600 hover:border-ink-200'
+                    activeTag === tag ? 'border-brand-200 bg-brand-50 text-brand-700' : 'border-transparent bg-ink-100 text-ink-600 hover:border-ink-200'
                   )}
                 >
                   {tag}
@@ -1116,7 +1116,7 @@ export default function Comunidades({
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
                 placeholder="Buscar…"
-                className="h-10 w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-10 pr-3 text-sm text-ink-700 outline-none placeholder:text-ink-400 focus:border-blue-400"
+                className="h-10 w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-10 pr-3 text-sm text-ink-700 outline-none placeholder:text-ink-400 focus:border-brand-400"
               />
             </div>
             <button type="button" className="btn-secondary w-full rounded-full" onClick={openComposerModal}>
@@ -1152,7 +1152,7 @@ export default function Comunidades({
                   onClick={() => setActiveTag(tag)}
                   className={cx(
                     'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide',
-                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-ink-200 text-ink-500'
+                    activeTag === tag ? 'border-brand-200 bg-brand-50 text-brand-700' : 'border-ink-200 text-ink-500'
                   )}
                 >
                   {tag}
@@ -1169,7 +1169,7 @@ export default function Comunidades({
                     value={searchValue}
                     onChange={(event) => setSearchValue(event.target.value)}
                     placeholder="Encontre de tudo"
-                    className="h-12 w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-11 pr-4 text-[15px] font-medium text-ink-700 outline-none placeholder:text-ink-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    className="h-12 w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-11 pr-4 text-[15px] font-medium text-ink-700 outline-none placeholder:text-ink-400 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100"
                   />
                 </div>
                 <button type="button" className="btn-secondary h-12 rounded-full px-6" onClick={openComposerModal}>
@@ -1181,8 +1181,8 @@ export default function Comunidades({
               <div className="mb-3 xl:hidden">
                 <div className="rounded border border-ink-200 bg-white p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700">Top 10 (mobile)</p>
-                    <Flame size={16} className="text-blue-700" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-700">Top 10 (mobile)</p>
+                    <Flame size={16} className="text-brand-700" />
                   </div>
                   <ul className="mt-2 divide-y divide-ink-100">
                     {trendingFeedPosts.map((tp, idx) => (
@@ -1217,7 +1217,7 @@ export default function Comunidades({
                     setActiveTag('Todos');
                     setSearchValue('');
                   }}
-                  className="font-semibold text-blue-700 underline-offset-2 transition hover:underline"
+                  className="font-semibold text-brand-700 underline-offset-2 transition hover:underline"
                 >
                   Todas as salas
                 </button>
@@ -1286,7 +1286,7 @@ export default function Comunidades({
                   onChange={(event) => setDraftTitle(event.target.value)}
                   placeholder="Título da pergunta"
                   disabled={composerSubmitting}
-                  className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition placeholder:text-ink-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100"
                 />
                 <textarea
                   rows={6}
@@ -1294,7 +1294,7 @@ export default function Comunidades({
                   onChange={(event) => setDraftContent(event.target.value)}
                   placeholder="Descreva seu contexto para a comunidade ajudar melhor."
                   disabled={composerSubmitting}
-                  className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm leading-7 text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm leading-7 text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100"
                 />
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <select
@@ -1368,7 +1368,7 @@ export default function Comunidades({
                       onChange={(e) =>
                         setAdminCategoriesDraft((prev) => prev.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
                       }
-                      className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                     />
                     <label className="mt-3 block text-xs font-semibold text-ink-600" htmlFor={`room-desc-${row.id}`}>
                       Descrição
@@ -1380,7 +1380,7 @@ export default function Comunidades({
                       onChange={(e) =>
                         setAdminCategoriesDraft((prev) => prev.map((r) => (r.id === row.id ? { ...r, description: e.target.value } : r)))
                       }
-                      className="mt-1 w-full resize-none rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-1 w-full resize-none rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                     />
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
@@ -1408,20 +1408,20 @@ export default function Comunidades({
                     value={newRoomName}
                     onChange={(e) => setNewRoomName(e.target.value)}
                     placeholder="Nome da nova sala"
-                    className="mt-2 w-full rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-400"
+                    className="mt-2 w-full rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-400"
                   />
                   <textarea
                     value={newRoomDescription}
                     onChange={(e) => setNewRoomDescription(e.target.value)}
                     placeholder="Descrição curta (opcional)"
                     rows={2}
-                    className="mt-2 w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700 outline-none focus:border-blue-400"
+                    className="mt-2 w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700 outline-none focus:border-brand-400"
                   />
                   <button
                     type="button"
                     disabled={adminBusyId === 'new-room'}
                     onClick={handleCreateAdminRoom}
-                    className="mt-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+                    className="mt-3 rounded-full bg-gradient-to-r from-brand-600 to-brand-600 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-md transition hover:from-brand-700 hover:to-brand-700 disabled:opacity-50"
                   >
                     Criar sala
                   </button>

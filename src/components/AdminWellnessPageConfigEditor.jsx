@@ -11,7 +11,7 @@ function IconSelect({ value, onChange, className = '' }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-600 ${className}`}
+      className={`rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-brand-600 ${className}`}
     >
       {WELLNESS_PAGE_ICON_KEYS.map((k) => (
         <option key={k} value={k}>
@@ -332,7 +332,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
         <div className="mt-3 space-y-4">
           {c.overviewCards.map((card) => (
             <div key={card.id} className="rounded-xl border border-ink-100 bg-ink-50/60 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">{card.id}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-brand-600">{card.id}</p>
               <div className="mt-2 grid gap-2 md:grid-cols-2">
                 <div>
                   <FieldLabel>Título</FieldLabel>
@@ -550,7 +550,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4">
+      <div className="rounded-2xl border border-brand-100 bg-brand-50/30 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h4 className="text-sm font-bold text-ink-900">Respirações guiadas</h4>
           <button
@@ -647,7 +647,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
                 <div>
                   <div className="flex items-center justify-between">
                     <FieldLabel>Fases (nome + segundos)</FieldLabel>
-                    <button type="button" onClick={() => addPhase(tech.id)} className="text-[11px] font-bold text-blue-700">
+                    <button type="button" onClick={() => addPhase(tech.id)} className="text-[11px] font-bold text-brand-700">
                       + fase
                     </button>
                   </div>

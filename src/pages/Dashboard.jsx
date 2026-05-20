@@ -205,7 +205,7 @@ export default function Dashboard({
             <button
               type="button"
               onClick={() => setActiveTab('planejamento')}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 transition hover:text-blue-900"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition hover:text-brand-900"
             >
               Ver planejamento
               <ArrowRight size={14} strokeWidth={2} />
@@ -237,7 +237,7 @@ export default function Dashboard({
         <div className="grid gap-4">
           <MiniPanel
             label="Lembrete"
-            icon={<BellRing size={15} className="text-blue-700" strokeWidth={2} />}
+            icon={<BellRing size={15} className="text-brand-700" strokeWidth={2} />}
             title={reminder.title}
             detail={reminder.detail}
             badge={reminder.badge}
@@ -247,7 +247,7 @@ export default function Dashboard({
 
           <MiniPanel
             label="Resumo rápido"
-            icon={<Sparkles size={15} className="text-blue-700" strokeWidth={2} />}
+            icon={<Sparkles size={15} className="text-brand-700" strokeWidth={2} />}
             title={studySummaryTitle}
             detail={
               primaryRecommendation
@@ -261,7 +261,7 @@ export default function Dashboard({
 
           <div className="section-card soft-accent">
             <div className="flex items-center gap-2">
-              <CalendarDays size={15} className="text-blue-700" strokeWidth={2} />
+              <CalendarDays size={15} className="text-brand-700" strokeWidth={2} />
               <p className="text-2xs font-semibold uppercase tracking-wider text-ink-500">Agenda curta</p>
             </div>
 
@@ -288,7 +288,7 @@ function Badge({ label, tone = 'primary' }) {
   const classes =
     tone === 'secondary'
       ? 'border-ink-200 bg-ink-50 text-ink-600'
-      : 'border-blue-100 bg-blue-50/90 text-blue-800';
+      : 'border-brand-100 bg-brand-50/90 text-brand-800';
 
   return (
     <span
@@ -310,7 +310,7 @@ function KpiCard({ label, value, detail, icon: Icon }) {
           </p>
           <p className="mt-1 text-xs text-ink-500 sm:text-sm">{detail}</p>
         </div>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink-100 text-blue-700 sm:h-9 sm:w-9">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink-100 text-brand-700 sm:h-9 sm:w-9">
           <Icon size={16} strokeWidth={2} />
         </div>
       </div>
@@ -321,7 +321,7 @@ function KpiCard({ label, value, detail, icon: Icon }) {
 function MiniPanel({ label, icon, title, detail, badge, tone = 'neutral', compact = false }) {
   const badgeClass =
     tone === 'brand'
-      ? 'border border-blue-100 bg-blue-50 text-blue-800'
+      ? 'border border-brand-100 bg-brand-50 text-brand-800'
       : 'border border-ink-200 bg-ink-50 text-ink-600';
 
   return (
@@ -351,14 +351,14 @@ function RoutineRow({ item, onStart, index }) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-ink-200/90 bg-white px-3 py-3 sm:px-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink-100 text-sm font-semibold text-blue-800 sm:h-9 sm:w-9">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink-100 text-sm font-semibold text-brand-800 sm:h-9 sm:w-9">
           {index + 1}
         </div>
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-medium text-ink-900">{item.subtitle}</p>
-            <span className="rounded-md border border-blue-100 bg-blue-50/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-800">
+            <span className="rounded-md border border-brand-100 bg-brand-50/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-800">
               {item.tag}
             </span>
             <span className="rounded-md border border-ink-200 bg-ink-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-500">
@@ -407,7 +407,7 @@ function AgendaBlock({ title, items, emptyText }) {
                   {done ? (
                     <CheckCircle2 size={16} className="text-emerald-600" strokeWidth={2} />
                   ) : (
-                    <CalendarDays size={16} className="text-blue-700" strokeWidth={2} />
+                    <CalendarDays size={16} className="text-brand-700" strokeWidth={2} />
                   )}
                 </div>
                 <div className="min-w-0">

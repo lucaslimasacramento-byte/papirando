@@ -25,7 +25,7 @@ import PageHeadPremium, {
   PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
 } from '../components/PageHeadPremium';
 
-/** Tom primário alinhado ao design system (`btn-primary` = blue-700). */
+/** Tom primário alinhado ao design system (`btn-primary` = brand-700). */
 const DISCIPLINE_ACCENT_FALLBACK = '#1d4ed8';
 
 export default function Disciplinas({
@@ -304,12 +304,12 @@ export default function Disciplinas({
                   <p className="text-2xs font-semibold uppercase tracking-wider text-ink-500">Avanço global</p>
                 </div>
                 <div className="flex items-baseline gap-1 tabular-nums">
-                  <span className="text-2xl font-semibold leading-none text-blue-900">{progressoGeral}</span>
-                  <span className="text-sm font-semibold text-blue-900">%</span>
+                  <span className="text-2xl font-semibold leading-none text-brand-900">{progressoGeral}</span>
+                  <span className="text-sm font-semibold text-brand-900">%</span>
                 </div>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-blue-100/80">
-                <div className="h-full rounded-full bg-blue-700 transition-all duration-700" style={{ width: `${progressoGeral}%` }} />
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-brand-100/80">
+                <div className="h-full rounded-full bg-brand-700 transition-all duration-700" style={{ width: `${progressoGeral}%` }} />
               </div>
             </div>
 
@@ -320,7 +320,7 @@ export default function Disciplinas({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Buscar disciplina..."
-                  className="w-full rounded-xl border border-ink-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all duration-300 hover:border-blue-200 focus:border-blue-700 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-xl border border-ink-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all duration-300 hover:border-brand-200 focus:border-brand-700 focus:ring-4 focus:ring-brand-50"
                 />
               </div>
 
@@ -333,7 +333,7 @@ export default function Disciplinas({
                   onClick={() => setPlanoFiltro('Todos')}
                   className={`rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
                     planoFiltro === 'Todos'
-                      ? 'border border-blue-100 bg-blue-50 text-blue-700'
+                      ? 'border border-brand-100 bg-brand-50 text-brand-700'
                       : 'border border-ink-200 bg-white text-ink-500 hover:bg-ink-50'
                   }`}
                 >
@@ -345,7 +345,7 @@ export default function Disciplinas({
                     onClick={() => setPlanoFiltro(plano)}
                     className={`max-w-[240px] truncate rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
                       planoFiltro === plano
-                        ? 'border border-blue-100 bg-blue-50 text-blue-700'
+                        ? 'border border-brand-100 bg-brand-50 text-brand-700'
                         : 'border border-ink-200 bg-white text-ink-500 hover:bg-ink-50'
                     }`}
                     title={plano}
@@ -389,7 +389,7 @@ export default function Disciplinas({
                     const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
 
                     return (
-                      <tr key={disciplina.id || idx} className="border-b border-ink-100 transition-all duration-300 hover:bg-blue-50/30">
+                      <tr key={disciplina.id || idx} className="border-b border-ink-100 transition-all duration-300 hover:bg-brand-50/30">
                         <td className="px-8 py-4">
                           <div className="flex items-center gap-4">
                             <div
@@ -448,7 +448,7 @@ export default function Disciplinas({
                             <button
                               type="button"
                               onClick={() => setViewingDiscipline && setViewingDiscipline(disciplina)}
-                              className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-semibold text-blue-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100"
+                              className="inline-flex items-center gap-2 rounded-xl bg-brand-50 px-3.5 py-2 text-xs font-semibold text-brand-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-100"
                             >
                               Abrir
                               <ArrowUpRight size={13} />
@@ -456,7 +456,7 @@ export default function Disciplinas({
                             <button
                               type="button"
                               onClick={() => setEditingDiscipline && setEditingDiscipline(disciplina)}
-                              className="flex h-9 w-9 items-center justify-center rounded-xl border border-ink-200 bg-ink-50 text-ink-500 transition-all duration-300 hover:border-blue-700 hover:bg-blue-700 hover:text-white"
+                              className="flex h-9 w-9 items-center justify-center rounded-xl border border-ink-200 bg-ink-50 text-ink-500 transition-all duration-300 hover:border-brand-700 hover:bg-brand-700 hover:text-white"
                               title="Editar disciplina"
                             >
                               <Edit3 size={14} />
@@ -528,9 +528,9 @@ export default function Disciplinas({
               />
             </div>
 
-            <div className="mt-6 flex items-center justify-between rounded-xl border border-blue-100 bg-white/90 px-4 py-4 shadow-sm">
+            <div className="mt-6 flex items-center justify-between rounded-xl border border-brand-100 bg-white/90 px-4 py-4 shadow-sm">
               <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-500">Potencial em aberto</span>
-              <div className="flex items-center gap-2 text-3xl font-semibold text-blue-900">
+              <div className="flex items-center gap-2 text-3xl font-semibold text-brand-900">
                 {iaInsights.potencial}
                 <ArrowUpRight size={22} className="text-emerald-500" />
               </div>
@@ -558,9 +558,9 @@ function InsightCard({ title, text, icon: Icon, iconColor }) {
 
 function KpiCard({ icon: Icon, label, value, sub, accent }) {
   const styles = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+    blue: 'bg-brand-50 text-brand-600 border-brand-100',
     emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    indigo: 'bg-brand-50 text-brand-600 border-brand-100',
     orange: 'bg-orange-50 text-orange-600 border-orange-100',
   };
 
@@ -570,7 +570,7 @@ function KpiCard({ icon: Icon, label, value, sub, accent }) {
         <Icon size={12} />
         {label}
       </div>
-      <p className="mt-5 text-3xl font-semibold leading-none text-blue-900 sm:text-4xl">{value}</p>
+      <p className="mt-5 text-3xl font-semibold leading-none text-brand-900 sm:text-4xl">{value}</p>
       <p className="mt-2 text-sm font-semibold text-ink-500">{sub}</p>
     </div>
   );

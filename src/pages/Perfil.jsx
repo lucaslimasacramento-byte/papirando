@@ -26,8 +26,8 @@ import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
 
 /** Paleta alinhada ao app (--accent #1d4ed8, superfícies frias). */
 const HERO_BAR =
-  'bg-gradient-to-br from-ink-900 via-[#14110d] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
-const ACCENT_BTN = 'bg-blue-700 hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500/40';
+  'bg-gradient-to-br from-ink-900 via-[#14110d] to-brand-900 ring-1 ring-brand-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+const ACCENT_BTN = 'bg-brand-700 hover:bg-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500/40';
 const PAGE_BG = 'bg-[var(--bg-canvas)]';
 
 const navItems = [
@@ -107,7 +107,7 @@ function Card({ children, className = '' }) {
 function Badge({ children, tone = 'neutral' }) {
   const tones = {
     neutral: 'border-ink-200 bg-ink-100 text-ink-700',
-    blue: 'border-blue-200 bg-blue-50 text-blue-700',
+    blue: 'border-brand-200 bg-brand-50 text-brand-700',
     green: 'border-emerald-200 bg-emerald-50 text-emerald-700',
     gold: 'border-amber-200 bg-amber-50 text-amber-700',
     red: 'border-red-200 bg-red-50 text-red-700',
@@ -146,7 +146,7 @@ function ToneIconWrap({ tone = 'blue', children }) {
         ? 'bg-emerald-100 text-emerald-700'
         : tone === 'red'
           ? 'bg-red-100 text-red-700'
-          : 'bg-blue-100 text-blue-700';
+          : 'bg-brand-100 text-brand-700';
   return <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl', cls)}>{children}</div>;
 }
 
@@ -225,7 +225,7 @@ function Field({ label, value, onChange, placeholder, disabled = false, type = '
         placeholder={placeholder}
         disabled={disabled}
         autoComplete={autoComplete}
-        className="w-full rounded-[20px] border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15 disabled:cursor-not-allowed disabled:bg-ink-50"
+        className="w-full rounded-[20px] border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-600 focus:ring-4 focus:ring-brand-500/15 disabled:cursor-not-allowed disabled:bg-ink-50"
       />
     </label>
   );
@@ -239,8 +239,8 @@ function ToggleChip({ active, onClick, children }) {
       className={cn(
         'rounded-2xl border px-4 py-2.5 text-sm font-semibold transition',
         active
-          ? 'border-blue-700 bg-blue-700 text-white shadow-sm'
-          : 'border-ink-200 bg-white text-ink-700 hover:border-blue-200 hover:text-blue-700'
+          ? 'border-brand-700 bg-brand-700 text-white shadow-sm'
+          : 'border-ink-200 bg-white text-ink-700 hover:border-brand-200 hover:text-brand-700'
       )}
     >
       {children}
@@ -291,14 +291,14 @@ function ActionTile({ icon, title, desc, actionLabel, onClick, disabled = false 
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-[24px] border border-ink-200 bg-ink-50/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-[24px] border border-ink-200 bg-ink-50/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
     >
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-ink-200">
         {IconComponent ? <IconComponent className="h-4 w-4 text-ink-900" /> : null}
       </div>
       <p className="mt-4 text-sm font-bold text-ink-950">{title}</p>
       <p className="mt-2 text-sm leading-6 text-ink-600">{desc}</p>
-      <p className="mt-4 text-sm font-semibold text-blue-700">{actionLabel}</p>
+      <p className="mt-4 text-sm font-semibold text-brand-700">{actionLabel}</p>
     </button>
   );
 }
@@ -681,7 +681,7 @@ export default function Perfil(props) {
                 <div className="relative">
                   <Badge tone="dark">Área privada</Badge>
                   <h1 className="mt-4 text-3xl font-extrabold tracking-tight">Meu perfil</h1>
-                  <p className="mt-2 text-sm leading-6 text-blue-100">
+                  <p className="mt-2 text-sm leading-6 text-brand-100">
                     Dados da conta, ranking, progresso e vínculos reais da sua jornada.
                   </p>
                 </div>
@@ -696,7 +696,7 @@ export default function Perfil(props) {
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ink-950 via-blue-900 to-indigo-700 text-5xl font-bold text-white">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ink-950 via-brand-900 to-brand-700 text-5xl font-bold text-white">
                       {avatarInitials}
                     </div>
                   )}
@@ -723,8 +723,8 @@ export default function Perfil(props) {
                         className={cn(
                           'flex w-full items-center justify-between rounded-[22px] px-4 py-3.5 text-left transition-all',
                           active
-                            ? 'bg-blue-700 text-white shadow-sm'
-                            : 'border border-ink-200 bg-white text-ink-700 hover:-translate-y-0.5 hover:border-blue-200 hover:text-ink-950 hover:shadow-sm'
+                            ? 'bg-brand-700 text-white shadow-sm'
+                            : 'border border-ink-200 bg-white text-ink-700 hover:-translate-y-0.5 hover:border-brand-200 hover:text-ink-950 hover:shadow-sm'
                         )}
                       >
                         <span className="flex items-center gap-3">
@@ -946,7 +946,7 @@ export default function Perfil(props) {
                       <div className={cn('p-6 text-white', HERO_BAR)}>
                         <Badge tone="dark">XP atual</Badge>
                         <h3 className="mt-4 text-2xl font-bold">Nivel {formatNumber(xpSummary.level || 1)}</h3>
-                        <p className="mt-2 text-sm leading-6 text-blue-100">
+                        <p className="mt-2 text-sm leading-6 text-brand-100">
                           {formatNumber(xpSummary.xpTotal || 0)} XP acumulado. Faltam{' '}
                           {formatNumber(Math.max(0, Number(xpSummary.nextLevelXp || 0) - Number(xpSummary.xpTotal || 0)))} XP para o próximo nível.
                         </p>
@@ -1058,7 +1058,7 @@ export default function Perfil(props) {
                             <button
                               type="button"
                               onClick={() => onOpenSquad?.(membership.id)}
-                              className="rounded-2xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:border-blue-200 hover:text-blue-700"
+                              className="rounded-2xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:border-brand-200 hover:text-brand-700"
                             >
                               Abrir esquadrao
                             </button>
@@ -1098,11 +1098,11 @@ export default function Perfil(props) {
                   <div className="px-6 py-6 sm:px-8 sm:py-7">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-100/90">Sua assinatura</p>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-brand-100/90">Sua assinatura</p>
                         <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
                           Plano {planLabel} · {subscriptionStatus}
                         </h2>
-                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-blue-100/95">
+                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-brand-100/95">
                           O plano ativo vale para recursos premium, limites de IA e ranking. Alterações de cobrança ficam na página
                           dedicada de assinatura.
                         </p>
@@ -1169,7 +1169,7 @@ export default function Perfil(props) {
                             'border-amber-300/80 bg-gradient-to-b from-amber-50/90 via-white to-white shadow-[0_20px_50px_rgba(180,83,9,0.18)] ring-2 ring-amber-400/50 lg:scale-[1.03] lg:z-10',
                           isTatico &&
                             !isElite &&
-                            'border-blue-400/50 bg-gradient-to-b from-blue-700 to-blue-900 text-white shadow-[0_16px_40px_rgba(30,58,138,0.35)] ring-1 ring-blue-400/40',
+                            'border-brand-400/50 bg-gradient-to-b from-brand-700 to-brand-900 text-white shadow-[0_16px_40px_rgba(30,58,138,0.35)] ring-1 ring-brand-400/40',
                           !isTatico && !isElite && 'border-ink-200/90',
                           isCurrent && 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-white'
                         )}
@@ -1183,7 +1183,7 @@ export default function Perfil(props) {
                           <span
                             className={cn(
                               'absolute right-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider',
-                              isTatico ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                              isTatico ? 'bg-white/20 text-white' : 'bg-brand-100 text-brand-800'
                             )}
                           >
                             Popular
@@ -1200,22 +1200,22 @@ export default function Perfil(props) {
                           <Icon className="h-6 w-6" strokeWidth={2} />
                         </div>
                         <h3 className={cn('mt-5 text-xl font-extrabold', isTatico ? 'text-white' : 'text-ink-950')}>{plano.nome}</h3>
-                        <p className={cn('mt-2 text-sm leading-relaxed', isTatico ? 'text-blue-100' : 'text-ink-600')}>{plano.descricao}</p>
+                        <p className={cn('mt-2 text-sm leading-relaxed', isTatico ? 'text-brand-100' : 'text-ink-600')}>{plano.descricao}</p>
                         <p className={cn('mt-5 text-3xl font-black tracking-tight', isTatico ? 'text-white' : 'text-ink-950')}>
                           {precoValor}
                           {plano.id !== 'gratuito' ? (
-                            <span className={cn('text-sm font-semibold', isTatico ? 'text-blue-200' : 'text-ink-500')}>/mês</span>
+                            <span className={cn('text-sm font-semibold', isTatico ? 'text-brand-200' : 'text-ink-500')}>/mês</span>
                           ) : null}
                         </p>
                         {plano.id !== 'gratuito' && planoPrecoAnual ? (
-                          <p className={cn('text-xs font-medium', isTatico ? 'text-blue-200/90' : 'text-ink-500')}>Valores na cobrança anual (referência da página de assinatura).</p>
+                          <p className={cn('text-xs font-medium', isTatico ? 'text-brand-200/90' : 'text-ink-500')}>Valores na cobrança anual (referência da página de assinatura).</p>
                         ) : null}
 
                         <ul className="mt-6 flex-1 space-y-3">
                           {plano.features.map((line) => (
                             <li key={line} className="flex gap-2.5 text-sm">
                               <Check className={cn('mt-0.5 h-4 w-4 shrink-0', isTatico ? 'text-emerald-300' : 'text-emerald-600')} strokeWidth={2.5} />
-                              <span className={cn('leading-snug', isTatico ? 'text-blue-50' : 'text-ink-700')}>{line}</span>
+                              <span className={cn('leading-snug', isTatico ? 'text-brand-50' : 'text-ink-700')}>{line}</span>
                             </li>
                           ))}
                         </ul>
@@ -1228,7 +1228,7 @@ export default function Perfil(props) {
                             isCurrent
                               ? 'border border-ink-200 bg-ink-50 text-ink-700 hover:bg-ink-100'
                               : isTatico
-                                ? 'bg-white text-blue-900 shadow-md hover:bg-blue-50'
+                                ? 'bg-white text-brand-900 shadow-md hover:bg-brand-50'
                                 : isElite
                                   ? cn(ACCENT_BTN, 'text-white shadow-md')
                                   : cn(ACCENT_BTN, 'text-white')

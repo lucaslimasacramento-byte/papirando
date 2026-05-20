@@ -374,7 +374,7 @@ export default function Ciclos({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-between gap-4 border-t border-ink-100 bg-ink-50/50 px-6 py-4 md:flex-row">
-                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#1d4ed8] bg-white px-6 py-3 text-sm font-bold text-[#1d4ed8] transition-colors hover:bg-blue-50 md:w-auto"><Plus size={16} /> Adicionar Disciplina</button>
+                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#1d4ed8] bg-white px-6 py-3 text-sm font-bold text-[#1d4ed8] transition-colors hover:bg-brand-50 md:w-auto"><Plus size={16} /> Adicionar Disciplina</button>
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={onResetCycle} className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-bold text-ink-500 transition-colors hover:text-red-500">Reiniciar</button>
                   <button type="button" onClick={() => setIsEditingCycle(false)} className="rounded-xl bg-[#1d4ed8] px-8 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]">Salvar Alterações</button>

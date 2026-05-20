@@ -79,14 +79,14 @@ function resolveAudiobookAudioSrc(url) {
 function resolveAccentStyles(accent) {
   const variants = {
     blue: {
-      icon: 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white',
-      progress: 'bg-blue-600',
-      text: 'group-hover:text-blue-600',
+      icon: 'bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white',
+      progress: 'bg-brand-600',
+      text: 'group-hover:text-brand-600',
     },
     indigo: {
-      icon: 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white',
-      progress: 'bg-indigo-600',
-      text: 'group-hover:text-indigo-600',
+      icon: 'bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white',
+      progress: 'bg-brand-600',
+      text: 'group-hover:text-brand-600',
     },
     emerald: {
       icon: 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white',
@@ -542,17 +542,17 @@ export default function Audiobooks(props) {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
         <div className="flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-xl border border-ink-800 bg-gradient-to-br from-ink-900 via-ink-800 to-ink-900 p-6 text-white shadow-md sm:p-8 lg:p-10">
-            <div className="absolute -right-10 -top-8 h-72 w-72 rounded-full bg-blue-400/15 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-52 w-52 rounded-full bg-indigo-400/10 blur-3xl" />
+            <div className="absolute -right-10 -top-8 h-72 w-72 rounded-full bg-brand-400/15 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-52 w-52 rounded-full bg-brand-400/10 blur-3xl" />
 
             <div className="relative z-10">
               <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
-                <div className="mx-auto flex h-40 w-40 shrink-0 items-center justify-center rounded-[2rem] border border-white/10 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-[0_18px_40px_rgba(37,99,235,0.35)] sm:h-44 sm:w-44 lg:mx-0">
+                <div className="mx-auto flex h-40 w-40 shrink-0 items-center justify-center rounded-[2rem] border border-white/10 bg-gradient-to-br from-brand-500 to-brand-600 shadow-[0_18px_40px_rgba(37,99,235,0.35)] sm:h-44 sm:w-44 lg:mx-0">
                   <BookOpen size={62} className="text-white/90" />
                 </div>
 
                 <div className="min-w-0 flex-1 text-center lg:text-left">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-blue-300/20 bg-blue-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-200">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-brand-300/20 bg-brand-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-200">
                     <Sparkles size={12} />
                     ouvindo agora
                   </div>
@@ -561,11 +561,11 @@ export default function Audiobooks(props) {
                     {activeBook?.title || 'Selecione um audiolivro'}
                   </h3>
 
-                  <p className="mt-3 text-base font-bold text-blue-100">
+                  <p className="mt-3 text-base font-bold text-brand-100">
                     {activeTrack?.title || 'Nenhuma faixa selecionada'}
                   </p>
 
-                  <p className="mt-1 text-sm font-medium text-blue-300">
+                  <p className="mt-1 text-sm font-medium text-brand-300">
                     {activeBook?.linkedTopic?.nome || activeBook?.materialLabel || 'Sem material vinculado'}
                   </p>
 
@@ -585,10 +585,10 @@ export default function Audiobooks(props) {
                     max={Math.max(activeDuration, 1)}
                     value={Math.min(activeCurrentTime, Math.max(activeDuration, 1))}
                     onChange={handleTimelineChange}
-                    className="h-3 w-full cursor-pointer appearance-none rounded-full bg-black/25 accent-blue-500"
+                    className="h-3 w-full cursor-pointer appearance-none rounded-full bg-black/25 accent-brand-500"
                   />
 
-                  <div className="flex items-center justify-between text-xs font-bold tabular-nums text-blue-200">
+                  <div className="flex items-center justify-between text-xs font-bold tabular-nums text-brand-200">
                     <span>{formatClock(activeCurrentTime)}</span>
                     <span>{formatClock(activeDuration)}</span>
                   </div>
@@ -598,7 +598,7 @@ export default function Audiobooks(props) {
                   <button
                     type="button"
                     onClick={handleChangePlaybackRate}
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-blue-100 transition-all duration-300 hover:bg-white/10"
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-brand-100 transition-all duration-300 hover:bg-white/10"
                   >
                     <span className="rounded-md border border-current px-1.5 py-0.5 text-[11px] leading-none">
                       {Number(audiobookState.playbackRate || DEFAULT_AUDIOBOOK_PLAYBACK_RATE).toFixed(2).replace('.00', '').replace('.', ',')}x
@@ -618,7 +618,7 @@ export default function Audiobooks(props) {
                     <button
                       type="button"
                       onClick={handleTogglePlay}
-                      className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white/10 bg-blue-600 text-white shadow-[0_14px_30px_rgba(37,99,235,0.45)] transition-all duration-300 hover:scale-105 hover:bg-blue-500 sm:h-24 sm:w-24"
+                      className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white/10 bg-brand-600 text-white shadow-[0_14px_30px_rgba(37,99,235,0.45)] transition-all duration-300 hover:scale-105 hover:bg-brand-500 sm:h-24 sm:w-24"
                     >
                       {isPlaying ? <Pause size={34} fill="currentColor" /> : <Play size={34} fill="currentColor" className="ml-1.5" />}
                     </button>
@@ -686,7 +686,7 @@ export default function Audiobooks(props) {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Buscar áudio, disciplina ou material…"
-                    className="h-12 w-full rounded-2xl border border-ink-200 bg-ink-50 pl-12 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all duration-300 placeholder:text-ink-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="h-12 w-full rounded-2xl border border-ink-200 bg-ink-50 pl-12 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all duration-300 placeholder:text-ink-400 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"
                   />
                 </label>
 
@@ -695,7 +695,7 @@ export default function Audiobooks(props) {
                   onClick={() => setShowFavoritesOnly((v) => !v)}
                   className={`inline-flex h-12 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold transition ${
                     showFavoritesOnly
-                      ? 'border-blue-300 bg-blue-50 text-blue-800'
+                      ? 'border-brand-300 bg-brand-50 text-brand-800'
                       : 'border-ink-200 bg-white text-ink-600 hover:border-ink-300'
                   }`}
                 >
@@ -738,7 +738,7 @@ export default function Audiobooks(props) {
                 </p>
               </div>
 
-              <div className="text-sm font-bold text-blue-700">
+              <div className="text-sm font-bold text-brand-700">
                 {inProgressCount} em andamento
               </div>
             </div>
@@ -767,7 +767,7 @@ export default function Audiobooks(props) {
           <div className="overflow-hidden rounded-[2.5rem] border border-ink-100 bg-white shadow-sm">
             <div className="flex flex-col gap-3 border-b border-ink-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
+                <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-600">
                   <ListMusic size={12} />
                   playlists
                 </div>
@@ -791,11 +791,11 @@ export default function Audiobooks(props) {
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-white p-6 shadow-sm">
-            <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-indigo-100 blur-2xl opacity-70" />
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-brand-100 bg-gradient-to-br from-brand-50 via-white to-white p-6 shadow-sm">
+            <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-brand-100 blur-2xl opacity-70" />
 
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-600 shadow-sm">
                 <Sparkles size={12} />
                 progresso por faixa
               </div>
@@ -879,7 +879,7 @@ export default function Audiobooks(props) {
 function PlayerMeta({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-left backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-200">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-200">{label}</p>
       <p className="mt-1 text-sm font-semibold text-white">{value}</p>
     </div>
   );
@@ -889,7 +889,7 @@ function AudioListItem({ item, isActive, onContinue, onToggleFavorite, onSelect,
   const styles = resolveAccentStyles(item.accent);
 
   return (
-    <div className={`group flex flex-col gap-4 px-5 py-5 transition-all duration-300 hover:bg-ink-50 sm:flex-row sm:items-center ${isActive ? 'bg-blue-50/40' : ''}`}>
+    <div className={`group flex flex-col gap-4 px-5 py-5 transition-all duration-300 hover:bg-ink-50 sm:flex-row sm:items-center ${isActive ? 'bg-brand-50/40' : ''}`}>
       <button
         type="button"
         onClick={onSelect}
@@ -969,8 +969,8 @@ function AudioListItem({ item, isActive, onContinue, onToggleFavorite, onSelect,
 
 function CommunityPlaylistCard({ playlist, onOpen }) {
   const styles = {
-    blue: 'from-blue-50 to-white border-blue-100 text-blue-700',
-    indigo: 'from-indigo-50 to-white border-indigo-100 text-indigo-700',
+    blue: 'from-brand-50 to-white border-brand-100 text-brand-700',
+    indigo: 'from-brand-50 to-white border-brand-100 text-brand-700',
     emerald: 'from-emerald-50 to-white border-emerald-100 text-emerald-700',
   };
 
@@ -1003,7 +1003,7 @@ function CommunityPlaylistCard({ playlist, onOpen }) {
 
 function TrackProgressCard({ track, active, onOpen, onPlay }) {
   return (
-    <div className={`rounded-2xl border p-4 shadow-sm transition-all duration-300 ${active ? 'border-blue-200 bg-blue-50/70' : 'border-indigo-100 bg-white'}`}>
+    <div className={`rounded-2xl border p-4 shadow-sm transition-all duration-300 ${active ? 'border-brand-200 bg-brand-50/70' : 'border-brand-100 bg-white'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-ink-900">{track.title}</p>
@@ -1021,12 +1021,12 @@ function TrackProgressCard({ track, active, onOpen, onPlay }) {
       </div>
 
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink-100">
-        <div className="h-full rounded-full bg-blue-600 transition-all duration-300" style={{ width: `${track.percent}%` }} />
+        <div className="h-full rounded-full bg-brand-600 transition-all duration-300" style={{ width: `${track.percent}%` }} />
       </div>
 
       <div className="mt-3 flex items-center justify-between">
         <span className="text-xs font-bold text-ink-500">{track.percent}% ouvido</span>
-        <button type="button" onClick={onOpen} className="text-xs font-semibold text-blue-700">
+        <button type="button" onClick={onOpen} className="text-xs font-semibold text-brand-700">
           Abrir faixa
         </button>
       </div>

@@ -140,7 +140,7 @@ function RedacaoPartesGuiasPanel({
         value={partesLinhas[key]}
         disabled={disabled}
         onChange={(e) => onChangeParte(key, e.target.value)}
-        className="w-full min-w-0 rounded border border-ink-200 bg-white px-1 py-0.5 text-center font-mono text-[11px] text-ink-800 outline-none focus:border-indigo-400 disabled:opacity-50"
+        className="w-full min-w-0 rounded border border-ink-200 bg-white px-1 py-0.5 text-center font-mono text-[11px] text-ink-800 outline-none focus:border-brand-400 disabled:opacity-50"
       />
     </label>
   );
@@ -161,7 +161,7 @@ function RedacaoPartesGuiasPanel({
             type="button"
             disabled={disabled}
             onClick={() => onPreset(p.v)}
-            className="rounded border border-ink-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-ink-600 transition hover:border-indigo-200 hover:bg-indigo-50/50 disabled:opacity-50"
+            className="rounded border border-ink-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-ink-600 transition hover:border-brand-200 hover:bg-brand-50/50 disabled:opacity-50"
           >
             {p.label}
           </button>
@@ -173,7 +173,7 @@ function RedacaoPartesGuiasPanel({
           checked={partesGuiasAtivas}
           disabled={disabled}
           onChange={(e) => onToggleGuias(e.target.checked)}
-          className="rounded border-ink-300 text-indigo-600"
+          className="rounded border-ink-300 text-brand-600"
         />
         Setas na margem
       </label>
@@ -181,7 +181,7 @@ function RedacaoPartesGuiasPanel({
         type="button"
         disabled={disabled}
         onClick={onFolhaPartes}
-        className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[10px] font-bold leading-tight text-indigo-900 transition hover:bg-indigo-100 disabled:opacity-50"
+        className="rounded-lg border border-brand-200 bg-brand-50 px-2 py-1.5 text-[10px] font-bold leading-tight text-brand-900 transition hover:bg-brand-100 disabled:opacity-50"
       >
         Folha vazia + guias
       </button>
@@ -199,7 +199,7 @@ function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) 
         onClick={onLivre}
         className={`flex min-w-[4.5rem] shrink-0 items-center justify-center gap-1 rounded-lg border px-2 py-2 text-left text-[11px] font-bold transition md:w-full md:justify-start ${
           activeId == null
-            ? 'border-blue-300 bg-blue-50 text-blue-900'
+            ? 'border-brand-300 bg-brand-50 text-brand-900'
             : 'border-ink-200 bg-white text-ink-600 hover:border-ink-300'
         } disabled:opacity-50`}
       >
@@ -218,8 +218,8 @@ function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) 
             title={item.titulo}
             className={`flex min-w-[7.5rem] shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-left transition md:w-full ${
               active
-                ? 'border-blue-400 bg-blue-600 text-white shadow-sm'
-                : 'border-ink-200 bg-white text-ink-700 hover:border-blue-200 hover:bg-blue-50/50'
+                ? 'border-brand-400 bg-brand-600 text-white shadow-sm'
+                : 'border-ink-200 bg-white text-ink-700 hover:border-brand-200 hover:bg-brand-50/50'
             } disabled:opacity-50`}
           >
             <span
@@ -267,7 +267,7 @@ const REDACAO_EIXO_FILTERS = [
 
 function eixoTagClasses(eixo) {
   const axis = {
-    seguranca: 'bg-blue-100 text-blue-700',
+    seguranca: 'bg-brand-100 text-brand-700',
     tecnologia: 'bg-purple-100 text-purple-700',
     'meio-ambiente': 'bg-emerald-100 text-emerald-700',
     sociedade: 'bg-rose-100 text-rose-700',
@@ -592,7 +592,7 @@ export default function Redacoes({
     ? [
         { key: 'gramatica', label: 'Gramática', scoreClass: 'text-red-500', barClass: 'bg-red-500' },
         { key: 'coesao', label: 'Coesão', scoreClass: 'text-emerald-500', barClass: 'bg-emerald-500' },
-        { key: 'tema', label: 'Tema', scoreClass: 'text-blue-500', barClass: 'bg-blue-500' },
+        { key: 'tema', label: 'Tema', scoreClass: 'text-brand-500', barClass: 'bg-brand-500' },
         { key: 'estrutura', label: 'Estrutura', scoreClass: 'text-amber-500', barClass: 'bg-amber-400' },
       ].map((item) => ({
         ...item,
@@ -741,7 +741,7 @@ export default function Redacoes({
                             setBancaHelpTab(redacaoBanca);
                             setBancaHelpOpen(true);
                           }}
-                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ink-200 bg-white text-sm font-bold text-ink-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ink-200 bg-white text-sm font-bold text-ink-600 shadow-sm transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800"
                           aria-label="Parâmetros da banca"
                         >
                           <CircleHelp size={18} strokeWidth={2} />
@@ -751,7 +751,7 @@ export default function Redacoes({
                       <select
                         value={redacaoBanca}
                         onChange={(e) => setRedacaoBanca(e.target.value)}
-                        className="w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-3 text-sm font-semibold text-ink-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 md:max-w-xl"
+                        className="w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-3 text-sm font-semibold text-ink-800 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100 md:max-w-xl"
                       >
                         {REDACAO_BANCA_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -791,7 +791,7 @@ export default function Redacoes({
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
                             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Sua redação</span>
                             {esqueletoAtivoId ? (
-                              <span className="truncate rounded-md border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-800">
+                              <span className="truncate rounded-md border border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[10px] font-bold text-brand-800">
                                 {esqueletosParaEditor.find((e) => e.id === esqueletoAtivoId)?.titulo || 'Esqueleto'}
                               </span>
                             ) : null}
@@ -877,9 +877,9 @@ export default function Redacoes({
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="group flex w-full flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-ink-200 bg-ink-50/80 p-5 text-center transition hover:border-blue-200"
+                            className="group flex w-full flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-ink-200 bg-ink-50/80 p-5 text-center transition hover:border-brand-200"
                           >
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-ink-200 bg-white text-blue-700 shadow-sm transition group-hover:scale-105">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-ink-200 bg-white text-brand-700 shadow-sm transition group-hover:scale-105">
                               <UploadCloud size={22} />
                             </div>
                             <h4 className="mt-3 text-sm font-semibold text-ink-900">
@@ -893,7 +893,7 @@ export default function Redacoes({
 
                         {uploadStatus === 'loading' && (
                           <div className="flex min-h-[200px] w-full flex-1 flex-col items-center justify-center rounded-2xl border border-ink-200 bg-ink-50 text-center">
-                            <Loader2 size={36} className="animate-spin text-blue-700" />
+                            <Loader2 size={36} className="animate-spin text-brand-700" />
                             <h4 className="mt-3 text-sm font-semibold text-ink-900">Lendo anexo…</h4>
                             <p className="mt-1 text-xs font-medium text-ink-500">Aguarde alguns segundos.</p>
                           </div>
@@ -990,7 +990,7 @@ export default function Redacoes({
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex flex-wrap items-center gap-2">
                         {corrigindo ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800">
                             <Loader2 size={14} className="animate-spin shrink-0" />
                             Gerando parecer…
                           </span>
@@ -1073,10 +1073,10 @@ export default function Redacoes({
                     })}
                   </div>
 
-                  <div className="mt-8 overflow-hidden rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,rgba(238,242,255,0.7)_0%,rgba(255,255,255,1)_100%)]">
-                    <div className="flex items-center justify-between gap-4 border-b border-indigo-100 px-6 py-5">
+                  <div className="mt-8 overflow-hidden rounded-[2rem] border border-brand-100 bg-[linear-gradient(180deg,rgba(238,242,255,0.7)_0%,rgba(255,255,255,1)_100%)]">
+                    <div className="flex items-center justify-between gap-4 border-b border-brand-100 px-6 py-5">
                       <div>
-                        <h4 className="flex items-center gap-2 text-lg font-semibold text-indigo-950">
+                        <h4 className="flex items-center gap-2 text-lg font-semibold text-brand-950">
                           <BrainCircuit size={20} />
                           Análise do tutor IA
                         </h4>
@@ -1084,7 +1084,7 @@ export default function Redacoes({
                           Resumo, pontos fortes e ajustes objetivos.
                         </p>
                       </div>
-                      <div className="hidden md:flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#1e40af] shadow-sm border border-indigo-100">
+                      <div className="hidden md:flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#1e40af] shadow-sm border border-brand-100">
                         <Sparkles size={18} />
                       </div>
                     </div>
@@ -1131,7 +1131,7 @@ export default function Redacoes({
                       />
                     </div>
 
-                    <div className="flex justify-end border-t border-indigo-100 px-6 py-5">
+                    <div className="flex justify-end border-t border-brand-100 px-6 py-5">
                       <button
                         type="button"
                         onClick={() => typeof window !== 'undefined' && window.print()}
@@ -1159,14 +1159,14 @@ export default function Redacoes({
                       value={temaBankQuery}
                       onChange={(e) => setTemaBankQuery(e.target.value)}
                       placeholder="Procurar tema de redação..."
-                      className="w-full rounded-[1.2rem] border border-ink-200 bg-ink-50 py-3.5 pl-12 pr-4 text-sm font-bold text-ink-700 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                      className="w-full rounded-[1.2rem] border border-ink-200 bg-ink-50 py-3.5 pl-12 pr-4 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-50"
                     />
                   </div>
 
                   <select
                     value={temaBankEixo}
                     onChange={(e) => setTemaBankEixo(e.target.value)}
-                    className="rounded-[1.2rem] border border-ink-200 bg-ink-50 px-4 py-3.5 text-sm font-bold text-ink-600 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                    className="rounded-[1.2rem] border border-ink-200 bg-ink-50 px-4 py-3.5 text-sm font-bold text-ink-600 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-50"
                   >
                     {REDACAO_EIXO_FILTERS.map((opt) => (
                       <option key={opt.id || 'all'} value={opt.id}>
@@ -1289,7 +1289,7 @@ export default function Redacoes({
                           <button
                             type="button"
                             onClick={() => openRedacaoInEditor(item)}
-                            className="rounded-lg border border-ink-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
+                            className="rounded-lg border border-ink-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-700 transition hover:border-brand-200 hover:bg-brand-50"
                           >
                             Abrir
                           </button>
@@ -1391,7 +1391,7 @@ export default function Redacoes({
                     className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
                       bancaHelpTab === opt.value
                         ? 'bg-ink-900 text-white shadow-sm'
-                        : 'border border-ink-200 bg-white text-ink-600 hover:border-blue-200 hover:text-blue-800'
+                        : 'border border-ink-200 bg-white text-ink-600 hover:border-brand-200 hover:text-brand-800'
                     }`}
                   >
                     {opt.value === 'CESPE / CEBRASPE' ? 'CEBRASPE' : opt.value}
@@ -1537,7 +1537,7 @@ function ThemeCard({ tags, title, description, onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-indigo-100 bg-[#eef2ff] px-4 py-3.5 text-sm font-semibold text-[#1e40af] transition hover:bg-[linear-gradient(135deg,#1e40af_0%,#1d4ed8_100%)] hover:text-white"
+        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-brand-100 bg-[#eef2ff] px-4 py-3.5 text-sm font-semibold text-[#1e40af] transition hover:bg-[linear-gradient(135deg,#1e40af_0%,#1d4ed8_100%)] hover:text-white"
       >
         Escrever sobre este tema
         <ArrowRight size={16} />

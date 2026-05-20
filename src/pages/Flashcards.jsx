@@ -39,9 +39,9 @@ import { generateFlashcards } from '../lib/aiClient';
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 const COLOR_CLASSES = {
-  blue:    { bg: 'bg-blue-50',    ring: 'ring-blue-200',    dot: 'bg-blue-500',    text: 'text-blue-700'    },
+  blue:    { bg: 'bg-brand-50',    ring: 'ring-brand-200',    dot: 'bg-brand-500',    text: 'text-brand-700'    },
   emerald: { bg: 'bg-emerald-50', ring: 'ring-emerald-200', dot: 'bg-emerald-500', text: 'text-emerald-700' },
-  violet:  { bg: 'bg-violet-50',  ring: 'ring-violet-200',  dot: 'bg-violet-500',  text: 'text-violet-700'  },
+  violet:  { bg: 'bg-ink-50',  ring: 'ring-ink-200',  dot: 'bg-ink-500',  text: 'text-ink-700'  },
   orange:  { bg: 'bg-orange-50',  ring: 'ring-orange-200',  dot: 'bg-orange-500',  text: 'text-orange-700'  },
   rose:    { bg: 'bg-rose-50',    ring: 'ring-rose-200',    dot: 'bg-rose-500',    text: 'text-rose-700'    },
   amber:   { bg: 'bg-amber-50',   ring: 'ring-amber-200',   dot: 'bg-amber-500',   text: 'text-amber-700'   },
@@ -92,7 +92,7 @@ function CModal({ title, onClose, children, footer }) {
 }
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
+  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10';
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Component Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -358,7 +358,7 @@ export default function Flashcards({ currentUserId }) {
               { key: 'again', label: 'Errei',   color: 'bg-red-100 text-red-700'     },
               { key: 'hard',  label: 'Difícil', color: 'bg-orange-100 text-orange-700' },
               { key: 'good',  label: 'Lembrei', color: 'bg-green-100 text-green-700'  },
-              { key: 'easy',  label: 'Fácil',   color: 'bg-blue-100 text-blue-700'    },
+              { key: 'easy',  label: 'Fácil',   color: 'bg-brand-100 text-brand-700'    },
             ].map(({ key, label, color }) => (
               <div key={key} className={`flex flex-col items-center rounded-xl px-2.5 py-2.5 ${color}`}>
                 <span className="text-lg font-semibold">{sessionStats[key]}</span>
@@ -379,7 +379,7 @@ export default function Flashcards({ currentUserId }) {
             </button>
             <button
               onClick={startStudy}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-700 sm:text-sm"
             >
               <RotateCcw size={14} />
               Revisar novamente
@@ -413,7 +413,7 @@ export default function Flashcards({ currentUserId }) {
         {/* Progress bar */}
         <div className="h-1.5 bg-ink-100">
           <div
-            className="h-full bg-blue-500 transition-all duration-500"
+            className="h-full bg-brand-500 transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -505,7 +505,7 @@ export default function Flashcards({ currentUserId }) {
             </button>
             <button
               onClick={() => { setFormErr(''); setCardModal(true); }}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 sm:px-3.5 sm:py-2"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 sm:px-3.5 sm:py-2"
             >
               <Plus size={14} />
               Card
@@ -531,7 +531,7 @@ export default function Flashcards({ currentUserId }) {
             <button
               onClick={startStudy}
               disabled={dueNow === 0}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3.5 sm:py-2"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3.5 sm:py-2"
             >
               <BookOpen size={14} />
               {dueNow === 0 ? 'Em dia!' : 'Estudar agora'}
@@ -543,7 +543,7 @@ export default function Flashcards({ currentUserId }) {
         <div className="flex-1 overflow-y-auto px-3.5 py-2.5 sm:px-4">
           {cardsLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-blue-500" />
+              <Loader2 size={24} className="animate-spin text-brand-500" />
             </div>
           ) : cards.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-10">
@@ -553,7 +553,7 @@ export default function Flashcards({ currentUserId }) {
               <p className="text-sm font-semibold text-ink-500">Nenhum card ainda.</p>
               <button
                 onClick={() => { setFormErr(''); setCardModal(true); }}
-                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
+                className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-brand-700 sm:text-sm"
               >
                 <Plus size={16} />
                 Criar primeiro card
@@ -610,7 +610,7 @@ export default function Flashcards({ currentUserId }) {
                 <button
                   onClick={handleCreateCard}
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
                 >
                   {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   Criar
@@ -809,7 +809,7 @@ export default function Flashcards({ currentUserId }) {
                 <button
                   onClick={handleCreateDeck}
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
                 >
                   {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   Criar
@@ -820,7 +820,7 @@ export default function Flashcards({ currentUserId }) {
         )}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
+            <Loader2 size={28} className="animate-spin text-brand-500" />
           </div>
         ) : decks.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-14">
@@ -834,7 +834,7 @@ export default function Flashcards({ currentUserId }) {
             <button
               type="button"
               onClick={() => { setFormErr(''); setShowInlineDeckForm(true); }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-300/55 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-brand-200/25 transition hover:from-brand-300 hover:via-brand-400 hover:to-brand-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
             >
               <Plus size={16} />
               Criar primeiro deck

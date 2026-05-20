@@ -12,7 +12,7 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
         <div className="px-10 py-8 flex justify-between items-center bg-white border-b border-ink-100 relative">
           <div>
             <h2 className="text-3xl font-black text-[#1e40af] tracking-tight flex items-center gap-3">
-              <Settings className="text-blue-600" size={32} /> Montar caderno
+              <Settings className="text-brand-600" size={32} /> Montar caderno
             </h2>
             <p className="text-ink-500 font-bold mt-1 text-sm">Configure os filtros para gerar o seu treino sob medida.</p>
           </div>
@@ -22,27 +22,27 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
         </div>
 
         <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-8 bg-[#F4F6F9]/30">
-          <div className="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="bg-brand-50/50 p-6 rounded-[2rem] border border-brand-100 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
-              <h4 className="text-lg font-black text-blue-900">Quantidade de questões</h4>
-              <p className="text-sm font-medium text-blue-700/70">Quantas questões quer resolver neste caderno?</p>
+              <h4 className="text-lg font-black text-brand-900">Quantidade de questões</h4>
+              <p className="text-sm font-medium text-brand-700/70">Quantas questões quer resolver neste caderno?</p>
             </div>
-            <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-blue-100">
-              <button onClick={() => setCadernoQtd(Math.max(5, cadernoQtd - 5))} className="w-12 h-12 flex items-center justify-center bg-ink-50 text-ink-500 hover:bg-blue-600 hover:text-white rounded-xl font-black transition-colors">-</button>
+            <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-brand-100">
+              <button onClick={() => setCadernoQtd(Math.max(5, cadernoQtd - 5))} className="w-12 h-12 flex items-center justify-center bg-ink-50 text-ink-500 hover:bg-brand-600 hover:text-white rounded-xl font-black transition-colors">-</button>
               <input
                 type="number"
                 value={cadernoQtd}
                 onChange={(e) => setCadernoQtd(Number(e.target.value))}
-                className="w-20 text-center text-3xl font-black text-blue-600 outline-none bg-transparent"
+                className="w-20 text-center text-3xl font-black text-brand-600 outline-none bg-transparent"
               />
-              <button onClick={() => setCadernoQtd(cadernoQtd + 5)} className="w-12 h-12 flex items-center justify-center bg-ink-50 text-ink-500 hover:bg-blue-600 hover:text-white rounded-xl font-black transition-colors">+</button>
+              <button onClick={() => setCadernoQtd(cadernoQtd + 5)} className="w-12 h-12 flex items-center justify-center bg-ink-50 text-ink-500 hover:bg-brand-600 hover:text-white rounded-xl font-black transition-colors">+</button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-blue-300 transition-colors">
+            <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-brand-300 transition-colors">
               <label className="block text-[11px] font-black text-ink-400 uppercase tracking-widest mb-3">Disciplina(s)</label>
-              <select className="w-full bg-ink-50 border border-ink-200 focus:border-blue-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
+              <select className="w-full bg-ink-50 border border-ink-200 focus:border-brand-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
                 <option>Selecione a disciplina...</option>
                 <option>Direito Constitucional</option>
                 <option>Direito Administrativo</option>
@@ -51,16 +51,16 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
               </select>
             </div>
 
-            <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-blue-300 transition-colors">
+            <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-brand-300 transition-colors">
               <label className="block text-[11px] font-black text-ink-400 uppercase tracking-widest mb-3">Assunto(s) específico(s)</label>
-              <select className="w-full bg-ink-50 border border-ink-200 focus:border-blue-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
+              <select className="w-full bg-ink-50 border border-ink-200 focus:border-brand-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
                 <option>Selecione a disciplina primeiro</option>
               </select>
             </div>
 
-            <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-blue-300 transition-colors">
+            <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-brand-300 transition-colors">
               <label className="block text-[11px] font-black text-ink-400 uppercase tracking-widest mb-3">Banca / instituição</label>
-              <select className="w-full bg-ink-50 border border-ink-200 focus:border-blue-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
+              <select className="w-full bg-ink-50 border border-ink-200 focus:border-brand-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
                 <option>Qualquer banca</option>
                 <option>CESPE / CEBRASPE</option>
                 <option>Fundação Carlos Chagas (FCC)</option>
@@ -69,18 +69,18 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-blue-300 transition-colors">
+              <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-brand-300 transition-colors">
                 <label className="block text-[11px] font-black text-ink-400 uppercase tracking-widest mb-3">Dificuldade</label>
-                <select className="w-full bg-ink-50 border border-ink-200 focus:border-blue-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
+                <select className="w-full bg-ink-50 border border-ink-200 focus:border-brand-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
                   <option>Todas</option>
                   <option>Fácil</option>
                   <option>Média</option>
                   <option>Difícil</option>
                 </select>
               </div>
-              <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-blue-300 transition-colors">
+              <div className="bg-white p-6 rounded-[2rem] border border-ink-200 shadow-sm hover:border-brand-300 transition-colors">
                 <label className="block text-[11px] font-black text-ink-400 uppercase tracking-widest mb-3">Ano</label>
-                <select className="w-full bg-ink-50 border border-ink-200 focus:border-blue-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
+                <select className="w-full bg-ink-50 border border-ink-200 focus:border-brand-600 rounded-xl p-4 outline-none font-bold text-ink-700 transition-all cursor-pointer">
                   <option>Recentes (2020-24)</option>
                   <option>Todos os anos</option>
                 </select>
@@ -113,11 +113,11 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
 
         <div className="px-10 py-6 bg-white border-t border-ink-100 flex justify-between items-center gap-4">
           <div className="hidden sm:block text-sm font-black text-ink-400">
-            <span className="text-blue-600">+1.500 questões</span> correspondem a estes filtros.
+            <span className="text-brand-600">+1.500 questões</span> correspondem a estes filtros.
           </div>
           <div className="flex gap-4 w-full sm:w-auto">
             <button onClick={() => setIsCadernoModalOpen(false)} className="flex-1 sm:flex-none px-8 py-4 rounded-2xl font-black text-ink-500 hover:bg-ink-100 transition-all text-sm border-2 border-ink-200 hover:border-ink-300">Cancelar</button>
-            <button onClick={() => setIsCadernoModalOpen(false)} className="flex-[2] sm:flex-none bg-[#1d4ed8] hover:bg-[#1D4ED8] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-200 transition-all flex items-center justify-center gap-2">
+            <button onClick={() => setIsCadernoModalOpen(false)} className="flex-[2] sm:flex-none bg-[#1d4ed8] hover:bg-[#1D4ED8] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-brand-200 transition-all flex items-center justify-center gap-2">
               <Play size={18} fill="currentColor" /> Gerar e iniciar
             </button>
           </div>

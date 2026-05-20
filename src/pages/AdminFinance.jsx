@@ -170,7 +170,7 @@ export default function AdminFinance({
               <input
                 value={form.descricao}
                 onChange={(e) => setForm((prev) => ({ ...prev, descricao: e.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 placeholder="Ex: Supabase, domínio, anúncios"
               />
             </Field>
@@ -179,7 +179,7 @@ export default function AdminFinance({
               <select
                 value={form.categoria}
                 onChange={(e) => setForm((prev) => ({ ...prev, categoria: e.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500"
               >
                 {CATEGORY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -193,7 +193,7 @@ export default function AdminFinance({
               <input
                 value={form.valor}
                 onChange={(e) => setForm((prev) => ({ ...prev, valor: e.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 placeholder="0,00"
               />
             </Field>
@@ -203,7 +203,7 @@ export default function AdminFinance({
                 type="month"
                 value={form.competencia}
                 onChange={(e) => setForm((prev) => ({ ...prev, competencia: e.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
               />
             </Field>
 
@@ -211,7 +211,7 @@ export default function AdminFinance({
               <select
                 value={form.status}
                 onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -225,7 +225,7 @@ export default function AdminFinance({
               <input
                 value={form.observacao}
                 onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 placeholder="Opcional"
               />
             </Field>
@@ -245,7 +245,7 @@ export default function AdminFinance({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70"
+              className="inline-flex items-center gap-2 rounded-2xl bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-70"
             >
               <Plus size={16} />
               {saving ? 'Salvando...' : form.id ? 'Atualizar despesa' : 'Cadastrar despesa'}
@@ -298,7 +298,7 @@ export default function AdminFinance({
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50 px-4 py-2 text-xs font-semibold text-ink-600">
-            <CalendarDays size={13} className="text-blue-600" />
+            <CalendarDays size={13} className="text-brand-600" />
             Competência atual {finance.currentMonth}
           </div>
         </div>

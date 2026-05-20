@@ -80,10 +80,10 @@ function getRolePillClass(role) {
     return 'border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800';
   }
   if (normalized === 'Coordenador') {
-    return 'border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 text-violet-700';
+    return 'border-ink-200 bg-gradient-to-r from-ink-50 to-brand-50 text-ink-700';
   }
   if (normalized === 'Professor') {
-    return 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700';
+    return 'border-brand-200 bg-gradient-to-r from-brand-50 to-brand-50 text-brand-700';
   }
   return 'border-ink-200 bg-ink-100 text-ink-700';
 }
@@ -918,7 +918,7 @@ export default function Esquadroes({
     return (
       <div className="page-shell">
         <div className="section-card min-h-[280px] flex flex-col items-center justify-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-ink-900">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-ink-900">
             <ShieldCheck size={26} />
           </div>
           <h3 className="text-2xl font-semibold text-ink-900">Nenhum esquadrão disponível ainda.</h3>
@@ -2054,7 +2054,7 @@ export default function Esquadroes({
                 onClick={() => setShowSquadSwitcher((prev) => !prev)}
                 className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3 py-2.5 shadow-sm ring-1 ring-white/10 backdrop-blur-sm transition hover:border-white/25 hover:bg-white/[0.12]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/90 to-indigo-600/90 text-white shadow-md shadow-blue-900/30">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500/90 to-brand-600/90 text-white shadow-md shadow-brand-900/30">
                   <Users size={20} />
                 </div>
                 <div className="text-left">
@@ -2074,7 +2074,7 @@ export default function Esquadroes({
                   >
                     <div className="flex items-center justify-between border-b border-ink-100 px-3 pb-2">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Trocar esquadrão</p>
-                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
+                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-brand-700">
                         {accessibleSquads.length} ativos
                       </span>
                     </div>
@@ -2091,7 +2091,7 @@ export default function Esquadroes({
                             }}
                             className={`flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
                               active
-                                ? 'border-indigo-200 bg-indigo-50 font-semibold text-indigo-900'
+                                ? 'border-brand-200 bg-brand-50 font-semibold text-brand-900'
                                 : 'border-transparent text-ink-800 hover:bg-ink-50'
                             }`}
                           >
@@ -2193,9 +2193,9 @@ export default function Esquadroes({
       ) : null}
 
       {selectedSquad ? (
-        <div className="rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-ink-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
+        <div className="rounded-2xl border border-brand-100/90 bg-gradient-to-r from-white via-ink-50/80 to-brand-50/40 p-2 shadow-sm ring-1 ring-brand-100 sm:p-2.5">
           <div className="mb-1.5 flex flex-col gap-1 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600/90">Área interna</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-600/90">Área interna</p>
             <span className="truncate text-[10px] font-semibold uppercase tracking-widest text-ink-600 sm:text-right">
               {selectedSquad.name}
             </span>
@@ -2238,7 +2238,7 @@ export default function Esquadroes({
       <div className="flex w-full flex-col gap-6">
           {!selectedSquad ? (
             <div className="flex min-h-[520px] flex-col items-center justify-center rounded-[2rem] border border-ink-100 bg-white px-6 text-center shadow-sm">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
                 <Shield size={28} />
               </div>
               <h3 className="mt-5 text-2xl font-semibold text-ink-900">Escolha um esquadrão</h3>
@@ -2251,7 +2251,7 @@ export default function Esquadroes({
               {activeSection === 'dashboard' && (
                 <div className="animate-in fade-in flex flex-col gap-6">
                   <section className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Dashboard do esquadrão</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-500">Dashboard do esquadrão</p>
                     <h3 className="mt-1 text-2xl font-semibold text-ink-900">Visão geral do {selectedSquad.name}</h3>
                     <p className="mt-2 text-sm font-medium text-ink-600">
                       Painel de apresentação do cursinho com foco em engajamento, operação e próximos passos da turma.
@@ -2287,10 +2287,10 @@ export default function Esquadroes({
 
               {activeSection === 'forum' && (
                 <div className="animate-in fade-in space-y-6">
-                  <section className="rounded-[2rem] border border-ink-200 bg-gradient-to-r from-blue-50/90 via-white to-indigo-50/60 p-6 shadow-sm ring-1 ring-ink-100">
+                  <section className="rounded-[2rem] border border-ink-200 bg-gradient-to-r from-brand-50/90 via-white to-brand-50/60 p-6 shadow-sm ring-1 ring-ink-100">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Fórum interno Papirando</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-600">Fórum interno Papirando</p>
                         <h3 className="mt-1 text-2xl font-semibold text-ink-900">Discussões exclusivas da turma</h3>
                         <p className="mt-2 max-w-2xl text-sm font-medium text-ink-600">
                           Busca, filtros, ordenação, destaque fixado, compositor e comentários em árvore — o mesmo padrão do fórum geral, isolado ao esquadrão.
@@ -2318,10 +2318,10 @@ export default function Esquadroes({
                   </section>
 
                   {forumFocusedPost ? (
-                    <section className="rounded-[2rem] border border-indigo-100 bg-white p-5 shadow-sm">
+                    <section className="rounded-[2rem] border border-brand-100 bg-white p-5 shadow-sm">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Tópico aberto</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-500">Tópico aberto</p>
                           <h3 className="mt-1 text-xl font-semibold text-ink-900">Thread completa com comentários</h3>
                         </div>
                         <button
@@ -2362,7 +2362,7 @@ export default function Esquadroes({
                               setForumPage(1);
                             }}
                             placeholder="Buscar por dúvida, autor, matéria, resumo, aviso..."
-                            className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-medium text-ink-700 outline-none transition focus:border-indigo-500 focus:bg-white"
+                            className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-medium text-ink-700 outline-none transition focus:border-brand-500 focus:bg-white"
                           />
                         </div>
 
@@ -2406,7 +2406,7 @@ export default function Esquadroes({
                               setForumSort(e.target.value);
                               setForumPage(1);
                             }}
-                            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-indigo-500"
+                            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500"
                           >
                             <option value="recentes">Mais recentes</option>
                             <option value="populares">Mais úteis</option>
@@ -2429,13 +2429,13 @@ export default function Esquadroes({
                   ) : null}
 
                   {!forumFocusedPost ? (
-                    <section className="group relative flex flex-col gap-4 overflow-hidden rounded-[2rem] border border-indigo-100 bg-white p-6 shadow-sm">
-                    <div className="absolute right-0 top-0 h-full w-2 bg-indigo-500" />
+                    <section className="group relative flex flex-col gap-4 overflow-hidden rounded-[2rem] border border-brand-100 bg-white p-6 shadow-sm">
+                    <div className="absolute right-0 top-0 h-full w-2 bg-brand-500" />
                     <div className="flex items-start gap-4">
                       <img
                         src={profileAvatarUrl}
                         alt="Tu"
-                        className="h-12 w-12 rounded-full border-2 border-indigo-100 shadow-sm"
+                        className="h-12 w-12 rounded-full border-2 border-brand-100 shadow-sm"
                       />
                       <textarea
                         ref={forumComposerRef}
@@ -2443,7 +2443,7 @@ export default function Esquadroes({
                         value={newForumPost}
                         onChange={(e) => setNewForumPost(e.target.value)}
                         placeholder="Abra um novo tópico do esquadrão sem precisar voltar para a home."
-                        className="w-full resize-none rounded-2xl border border-transparent bg-ink-50 p-4 text-sm font-medium text-ink-700 outline-none transition-all hover:border-ink-200 hover:bg-white focus:border-indigo-500 focus:bg-white"
+                        className="w-full resize-none rounded-2xl border border-transparent bg-ink-50 p-4 text-sm font-medium text-ink-700 outline-none transition-all hover:border-ink-200 hover:bg-white focus:border-brand-500 focus:bg-white"
                       />
                     </div>
                     <div className="flex items-center justify-between pl-16">
@@ -2451,7 +2451,7 @@ export default function Esquadroes({
                       <button
                         type="button"
                         onClick={handlePublishForumPost}
-                        className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-indigo-700"
+                        className="flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-brand-700"
                       >
                         <Send size={16} /> Publicar
                       </button>
@@ -2495,7 +2495,7 @@ export default function Esquadroes({
 
                     {filteredForumPosts.length === 0 ? (
                       <div className="rounded-[2rem] border border-dashed border-ink-200 bg-white p-10 text-center shadow-sm">
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
                           <Search size={22} />
                         </div>
                         <h4 className="mt-4 text-xl font-semibold text-ink-900">Nada encontrado</h4>
@@ -2546,7 +2546,7 @@ export default function Esquadroes({
                               {av ? (
                                 <img src={av} alt="" className="h-full w-full object-cover" />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-indigo-100 text-xs font-bold text-indigo-700">
+                                <div className="flex h-full w-full items-center justify-center bg-brand-100 text-xs font-bold text-brand-700">
                                   {String(who).charAt(0)}
                                 </div>
                               )}
@@ -2565,13 +2565,13 @@ export default function Esquadroes({
                                 Fixado
                               </span>
                             ) : null}
-                            <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
+                            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-brand-700">
                               Mural
                             </span>
                           </div>
                         </div>
                         <div className="p-6">
-                          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand-600">
                             <Megaphone size={14} /> Aviso à turma
                           </div>
                           <h4 className="text-lg font-semibold text-ink-900">{notice.title}</h4>
@@ -2580,7 +2580,7 @@ export default function Esquadroes({
                             <a
                               href={notice.attachmentUrl || '#'}
                               download={notice.attachmentName}
-                              className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-blue-700"
+                              className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-brand-700"
                             >
                               <Bookmark size={12} />
                               {notice.attachmentName}
@@ -2601,15 +2601,15 @@ export default function Esquadroes({
               {activeSection === 'cronograma' && (
                 <div className="space-y-4">
                   <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Cronograma interno</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-500">Cronograma interno</p>
                     <h3 className="mt-1 text-2xl font-semibold text-ink-900">Planejamento da turma</h3>
                     <p className="mt-2 text-sm font-medium text-ink-600">
                       Aqui o cursinho concentra calendario de atividades, simulados e marcos da turma no proprio esquadrao.
                     </p>
                   </div>
-                  <div className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-5 shadow-sm ring-1 ring-indigo-100">
+                  <div className="rounded-[2rem] border border-brand-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-5 shadow-sm ring-1 ring-brand-100">
                     <div className="mb-3 flex items-center justify-between gap-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Visão calendário</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-600">Visão calendário</p>
                       <span className="text-xs font-semibold text-ink-500">{cronogramaCards.length} evento(s)</span>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -2618,9 +2618,9 @@ export default function Esquadroes({
                           key={`calendar-${item.id}`}
                           type="button"
                           onClick={() => openCronogramaNavItem(item)}
-                          className="rounded-xl border border-indigo-100 bg-white px-3 py-3 text-left transition hover:border-indigo-200 hover:shadow-sm"
+                          className="rounded-xl border border-brand-100 bg-white px-3 py-3 text-left transition hover:border-brand-200 hover:shadow-sm"
                         >
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">{item.label}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-500">{item.label}</p>
                           <p className="mt-1 text-sm font-semibold text-ink-900">{item.title}</p>
                           <p className="mt-1 text-xs font-medium text-ink-500">{item.when}</p>
                         </button>
@@ -2634,10 +2634,10 @@ export default function Esquadroes({
                           key={item.id}
                           type="button"
                           onClick={() => openCronogramaNavItem(item)}
-                          className="rounded-[1.6rem] border border-ink-200 bg-white p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                          className="rounded-[1.6rem] border border-ink-200 bg-white p-5 text-left shadow-sm transition hover:border-brand-200 hover:shadow-md"
                         >
                           <div className="mb-3 flex items-center justify-between gap-2">
-                            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-700">
+                            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-brand-700">
                               {item.label}
                             </span>
                             <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">{item.when}</span>
@@ -2657,7 +2657,7 @@ export default function Esquadroes({
                                 <p className="text-[11px] font-semibold text-ink-700">Publicado por {item.publishedBy}</p>
                                 <p className="text-[10px] font-medium text-ink-400">{item.publishedAtLabel || ''}</p>
                               </div>
-                              <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
+                              <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-brand-600">Abrir →</span>
                             </div>
                           ) : null}
                         </button>
@@ -2693,8 +2693,8 @@ export default function Esquadroes({
                             openInternalActivity(activity);
                           }
                         }}
-                        className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
-                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-ink-200'
+                        className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-brand-200 hover:shadow-md ${
+                          hl ? 'border-brand-300 ring-2 ring-brand-200' : 'border-ink-200'
                         }`}
                       >
                         <div className="mb-4 flex items-center justify-between gap-3">
@@ -2705,7 +2705,7 @@ export default function Esquadroes({
                         </div>
                         <p className="text-sm font-medium leading-relaxed text-ink-600">{activity.helper}</p>
                         {activity.dueDate || activity.dueTime ? (
-                          <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                          <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-brand-600">
                             Prazo {activity.dueDate || 'a definir'} {activity.dueTime ? `• ${activity.dueTime}` : ''}
                           </p>
                         ) : null}
@@ -2722,7 +2722,7 @@ export default function Esquadroes({
                               <p className="text-xs font-semibold text-ink-700">Lançado por {activity.publishedBy}</p>
                               <p className="text-[11px] font-medium text-ink-400">{activity.publishedAtLabel || ''}</p>
                             </div>
-                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
+                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-brand-600">
                               {activity.questionPackId ? 'Ir à lista →' : 'Detalhes →'}
                             </span>
                           </div>
@@ -2731,7 +2731,7 @@ export default function Esquadroes({
                           <a
                             href={activity.attachmentUrl || '#'}
                             download={activity.attachmentName}
-                            className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-blue-700"
+                            className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-brand-700"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Bookmark size={12} />
@@ -2754,7 +2754,7 @@ export default function Esquadroes({
                   <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <h4 className="text-lg font-semibold text-ink-900">Listas com maior engajamento</h4>
-                      <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
+                      <span className="rounded-full bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-brand-700">
                         {questionPosts.length} posts
                       </span>
                     </div>
@@ -2770,11 +2770,11 @@ export default function Esquadroes({
                               setActiveSection('praticas');
                               setSquadNavTarget({ type: 'questao', id: item.id });
                             }}
-                            className={`rounded-xl border bg-ink-50 p-4 text-left transition hover:border-indigo-200 hover:bg-white hover:shadow-sm ${
-                              hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-ink-100'
+                            className={`rounded-xl border bg-ink-50 p-4 text-left transition hover:border-brand-200 hover:bg-white hover:shadow-sm ${
+                              hl ? 'border-brand-300 ring-2 ring-brand-200' : 'border-ink-100'
                             }`}
                           >
-                            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{item.tag}</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">{item.tag}</p>
                             <h5 className="mt-1 text-sm font-semibold text-ink-900">{item.title}</h5>
                             <p className="mt-2 text-xs font-medium text-ink-500">{item.meta}</p>
                             {item.publishedBy ? (
@@ -2793,7 +2793,7 @@ export default function Esquadroes({
                                     {item.questionsCount ? ` · ${item.questionsCount} questões` : ''}
                                   </p>
                                 </div>
-                                <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
+                                <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-brand-600">Abrir →</span>
                               </div>
                             ) : null}
                           </button>
@@ -2815,7 +2815,7 @@ export default function Esquadroes({
                     <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Simulado selecionado</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-600">Simulado selecionado</p>
                           <h4 className="mt-1 text-xl font-semibold text-ink-900">{selectedSimulado.title}</h4>
                           <p className="mt-2 text-sm font-medium text-ink-600">
                             {selectedSimulado.helper || 'Aplicação interna com resultado enviado ao professor responsável.'}
@@ -2858,7 +2858,7 @@ export default function Esquadroes({
                               value={simuladoAttempt?.teacherComment || ''}
                               onChange={(e) => handleTeacherCommentOnAttempt(e.target.value)}
                               placeholder="Comentário pedagógico do professor sobre erros e pontos de atenção..."
-                              className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                              className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                             />
                           ) : null}
                         </div>
@@ -2884,15 +2884,15 @@ export default function Esquadroes({
                             setSelectedSimuladoId(simulado.id);
                           }
                         }}
-                        className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
-                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-ink-200'
+                        className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-brand-200 hover:shadow-md ${
+                          hl ? 'border-brand-300 ring-2 ring-brand-200' : 'border-ink-200'
                         }`}
                       >
-                        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand-600">
                           <Trophy size={14} /> Simulado programado
                         </div>
                         <h4 className="text-lg font-semibold text-ink-900">{simulado.title}</h4>
-                        <p className="mt-2 text-sm font-semibold text-indigo-600">{simulado.dateLabel || simulado.date}</p>
+                        <p className="mt-2 text-sm font-semibold text-brand-600">{simulado.dateLabel || simulado.date}</p>
                         <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{simulado.helper}</p>
                         {simulado.publishedBy ? (
                           <div className="mt-4 flex items-center gap-2 border-t border-ink-100 pt-4">
@@ -2907,14 +2907,14 @@ export default function Esquadroes({
                               <p className="text-xs font-semibold text-ink-700">Publicado por {simulado.publishedBy}</p>
                               <p className="text-[11px] font-medium text-ink-400">{simulado.publishedAtLabel || ''}</p>
                             </div>
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Ficha →</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-600">Ficha →</span>
                           </div>
                         ) : null}
                         {simulado.attachmentName ? (
                           <a
                             href={simulado.attachmentUrl || '#'}
                             download={simulado.attachmentName}
-                            className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-blue-700"
+                            className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-brand-700"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Bookmark size={12} />
@@ -2935,7 +2935,7 @@ export default function Esquadroes({
               {activeSection === 'configuracao' && (
                 <div className="space-y-6">
                   <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Governança do esquadrão</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-500">Governança do esquadrão</p>
                     <h3 className="mt-1 text-2xl font-semibold text-ink-900">Papéis, permissões e convite</h3>
                     <p className="mt-2 text-sm font-medium text-ink-600">
                       Cada papel tem escopo explícito. O dono controla selos de professor, matérias e moderação; alunos enxergam apenas o que a turma libera.
@@ -2944,12 +2944,12 @@ export default function Esquadroes({
                   <div className="grid gap-4 md:grid-cols-2">
                     {roleHierarchyDetail.map((item) => (
                       <div key={item.role} className="rounded-[1.6rem] border border-ink-200 bg-white p-5 shadow-sm">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">{item.role}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-600">{item.role}</p>
                         <p className="mt-2 text-sm font-medium text-ink-700">{item.summary}</p>
                         <ul className="mt-3 space-y-2 text-sm font-medium text-ink-600">
                           {item.can.map((line) => (
                             <li key={line} className="flex gap-2">
-                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
                               <span>{line}</span>
                             </li>
                           ))}
@@ -2957,13 +2957,13 @@ export default function Esquadroes({
                       </div>
                     ))}
                   </div>
-                  <div className="rounded-[2rem] border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-white p-6 shadow-sm ring-1 ring-indigo-100">
+                  <div className="rounded-[2rem] border border-brand-100 bg-gradient-to-r from-brand-50/80 to-white p-6 shadow-sm ring-1 ring-brand-100">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Link de convite (ADM)</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-600">Link de convite (ADM)</p>
                         <h4 className="mt-1 text-lg font-semibold text-ink-900">Compartilhe com alunos e equipe</h4>
                         <p className="mt-2 text-sm font-medium text-ink-600">
-                          Código atual: <span className="font-semibold text-indigo-700">{selectedSquad.inviteCode || '—'}</span>
+                          Código atual: <span className="font-semibold text-brand-700">{selectedSquad.inviteCode || '—'}</span>
                         </p>
                         <p className="mt-1 text-xs font-medium text-ink-500">
                           Fluxo: o aluno se cadastra na plataforma, entra com este convite e acessa apenas o esquadrão autorizado.
@@ -2995,7 +2995,7 @@ export default function Esquadroes({
                     </div>
                   </div>
                   <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Estrutura acadêmica</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-500">Estrutura acadêmica</p>
                     <h4 className="mt-1 text-lg font-semibold text-ink-900">Funções do cursinho e turmas</h4>
                     <p className="mt-2 text-sm font-medium text-ink-600">
                       O ADM define os papéis oficiais (Diretor, Coordenador, Professor e Aluno) e segmenta conteúdos por turma.
@@ -3011,7 +3011,7 @@ export default function Esquadroes({
                       <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">Turmas cadastradas</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {(Array.isArray(selectedSquad?.turmas) && selectedSquad.turmas.length ? selectedSquad.turmas : ['Turma única']).map((turma) => (
-                          <span key={turma} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                          <span key={turma} className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
                             {turma}
                           </span>
                         ))}
@@ -3022,7 +3022,7 @@ export default function Esquadroes({
                             value={newTurmaName}
                             onChange={(e) => setNewTurmaName(e.target.value)}
                             placeholder="Nova turma (ex.: Turma Noite A)"
-                            className="flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                            className="flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                           />
                           <button
                             type="button"
@@ -3122,7 +3122,7 @@ export default function Esquadroes({
 
               {activeSection === 'ranking' && (
                 <div className="space-y-4">
-                  <div className="rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50/90 via-white to-indigo-50/40 p-6 shadow-sm ring-1 ring-amber-100/80">
+                  <div className="rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50/90 via-white to-brand-50/40 p-6 shadow-sm ring-1 ring-amber-100/80">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-800">Como funciona a pontuação</p>
                     <h3 className="mt-1 text-xl font-semibold text-ink-900">Regras de XP</h3>
                     <p className="mt-2 text-sm font-medium text-ink-600">
@@ -3159,7 +3159,7 @@ export default function Esquadroes({
               {activeSection === 'admin' && canManageSquad && (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
                   <section className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Dados do esquadrão</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-500">Dados do esquadrão</p>
                     <h3 className="mt-1 text-2xl font-semibold tracking-tight text-ink-900">Configurações gerais</h3>
                     <div className="mt-5 grid gap-4 md:grid-cols-2">
                       <label className="text-sm font-semibold text-ink-700">
@@ -3167,7 +3167,7 @@ export default function Esquadroes({
                         <input
                           value={adminEdit.name}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, name: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                         />
                       </label>
                       <label className="text-sm font-semibold text-ink-700">
@@ -3175,7 +3175,7 @@ export default function Esquadroes({
                         <input
                           value={adminEdit.focus}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, focus: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                         />
                       </label>
                       <label className="text-sm font-semibold text-ink-700">
@@ -3183,7 +3183,7 @@ export default function Esquadroes({
                         <input
                           value={adminEdit.inviteCode}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, inviteCode: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                         />
                       </label>
                       <label className="text-sm font-semibold text-ink-700">
@@ -3191,7 +3191,7 @@ export default function Esquadroes({
                         <select
                           value={adminEdit.visibility}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, visibility: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                         >
                           <option value="Privado">Privado</option>
                           <option value="Público">Público</option>
@@ -3204,7 +3204,7 @@ export default function Esquadroes({
                         rows={3}
                         value={adminEdit.description}
                         onChange={(e) => setAdminEdit((prev) => ({ ...prev, description: e.target.value }))}
-                        className="mt-1 w-full resize-none rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
+                        className="mt-1 w-full resize-none rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-brand-500"
                       />
                     </label>
                     <div className="mt-4 flex justify-end">
@@ -3218,10 +3218,10 @@ export default function Esquadroes({
                     </div>
                   </section>
 
-                  <section className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] p-5 shadow-sm">
+                  <section className="rounded-[2rem] border border-brand-100 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] p-5 shadow-sm">
                     <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Administração do esquadrão</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-500">Administração do esquadrão</p>
                         <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900">Controle central do ambiente</h3>
                         <p className="mt-1 max-w-2xl text-sm font-medium text-ink-500">
                           Organize pessoas, publique conteúdo e ajuste permissões sem sair do fluxo atual.
@@ -3271,7 +3271,7 @@ export default function Esquadroes({
                   <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
                     <div className="space-y-6">
                       <AdminPanel
-                        icon={<UserPlus size={18} className="text-indigo-600" />}
+                        icon={<UserPlus size={18} className="text-brand-600" />}
                         title="Pessoas do esquadrão"
                         subtitle="Visual limpo para bater o olho e entender quem é dono, professor ou membro."
                       >
@@ -3299,7 +3299,7 @@ export default function Esquadroes({
                       </AdminPanel>
 
                       <AdminPanel
-                        icon={<ClipboardList size={18} className="text-indigo-600" />}
+                        icon={<ClipboardList size={18} className="text-brand-600" />}
                         title="Atalhos de publicação"
                         subtitle="As ações principais ficam visíveis e organizadas, sem parecer um monte de botão jogado."
                       >
@@ -3334,7 +3334,7 @@ export default function Esquadroes({
 
                     <div className="space-y-6">
                       <AdminPanel
-                        icon={<Shield size={18} className="text-indigo-600" />}
+                        icon={<Shield size={18} className="text-brand-600" />}
                         title="Estado das permissões"
                         subtitle="Leitura rápida do que está ativo hoje dentro do esquadrão."
                       >
@@ -3346,8 +3346,8 @@ export default function Esquadroes({
                           <PermissionItem label="Fixar mural" value={selectedSquad?.permissions?.pinNotices === false ? 'Restrito' : 'Ativo'} />
                         </div>
 
-                        <div className="mt-4 rounded-[1.4rem] border border-dashed border-indigo-200 bg-indigo-50/60 p-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Ajuste rápido</p>
+                        <div className="mt-4 rounded-[1.4rem] border border-dashed border-brand-200 bg-brand-50/60 p-4">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-500">Ajuste rápido</p>
                           <p className="mt-2 text-sm font-medium leading-relaxed text-ink-600">
                             Precisa trocar um membro para professor ou mexer em escopo? Abre o fluxo de permissões e resolve sem gambiarra.
                           </p>
@@ -3362,7 +3362,7 @@ export default function Esquadroes({
                       </AdminPanel>
 
                       <AdminPanel
-                        icon={<Sparkles size={18} className="text-indigo-600" />}
+                        icon={<Sparkles size={18} className="text-brand-600" />}
                         title="Resumo operacional"
                         subtitle="Panorama curto para saber se o esquadrão está redondo ou pedindo socorro."
                       >
@@ -3375,7 +3375,7 @@ export default function Esquadroes({
                       </AdminPanel>
 
                       <AdminPanel
-                        icon={<MessageCircle size={18} className="text-indigo-600" />}
+                        icon={<MessageCircle size={18} className="text-brand-600" />}
                         title="Moderação do fórum"
                         subtitle="Aba exclusiva para o ADM controlar conteúdo, fixar, ocultar e apagar posts."
                       >
@@ -3490,7 +3490,7 @@ function QuickStatCard({ icon, label, value }) {
 function ForumBadge({ label, value }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-100">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-100">{label}</p>
       <p className="mt-1 text-sm font-semibold text-white">{value}</p>
     </div>
   );
@@ -3498,14 +3498,14 @@ function ForumBadge({ label, value }) {
 
 function ForumPostFeatured({ post }) {
   return (
-    <div className="rounded-[1.6rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#eef4ff_100%)] p-5 shadow-sm">
+    <div className="rounded-[1.6rem] border border-brand-100 bg-[linear-gradient(180deg,#ffffff_0%,#eef4ff_100%)] p-5 shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-12 w-12 rounded-full object-cover" />
           <div className="min-w-0">
             <h5 className="flex items-center gap-1 text-sm font-semibold text-ink-800">
               <span className="truncate">{post.author}</span>
-              {post.badge ? <Shield size={12} className="shrink-0 text-blue-500" fill="currentColor" /> : null}
+              {post.badge ? <Shield size={12} className="shrink-0 text-brand-500" fill="currentColor" /> : null}
             </h5>
             <p className="text-[10px] font-bold text-ink-400">
               {post.createdAt} • {post.section}
@@ -3530,7 +3530,7 @@ function ForumPostFeatured({ post }) {
       <h4 className="text-xl font-semibold text-ink-900">{post.title}</h4>
       <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{post.message}</p>
 
-      <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-indigo-100 pt-4">
+      <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-brand-100 pt-4">
         <div className="flex items-center gap-2 text-xs font-semibold text-ink-500">
           <ThumbsUp size={14} />
           {post.helpful}
@@ -3577,7 +3577,7 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
           <div className="min-w-0">
             <h5 className="flex items-center gap-1 text-sm font-semibold text-ink-800">
               <span className="truncate">{post.author}</span>
-              {post.badge ? <Shield size={12} className="text-blue-500" fill="currentColor" /> : null}
+              {post.badge ? <Shield size={12} className="text-brand-500" fill="currentColor" /> : null}
             </h5>
             <p className="text-[10px] font-bold text-ink-400">
               {post.createdAt} • {post.section}
@@ -3627,16 +3627,16 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
       </div>
 
       <div className="mb-5 flex flex-wrap items-center gap-5 border-y border-ink-100 py-4">
-        <button className="group flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-blue-600">
+        <button className="group flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-brand-600">
           <ThumbsUp size={16} className="transition-transform group-hover:-translate-y-1" /> {post.helpful}
         </button>
-        <button className="flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-indigo-600">
+        <button className="flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-brand-600">
           <MessageCircle size={16} /> {post.replies} respostas
         </button>
         <button
           type="button"
           onClick={onOpenThread}
-          className="flex items-center gap-2 text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-800"
+          className="flex items-center gap-2 text-xs font-bold text-brand-600 transition-colors hover:text-brand-800"
         >
           Abrir tópico
         </button>
@@ -3649,7 +3649,7 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
       </div>
 
       <div className="space-y-4">
-        <div className="rounded-[1.4rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4">
+        <div className="rounded-[1.4rem] border border-brand-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4">
           <div className="mb-3 flex items-center gap-3">
             <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-9 w-9 rounded-full object-cover" />
             <div className="min-w-0">
@@ -3661,20 +3661,20 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
           <textarea
             rows="3"
             placeholder="Escreve uma resposta, complementa a explicação ou salva um colega do desespero..."
-            className="w-full resize-none rounded-2xl border border-ink-200 bg-white p-4 text-sm font-medium text-ink-700 outline-none transition focus:border-indigo-500"
+            className="w-full resize-none rounded-2xl border border-ink-200 bg-white p-4 text-sm font-medium text-ink-700 outline-none transition focus:border-brand-500"
           />
 
           <div className="mt-3 flex items-center justify-between">
             <div className="flex gap-2">
-              <button className="rounded-lg p-2 text-ink-400 transition hover:text-indigo-600">
+              <button className="rounded-lg p-2 text-ink-400 transition hover:text-brand-600">
                 <Camera size={16} />
               </button>
-              <button className="rounded-lg p-2 text-ink-400 transition hover:text-indigo-600">
+              <button className="rounded-lg p-2 text-ink-400 transition hover:text-brand-600">
                 <Target size={16} />
               </button>
             </div>
 
-            <button className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+            <button className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
               <Send size={14} />
               Responder
             </button>
@@ -3712,7 +3712,7 @@ function CommentThread({ comment, level = 0 }) {
   const [showChildren, setShowChildren] = useState(true);
 
   return (
-    <div className={`${level > 0 ? 'ml-6 border-l border-indigo-100 pl-4' : ''}`}>
+    <div className={`${level > 0 ? 'ml-6 border-l border-brand-100 pl-4' : ''}`}>
       <div className="rounded-[1.4rem] border border-ink-100 bg-ink-50 p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -3720,7 +3720,7 @@ function CommentThread({ comment, level = 0 }) {
             <div className="min-w-0">
               <h6 className="flex items-center gap-1 text-sm font-semibold text-ink-800">
                 <span className="truncate">{comment.author}</span>
-                {comment.badge ? <Shield size={11} className="text-blue-500" fill="currentColor" /> : null}
+                {comment.badge ? <Shield size={11} className="text-brand-500" fill="currentColor" /> : null}
               </h6>
               <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400">{comment.createdAt}</p>
             </div>
@@ -3734,16 +3734,16 @@ function CommentThread({ comment, level = 0 }) {
         <p className="text-sm font-medium leading-relaxed text-ink-600">{comment.content}</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-ink-500">
-          <button className="inline-flex items-center gap-2 transition hover:text-blue-600">
+          <button className="inline-flex items-center gap-2 transition hover:text-brand-600">
             <ThumbsUp size={14} />
             {comment.likes || 0}
           </button>
-          <button className="transition hover:text-indigo-600">Responder</button>
+          <button className="transition hover:text-brand-600">Responder</button>
           {(comment.children || []).length ? (
             <button
               type="button"
               onClick={() => setShowChildren((prev) => !prev)}
-              className="transition hover:text-indigo-600"
+              className="transition hover:text-brand-600"
             >
               {showChildren ? 'Ocultar aninhadas' : `Ver aninhadas (${comment.children.length})`}
             </button>
@@ -3765,13 +3765,13 @@ function CommentThread({ comment, level = 0 }) {
 function TeacherCard({ teacher }) {
   return (
     <div className="overflow-hidden rounded-[2rem] border border-ink-100 bg-white shadow-sm transition-all hover:shadow-lg">
-      <div className="relative h-20 bg-gradient-to-r from-ink-100 via-white to-blue-50">
+      <div className="relative h-20 bg-gradient-to-r from-ink-100 via-white to-brand-50">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_34%)]" />
         <div className="absolute -bottom-10 left-6 h-20 w-20 rounded-2xl border-4 border-white bg-white p-1 shadow-md">
           {teacher.avatar ? (
             <img src={teacher.avatar} alt={teacher.name} className="h-full w-full rounded-xl object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-xl bg-blue-100 font-semibold text-blue-700">
+            <div className="flex h-full w-full items-center justify-center rounded-xl bg-brand-100 font-semibold text-brand-700">
               {String(teacher.name || 'P').charAt(0).toUpperCase()}
             </div>
           )}
@@ -3784,7 +3784,7 @@ function TeacherCard({ teacher }) {
             <h3 className="break-words text-xl font-semibold leading-tight text-ink-900">{teacher.name}</h3>
             <p className="mt-1 break-words text-sm font-medium leading-relaxed text-ink-500">{teacher.subject}</p>
           </div>
-          <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-600">
+          <span className="shrink-0 rounded-full bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-brand-600">
             Selo Papirando
           </span>
         </div>
@@ -3815,7 +3815,7 @@ function TeacherMiniCard({ teacher }) {
         {teacher.avatar ? (
           <img src={teacher.avatar} alt={teacher.name} className="h-full w-full rounded-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
             {String(teacher.name || 'P').charAt(0).toUpperCase()}
           </div>
         )}
@@ -3847,7 +3847,7 @@ function RankingRow({ item }) {
           {item.avatar ? (
             <img src={item.avatar} alt={item.name} className="h-full w-full rounded-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
               {String(item.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
@@ -3872,8 +3872,8 @@ function RankingRow({ item }) {
 
 function MembersHero({ squad, canManageSquad }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-ink-900 to-indigo-900 p-6 text-white shadow-xl shadow-indigo-900/15">
-      <div className="pointer-events-none absolute -top-10 right-0 h-40 w-40 rounded-full bg-indigo-400/20 blur-3xl" />
+    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-ink-900 to-brand-900 p-6 text-white shadow-xl shadow-brand-900/15">
+      <div className="pointer-events-none absolute -top-10 right-0 h-40 w-40 rounded-full bg-brand-400/20 blur-3xl" />
       <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-lg border border-yellow-400 bg-yellow-500 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white shadow-sm">
@@ -3881,7 +3881,7 @@ function MembersHero({ squad, canManageSquad }) {
             Gestão de membros
           </div>
           <h3 className="mt-4 text-3xl font-semibold tracking-tight">Membros do esquadrão</h3>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-indigo-200">
+          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-brand-200">
             Aqui o dono do cursinho organiza quem entra, quem recebe selo de professor e quem ganha acesso às ferramentas internas.
           </p>
         </div>
@@ -3909,7 +3909,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
           {member.avatar ? (
             <img src={member.avatar} alt={member.name} className="h-full w-full rounded-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
               {String(member.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
@@ -3919,7 +3919,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
           <p className="truncate text-sm font-semibold text-ink-800">{member.name}</p>
           <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-ink-400">{member.role}</p>
           {member.subject ? (
-            <p className="mt-0.5 text-[11px] font-semibold text-indigo-600">Matéria: {member.subject}</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-brand-600">Matéria: {member.subject}</p>
           ) : null}
           {member.email ? <p className="mt-0.5 truncate text-[11px] font-medium text-ink-500">{member.email}</p> : null}
           {member.joinedAt ? <p className="text-[10px] font-medium text-ink-400">Entrou: {member.joinedAt}</p> : null}
@@ -3946,7 +3946,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
               <select
                 value={normalizedRole}
                 onChange={(e) => onSetRole?.(member, e.target.value)}
-                className="rounded-xl border border-indigo-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-2 text-xs font-semibold text-ink-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="rounded-xl border border-brand-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-2 text-xs font-semibold text-ink-800 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               >
                 {CURSINHO_ROLE_OPTIONS.map((role) => (
                   <option key={role} value={role}>
@@ -3979,8 +3979,8 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
 
 function AdminHero({ squad }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-[#102347] via-[#17346a] to-indigo-900 p-6 text-white shadow-xl shadow-indigo-900/15">
-      <div className="pointer-events-none absolute -top-14 right-0 h-44 w-44 rounded-full bg-indigo-400/20 blur-3xl" />
+    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-[#102347] via-[#17346a] to-brand-900 p-6 text-white shadow-xl shadow-brand-900/15">
+      <div className="pointer-events-none absolute -top-14 right-0 h-44 w-44 rounded-full bg-brand-400/20 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-0 h-28 w-28 rounded-full bg-cyan-400/10 blur-2xl" />
       <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -3989,7 +3989,7 @@ function AdminHero({ squad }) {
             Administração do esquadrão
           </div>
           <h3 className="mt-4 text-3xl font-semibold tracking-tight">Painel de controle interno</h3>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-indigo-200">
+          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-brand-200">
             Tudo que o dono precisa para organizar pessoas, controlar publicações e manter o esquadrão nos trilhos.
           </p>
         </div>
@@ -4008,7 +4008,7 @@ function AdminPanel({ icon, title, subtitle, children }) {
     <section className="overflow-hidden rounded-[2rem] border border-ink-100 bg-white shadow-sm">
       <div className="border-b border-ink-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+          <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
             {icon}
           </div>
           <div>
@@ -4032,7 +4032,7 @@ function AdminMemberRow({ member, onManagePermissions }) {
           {member.avatar ? (
             <img src={member.avatar} alt={member.name} className="h-full w-full rounded-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
               {String(member.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
@@ -4083,7 +4083,7 @@ function AdminActionCard({ title, helper, badge, onClick }) {
     <div className="flex min-h-[236px] flex-col rounded-[1.5rem] border border-ink-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h5 className="pr-2 text-lg font-semibold leading-tight text-ink-900">{title}</h5>
-        <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-brand-600">
           {badge}
         </span>
       </div>
@@ -4127,12 +4127,12 @@ function AdminCommandCard({ icon, title, description, actionLabel, onClick }) {
       onClick={onClick}
       className="group flex min-h-[228px] h-full flex-col rounded-[1.6rem] border border-ink-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 transition group-hover:bg-brand-600 group-hover:text-white">
         {icon}
       </div>
       <h4 className="mt-5 text-lg font-semibold leading-tight tracking-tight text-ink-900">{title}</h4>
       <p className="mt-3 text-sm font-medium leading-relaxed text-ink-500">{description}</p>
-      <span className="mt-auto inline-flex items-center gap-2 pt-4 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+      <span className="mt-auto inline-flex items-center gap-2 pt-4 text-xs font-semibold uppercase tracking-widest text-brand-600">
         {actionLabel}
         <ArrowRight size={13} />
       </span>
@@ -4142,7 +4142,7 @@ function AdminCommandCard({ icon, title, description, actionLabel, onClick }) {
 
 function AdminMetricTone({ label, value, tone = 'blue' }) {
   const toneMap = {
-    blue: 'border-indigo-100 bg-indigo-50 text-indigo-700',
+    blue: 'border-brand-100 bg-brand-50 text-brand-700',
     gold: 'border-amber-100 bg-amber-50 text-amber-700',
     emerald: 'border-emerald-100 bg-emerald-50 text-emerald-700',
     slate: 'border-ink-200 bg-ink-50 text-ink-700',
@@ -4283,7 +4283,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.title}
               onChange={(event) => onChange((prev) => ({ ...prev, title: event.target.value }))}
-              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               placeholder="Título principal"
             />
           ) : null}
@@ -4292,7 +4292,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
             <select
               value={flow.status}
               onChange={(event) => onChange((prev) => ({ ...prev, status: event.target.value }))}
-              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             >
               <option>Aberta</option>
               <option>Programada</option>
@@ -4307,13 +4307,13 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="date"
                 value={flow.date}
                 onChange={(event) => onChange((prev) => ({ ...prev, date: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               />
               <input
                 type="time"
                 value={flow.time}
                 onChange={(event) => onChange((prev) => ({ ...prev, time: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               />
             </div>
           ) : null}
@@ -4324,13 +4324,13 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="date"
                 value={flow.dueDate}
                 onChange={(event) => onChange((prev) => ({ ...prev, dueDate: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               />
               <input
                 type="time"
                 value={flow.dueTime}
                 onChange={(event) => onChange((prev) => ({ ...prev, dueTime: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               />
             </div>
           ) : null}
@@ -4340,7 +4340,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.helper}
               onChange={(event) => onChange((prev) => ({ ...prev, helper: event.target.value }))}
-              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               placeholder="Descrição operacional"
             />
           ) : null}
@@ -4350,7 +4350,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               rows="4"
               value={flow.description}
               onChange={(event) => onChange((prev) => ({ ...prev, description: event.target.value }))}
-              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               placeholder="Escreva o comunicado que será fixado no mural"
             />
           ) : null}
@@ -4374,7 +4374,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 }}
               />
               {flow.attachmentName ? (
-                <span className="mt-3 block text-xs font-semibold uppercase tracking-widest text-blue-700">
+                <span className="mt-3 block text-xs font-semibold uppercase tracking-widest text-brand-700">
                   {flow.attachmentName}
                 </span>
               ) : null}
@@ -4386,7 +4386,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.inviteName}
               onChange={(event) => onChange((prev) => ({ ...prev, inviteName: event.target.value }))}
-              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               placeholder="Nome do aluno convidado"
             />
           ) : null}
@@ -4397,14 +4397,14 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="text"
                 value={flow.teacherName}
                 onChange={(event) => onChange((prev) => ({ ...prev, teacherName: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
                 placeholder="Nome do professor"
               />
               <input
                 type="text"
                 value={flow.teacherSubject}
                 onChange={(event) => onChange((prev) => ({ ...prev, teacherSubject: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
                 placeholder="Matéria ou responsabilidade"
               />
             </>
@@ -4415,7 +4415,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               <select
                 value={flow.memberId}
                 onChange={(event) => onChange((prev) => ({ ...prev, memberId: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               >
                 <option value="">Selecionar membro</option>
                 {members.map((member) => (
@@ -4427,7 +4427,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               <select
                 value={flow.permissionScope}
                 onChange={(event) => onChange((prev) => ({ ...prev, permissionScope: event.target.value }))}
-                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               >
                 {PERMISSION_SCOPE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -4440,7 +4440,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                   type="text"
                   value={flow.teacherSubject}
                   onChange={(event) => onChange((prev) => ({ ...prev, teacherSubject: event.target.value }))}
-                  className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
                   placeholder="Matéria do professor, se for promover"
                 />
               ) : null}
@@ -4494,14 +4494,14 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             type="text"
             value={form.name}
             onChange={(event) => onChange((prev) => ({ ...prev, name: event.target.value }))}
-            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             placeholder="Nome do esquadrão"
           />
 
           <select
             value={form.focus}
             onChange={(event) => onChange((prev) => ({ ...prev, focus: event.target.value }))}
-            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           >
             <option value="">Selecionar concurso foco</option>
             {focusOptions.map((option) => (
@@ -4514,7 +4514,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           <select
             value={form.visibility}
             onChange={(event) => onChange((prev) => ({ ...prev, visibility: event.target.value }))}
-            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           >
             <option>Privado</option>
             <option>Por convite</option>
@@ -4525,7 +4525,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             type="text"
             value={form.inviteCode}
             onChange={(event) => onChange((prev) => ({ ...prev, inviteCode: event.target.value.toUpperCase() }))}
-            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             placeholder="Codigo de entrada do esquadrao"
           />
 
@@ -4533,7 +4533,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             rows="4"
             value={form.description}
             onChange={(event) => onChange((prev) => ({ ...prev, description: event.target.value }))}
-            className="md:col-span-2 rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="md:col-span-2 rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             placeholder="Descreva a proposta da turma, metodologia, rotina e objetivo do esquadrao"
           />
 

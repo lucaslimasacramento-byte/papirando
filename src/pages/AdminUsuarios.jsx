@@ -120,7 +120,7 @@ export default function AdminUsuarios({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por nome, email, plano ou papel..."
-              className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
             />
           </div>
         </div>
@@ -191,13 +191,13 @@ export default function AdminUsuarios({
                       value={profile.max_courses ?? 3}
                       disabled={savingId === profile.id}
                       onChange={(e) => handleFieldChange(profile, 'max_courses', Number(e.target.value || 0))}
-                      className="w-28 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
+                      className="w-28 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500"
                     />
                   </td>
 
                   <td className="px-4 py-4">
                     <div className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-semibold text-ink-600">
-                      <WalletCards size={13} className="text-blue-600" />
+                      <WalletCards size={13} className="text-brand-600" />
                       {savingId === profile.id ? 'Salvando...' : 'Configurável'}
                     </div>
                   </td>
@@ -222,7 +222,7 @@ export default function AdminUsuarios({
 function SummaryCard({ icon: Icon, label, value }) {
   return (
     <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+      <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-700">
         <Icon size={12} />
         {label}
       </div>
@@ -237,7 +237,7 @@ function SelectCell({ value, options, onChange, disabled }) {
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
+      className="rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500"
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>

@@ -846,7 +846,7 @@ function PlanejamentoContent({
                   selectedCourseLabels.map((course) => (
                     <span
                       key={course.plano}
-                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-ink-100 bg-blue-50 text-[#1d4ed8]"
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-ink-100 bg-brand-50 text-[#1d4ed8]"
                     >
                       {course.nome}
                     </span>
@@ -875,7 +875,7 @@ function PlanejamentoContent({
                 <button
                   type="button"
                   onClick={openWizard}
-                  className="inline-flex items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-bold text-[#1d4ed8] transition hover:border-blue-200 hover:bg-blue-100"
+                  className="inline-flex items-center justify-center rounded-xl border border-brand-100 bg-brand-50 px-3 py-2 text-xs font-bold text-[#1d4ed8] transition hover:border-brand-200 hover:bg-brand-100"
                 >
                   Reabrir ajuste
                 </button>
@@ -959,7 +959,7 @@ function PlanejamentoContent({
                         <button
                           onClick={() => setCalViewMode('mes')}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                            calViewMode === 'mes' ? 'bg-blue-50 text-[#1d4ed8]' : 'text-ink-500 hover:bg-ink-50'
+                            calViewMode === 'mes' ? 'bg-brand-50 text-[#1d4ed8]' : 'text-ink-500 hover:bg-ink-50'
                           }`}
                         >
                           Mês
@@ -967,7 +967,7 @@ function PlanejamentoContent({
                         <button
                           onClick={() => setCalViewMode('semana')}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                            calViewMode === 'semana' ? 'bg-blue-50 text-[#1d4ed8]' : 'text-ink-500 hover:bg-ink-50'
+                            calViewMode === 'semana' ? 'bg-brand-50 text-[#1d4ed8]' : 'text-ink-500 hover:bg-ink-50'
                           }`}
                         >
                           Semana
@@ -994,7 +994,7 @@ function PlanejamentoContent({
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
+                  <div className="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-800">
                     {summary.paceLabel || 'Ritmo sob controle'}
                   </div>
 
@@ -1052,7 +1052,7 @@ function PlanejamentoContent({
                           <div
                             key={`${dateKey || 'blank'}-${index}`}
                             className={`bg-white p-2 flex flex-col transition-colors overflow-hidden group relative ${
-                              !valid ? 'bg-ink-50/50' : 'hover:bg-blue-50/30'
+                              !valid ? 'bg-ink-50/50' : 'hover:bg-brand-50/30'
                             }`}
                           >
                             {valid ? (
@@ -1116,7 +1116,7 @@ function PlanejamentoContent({
                         const events = filteredCalendarEvents.filter((event) => event.data === dateKey);
 
                         return (
-                          <div key={dateKey} className="bg-white p-2 flex flex-col transition-colors hover:bg-blue-50/20">
+                          <div key={dateKey} className="bg-white p-2 flex flex-col transition-colors hover:bg-brand-50/20">
                             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 mt-2">
                               {events.map((event) => (
                                 <button
@@ -1299,7 +1299,7 @@ function PlanejamentoContent({
                                     <button
                                       type="button"
                                       onClick={() => handlePlanAction(task, 'start', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-ink-700 hover:bg-blue-50 hover:text-[#1d4ed8] flex items-center gap-2 transition-colors"
+                                      className="w-full text-left px-4 py-2 text-xs font-bold text-ink-700 hover:bg-brand-50 hover:text-[#1d4ed8] flex items-center gap-2 transition-colors"
                                     >
                                       <Play size={14} />
                                       Iniciar sessão
@@ -1307,7 +1307,7 @@ function PlanejamentoContent({
                                     <button
                                       type="button"
                                       onClick={() => handlePlanAction(task, 'open', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-ink-700 hover:bg-blue-50 hover:text-[#1d4ed8] flex items-center gap-2 transition-colors"
+                                      className="w-full text-left px-4 py-2 text-xs font-bold text-ink-700 hover:bg-brand-50 hover:text-[#1d4ed8] flex items-center gap-2 transition-colors"
                                     >
                                       <Target size={14} />
                                       Abrir disciplina
@@ -1501,7 +1501,7 @@ function PlanejamentoContent({
                         }
                         className={`rounded-xl border px-4 py-3 text-left transition ${
                           wizardCoursePlans.includes(course.plano)
-                            ? 'border-[#1d4ed8] bg-blue-50'
+                            ? 'border-[#1d4ed8] bg-brand-50'
                             : 'border-ink-200 bg-white hover:border-ink-300'
                         }`}
                       >
@@ -1544,7 +1544,7 @@ function PlanejamentoContent({
                             }))
                           }
                           className={`rounded-xl border px-4 py-3 text-center text-sm font-semibold transition sm:text-base ${
-                            selected ? 'border-[#1d4ed8] bg-blue-50 text-ink-900' : 'border-ink-200 bg-white text-ink-500'
+                            selected ? 'border-[#1d4ed8] bg-brand-50 text-ink-900' : 'border-ink-200 bg-white text-ink-500'
                           }`}
                         >
                           {discipline.nome}
@@ -1689,7 +1689,7 @@ function PlanejamentoContent({
                   })}
                 </div>
 
-                <div className="mt-5 rounded-2xl bg-blue-50 px-5 py-3 text-right text-lg font-semibold text-ink-900 sm:text-xl">
+                <div className="mt-5 rounded-2xl bg-brand-50 px-5 py-3 text-right text-lg font-semibold text-ink-900 sm:text-xl">
                   Total na Semana: {formatMinutes(totalWizardMinutes)}
                 </div>
 
@@ -1889,7 +1889,7 @@ function WizardModeCard({ active, icon, title, text, onClick }) {
       }`}
     >
       <div className="flex h-36 items-center justify-center bg-white">{icon}</div>
-      <div className={`p-5 ${active ? 'bg-blue-50' : 'bg-white'}`}>
+      <div className={`p-5 ${active ? 'bg-brand-50' : 'bg-white'}`}>
         <p className="text-xl font-semibold text-ink-700">{title}</p>
         <p className="mt-2 text-sm leading-7 text-ink-600">{text}</p>
       </div>

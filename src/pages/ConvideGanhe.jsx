@@ -409,12 +409,12 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                       className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm transition hover:border-white/15 hover:bg-white/[0.09]"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/80 to-indigo-600/90 text-xs font-bold text-white shadow-lg shadow-blue-950/40">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500/80 to-brand-600/90 text-xs font-bold text-white shadow-lg shadow-brand-950/40">
                           {step.n}
                         </span>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ink-400">
-                            <Icon size={13} className="text-blue-300" />
+                            <Icon size={13} className="text-brand-300" />
                             {step.title}
                           </div>
                           <p className="mt-1.5 text-xs font-medium leading-relaxed text-ink-300">{step.text}</p>
@@ -457,7 +457,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                     readOnly
                     value={inviteUrl}
                     onFocus={(e) => e.target.select()}
-                    className="w-full cursor-text truncate rounded-xl border border-white/12 bg-[#0c1220]/90 px-4 py-3.5 font-mono text-[13px] font-semibold text-blue-200 shadow-inner focus:border-blue-400/40 focus:outline-none focus:ring-2 focus:ring-blue-500/25"
+                    className="w-full cursor-text truncate rounded-xl border border-white/12 bg-[#0c1220]/90 px-4 py-3.5 font-mono text-[13px] font-semibold text-brand-200 shadow-inner focus:border-brand-400/40 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
                   />
                 </label>
 
@@ -471,7 +471,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                     type="button"
                     onClick={handleCopyLink}
                     aria-label="Copiar link de convite"
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 sm:flex-initial sm:min-w-[140px] ${
+                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 sm:flex-initial sm:min-w-[140px] ${
                       linkCopied
                         ? 'bg-emerald-500 text-white shadow-lg'
                         : 'bg-white text-ink-900 hover:bg-ink-100'
@@ -487,7 +487,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                     className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/20 py-3.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:flex-initial sm:min-w-[140px] ${
                       linkShared
                         ? 'border-emerald-400/40 bg-emerald-500/20 text-emerald-100'
-                        : 'bg-blue-600 text-white hover:bg-blue-500'
+                        : 'bg-brand-600 text-white hover:bg-brand-500'
                     }`}
                   >
                     <Share2 size={18} />
@@ -552,14 +552,14 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                     </p>
                   </div>
                   {nextGoal ? (
-                    <p className="text-sm font-bold text-blue-700">{missingConfirmationsLabel}</p>
+                    <p className="text-sm font-bold text-brand-700">{missingConfirmationsLabel}</p>
                   ) : (
                     <p className="text-sm font-semibold text-emerald-700">Parabéns pelo programa completo!</p>
                   )}
                 </div>
                 <div className="mt-4 h-3 overflow-hidden rounded-full bg-ink-200/90">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-sky-500 to-indigo-500 transition-[width] duration-700 ease-out"
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-sky-500 to-brand-500 transition-[width] duration-700 ease-out"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -581,7 +581,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                           active
                             ? 'border-emerald-200 bg-gradient-to-b from-emerald-50/90 to-white shadow-sm'
                             : isNext
-                              ? 'border-indigo-200 bg-gradient-to-b from-indigo-50/90 to-white shadow-md ring-2 ring-indigo-100'
+                              ? 'border-brand-200 bg-gradient-to-b from-brand-50/90 to-white shadow-md ring-2 ring-brand-100'
                               : 'border-ink-200 bg-ink-50/70'
                         }`}
                       >
@@ -594,7 +594,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                             active
                               ? 'bg-emerald-100 text-emerald-800'
                               : isNext
-                                ? 'bg-indigo-100 text-indigo-800'
+                                ? 'bg-brand-100 text-brand-800'
                                 : 'bg-white text-ink-500 ring-1 ring-ink-200'
                           }`}
                         >
@@ -606,8 +606,8 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 </div>
               </div>
 
-              <div className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/80 to-white p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">Último bônus</p>
+              <div className="mt-6 rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50/80 to-white p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-700">Último bônus</p>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-ink-800">
                   {latestBonus
                     ? `${latestBonus.reward_title} · ${formatReferralDate(latestBonus.created_at)}`
@@ -616,7 +616,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 {bonusHistory.length > 1 ? (
                   <ul className="mt-3 max-h-28 space-y-1.5 overflow-y-auto text-xs font-medium text-ink-600">
                     {bonusHistory.slice(1, 8).map((b) => (
-                      <li key={b.id} className="flex justify-between gap-2 border-b border-blue-100/60 pb-1.5 last:border-0">
+                      <li key={b.id} className="flex justify-between gap-2 border-b border-brand-100/60 pb-1.5 last:border-0">
                         <span className="truncate">{b.reward_title}</span>
                         <span className="shrink-0 tabular-nums text-ink-400">{formatReferralDate(b.created_at)}</span>
                       </li>
@@ -733,7 +733,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 href={inviteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-blue-700 hover:text-blue-800"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:text-brand-800"
               >
                 Testar meu link
                 <ChevronRight size={14} />

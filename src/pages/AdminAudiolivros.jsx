@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { BookMarked, Headphones, LibraryBig, Save } from 'lucide-react';
 import AdminPageHeader from '../components/AdminPageHeader';
 import { AdminAudiobookCatalogEditor } from '../components/AdminAudiobookCatalogEditor';
@@ -49,7 +49,7 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
         ]}
       />
 
-      <section className="rounded-[2rem] border border-violet-100 bg-white p-6 shadow-sm">
+      <section className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
         {feedback ? (
           <div className="mb-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
             {feedback}
@@ -82,7 +82,7 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
                 setSaving(false);
               }
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-5 py-2.5 text-sm font-bold text-violet-900 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-5 py-2.5 text-sm font-bold text-ink-900 disabled:opacity-50"
           >
             <Save size={16} />
             {saving ? 'Salvando...' : 'Salvar catálogo de audiolivros'}

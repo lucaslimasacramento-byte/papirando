@@ -263,7 +263,7 @@ export default function Questoes({
                 type="number"
                 min={1}
                 autoFocus
-                className="w-16 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-sm font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40"
+                className="w-16 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-sm font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-brand-400/40"
                 value={metaDiariaQuestoes}
                 onChange={(e) => setMetaDiariaQuestoes(Number(e.target.value))}
                 onBlur={() => setIsEditingMeta(false)}
@@ -310,7 +310,7 @@ export default function Questoes({
             label: 'Acurácia',
             value: `${historyOverview.overallAccuracy}%`,
             accent: 'blue',
-            valueClassName: '!text-blue-200',
+            valueClassName: '!text-brand-200',
           },
           {
             key: 'time',
@@ -356,7 +356,7 @@ export default function Questoes({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Palavras-chave, lei, artigo, código..."
-              className="w-full rounded-lg border border-ink-200 bg-ink-50 py-2 pl-10 pr-24 text-xs font-semibold text-ink-700 outline-none transition-all placeholder:font-medium placeholder:text-ink-400 hover:border-ink-300 focus:border-blue-700 focus:bg-white sm:pl-11 sm:text-sm"
+              className="w-full rounded-lg border border-ink-200 bg-ink-50 py-2 pl-10 pr-24 text-xs font-semibold text-ink-700 outline-none transition-all placeholder:font-medium placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-700 focus:bg-white sm:pl-11 sm:text-sm"
             />
 
             <button type="button" className={buttonClass('primary', 'absolute inset-y-1 right-1 px-3 py-1 text-[10px] sm:text-xs')}>
@@ -373,7 +373,7 @@ export default function Questoes({
               <SlidersHorizontal size={14} />
               Filtros
               {activeFiltersCount > 0 ? (
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                <span className="rounded-full border border-brand-200 bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
                   {activeFiltersCount}
                 </span>
               ) : null}
@@ -413,7 +413,7 @@ export default function Questoes({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col pr-0.5">
           {dbLoading && (
             <div className="flex flex-1 items-center justify-center gap-2 py-4">
-              <Loader2 size={18} className="animate-spin text-blue-500" />
+              <Loader2 size={18} className="animate-spin text-brand-500" />
               <span className="text-xs font-semibold text-ink-500">Carregando questões...</span>
             </div>
           )}
@@ -482,7 +482,7 @@ export default function Questoes({
                 </label>
                 <select
                   id="questoes-filter-disciplina"
-                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-blue-400 focus:bg-white"
+                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-brand-400 focus:bg-white"
                   value={filterDisc}
                   onChange={(e) => setFilterDisc(e.target.value)}
                 >
@@ -506,7 +506,7 @@ export default function Questoes({
                 </label>
                 <select
                   id="questoes-filter-banca"
-                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-blue-400 focus:bg-white"
+                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-brand-400 focus:bg-white"
                   value={filterBanca}
                   onChange={(e) => setFilterBanca(e.target.value)}
                 >
@@ -530,7 +530,7 @@ export default function Questoes({
                 </label>
                 <select
                   id="questoes-filter-nivel"
-                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-blue-400 focus:bg-white"
+                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-brand-400 focus:bg-white"
                   value={filterDif}
                   onChange={(e) => setFilterDif(e.target.value)}
                 >
@@ -597,7 +597,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
       <div className={`shrink-0 border-b px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') : 'border-ink-100 bg-ink-50/50'}`}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs ${submitted ? (wasCorrect ? 'bg-emerald-100 text-ink-900' : 'bg-rose-100 text-ink-900') : 'bg-blue-100 text-ink-900'}`}>
+            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs ${submitted ? (wasCorrect ? 'bg-emerald-100 text-ink-900' : 'bg-rose-100 text-ink-900') : 'bg-brand-100 text-ink-900'}`}>
               {question.id}
             </span>
             <span className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-wide text-ink-500 sm:text-xs">
@@ -705,7 +705,7 @@ function FilterField({ label, options }) {
   return (
     <div className="flex flex-col">
       <label className="mb-2 ml-2 text-[10px] font-semibold uppercase tracking-widest text-ink-400">{label}</label>
-      <select className="w-full cursor-pointer appearance-none rounded-xl border-2 border-transparent bg-ink-50 p-3.5 font-bold text-ink-700 outline-none transition-colors hover:border-ink-200 focus:border-blue-600">
+      <select className="w-full cursor-pointer appearance-none rounded-xl border-2 border-transparent bg-ink-50 p-3.5 font-bold text-ink-700 outline-none transition-colors hover:border-ink-200 focus:border-brand-600">
         {options.map((option) => (
           <option key={option}>{option}</option>
         ))}
@@ -715,9 +715,9 @@ function FilterField({ label, options }) {
 }
 
 function AnswerOption({ label, text, selected = false, submitted = false, isCorrect = false, isWrongSelection = false, onClick }) {
-  let tone = 'border-ink-100 hover:border-blue-400 hover:bg-blue-50';
-  let markerTone = 'border-ink-300 text-ink-400 group-hover/option:border-blue-500 group-hover/option:text-blue-600';
-  let textTone = 'text-ink-600 group-hover/option:text-blue-900';
+  let tone = 'border-ink-100 hover:border-brand-400 hover:bg-brand-50';
+  let markerTone = 'border-ink-300 text-ink-400 group-hover/option:border-brand-500 group-hover/option:text-brand-600';
+  let textTone = 'text-ink-600 group-hover/option:text-brand-900';
 
   if (submitted && isCorrect) {
     tone = 'border-emerald-500 bg-emerald-50';
@@ -728,9 +728,9 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
     markerTone = 'border-rose-500 bg-rose-500 text-white';
     textTone = 'text-rose-900';
   } else if (selected) {
-    tone = 'border-blue-500 bg-blue-50';
-    markerTone = 'border-blue-500 bg-blue-500 text-white';
-    textTone = 'text-blue-900';
+    tone = 'border-brand-500 bg-brand-50';
+    markerTone = 'border-brand-500 bg-brand-500 text-white';
+    textTone = 'text-brand-900';
   }
 
   return (
@@ -745,7 +745,7 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
 
 function InlineAction({ Icon, text }) {
   return (
-    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-ink-500 transition-colors hover:bg-ink-100 hover:text-blue-700">
+    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-ink-500 transition-colors hover:bg-ink-100 hover:text-brand-700">
       {React.createElement(Icon, { size: 16 })}
       {text}
     </button>
@@ -763,17 +763,17 @@ function InlineReport() {
 
 function SidebarFolder({ Icon, iconWrap, title, subtitle }) {
   return (
-    <div className="group flex cursor-pointer items-center justify-between rounded-xl border border-transparent p-3 transition-all hover:border-blue-100 hover:bg-blue-50">
+    <div className="group flex cursor-pointer items-center justify-between rounded-xl border border-transparent p-3 transition-all hover:border-brand-100 hover:bg-brand-50">
       <div className="flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg shadow-sm group-hover:bg-white ${iconWrap}`}>
           {React.createElement(Icon, { size: 18 })}
         </div>
         <div>
-          <p className="text-sm font-semibold text-ink-700 group-hover:text-blue-900">{title}</p>
+          <p className="text-sm font-semibold text-ink-700 group-hover:text-brand-900">{title}</p>
           <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400">{subtitle}</p>
         </div>
       </div>
-      <ChevronRight size={18} className="text-ink-300 transition-colors group-hover:text-blue-500" />
+      <ChevronRight size={18} className="text-ink-300 transition-colors group-hover:text-brand-500" />
     </div>
   );
 }
@@ -795,7 +795,7 @@ function buttonClass(tone = 'primary', extra = '') {
     'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm';
   const tones = {
     primary:
-      'border border-blue-700 bg-blue-700 text-white hover:border-blue-800 hover:bg-blue-800 hover:shadow-md',
+      'border border-brand-700 bg-brand-700 text-white hover:border-brand-800 hover:bg-brand-800 hover:shadow-md',
     secondary:
       'border border-ink-200 bg-white text-ink-700 hover:border-ink-300 hover:bg-ink-50',
   };

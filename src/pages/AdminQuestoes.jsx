@@ -45,7 +45,7 @@ function emptyForm() {
 }
 
 function inputCls(extra = '') {
-  return `w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-2.5 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 ${extra}`;
+  return `w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-2.5 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 ${extra}`;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -204,7 +204,7 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
             </div>
           ))}
           {form.tipo === 'multipla_escolha' && form.alternativas.length < 6 && (
-            <button onClick={addAlternativa} className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700">
+            <button onClick={addAlternativa} className="flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700">
               <Plus size={13} />
               Adicionar alternativa
             </button>
@@ -220,7 +220,7 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
         <input
           type="checkbox"
           id="is_public"
-          className="h-4 w-4 rounded accent-blue-600"
+          className="h-4 w-4 rounded accent-brand-600"
           checked={form.is_public}
           onChange={(e) => set('is_public', e.target.checked)}
         />
@@ -234,7 +234,7 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
         <button
           onClick={() => onSave(form)}
           disabled={saving}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
           Salvar questão
@@ -406,7 +406,7 @@ export default function AdminQuestoes() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 border-b border-ink-100 bg-ink-50 px-6 py-3">
         <input
-          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-400 w-44"
+          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-brand-400 w-44"
           placeholder="Disciplina..."
           value={filterDisc}
           onChange={(e) => { setFilterDisc(e.target.value); setPage(0); }}
@@ -415,7 +415,7 @@ export default function AdminQuestoes() {
         <datalist id="disc-opts">{discOptions.map((d) => <option key={d} value={d} />)}</datalist>
 
         <input
-          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-400 w-40"
+          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-brand-400 w-40"
           placeholder="Banca..."
           value={filterBanca}
           onChange={(e) => { setFilterBanca(e.target.value); setPage(0); }}
@@ -424,7 +424,7 @@ export default function AdminQuestoes() {
         <datalist id="banca-opts">{bancaOptions.map((b) => <option key={b} value={b} />)}</datalist>
 
         <select
-          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-400"
+          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-brand-400"
           value={filterTipo}
           onChange={(e) => { setFilterTipo(e.target.value); setPage(0); }}
         >
@@ -444,7 +444,7 @@ export default function AdminQuestoes() {
 
       {/* Create form */}
       {createOpen && (
-        <div className="border-b border-blue-100 bg-blue-50 px-6 py-5">
+        <div className="border-b border-brand-100 bg-brand-50 px-6 py-5">
           <h3 className="mb-4 text-sm font-semibold text-ink-800">Nova Questão</h3>
           <QuestionForm
             onSave={handleCreate}
@@ -459,13 +459,13 @@ export default function AdminQuestoes() {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 size={24} className="animate-spin text-blue-500" />
+            <Loader2 size={24} className="animate-spin text-brand-500" />
           </div>
         ) : questions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
             <BookOpen size={40} className="text-ink-300" />
             <p className="font-bold text-ink-500">Nenhuma questão encontrada.</p>
-            <button onClick={() => { setFormErr(''); setCreateOpen(true); }} className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">
+            <button onClick={() => { setFormErr(''); setCreateOpen(true); }} className="flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700">
               <Plus size={15} />
               Cadastrar primeira questão
             </button>
@@ -480,7 +480,7 @@ export default function AdminQuestoes() {
               return (
                 <div key={q.id} className="px-6 py-4">
                   {isEditing ? (
-                    <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-5">
+                    <div className="rounded-2xl border-2 border-brand-200 bg-brand-50 p-5">
                       <p className="mb-4 text-sm font-semibold text-ink-800">Editando questão</p>
                       <QuestionForm
                         initial={{ ...q, alternativas: alts }}
@@ -497,7 +497,7 @@ export default function AdminQuestoes() {
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {q.disciplina && (
-                              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">{q.disciplina}</span>
+                              <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-bold text-brand-700">{q.disciplina}</span>
                             )}
                             {q.banca && (
                               <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-[11px] font-bold text-ink-600">{q.banca}</span>
@@ -526,7 +526,7 @@ export default function AdminQuestoes() {
                           </button>
                           <button
                             onClick={() => { setFormErr(''); setEditingId(q.id); setExpandedId(null); }}
-                            className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-blue-500"
+                            className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-brand-500"
                           >
                             <Pencil size={14} />
                           </button>
@@ -562,8 +562,8 @@ export default function AdminQuestoes() {
                             ))}
                           </div>
                           {q.explicacao && (
-                            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-                              <p className="text-xs font-bold uppercase tracking-wide text-blue-500 mb-1">Explicação</p>
+                            <div className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3">
+                              <p className="text-xs font-bold uppercase tracking-wide text-brand-500 mb-1">Explicação</p>
                               <p className="text-sm text-ink-700">{q.explicacao}</p>
                             </div>
                           )}

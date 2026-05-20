@@ -16,7 +16,7 @@ import { supabase as supabaseClient } from '../lib/supabase';
 
 const STATUS_COLORS = {
   active: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  trialing: 'border-blue-200 bg-blue-50 text-blue-700',
+  trialing: 'border-brand-200 bg-brand-50 text-brand-700',
   canceled: 'border-red-200 bg-red-50 text-red-700',
   past_due: 'border-amber-200 bg-amber-50 text-amber-700',
   unpaid: 'border-orange-200 bg-orange-50 text-orange-700',
@@ -24,7 +24,7 @@ const STATUS_COLORS = {
 
 const PLAN_COLORS = {
   elite: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-  tatico: 'border-blue-200 bg-blue-50 text-blue-700',
+  tatico: 'border-brand-200 bg-brand-50 text-brand-700',
   gratuito: 'border-ink-200 bg-ink-50 text-ink-600',
 };
 
@@ -166,7 +166,7 @@ export default function AdminAssinaturas() {
           {[
             { label: 'Ativas', value: activeCount, cls: 'text-emerald-700' },
             { label: 'Elite', value: eliteCount, cls: 'text-yellow-700' },
-            { label: 'Tatico', value: taticoCount, cls: 'text-blue-700' },
+            { label: 'Tatico', value: taticoCount, cls: 'text-brand-700' },
             { label: 'Total', value: rows.length, cls: 'text-ink-700' },
           ].map(({ label, value, cls }) => (
             <div key={label} className="section-card flex flex-col gap-1 py-3">
@@ -212,7 +212,7 @@ export default function AdminAssinaturas() {
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
                     placeholder="usuario@email.com"
-                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
                     required
                     disabled={creating}
                   />
@@ -222,7 +222,7 @@ export default function AdminAssinaturas() {
                   <select
                     value={formPlan}
                     onChange={(e) => setFormPlan(e.target.value)}
-                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none"
                     disabled={creating}
                   >
                     <option value="tatico">Tatico</option>
@@ -234,7 +234,7 @@ export default function AdminAssinaturas() {
                   <select
                     value={formBilling}
                     onChange={(e) => setFormBilling(e.target.value)}
-                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-brand-400 focus:outline-none"
                     disabled={creating}
                   >
                     <option value="monthly">Mensal</option>
@@ -278,7 +278,7 @@ export default function AdminAssinaturas() {
 
           {loading ? (
             <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
-              <Loader2 size={18} className="animate-spin text-blue-700" />
+              <Loader2 size={18} className="animate-spin text-brand-700" />
               Carregando...
             </div>
           ) : rows.length === 0 ? (

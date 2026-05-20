@@ -96,7 +96,7 @@ export default function DisciplinaDetalhe({
             <button
               type="button"
               onClick={() => setEditingDiscipline?.(viewingDiscipline)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-400"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-400"
             >
               <Plus size={16} />
               Adicionar tópico
@@ -155,7 +155,7 @@ export default function DisciplinaDetalhe({
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Mapa da disciplina</p>
             <h4 className="mt-1 text-lg font-semibold text-ink-900">Tópicos cadastrados</h4>
           </div>
-          <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+          <div className="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-700">
             {totalDeTopicos} tópicos
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function DisciplinaDetalhe({
               id={topico?.id ? `disciplina-topico-${topico.id}` : undefined}
               className={`border-b border-ink-100 px-6 py-4 transition-all duration-300 hover:bg-ink-50/80 ${
                 String(topico?.id || '') === String(highlightedTopicId || '')
-                  ? 'bg-blue-50/80 ring-1 ring-inset ring-blue-200'
+                  ? 'bg-brand-50/80 ring-1 ring-inset ring-brand-200'
                   : ''
               }`}
             >
@@ -235,7 +235,7 @@ export default function DisciplinaDetalhe({
 function Insight({ title, text }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="mb-1 text-[10px] font-semibold uppercase text-blue-200">{title}</div>
+      <div className="mb-1 text-[10px] font-semibold uppercase text-brand-200">{title}</div>
       <p className="text-sm text-white/90">{text}</p>
     </div>
   );

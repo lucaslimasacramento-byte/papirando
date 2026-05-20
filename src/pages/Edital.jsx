@@ -172,7 +172,7 @@ export default function Edital({
               <select
                 value={concursoSelecionadoId}
                 onChange={(e) => setConcursoSelecionadoId(e.target.value)}
-                className="min-w-[220px] cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-2 pl-3 pr-9 text-xs font-semibold text-ink-100 outline-none transition-all hover:border-white/30 hover:bg-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25 sm:min-w-[260px] sm:px-3.5 sm:py-2 sm:text-[13px]"
+                className="min-w-[220px] cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-2 pl-3 pr-9 text-xs font-semibold text-ink-100 outline-none transition-all hover:border-white/30 hover:bg-white/15 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 sm:min-w-[260px] sm:px-3.5 sm:py-2 sm:text-[13px]"
                 style={{
                   backgroundImage: selectChevronDark,
                   backgroundRepeat: 'no-repeat',
@@ -240,21 +240,21 @@ export default function Edital({
 
             <div className="h-3 w-full overflow-hidden rounded-full bg-ink-200">
               <div
-                className="h-full rounded-full bg-blue-700 transition-all duration-700"
+                className="h-full rounded-full bg-brand-700 transition-all duration-700"
                 style={{ width: `${Math.min(100, Math.max(0, progGeralEdital || 0))}%` }}
               />
             </div>
           </div>
 
           {(aiPanelOpen || aiAnalysis || aiLoading || aiError) ? (
-            <div className="mt-6 rounded-xl border border-violet-200/80 bg-violet-50/70 p-4 sm:p-5">
+            <div className="mt-6 rounded-xl border border-ink-200/80 bg-ink-50/70 p-4 sm:p-5">
               <button
                 type="button"
                 onClick={() => setAiPanelOpen((prev) => !prev)}
                 className="flex w-full items-center justify-between gap-3 text-left"
               >
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-800">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-800">
                     Leitura com IA
                   </p>
                   <p className="mt-1 text-sm font-semibold text-ink-900">
@@ -263,14 +263,14 @@ export default function Edital({
                 </div>
                 <ChevronDown
                   size={18}
-                  className={`text-violet-600 transition-transform ${aiPanelOpen ? 'rotate-180' : ''}`}
+                  className={`text-ink-600 transition-transform ${aiPanelOpen ? 'rotate-180' : ''}`}
                 />
               </button>
 
               {aiPanelOpen ? (
                 <div className="mt-4 grid gap-4">
                   {aiLoading ? (
-                    <div className="flex items-center gap-3 rounded-xl border border-violet-100 bg-white/80 p-4 text-sm font-semibold text-violet-700">
+                    <div className="flex items-center gap-3 rounded-xl border border-ink-100 bg-white/80 p-4 text-sm font-semibold text-ink-700">
                       <Loader2 size={18} className="animate-spin" />
                       Analisando edital com IA...
                     </div>
@@ -297,8 +297,8 @@ export default function Edital({
                     />
                   </div>
 
-                  <div className="rounded-xl border border-violet-100 bg-white/90 p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-800">
+                  <div className="rounded-xl border border-ink-100 bg-white/90 p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-800">
                       Disciplinas identificadas
                     </p>
                     <div className="mt-3 space-y-3">
@@ -366,7 +366,7 @@ export default function Edital({
                       setExpandedEditalSubject(isExpanded ? null : disciplina.id)
                     }
                     className={`cursor-pointer px-5 py-5 sm:px-6 lg:px-8 transition-all duration-300 ${
-                      isExpanded ? 'bg-blue-50/30' : 'hover:bg-ink-50/80'
+                      isExpanded ? 'bg-brand-50/30' : 'hover:bg-ink-50/80'
                     }`}
                   >
                     <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
@@ -380,7 +380,7 @@ export default function Edital({
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="truncate text-base font-semibold text-ink-900 transition-colors group-hover:text-blue-700 sm:text-lg">
+                            <h4 className="truncate text-base font-semibold text-ink-900 transition-colors group-hover:text-brand-700 sm:text-lg">
                               {disciplina.nome}
                             </h4>
                             <span className="rounded-full bg-ink-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-600">
@@ -414,7 +414,7 @@ export default function Edital({
                             e.stopPropagation();
                             setEditingDiscipline?.(disciplina);
                           }}
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ink-200 bg-white text-ink-400 transition-all duration-300 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ink-200 bg-white text-ink-400 transition-all duration-300 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
                           title="Editar disciplina"
                         >
                           <Edit3 size={17} />
@@ -423,7 +423,7 @@ export default function Edital({
                         <div
                           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 ${
                             isExpanded
-                              ? 'border-blue-100 bg-blue-50 text-blue-700'
+                              ? 'border-brand-100 bg-brand-50 text-brand-700'
                               : 'border-ink-200 bg-ink-50 text-ink-400'
                           }`}
                         >
@@ -443,7 +443,7 @@ export default function Edital({
                       <div className="overflow-hidden rounded-xl border border-ink-100 bg-ink-50/70">
                         <div className="flex flex-col gap-3 border-b border-ink-100 bg-white px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
                           <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
-                            <Layers size={14} className="text-blue-700" />
+                            <Layers size={14} className="text-brand-700" />
                             Tópicos da disciplina
                           </div>
 
@@ -549,7 +549,7 @@ export default function Edital({
                                     <div className="w-24 flex justify-center">
                                       <button
                                         onClick={() => setLinkModalOpen?.(true)}
-                                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-ink-700 transition-all duration-300 hover:bg-blue-50 hover:text-blue-700"
+                                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-ink-700 transition-all duration-300 hover:bg-brand-50 hover:text-brand-700"
                                       >
                                         <LinkIcon size={13} />
                                         Adicionar
@@ -576,9 +576,9 @@ export default function Edital({
 
 function TopStat({ icon: Icon, label, value, accent }) {
   const styles = {
-    blue: 'bg-blue-50 text-blue-600',
+    blue: 'bg-brand-50 text-brand-600',
     emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
+    indigo: 'bg-brand-50 text-brand-600',
     orange: 'bg-orange-50 text-orange-600',
   };
 
@@ -601,8 +601,8 @@ function TopStat({ icon: Icon, label, value, accent }) {
 
 function AiMiniInfo({ label, value }) {
   return (
-    <div className="rounded-xl border border-violet-100 bg-white/90 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700">{label}</p>
+    <div className="rounded-xl border border-ink-100 bg-white/90 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-700">{label}</p>
       <p className="mt-1 text-sm font-semibold text-ink-700">{value}</p>
     </div>
   );

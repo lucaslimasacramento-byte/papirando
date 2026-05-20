@@ -36,7 +36,7 @@ export default function MeusConcursos({
 
       {targetContest && (
         <section className="section-card soft-accent p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">Concurso alvo</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-700">Concurso alvo</p>
           <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-2xl font-semibold text-ink-900">{targetContest.nome}</h3>
@@ -45,7 +45,7 @@ export default function MeusConcursos({
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <span className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-bold text-blue-700">
+              <span className="rounded-full border border-brand-100 bg-white px-4 py-2 text-sm font-bold text-brand-700">
                 {targetContest.diasParaProva !== null
                   ? `Faltam ${targetContest.diasParaProva} dia(s)`
                   : 'Sem prova definida'}
@@ -96,12 +96,12 @@ export default function MeusConcursos({
 
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <MiniBox
-                    icon={<CalendarDays size={14} className="text-blue-600" />}
+                    icon={<CalendarDays size={14} className="text-brand-600" />}
                     label="Prova"
                     value={contest.prova_data ? String(contest.prova_data).split('-').reverse().join('/') : 'A definir'}
                   />
                   <MiniBox
-                    icon={<Layers3 size={14} className="text-blue-600" />}
+                    icon={<Layers3 size={14} className="text-brand-600" />}
                     label="Checklist"
                     value={`${contest.checklistDoneCount} etapa(s)`}
                   />
@@ -109,12 +109,12 @@ export default function MeusConcursos({
 
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <MiniBox
-                    icon={<Crown size={14} className="text-blue-600" />}
+                    icon={<Crown size={14} className="text-brand-600" />}
                     label="Disciplinas"
                     value={String(contest.disciplinas?.length || 0)}
                   />
                   <MiniBox
-                    icon={<Heart size={14} className="text-blue-600" />}
+                    icon={<Heart size={14} className="text-brand-600" />}
                     label="Andamento"
                     value={`${contest.disciplinasIniciadas} iniciada(s)`}
                   />
@@ -152,7 +152,7 @@ export default function MeusConcursos({
 
 function Tag({ children, tone = 'blue' }) {
   const toneClasses = {
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
+    blue: 'border-brand-100 bg-brand-50 text-brand-700',
     rose: 'border-rose-100 bg-rose-50 text-rose-700',
     amber: 'border-amber-100 bg-amber-50 text-amber-700',
     yellow: 'border-yellow-100 bg-yellow-50 text-yellow-700',
@@ -174,7 +174,7 @@ function MiniBox({ icon, label, value }) {
         {icon}
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
       </div>
-      <p className="mt-2 text-sm font-semibold text-blue-900">{value}</p>
+      <p className="mt-2 text-sm font-semibold text-brand-900">{value}</p>
     </div>
   );
 }

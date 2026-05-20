@@ -207,7 +207,7 @@ export default function RegistroEstudoModal({
           </div>
 
           <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <div className="rounded-[2rem] border border-blue-100 bg-blue-50/60 p-5">
+            <div className="rounded-[2rem] border border-brand-100 bg-brand-50/60 p-5">
               <div className="mb-4 flex items-center gap-2 text-[#1e40af]">
                 <BookOpen size={18} />
                 <h3 className="text-sm font-black uppercase tracking-[0.18em]">Validação do registro</h3>

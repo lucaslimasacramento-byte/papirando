@@ -83,7 +83,7 @@ export default function QuestionImportPage() {
               <select
                 value={year}
                 onChange={(event) => setYear(Number(event.target.value))}
-                className="h-12 rounded-2xl border border-ink-200 bg-ink-50 px-4 text-sm font-bold text-ink-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-12 rounded-2xl border border-ink-200 bg-ink-50 px-4 text-sm font-bold text-ink-800 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
               >
                 {YEARS.map((item) => (
                   <option key={item} value={item}>ENEM {item}</option>
@@ -95,7 +95,7 @@ export default function QuestionImportPage() {
               type="button"
               onClick={() => runImport('year')}
               disabled={loading}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-900/15 transition hover:bg-blue-700 disabled:opacity-70"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-brand-600 px-5 text-sm font-bold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-700 disabled:opacity-70"
             >
               {loading ? <Loader2 size={17} className="animate-spin" /> : <DownloadCloud size={17} />}
               Importar questões
@@ -111,7 +111,7 @@ export default function QuestionImportPage() {
               type="button"
               onClick={() => runImport('all')}
               disabled={loading}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-700 transition hover:bg-blue-100 disabled:opacity-70 sm:w-fit"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-brand-50 px-4 text-sm font-bold text-brand-700 transition hover:bg-brand-100 disabled:opacity-70 sm:w-fit"
             >
               {loading ? <Loader2 size={17} className="animate-spin" /> : <DownloadCloud size={17} />}
               Importar todos os anos ENEM

@@ -96,12 +96,12 @@ export default function SimuladosRankingPanel({
         aria-modal="true"
         aria-labelledby="ranking-dialog-title"
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-blue-50/90 via-white to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-brand-50/90 via-white to-transparent" />
 
         <header className="relative flex shrink-0 items-start justify-between gap-4 border-b border-ink-100 px-5 pb-4 pt-5 sm:px-7 sm:pb-5 sm:pt-6">
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-ink-200/80 bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500 shadow-sm">
-              <Sparkles size={12} className="text-blue-500" />
+              <Sparkles size={12} className="text-brand-500" />
               Papirando
             </div>
             <h2 id="ranking-dialog-title" className="page-title mt-2 text-xl tracking-tight text-ink-900 sm:text-2xl">
@@ -113,12 +113,12 @@ export default function SimuladosRankingPanel({
               aparecem com base nas respostas públicas registradas na plataforma.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50/90 px-3 py-1 text-[11px] font-semibold text-blue-800">
-                <Target size={13} className="text-blue-600" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50/90 px-3 py-1 text-[11px] font-semibold text-brand-800">
+                <Target size={13} className="text-brand-600" />
                 Suas questões: {selfPreview.questionPts} pts
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-100 bg-violet-50/90 px-3 py-1 text-[11px] font-semibold text-violet-900">
-                <PenLine size={13} className="text-violet-600" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-100 bg-ink-50/90 px-3 py-1 text-[11px] font-semibold text-ink-900">
+                <PenLine size={13} className="text-ink-600" />
                 Sua redação: {selfPreview.redacaoPts} pts
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-[11px] font-semibold text-ink-700">
@@ -139,7 +139,7 @@ export default function SimuladosRankingPanel({
         <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 sm:px-6 sm:py-4">
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-20">
-              <Loader2 className="size-9 animate-spin text-blue-600" strokeWidth={2} />
+              <Loader2 className="size-9 animate-spin text-brand-600" strokeWidth={2} />
               <p className="text-sm font-medium text-ink-500">Carregando perfis oficiais…</p>
             </div>
           ) : loadError ? (
@@ -163,8 +163,8 @@ export default function SimuladosRankingPanel({
                     onClick={() => setSelectedPerson(row)}
                     className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left shadow-sm transition sm:gap-4 sm:px-4 sm:py-3 ${
                       row.isSelf
-                        ? 'border-blue-200/90 bg-gradient-to-r from-blue-50/90 via-white to-white ring-1 ring-blue-100/80'
-                        : 'border-ink-100 bg-white hover:border-blue-200/60 hover:shadow-md'
+                        ? 'border-brand-200/90 bg-gradient-to-r from-brand-50/90 via-white to-white ring-1 ring-brand-100/80'
+                        : 'border-ink-100 bg-white hover:border-brand-200/60 hover:shadow-md'
                     }`}
                   >
                     <div
@@ -183,7 +183,7 @@ export default function SimuladosRankingPanel({
                     <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-ink-200/80 bg-ink-50 shadow-inner sm:h-12 sm:w-12">
                       <img src={avatarSrc(row)} alt="" className="h-full w-full object-cover" loading="lazy" />
                       {row.isSelf ? (
-                        <span className="absolute bottom-0 right-0 rounded-tl-md bg-blue-600 px-1 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
+                        <span className="absolute bottom-0 right-0 rounded-tl-md bg-brand-600 px-1 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
                           você
                         </span>
                       ) : null}
@@ -240,7 +240,7 @@ function MiniProfileSheet({ person, profile, onClose }) {
     <div className="fixed inset-0 z-[100] flex justify-end sm:justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true">
       <button type="button" className="absolute inset-0 bg-ink-950/35 backdrop-blur-sm" aria-label="Fechar" onClick={onClose} />
       <div className="relative z-10 flex h-full w-full max-w-md animate-in slide-in-from-bottom-4 flex-col overflow-hidden rounded-t-3xl border border-ink-200/90 bg-white shadow-[0_-12px_60px_rgba(15,23,42,0.2)] duration-300 sm:h-auto sm:max-h-[90vh] sm:rounded-3xl sm:shadow-2xl">
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-blue-600/10 via-violet-500/5 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-brand-600/10 via-ink-500/5 to-transparent" />
         <div className="relative flex items-center justify-between border-b border-ink-100 px-5 py-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Perfil</p>
           <button
@@ -258,7 +258,7 @@ function MiniProfileSheet({ person, profile, onClose }) {
                 <img src={avatarSrc(person)} alt="" className="h-full w-full object-cover" />
               </div>
               {isSelf ? (
-                <span className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-md">
+                <span className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-brand-600 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-md">
                   <User size={11} />
                   Você
                 </span>
@@ -281,12 +281,12 @@ function MiniProfileSheet({ person, profile, onClose }) {
               <p className="mt-1 text-xl font-bold tabular-nums text-ink-900">{person.totalScore}</p>
             </div>
             <div className="rounded-xl bg-white px-2 py-3 text-center shadow-sm sm:py-4">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-blue-600">Questões</p>
-              <p className="mt-1 text-xl font-bold tabular-nums text-blue-700">{person.questionPoints}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-brand-600">Questões</p>
+              <p className="mt-1 text-xl font-bold tabular-nums text-brand-700">{person.questionPoints}</p>
             </div>
             <div className="rounded-xl bg-white px-2 py-3 text-center shadow-sm sm:py-4">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-violet-600">Redação</p>
-              <p className="mt-1 text-xl font-bold tabular-nums text-violet-800">{person.redacaoPoints || 0}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-ink-600">Redação</p>
+              <p className="mt-1 text-xl font-bold tabular-nums text-ink-800">{person.redacaoPoints || 0}</p>
             </div>
           </div>
 

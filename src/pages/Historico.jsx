@@ -14,10 +14,10 @@ import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPre
 
 const COLOR_STYLES = {
   blue: {
-    soft: 'bg-blue-50',
-    text: 'text-blue-700',
-    border: 'border-blue-200',
-    line: 'bg-blue-500',
+    soft: 'bg-brand-50',
+    text: 'text-brand-700',
+    border: 'border-brand-200',
+    line: 'bg-brand-500',
   },
   orange: {
     soft: 'bg-orange-50',
@@ -32,10 +32,10 @@ const COLOR_STYLES = {
     line: 'bg-emerald-500',
   },
   indigo: {
-    soft: 'bg-indigo-50',
-    text: 'text-indigo-700',
-    border: 'border-indigo-200',
-    line: 'bg-indigo-500',
+    soft: 'bg-brand-50',
+    text: 'text-brand-700',
+    border: 'border-brand-200',
+    line: 'bg-brand-500',
   },
 };
 

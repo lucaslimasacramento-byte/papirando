@@ -1,4 +1,4 @@
-export const WELLNESS_PAGE_CONFIG_STORAGE_KEY = 'papirando_wellness_page_config';
+﻿export const WELLNESS_PAGE_CONFIG_STORAGE_KEY = 'papirando_wellness_page_config';
 
 /** Ícones permitidos no painel (mapeados em BemEstar.jsx). */
 export const WELLNESS_PAGE_ICON_KEYS = [
@@ -163,7 +163,7 @@ export function buildDefaultWellnessPageConfig() {
         eyebrow: 'Regulação rápida',
         text: 'Entre, escolha a técnica e coloque a mente de volta no eixo.',
         icon: 'wind',
-        accent: 'from-blue-500/15 to-indigo-500/10',
+        accent: 'from-brand-500/15 to-brand-500/10',
       },
       {
         id: 'meditacoes',
@@ -171,7 +171,7 @@ export function buildDefaultWellnessPageConfig() {
         eyebrow: 'Recuperação mental',
         text: 'Áudios curtos para ansiedade, foco e recuperação cognitiva.',
         icon: 'headphones',
-        accent: 'from-indigo-500/15 to-sky-500/10',
+        accent: 'from-brand-500/15 to-sky-500/10',
       },
       {
         id: 'pausas',
@@ -179,7 +179,7 @@ export function buildDefaultWellnessPageConfig() {
         eyebrow: 'Vídeos curtos',
         text: 'Micro pausas práticas para soltar tensão e resetar o cérebro.',
         icon: 'activity',
-        accent: 'from-emerald-500/15 to-blue-500/10',
+        accent: 'from-emerald-500/15 to-brand-500/10',
       },
     ],
     overviewDirection: {

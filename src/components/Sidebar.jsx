@@ -168,7 +168,7 @@ export default function Sidebar({
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.22),transparent_70%)]" />
       <div className="pointer-events-none absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-[#1d4ed8]/35 blur-3xl" />
-      <div className="pointer-events-none absolute -left-16 top-1/3 h-44 w-44 rounded-full bg-blue-400/12 blur-3xl" />
+      <div className="pointer-events-none absolute -left-16 top-1/3 h-44 w-44 rounded-full bg-brand-400/12 blur-3xl" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-white/8" />
 
       <div className={`relative flex h-[74px] shrink-0 items-center border-b border-white/8 ${isCollapsed ? 'px-2' : 'px-3.5'}`}>
@@ -229,7 +229,7 @@ export default function Sidebar({
                     } ${
                       isActive
                         ? `bg-[linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.1))] text-white ring-1 ring-white/14 shadow-[0_10px_28px_rgba(15,23,42,0.35)] ${isCollapsed ? '' : 'pl-3'}`
-                        : 'bg-white/[0.03] text-blue-50/95 hover:bg-white/[0.09] hover:text-white'
+                        : 'bg-white/[0.03] text-brand-50/95 hover:bg-white/[0.09] hover:text-white'
                     }`}
                   >
                     {isActive ? (

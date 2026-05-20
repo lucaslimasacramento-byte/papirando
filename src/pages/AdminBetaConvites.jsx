@@ -119,12 +119,12 @@ export default function AdminBetaConvites() {
         <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="section-card overflow-hidden p-0">
             <div className="bg-[linear-gradient(135deg,#0f2a4f,#1d4ed8)] px-6 py-6 text-white">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-100">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-brand-100">
                 <ShieldCheck size={13} />
                 Experiência do convidado
               </div>
               <h2 className="text-2xl font-black tracking-tight">O convite libera 3 meses de acesso completo.</h2>
-              <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-blue-100">
+              <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-brand-100">
                 Quem entrar pelo link beta não fica como gratuito: a conta recebe o estado Beta 3 meses e pode testar todos os recursos da plataforma.
               </p>
             </div>
@@ -146,7 +146,7 @@ export default function AdminBetaConvites() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
               Texto sugerido
             </p>
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm font-semibold leading-relaxed text-blue-950">
+            <div className="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-4 text-sm font-semibold leading-relaxed text-brand-950">
               Você recebeu um convite para testar o Papirando por 3 meses com acesso completo. Use tudo, mande feedbacks sinceros e acumule descontos para continuar quando o beta terminar.
             </div>
             <p className="text-xs font-medium leading-relaxed text-ink-500">
@@ -163,7 +163,7 @@ export default function AdminBetaConvites() {
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-100">
             <div
-              className="h-full rounded-full bg-blue-600 transition-all duration-500"
+              className="h-full rounded-full bg-brand-600 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -189,7 +189,7 @@ export default function AdminBetaConvites() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@email.com"
-                  className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
                   required
                   disabled={creating || rows.length >= MAX_SLOTS}
                 />
@@ -204,7 +204,7 @@ export default function AdminBetaConvites() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome do convidado"
-                  className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
                   disabled={creating || rows.length >= MAX_SLOTS}
                 />
               </div>
@@ -219,7 +219,7 @@ export default function AdminBetaConvites() {
                 value={observacao}
                 onChange={(e) => setObservacao(e.target.value)}
                 placeholder="Ex: amigo, influencer, parceiro..."
-                className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
                 disabled={creating || rows.length >= MAX_SLOTS}
               />
             </div>
@@ -266,7 +266,7 @@ export default function AdminBetaConvites() {
 
           {loading ? (
             <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
-              <Loader2 size={18} className="animate-spin text-blue-700" />
+              <Loader2 size={18} className="animate-spin text-brand-700" />
               Carregando...
             </div>
           ) : rows.length === 0 ? (

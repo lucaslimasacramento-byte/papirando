@@ -245,9 +245,9 @@ export default function Simulados({
             <button
               type="button"
               onClick={() => setRankingOpen(true)}
-              className="group relative inline-flex min-h-[2.75rem] w-full min-w-0 animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45"
+              className="group relative inline-flex min-h-[2.75rem] w-full min-w-0 animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-brand-600 p-[1.5px] shadow-lg shadow-brand-900/35 transition hover:shadow-xl hover:shadow-brand-800/45"
             >
-              <span className="relative flex h-full min-h-[2.65rem] w-full items-center justify-center gap-1.5 overflow-hidden rounded-[11px] bg-gradient-to-br from-ink-950 via-blue-950 to-blue-700 px-3 py-2 sm:min-h-[2.9rem] sm:gap-2 sm:rounded-[11px] sm:px-4 sm:py-2.5">
+              <span className="relative flex h-full min-h-[2.65rem] w-full items-center justify-center gap-1.5 overflow-hidden rounded-[11px] bg-gradient-to-br from-ink-950 via-brand-950 to-brand-700 px-3 py-2 sm:min-h-[2.9rem] sm:gap-2 sm:rounded-[11px] sm:px-4 sm:py-2.5">
                 <span
                   className="pointer-events-none absolute inset-y-0 left-0 w-[45%] -translate-x-full skew-x-[-16deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-90 animate-rankingCtaShimmer"
                   aria-hidden
@@ -298,7 +298,7 @@ export default function Simulados({
             <PathwayCard
               onAction={() => openSimuladoReviewModal?.('novo')}
               badge="Fluxo rápido"
-              badgeClass="border-blue-200 bg-blue-50 text-blue-700"
+              badgeClass="border-brand-200 bg-brand-50 text-brand-700"
               title="Registrar prova externa"
               description="Lançar acertos, erros, brancos, tempo e banca — ideal para simulados de cursinho ou PDF."
               meta={[
@@ -337,7 +337,7 @@ export default function Simulados({
                   value={historyQuery}
                   onChange={(e) => setHistoryQuery(e.target.value)}
                   placeholder="Buscar por nome, banca ou data..."
-                  className="w-full rounded-lg border border-ink-200 bg-ink-50 py-2 pl-9 pr-3 text-xs font-semibold text-ink-700 outline-none placeholder:text-ink-400 focus:border-blue-500 focus:bg-white sm:text-sm"
+                  className="w-full rounded-lg border border-ink-200 bg-ink-50 py-2 pl-9 pr-3 text-xs font-semibold text-ink-700 outline-none placeholder:text-ink-400 focus:border-brand-500 focus:bg-white sm:text-sm"
                 />
               </div>
             </div>
@@ -408,7 +408,7 @@ export default function Simulados({
                           <button
                             type="button"
                             onClick={() => openSimuladoReviewModal?.(row.id)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50 sm:text-xs"
+                            className="inline-flex items-center gap-1 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-brand-700 transition hover:border-brand-200 hover:bg-brand-50 sm:text-xs"
                           >
                             Revisar
                             <ChevronRight size={14} />
@@ -426,7 +426,7 @@ export default function Simulados({
         <aside className="flex min-w-0 flex-col gap-4">
           <div className="section-card !p-4 sm:!p-5">
             <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-500">
-              <TrendingUp size={16} className="text-blue-600" />
+              <TrendingUp size={16} className="text-brand-600" />
               Evolução por matéria
             </h4>
             <div className="space-y-4">
@@ -441,8 +441,8 @@ export default function Simulados({
                     label={item.name}
                     value={`${item.accuracy}%`}
                     width={`${Math.min(100, item.accuracy)}%`}
-                    color={item.accuracy >= 80 ? 'bg-emerald-500' : item.accuracy >= 65 ? 'bg-blue-600' : 'bg-amber-500'}
-                    textColor={item.accuracy >= 80 ? 'text-emerald-600' : item.accuracy >= 65 ? 'text-blue-700' : 'text-amber-700'}
+                    color={item.accuracy >= 80 ? 'bg-emerald-500' : item.accuracy >= 65 ? 'bg-brand-600' : 'bg-amber-500'}
+                    textColor={item.accuracy >= 80 ? 'text-emerald-600' : item.accuracy >= 65 ? 'text-brand-700' : 'text-amber-700'}
                   />
                 ))
               )}
@@ -451,7 +451,7 @@ export default function Simulados({
 
           <div className="section-card !p-4 sm:!p-5">
             <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-500">
-              <History size={16} className="text-blue-600" />
+              <History size={16} className="text-brand-600" />
               Último simulado
             </h4>
 
@@ -498,7 +498,7 @@ export default function Simulados({
 
           <div className="section-card !p-4 sm:!p-5">
             <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-500">
-              <PieChart size={16} className="text-blue-600" />
+              <PieChart size={16} className="text-brand-600" />
               Resumo operacional
             </h4>
             <div className="space-y-2">
@@ -516,7 +516,7 @@ export default function Simulados({
 
 function accuracyPillClass(accuracy) {
   if (accuracy >= 80) return 'border-emerald-200 bg-emerald-50 text-emerald-800';
-  if (accuracy >= 65) return 'border-blue-200 bg-blue-50 text-blue-800';
+  if (accuracy >= 65) return 'border-brand-200 bg-brand-50 text-brand-800';
   if (accuracy <= 0) return 'border-ink-200 bg-ink-50 text-ink-600';
   return 'border-amber-200 bg-amber-50 text-amber-900';
 }
@@ -533,7 +533,7 @@ function PathwayCard({ onAction, badge, badgeClass, title, description, meta, ct
         <ul className="mt-4 space-y-2">
           {meta.map((m) => (
             <li key={m.text} className="flex items-center gap-2 text-xs font-semibold text-ink-600">
-              <m.icon size={14} className="shrink-0 text-blue-600" />
+              <m.icon size={14} className="shrink-0 text-brand-600" />
               {m.text}
             </li>
           ))}

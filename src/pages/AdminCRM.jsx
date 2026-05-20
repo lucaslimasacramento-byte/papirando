@@ -148,33 +148,33 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
 
           <div className="grid gap-4">
             <Field label="Nome">
-              <input value={form.nome} onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.nome} onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50" />
             </Field>
             <Field label="Contato">
-              <input value={form.contato} onChange={(e) => setForm((prev) => ({ ...prev, contato: e.target.value }))} placeholder="Telefone, e-mail ou @usuario" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.contato} onChange={(e) => setForm((prev) => ({ ...prev, contato: e.target.value }))} placeholder="Telefone, e-mail ou @usuario" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50" />
             </Field>
             <Field label="Canal">
-              <select value={form.canal} onChange={(e) => setForm((prev) => ({ ...prev, canal: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500">
+              <select value={form.canal} onChange={(e) => setForm((prev) => ({ ...prev, canal: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500">
                 {CHANNEL_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Interesse principal">
-              <input value={form.interesse} onChange={(e) => setForm((prev) => ({ ...prev, interesse: e.target.value }))} placeholder="Ex: PMAL, carreiras policiais, plano elite" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.interesse} onChange={(e) => setForm((prev) => ({ ...prev, interesse: e.target.value }))} placeholder="Ex: PMAL, carreiras policiais, plano elite" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50" />
             </Field>
             <Field label="Etapa do funil">
-              <select value={form.stage} onChange={(e) => setForm((prev) => ({ ...prev, stage: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500">
+              <select value={form.stage} onChange={(e) => setForm((prev) => ({ ...prev, stage: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500">
                 {CRM_STAGE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Valor mensal potencial">
-              <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50" />
             </Field>
             <Field label="ObservaÃ§Ã£o">
-              <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-50" />
             </Field>
           </div>
 
@@ -184,7 +184,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
                 Cancelar ediÃ§Ã£o
               </button>
             )}
-            <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70">
+            <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-70">
               <Plus size={16} />
               {saving ? 'Salvando...' : form.id ? 'Atualizar lead' : 'Cadastrar lead'}
             </button>
@@ -204,7 +204,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold text-ink-900">{lead.nome}</p>
-                      <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+                      <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">
                         {CRM_STAGE_OPTIONS.find((option) => option.value === lead.stage)?.label || lead.stage}
                       </span>
                     </div>
@@ -244,7 +244,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
 function SummaryCard({ icon: Icon, label, value }) {
   return (
       <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+      <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-700">
         <Icon size={12} />
         {label}
       </div>

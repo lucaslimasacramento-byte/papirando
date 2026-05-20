@@ -167,7 +167,7 @@ export default function AdminDisciplinasPadrao({
                       key={entry.id}
                       className={`rounded-[1.2rem] border px-3 py-3 transition-all ${
                         selectedId === entry.id
-                          ? 'border-blue-200 bg-blue-50 shadow-sm'
+                          ? 'border-brand-200 bg-brand-50 shadow-sm'
                           : 'border-ink-200 bg-ink-50/70'
                       }`}
                     >
@@ -187,7 +187,7 @@ export default function AdminDisciplinasPadrao({
                           <button
                             type="button"
                             onClick={() => handleEdit(entry)}
-                            className="rounded-lg p-2 text-ink-400 transition-colors hover:bg-blue-100 hover:text-blue-700"
+                            className="rounded-lg p-2 text-ink-400 transition-colors hover:bg-brand-100 hover:text-brand-700"
                             title={`Editar ${entry.nome}`}
                           >
                             <Pencil size={14} />
@@ -235,7 +235,7 @@ export default function AdminDisciplinasPadrao({
               <input
                 value={form.nome}
                 onChange={(event) => setForm((prev) => ({ ...prev, nome: event.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 placeholder="Ex: Língua Portuguesa"
               />
             </Field>
@@ -244,7 +244,7 @@ export default function AdminDisciplinasPadrao({
               <select
                 value={form.area}
                 onChange={(event) => setForm((prev) => ({ ...prev, area: event.target.value }))}
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
               >
                 {AREA_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -261,7 +261,7 @@ export default function AdminDisciplinasPadrao({
                 rows={12}
                 value={form.aliasesText}
                 onChange={(event) => setForm((prev) => ({ ...prev, aliasesText: event.target.value }))}
-                className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 placeholder={`Um alias por linha\nPortugues\nLingua portuguesa\nPortugues gramatica`}
               />
             </Field>
@@ -291,7 +291,7 @@ export default function AdminDisciplinasPadrao({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70"
+                className="inline-flex items-center gap-2 rounded-2xl bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-70"
               >
                 <Save size={16} />
                 {isSaving ? 'Salvando...' : form.id ? 'Atualizar disciplina' : 'Criar disciplina'}

@@ -90,9 +90,9 @@ function getCalmStatTone(label) {
   }
   if (key.includes("press") || key.includes("reserva")) {
     return {
-      card: "border-indigo-200/80 bg-gradient-to-br from-indigo-50/85 via-white to-violet-50/55",
-      iconWrap: "bg-indigo-100 text-indigo-700",
-      label: "text-indigo-700",
+      card: "border-brand-200/80 bg-gradient-to-br from-brand-50/85 via-white to-ink-50/55",
+      iconWrap: "bg-brand-100 text-brand-700",
+      label: "text-brand-700",
       value: "text-ink-900",
       helper: "text-ink-600",
     };
@@ -379,7 +379,7 @@ export default function SaudeMentalEFoco({
                     className="flex min-w-[9.5rem] flex-1 flex-col justify-center gap-0.5 rounded-lg border border-ink-200/80 bg-ink-50/95 px-2 py-1.5 shadow-sm sm:min-w-0"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white text-blue-700 shadow-sm">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white text-brand-700 shadow-sm">
                         <Icon size={12} strokeWidth={2.25} />
                       </span>
                       <span className="truncate text-[10px] font-bold uppercase tracking-wide text-ink-900">
@@ -488,12 +488,12 @@ function OverviewSection({
             key={id}
             type="button"
             onClick={() => setCurrentView(id)}
-            className="group overflow-hidden rounded-[1.8rem] border border-ink-200 bg-white text-left shadow-[0_14px_34px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-[0_20px_40px_rgba(37,99,235,0.08)]"
+            className="group overflow-hidden rounded-[1.8rem] border border-ink-200 bg-white text-left shadow-[0_14px_34px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:border-brand-100 hover:shadow-[0_20px_40px_rgba(37,99,235,0.08)]"
           >
             <div className={`h-1.5 w-full bg-gradient-to-r ${accent}`} />
             <div className="p-6">
               <div className="flex items-center justify-between gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 shadow-sm">
                   <Icon size={20} />
                 </div>
                 <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">
@@ -504,7 +504,7 @@ function OverviewSection({
               <h3 className="mt-5 text-xl font-semibold text-ink-900">{title}</h3>
               <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{text}</p>
 
-              <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
+              <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-700">
                 Abrir área
                 <ArrowRight size={15} className="transition group-hover:translate-x-0.5" />
               </div>
@@ -589,7 +589,7 @@ function BreathingSection({
     <section className="overflow-hidden rounded-[2rem] border border-ink-200 bg-[#0B1322] text-white shadow-[0_24px_60px_rgba(2,6,23,0.35)]">
       <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="border-b border-white/10 p-6 lg:border-b-0 lg:border-r lg:p-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-400/20 bg-brand-500/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-300">
             <Wind size={12} />
             {breathingBadge}
           </div>
@@ -602,12 +602,12 @@ function BreathingSection({
                 onClick={() => setActiveTechnique(item.id)}
                 className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
                   activeTechnique === item.id
-                    ? "border-blue-400/30 bg-blue-500/10 text-white"
+                    ? "border-brand-400/30 bg-brand-500/10 text-white"
                     : "border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:text-white"
                 }`}
               >
                 <span>{item.nome}</span>
-                <span className="text-[10px] uppercase tracking-[0.16em] text-blue-200">
+                <span className="text-[10px] uppercase tracking-[0.16em] text-brand-200">
                   {item.uso}
                 </span>
               </button>
@@ -617,7 +617,7 @@ function BreathingSection({
 
         <div className="p-6 lg:p-7">
           <div
-            className={`mx-auto flex h-60 w-60 items-center justify-center rounded-full border border-blue-300/20 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.3),rgba(15,23,42,0.02)_60%)] transition-all duration-500 ${
+            className={`mx-auto flex h-60 w-60 items-center justify-center rounded-full border border-brand-300/20 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.3),rgba(15,23,42,0.02)_60%)] transition-all duration-500 ${
               isBreathing ? "scale-105 shadow-[0_0_80px_rgba(59,130,246,0.18)]" : "scale-95"
             }`}
           >
@@ -626,7 +626,7 @@ function BreathingSection({
                 <p className="text-xl font-semibold text-white">
                   {isBreathing ? currentPhase.nome : activeTechniqueData.nome}
                 </p>
-                <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-200">
+                <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200">
                   {isBreathing ? `${breathingState.remaining}s` : activeTechniqueData.uso}
                 </p>
               </div>
@@ -659,7 +659,7 @@ function BreathingSection({
                 key={`${activeTechnique}-${fase.nome}-${index}`}
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
                   isBreathing && breathingState.phaseIndex === index
-                    ? "border-blue-400/20 bg-blue-500/10 text-white"
+                    ? "border-brand-400/20 bg-brand-500/10 text-white"
                     : "border-white/10 bg-white/5 text-ink-200"
                 }`}
               >
@@ -704,7 +704,7 @@ function BreathingSection({
               className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition ${
                 isBreathing
                   ? "border border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500 hover:text-white"
-                  : "bg-blue-600 text-white hover:bg-blue-500"
+                  : "bg-brand-600 text-white hover:bg-brand-500"
               }`}
             >
               <Play size={15} fill="currentColor" />
@@ -761,7 +761,7 @@ function AudioLibrarySection({
             <button
               type="button"
               onClick={() => setActiveTab?.("admin_configuracoes")}
-              className="inline-flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-bold text-blue-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-4 py-2.5 text-sm font-bold text-brand-700"
             >
               <Waves size={15} />
               Ajustar no ADM
@@ -786,13 +786,13 @@ function AudioLibrarySection({
                     onClick={() => setActiveTrackId(track.id)}
                     className={`relative flex w-full items-center gap-3 overflow-hidden rounded-[1.4rem] border px-4 py-4 text-left transition ${
                       activeTrack?.id === track.id
-                        ? "border-blue-200 bg-blue-50/70 shadow-sm"
-                        : "border-ink-200 bg-ink-50/70 hover:border-blue-100"
+                        ? "border-brand-200 bg-brand-50/70 shadow-sm"
+                        : "border-ink-200 bg-ink-50/70 hover:border-brand-100"
                     }`}
                   >
                     <div
                       className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${
-                        track.accent || "from-sky-500/20 to-blue-500/10"
+                        track.accent || "from-sky-500/20 to-brand-500/10"
                       }`}
                     />
                     <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#18365C] text-white shadow-sm">
@@ -853,7 +853,7 @@ function AudioLibrarySection({
                 disabled={!canPlayActiveTrack}
                 className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white transition ${
                   canPlayActiveTrack
-                    ? "bg-blue-600 hover:bg-blue-700"
+                    ? "bg-brand-600 hover:bg-brand-700"
                     : "cursor-not-allowed bg-ink-300"
                 }`}
               >
@@ -934,7 +934,7 @@ function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTrac
                   <button
                     type="button"
                     onClick={() => onOpenPause?.(item.id)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700"
+                    className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700"
                   >
                     <Play size={15} fill="currentColor" />
                     Abrir pausa
@@ -956,7 +956,7 @@ function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTrac
             <button
               type="button"
               onClick={() => setActiveTab?.("admin_configuracoes")}
-              className="font-semibold text-blue-700"
+              className="font-semibold text-brand-700"
             >
               Configurações
             </button>
@@ -986,7 +986,7 @@ function FocusMode({ track, onPlayTrack, onClose }) {
           <MusicGlyph />
         </div>
 
-        <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-200">
+        <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-200">
           {track.category || "Bem-estar"}
         </p>
         <h3 className="mt-3 text-4xl font-semibold tracking-tight text-white">{track.title}</h3>
@@ -1003,7 +1003,7 @@ function FocusMode({ track, onPlayTrack, onClose }) {
             onClick={() => onPlayTrack?.(track.id)}
             disabled={!canPlayTrack}
             className={`inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-semibold text-white ${
-              canPlayTrack ? "bg-blue-600" : "cursor-not-allowed bg-ink-500"
+              canPlayTrack ? "bg-brand-600" : "cursor-not-allowed bg-ink-500"
             }`}
           >
             <Play size={16} fill="currentColor" />
@@ -1089,7 +1089,7 @@ function FatigueKpiStripCard({ score }) {
   const meta = fatigueStripMeta(score);
   return (
     <div className="flex min-h-[142px] flex-col rounded-2xl border border-ink-200 bg-white/90 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] min-w-0">
-      <div className="flex items-center gap-1.5 text-indigo-700">
+      <div className="flex items-center gap-1.5 text-brand-700">
         <Activity size={13} className="shrink-0" />
         <p className="text-[9px] font-semibold uppercase tracking-[0.12em]">Carga mental</p>
       </div>
@@ -1133,9 +1133,9 @@ function SurfaceStat({ icon: Icon, label, value, helper, compact = false, stripE
         compact ? "p-2.5 sm:p-3" : "p-4"
       }`}
     >
-      <div className="flex items-center gap-1.5 text-blue-700">
+      <div className="flex items-center gap-1.5 text-brand-700">
         <Icon size={compact ? 14 : 15} />
-        <p className={`font-semibold uppercase tracking-[0.14em] text-blue-700 ${compact ? "text-[9px]" : "text-[10px]"}`}>
+        <p className={`font-semibold uppercase tracking-[0.14em] text-brand-700 ${compact ? "text-[9px]" : "text-[10px]"}`}>
           {label}
         </p>
       </div>
@@ -1150,7 +1150,7 @@ function SurfaceStat({ icon: Icon, label, value, helper, compact = false, stripE
 function MiniPill({ icon: Icon, label, value }) {
   return (
     <div className="rounded-[1.2rem] border border-ink-200 bg-white px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-2 text-blue-700">
+      <div className="flex items-center gap-2 text-brand-700">
         <Icon size={14} />
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">{label}</p>
       </div>
@@ -1172,10 +1172,10 @@ function DashboardInfoCard({ label, value, helper }) {
 function DashboardBar({ label, value, tone = "default" }) {
   const gradient =
     tone === "positive"
-      ? "from-emerald-400 to-blue-500"
+      ? "from-emerald-400 to-brand-500"
       : tone === "warn"
       ? "from-amber-400 to-rose-400"
-      : "from-blue-400 to-indigo-500";
+      : "from-brand-400 to-brand-500";
 
   return (
     <div>

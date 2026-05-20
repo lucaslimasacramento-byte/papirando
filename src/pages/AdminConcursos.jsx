@@ -1768,7 +1768,7 @@ export default function AdminConcursos({
                     value={contestQuery}
                     onChange={(event) => setContestQuery(event.target.value)}
                     placeholder="Nome, cargo, órgão ou banca"
-                    className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                   />
                 </div>
               </div>
@@ -1814,7 +1814,7 @@ export default function AdminConcursos({
                         <div
                           key={template.id}
                           className={`grid gap-3 px-4 py-3 transition-colors lg:grid-cols-[minmax(0,1.7fr)_minmax(160px,0.8fr)_150px_110px_44px] lg:items-center ${
-                            selectedTemplateId === template.id ? 'bg-blue-50' : 'bg-white hover:bg-ink-50'
+                            selectedTemplateId === template.id ? 'bg-brand-50' : 'bg-white hover:bg-ink-50'
                           }`}
                         >
                           <button
@@ -1874,7 +1874,7 @@ export default function AdminConcursos({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-brand-200 transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
                 {isSaving ? 'Salvando...' : form.id ? 'Salvar concurso' : 'Criar concurso'}
@@ -1883,7 +1883,7 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={() => onDuplicateTemplate?.(selectedTemplate)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-700"
+                  className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-bold text-brand-700"
                 >
                   <Copy size={15} />
                   Duplicar
@@ -1902,10 +1902,10 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          <div className="mb-6 rounded-[1.6rem] border border-indigo-100 bg-indigo-50/60 p-4">
+          <div className="mb-6 rounded-[1.6rem] border border-brand-100 bg-brand-50/60 p-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Preencher com IA</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-500">Preencher com IA</p>
                 <h4 className="mt-1 text-lg font-semibold text-ink-900">Colar formulário analisado do edital</h4>
                 <p className="mt-1 text-sm font-semibold text-ink-500">
                   Use o formulário estruturado que veio da análise do edital. A IA organiza os campos, disciplinas e tópicos no rascunho.
@@ -1916,7 +1916,7 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={handleDownloadContestPrompt}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition-colors hover:bg-indigo-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-4 py-3 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-50"
                 >
                   <Download size={16} />
                   Baixar prompt
@@ -1924,7 +1924,7 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={clearContestDraft}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition-colors hover:bg-indigo-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-4 py-3 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-50"
                 >
                   <X size={16} />
                   Limpar preenchimento
@@ -1936,7 +1936,7 @@ export default function AdminConcursos({
                     isParsingContestForm ||
                     (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfFile)
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-300"
                 >
                   {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                   {isParsingContestForm
@@ -1947,14 +1947,14 @@ export default function AdminConcursos({
             </div>
 
             {/* Mode tabs */}
-            <div className="mt-4 flex gap-1 rounded-2xl bg-indigo-50 p-1">
+            <div className="mt-4 flex gap-1 rounded-2xl bg-brand-50 p-1">
               <button
                 type="button"
                 onClick={() => { setAiInputMode('text'); setContestFormImportStatus(''); setContestFormOptions([]); }}
                 className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
                   aiInputMode === 'text'
-                    ? 'bg-white text-indigo-700 shadow-sm'
-                    : 'text-indigo-400 hover:text-indigo-600'
+                    ? 'bg-white text-brand-700 shadow-sm'
+                    : 'text-brand-400 hover:text-brand-600'
                 }`}
               >
                 Colar texto
@@ -1964,8 +1964,8 @@ export default function AdminConcursos({
                 onClick={() => { setAiInputMode('pdf'); setContestFormImportStatus(''); setContestFormOptions([]); }}
                 className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
                   aiInputMode === 'pdf'
-                    ? 'bg-white text-indigo-700 shadow-sm'
-                    : 'text-indigo-400 hover:text-indigo-600'
+                    ? 'bg-white text-brand-700 shadow-sm'
+                    : 'text-brand-400 hover:text-brand-600'
                 }`}
               >
                 Enviar PDF
@@ -1982,7 +1982,7 @@ export default function AdminConcursos({
                   setContestFormOptions([]);
                 }}
                 placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
-                className="mt-2 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                className="mt-2 w-full rounded-[1.4rem] border border-brand-100 bg-white px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
               />
             ) : (
               <div className="mt-2">
@@ -1990,18 +1990,18 @@ export default function AdminConcursos({
                   htmlFor="ai-pdf-upload"
                   className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.4rem] border-2 border-dashed px-6 py-8 transition-colors ${
                     aiPdfFile
-                      ? 'border-indigo-300 bg-indigo-50'
-                      : 'border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50'
+                      ? 'border-brand-300 bg-brand-50'
+                      : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50'
                   }`}
                 >
                   {aiPdfFile ? (
                     <>
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100">
                         <span className="text-lg">📄</span>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-bold text-indigo-700">{aiPdfFile.name}</p>
-                        <p className="mt-0.5 text-xs text-indigo-500">
+                        <p className="text-sm font-bold text-brand-700">{aiPdfFile.name}</p>
+                        <p className="mt-0.5 text-xs text-brand-500">
                           {(aiPdfFile.size / 1024 / 1024).toFixed(1)} MB
                           {' · pronto para análise'}
                         </p>
@@ -2009,19 +2009,19 @@ export default function AdminConcursos({
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); setAiPdfFile(null); }}
-                        className="text-xs font-semibold text-indigo-400 hover:text-indigo-600"
+                        className="text-xs font-semibold text-brand-400 hover:text-brand-600"
                       >
                         Trocar arquivo
                       </button>
                     </>
                   ) : (
                     <>
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100">
                         <span className="text-lg">📎</span>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-bold text-indigo-700">Clique para selecionar o PDF do edital</p>
-                        <p className="mt-0.5 text-xs text-indigo-500">Máximo 18 MB · somente PDF</p>
+                        <p className="text-sm font-bold text-brand-700">Clique para selecionar o PDF do edital</p>
+                        <p className="mt-0.5 text-xs text-brand-500">Máximo 18 MB · somente PDF</p>
                       </div>
                     </>
                   )}
@@ -2037,25 +2037,25 @@ export default function AdminConcursos({
             )}
 
             {contestFormImportStatus && (
-              <p className="mt-3 rounded-2xl border border-indigo-100 bg-white px-4 py-3 text-sm font-semibold text-indigo-700">
+              <p className="mt-3 rounded-2xl border border-brand-100 bg-white px-4 py-3 text-sm font-semibold text-brand-700">
                 {contestFormImportStatus}
               </p>
             )}
 
             {contestFormOptions.length > 1 && (
-              <div className="mt-4 rounded-[1.4rem] border border-indigo-100 bg-white p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">
+              <div className="mt-4 rounded-[1.4rem] border border-brand-100 bg-white p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-500">
                   Opções separadas encontradas
                 </p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
-                  <p className="text-sm font-semibold text-blue-800">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3">
+                  <p className="text-sm font-semibold text-brand-800">
                     Salve tudo de uma vez. Concursos diferentes ficam em cards separados; cargos do mesmo concurso ficam dentro do card correto.
                   </p>
                   <button
                     type="button"
                     onClick={handleSaveAllContestOptions}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-70"
+                    className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-70"
                   >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <PlusCircle size={16} />}
                     Salvar todos
@@ -2074,7 +2074,7 @@ export default function AdminConcursos({
                         key={`${option.nome || option.cargo || 'opcao'}-${optionIndex}`}
                         type="button"
                         onClick={() => applyContestFormTemplate({ templates: contestFormOptions }, optionIndex)}
-                        className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50"
+                        className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 text-left transition-colors hover:border-brand-200 hover:bg-brand-50"
                       >
                         <span className="line-clamp-2 text-sm font-bold text-ink-900">
                           {option.nome || option.cargo || `Opção ${optionIndex + 1}`}
@@ -2127,7 +2127,7 @@ export default function AdminConcursos({
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-3">
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-brand-200 bg-white px-4 py-3 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-50">
                       {isUploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                       {isUploadingImage ? 'Enviando imagem...' : 'Upload de imagem'}
                       <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0])} />
@@ -2135,7 +2135,7 @@ export default function AdminConcursos({
                     <input
                       value={form.imagem_url}
                       onChange={(e) => updateFormField('imagem_url', e.target.value)}
-                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                       placeholder="URL final da imagem"
                     />
                     {form.imagem_url && (
@@ -2154,7 +2154,7 @@ export default function AdminConcursos({
                     <input
                       value={form.edital_url}
                       onChange={(e) => updateFormField('edital_url', e.target.value)}
-                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                       placeholder="URL final do edital PDF"
                     />
                     {form.edital_url && (
@@ -2223,7 +2223,7 @@ export default function AdminConcursos({
                         type="button"
                         onClick={() => toggleEtapaTag(option.value)}
                         className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                          active ? 'bg-blue-600 text-white' : 'border border-ink-200 bg-white text-ink-600'
+                          active ? 'bg-brand-600 text-white' : 'border border-ink-200 bg-white text-ink-600'
                         }`}
                       >
                         {option.label}
@@ -2243,12 +2243,12 @@ export default function AdminConcursos({
                       }
                     }}
                     placeholder="Ex.: Avaliação curricular, prova prática, títulos, perícia médica"
-                    className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                   />
                   <button
                     type="button"
                     onClick={addCustomEtapa}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-4 py-3 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-50"
                   >
                     <Plus size={16} />
                     Adicionar etapa
@@ -2275,13 +2275,13 @@ export default function AdminConcursos({
                 )}
 
                 {form.etapas_tags.includes('taf') && (
-                  <div className="mt-5 rounded-[1.2rem] border border-blue-100 bg-blue-50/60 p-4">
+                  <div className="mt-5 rounded-[1.2rem] border border-brand-100 bg-brand-50/60 p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-ink-900">Itens do TAF</p>
                         <p className="mt-1 text-xs font-semibold text-ink-500">Adicione as provas físicas que fazem parte do teste.</p>
                       </div>
-                      <button type="button" onClick={addTafItem} className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700">
+                      <button type="button" onClick={addTafItem} className="rounded-xl border border-brand-200 bg-white px-3 py-2 text-xs font-bold text-brand-700">
                         + Item
                       </button>
                     </div>
@@ -2293,7 +2293,7 @@ export default function AdminConcursos({
                             value={item}
                             onChange={(e) => updateTafItem(index, e.target.value)}
                             placeholder="Ex.: Corrida de 12 minutos"
-                            className="flex-1 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
+                            className="flex-1 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-500"
                           />
                           <button
                             type="button"
@@ -2334,7 +2334,7 @@ export default function AdminConcursos({
                     rows={4}
                     value={form.descricao}
                     onChange={(e) => updateFormField('descricao', e.target.value)}
-                    className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                   />
                 </div>
 
@@ -2358,7 +2358,7 @@ export default function AdminConcursos({
                     <h4 className="mt-1 text-lg font-semibold text-ink-900">Disciplinas e tópicos</h4>
                   </div>
 
-                  <button type="button" onClick={addSubject} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
+                  <button type="button" onClick={addSubject} className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-bold text-brand-700">
                     <PlusCircle size={16} />
                     Nova disciplina
                   </button>
@@ -2408,7 +2408,7 @@ export default function AdminConcursos({
                           value={subject.topicosTexto}
                           onChange={(e) => updateSubjectField(index, 'topicosTexto', e.target.value)}
                           placeholder={`Um tópico por linha\nConceitos iniciais\nPoder de polícia\nAtos administrativos`}
-                          className="w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                          className="w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                         />
                       </div>
                           </>
@@ -2433,7 +2433,7 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={() => onDuplicateTemplate?.(selectedTemplate)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-bold text-indigo-700"
+                  className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-5 py-3 text-sm font-bold text-brand-700"
                 >
                   <Copy size={16} />
                   Duplicar
@@ -2449,7 +2449,7 @@ export default function AdminConcursos({
                   Excluir
                 </button>
               )}
-              <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70">
+              <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-2xl bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-70">
                 <Plus size={16} />
                 {isSaving ? 'Salvando...' : form.id ? 'Atualizar concurso' : 'Criar concurso'}
               </button>
@@ -2477,7 +2477,7 @@ export default function AdminConcursos({
                   rows={6}
                   value={questionForm.enunciado}
                   onChange={(e) => setQuestionForm((prev) => ({ ...prev, enunciado: e.target.value }))}
-                  className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 />
               </div>
 
@@ -2485,13 +2485,13 @@ export default function AdminConcursos({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Alternativas</p>
                 {QUESTION_LABELS.map((label, index) => (
                   <div key={label} className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-blue-700">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-sm font-semibold text-brand-700">
                       {label}
                     </span>
                     <input
                       value={questionForm.alternativas[index]}
                       onChange={(e) => updateQuestionAlternative(index, e.target.value)}
-                      className="flex-1 rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="flex-1 rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                       placeholder={`Alternativa ${label}`}
                     />
                   </div>
@@ -2532,7 +2532,7 @@ export default function AdminConcursos({
                   rows={5}
                   value={questionForm.comentario}
                   onChange={(e) => setQuestionForm((prev) => ({ ...prev, comentario: e.target.value }))}
-                  className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                 />
               </div>
             </div>
@@ -2542,7 +2542,7 @@ export default function AdminConcursos({
                 type="button"
                 onClick={handleSaveQuestion}
                 disabled={questionsSaving}
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70"
+                className="inline-flex items-center gap-2 rounded-2xl bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-70"
               >
                 <Plus size={16} />
                 {questionsSaving ? 'Salvando...' : 'Salvar questão'}
@@ -2556,14 +2556,14 @@ export default function AdminConcursos({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Listagem</p>
                 <h3 className="mt-2 text-2xl font-semibold text-ink-900">Questões cadastradas</h3>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+              <span className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
                 {visibleQuestions.length} ativas
               </span>
             </div>
 
             {questionsLoading ? (
               <div className="flex items-center justify-center py-16">
-                <Loader2 size={24} className="animate-spin text-blue-500" />
+                <Loader2 size={24} className="animate-spin text-brand-500" />
               </div>
             ) : visibleQuestions.length === 0 ? (
               <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-ink-50/70 px-6 py-12 text-center">
@@ -2629,7 +2629,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink-950/55 px-4 py-6 backdrop-blur-sm">
       <div className="w-full max-w-xl overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-2xl">
-        <div className="bg-gradient-to-br from-ink-950 via-ink-900 to-blue-950 px-6 py-6 text-white">
+        <div className="bg-gradient-to-br from-ink-950 via-ink-900 to-brand-950 px-6 py-6 text-white">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/15 text-red-200 ring-1 ring-red-300/30">
               <Trash2 size={22} />
@@ -2714,7 +2714,7 @@ function TextField({ label, value, onChange, placeholder = '', icon: Icon = null
           placeholder={placeholder}
           list={listId || undefined}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
         />
       </div>
     </div>
@@ -2730,7 +2730,7 @@ function SelectField({ label, value, onChange, options, icon: Icon = null }) {
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -2769,7 +2769,7 @@ function DateField({ value, onChange }) {
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+          className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
         />
       </div>
     </div>
@@ -2788,7 +2788,7 @@ function StatusBadge({ isPublic }) {
 function StatusPill({ value }) {
   const option = STATUS_OPTIONS.find((item) => item.value === value);
   return (
-    <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+    <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
       <BadgeCheck size={14} />
       {option?.label || 'Previsto'}
     </div>
@@ -2800,7 +2800,7 @@ function StorageBadge({ storage = 'local' }) {
   return (
     <div
       className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-        isSupabase ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+        isSupabase ? 'bg-brand-100 text-brand-700' : 'bg-amber-100 text-amber-700'
       }`}
     >
       <Database size={14} />

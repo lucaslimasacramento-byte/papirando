@@ -31,12 +31,12 @@ import PageHeadPremium, {
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const PRIMARY_HEADER_BUTTON_CLASS =
-  'inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]';
+  'inline-flex items-center gap-1.5 rounded-lg border border-brand-300/55 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-brand-200/25 transition hover:from-brand-300 hover:via-brand-400 hover:to-brand-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]';
 
 const HIGHLIGHT_COLORS = [
   { value: '#FCD34D', label: 'Amarelo', cls: 'bg-yellow-300' },
   { value: '#6EE7B7', label: 'Verde',   cls: 'bg-emerald-300' },
-  { value: '#93C5FD', label: 'Azul',    cls: 'bg-blue-300'    },
+  { value: '#93C5FD', label: 'Azul',    cls: 'bg-brand-300'    },
   { value: '#FCA5A5', label: 'Rosa',    cls: 'bg-red-300'     },
 ];
 
@@ -46,7 +46,7 @@ const MATERIAL_MARKER_COLORS = ['#1d4ed8', '#b45309', '#4d7c3f', '#EC4899'];
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
+  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10';
 }
 
 function formatFileSize(bytes) {
@@ -462,7 +462,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 
           {loading && !pdfErr && (
             <div className="flex items-center gap-3 mt-16">
-              <Loader2 size={22} className="animate-spin text-blue-500" />
+              <Loader2 size={22} className="animate-spin text-brand-500" />
               <span className="text-sm font-semibold text-ink-600">Carregando PDF...</span>
             </div>
           )}
@@ -501,7 +501,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
         <div className="flex w-[min(100vw-2rem,22rem)] shrink-0 flex-col overflow-hidden border-l border-ink-200 bg-white sm:min-w-[280px]">
           <div className="shrink-0 space-y-3 border-b border-ink-100 px-4 py-4">
             <div className="flex items-center gap-2">
-              <Bookmark size={15} className="text-blue-600" />
+              <Bookmark size={15} className="text-brand-600" />
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500">Marcações</p>
             </div>
             <p className="text-[11px] font-medium leading-snug text-ink-500">
@@ -511,14 +511,14 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
               value={markerDraft.label}
               onChange={(e) => setMarkerDraft((prev) => ({ ...prev, label: e.target.value }))}
               placeholder="Título da marcação"
-              className="w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2 text-xs font-semibold text-ink-800 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2 text-xs font-semibold text-ink-800 outline-none focus:border-brand-500"
             />
             <textarea
               rows={2}
               value={markerDraft.excerpt}
               onChange={(e) => setMarkerDraft((prev) => ({ ...prev, excerpt: e.target.value }))}
               placeholder="Trecho, lembrete ou fundamento"
-              className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2 text-xs font-medium text-ink-700 outline-none focus:border-blue-500"
+              className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2 text-xs font-medium text-ink-700 outline-none focus:border-brand-500"
             />
             <div className="flex flex-wrap gap-2">
               {MATERIAL_MARKER_COLORS.map((color) => (
@@ -535,7 +535,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
             <button
               type="button"
               onClick={saveMaterialMarker}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-xs font-bold text-white hover:bg-blue-700"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-3 py-2.5 text-xs font-bold text-white hover:bg-brand-700"
             >
               <Bookmark size={14} />
               Salvar marcação — p. {page}
@@ -550,7 +550,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                   <div
                     key={m.id}
                     className={`group flex items-start gap-2 rounded-xl border p-2.5 ${
-                      m.page_num === page ? 'border-blue-200 bg-blue-50/80' : 'border-ink-100 bg-ink-50/60'
+                      m.page_num === page ? 'border-brand-200 bg-brand-50/80' : 'border-ink-100 bg-ink-50/60'
                     }`}
                   >
                     <button
@@ -654,7 +654,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
           </button>
           <button
             onClick={openAiModal}
-            className="flex items-center gap-1 rounded-lg bg-violet-500 px-2.5 py-1 text-xs font-bold text-white hover:bg-violet-400"
+            className="flex items-center gap-1 rounded-lg bg-ink-500 px-2.5 py-1 text-xs font-bold text-white hover:bg-ink-400"
           >
             <Sparkles size={12} />
             Flashcard
@@ -750,7 +750,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
               <button
                 onClick={handleAiFlashcard}
                 disabled={aiLoading || !aiText || !aiDeckId}
-                className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white hover:bg-violet-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-ink-600 px-5 py-2 text-sm font-bold text-white hover:bg-ink-700 disabled:opacity-50"
               >
                 {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 {aiLoading ? 'Gerando...' : 'Criar flashcards'}
@@ -864,7 +864,7 @@ export default function Materiais({ currentUserId }) {
           onCreateFlashcard={showFlashcardToast}
         />
         {flashcardToast && (
-          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-bold text-white shadow-xl">
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-ink-600 px-5 py-3 text-sm font-bold text-white shadow-xl">
             <Sparkles size={16} />
             {flashcardToast}
           </div>
@@ -918,7 +918,7 @@ export default function Materiais({ currentUserId }) {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
+            <Loader2 size={28} className="animate-spin text-brand-500" />
           </div>
         ) : materials.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -943,7 +943,7 @@ export default function Materiais({ currentUserId }) {
             {materials.map((m) => (
               <div
                 key={m.id}
-                className="section-card group relative flex cursor-pointer flex-col gap-3 p-5 transition-all hover:border-blue-200 hover:shadow-sm"
+                className="section-card group relative flex cursor-pointer flex-col gap-3 p-5 transition-all hover:border-brand-200 hover:shadow-sm"
                 onClick={() => setActiveMaterial(m)}
               >
                 <div className="flex items-start justify-between">
@@ -961,7 +961,7 @@ export default function Materiais({ currentUserId }) {
                 <div>
                   <h3 className="font-semibold leading-tight text-ink-900">{m.title}</h3>
                   {m.disciplina && (
-                    <p className="text-xs font-bold text-blue-600 mt-0.5">{m.disciplina}</p>
+                    <p className="text-xs font-bold text-brand-600 mt-0.5">{m.disciplina}</p>
                   )}
                 </div>
 
@@ -969,7 +969,7 @@ export default function Materiais({ currentUserId }) {
                   {m.page_count > 0 && <span>{m.page_count} páginas</span>}
                   {m.file_size > 0 && <span>{formatFileSize(m.file_size)}</span>}
                   {m.last_page > 1 && (
-                    <span className="ml-auto text-blue-600">p. {m.last_page}</span>
+                    <span className="ml-auto text-brand-600">p. {m.last_page}</span>
                   )}
                 </div>
               </div>
@@ -1024,7 +1024,7 @@ export default function Materiais({ currentUserId }) {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-ink-300 bg-ink-50 px-4 py-4 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:border-blue-400 transition-all"
+                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-ink-300 bg-ink-50 px-4 py-4 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:border-brand-400 transition-all"
                 >
                   <Upload size={18} className="text-ink-400" />
                   {uploadFile ? uploadFile.name : 'Clique para selecionar o PDF'}
@@ -1041,7 +1041,7 @@ export default function Materiais({ currentUserId }) {
               <button
                 onClick={handleUpload}
                 disabled={uploading}
-                className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {uploading ? 'Enviando...' : 'Enviar'}

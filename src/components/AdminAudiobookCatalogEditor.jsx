@@ -8,7 +8,7 @@ const ACCENTS = [
 ];
 
 function inputCls() {
-  return 'mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-violet-500';
+  return 'mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-ink-500';
 }
 
 function getBookMeta(book, index) {
@@ -79,16 +79,16 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="rounded-[1.8rem] border border-violet-100 bg-violet-50/40 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-violet-100 pb-4">
+      <aside className="rounded-[1.8rem] border border-ink-100 bg-ink-50/40 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 pb-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-500">Biblioteca</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500">Biblioteca</p>
             <h3 className="mt-2 text-xl font-semibold text-ink-900">Obras salvas</h3>
           </div>
           <button
             type="button"
             onClick={addBook}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-bold text-violet-900"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-900"
           >
             <Plus size={14} />
             Nova obra
@@ -121,8 +121,8 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 onClick={() => setSelectedIndex(index)}
                 className={`w-full rounded-[1.4rem] border px-4 py-4 text-left transition ${
                   isActive
-                    ? 'border-violet-300 bg-white shadow-sm'
-                    : 'border-white/80 bg-white/75 hover:border-violet-200 hover:bg-white'
+                    ? 'border-ink-300 bg-white shadow-sm'
+                    : 'border-white/80 bg-white/75 hover:border-ink-200 hover:bg-white'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -139,8 +139,8 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
           })}
 
           {books.length === 0 && (
-            <div className="rounded-[1.4rem] border border-dashed border-violet-200 bg-white/70 px-4 py-8 text-center">
-              <BookMarked className="mx-auto text-violet-400" size={20} />
+            <div className="rounded-[1.4rem] border border-dashed border-ink-200 bg-white/70 px-4 py-8 text-center">
+              <BookMarked className="mx-auto text-ink-400" size={20} />
               <p className="mt-3 text-sm font-semibold text-ink-800">Nenhuma obra cadastrada</p>
               <p className="mt-1 text-xs font-medium text-ink-500">Crie a primeira obra para começar o catálogo.</p>
             </div>
@@ -274,7 +274,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                       ],
                     }))
                   }
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-900"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-bold text-ink-900"
                 >
                   <Plus size={14} />
                   Nova faixa
@@ -376,7 +376,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
         ) : (
           <div className="flex min-h-[420px] items-center justify-center rounded-[1.6rem] border border-dashed border-ink-200 bg-ink-50/60 px-6 text-center">
             <div>
-              <BookMarked className="mx-auto text-violet-400" size={24} />
+              <BookMarked className="mx-auto text-ink-400" size={24} />
               <h3 className="mt-4 text-xl font-semibold text-ink-900">Selecione uma obra</h3>
               <p className="mt-2 text-sm font-medium text-ink-500">Escolha um item na biblioteca lateral ou crie uma nova obra.</p>
             </div>

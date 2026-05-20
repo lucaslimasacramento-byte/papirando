@@ -62,8 +62,8 @@ function fmtHours(minutes) {
 }
 
 const DISCIPLINE_COLORS = [
-  'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500',
-  'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-orange-500',
+  'bg-brand-500', 'bg-emerald-500', 'bg-ink-500', 'bg-amber-500',
+  'bg-rose-500', 'bg-cyan-500', 'bg-brand-500', 'bg-orange-500',
 ];
 
 function inputCls() {
@@ -363,7 +363,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
             <button
               type="button"
               onClick={() => openAddGoal()}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:text-[13px]"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-300/55 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-brand-200/25 transition hover:from-brand-300 hover:via-brand-400 hover:to-brand-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:text-[13px]"
             >
               <Plus size={14} />
               Nova meta
@@ -435,7 +435,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
             </div>
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${questoesMetaDone ? 'bg-emerald-500' : 'bg-violet-500'}`}
+                className={`h-full rounded-full transition-all duration-500 ${questoesMetaDone ? 'bg-emerald-500' : 'bg-ink-500'}`}
                 style={{ width: `${totalQuestoesPct}%` }}
               />
             </div>
@@ -453,7 +453,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-blue-500" />
+            <Loader2 size={24} className="animate-spin text-brand-500" />
           </div>
         ) : allDisciplinas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
@@ -467,7 +467,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
             <button
               type="button"
               onClick={() => openAddGoal()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-300/55 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-brand-200/25 transition hover:from-brand-300 hover:via-brand-400 hover:to-brand-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
             >
               <Plus size={16} />
               Criar primeira meta
@@ -506,7 +506,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                             <span className="text-[11px] text-ink-400">/ meta {fmtHours(goalMins)}</span>
                           )}
                           {goal && goalQuestoes > 0 && (
-                            <span className="text-[11px] font-semibold text-violet-700">
+                            <span className="text-[11px] font-semibold text-ink-700">
                               · {actualQuestoes}/{goalQuestoes} questões
                             </span>
                           )}
@@ -565,7 +565,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                       </div>
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
                         <div
-                          className={`h-full rounded-full transition-all duration-700 ${doneQuestoes ? 'bg-emerald-500' : 'bg-violet-500'}`}
+                          className={`h-full rounded-full transition-all duration-700 ${doneQuestoes ? 'bg-emerald-500' : 'bg-ink-500'}`}
                           style={{ width: `${qPct}%` }}
                         />
                       </div>

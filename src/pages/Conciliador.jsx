@@ -1112,7 +1112,7 @@ export default function Conciliador({
                     <>
                       <span className="font-semibold text-ink-300">{String(selectedBase?.nome || '')}</span>
                       <span className="text-ink-500"> · </span>
-                      <span className="font-semibold text-indigo-200">{String(selectedTargetOne?.nome || '')}</span>
+                      <span className="font-semibold text-brand-200">{String(selectedTargetOne?.nome || '')}</span>
                       {courseCount === 3 && selectedTargetTwo ? (
                         <>
                           <span className="text-ink-500"> · </span>
@@ -1175,7 +1175,7 @@ export default function Conciliador({
                       <span
                         aria-hidden
                         className={`absolute inset-x-0 bottom-0 h-0.5 rounded-full transition ${
-                          active ? 'bg-blue-400' : 'bg-transparent group-hover:bg-white/20'
+                          active ? 'bg-brand-400' : 'bg-transparent group-hover:bg-white/20'
                         }`}
                       />
                     </button>
@@ -1270,7 +1270,7 @@ export default function Conciliador({
                       type="button"
                       disabled={options.length < 3}
                       onClick={() => setCourseCount(3)}
-                      className="inline-flex shrink-0 items-center justify-center gap-1 self-stretch rounded-lg border border-dashed border-ink-300 bg-ink-50/90 px-2.5 py-2 text-[11px] font-semibold text-ink-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[5.5rem] sm:flex-col sm:py-2.5"
+                      className="inline-flex shrink-0 items-center justify-center gap-1 self-stretch rounded-lg border border-dashed border-ink-300 bg-ink-50/90 px-2.5 py-2 text-[11px] font-semibold text-ink-600 hover:border-brand-300 hover:bg-brand-50/60 hover:text-brand-800 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[5.5rem] sm:flex-col sm:py-2.5"
                       title={options.length < 3 ? 'São necessários ao menos três editais no catálogo' : 'Incluir terceiro edital na comparação'}
                     >
                       <Plus size={14} className="shrink-0" />
@@ -1338,7 +1338,7 @@ export default function Conciliador({
                   <section className="overflow-hidden rounded-[1.9rem] border border-ink-800/50 bg-[linear-gradient(135deg,#091428_0%,#132b4d_58%,#312e81_100%)] p-6 shadow-[0_30px_80px_-32px_rgba(15,23,42,0.7)] md:p-7 xl:p-8">
                     <div className="grid gap-6 xl:grid-cols-[1fr_300px] xl:items-center">
                       <div className="space-y-5">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-100">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-brand-100">
                           <Sparkles size={13} />
                           Resultado executivo
                         </div>
@@ -1591,7 +1591,7 @@ export default function Conciliador({
               </section>
             ) : (
               <section className="rounded-[1.9rem] border border-dashed border-ink-300 bg-white/80 p-8 text-center shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)]">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#dbeafe_0%,#eef2ff_100%)] text-blue-700 shadow-sm">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#dbeafe_0%,#eef2ff_100%)] text-brand-700 shadow-sm">
                   <Wand2 size={24} />
                 </div>
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-400">Painel interativo</p>
@@ -1629,21 +1629,21 @@ export default function Conciliador({
                   <button
                     type="button"
                     onClick={() => handleRestoreHistory(entry)}
-                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-700 hover:border-indigo-200"
+                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-700 hover:border-brand-200"
                   >
                     Restaurar
                   </button>
                   <button
                     type="button"
                     onClick={() => onOpenContestDetail?.(entry.baseContestId)}
-                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-700 hover:border-indigo-200"
+                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-700 hover:border-brand-200"
                   >
                     Ver base
                   </button>
                   <button
                     type="button"
                     onClick={() => onSetTargetContest?.(entry.anchorContestId || entry.targetOneId)}
-                    className="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700"
+                    className="rounded-lg border border-brand-100 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700"
                   >
                     Foco
                   </button>
@@ -1681,8 +1681,8 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
   const col = (contest, tone) => {
     const border =
       tone === 'blue'
-        ? 'border-blue-100 bg-gradient-to-b from-blue-50/40 to-white'
-        : 'border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white';
+        ? 'border-brand-100 bg-gradient-to-b from-brand-50/40 to-white'
+        : 'border-brand-100 bg-gradient-to-b from-brand-50/40 to-white';
     const rows = disciplineRows(contest);
 
     return (
@@ -1750,8 +1750,8 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
 
 function SelectStripField({ micro, icon: Icon, value, onChange, options, excludeIds = [], accent = 'blue', trailing = null }) {
   const accents = {
-    blue: { wrap: 'border-blue-200/80 bg-white', bar: 'bg-blue-600 text-white' },
-    indigo: { wrap: 'border-indigo-200/80 bg-white', bar: 'bg-indigo-600 text-white' },
+    blue: { wrap: 'border-brand-200/80 bg-white', bar: 'bg-brand-600 text-white' },
+    indigo: { wrap: 'border-brand-200/80 bg-white', bar: 'bg-brand-600 text-white' },
     pink: { wrap: 'border-pink-200/80 bg-white', bar: 'bg-pink-600 text-white' },
   };
   const palette = accents[accent] || accents.blue;
@@ -1805,14 +1805,14 @@ function StripQuickContestLinks({ label, contest, onOpenContestDetail, onSetTarg
       <button
         type="button"
         onClick={() => onOpenContestDetail?.(contest.id)}
-        className="shrink-0 font-semibold text-indigo-600 hover:underline"
+        className="shrink-0 font-semibold text-brand-600 hover:underline"
       >
         Ver
       </button>
       <button
         type="button"
         onClick={() => onSetTargetContest?.(contest.id)}
-        className="shrink-0 font-semibold text-indigo-600 hover:underline"
+        className="shrink-0 font-semibold text-brand-600 hover:underline"
       >
         Foco
       </button>
@@ -1822,8 +1822,8 @@ function StripQuickContestLinks({ label, contest, onOpenContestDetail, onSetTarg
 
 function InfoCard({ icon: Icon, eyebrow, title, text, tone = 'blue', tall = false }) {
   const tones = {
-    blue: 'border-blue-100 bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] text-blue-950',
-    indigo: 'border-indigo-100 bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] text-indigo-950',
+    blue: 'border-brand-100 bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] text-brand-950',
+    indigo: 'border-brand-100 bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] text-brand-950',
     amber: 'border-amber-100 bg-[linear-gradient(135deg,#fff7ed_0%,#fffbeb_100%)] text-amber-950',
     gold: 'border-amber-200 bg-[linear-gradient(135deg,#fff8db_0%,#fffdf3_100%)] text-amber-950',
     slate: 'border-ink-200 bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] text-ink-950',
@@ -1912,14 +1912,14 @@ function DarkMetric({ label, value, helper, compact = false }) {
 function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = false, muted = false }) {
   const themes = {
     blue: {
-      wrapper: 'border-blue-100',
-      header: 'bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] border-blue-100',
-      iconBox: 'bg-blue-600 text-white',
+      wrapper: 'border-brand-100',
+      header: 'bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] border-brand-100',
+      iconBox: 'bg-brand-600 text-white',
       title: 'text-ink-950',
       subtitle: 'text-ink-500',
-      dot: 'bg-blue-500',
-      bar: 'bg-blue-500',
-      badge: 'bg-blue-50 text-blue-700 border-blue-100',
+      dot: 'bg-brand-500',
+      bar: 'bg-brand-500',
+      badge: 'bg-brand-50 text-brand-700 border-brand-100',
       itemBorder: 'border-ink-100',
     },
     amber: {
@@ -1934,15 +1934,15 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
       itemBorder: 'border-amber-100',
     },
     indigo: {
-      wrapper: 'border-indigo-100',
-      header: 'bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] border-indigo-100',
-      iconBox: 'bg-indigo-600 text-white',
+      wrapper: 'border-brand-100',
+      header: 'bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] border-brand-100',
+      iconBox: 'bg-brand-600 text-white',
       title: 'text-ink-950',
       subtitle: 'text-ink-500',
-      dot: 'bg-indigo-500',
-      bar: 'bg-indigo-500',
-      badge: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-      itemBorder: 'border-indigo-100',
+      dot: 'bg-brand-500',
+      bar: 'bg-brand-500',
+      badge: 'bg-brand-50 text-brand-700 border-brand-100',
+      itemBorder: 'border-brand-100',
     },
     slate: {
       wrapper: 'border-ink-200',

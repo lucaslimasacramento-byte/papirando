@@ -469,7 +469,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6">
         <div className="app-main-shell flex min-h-[calc(100vh-140px)] items-center justify-center rounded-[28px] border border-ink-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
           <div className="flex items-center gap-3 text-sm font-semibold text-ink-500">
-            <Loader2 size={18} className="animate-spin text-blue-700" />
+            <Loader2 size={18} className="animate-spin text-brand-700" />
             Carregando Vade Mecum...
           </div>
         </div>
@@ -534,7 +534,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-3.5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-[0_10px_28px_rgba(37,99,235,0.35)] sm:h-14 sm:w-14">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-600 text-white shadow-[0_10px_28px_rgba(37,99,235,0.35)] sm:h-14 sm:w-14">
                   <Scale size={22} className="sm:h-6 sm:w-6" strokeWidth={2} />
                 </div>
                 <div className="min-w-0">
@@ -553,7 +553,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploading}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700 disabled:opacity-70"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-bold text-brand-700 disabled:opacity-70"
                     >
                       {isUploading ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
                       Atualizar arquivo
@@ -571,7 +571,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       <button
                         type="button"
                         onClick={onOpenAdminLegislacao}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-bold text-indigo-800"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-bold text-brand-800"
                       >
                         <Settings size={16} />
                         Lançamentos (admin)
@@ -593,7 +593,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   href={fullReaderUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-bold text-brand-700"
                 >
                   <DownloadCloud size={16} />
                   Abrir leitor completo
@@ -609,7 +609,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Buscar bloco legislativo..."
-                  className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-bold text-ink-700 outline-none focus:border-blue-600"
+                  className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-bold text-ink-700 outline-none focus:border-brand-600"
                 />
               </div>
 
@@ -624,7 +624,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       if (event.key === 'Enter') submitPdfSearch();
                     }}
                     placeholder="Buscar texto no PDF..."
-                    className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-bold text-ink-700 outline-none focus:border-blue-600"
+                    className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-bold text-ink-700 outline-none focus:border-brand-600"
                   />
                 </div>
                 <button type="button" onClick={submitPdfSearch} className="btn-primary rounded-2xl px-4 py-3">
@@ -643,8 +643,8 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                     onClick={() => goToSection(section)}
                     className={`shrink-0 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
                       selectedSection === section
-                        ? 'border-blue-200 bg-blue-50 text-blue-700'
-                        : 'border-ink-200 bg-ink-50/70 text-ink-700 hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-700'
+                        ? 'border-brand-200 bg-brand-50 text-brand-700'
+                        : 'border-ink-200 bg-ink-50/70 text-ink-700 hover:border-brand-200 hover:bg-brand-50/60 hover:text-brand-700'
                     }`}
                   >
                     <span>{section}</span>
@@ -697,7 +697,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   Próxima
                   <ChevronRight size={15} />
                 </button>
-                <span className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
+                <span className="rounded-xl border border-brand-100 bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700">
                   Página {currentPage}
                   {maxPage != null ? ` / ${maxPage}` : ''}
                 </span>
@@ -763,7 +763,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               <button
                 type="button"
                 onClick={() => setFocusMode(false)}
-                className="inline-flex items-center gap-2 rounded-xl border border-blue-200/20 bg-blue-500/10 px-4 py-2.5 text-sm font-bold text-blue-200"
+                className="inline-flex items-center gap-2 rounded-xl border border-brand-200/20 bg-brand-500/10 px-4 py-2.5 text-sm font-bold text-brand-200"
               >
                 <Minimize2 size={15} />
                 Sair do foco
@@ -838,14 +838,14 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   value={currentSectionState.note || ''}
                   onChange={(event) => updateSectionState({ note: event.target.value })}
                   placeholder="Escreva observações, links mentais, jurisprudência ou pontos para revisar depois."
-                  className="mt-2 w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-medium leading-relaxed text-ink-600 outline-none focus:border-blue-600"
+                  className="mt-2 w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-medium leading-relaxed text-ink-600 outline-none focus:border-brand-600"
                 />
               </div>
             </section>
 
             <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2">
-                <Highlighter size={16} className="text-blue-700" />
+                <Highlighter size={16} className="text-brand-700" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Marcações</p>
               </div>
 
@@ -854,14 +854,14 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   value={markerDraft.label}
                   onChange={(event) => setMarkerDraft((prev) => ({ ...prev, label: event.target.value }))}
                   placeholder="Título da marcação"
-                  className="rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
+                  className="rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-600"
                 />
                 <textarea
                   rows="3"
                   value={markerDraft.excerpt}
                   onChange={(event) => setMarkerDraft((prev) => ({ ...prev, excerpt: event.target.value }))}
                   placeholder="Trecho, lembrete ou fundamento da marcação"
-                  className="rounded-[1.2rem] border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-medium text-ink-700 outline-none focus:border-blue-600"
+                  className="rounded-[1.2rem] border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-medium text-ink-700 outline-none focus:border-brand-600"
                 />
                 <div className="flex flex-wrap gap-2">
                   {MARKER_COLORS.map((color) => (
@@ -918,7 +918,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
             <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2">
-                <NotebookPen size={16} className="text-blue-700" />
+                <NotebookPen size={16} className="text-brand-700" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Busca e resumo</p>
               </div>
 
@@ -964,7 +964,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                           key={`${result.page}-${idx}-${result.excerpt.slice(0, 24)}`}
                           type="button"
                           onClick={() => goToPage(result.page)}
-                          className="w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4 text-left transition-colors hover:border-blue-200 hover:bg-blue-50/50"
+                          className="w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/50"
                         >
                           <p className="font-semibold text-ink-900">
                             Página {result.page} · {result.section}
@@ -1020,8 +1020,8 @@ function ActionPill({ active, icon: Icon, label, onClick }) {
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${
         active
-          ? 'border-blue-200 bg-blue-50 text-blue-700'
-          : 'border-ink-200 bg-white text-ink-500 hover:border-blue-100 hover:text-blue-700'
+          ? 'border-brand-200 bg-brand-50 text-brand-700'
+          : 'border-ink-200 bg-white text-ink-500 hover:border-brand-100 hover:text-brand-700'
       }`}
     >
       <Icon size={13} className={active ? 'fill-current' : ''} />

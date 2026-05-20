@@ -454,7 +454,7 @@ export default function Revisoes({
         <div className="min-w-0 pr-1">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-ink-400">
-              <ListOrdered size={18} className="text-blue-600" />
+              <ListOrdered size={18} className="text-brand-600" />
               Fila de revisão
             </h3>
 
@@ -470,7 +470,7 @@ export default function Revisoes({
 
           {reviewHighlights.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-6 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#1d4ed8]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-[#1d4ed8]">
                 <Sparkles size={22} />
               </div>
               <h4 className="mt-3 text-lg font-semibold text-ink-900">Nenhuma revisão inteligente por enquanto</h4>
@@ -495,7 +495,7 @@ export default function Revisoes({
 
           {flashcardState.loading ? (
             <div className="flex min-h-[220px] items-center justify-center">
-              <Loader2 size={24} className="animate-spin text-blue-500" />
+              <Loader2 size={24} className="animate-spin text-brand-500" />
             </div>
           ) : flashcardState.deckSummary.length === 0 ? (
             <div className="mt-4 rounded-2xl border border-dashed border-ink-200 bg-ink-50 p-4 text-sm font-semibold text-ink-500">
@@ -529,7 +529,7 @@ function SummaryPanel({ icon: Icon, label, value, detail, actionLabel, onAction,
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
           <p className="mt-2 text-3xl font-semibold text-ink-900">{loading ? '--' : value}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#185FA5]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-[#185FA5]">
           <Icon size={18} />
         </div>
       </div>
@@ -560,12 +560,12 @@ function ReviewCard({
   return (
     <div
       className={`group relative flex flex-col gap-4 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all hover:shadow-md sm:flex-row sm:items-center ${
-        isUrgent ? 'border-red-200 hover:border-red-300' : 'border-ink-100 hover:border-blue-200'
+        isUrgent ? 'border-red-200 hover:border-red-300' : 'border-ink-100 hover:border-brand-200'
       }`}
     >
-      <div className={`absolute bottom-0 left-0 top-0 w-1.5 ${isUrgent ? 'bg-red-500' : 'bg-blue-500'}`} />
+      <div className={`absolute bottom-0 left-0 top-0 w-1.5 ${isUrgent ? 'bg-red-500' : 'bg-brand-500'}`} />
 
-      <div className="ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-transform group-hover:scale-110">
+      <div className="ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-transform group-hover:scale-110">
         <RotateCcw size={20} />
       </div>
 
@@ -573,7 +573,7 @@ function ReviewCard({
         <div className="mb-1 flex flex-wrap items-center gap-2">
           <span
             className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest ${
-              isUrgent ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'
+              isUrgent ? 'bg-red-50 text-red-500' : 'bg-brand-50 text-brand-600'
             }`}
           >
             {badgeText}
@@ -592,7 +592,7 @@ function ReviewCard({
         <button
           type="button"
           onClick={onOpen}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-ink-200 px-4 py-2 text-xs font-semibold text-ink-500 transition-all hover:border-blue-600 hover:text-blue-600 sm:flex-none sm:text-sm"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-ink-200 px-4 py-2 text-xs font-semibold text-ink-500 transition-all hover:border-brand-600 hover:text-brand-600 sm:flex-none sm:text-sm"
         >
           <CheckSquare size={16} />
           Abrir
@@ -618,7 +618,7 @@ function DeckRow({ title, subject, dueToday, overdue, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full items-center justify-between rounded-[1.6rem] border border-ink-200 bg-ink-50 px-4 py-4 text-left transition hover:border-blue-200 hover:bg-white"
+      className="flex w-full items-center justify-between rounded-[1.6rem] border border-ink-200 bg-ink-50 px-4 py-4 text-left transition hover:border-brand-200 hover:bg-white"
     >
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-ink-900">{title}</p>

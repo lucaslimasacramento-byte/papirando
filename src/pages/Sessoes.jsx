@@ -375,7 +375,7 @@ function LiveSessionCard({
 
 function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenRegister }) {
   return (
-    <div className="section-card min-h-0 border-blue-100/50 p-3">
+    <div className="section-card min-h-0 border-brand-100/50 p-3">
       <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
         <BookOpen size={13} className="text-[#1d4ed8]" />
         Próxima sessão sugerida

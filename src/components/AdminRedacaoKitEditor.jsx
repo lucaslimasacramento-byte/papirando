@@ -32,7 +32,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, titulo: e.target.value },
               }))
             }
-            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
           />
         </label>
         <label className="mt-3 block">
@@ -46,7 +46,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, subtitulo: e.target.value },
               }))
             }
-            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-medium leading-relaxed text-ink-700 outline-none focus:border-blue-600"
+            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-medium leading-relaxed text-ink-700 outline-none focus:border-brand-600"
           />
         </label>
         <div className="mt-4">
@@ -67,7 +67,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       },
                     }));
                   }}
-                  className="min-w-0 flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-blue-600"
+                  className="min-w-0 flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-brand-600"
                 />
                 <button
                   type="button"
@@ -155,7 +155,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                         modelos: d.modelos.map((x, j) => (j === i ? { ...x, id: v } : x)),
                       }));
                     }}
-                    className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-ink-800 outline-none focus:border-blue-600"
+                    className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-ink-800 outline-none focus:border-brand-600"
                   />
                 </label>
                 <label className="sm:col-span-2">
@@ -170,7 +170,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                         modelos: d.modelos.map((x, j) => (j === i ? { ...x, titulo: v } : x)),
                       }));
                     }}
-                    className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                    className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
                   />
                 </label>
               </div>
@@ -186,7 +186,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       modelos: d.modelos.map((x, j) => (j === i ? { ...x, badge: v || undefined } : x)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-medium text-ink-700 outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-medium text-ink-700 outline-none focus:border-brand-600"
                 />
               </label>
               <label className="mt-3 block">
@@ -202,7 +202,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                     }));
                   }}
                   spellCheck={false}
-                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-ink-800 outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-ink-800 outline-none focus:border-brand-600"
                 />
               </label>
             </div>
@@ -273,7 +273,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                       [field]: d[field].map((b, j) => (j === i ? { ...b, id: v } : b)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-ink-800 outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-ink-800 outline-none focus:border-brand-600"
                 />
               </label>
               <label>
@@ -288,7 +288,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                       [field]: d[field].map((b, j) => (j === i ? { ...b, emoji: v || '📌' } : b)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-600"
                 />
               </label>
             </div>
@@ -304,7 +304,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                     [field]: d[field].map((b, j) => (j === i ? { ...b, titulo: v } : b)),
                   }));
                 }}
-                className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-brand-600"
               />
             </label>
             <label className="mt-3 block">
@@ -323,7 +323,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                   }));
                 }}
                 spellCheck={false}
-                className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-ink-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-ink-800 outline-none focus:border-brand-600"
               />
             </label>
           </div>

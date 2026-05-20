@@ -23,36 +23,36 @@ const THEME_CONFIG = {
     icon: Shield,
     names: ['Aspirante', 'Tático', 'Elite'],
     ui: {
-      accentText: 'text-blue-600',
-      accentBg: 'bg-blue-600',
-      accentBgHover: 'hover:bg-blue-500',
-      accentBorder: 'border-blue-900',
-      accentLightText: 'text-blue-200',
-      accentMidText: 'text-blue-300',
-      accentFeature: 'text-blue-400',
-      accentFeatureMuted: 'text-blue-800',
-      accentIconBg: 'bg-blue-500',
-      accentShadow: 'shadow-blue-500/30',
-      accentGradient: 'from-blue-400 to-blue-600',
-      accentRing: 'ring-blue-200',
+      accentText: 'text-brand-600',
+      accentBg: 'bg-brand-600',
+      accentBgHover: 'hover:bg-brand-500',
+      accentBorder: 'border-brand-900',
+      accentLightText: 'text-brand-200',
+      accentMidText: 'text-brand-300',
+      accentFeature: 'text-brand-400',
+      accentFeatureMuted: 'text-brand-800',
+      accentIconBg: 'bg-brand-500',
+      accentShadow: 'shadow-brand-500/30',
+      accentGradient: 'from-brand-400 to-brand-600',
+      accentRing: 'ring-brand-200',
     },
   },
   juridico: {
     icon: Target,
     names: ['Assistente', 'Analista', 'Magistrado'],
     ui: {
-      accentText: 'text-indigo-600',
-      accentBg: 'bg-indigo-600',
-      accentBgHover: 'hover:bg-indigo-500',
-      accentBorder: 'border-indigo-900',
-      accentLightText: 'text-indigo-200',
-      accentMidText: 'text-indigo-300',
-      accentFeature: 'text-indigo-400',
-      accentFeatureMuted: 'text-indigo-800',
-      accentIconBg: 'bg-indigo-500',
-      accentShadow: 'shadow-indigo-500/30',
-      accentGradient: 'from-indigo-400 to-indigo-600',
-      accentRing: 'ring-indigo-200',
+      accentText: 'text-brand-600',
+      accentBg: 'bg-brand-600',
+      accentBgHover: 'hover:bg-brand-500',
+      accentBorder: 'border-brand-900',
+      accentLightText: 'text-brand-200',
+      accentMidText: 'text-brand-300',
+      accentFeature: 'text-brand-400',
+      accentFeatureMuted: 'text-brand-800',
+      accentIconBg: 'bg-brand-500',
+      accentShadow: 'shadow-brand-500/30',
+      accentGradient: 'from-brand-400 to-brand-600',
+      accentRing: 'ring-brand-200',
     },
   },
   saude: {
@@ -359,7 +359,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
 
           <div className="flex flex-col gap-3 w-full lg:w-auto">
             <div className="flex items-center gap-3 text-sm font-semibold text-ink-600">
-              <Calendar size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
+              <Calendar size={18} className="text-brand-500 shrink-0" aria-hidden="true" />
               Próxima cobrança:{' '}
               <span className="text-ink-800">
                 {subscription?.current_period_end ? formatPeriodEnd(subscription.current_period_end) : '—'}
@@ -367,7 +367,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
             </div>
 
             <div className="flex items-center gap-3 text-sm font-semibold text-ink-600">
-              <CreditCard size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
+              <CreditCard size={18} className="text-brand-500 shrink-0" aria-hidden="true" />
               Provedor:{' '}
               <span className="text-ink-800">
                 {subscription?.provider === 'manual' ? 'Acesso beta' : 'Stripe'}
@@ -379,7 +379,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
                 href="https://billing.stripe.com/p/login"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-left text-xs font-semibold text-blue-600 underline hover:text-blue-800"
+                className="mt-1 inline-flex items-center gap-1 text-left text-xs font-semibold text-brand-600 underline hover:text-brand-800"
               >
                 Portal de pagamento
                 <ExternalLink size={11} />

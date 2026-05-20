@@ -5,7 +5,7 @@ import { getDefaultRedacaoKitBundle } from '../lib/redacaoKitMerge';
 function KitDetails({ title, badge, children, defaultOpen = false }) {
   return (
     <details
-      className="group w-full rounded-2xl border border-ink-200/80 bg-white shadow-sm transition open:border-indigo-200/70 open:shadow-md"
+      className="group w-full rounded-2xl border border-ink-200/80 bg-white shadow-sm transition open:border-brand-200/70 open:shadow-md"
       open={defaultOpen}
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 marker:content-none [&::-webkit-details-marker]:hidden sm:px-5">
@@ -15,7 +15,7 @@ function KitDetails({ title, badge, children, defaultOpen = false }) {
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">{badge}</p>
           ) : null}
         </div>
-        <span className="shrink-0 rounded-full border border-ink-200 bg-ink-50 px-2.5 py-1 text-[10px] font-bold text-ink-500 group-open:border-indigo-100 group-open:bg-indigo-50 group-open:text-indigo-800">
+        <span className="shrink-0 rounded-full border border-ink-200 bg-ink-50 px-2.5 py-1 text-[10px] font-bold text-ink-500 group-open:border-brand-100 group-open:bg-brand-50 group-open:text-brand-800">
           <span className="group-open:hidden">Abrir</span>
           <span className="hidden group-open:inline">Recolher</span>
         </span>
@@ -29,7 +29,7 @@ function SectionHeading({ step, icon: Icon, title, description, headingId }) {
   return (
     <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
       <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2">
-        <span className="font-mono text-[11px] font-bold tabular-nums text-indigo-500">{step}</span>
+        <span className="font-mono text-[11px] font-bold tabular-nums text-brand-500">{step}</span>
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-ink-200/90 bg-gradient-to-br from-ink-50 to-white text-ink-700 shadow-sm">
           <Icon size={22} strokeWidth={2} />
         </div>
@@ -149,15 +149,15 @@ export function RedacaoDicasKitPanel({ bundle: bundleProp, expertTips = [], onOp
                 key={tip.id}
                 type="button"
                 onClick={() => onOpenExpert?.(tip)}
-                className="group flex flex-col items-start gap-3 rounded-2xl border border-ink-200 bg-white p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                className="group flex flex-col items-start gap-3 rounded-2xl border border-ink-200 bg-white p-5 text-left shadow-sm transition hover:border-brand-200 hover:shadow-md"
               >
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-800">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-800">
                   <Lightbulb size={12} strokeWidth={2.2} />
                   Especialista
                 </span>
-                <span className="text-[15px] font-semibold leading-snug text-ink-900 group-hover:text-indigo-950">{tip.title}</span>
+                <span className="text-[15px] font-semibold leading-snug text-ink-900 group-hover:text-brand-950">{tip.title}</span>
                 <span className="line-clamp-3 text-sm font-medium leading-relaxed text-ink-500">{tip.body || 'Ver conteúdo'}</span>
-                <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700">
+                <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700">
                   <Eye size={16} strokeWidth={2.2} />
                   Abrir
                 </span>

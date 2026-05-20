@@ -448,8 +448,8 @@ export default function EditarDisciplinaModal({
                   Nome
                 </label>
                 <div className="relative">
-                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-blue-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#1d4ed8] focus-within:ring-4 focus-within:ring-blue-50">
-                    <Search size={16} className="text-blue-500" />
+                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-brand-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#1d4ed8] focus-within:ring-4 focus-within:ring-brand-50">
+                    <Search size={16} className="text-brand-500" />
                     <input
                       type="text"
                       value={nome}
@@ -485,13 +485,13 @@ export default function EditarDisciplinaModal({
                               }}
                               className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
                                 isActive
-                                  ? 'bg-blue-50 text-[#1d4ed8]'
+                                  ? 'bg-brand-50 text-[#1d4ed8]'
                                   : 'text-ink-700 hover:bg-ink-50'
                               }`}
                             >
                               <span className="truncate">{item}</span>
                               {isActive && (
-                                <span className="rounded-full border border-blue-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-blue-700">
+                                <span className="rounded-full border border-brand-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-brand-700">
                                   Padrão
                                 </span>
                               )}
@@ -550,8 +550,8 @@ export default function EditarDisciplinaModal({
               </div>
             </div>
 
-            <div className="rounded-[1.8rem] border border-blue-100 bg-blue-50/60 p-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-700">
+            <div className="rounded-[1.8rem] border border-brand-100 bg-brand-50/60 p-5">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brand-700">
                 Resumo da disciplina
               </p>
               <div className="mt-4 space-y-3">
@@ -566,7 +566,7 @@ export default function EditarDisciplinaModal({
           <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
             <div className="rounded-[2rem] border border-ink-100 bg-ink-50/60 p-5">
               <div className="mb-4 flex items-center gap-2">
-                <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
+                <div className="rounded-xl bg-brand-100 p-2 text-brand-700">
                   {editingTopicId ? <Edit3 size={16} /> : <Plus size={16} />}
                 </div>
                 <div>
@@ -589,7 +589,7 @@ export default function EditarDisciplinaModal({
                     onChange={(e) => handleTopicFieldChange('nome', e.target.value)}
                     rows={4}
                     placeholder="Ex.: Controle de constitucionalidade"
-                    className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                   />
                 </div>
 
@@ -603,7 +603,7 @@ export default function EditarDisciplinaModal({
                       min="0"
                       value={topicForm.acertos}
                       onChange={(e) => handleTopicFieldChange('acertos', e.target.value)}
-                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                     />
                   </div>
 
@@ -616,7 +616,7 @@ export default function EditarDisciplinaModal({
                       min="0"
                       value={topicForm.erros}
                       onChange={(e) => handleTopicFieldChange('erros', e.target.value)}
-                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
                     />
                   </div>
                 </div>
@@ -676,7 +676,7 @@ export default function EditarDisciplinaModal({
                     {topicos.map((topico, index) => (
                       <div
                         key={topico.id}
-                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-blue-50/30 ${
+                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-brand-50/30 ${
                           index % 2 === 0 ? 'bg-white' : 'bg-ink-50/40'
                         }`}
                       >
@@ -725,7 +725,7 @@ export default function EditarDisciplinaModal({
                             <span className="rounded-full bg-red-50 px-2.5 py-1 text-red-500">
                               Erros: {toNumber(topico.erros)}
                             </span>
-                            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-600">
+                            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-brand-600">
                               %: {getPercentualByQuestions(topico.acertos, topico.erros)}
                             </span>
                           </div>
@@ -735,7 +735,7 @@ export default function EditarDisciplinaModal({
                           <button
                             type="button"
                             onClick={() => handleEditTopic(topico)}
-                            className="rounded-xl border border-ink-200 bg-white p-2.5 text-ink-500 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-[#1d4ed8]"
+                            className="rounded-xl border border-ink-200 bg-white p-2.5 text-ink-500 transition-all hover:border-brand-200 hover:bg-brand-50 hover:text-[#1d4ed8]"
                             title="Editar tópico"
                           >
                             <Edit3 size={15} />

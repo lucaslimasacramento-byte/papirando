@@ -319,7 +319,7 @@ export default function ConcursosDisponiveis({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar por concurso, banca, cargo ou área..."
-                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
               />
             </div>
 
@@ -329,7 +329,7 @@ export default function ConcursosDisponiveis({
                   type="button"
                   onClick={() => setViewMode('vitrine')}
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'vitrine' ? 'bg-blue-50 text-blue-700' : 'text-ink-500 hover:bg-ink-50'
+                    viewMode === 'vitrine' ? 'bg-brand-50 text-brand-700' : 'text-ink-500 hover:bg-ink-50'
                   }`}
                 >
                   Vitrine
@@ -338,7 +338,7 @@ export default function ConcursosDisponiveis({
                   type="button"
                   onClick={() => setViewMode('lista')}
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'lista' ? 'bg-blue-50 text-blue-700' : 'text-ink-500 hover:bg-ink-50'
+                    viewMode === 'lista' ? 'bg-brand-50 text-brand-700' : 'text-ink-500 hover:bg-ink-50'
                   }`}
                 >
                   Lista
@@ -392,8 +392,8 @@ export default function ConcursosDisponiveis({
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
                   (item.area === 'Todas' && (areasSelecionadas.includes('Todas') || areasSelecionadas.length === 0)) ||
                   areasSelecionadas.includes(item.area)
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-ink-200 bg-ink-50/70 text-ink-600 hover:border-blue-100 hover:bg-white'
+                    ? 'border-brand-200 bg-brand-50 text-brand-700 shadow-sm'
+                    : 'border-ink-200 bg-ink-50/70 text-ink-600 hover:border-brand-100 hover:bg-white'
                 }`}
               >
                 <span>{item.area}</span>
@@ -407,7 +407,7 @@ export default function ConcursosDisponiveis({
           {!isAdmin && (
             <div
               className={`rounded-2xl border px-4 py-3 ${
-                limiteAtingido ? 'border-amber-200 bg-amber-50' : 'border-blue-100 bg-blue-50/70'
+                limiteAtingido ? 'border-amber-200 bg-amber-50' : 'border-brand-100 bg-brand-50/70'
               }`}
             >
               <p className="text-sm font-semibold text-ink-900">
@@ -489,7 +489,7 @@ export default function ConcursosDisponiveis({
                   return (
                     <article
                       key={contest.id}
-                      className="group overflow-hidden rounded-[1.35rem] border border-ink-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
+                      className="group overflow-hidden rounded-[1.35rem] border border-ink-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
                     >
                       <button
                         type="button"
@@ -546,7 +546,7 @@ export default function ConcursosDisponiveis({
                                 </span>
                               ))}
                               {cargos.length > 3 && (
-                                <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">
+                                <span className="rounded-full border border-brand-100 bg-brand-50 px-2.5 py-1 text-[10px] font-bold text-brand-700">
                                   +{cargos.length - 3}
                                 </span>
                               )}
@@ -584,7 +584,7 @@ export default function ConcursosDisponiveis({
                             type="button"
                             onClick={() => handleImport(contest)}
                             disabled={importingId === contest.id || limiteAtingido}
-                            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
+                            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 text-sm font-bold text-white transition-colors hover:bg-brand-900 disabled:opacity-70"
                           >
                             {limiteAtingido
                               ? 'Limite atingido'
@@ -631,7 +631,7 @@ export default function ConcursosDisponiveis({
                       </div>
                       <div className="text-sm font-semibold text-emerald-700">{formatCurrencyBR(contest.salario)}</div>
                       <div className="text-sm font-semibold text-amber-700">{formatCurrencyBR(contest.inscricao_valor)}</div>
-                      <div className="text-sm font-semibold text-blue-700">{formatDateBR(contest.prova_data)}</div>
+                      <div className="text-sm font-semibold text-brand-700">{formatDateBR(contest.prova_data)}</div>
 
                       <div className="flex flex-wrap gap-2">
                         <button
@@ -689,7 +689,7 @@ function FilterSelect({ value, onChange, options, renderLabel }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+      className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-50"
     >
       {options.map((option) => {
         const optionValue = typeof option === 'string' ? option : option.value;
@@ -708,7 +708,7 @@ function FilterSelect({ value, onChange, options, renderLabel }) {
 
 function AreaBadge({ children }) {
   return (
-    <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+    <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">
       {children}
     </span>
   );
@@ -725,7 +725,7 @@ function StatusBadge({ children }) {
 function InfoPill({ icon: Icon, label }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-bold text-ink-600">
-      <Icon size={12} className="text-blue-600" />
+      <Icon size={12} className="text-brand-600" />
       <span className="truncate">{label}</span>
     </div>
   );
@@ -742,7 +742,7 @@ function MetaCounter({ label, value }) {
 
 function QuickInfo({ label, value, tone = 'blue', wide = false }) {
   const toneClasses = {
-    blue: 'text-blue-700',
+    blue: 'text-brand-700',
     amber: 'text-amber-700',
     green: 'text-emerald-700',
   };
@@ -757,7 +757,7 @@ function QuickInfo({ label, value, tone = 'blue', wide = false }) {
 
 function QuickTag({ children, tone = 'blue' }) {
   const toneClasses = {
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
+    blue: 'border-brand-100 bg-brand-50 text-brand-700',
     amber: 'border-amber-100 bg-amber-50 text-amber-700',
     rose: 'border-rose-100 bg-rose-50 text-rose-700',
     green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
@@ -920,7 +920,7 @@ function ContestPreviewModal({
                     {contest.etapas_tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700"
+                        className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700"
                       >
                         {STAGE_LABELS[tag] || tag}
                       </span>
@@ -929,8 +929,8 @@ function ContestPreviewModal({
                 )}
 
                 {contest.taf_itens?.length > 0 && (
-                  <div className="mt-4 rounded-[1rem] border border-blue-100 bg-blue-50/70 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Itens do TAF</p>
+                  <div className="mt-4 rounded-[1rem] border border-brand-100 bg-brand-50/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Itens do TAF</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {contest.taf_itens.map((item) => (
                         <span

@@ -6,7 +6,7 @@ import { deleteBetaFeedbackItem, loadBetaFeedback } from '../lib/betaFeedbackApi
 const TIPO_LABELS = { bug: 'Bug', sugestao: 'Sugestao', elogio: 'Elogio', geral: 'Outro' };
 const TIPO_COLORS = {
   bug: 'border-red-200 bg-red-50 text-red-700',
-  sugestao: 'border-blue-200 bg-blue-50 text-blue-700',
+  sugestao: 'border-brand-200 bg-brand-50 text-brand-700',
   elogio: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   geral: 'border-ink-200 bg-ink-50 text-ink-600',
 };
@@ -108,7 +108,7 @@ export default function AdminBetaFeedback() {
 
           {loading ? (
             <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
-              <Loader2 size={18} className="animate-spin text-blue-700" />
+              <Loader2 size={18} className="animate-spin text-brand-700" />
               Carregando...
             </div>
           ) : rows.length === 0 ? (

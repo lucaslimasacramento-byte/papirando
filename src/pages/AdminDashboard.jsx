@@ -287,7 +287,7 @@ export default function AdminDashboard({
                     <span className="text-lg font-semibold text-ink-900">{count}</span>
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-white">
-                    <div className="h-full rounded-full bg-blue-600" style={{ width: `${Math.min(100, Math.round((count / Math.max(contestLibrary.length, 1)) * 100))}%` }} />
+                    <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.min(100, Math.round((count / Math.max(contestLibrary.length, 1)) * 100))}%` }} />
                   </div>
                 </div>
               ))}
@@ -376,14 +376,14 @@ function ActionCard({ icon: Icon, title, text, actionLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-[1.6rem] border border-ink-200 bg-ink-50/70 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/50"
+      className="rounded-[1.6rem] border border-ink-200 bg-ink-50/70 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50/50"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
         <Icon size={20} />
       </div>
       <p className="mt-4 text-lg font-semibold text-ink-900">{title}</p>
       <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{text}</p>
-      <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
+      <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-700">
         {actionLabel}
         <ArrowRight size={15} />
       </div>
@@ -395,7 +395,7 @@ function OpsCard({ icon: Icon, label, value }) {
   return (
     <div className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <Icon size={18} />
         </div>
         <div className="min-w-0">
