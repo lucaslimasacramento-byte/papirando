@@ -25,50 +25,54 @@ export default function BetaWelcomeBanner({ onSendFeedback, onStart }) {
   };
 
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm">
+    <div className="mb-4 overflow-hidden rounded-lg border border-[#14110d]/18 bg-[#ebe6d8] shadow-none">
       <div className="flex items-start justify-between gap-4 p-5">
         <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-          {/* Ícone */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-300/40">
-            <Sparkles size={22} />
+          {/* Ícone — em tinta (CTA primário Papirando) */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#14110d] text-[#f3efe5] shadow-none">
+            <Sparkles size={22} strokeWidth={1.75} />
           </div>
 
           {/* Texto */}
           <div className="min-w-0 flex-1">
             <div className="mb-0.5 flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900">Bem-vindo ao beta fechado do Papirando!</h3>
-              <span className="rounded-full border border-blue-300 bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700">
+              <h3
+                className="text-[1.625rem] font-light leading-tight tracking-[-0.025em] text-[#14110d]"
+                style={{ fontFamily: 'Fraunces, "Plus Jakarta Sans", serif', fontStyle: 'italic' }}
+              >
+                Bem-vindo ao beta fechado do Papirando<span className="text-[#1d4ed8]">.</span>
+              </h3>
+              <span className="rounded-sm border border-[#1d4ed8]/28 bg-[#eaf0fd] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#1d4ed8]">
                 Beta
               </span>
             </div>
-            <p className="mb-3 text-sm font-medium text-slate-600">
-              Você é um dos primeiros a usar a plataforma. Explore à vontade e nos diga o que achou!
+            <p className="mb-3 text-sm font-medium leading-relaxed text-[#3a342c]">
+              Você é um dos primeiros a papirar por aqui. Explore à vontade e nos conta o que achou.
             </p>
 
             {/* Checklist de features */}
             <ul className="mb-4 grid grid-cols-1 gap-1 sm:grid-cols-2">
               {FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                  <CheckCircle2 size={13} className="shrink-0 text-emerald-500" />
+                <li key={f} className="flex items-center gap-2 text-xs font-semibold text-[#3a342c]">
+                  <CheckCircle2 size={13} strokeWidth={1.75} className="shrink-0 text-[#4d7c3f]" />
                   {f}
                 </li>
               ))}
             </ul>
 
-            {/* Ações */}
+            {/* Ações — CTA primário em tinta (brandbook); secundário em papel */}
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => { onSendFeedback?.(); handleDismiss(); }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#14110d] px-4 text-[13px] font-semibold tracking-tight text-[#f3efe5] transition-colors hover:bg-[#3a342c]"
               >
-                <Sparkles size={13} />
                 Enviar feedback
               </button>
               <button
                 type="button"
                 onClick={() => { onStart?.(); handleDismiss(); }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#14110d]/28 bg-white px-4 text-[13px] font-semibold tracking-tight text-[#14110d] transition-colors hover:bg-[#ebe6d8]"
               >
                 Começar a explorar →
               </button>
@@ -81,9 +85,9 @@ export default function BetaWelcomeBanner({ onSendFeedback, onStart }) {
           type="button"
           onClick={handleDismiss}
           aria-label="Fechar banner de boas-vindas"
-          className="mt-0.5 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          className="mt-0.5 shrink-0 rounded-md p-1.5 text-[#847b6c] transition-colors hover:bg-[#f3efe5] hover:text-[#14110d]"
         >
-          <X size={16} />
+          <X size={16} strokeWidth={1.75} />
         </button>
       </div>
     </div>
