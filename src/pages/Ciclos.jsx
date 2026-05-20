@@ -11,60 +11,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
-
-const CYCLE_PASTEL_COLORS = Array.from(
-  new Set([
-    '#FFD1DC',
-    '#FFB3BA',
-    '#FFDFBA',
-    '#FFFFBA',
-    '#BAFFC9',
-    '#BAE1FF',
-    '#D7BAFF',
-    '#FFCCE5',
-    '#CCE5FF',
-    '#E5FFCC',
-    '#FADADD',
-    '#D6EAF8',
-    '#D5F5E3',
-    '#FCF3CF',
-    '#EBDEF0',
-    '#F9E79F',
-    '#AED6F1',
-    '#A9DFBF',
-    '#F5CBA7',
-    '#F1948A',
-    '#BB8FCE',
-    '#85C1E9',
-    '#73C6B6',
-    '#F7DC6F',
-    '#F8C471',
-    '#E59866',
-    '#D98880',
-    '#C39BD3',
-    '#7FB3D5',
-    '#76D7C4',
-    '#FAD7A0',
-    '#F5B7B1',
-    '#E8DAEF',
-    '#D4E6F1',
-    '#D1F2EB',
-    '#FDEBD0',
-    '#FADBD8',
-    '#EAF2F8',
-    '#E8F8F5',
-    '#FEF9E7',
-    '#FDEDEC',
-    '#EBF5FB',
-    '#E9F7EF',
-    '#FDF2E9',
-    '#F5EEF8',
-    '#D6DBDF',
-    '#A3E4D7',
-    '#F9EBEA',
-    '#EAFAF1',
-  ])
-);
+import { disciplineColorByIndex } from '../lib/disciplineColors';
 
 const CHART_CENTER = 60;
 const OUTER_RING_OUTER_RADIUS = 54;
@@ -637,14 +584,9 @@ function formatMinutes(minutes = 0) {
 
 function buildDistinctPastelColor(index) {
   const safeIndex = Math.max(0, Number(index || 0));
-  if (safeIndex < CYCLE_PASTEL_COLORS.length) {
-    return CYCLE_PASTEL_COLORS[safeIndex];
-  }
-
-  const hue = Math.round(((safeIndex - CYCLE_PASTEL_COLORS.length) * 137.508 + 12) % 360);
-  const saturation = 54 - (safeIndex % 3) * 3;
-  const lightness = 86 - (safeIndex % 2) * 2;
-  return `hsl(${hue} ${Math.max(42, saturation)}% ${Math.max(78, lightness)}%)`;
+  // Paleta Papirando (28 pastéis warm-aligned) com módulo cíclico.
+  // Veja src/lib/disciplineColors.js.
+  return disciplineColorByIndex(safeIndex);
 }
 
 function buildInnerCycleSegments(subjects) {

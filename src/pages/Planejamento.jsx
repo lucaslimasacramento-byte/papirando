@@ -25,6 +25,10 @@ import PageHeadPremium, {
   PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS,
   PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS,
 } from '../components/PageHeadPremium';
+// Paleta procedural Papirando — veja src/lib/disciplineColors.js.
+// Antes Planejamento e Ciclos duplicavam o mesmo array literal de ~50 cores
+// pastel default; agora ambos consomem a mesma fonte warm-aligned.
+import { PASTEL_SUBJECT_COLORS } from '../lib/disciplineColors';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -54,58 +58,6 @@ const PLANNING_REMOVED_TASKS_KEY = 'papirando_planning_removed_tasks';
 const DURATION_OPTIONS = [30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180];
 const WEEKDAY_ORDER = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 const TIME_PICKER_OPTIONS = Array.from({ length: 25 }, (_, index) => index * 30);
-const PASTEL_SUBJECT_COLORS = [
-  '#FFD1DC',
-  '#FFB3BA',
-  '#FFDFBA',
-  '#FFFFBA',
-  '#BAFFC9',
-  '#BAE1FF',
-  '#D7BAFF',
-  '#FFCCE5',
-  '#CCE5FF',
-  '#E5FFCC',
-  '#FADADD',
-  '#D6EAF8',
-  '#D5F5E3',
-  '#FCF3CF',
-  '#EBDEF0',
-  '#F9E79F',
-  '#AED6F1',
-  '#A9DFBF',
-  '#F5CBA7',
-  '#F1948A',
-  '#BB8FCE',
-  '#85C1E9',
-  '#73C6B6',
-  '#F7DC6F',
-  '#F8C471',
-  '#E59866',
-  '#D98880',
-  '#C39BD3',
-  '#7FB3D5',
-  '#76D7C4',
-  '#FAD7A0',
-  '#F5B7B1',
-  '#E8DAEF',
-  '#D4E6F1',
-  '#D1F2EB',
-  '#FCF3CF',
-  '#FDEBD0',
-  '#FADBD8',
-  '#EAF2F8',
-  '#E8F8F5',
-  '#FEF9E7',
-  '#FDEDEC',
-  '#EBF5FB',
-  '#E9F7EF',
-  '#FDF2E9',
-  '#F5EEF8',
-  '#D6DBDF',
-  '#A3E4D7',
-  '#F9EBEA',
-  '#EAFAF1',
-];
 const PLANNING_TYPE_COLORS = {
   Sessao: '#CCE5FF',
   Revisao: '#BAFFC9',
