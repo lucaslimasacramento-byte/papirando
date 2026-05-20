@@ -50,7 +50,7 @@ export const CONTEST_AREA_THEME = {
   },
   Administrativa: {
     accentStart: '#94a3b8',
-    accentEnd: '#2563eb',
+    accentEnd: '#1d4ed8',
     accentShadow: 'rgba(148, 163, 184, 0.28)',
     dark: '#101827',
     darkSoft: '#1e293b',

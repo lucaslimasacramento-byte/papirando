@@ -163,7 +163,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         popular: true,
         icon: <Star size={24} aria-hidden="true" />,
         iconWrapperClass: `${theme.ui.accentIconBg} text-white shadow-lg ${theme.ui.accentShadow}`,
-        cardClass: `bg-[#1A365D] rounded-[2.5rem] p-8 border ${theme.ui.accentBorder} shadow-2xl flex flex-col relative overflow-hidden transform transition-all duration-300 md:-translate-y-4 hover:-translate-y-5`,
+        cardClass: `bg-[#1e40af] rounded-[2.5rem] p-8 border ${theme.ui.accentBorder} shadow-2xl flex flex-col relative overflow-hidden transform transition-all duration-300 md:-translate-y-4 hover:-translate-y-5`,
         features: [
           { text: `Tudo do plano ${nomePlano1}`, available: true, color: theme.ui.accentFeature },
           { text: 'Ciclos de Estudo Ilimitados', available: true, color: theme.ui.accentFeature },
@@ -480,7 +480,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${
                           plano.destaque
-                            ? 'bg-white text-[#1A365D]'
+                            ? 'bg-white text-[#1e40af]'
                             : 'bg-emerald-100 text-emerald-700'
                         }`}
                       >

@@ -645,7 +645,7 @@ export default function ConcursosDisponiveis({
                           type="button"
                           onClick={() => handleImport(contest)}
                           disabled={importingId === contest.id || limiteAtingido}
-                          className="rounded-xl bg-[#2563EB] px-3 py-2 text-sm font-bold text-white disabled:opacity-70"
+                          className="rounded-xl bg-[#1d4ed8] px-3 py-2 text-sm font-bold text-white disabled:opacity-70"
                         >
                           {importingId === contest.id ? '...' : 'Adicionar'}
                         </button>
@@ -1008,7 +1008,7 @@ function ContestPreviewModal({
               <button
                 onClick={() => onImport(contest)}
                 disabled={importingId === contest.id || limiteAtingido}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1d4ed8] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:opacity-70"
               >
                 {limiteAtingido
                   ? 'Limite atingido'

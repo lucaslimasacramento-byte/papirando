@@ -26,7 +26,7 @@ import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
 
 /** Paleta alinhada ao app (--accent #1d4ed8, superfícies frias). */
 const HERO_BAR =
-  'bg-gradient-to-br from-slate-900 via-[#0f172a] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+  'bg-gradient-to-br from-slate-900 via-[#14110d] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
 const ACCENT_BTN = 'bg-blue-700 hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500/40';
 const PAGE_BG = 'bg-[var(--bg-canvas)]';
 
@@ -954,7 +954,7 @@ export default function Perfil(props) {
                       <div className="p-6">
                         <div className="h-3 overflow-hidden rounded-full bg-slate-100">
                           <div
-                            className="h-full rounded-full bg-[linear-gradient(90deg,#1e3a8a,#2563eb)]"
+                            className="h-full rounded-full bg-[linear-gradient(90deg,#1e3a8a,#1d4ed8)]"
                             style={{ width: `${Math.max(0, Math.min(100, Number(xpSummary.progressPercent || 0)))}%` }}
                           />
                         </div>

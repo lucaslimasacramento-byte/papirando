@@ -1453,7 +1453,7 @@ function PremiumTabButton({ active, onClick, icon: Icon, label, compact = false 
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-[1rem] px-4 ${compact ? 'py-3' : 'py-3.5'} text-sm font-semibold transition-all ${
         active
-          ? 'bg-[linear-gradient(135deg,#0f172a_0%,#1d4ed8_100%)] text-white shadow-[0_16px_35px_-22px_rgba(37,99,235,0.7)]'
+          ? 'bg-[linear-gradient(135deg,#14110d_0%,#1d4ed8_100%)] text-white shadow-[0_16px_35px_-22px_rgba(37,99,235,0.7)]'
           : 'text-slate-500 hover:bg-white hover:text-slate-900'
       }`}
     >
@@ -1537,7 +1537,7 @@ function ThemeCard({ tags, title, description, onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-indigo-100 bg-[#eef2ff] px-4 py-3.5 text-sm font-semibold text-[#1e40af] transition hover:bg-[linear-gradient(135deg,#312e81_0%,#2563eb_100%)] hover:text-white"
+        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-indigo-100 bg-[#eef2ff] px-4 py-3.5 text-sm font-semibold text-[#1e40af] transition hover:bg-[linear-gradient(135deg,#1e40af_0%,#1d4ed8_100%)] hover:text-white"
       >
         Escrever sobre este tema
         <ArrowRight size={16} />

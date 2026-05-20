@@ -894,7 +894,7 @@ function PlanejamentoContent({
                   selectedCourseLabels.map((course) => (
                     <span
                       key={course.plano}
-                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-gray-100 bg-blue-50 text-[#2563EB]"
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-gray-100 bg-blue-50 text-[#1d4ed8]"
                     >
                       {course.nome}
                     </span>
@@ -923,14 +923,14 @@ function PlanejamentoContent({
                 <button
                   type="button"
                   onClick={openWizard}
-                  className="inline-flex items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-bold text-[#2563EB] transition hover:border-blue-200 hover:bg-blue-100"
+                  className="inline-flex items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-bold text-[#1d4ed8] transition hover:border-blue-200 hover:bg-blue-100"
                 >
                   Reabrir ajuste
                 </button>
                 <button
                   type="button"
                   onClick={() => setCurrentDate(new Date())}
-                  className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition hover:border-[#2563EB] hover:text-[#2563EB]"
+                  className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
                 >
                   Ir para hoje
                 </button>
@@ -939,8 +939,8 @@ function PlanejamentoContent({
                   onClick={() => setAgendaViewMode('calendario')}
                   className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
                     agendaViewMode === 'calendario'
-                      ? 'bg-[#2563EB] text-white shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#2563EB] hover:text-[#2563EB]'
+                      ? 'bg-[#1d4ed8] text-white shadow-sm'
+                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#1d4ed8] hover:text-[#1d4ed8]'
                   }`}
                 >
                   Calendário
@@ -950,15 +950,15 @@ function PlanejamentoContent({
                   onClick={() => setAgendaViewMode('kanban')}
                   className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
                     agendaViewMode === 'kanban'
-                      ? 'bg-[#2563EB] text-white shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#2563EB] hover:text-[#2563EB]'
+                      ? 'bg-[#1d4ed8] text-white shadow-sm'
+                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#1d4ed8] hover:text-[#1d4ed8]'
                   }`}
                 >
                   Kanban
                 </button>
               </div>
               <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${rhythmPercent}%` }} />
+                <div className="h-full rounded-full bg-[#1d4ed8]" style={{ width: `${rhythmPercent}%` }} />
               </div>
               <p className="mt-3 text-xs font-semibold leading-5 text-gray-500">
                 A IA do plano consolida matérias iguais entre cursos antes de montar agenda e kanban.
@@ -1007,7 +1007,7 @@ function PlanejamentoContent({
                         <button
                           onClick={() => setCalViewMode('mes')}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                            calViewMode === 'mes' ? 'bg-blue-50 text-[#2563EB]' : 'text-gray-500 hover:bg-gray-50'
+                            calViewMode === 'mes' ? 'bg-blue-50 text-[#1d4ed8]' : 'text-gray-500 hover:bg-gray-50'
                           }`}
                         >
                           Mês
@@ -1015,7 +1015,7 @@ function PlanejamentoContent({
                         <button
                           onClick={() => setCalViewMode('semana')}
                           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                            calViewMode === 'semana' ? 'bg-blue-50 text-[#2563EB]' : 'text-gray-500 hover:bg-gray-50'
+                            calViewMode === 'semana' ? 'bg-blue-50 text-[#1d4ed8]' : 'text-gray-500 hover:bg-gray-50'
                           }`}
                         >
                           Semana
@@ -1055,7 +1055,7 @@ function PlanejamentoContent({
                     </button>
                     <button
                       onClick={() => setCurrentDate(new Date())}
-                      className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm shadow-sm hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
+                      className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm shadow-sm hover:text-[#1d4ed8] hover:border-[#1d4ed8] transition-colors"
                     >
                       Hoje
                     </button>
@@ -1108,7 +1108,7 @@ function PlanejamentoContent({
                                 <div className="flex justify-between items-start mb-2">
                                   <span
                                     className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${
-                                      isToday ? 'bg-[#2563EB] text-white shadow-md' : 'text-gray-600'
+                                      isToday ? 'bg-[#1d4ed8] text-white shadow-md' : 'text-gray-600'
                                     }`}
                                   >
                                     {day}
@@ -1148,7 +1148,7 @@ function PlanejamentoContent({
                             </div>
                             <div
                               className={`mx-auto w-8 h-8 flex items-center justify-center rounded-full text-lg font-semibold ${
-                                isToday ? 'bg-[#2563EB] text-white shadow-md' : 'text-gray-800'
+                                isToday ? 'bg-[#1d4ed8] text-white shadow-md' : 'text-gray-800'
                               }`}
                             >
                               {date.getDate()}
@@ -1203,7 +1203,7 @@ function PlanejamentoContent({
                 <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-5 md:py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div className="min-w-0">
                     <h3 className="text-base md:text-lg font-extrabold text-gray-800 flex items-center gap-2">
-                      <Columns size={18} className="text-[#2563EB] shrink-0" />
+                      <Columns size={18} className="text-[#1d4ed8] shrink-0" />
                       Quadro de Etapas
                     </h3>
                     <p className="text-[11px] md:text-xs font-semibold text-gray-500 leading-snug mt-0.5">
@@ -1337,7 +1337,7 @@ function PlanejamentoContent({
                                   type="button"
                                   onMouseDown={(event) => event.stopPropagation()}
                                   onClick={() => setKanbanMenuOpen(kanbanMenuOpen === task.id ? '' : task.id)}
-                                  className="text-gray-400 hover:text-[#2563EB] p-1 bg-white/90 rounded-md border border-transparent hover:border-gray-200 transition-all opacity-80 group-hover:opacity-100"
+                                  className="text-gray-400 hover:text-[#1d4ed8] p-1 bg-white/90 rounded-md border border-transparent hover:border-gray-200 transition-all opacity-80 group-hover:opacity-100"
                                   title="Mais ações"
                                 >
                                   <MoreHorizontal size={15} />
@@ -1347,7 +1347,7 @@ function PlanejamentoContent({
                                     <button
                                       type="button"
                                       onClick={() => handlePlanAction(task, 'start', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-blue-50 hover:text-[#2563EB] flex items-center gap-2 transition-colors"
+                                      className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-blue-50 hover:text-[#1d4ed8] flex items-center gap-2 transition-colors"
                                     >
                                       <Play size={14} />
                                       Iniciar sessão
@@ -1355,7 +1355,7 @@ function PlanejamentoContent({
                                     <button
                                       type="button"
                                       onClick={() => handlePlanAction(task, 'open', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-blue-50 hover:text-[#2563EB] flex items-center gap-2 transition-colors"
+                                      className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-blue-50 hover:text-[#1d4ed8] flex items-center gap-2 transition-colors"
                                     >
                                       <Target size={14} />
                                       Abrir disciplina
@@ -1381,7 +1381,7 @@ function PlanejamentoContent({
                           ) : null}
 
                           {isActiveDrop ? (
-                            <div className="h-16 flex items-center justify-center border-2 border-dashed border-[#2563EB] bg-[#2563EB]/10 rounded-lg text-[#2563EB] text-[10px] font-bold shadow-inner">
+                            <div className="h-16 flex items-center justify-center border-2 border-dashed border-[#1d4ed8] bg-[#1d4ed8]/10 rounded-lg text-[#1d4ed8] text-[10px] font-bold shadow-inner">
                               Soltar aqui
                             </div>
                           ) : null}
@@ -1412,7 +1412,7 @@ function PlanejamentoContent({
                   type="button"
                   onClick={safeCycleProps.onRestartCycle}
                   disabled={!Array.isArray(safeCycleProps.activeCycle) || safeCycleProps.activeCycle.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <RotateCcw size={16} />
                   Recomeçar Ciclo
@@ -1420,7 +1420,7 @@ function PlanejamentoContent({
                 <button
                   type="button"
                   onClick={openWizard}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]"
                 >
                   Replanejar
                 </button>
@@ -1428,7 +1428,7 @@ function PlanejamentoContent({
                   type="button"
                   onClick={safeCycleProps.onRemoveCycle}
                   disabled={!Array.isArray(safeCycleProps.activeCycle) || safeCycleProps.activeCycle.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Remover
                 </button>
@@ -1440,8 +1440,8 @@ function PlanejamentoContent({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <TagPill label="Ciclo flexível" color="#2563EB" soft />
-                  <TagPill label={targetContest?.nome || 'Sem alvo'} color="#2563EB" soft />
+                  <TagPill label="Ciclo flexível" color="#1d4ed8" soft />
+                  <TagPill label={targetContest?.nome || 'Sem alvo'} color="#1d4ed8" soft />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <h2 className="text-[1.65rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
@@ -1462,7 +1462,7 @@ function PlanejamentoContent({
                 <button
                   type="button"
                   onClick={safeCycleProps.onResetCycle}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:border-[#2563EB] hover:text-[#2563EB]"
+                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
                 >
                   <RotateCcw size={16} />
                   Reiniciar ciclo
@@ -1517,14 +1517,14 @@ function PlanejamentoContent({
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <WizardModeCard
                     active={wizardModeDraft === 'ciclo'}
-                    icon={<RotateCcw size={62} className="text-[#2563EB]" />}
+                    icon={<RotateCcw size={62} className="text-[#1d4ed8]" />}
                     title="Ciclo de Estudos"
                     text="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina."
                     onClick={() => setWizardModeDraft('ciclo')}
                   />
                   <WizardModeCard
                     active={wizardModeDraft === 'fixo'}
-                    icon={<CalendarDays size={62} className="text-[#2563EB]" />}
+                    icon={<CalendarDays size={62} className="text-[#1d4ed8]" />}
                     title="Planejamento Semanal"
                     text="Defina dias certos para cada frente de estudo e acompanhe tudo em calendário e kanban."
                     onClick={() => setWizardModeDraft('fixo')}
@@ -1549,7 +1549,7 @@ function PlanejamentoContent({
                         }
                         className={`rounded-xl border px-4 py-3 text-left transition ${
                           wizardCoursePlans.includes(course.plano)
-                            ? 'border-[#2563EB] bg-blue-50'
+                            ? 'border-[#1d4ed8] bg-blue-50'
                             : 'border-gray-200 bg-white hover:border-gray-300'
                         }`}
                       >
@@ -1558,7 +1558,7 @@ function PlanejamentoContent({
                             <p className="text-base font-bold text-gray-800">{course.nome}</p>
                             <p className="mt-1 text-sm text-gray-500">{course.concurso || course.plano}</p>
                           </div>
-                          {course.isTarget ? <TagPill label="Alvo" color="#2563EB" soft /> : null}
+                          {course.isTarget ? <TagPill label="Alvo" color="#1d4ed8" soft /> : null}
                         </div>
                       </button>
                     ))}
@@ -1592,7 +1592,7 @@ function PlanejamentoContent({
                             }))
                           }
                           className={`rounded-xl border px-4 py-3 text-center text-sm font-semibold transition sm:text-base ${
-                            selected ? 'border-[#2563EB] bg-blue-50 text-slate-900' : 'border-gray-200 bg-white text-gray-500'
+                            selected ? 'border-[#1d4ed8] bg-blue-50 text-slate-900' : 'border-gray-200 bg-white text-gray-500'
                           }`}
                         >
                           {discipline.nome}
@@ -1635,7 +1635,7 @@ function PlanejamentoContent({
                                       },
                                     }))
                                   }
-                                  className="w-full accent-[#2563EB]"
+                                  className="w-full accent-[#1d4ed8]"
                                 />
                                 <span className="w-6 text-right font-bold text-gray-700">{config.importance}</span>
                               </div>
@@ -1658,7 +1658,7 @@ function PlanejamentoContent({
                                       },
                                     }))
                                   }
-                                  className="w-full accent-[#2563EB]"
+                                  className="w-full accent-[#1d4ed8]"
                                 />
                                 <span className="w-6 text-right font-bold text-gray-700">{config.knowledge}</span>
                               </div>
@@ -1752,7 +1752,7 @@ function PlanejamentoContent({
                         type="button"
                         onClick={() => setWizardSubjectsPerDay(count)}
                         className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                          wizardSubjectsPerDay === count ? 'bg-[#2563EB] text-white shadow-sm' : 'text-gray-600 hover:bg-white'
+                          wizardSubjectsPerDay === count ? 'bg-[#1d4ed8] text-white shadow-sm' : 'text-gray-600 hover:bg-white'
                         }`}
                       >
                         {count} matéria{count > 1 ? 's' : ''}
@@ -1772,7 +1772,7 @@ function PlanejamentoContent({
                     <select
                       value={wizardMinDuration}
                       onChange={(event) => setWizardMinDuration(Number(event.target.value))}
-                      className="min-w-[120px] border-b-2 border-[#2563EB] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
+                      className="min-w-[120px] border-b-2 border-[#1d4ed8] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
                     >
                       {DURATION_OPTIONS.map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1784,7 +1784,7 @@ function PlanejamentoContent({
                     <select
                       value={wizardMaxDuration}
                       onChange={(event) => setWizardMaxDuration(Number(event.target.value))}
-                      className="min-w-[120px] border-b-2 border-[#2563EB] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
+                      className="min-w-[120px] border-b-2 border-[#1d4ed8] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
                     >
                       {DURATION_OPTIONS.filter((minutes) => minutes >= wizardMinDuration).map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1811,7 +1811,7 @@ function PlanejamentoContent({
                   <button
                     type="button"
                     onClick={goToPreviousWizardStep}
-                    className="rounded-xl border-2 border-[#2563EB] px-5 py-2.5 text-sm font-semibold text-[#2563EB]"
+                    className="rounded-xl border-2 border-[#1d4ed8] px-5 py-2.5 text-sm font-semibold text-[#1d4ed8]"
                   >
                     Voltar
                   </button>
@@ -1825,7 +1825,7 @@ function PlanejamentoContent({
                       (wizardStep === 1 && wizardCoursePlans.length === 0) ||
                       (wizardStep === 2 && selectedWizardSubjects.length === 0)
                     }
-                    className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="rounded-xl bg-[#1d4ed8] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
                   >
                     Proximo
                   </button>
@@ -1834,7 +1834,7 @@ function PlanejamentoContent({
                     type="button"
                     onClick={saveWizardConfig}
                     disabled={wizardCoursePlans.length === 0}
-                    className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="rounded-xl bg-[#1d4ed8] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
                   >
                     Concluir
                   </button>
@@ -1912,7 +1912,7 @@ function WizardStepper({ step }) {
             <div className="flex flex-col items-center gap-2">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-lg font-bold ${
-                  active || done ? 'border-[#2563EB] bg-[#2563EB] text-white' : 'border-gray-400 text-gray-400'
+                  active || done ? 'border-[#1d4ed8] bg-[#1d4ed8] text-white' : 'border-gray-400 text-gray-400'
                 }`}
               >
                 {String(number).padStart(2, '0')}
@@ -1933,7 +1933,7 @@ function WizardModeCard({ active, icon, title, text, onClick }) {
       type="button"
       onClick={onClick}
       className={`rounded-[1.2rem] border text-left overflow-hidden transition ${
-        active ? 'border-[#2563EB] shadow-[0_0_0_1px_#2563EB_inset]' : 'border-gray-300'
+        active ? 'border-[#1d4ed8] shadow-[0_0_0_1px_#1d4ed8_inset]' : 'border-gray-300'
       }`}
     >
       <div className="flex h-36 items-center justify-center bg-white">{icon}</div>

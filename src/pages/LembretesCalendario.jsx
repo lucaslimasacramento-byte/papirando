@@ -1225,7 +1225,7 @@ function TagPill({ label, color, soft = false }) {
       className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]"
       style={{
         backgroundColor: soft ? `${color}22` : color,
-        color: soft ? '#0f172a' : '#FFFFFF',
+        color: soft ? '#14110d' : '#FFFFFF',
         border: soft ? `1px solid ${color}30` : 'none',
       }}
     >

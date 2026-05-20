@@ -14,12 +14,12 @@ import {
 import { supabase } from '../lib/supabase';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
 
-const COLOR_OPTIONS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
+const COLOR_OPTIONS = ['#1d4ed8', '#4d7c3f', '#b45309', '#b91c1c', '#8B5CF6', '#EC4899', '#14B8A6'];
 
 const EMPTY_DISCIPLINE = {
   nome: '',
   plano: 'Geral',
-  cor: '#2563EB',
+  cor: '#1d4ed8',
   topicos: [],
   percentual: 0,
   tempo_total_min: 0,
@@ -421,7 +421,7 @@ export default function EditarDisciplinaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A365D]/60 p-4 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1e40af]/60 p-4 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-300">
         <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-8 py-6">
           <div>
@@ -448,7 +448,7 @@ export default function EditarDisciplinaModal({
                   Nome
                 </label>
                 <div className="relative">
-                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-blue-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#2563EB] focus-within:ring-4 focus-within:ring-blue-50">
+                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-blue-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#1d4ed8] focus-within:ring-4 focus-within:ring-blue-50">
                     <Search size={16} className="text-blue-500" />
                     <input
                       type="text"
@@ -485,7 +485,7 @@ export default function EditarDisciplinaModal({
                               }}
                               className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
                                 isActive
-                                  ? 'bg-blue-50 text-[#2563EB]'
+                                  ? 'bg-blue-50 text-[#1d4ed8]'
                                   : 'text-gray-700 hover:bg-gray-50'
                               }`}
                             >
@@ -516,7 +516,7 @@ export default function EditarDisciplinaModal({
                 <select
                   value={plano}
                   onChange={(e) => setPlano(e.target.value)}
-                  className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors focus:border-[#2563EB]"
+                  className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors focus:border-[#1d4ed8]"
                 >
                   {courseOptions.map((option) => (
                     <option key={option} value={option}>
@@ -570,7 +570,7 @@ export default function EditarDisciplinaModal({
                   {editingTopicId ? <Edit3 size={16} /> : <Plus size={16} />}
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-[#1A365D]">
+                  <h3 className="text-base font-black text-[#1e40af]">
                     {editingTopicId ? 'Editar tópico' : 'Novo tópico'}
                   </h3>
                   <p className="text-sm font-medium text-gray-500">
@@ -626,7 +626,7 @@ export default function EditarDisciplinaModal({
                     type="checkbox"
                     checked={topicForm.concluido}
                     onChange={(e) => handleTopicFieldChange('concluido', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+                    className="h-4 w-4 rounded border-gray-300 text-[#1d4ed8] focus:ring-[#1d4ed8]"
                   />
                   <span className="text-sm font-semibold text-gray-700">Marcar como concluído</span>
                 </label>
@@ -635,7 +635,7 @@ export default function EditarDisciplinaModal({
                   <button
                     type="button"
                     onClick={handleAddOrUpdateTopic}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#2563EB] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8]"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#1d4ed8] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8]"
                   >
                     {editingTopicId ? <Edit3 size={15} /> : <Plus size={15} />}
                     {editingTopicId ? 'Atualizar tópico' : 'Adicionar tópico'}
@@ -655,7 +655,7 @@ export default function EditarDisciplinaModal({
             </div>
 
             <div>
-              <div className="mb-4 flex items-end justify-between border-b border-[#2563EB] pb-2">
+              <div className="mb-4 flex items-end justify-between border-b border-[#1d4ed8] pb-2">
                 <div>
                   <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                     Tópicos
@@ -664,7 +664,7 @@ export default function EditarDisciplinaModal({
                     Reordene, edite e remova os tópicos da disciplina.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#2563EB]">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1d4ed8]">
                   <Columns size={12} />
                   Organização manual
                 </div>
@@ -735,7 +735,7 @@ export default function EditarDisciplinaModal({
                           <button
                             type="button"
                             onClick={() => handleEditTopic(topico)}
-                            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-[#2563EB]"
+                            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-[#1d4ed8]"
                             title="Editar tópico"
                           >
                             <Edit3 size={15} />
@@ -785,7 +785,7 @@ export default function EditarDisciplinaModal({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl bg-[#1d4ed8] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? (
               <>
@@ -806,7 +806,7 @@ function SummaryLine({ label, value }) {
   return (
     <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3">
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{label}</span>
-      <span className="text-lg font-black text-[#1A365D]">{value}</span>
+      <span className="text-lg font-black text-[#1e40af]">{value}</span>
     </div>
   );
 }

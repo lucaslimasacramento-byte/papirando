@@ -67,7 +67,7 @@ const DISCIPLINE_COLORS = [
 ];
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-[#2563EB]/15';
+  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-[#1d4ed8]/15';
 }
 
 /** Alinha com Planejamento: alguns bancos usam semana_inicio/horas_meta, outros week_start/meta_horas. */
@@ -376,7 +376,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB]"
+          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#1d4ed8]"
           aria-label="Semana anterior"
         >
           <ChevronLeft size={18} />
@@ -387,14 +387,14 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
           </p>
           <p className="text-sm font-bold text-slate-900">{formatWeekLabel(monday)}</p>
           {isCurrentWeek && (
-            <p className="text-[11px] font-semibold text-[#2563EB]">Esta semana</p>
+            <p className="text-[11px] font-semibold text-[#1d4ed8]">Esta semana</p>
           )}
         </div>
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
           disabled={weekOffset >= 0}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB] disabled:pointer-events-none disabled:opacity-35"
+          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#1d4ed8] disabled:pointer-events-none disabled:opacity-35"
           aria-label="Próxima semana"
         >
           <ChevronRight size={18} />
@@ -404,7 +404,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
       <div className="section-card shrink-0 rounded-none border-x-0 border-t-0 px-4 py-3 sm:px-5 sm:py-3.5 lg:px-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <TrendingUp size={16} className="text-[#2563EB]" />
+            <TrendingUp size={16} className="text-[#1d4ed8]" />
             <span className="text-sm font-bold text-slate-700">Total da semana</span>
           </div>
           <div className="text-right">
@@ -419,7 +419,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
         {totalGoalMins > 0 && (
           <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${totalPct >= 100 ? 'bg-emerald-500' : 'bg-[#2563EB]'}`}
+              className={`h-full rounded-full transition-all duration-500 ${totalPct >= 100 ? 'bg-emerald-500' : 'bg-[#1d4ed8]'}`}
               style={{ width: `${totalPct}%` }}
             />
           </div>
@@ -501,7 +501,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-bold text-slate-800">{disc}</p>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-                          <span className="text-[11px] font-bold text-[#2563EB]">{fmtHours(actualMins)} estudados</span>
+                          <span className="text-[11px] font-bold text-[#1d4ed8]">{fmtHours(actualMins)} estudados</span>
                           {goalMins > 0 && (
                             <span className="text-[11px] text-slate-400">/ meta {fmtHours(goalMins)}</span>
                           )}
@@ -523,7 +523,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                       <button
                         type="button"
                         onClick={() => (goal ? openEditGoal(goal) : openAddGoal(disc))}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#2563EB]"
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#1d4ed8]"
                         title={goal ? 'Editar meta' : 'Definir meta'}
                       >
                         <Pencil size={13} />
@@ -668,7 +668,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 type="button"
                 onClick={handleSaveGoal}
                 disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 Salvar

@@ -1074,11 +1074,11 @@ export default function AppTabContent(props) {
   if (!KNOWN_TABS.includes(activeTab)) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-gray-400 p-10">
-        <Target size={40} className="text-[#2563EB] mb-6" />
+        <Target size={40} className="text-[#1d4ed8] mb-6" />
         <h2 className="text-3xl font-black text-gray-800 mb-2">Construção em Progresso!</h2>
         <button
           onClick={() => setActiveTab('home')}
-          className="bg-[#2563EB] text-white px-6 py-2.5 rounded-xl font-bold"
+          className="bg-[#1d4ed8] text-white px-6 py-2.5 rounded-xl font-bold"
         >
           Voltar ao Inicio
         </button>

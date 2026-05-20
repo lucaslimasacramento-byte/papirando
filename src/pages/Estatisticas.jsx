@@ -217,7 +217,7 @@ export default function Estatisticas({
         <div className="section-card flex min-h-0 min-w-0 flex-col overflow-hidden p-4 md:p-5">
           <div className="mb-3 shrink-0">
             <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
-              <Activity size={18} className="text-[#2563EB]" />
+              <Activity size={18} className="text-[#1d4ed8]" />
               Análise por matéria canônica
             </h3>
             <p className="mt-0.5 text-[11px] font-semibold text-gray-400">
@@ -247,11 +247,11 @@ export default function Estatisticas({
         </div>
 
         <div className="grid min-w-0 gap-3 xl:grid-rows-[minmax(26rem,auto)_auto]">
-          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#2563EB]/15 sm:min-h-[26rem] sm:p-5">
-            <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-[#2563EB]/25 blur-3xl" />
-            <div className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full bg-[#2563EB]/10 blur-2xl" />
+          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#1d4ed8]/15 sm:min-h-[26rem] sm:p-5">
+            <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-[#1d4ed8]/25 blur-3xl" />
+            <div className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full bg-[#1d4ed8]/10 blur-2xl" />
             <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-              <div className="mb-2 shrink-0 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-[#2563EB]/35 bg-[#2563EB]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
+              <div className="mb-2 shrink-0 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-[#1d4ed8]/35 bg-[#1d4ed8]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
                 <BrainCircuit size={12} className="shrink-0 text-[#93C5FD]" />
                 <span className="truncate">Leitura da IA</span>
               </div>
@@ -291,7 +291,7 @@ export default function Estatisticas({
               </div>
 
               <div className="shrink-0 pt-3">
-                <div className="rounded-xl border border-[#2563EB]/25 bg-[#2563EB]/10 p-2.5 sm:p-3">
+                <div className="rounded-xl border border-[#1d4ed8]/25 bg-[#1d4ed8]/10 p-2.5 sm:p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-[#93C5FD]/90 sm:text-xs">
                       Potencial de subida
@@ -329,14 +329,14 @@ export default function Estatisticas({
 
 function MetricStripCard({ icon: Icon, title, highlight, footerLabel, footerValue, accent }) {
   const accents = {
-    blue: 'bg-[#EFF6FF] text-[#2563EB]',
+    blue: 'bg-[#EFF6FF] text-[#1d4ed8]',
     orange: 'bg-orange-50 text-orange-600',
     emerald: 'bg-emerald-50 text-emerald-600',
     indigo: 'bg-indigo-50 text-indigo-600',
   };
 
   return (
-    <div className="flex h-full w-full min-h-[6.75rem] min-w-[8.25rem] shrink-0 flex-col rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#2563EB]/20 hover:shadow-md sm:min-h-[6.25rem] sm:min-w-0 sm:p-2.5">
+    <div className="flex h-full w-full min-h-[6.75rem] min-w-[8.25rem] shrink-0 flex-col rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#1d4ed8]/20 hover:shadow-md sm:min-h-[6.25rem] sm:min-w-0 sm:p-2.5">
       <div className={`mb-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md sm:mb-1.5 sm:h-7 sm:w-7 sm:rounded-lg ${accents[accent]}`}>
         <Icon size={15} strokeWidth={2.25} />
       </div>
@@ -356,13 +356,13 @@ function DisciplineRow({ name, timeLabel, accuracy, questions, maxMinutes, minut
   const width = Math.max(12, Math.round((minutes / Math.max(maxMinutes, 1)) * 100));
 
   return (
-    <div className="rounded-2xl border border-gray-100 p-3.5 transition-all hover:border-[#2563EB]/25 hover:shadow-sm sm:p-4">
+    <div className="rounded-2xl border border-gray-100 p-3.5 transition-all hover:border-[#1d4ed8]/25 hover:shadow-sm sm:p-4">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-gray-800">{name}</p>
           <p className="mt-1 text-xs font-semibold text-gray-400">{questions} questões registradas</p>
         </div>
-        <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[#2563EB]">{timeLabel}</span>
+        <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">{timeLabel}</span>
       </div>
 
       <div className="mt-4">
@@ -371,7 +371,7 @@ function DisciplineRow({ name, timeLabel, accuracy, questions, maxMinutes, minut
           <span>{accuracy}% de acurácia</span>
         </div>
         <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
-          <div className="h-full rounded-full bg-gradient-to-r from-[#93C5FD] to-[#2563EB]" style={{ width: `${width}%` }} />
+          <div className="h-full rounded-full bg-gradient-to-r from-[#93C5FD] to-[#1d4ed8]" style={{ width: `${width}%` }} />
         </div>
       </div>
     </div>
@@ -400,7 +400,7 @@ function TopicRow({ item }) {
 
 function InsightBullet({ title, text }) {
   return (
-    <div className="rounded-xl border border-[#2563EB]/20 border-l-[3px] border-l-[#2563EB] bg-[#2563EB]/10 p-3 sm:rounded-2xl sm:p-3.5">
+    <div className="rounded-xl border border-[#1d4ed8]/20 border-l-[3px] border-l-[#1d4ed8] bg-[#1d4ed8]/10 p-3 sm:rounded-2xl sm:p-3.5">
       <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#93C5FD] sm:text-xs">{title}</div>
       <p className="break-words text-[13px] font-medium leading-snug text-white/90 sm:text-sm sm:leading-relaxed">{text}</p>
     </div>

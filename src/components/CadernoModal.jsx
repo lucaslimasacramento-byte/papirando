@@ -7,11 +7,11 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
   if (!isCadernoModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-[#1A365D]/80 backdrop-blur-md animate-in fade-in duration-300 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[1000] bg-[#1e40af]/80 backdrop-blur-md animate-in fade-in duration-300 flex items-center justify-center p-4">
       <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 max-h-[95vh]">
         <div className="px-10 py-8 flex justify-between items-center bg-white border-b border-gray-100 relative">
           <div>
-            <h2 className="text-3xl font-black text-[#1A365D] tracking-tight flex items-center gap-3">
+            <h2 className="text-3xl font-black text-[#1e40af] tracking-tight flex items-center gap-3">
               <Settings className="text-blue-600" size={32} /> Montar caderno
             </h2>
             <p className="text-gray-500 font-bold mt-1 text-sm">Configure os filtros para gerar o seu treino sob medida.</p>
@@ -92,20 +92,20 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
             <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Opções avançadas</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
-                <input type="checkbox" defaultChecked className="w-5 h-5 rounded border-2 border-gray-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer" />
-                <span className="text-sm font-bold text-gray-600 group-hover:text-[#2563EB] transition-colors">Excluir questões anuladas/desatualizadas</span>
+                <input type="checkbox" defaultChecked className="w-5 h-5 rounded border-2 border-gray-300 text-[#1d4ed8] focus:ring-[#1d4ed8] cursor-pointer" />
+                <span className="text-sm font-bold text-gray-600 group-hover:text-[#1d4ed8] transition-colors">Excluir questões anuladas/desatualizadas</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
-                <input type="checkbox" defaultChecked className="w-5 h-5 rounded border-2 border-gray-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer" />
-                <span className="text-sm font-bold text-gray-600 group-hover:text-[#2563EB] transition-colors">Apenas questões com comentários</span>
+                <input type="checkbox" defaultChecked className="w-5 h-5 rounded border-2 border-gray-300 text-[#1d4ed8] focus:ring-[#1d4ed8] cursor-pointer" />
+                <span className="text-sm font-bold text-gray-600 group-hover:text-[#1d4ed8] transition-colors">Apenas questões com comentários</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
-                <input type="checkbox" className="w-5 h-5 rounded border-2 border-gray-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer" />
-                <span className="text-sm font-bold text-gray-600 group-hover:text-[#2563EB] transition-colors">Esconder questões que já resolvi</span>
+                <input type="checkbox" className="w-5 h-5 rounded border-2 border-gray-300 text-[#1d4ed8] focus:ring-[#1d4ed8] cursor-pointer" />
+                <span className="text-sm font-bold text-gray-600 group-hover:text-[#1d4ed8] transition-colors">Esconder questões que já resolvi</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
-                <input type="checkbox" className="w-5 h-5 rounded border-2 border-gray-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer" />
-                <span className="text-sm font-bold text-gray-600 group-hover:text-[#2563EB] transition-colors">Apenas questões inéditas do Papirando</span>
+                <input type="checkbox" className="w-5 h-5 rounded border-2 border-gray-300 text-[#1d4ed8] focus:ring-[#1d4ed8] cursor-pointer" />
+                <span className="text-sm font-bold text-gray-600 group-hover:text-[#1d4ed8] transition-colors">Apenas questões inéditas do Papirando</span>
               </label>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
           </div>
           <div className="flex gap-4 w-full sm:w-auto">
             <button onClick={() => setIsCadernoModalOpen(false)} className="flex-1 sm:flex-none px-8 py-4 rounded-2xl font-black text-gray-500 hover:bg-gray-100 transition-all text-sm border-2 border-gray-200 hover:border-gray-300">Cancelar</button>
-            <button onClick={() => setIsCadernoModalOpen(false)} className="flex-[2] sm:flex-none bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-200 transition-all flex items-center justify-center gap-2">
+            <button onClick={() => setIsCadernoModalOpen(false)} className="flex-[2] sm:flex-none bg-[#1d4ed8] hover:bg-[#1D4ED8] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-200 transition-all flex items-center justify-center gap-2">
               <Play size={18} fill="currentColor" /> Gerar e iniciar
             </button>
           </div>

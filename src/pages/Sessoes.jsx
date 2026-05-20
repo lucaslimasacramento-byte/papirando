@@ -168,7 +168,7 @@ export default function Sessoes({
           <div className="section-card p-4 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
-                <LayoutGrid size={16} className="text-[#2563EB]" />
+                <LayoutGrid size={16} className="text-[#1d4ed8]" />
                 Métodos de estudo
               </h3>
 
@@ -251,7 +251,7 @@ export default function Sessoes({
         <div className="custom-scrollbar flex min-w-0 flex-col pr-0.5">
           <div className="section-card p-4 sm:p-5">
             <div className="mb-3 flex items-center gap-2">
-              <Clock size={16} className="text-[#2563EB]" />
+              <Clock size={16} className="text-[#1d4ed8]" />
               <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Últimas sessões</h3>
             </div>
 
@@ -295,10 +295,10 @@ function LiveSessionCard({
   onRegister,
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-5 text-white shadow-md ring-1 ring-[#2563EB]/20 sm:p-6">
+    <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-5 text-white shadow-md ring-1 ring-[#1d4ed8]/20 sm:p-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.12),transparent_55%)]" />
       <div className="relative z-10">
-      <div className="inline-flex items-center gap-2 rounded-full border border-[#2563EB]/35 bg-[#2563EB]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[#1d4ed8]/35 bg-[#1d4ed8]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
         <Activity size={12} className="text-[#93C5FD]" />
         Sessão ao vivo
       </div>
@@ -312,7 +312,7 @@ function LiveSessionCard({
           : 'Abra um timer, retome do overlay global ou registre a sessão manualmente.'}
       </p>
 
-      <div className="mt-5 rounded-2xl border border-[#2563EB]/20 bg-white/10 p-4 sm:p-5">
+      <div className="mt-5 rounded-2xl border border-[#1d4ed8]/20 bg-white/10 p-4 sm:p-5">
         <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#93C5FD]/90">
           <span>{timerMode === 'cronometro' ? 'Modo livre' : 'Pomodoro'}</span>
           <span>{plannedDurationLabel}</span>
@@ -356,7 +356,7 @@ function LiveSessionCard({
         <button
           type="button"
           onClick={onOpenTimer}
-          className="rounded-xl border border-[#2563EB]/30 bg-[#2563EB]/10 px-3 py-2.5 text-xs font-bold text-[#E0E7FF] transition hover:bg-[#2563EB]/20 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
+          className="rounded-xl border border-[#1d4ed8]/30 bg-[#1d4ed8]/10 px-3 py-2.5 text-xs font-bold text-[#E0E7FF] transition hover:bg-[#1d4ed8]/20 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
         >
           Abrir overlay
         </button>
@@ -377,7 +377,7 @@ function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenReg
   return (
     <div className="section-card min-h-0 border-blue-100/50 p-3">
       <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-        <BookOpen size={13} className="text-[#2563EB]" />
+        <BookOpen size={13} className="text-[#1d4ed8]" />
         Próxima sessão sugerida
       </div>
 
@@ -400,7 +400,7 @@ function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenReg
         <button
           type="button"
           onClick={recommendation ? onStart : onOpenPlan}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#1D4ED8] sm:text-xs"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#1d4ed8] px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#1D4ED8] sm:text-xs"
         >
           <Play size={14} fill="currentColor" />
           {recommendation ? 'Começar sugerida' : 'Abrir plano'}
@@ -430,7 +430,7 @@ function MiniInfo({ label, value }) {
 function MethodPill({ icon: Icon, text }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-gray-600 shadow-sm">
-      <Icon size={13} className="text-[#2563EB]" />
+      <Icon size={13} className="text-[#1d4ed8]" />
       {text}
     </div>
   );

@@ -461,7 +461,7 @@ export default function Revisoes({
             <button
               type="button"
               onClick={() => setActiveTab?.('historico')}
-              className="inline-flex items-center gap-2 text-sm font-bold text-[#2563EB] transition-all hover:gap-3"
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#1d4ed8] transition-all hover:gap-3"
             >
               Ver histórico consolidado
               <ArrowRight size={14} />
@@ -470,7 +470,7 @@ export default function Revisoes({
 
           {reviewHighlights.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#1d4ed8]">
                 <Sparkles size={22} />
               </div>
               <h4 className="mt-3 text-lg font-semibold text-slate-900">Nenhuma revisão inteligente por enquanto</h4>
@@ -602,7 +602,7 @@ function ReviewCard({
           type="button"
           onClick={onRegister}
           className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white transition-all shadow-sm sm:flex-none sm:text-sm ${
-            isUrgent ? 'bg-red-500 hover:bg-red-600' : 'bg-[#2563EB] hover:bg-[#1D4ED8]'
+            isUrgent ? 'bg-red-500 hover:bg-red-600' : 'bg-[#1d4ed8] hover:bg-[#1D4ED8]'
           }`}
         >
           <Play size={16} fill="currentColor" />

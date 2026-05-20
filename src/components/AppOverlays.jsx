@@ -16,12 +16,12 @@ function WellnessMiniPlayer({ track, isPlaying, onTogglePlay, onClose }) {
       <button
         type="button"
         onClick={onTogglePlay}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#2563EB] text-white"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#1d4ed8] text-white"
       >
         {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
       </button>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-black text-[#1A365D]">{track.title}</p>
+        <p className="truncate text-sm font-black text-[#1e40af]">{track.title}</p>
         <p className="mt-1 truncate text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">
           {track.category || 'Faixa'} · {track.durationLabel || 'Duracao livre'}
         </p>

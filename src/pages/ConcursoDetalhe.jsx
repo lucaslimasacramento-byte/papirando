@@ -525,7 +525,7 @@ export default function ConcursoDetalhe({
             ) : (
               <div
                 className="flex min-h-[260px] w-full items-center justify-center text-white"
-                style={{ background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e3a8a 100%)` }}
+                style={{ background: `linear-gradient(135deg, ${contest.cor || '#1d4ed8'} 0%, #1e3a8a 100%)` }}
               >
                 <LibraryBig size={56} />
               </div>

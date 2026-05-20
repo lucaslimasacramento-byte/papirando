@@ -416,7 +416,7 @@ export default function Login({
               type="button"
               onClick={handleToggleMode}
               disabled={loading}
-              className="ml-2 inline-flex items-center gap-1 text-[#2563EB] transition hover:text-[#1D4ED8] disabled:opacity-60"
+              className="ml-2 inline-flex items-center gap-1 text-[#1d4ed8] transition hover:text-[#1D4ED8] disabled:opacity-60"
             >
               {isLoginMode ? (hasBetaInvite ? 'Ativar convite' : 'Registre-se grátis') : 'Fazer login'}
               <ArrowRight size={14} />
@@ -431,7 +431,7 @@ export default function Login({
               {hasBetaInvite && !isLoginMode ? 'Convite beta liberado' : isLoginMode ? 'Acesso rápido' : 'Criação imediata'}
             </div>
 
-            <h2 className="text-3xl font-black tracking-tight text-[#0F172A] xl:text-4xl">
+            <h2 className="text-3xl font-black tracking-tight text-[#14110d] xl:text-4xl">
               {hasBetaInvite && !isLoginMode ? 'Seu acesso beta chegou' : isLoginMode ? 'Bem-vindo(a) de volta!' : 'Crie a sua conta'}
             </h2>
             <p className="mt-2 text-sm font-medium leading-relaxed text-[#64748B] xl:text-base">
@@ -567,7 +567,7 @@ export default function Login({
                     type="checkbox"
                     checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
-                    className="h-5 w-5 rounded-md border-slate-300 text-[#2563EB] shadow-sm focus:ring-4 focus:ring-blue-500/20"
+                    className="h-5 w-5 rounded-md border-slate-300 text-[#1d4ed8] shadow-sm focus:ring-4 focus:ring-blue-500/20"
                   />
                   Manter sessão ativa
                 </label>
@@ -581,7 +581,7 @@ export default function Login({
               <button
                 type="submit"
                 disabled={loading}
-                className="group mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#2563EB,#1D4ED8)] py-3.5 text-sm font-black text-white shadow-[0_18px_36px_rgba(37,99,235,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(37,99,235,0.38)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 xl:mt-4 xl:py-4"
+                className="group mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#1d4ed8,#1D4ED8)] py-3.5 text-sm font-black text-white shadow-[0_18px_36px_rgba(37,99,235,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(37,99,235,0.38)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 xl:mt-4 xl:py-4"
               >
                 {loading ? (
                   <>
@@ -692,7 +692,7 @@ function InputField({
           className={`h-[52px] w-full rounded-2xl border border-[#E2E8F0] py-3 pl-12 pr-4 text-base font-semibold text-slate-800 outline-none transition-all placeholder:text-slate-400 xl:h-[60px] xl:py-4 ${
             readOnly
               ? 'bg-blue-50 text-blue-900'
-              : 'bg-slate-50/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-blue-500/15'
+              : 'bg-slate-50/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-blue-500/15'
           }`}
         />
       </div>
@@ -723,7 +723,7 @@ function PasswordField({
             type="button"
             onClick={onForgotPassword}
             disabled={loading}
-            className="text-xs font-black text-[#2563EB] transition hover:text-[#1D4ED8] disabled:opacity-60"
+            className="text-xs font-black text-[#1d4ed8] transition hover:text-[#1D4ED8] disabled:opacity-60"
           >
             Esqueceu a senha?
           </button>
@@ -738,7 +738,7 @@ function PasswordField({
           required
           value={value}
           onChange={onChange}
-          className="h-[52px] w-full rounded-2xl border border-[#E2E8F0] bg-slate-50/80 py-3 pl-12 pr-12 text-base font-semibold text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-blue-500/15 xl:h-[60px] xl:py-4"
+          className="h-[52px] w-full rounded-2xl border border-[#E2E8F0] bg-slate-50/80 py-3 pl-12 pr-12 text-base font-semibold text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all placeholder:text-slate-400 focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-blue-500/15 xl:h-[60px] xl:py-4"
         />
         <button
           type="button"

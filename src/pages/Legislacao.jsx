@@ -42,7 +42,7 @@ import { mergeVadeBootstrapState } from '../lib/vadeMecumMerge';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-const MARKER_COLORS = ['#2563EB', '#F59E0B', '#10B981', '#EC4899'];
+const MARKER_COLORS = ['#1d4ed8', '#b45309', '#4d7c3f', '#EC4899'];
 
 function buildLocalStorageKey(userId) {
   return `papirando_vade_mecum_state_${userId || 'guest'}`;

@@ -167,7 +167,7 @@ export default function Sidebar({
         aria-hidden
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.22),transparent_70%)]" />
-      <div className="pointer-events-none absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-[#2563EB]/35 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-[#1d4ed8]/35 blur-3xl" />
       <div className="pointer-events-none absolute -left-16 top-1/3 h-44 w-44 rounded-full bg-blue-400/12 blur-3xl" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-white/8" />
 

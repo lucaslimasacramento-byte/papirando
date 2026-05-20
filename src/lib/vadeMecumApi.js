@@ -90,7 +90,7 @@ function normalizeMarkers(value) {
       section: String(item.section || ''),
       label: String(item.label || '').trim(),
       excerpt: String(item.excerpt || '').trim(),
-      color: String(item.color || '#2563EB'),
+      color: String(item.color || '#1d4ed8'),
       createdAt: item.createdAt || new Date().toISOString(),
     }));
 }

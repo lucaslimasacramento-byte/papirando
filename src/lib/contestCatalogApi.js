@@ -1,6 +1,6 @@
 import { normalizeContestStatus } from './contestGrouping';
 
-const DEFAULT_COLORS = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+const DEFAULT_COLORS = ['#1d4ed8', '#4d7c3f', '#b45309', '#8B5CF6', '#EC4899', '#14B8A6'];
 
 function parseArrayField(value) {
   if (Array.isArray(value)) return value;

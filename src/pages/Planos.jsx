@@ -31,7 +31,7 @@ const EMPTY_COURSE_FORM = {
   plano: '',
   concurso: '',
   banca: '',
-  cor: '#2563EB',
+  cor: '#1d4ed8',
 };
 
 const formatStatusLabel = (value) => {
@@ -437,7 +437,7 @@ export default function Planos({
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[#1d4ed8]">
                       <LibraryBig size={18} />
                     </div>
                     <div>
@@ -934,7 +934,7 @@ function PrimaryButton({ children, onClick, disabled = false }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+      className="inline-flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
     >
       {children}
     </button>

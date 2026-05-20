@@ -65,7 +65,7 @@ export default function Aplicativos() {
         <div className="pointer-events-none absolute -mr-20 -mt-20 h-[520px] w-[520px] rounded-full bg-blue-400/20 blur-[110px]" />
         <div className="pointer-events-none absolute -mb-10 -ml-10 bottom-0 left-0 h-[320px] w-[320px] rounded-full bg-cyan-400/10 blur-[100px]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:34px_34px] opacity-[0.08]" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-[#0F172A]/50 to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-[#14110d]/50 to-transparent" />
 
         <div className="relative z-10 flex-1 text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-100 backdrop-blur-sm">
@@ -116,7 +116,7 @@ export default function Aplicativos() {
               </div>
 
               <div className="absolute inset-0 z-10 flex flex-col bg-[#F4F6F9]">
-                <div className="relative overflow-hidden rounded-b-[2.2rem] bg-gradient-to-br from-[#2563EB] to-blue-700 px-6 pb-6 pt-12 shadow-sm">
+                <div className="relative overflow-hidden rounded-b-[2.2rem] bg-gradient-to-br from-[#1d4ed8] to-blue-700 px-6 pb-6 pt-12 shadow-sm">
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
                   <div className="relative z-10 mb-4 flex items-center justify-between text-white">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">

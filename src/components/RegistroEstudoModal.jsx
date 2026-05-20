@@ -91,7 +91,7 @@ export default function RegistroEstudoModal({
         erros: Number(erros),
         desempenho,
         tipo: categoria.toUpperCase(),
-        cor: disciplinaSelecionada.cor || '#2563EB',
+        cor: disciplinaSelecionada.cor || '#1d4ed8',
         data: new Date().toISOString().split('T')[0],
         plano: disciplinaSelecionada.plano || 'Geral',
       };
@@ -103,7 +103,7 @@ export default function RegistroEstudoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#1A365D]/60 p-4 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#1e40af]/60 p-4 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="flex max-h-[95vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-300">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-8 py-6">
           <div>
@@ -126,7 +126,7 @@ export default function RegistroEstudoModal({
         <div className="custom-scrollbar flex-1 overflow-y-auto p-8">
           <div className="mb-8 flex items-center gap-4">
             <CalendarDays size={20} className="text-gray-800" />
-            <button className="rounded-full bg-[#2563EB] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+            <button className="rounded-full bg-[#1d4ed8] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
               Hoje
             </button>
           </div>
@@ -136,7 +136,7 @@ export default function RegistroEstudoModal({
               <select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1d4ed8] focus:border-[#1d4ed8]"
               >
                 <option value="Teoria">Teoria</option>
                 <option value="Questões">Questões</option>
@@ -148,7 +148,7 @@ export default function RegistroEstudoModal({
               <select
                 value={disciplinaId}
                 onChange={(e) => setDisciplinaId(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1d4ed8] focus:border-[#1d4ed8]"
               >
                 <option value="">Selecione...</option>
                 {bancoDisciplinas.map((disciplina) => (
@@ -165,7 +165,7 @@ export default function RegistroEstudoModal({
                 placeholder={formatTimeStr ? formatTimeStr(timerValue || 0) : '00:00'}
                 value={tempoManual}
                 onChange={(e) => setTempoManual(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1d4ed8] focus:border-[#1d4ed8]"
               />
             </Field>
           </div>
@@ -177,7 +177,7 @@ export default function RegistroEstudoModal({
                   value={topicoId}
                   onChange={(e) => setTopicoId(e.target.value)}
                   disabled={!disciplinaSelecionada || topicosDisponiveis.length === 0}
-                  className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB] disabled:cursor-not-allowed disabled:text-gray-400"
+                  className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1d4ed8] focus:border-[#1d4ed8] disabled:cursor-not-allowed disabled:text-gray-400"
                 >
                   <option value="">
                     {!disciplinaSelecionada
@@ -201,14 +201,14 @@ export default function RegistroEstudoModal({
                 placeholder="Ex.: Aula 01"
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1d4ed8] focus:border-[#1d4ed8]"
               />
             </Field>
           </div>
 
           <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="rounded-[2rem] border border-blue-100 bg-blue-50/60 p-5">
-              <div className="mb-4 flex items-center gap-2 text-[#1A365D]">
+              <div className="mb-4 flex items-center gap-2 text-[#1e40af]">
                 <BookOpen size={18} />
                 <h3 className="text-sm font-black uppercase tracking-[0.18em]">Validação do registro</h3>
               </div>
@@ -242,7 +242,7 @@ export default function RegistroEstudoModal({
                     min="0"
                     value={acertos}
                     onChange={(e) => setAcertos(e.target.value)}
-                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#2563EB]"
+                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#1d4ed8]"
                   />
                 </Field>
 
@@ -252,7 +252,7 @@ export default function RegistroEstudoModal({
                     min="0"
                     value={erros}
                     onChange={(e) => setErros(e.target.value)}
-                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#2563EB]"
+                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#1d4ed8]"
                   />
                 </Field>
               </div>
@@ -280,7 +280,7 @@ export default function RegistroEstudoModal({
           <button
             onClick={handleSalvar}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <CheckCircle2 size={16} />
             {isSaving ? 'Salvando...' : 'Salvar estudo'}
@@ -306,7 +306,7 @@ function InfoPill({ label, value }) {
   return (
     <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-1 text-sm font-bold text-[#1A365D]">{value}</p>
+      <p className="mt-1 text-sm font-bold text-[#1e40af]">{value}</p>
     </div>
   );
 }

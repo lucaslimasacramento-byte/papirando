@@ -144,7 +144,7 @@ export default function RegistroSimuladoModal({
       <div className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-500">
         <div className="flex items-center justify-between border-b border-gray-100 bg-white px-10 py-8">
           <h2 className="text-3xl font-black tracking-tight text-gray-700">Novo Simulado</h2>
-          <button onClick={closeModal} className="rounded-xl p-2 text-[#10B981]/60 transition-all hover:text-[#10B981]">
+          <button onClick={closeModal} className="rounded-xl p-2 text-[#4d7c3f]/60 transition-all hover:text-[#4d7c3f]">
             <X size={40} strokeWidth={2.5} />
           </button>
         </div>
@@ -254,7 +254,7 @@ export default function RegistroSimuladoModal({
         </div>
 
         <div className="flex items-center justify-between gap-4 border-t border-gray-100 bg-white px-10 py-6">
-          <button onClick={addSimuladoRow} className="flex items-center gap-2 rounded-2xl border-2 border-[#10B981] px-8 py-3 text-sm font-black text-[#10B981] transition-all hover:bg-emerald-50">
+          <button onClick={addSimuladoRow} className="flex items-center gap-2 rounded-2xl border-2 border-[#4d7c3f] px-8 py-3 text-sm font-black text-[#4d7c3f] transition-all hover:bg-emerald-50">
             <Plus size={16} strokeWidth={3} />
             Adicionar disciplina
           </button>
@@ -262,7 +262,7 @@ export default function RegistroSimuladoModal({
             <button onClick={closeModal} className="rounded-2xl border-2 border-emerald-500 px-8 py-3 text-sm font-black text-emerald-500 transition-all hover:bg-emerald-50">
               Cancelar
             </button>
-            <button onClick={handleSave} disabled={saving} className="rounded-2xl bg-[#10B981] px-12 py-3 text-sm font-black text-white shadow-xl shadow-emerald-100 transition-all hover:bg-[#0E9F6E] disabled:opacity-60">
+            <button onClick={handleSave} disabled={saving} className="rounded-2xl bg-[#4d7c3f] px-12 py-3 text-sm font-black text-white shadow-xl shadow-emerald-100 transition-all hover:bg-[#0E9F6E] disabled:opacity-60">
               {saving ? 'Salvando...' : 'Salvar Simulado'}
             </button>
           </div>

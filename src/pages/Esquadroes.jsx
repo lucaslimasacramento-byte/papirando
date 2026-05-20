@@ -4459,7 +4459,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
+            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#1d4ed8)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
           >
             Salvar fluxo
           </button>
@@ -4564,7 +4564,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
+            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#1d4ed8)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
           >
             Criar esquadrão
           </button>
