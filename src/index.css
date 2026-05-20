@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@1,9..144,300..600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,28 +6,56 @@
 
 :root {
   color-scheme: light;
-  --bg-page: #f5f7fa;
-  --bg-page-deep: #e9eef5;
-  --surface: rgba(255, 255, 255, 0.96);
+  /* Papirando palette — alinhado ao Brandbook.html.
+     Os HEX 'cool' originais (slate/cool gray) foram substituídos pelo warm
+     paper+ink system. Vars premium-dark do page-head ficam preservadas abaixo. */
+  --bg-page:        #f3efe5;  /* --bg-paper · creme quente */
+  --bg-page-deep:   #ebe6d8;  /* --bg-paper-soft */
+  --surface:        rgba(255, 255, 255, 0.96);
   --surface-strong: #ffffff;
-  --surface-muted: #f8fafc;
-  --line: rgba(15, 23, 42, 0.06);
-  --line-strong: rgba(15, 23, 42, 0.1);
-  --text-main: #0f172a;
-  --text-soft: #64748b;
-  --brand: #185fa5;
-  --brand-deep: #1d4ed8;
-  --brand-navy: #0c447c;
+  --surface-muted:  #f9f7f0;  /* --bg-surface-2 */
+  --line:        rgba(20, 17, 13, 0.06);  /* warm rule */
+  --line-strong: rgba(20, 17, 13, 0.10);
+  --text-main: #14110d;  /* --ink · warm near-black */
+  --text-soft: #847b6c;  /* --ink-3 · captions */
+  --brand:        #1d4ed8;  /* --accent oficial */
+  --brand-deep:   #1d4ed8;
+  --brand-navy:   #1e40af;  /* --accent-2 hover */
   --brand-indigo: #1d4ed8;
-  --success: #00c28c;
-  --warning: #854f0b;
-  --danger: #a32d2d;
-  --shadow-shell: 0 8px 24px rgba(15, 23, 42, 0.05);
-  --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.05);
-  --shadow-soft: 0 1px 4px rgba(15, 23, 42, 0.04);
-  --radius-shell: 16px;
-  --radius-card: 14px;
+  --success: #4d7c3f;
+  --warning: #b45309;
+  --danger:  #b91c1c;
+  --shadow-shell: 0 8px 24px rgba(20, 17, 13, 0.05);
+  --shadow-card:  0 2px 10px rgba(20, 17, 13, 0.05);
+  --shadow-soft:  0 1px 4px rgba(20, 17, 13, 0.04);
+  --radius-shell:   16px;
+  --radius-card:    14px;
   --radius-control: 12px;
+  /* Tokens semânticos Papirando (acesso direto à paleta do brandbook). */
+  --pp-paper:        #f3efe5;
+  --pp-paper-soft:   #ebe6d8;
+  --pp-surface:      #ffffff;
+  --pp-surface-2:    #f9f7f0;
+  --pp-ink:          #14110d;
+  --pp-ink-2:        #3a342c;
+  --pp-ink-3:        #847b6c;
+  --pp-ink-4:        #b6ad9c;
+  --pp-ink-5:        #d8d0bf;
+  --pp-accent:       #1d4ed8;
+  --pp-accent-2:     #1e40af;
+  --pp-accent-soft:  #eaf0fd;
+  --pp-accent-ring:  rgba(29, 78, 216, 0.30);
+  --pp-highlight:      #f4d04e;
+  --pp-highlight-soft: #fdf3ce;
+  --pp-success:      #4d7c3f;
+  --pp-success-soft: #e8efdc;
+  --pp-warn:         #b45309;
+  --pp-warn-soft:    #fbeacd;
+  --pp-danger:       #b91c1c;
+  --pp-danger-soft:  #fde4e4;
+  --pp-font-sans:  'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --pp-font-serif: 'Fraunces', 'Plus Jakarta Sans', serif;
+  --pp-font-mono:  'JetBrains Mono', ui-monospace, monospace;
   --page-head-dark: #0c1425;
   --page-head-dark-soft: #121d33;
   --page-head-pill: rgba(255, 255, 255, 0.075);
@@ -72,7 +100,7 @@
 
   ::selection {
     background: rgba(49, 94, 251, 0.18);
-    color: #0f172a;
+    color: #14110d;
   }
 }
 
@@ -434,6 +462,9 @@
     background: rgba(0, 0, 0, 0.2);
   }
 
+  /* Normalização de container — alinhado ao brandbook:
+     container max 1240px, padding lateral responsivo 20/32/64px.
+     (Era 1540px / 12px global !important — fora do brandbook.) */
   main > div[class*='max-w-7xl'],
   main > div[class*='max-w-[1600px]'],
   main > div[class*='max-w-[1650px]'],
@@ -441,9 +472,33 @@
   main > div[class*='max-w-[1480px]'],
   main > div[class*='max-w-[1450px]'],
   main > div[class*='max-w-[1400px]'] {
-    max-width: 1540px !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    max-width: 1240px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  @media (min-width: 720px) {
+    main > div[class*='max-w-7xl'],
+    main > div[class*='max-w-[1600px]'],
+    main > div[class*='max-w-[1650px]'],
+    main > div[class*='max-w-[1540px]'],
+    main > div[class*='max-w-[1480px]'],
+    main > div[class*='max-w-[1450px]'],
+    main > div[class*='max-w-[1400px]'] {
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+  }
+  @media (min-width: 1024px) {
+    main > div[class*='max-w-7xl'],
+    main > div[class*='max-w-[1600px]'],
+    main > div[class*='max-w-[1650px]'],
+    main > div[class*='max-w-[1540px]'],
+    main > div[class*='max-w-[1480px]'],
+    main > div[class*='max-w-[1450px]'],
+    main > div[class*='max-w-[1400px]'] {
+      padding-left: 64px;
+      padding-right: 64px;
+    }
   }
 
 }

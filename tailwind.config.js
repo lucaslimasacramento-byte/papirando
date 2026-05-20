@@ -10,34 +10,76 @@ export default {
         '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
       },
       colors: {
+        // Papirando palette — fonte da verdade: Brandbook.html.
+        // brand.600/700 = accent royal #1d4ed8 oficial; 800 = accent-2 (hover).
+        // Os tons 50-500 e 900 mantêm os HEX Tailwind blue por compatibilidade
+        // com bg-brand-50 já usados; novo código deve preferir `accent.*`.
         brand: {
-          50: '#eff6ff',
+          50: '#eaf0fd',
           100: '#dbeafe',
           200: '#bfdbfe',
-          300: '#93c5fd',
+          300: '#93b4ff',
           400: '#60a5fa',
           500: '#3b82f6',
-          600: '#2563eb',
+          600: '#1d4ed8',
           700: '#1d4ed8',
           800: '#1e40af',
           900: '#1e3a8a',
         },
+        // ink.* warm — escala de "tinta" do brandbook (era Tailwind slate frio).
         ink: {
-          900: '#0f172a',
-          800: '#1e293b',
-          700: '#334155',
-          600: '#475569',
-          500: '#64748b',
-          400: '#94a3b8',
-          300: '#cbd5e1',
-          200: '#e2e8f0',
-          100: '#f1f5f9',
+          900: '#14110d',
+          800: '#3a342c',
+          700: '#3a342c',
+          600: '#847b6c',
+          500: '#847b6c',
+          400: '#b6ad9c',
+          300: '#d8d0bf',
+          200: '#ebe6d8',
+          100: '#f3efe5',
+        },
+        // Papéis semânticos novos (use estes preferencialmente em código novo).
+        paper: {
+          DEFAULT: '#f3efe5',
+          soft:    '#ebe6d8',
+        },
+        surface: {
+          DEFAULT: '#ffffff',
+          2:       '#f9f7f0',
+        },
+        accent: {
+          DEFAULT: '#1d4ed8',
+          2:       '#1e40af',
+          soft:    '#eaf0fd',
+          dark:    '#93b4ff',
+        },
+        highlight: {
+          DEFAULT: '#f4d04e',
+          soft:    '#fdf3ce',
+        },
+        // success/warn/danger semânticos — Tailwind defaults conflitavam (emerald, amber, red).
+        success: {
+          DEFAULT: '#4d7c3f',
+          soft:    '#e8efdc',
+        },
+        warn: {
+          DEFAULT: '#b45309',
+          soft:    '#fbeacd',
+        },
+        danger: {
+          DEFAULT: '#b91c1c',
+          soft:    '#fde4e4',
         },
       },
       boxShadow: {
-        shell: '0 1px 3px rgba(15, 23, 42, 0.05)',
-        card: '0 4px 14px rgba(15, 23, 42, 0.05)',
-        float: '0 8px 24px rgba(15, 23, 42, 0.07)',
+        // Sombras com viés warm (era rgba slate).
+        shell: '0 1px 3px rgba(20, 17, 13, 0.05)',
+        card: '0 4px 14px rgba(20, 17, 13, 0.05)',
+        float: '0 8px 24px rgba(20, 17, 13, 0.07)',
+        // Escala oficial do brandbook (pl-sh-low/mid/high).
+        'pl-low':  '0 1px 2px rgba(20,17,13,0.05), 0 2px 6px rgba(20,17,13,0.04)',
+        'pl-mid':  '0 4px 8px rgba(20,17,13,0.06), 0 12px 24px rgba(20,17,13,0.08)',
+        'pl-high': '0 10px 20px rgba(20,17,13,0.08), 0 24px 48px rgba(20,17,13,0.14)',
       },
       borderRadius: {
         '4xl': '2rem',
