@@ -174,6 +174,33 @@ using (
   and public.is_app_admin()
 );
 
+create or replace function public.admin_delete_contest_template(
+  p_id uuid default null,
+  p_slug text default null
+)
+returns table (
+  deleted_id uuid,
+  deleted_slug text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_app_admin() then
+    raise exception 'ADMIN_REQUIRED' using errcode = '42501';
+  end if;
+
+  return query
+  delete from public.contest_templates ct
+  where (p_id is not null and ct.id = p_id)
+     or (p_slug is not null and ct.slug = p_slug)
+  returning ct.id, ct.slug;
+end;
+$$;
+
+grant execute on function public.admin_delete_contest_template(uuid, text) to authenticated;
+
 insert into public.contest_templates (slug, nome, plano, concurso, area, cargo, banca, salario, inscricao_valor, escolaridade, vagas, lotacao, etapas, etapas_tags, taf_itens, cor, origem, descricao, status_concurso, prova_data)
 values
   (

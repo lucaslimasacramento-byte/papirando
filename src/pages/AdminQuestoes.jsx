@@ -1,13 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BookOpen,
   Check,
   ChevronDown,
   ChevronUp,
+  Eye,
+  EyeOff,
+  FileJson,
   Loader2,
   Pencil,
   Plus,
   Trash2,
+  Upload,
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -46,6 +50,39 @@ function emptyForm() {
 
 function inputCls(extra = '') {
   return `w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 ${extra}`;
+}
+
+function cleanQuestionText(value = '') {
+  return String(value || '')
+    .replace(/!\[[^\]]*]\([^)]*\)/g, '[imagem]')
+    .replace(/\*\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeImportedQuestion(raw) {
+  const tipo = String(raw.tipo || 'certo_errado').trim();
+  let alternativas = raw.alternativas;
+  if (!Array.isArray(alternativas)) {
+    alternativas = tipo === 'multipla_escolha'
+      ? [{ id: 'A', label: '', isCorrect: false }, { id: 'B', label: '', isCorrect: false }, { id: 'C', label: '', isCorrect: false }, { id: 'D', label: '', isCorrect: false }, { id: 'E', label: '', isCorrect: false }]
+      : DEFAULT_CE_ALTS.map((a) => ({ ...a }));
+  }
+  return {
+    disciplina: String(raw.disciplina || '').trim(),
+    topico: String(raw.topico || '').trim(),
+    banca: String(raw.banca || '').trim(),
+    cargo: String(raw.cargo || '').trim(),
+    ano: String(raw.ano || new Date().getFullYear()),
+    plano: String(raw.plano || '').trim(),
+    tipo,
+    enunciado: String(raw.enunciado || raw.statement || '').trim(),
+    alternativas,
+    gabarito: String(raw.gabarito || raw.answer || '').trim(),
+    explicacao: String(raw.explicacao || raw.explanation || '').trim(),
+    dificuldade: String(raw.dificuldade || 'Media').trim(),
+    is_public: raw.is_public !== false,
+  };
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -266,6 +303,18 @@ export default function AdminQuestoes() {
   const [formErr, setFormErr]       = useState('');
   const [deleteErr, setDeleteErr]   = useState('');
 
+  // Bulk selection
+  const [selected, setSelected] = useState(new Set());
+  const [batchWorking, setBatchWorking] = useState(false);
+
+  // Import modal
+  const [importOpen, setImportOpen]   = useState(false);
+  const [importData, setImportData]   = useState([]);
+  const [importError, setImportError] = useState('');
+  const [importing, setImporting]     = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const fileInputRef = useRef(null);
+
   // Unique filter options
   const [discOptions, setDiscOptions]   = useState([]);
   const [bancaOptions, setBancaOptions] = useState([]);
@@ -367,6 +416,61 @@ export default function AdminQuestoes() {
     setTotal((t) => Math.max(0, t - 1));
   }
 
+  const handleBatchPublish = async (isPublic) => {
+    if (selected.size === 0) return;
+    setBatchWorking(true);
+    const ids = [...selected];
+    const { error } = await supabase
+      .from('questions')
+      .update({ is_public: isPublic, updated_at: new Date().toISOString() })
+      .in('id', ids);
+    if (!error) {
+      setQuestions((prev) => prev.map((q) => selected.has(q.id) ? { ...q, is_public: isPublic } : q));
+      setSelected(new Set());
+    }
+    setBatchWorking(false);
+  };
+
+  const handleFileImport = (e) => {
+    setImportError('');
+    setImportResult(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        const arr = Array.isArray(parsed) ? parsed : [parsed];
+        setImportData(arr.map(normalizeImportedQuestion));
+        setImportOpen(true);
+      } catch {
+        setImportError('Arquivo JSON inválido. Verifique a estrutura e tente novamente.');
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+    e.target.value = '';
+  };
+
+  const handleConfirmImport = async () => {
+    if (importData.length === 0) return;
+    setImporting(true);
+    setImportResult(null);
+    let inserted = 0;
+    let skipped = 0;
+    for (const q of importData) {
+      if (!q.enunciado || !q.disciplina) { skipped++; continue; }
+      const { error } = await supabase.from('questions').insert({
+        ...q,
+        alternativas: JSON.stringify(q.alternativas),
+      });
+      if (error) skipped++;
+      else inserted++;
+    }
+    setImportResult({ inserted, skipped });
+    setImporting(false);
+    if (inserted > 0) loadQuestions();
+  };
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
@@ -392,14 +496,25 @@ export default function AdminQuestoes() {
         ]}
         trailingClassName="shrink-0"
         trailing={(
-          <button
-            type="button"
-            onClick={() => { setFormErr(''); setCreateOpen(true); }}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15"
-          >
-            <Plus size={16} />
-            Nova questão
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileImport} />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15"
+            >
+              <Upload size={15} />
+              Importar JSON
+            </button>
+            <button
+              type="button"
+              onClick={() => { setFormErr(''); setCreateOpen(true); }}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/15"
+            >
+              <Plus size={16} />
+              Nova questão
+            </button>
+          </div>
         )}
       />
 
@@ -440,6 +555,34 @@ export default function AdminQuestoes() {
             Limpar filtros
           </button>
         )}
+
+        {selected.size > 0 && (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500">{selected.size} selecionada{selected.size !== 1 ? 's' : ''}</span>
+            <button
+              onClick={() => handleBatchPublish(true)}
+              disabled={batchWorking}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+            >
+              <Eye size={13} />
+              Publicar
+            </button>
+            <button
+              onClick={() => handleBatchPublish(false)}
+              disabled={batchWorking}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            >
+              <EyeOff size={13} />
+              Despublicar
+            </button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-50"
+            >
+              Limpar seleção
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Create form */}
@@ -476,6 +619,7 @@ export default function AdminQuestoes() {
               const isExpanded = expandedId === q.id;
               const isEditing  = editingId === q.id;
               const alts = Array.isArray(q.alternativas) ? q.alternativas : JSON.parse(q.alternativas || '[]');
+              const questionText = cleanQuestionText(q.enunciado || q.statement);
 
               return (
                 <div key={q.id} className="px-6 py-4">
@@ -494,6 +638,16 @@ export default function AdminQuestoes() {
                     <>
                       {/* Question row */}
                       <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 shrink-0 rounded accent-blue-600"
+                          checked={selected.has(q.id)}
+                          onChange={(e) => setSelected((prev) => {
+                            const next = new Set(prev);
+                            if (e.target.checked) next.add(q.id); else next.delete(q.id);
+                            return next;
+                          })}
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {q.disciplina && (
@@ -505,6 +659,9 @@ export default function AdminQuestoes() {
                             {q.ano && (
                               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-500">{q.ano}</span>
                             )}
+                            {q.source && q.source !== 'manual' && (
+                              <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-[11px] font-bold text-violet-700">{q.source}</span>
+                            )}
                             <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                               q.dificuldade === 'Facil' ? 'bg-emerald-100 text-emerald-700' :
                               q.dificuldade === 'Dificil' ? 'bg-red-100 text-red-700' :
@@ -514,7 +671,7 @@ export default function AdminQuestoes() {
                               <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-[11px] font-bold text-white">Privada</span>
                             )}
                           </div>
-                          <p className="text-sm font-semibold text-slate-700 line-clamp-2">{q.enunciado}</p>
+                          <p className="text-sm font-semibold text-slate-700 line-clamp-2">{questionText}</p>
                         </div>
 
                         <div className="flex items-center gap-1 shrink-0">
@@ -542,7 +699,7 @@ export default function AdminQuestoes() {
                       {/* Expanded detail */}
                       {isExpanded && (
                         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                          <p className="text-sm text-slate-700 font-medium leading-relaxed">{q.enunciado}</p>
+                          <p className="text-sm text-slate-700 font-medium leading-relaxed">{questionText}</p>
                           <div className="space-y-1.5">
                             {alts.map((alt) => (
                               <div
@@ -589,6 +746,79 @@ export default function AdminQuestoes() {
             <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
               Próxima
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Import modal */}
+      {importOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={(e) => { if (e.target === e.currentTarget) setImportOpen(false); }}>
+          <div className="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <FileJson size={18} className="text-blue-600" />
+                <h2 className="text-sm font-bold text-slate-800">Importar questões — JSON</h2>
+              </div>
+              <button type="button" onClick={() => setImportOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+              {importError && (
+                <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{importError}</p>
+              )}
+
+              {importResult ? (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-center space-y-1">
+                  <Check size={28} className="mx-auto text-emerald-500" />
+                  <p className="font-bold text-emerald-800">{importResult.inserted} questão{importResult.inserted !== 1 ? 'ões' : ''} importada{importResult.inserted !== 1 ? 's' : ''}.</p>
+                  {importResult.skipped > 0 && (
+                    <p className="text-xs text-slate-500">{importResult.skipped} ignorada{importResult.skipped !== 1 ? 's' : ''} (sem enunciado ou disciplina).</p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs font-semibold text-slate-500">
+                    {importData.length} questão{importData.length !== 1 ? 'ões' : ''} detectada{importData.length !== 1 ? 's' : ''} no arquivo.
+                    Campos obrigatórios: <code className="rounded bg-slate-100 px-1">disciplina</code> e <code className="rounded bg-slate-100 px-1">enunciado</code>.
+                  </p>
+                  <div className="max-h-56 overflow-y-auto space-y-2">
+                    {importData.map((q, i) => (
+                      <div key={i} className={`rounded-xl border px-4 py-3 text-xs ${!q.enunciado || !q.disciplina ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <p className="font-bold text-slate-700">{q.disciplina || <span className="text-amber-600">Sem disciplina</span>}</p>
+                        <p className="mt-0.5 line-clamp-2 text-slate-500">{q.enunciado || <span className="text-amber-600">Sem enunciado</span>}</p>
+                        {q.banca && <span className="mt-1 inline-block rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">{q.banca} · {q.ano}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {!importResult && (
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-5 py-4">
+                <button type="button" onClick={() => setImportOpen(false)} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600">
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmImport}
+                  disabled={importing || importData.length === 0}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {importing ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  {importing ? 'Importando...' : `Importar ${importData.length} questão${importData.length !== 1 ? 'ões' : ''}`}
+                </button>
+              </div>
+            )}
+            {importResult && (
+              <div className="flex justify-end border-t border-slate-100 px-5 py-4">
+                <button type="button" onClick={() => { setImportOpen(false); setImportData([]); setImportResult(null); }} className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700">
+                  Fechar
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

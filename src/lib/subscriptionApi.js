@@ -16,6 +16,12 @@ export function isPremiumStatus(status) {
   return ['active', 'trialing'].includes(String(status || ''));
 }
 
+function isMissingAdminSubscriptionsRpc(error) {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '').toLowerCase();
+  return code === 'PGRST202' || code === '42883' || message.includes('admin_list_subscriptions');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // API
 // ─────────────────────────────────────────────────────────────────────────────
@@ -53,14 +59,19 @@ export async function startStripeCheckout({ planId, billing }) {
  * Admin: carrega todas as assinaturas (requer is_app_admin = true via RLS)
  */
 export async function loadAllSubscriptions() {
-  const { data, error } = await supabase
+  const { data, error } = await supabase.rpc('admin_list_subscriptions');
+
+  if (!error) return data ?? [];
+  if (!isMissingAdminSubscriptionsRpc(error)) throw new Error(error.message);
+
+  const { data: fallbackData, error: fallbackError } = await supabase
     .from('subscriptions')
-    .select('*, user_email:subscriptions_admin_view(user_email)')
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(500);
 
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  if (fallbackError) throw new Error(fallbackError.message);
+  return fallbackData ?? [];
 }
 
 /**

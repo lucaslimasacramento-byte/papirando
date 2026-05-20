@@ -11,13 +11,6 @@ export function resolveAiBaseUrl() {
 }
 
 async function resolveAiBearerToken() {
-  const staticToken =
-    typeof import.meta !== 'undefined' && import.meta?.env?.VITE_AI_SERVER_TOKEN
-      ? String(import.meta.env.VITE_AI_SERVER_TOKEN).trim()
-      : '';
-
-  if (staticToken) return staticToken;
-
   try {
     const { data } = await supabase.auth.getSession();
     return String(data?.session?.access_token || '').trim();

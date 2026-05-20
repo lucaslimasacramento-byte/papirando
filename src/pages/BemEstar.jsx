@@ -22,7 +22,6 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import PageHeadPremium, { PageHeadPremiumBadge } from "../components/PageHeadPremium";
 import { resolveWellnessMediaUrl } from "../lib/wellnessLibrary";
 import { normalizeWellnessPageConfig, wellnessBreathingMapFromList } from "../lib/wellnessPageConfig";
 
@@ -296,105 +295,78 @@ export default function SaudeMentalEFoco({
   ];
 
   return (
-    <div className="w-full bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_25%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_18%),linear-gradient(180deg,#f8fbff_0%,#f3f7fc_100%)]">
-      <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-4 sm:gap-6 sm:px-5 sm:py-5 lg:px-6 lg:py-6">
-        <PageHeadPremium
-          className="shrink-0 lg:!flex-row lg:!items-center lg:!justify-between"
-          icon={Brain}
-          badge={
-            <PageHeadPremiumBadge icon={Brain} className="!normal-case sm:!text-[9px]">
-              {cfg.hero.badge}
-            </PageHeadPremiumBadge>
-          }
-          title={cfg.hero.title}
-          titleAs="h1"
-          subtitle={cfg.hero.subtitle}
-          leadingClassName="w-full items-center xl:max-w-[min(100%,46rem)]"
-          leadingExtra={(
-            <div className="mt-2 sm:mt-3">
-              <p className="flex items-start gap-2 border-l-2 border-white/20 pl-2.5 text-[11px] font-medium leading-snug text-slate-300 sm:pl-3 sm:text-xs">
-                <Quote size={14} className="mt-0.5 shrink-0 text-slate-400" aria-hidden />
-                <span>
-                  <span className="font-semibold text-slate-200">{cfg.quote.prefix} </span>
-                  {cfg.quote.body}
-                </span>
-              </p>
-            </div>
-          )}
-        />
+    <div className="pl-app pl-paper-bg-soft pl-be-shell">
+      {/* Hero */}
+      <header className="pl-be-hero">
+        <div>
+          <div className="icon">
+            <Brain size={22} strokeWidth={1.75} color="#fff" />
+          </div>
+          <span className="eyebrow">{cfg.hero.badge || "Saude mental e foco"}</span>
+          <h1>{cfg.hero.title || "Reduzir ruido, recuperar presenca e render com calma"}<span className="dot">.</span></h1>
+          <p className="subtitle">{cfg.hero.subtitle || "Direcao e respiro antes da execucao."}</p>
+          <div className="quote">
+            <span className="ico">"</span>
+            <p>
+              <strong>{cfg.quote?.prefix || "Direcao"}</strong>{cfg.quote?.prefix ? " · " : ""}{cfg.quote?.body || "Nem todo avanco vem de acelerar — as vezes o salto nasce ao reduzir o ruido e voltar ao centro."}
+            </p>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex flex-col gap-4">
-          <section className="rounded-2xl border border-slate-200/90 bg-white p-2.5 shadow-sm sm:p-3">
-            <div className="grid w-full min-w-0 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-              {cfg.statusCards.map(({ label, value, helper, icon }) => {
-                const Icon = wellnessIconComponent(icon);
-                return <SurfaceStat key={label} icon={Icon} label={label} value={value} helper={helper} stripEqual />;
-              })}
-              <CvvKpiStripCard cvv={cfg.cvv} />
-              <FatigueKpiStripCard score={fatigueScore} />
+      {/* KPI strip */}
+      <section className="pl-be-kpis">
+        {cfg.statusCards.map(({ label, value, helper, icon }) => {
+          const Icon = wellnessIconComponent(icon);
+          const isCvv = String(label || "").toLowerCase().includes("cvv");
+          const isFoco = String(label || "").toLowerCase().includes("foco") || String(label || "").toLowerCase().includes("clareza");
+          return (
+            <div key={label} className={`pl-be-kpi${isCvv ? " cvv" : isFoco ? " foco" : ""}`}>
+              <span className="lab"><Icon size={11} /> {label}</span>
+              <span className="val">{value}</span>
+              {helper ? <p className="helper">{helper}</p> : null}
             </div>
-          </section>
+          );
+        })}
+        <CvvKpiStripCard cvv={cfg.cvv} />
+        <FatigueKpiStripCard score={fatigueScore} />
+      </section>
 
-          <div className="shrink-0 rounded-2xl border border-cyan-100/90 bg-gradient-to-r from-white via-slate-50/85 to-cyan-50/35 p-2 shadow-sm ring-1 ring-cyan-100/70 sm:p-2.5">
-            <div className="mb-1 px-1 sm:px-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-800/85">Navegação</p>
-            </div>
-            <nav
-              className="flex flex-row max-sm:gap-1.5 max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-0.5 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-start sm:gap-2"
-              aria-label="Áreas de bem-estar"
+      {/* Tabs */}
+      <div className="pl-be-tabs-wrap">
+        <p className="eyebrow">Navegacao</p>
+        <nav className="pl-be-tabs" aria-label="Areas de bem-estar">
+          {navItems.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setCurrentView(id)}
+              className={`pl-be-tab${currentView === id ? " active" : ""}`}
             >
-              {navItems.map(({ id, label, icon: Icon }) => {
-                const active = currentView === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setCurrentView(id)}
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition sm:gap-2 sm:px-3.5 sm:text-sm ${
-                      active
-                        ? "bg-slate-900 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
-                    }`}
-                  >
-                    <Icon size={16} className="shrink-0 opacity-90" />
-                    <span className="whitespace-nowrap">{label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+              <Icon size={14} /> {label}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-          <div className="rounded-xl border border-slate-200/90 bg-white/95 px-2.5 py-2 shadow-sm sm:px-3">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
-              <p className="min-w-0 shrink-0 text-[11px] font-medium leading-snug text-slate-600 md:max-w-[13rem] lg:max-w-[15.5rem]">
-                <span className="font-semibold text-slate-800">{cfg.resumo.introLead} </span>
-                {cfg.resumo.intro}
-              </p>
-              <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden">
-                {cfg.wellbeingPlan.map(({ title, text, icon }) => {
-                  const Icon = wellnessIconComponent(icon);
-                  return (
-                  <div
-                    key={title}
-                    className="flex min-w-[9.5rem] flex-1 flex-col justify-center gap-0.5 rounded-lg border border-slate-200/80 bg-slate-50/95 px-2 py-1.5 shadow-sm sm:min-w-0"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white text-blue-700 shadow-sm">
-                        <Icon size={12} strokeWidth={2.25} />
-                      </span>
-                      <span className="truncate text-[10px] font-bold uppercase tracking-wide text-slate-900">
-                        {title}
-                      </span>
-                    </div>
-                    <p className="line-clamp-2 text-[9px] font-medium leading-snug text-slate-500">{text}</p>
-                  </div>
-                );
-                })}
-              </div>
+      {/* Resumo strip */}
+      <section className="pl-be-resumo">
+        <div className="col head">
+          <span className="lab">Resumo</span>
+          <p><strong>{cfg.resumo?.introLead}</strong> {cfg.resumo?.intro || "Uma aba por tipo de cuidado. Rituais curtos entre blocos evitam sobrecarga."}</p>
+        </div>
+        {(cfg.wellbeingPlan || []).slice(0, 3).map(({ title, text, icon }, idx) => {
+          const Icon = wellnessIconComponent(icon);
+          return (
+            <div key={title || idx} className="col">
+              <span className="lab"><Icon size={11} /> {title}</span>
+              <p>{text}</p>
             </div>
-          </div>
+          );
+        })}
+      </section>
 
-          <main className="min-w-0">
+      <main>
             {currentView === "visao_geral" && (
               <OverviewSection
                 cfg={cfg}
@@ -446,25 +418,22 @@ export default function SaudeMentalEFoco({
                 onOpenPause={(trackId) => setActiveQuickPauseId(trackId)}
               />
             )}
-          </main>
-        </div>
+      </main>
 
-        {focusModeOpen && activeTrack ? (
-          <FocusMode
-            track={activeTrack}
-            onPlayTrack={onPlayTrack}
-            onClose={() => setFocusModeOpen(false)}
-          />
-        ) : null}
+      {focusModeOpen && activeTrack ? (
+        <FocusMode
+          track={activeTrack}
+          onPlayTrack={onPlayTrack}
+          onClose={() => setFocusModeOpen(false)}
+        />
+      ) : null}
 
-        {activeQuickPause ? (
-          <QuickPausePlayer
-            track={activeQuickPause}
-            onClose={() => setActiveQuickPauseId("")}
-          />
-        ) : null}
-
-      </div>
+      {activeQuickPause ? (
+        <QuickPausePlayer
+          track={activeQuickPause}
+          onClose={() => setActiveQuickPauseId("")}
+        />
+      ) : null}
     </div>
   );
 }
@@ -479,93 +448,74 @@ function OverviewSection({
   techniqueCount,
 }) {
   return (
-    <section className="grid gap-5">
-      <div className="grid gap-5 lg:grid-cols-3">
-        {cfg.overviewCards.map(({ id, title, eyebrow, text, icon, accent }) => {
+    <section className="pl-be-overview">
+      {/* 3 feature cards */}
+      <div className="pl-be-features">
+        {cfg.overviewCards.map(({ id, title, eyebrow, text, icon }) => {
           const Icon = wellnessIconComponent(icon);
           return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setCurrentView(id)}
-            className="group overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white text-left shadow-[0_14px_34px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-[0_20px_40px_rgba(37,99,235,0.08)]"
-          >
-            <div className={`h-1.5 w-full bg-gradient-to-r ${accent}`} />
-            <div className="p-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 shadow-sm">
-                  <Icon size={20} />
-                </div>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  {eyebrow}
-                </span>
+            <button
+              key={id}
+              type="button"
+              onClick={() => setCurrentView(id)}
+              className="pl-be-feature"
+            >
+              <div className="top">
+                <div className="icon"><Icon size={20} /></div>
+                <span className="tag">{eyebrow}</span>
               </div>
-
-              <h3 className="mt-5 text-xl font-semibold text-slate-900">{title}</h3>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">{text}</p>
-
-              <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
-                Abrir área
-                <ArrowRight size={15} className="transition group-hover:translate-x-0.5" />
-              </div>
-            </div>
-          </button>
-        );
+              <h3>{title}</h3>
+              <p>{text}</p>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+              <a role="button" tabIndex={-1}>Abrir área <ArrowRight size={13} /></a>
+            </button>
+          );
         })}
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
-        <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="p-6 lg:p-7">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              {cfg.overviewDirection.eyebrow}
-            </p>
-            <h3 className="mt-2 text-[1.9rem] font-semibold leading-tight text-slate-900">
-              {cfg.overviewDirection.title}
-            </h3>
-            <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-500">
-              {cfg.overviewDirection.body}
-            </p>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <MiniPill icon={Zap} label="Prioridade" value={cfg.overviewDirection.priorityPill} />
-              <MiniPill icon={Waves} label="Categorias" value={`${categoryCount} ativas`} />
-              <MiniPill
-                icon={MoonStar}
-                label="Técnicas"
-                value={`${techniqueCount} opções`}
-              />
+      {/* Direction + readings */}
+      <div className="pl-be-directed">
+        <div className="pl-be-dir-card">
+          <p className="eyebrow">{cfg.overviewDirection.eyebrow}</p>
+          <h3>{cfg.overviewDirection.title}</h3>
+          <p>{cfg.overviewDirection.body}</p>
+          <div className="pl-be-dir-pills">
+            <div className="pl-be-dir-pill">
+              <span className="lab"><Zap size={11} /> Prioridade</span>
+              <div className="val">{cfg.overviewDirection.priorityPill}</div>
+            </div>
+            <div className="pl-be-dir-pill">
+              <span className="lab"><Waves size={11} /> Categorias</span>
+              <div className="val">{categoryCount} ativas</div>
+            </div>
+            <div className="pl-be-dir-pill">
+              <span className="lab"><MoonStar size={11} /> Técnicas</span>
+              <div className="val">{techniqueCount} opções</div>
             </div>
           </div>
+        </div>
 
-          <div className="border-t border-slate-200 bg-[linear-gradient(135deg,#f8fbff_0%,#eef5ff_100%)] p-6 lg:border-l lg:border-t-0 lg:p-7">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              {cfg.overviewReadingsEyebrow}
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <DashboardInfoCard
-                label="Faixas ativas"
-                value={String(publicAudioTracks.length)}
-                helper="Áudios disponíveis"
-              />
-              <DashboardInfoCard
-                label="Pausas em vídeo"
-                value={String(publicVideoTracks.length)}
-                helper="Clipes prontos para abrir"
-              />
-              <DashboardInfoCard
-                label="Carga estimada"
-                value={`${fatigueScore}%`}
-                helper="Leitura visual rápida"
-              />
-            </div>
-
-            <div className="mt-6 space-y-4">
-              {cfg.dailySignals.map((item) => (
-                <DashboardBar key={item.label} {...item} />
-              ))}
-            </div>
+        <div className="pl-be-leitura-card">
+          <p className="eyebrow">{cfg.overviewReadingsEyebrow}</p>
+          <div className="pl-be-leitura-row">
+            <span className="lab">Faixas ativas</span>
+            <div className="val">{publicAudioTracks.length}</div>
+            <p className="helper">Áudios disponíveis</p>
+          </div>
+          <div className="pl-be-leitura-row">
+            <span className="lab">Pausas em vídeo</span>
+            <div className="val">{publicVideoTracks.length}</div>
+            <p className="helper">Clipes prontos para abrir</p>
+          </div>
+          <div className="pl-be-leitura-row">
+            <span className="lab">Carga estimada</span>
+            <div className="val">{fatigueScore}%</div>
+            <p className="helper">Leitura visual rápida</p>
+          </div>
+          <div className="pl-be-bars">
+            {cfg.dailySignals.map((item) => (
+              <DashboardBar key={item.label} {...item} />
+            ))}
           </div>
         </div>
       </div>
@@ -586,7 +536,7 @@ function BreathingSection({
   setBreathingState,
 }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[#0B1322] text-white shadow-[0_24px_60px_rgba(2,6,23,0.35)]">
+    <section className="pl-be-stage">
       <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="border-b border-white/10 p-6 lg:border-b-0 lg:border-r lg:p-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">

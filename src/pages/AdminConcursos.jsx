@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BadgeCheck,
   CalendarDays,
@@ -1003,7 +1003,10 @@ export default function AdminConcursos({
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingEdital, setIsUploadingEdital] = useState(false);
-  const [activePanel, setActivePanel] = useState('concursos');
+  const [isContestModalOpen, setIsContestModalOpen] = useState(false);
+  const [adminSection, setAdminSection] = useState('concursos');
+  const [logoBatchUrl, setLogoBatchUrl] = useState('');
+  const [logoBatchOrgao, setLogoBatchOrgao] = useState('');
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
@@ -1139,6 +1142,47 @@ export default function AdminConcursos({
   const selectedTemplate = useMemo(
     () => concursoCatalog.find((template) => template.id === selectedTemplateId) || null,
     [concursoCatalog, selectedTemplateId]
+  );
+
+  const logoLibrary = useMemo(() => {
+    const byUrl = new Map();
+
+    concursoCatalog.forEach((template) => {
+      const url = String(template.imagem_url || '').trim();
+      if (!url) return;
+
+      const current = byUrl.get(url);
+      const linked = current?.linked || [];
+      byUrl.set(url, {
+        url,
+        label: current?.label || template.concurso || template.nome || 'Logotipo cadastrada',
+        linked: [...linked, template.nome || template.concurso || 'Concurso'],
+      });
+    });
+
+    return Array.from(byUrl.values()).sort((first, second) =>
+      first.label.localeCompare(second.label, 'pt-BR')
+    );
+  }, [concursoCatalog]);
+
+  const orgaoOptions = useMemo(
+    () =>
+      Array.from(new Set(concursoCatalog.map((template) => String(template.concurso || '').trim()).filter(Boolean)))
+        .sort((first, second) => first.localeCompare(second, 'pt-BR')),
+    [concursoCatalog]
+  );
+
+  const selectedOrgaoLogoUrls = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          concursoCatalog
+            .filter((template) => String(template.concurso || '').trim() === logoBatchOrgao)
+            .map((template) => String(template.imagem_url || '').trim())
+            .filter(Boolean)
+        )
+      ),
+    [concursoCatalog, logoBatchOrgao]
   );
 
   const visibleQuestions = useMemo(
@@ -1487,6 +1531,7 @@ export default function AdminConcursos({
       }
 
       resetForm();
+      setIsContestModalOpen(false);
     } catch (error) {
       toastError(error.message || 'Não foi possível salvar o concurso.', 'Erro ao salvar');
     } finally {
@@ -1519,6 +1564,7 @@ export default function AdminConcursos({
   const handleEditTemplate = (template) => {
     setSelectedTemplateId(template.id);
     setForm(buildFormFromTemplate(template));
+    setIsContestModalOpen(true);
     localStorage.removeItem(DRAFT_STORAGE_KEY);
   };
 
@@ -1531,7 +1577,7 @@ export default function AdminConcursos({
 
     setIsUploadingImage(true);
     try {
-      const url = await onUploadImage?.({ file, currentUrl: form.imagem_url });
+      const url = await onUploadImage?.({ file, currentUrl: '' });
       if (url) updateFormField('imagem_url', url);
     } catch (error) {
       toastError(error.message || 'Não foi possível enviar a imagem.', 'Erro no upload');
@@ -1576,6 +1622,83 @@ export default function AdminConcursos({
       updateFormField('edital_url', '');
     } catch (error) {
       toastError(error.message || 'Não foi possível remover o edital.', 'Erro ao remover');
+    }
+  };
+
+  const handleApplyLogoToOrgao = async () => {
+    const orgao = logoBatchOrgao.trim();
+    const logoUrl = logoBatchUrl.trim();
+
+    if (!orgao) {
+      warning('Escolha o órgão antes de vincular a logotipo.');
+      return;
+    }
+    if (!logoUrl) {
+      warning('Escolha ou envie uma logotipo antes de vincular.');
+      return;
+    }
+
+    const conflictingUrls = selectedOrgaoLogoUrls.filter((url) => url !== logoUrl);
+    if (conflictingUrls.length > 0) {
+      warning('Esse órgão já possui outra logotipo vinculada. Use a mesma logo ou remova a duplicidade antes de salvar.');
+      return;
+    }
+
+    const templates = concursoCatalog.filter((template) => String(template.concurso || '').trim() === orgao);
+    if (templates.length === 0) {
+      warning('Nenhum concurso encontrado para esse órgão.');
+      return;
+    }
+
+    const toUpdate = templates.filter((t) => (t.imagem_url || '').trim() !== logoUrl);
+    if (toUpdate.length === 0) {
+      success(`Todos os concursos de ${orgao} já usam esta logotipo.`);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      for (const template of toUpdate) {
+        await onUpdateTemplate?.({
+          id: template.id,
+          slug: template.slug || '',
+          nome: template.nome || '',
+          plano: template.plano || template.nome || '',
+          concurso: template.concurso || '',
+          area: template.area || 'Geral',
+          cargo: template.cargo || '',
+          banca: template.banca || 'A definir',
+          salario: template.salario || '',
+          inscricao_valor: template.inscricao_valor || '',
+          escolaridade: template.escolaridade || '',
+          vagas: template.vagas || '',
+          lotacao: template.lotacao || '',
+          etapas: template.etapas || '',
+          etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : [],
+          taf_itens: Array.isArray(template.taf_itens) ? template.taf_itens : [],
+          cor: template.cor || '#2563EB',
+          descricao: template.descricao || '',
+          is_public: template.is_public !== false,
+          status_concurso: template.status_concurso || 'edital_publicado',
+          prova_data: template.prova_data || '',
+          imagem_url: logoUrl,
+          edital_url: template.edital_url || '',
+          disciplinas: (template.disciplinas || []).map((subject, subjectIndex) => ({
+            nome: subject.nome || '',
+            ordem: subjectIndex,
+            cor: subject.cor || '',
+            topicos: (subject.topicos || []).map((topic, topicIndex) => ({
+              nome: typeof topic === 'string' ? topic : topic.nome,
+              ordem: topicIndex,
+            })).filter((topic) => topic.nome),
+          })),
+        });
+      }
+      success(`Logotipo vinculada a ${templates.length} concurso(s) de ${orgao}.`);
+    } catch (error) {
+      toastError(error.message || 'Não foi possível vincular a logotipo ao órgão.', 'Erro ao vincular');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1722,35 +1845,28 @@ export default function AdminConcursos({
         <InsightCard title="Sem tópicos" value={stats.semTopicos} text="Disciplinas ainda superficiais." />
       </div>
 
-      <div className="rounded-[1.6rem] border border-gray-200 bg-white p-2 shadow-sm">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: 'concursos', label: 'Concursos', icon: LibraryBig },
-            { id: 'questoes', label: 'Banco de Questões', icon: FileText },
-          ].map((tab) => {
-            const active = activePanel === tab.id;
-            const Icon = tab.icon;
-
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActivePanel(tab.id)}
-                className={`inline-flex items-center gap-2 rounded-[1rem] px-4 py-3 text-sm font-semibold transition-all ${
-                  active
-                    ? 'bg-[#1A365D] text-white shadow-sm'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-[#1A365D]'
-                }`}
-              >
-                <Icon size={16} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+      {/* Tab switcher */}
+      <div className="flex gap-1 rounded-2xl border border-gray-200 bg-gray-50 p-1 w-fit">
+        {[
+          { id: 'concursos', label: 'Concursos' },
+          { id: 'logos', label: 'Logotipos' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setAdminSection(tab.id)}
+            className={`rounded-xl px-5 py-2 text-sm font-bold transition-all ${
+              adminSection === tab.id
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {activePanel === 'concursos' ? (
+      {adminSection === 'concursos' && (
       <div className="space-y-6">
         <div className="rounded-[1.6rem] border border-gray-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -1783,7 +1899,10 @@ export default function AdminConcursos({
               <div className="flex items-end">
                 <button
                   type="button"
-                  onClick={resetForm}
+                  onClick={() => {
+                    resetForm();
+                    setIsContestModalOpen(true);
+                  }}
                   className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-2xl bg-[#1A365D] px-4 text-sm font-bold text-white transition-colors hover:bg-[#142a49]"
                 >
                   <Plus size={16} />
@@ -1850,6 +1969,27 @@ export default function AdminConcursos({
           </div>
         </div>
 
+      </div>
+      )} {/* fim adminSection === 'concursos' */}
+
+      {adminSection === 'logos' && (
+        <LogosSection
+          uniqueLogos={logoLibrary}
+          orgaoOptions={orgaoOptions}
+          selectedOrgaoLogoUrls={selectedOrgaoLogoUrls}
+          logoBatchUrl={logoBatchUrl}
+          setLogoBatchUrl={setLogoBatchUrl}
+          logoBatchOrgao={logoBatchOrgao}
+          setLogoBatchOrgao={setLogoBatchOrgao}
+          isSaving={isSaving}
+          onVincular={handleApplyLogoToOrgao}
+          concursoCatalog={concursoCatalog}
+        />
+      )}
+
+        {isContestModalOpen ? (
+        <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-950/55 px-4 py-6 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-6xl">
         <div className="rounded-[1.8rem] border border-gray-200 bg-white p-4 shadow-sm md:p-6">
           <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -1865,6 +2005,14 @@ export default function AdminConcursos({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { resetForm(); setIsContestModalOpen(false); }}
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-600"
+              >
+                <X size={15} />
+                Fechar
+              </button>
               <StatusBadge isPublic={form.is_public} />
               <StatusPill value={form.status_concurso} />
               {selectedTemplate && (
@@ -2114,7 +2262,7 @@ export default function AdminConcursos({
               <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
                 <div className="overflow-hidden rounded-[1.2rem] border border-gray-200 bg-white">
                 {form.imagem_url ? (
-                  <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-36 w-full object-cover" />
+                  <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-36 w-full object-contain bg-slate-900/5 p-3" />
                 ) : (
                   <div
                     className="flex h-36 w-full items-center justify-center text-white"
@@ -2142,6 +2290,41 @@ export default function AdminConcursos({
                       <button type="button" onClick={handleRemoveImage} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-600">
                         Remover imagem
                       </button>
+                    )}
+                    {logoLibrary.length > 0 && (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Reutilizar logotipo
+                        </p>
+                        <div className="mt-3 grid max-h-52 gap-2 overflow-y-auto pr-1">
+                          {logoLibrary.map((asset) => {
+                            const selected = form.imagem_url === asset.url;
+                            return (
+                              <button
+                                key={asset.url}
+                                type="button"
+                                onClick={() => {
+                                  updateFormField('imagem_url', asset.url);
+                                  setLogoBatchUrl(asset.url);
+                                }}
+                                className={`flex items-center gap-3 rounded-xl border bg-white p-2 text-left transition-colors ${
+                                  selected ? 'border-blue-300 ring-2 ring-blue-100' : 'border-slate-200 hover:border-blue-200'
+                                }`}
+                              >
+                                <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-900/5">
+                                  <img src={asset.url} alt="" className="h-full w-full object-contain p-1" aria-hidden />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-xs font-bold text-slate-800">{asset.label}</span>
+                                  <span className="block truncate text-[11px] font-semibold text-slate-400">
+                                    {asset.linked.length} vínculo(s) no catálogo
+                                  </span>
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -2425,7 +2608,7 @@ export default function AdminConcursos({
           <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex flex-wrap justify-end gap-3">
               {form.id && (
-                <button type="button" onClick={resetForm} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
+                <button type="button" onClick={() => { resetForm(); setIsContestModalOpen(false); }} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
                   Cancelar edição
                 </button>
               )}
@@ -2456,156 +2639,9 @@ export default function AdminConcursos({
             </div>
           </div>
         </div>
-      </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-          <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="mb-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Banco de questões</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Cadastrar nova questão</h3>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <TextField label="Banca" value={questionForm.banca} onChange={(value) => setQuestionForm((prev) => ({ ...prev, banca: value }))} />
-                <TextField label="Disciplina" value={questionForm.disciplina} onChange={(value) => setQuestionForm((prev) => ({ ...prev, disciplina: value }))} />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Enunciado</label>
-                <textarea
-                  rows={6}
-                  value={questionForm.enunciado}
-                  onChange={(e) => setQuestionForm((prev) => ({ ...prev, enunciado: e.target.value }))}
-                  className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Alternativas</p>
-                {QUESTION_LABELS.map((label, index) => (
-                  <div key={label} className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-blue-700">
-                      {label}
-                    </span>
-                    <input
-                      value={questionForm.alternativas[index]}
-                      onChange={(e) => updateQuestionAlternative(index, e.target.value)}
-                      className="flex-1 rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                      placeholder={`Alternativa ${label}`}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <SelectField
-                  label="Gabarito"
-                  value={questionForm.gabarito}
-                  onChange={(value) => setQuestionForm((prev) => ({ ...prev, gabarito: value }))}
-                  options={QUESTION_LABELS.map((label) => ({ value: label, label }))}
-                />
-                <SelectField
-                  label="Nível"
-                  value={questionForm.nivel}
-                  onChange={(value) => setQuestionForm((prev) => ({ ...prev, nivel: value }))}
-                  options={[
-                    { value: 'facil', label: 'Fácil' },
-                    { value: 'medio', label: 'Médio' },
-                    { value: 'dificil', label: 'Difícil' },
-                  ]}
-                />
-                <SelectField
-                  label="Tipo"
-                  value={questionForm.tipo}
-                  onChange={(value) => setQuestionForm((prev) => ({ ...prev, tipo: value }))}
-                  options={[
-                    { value: 'multipla_escolha', label: 'Múltipla escolha' },
-                    { value: 'certo_errado', label: 'Certo ou errado' },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Comentário</label>
-                <textarea
-                  rows={5}
-                  value={questionForm.comentario}
-                  onChange={(e) => setQuestionForm((prev) => ({ ...prev, comentario: e.target.value }))}
-                  className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={handleSaveQuestion}
-                disabled={questionsSaving}
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70"
-              >
-                <Plus size={16} />
-                {questionsSaving ? 'Salvando...' : 'Salvar questão'}
-              </button>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Listagem</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Questões cadastradas</h3>
-              </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
-                {visibleQuestions.length} ativas
-              </span>
-            </div>
-
-            {questionsLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 size={24} className="animate-spin text-blue-500" />
-              </div>
-            ) : visibleQuestions.length === 0 ? (
-              <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-gray-50/70 px-6 py-12 text-center">
-                <p className="text-sm font-semibold text-gray-500">Nenhuma questão cadastrada ainda.</p>
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-[1.6rem] border border-gray-200">
-                <div className="grid grid-cols-[120px_140px_minmax(0,1fr)_100px_100px] gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
-                  <span>Banca</span>
-                  <span>Disciplina</span>
-                  <span>Enunciado</span>
-                  <span>Nível</span>
-                  <span>Ações</span>
-                </div>
-
-                <div className="divide-y divide-gray-200">
-                  {visibleQuestions.map((question) => (
-                    <div
-                      key={question.id}
-                      className="grid grid-cols-[120px_140px_minmax(0,1fr)_100px_100px] gap-3 px-4 py-4 text-sm font-semibold text-gray-700"
-                    >
-                      <span>{question.banca || '-'}</span>
-                      <span>{question.disciplina || '-'}</span>
-                      <span className="text-gray-600">{truncateQuestionText(question.enunciado, 80)}</span>
-                      <span>{normalizeQuestionNivel(question.dificuldade || question.nivel)}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteQuestion(question.id)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700"
-                      >
-                        <Trash2 size={14} />
-                        Excluir
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      )}
-
+        ) : null}
       {deleteTarget ? (
         <DeleteContestModal
           template={deleteTarget}
@@ -2619,6 +2655,156 @@ export default function AdminConcursos({
           onConfirm={handleConfirmDeleteTemplate}
         />
       ) : null}
+    </div>
+  );
+}
+
+function LogosSection({
+  uniqueLogos,
+  orgaoOptions,
+  selectedOrgaoLogoUrls,
+  logoBatchUrl,
+  setLogoBatchUrl,
+  logoBatchOrgao,
+  setLogoBatchOrgao,
+  isSaving,
+  onVincular,
+  concursoCatalog,
+}) {
+  const logosByOrgao = React.useMemo(() => {
+    const map = {};
+    for (const t of concursoCatalog) {
+      const orgao = String(t.concurso || '').trim();
+      if (!orgao) continue;
+      if (!map[orgao]) map[orgao] = { orgao, url: t.imagem_url || '', concursos: [] };
+      map[orgao].concursos.push(t.nome || t.concurso || '');
+      if (t.imagem_url && !map[orgao].url) map[orgao].url = t.imagem_url;
+    }
+    return Object.values(map).sort((a, b) => a.orgao.localeCompare(b.orgao, 'pt-BR'));
+  }, [concursoCatalog]);
+
+  const selectedLogo = uniqueLogos.find((l) => l.url === logoBatchUrl);
+
+  return (
+    <div className="space-y-6">
+      {/* Grid de logos cadastradas */}
+      <div className="rounded-[1.6rem] border border-gray-200 bg-white p-5 shadow-sm">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Imagens cadastradas</p>
+        <h3 className="mt-1 mb-4 text-xl font-semibold text-slate-900">Selecione uma logo para vincular</h3>
+
+        {uniqueLogos.length === 0 ? (
+          <p className="py-10 text-center text-sm font-semibold text-slate-400">Nenhuma logo cadastrada ainda. Adicione uma imagem pelo formulário de edição de um concurso.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {uniqueLogos.map((logo) => (
+              <button
+                key={logo.url}
+                type="button"
+                onClick={() => setLogoBatchUrl(logo.url === logoBatchUrl ? '' : logo.url)}
+                className={`group flex flex-col items-center gap-2 rounded-2xl border-2 p-3 text-center transition-all ${
+                  logoBatchUrl === logo.url
+                    ? 'border-blue-500 bg-blue-50 shadow-md shadow-blue-100'
+                    : 'border-gray-100 bg-gray-50/70 hover:border-blue-200 hover:bg-blue-50/40'
+                }`}
+              >
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-sm">
+                  <img
+                    src={logo.url}
+                    alt={logo.label}
+                    className="h-full w-full object-contain"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                </div>
+                <p className="line-clamp-2 text-[11px] font-semibold leading-tight text-slate-700">{logo.label}</p>
+                <p className="text-[10px] text-slate-400">{logo.linked.length} concurso{logo.linked.length !== 1 ? 's' : ''}</p>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Painel de vinculação */}
+      <div className="rounded-[1.6rem] border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Vincular por órgão</p>
+        <h3 className="mt-1 text-xl font-semibold text-slate-900">Aplicar logo a todos os concursos de um órgão</h3>
+        <p className="mt-1 mb-4 max-w-2xl text-sm font-semibold leading-relaxed text-slate-500">
+          Selecione uma logo acima, escolha o órgão e clique em Vincular. O sistema aplica a mesma URL a todos os concursos daquele órgão.
+        </p>
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+          {/* Preview da logo selecionada */}
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-white">
+            {selectedLogo ? (
+              <img src={selectedLogo.url} alt={selectedLogo.label} className="h-full w-full object-contain p-1" />
+            ) : (
+              <span className="text-[10px] font-semibold text-slate-400 text-center leading-tight px-1">Sem logo</span>
+            )}
+          </div>
+
+          <div className="flex-1">
+            <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Órgão</label>
+            <select
+              value={logoBatchOrgao}
+              onChange={(e) => setLogoBatchOrgao(e.target.value)}
+              className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+            >
+              <option value="">Selecionar órgão</option>
+              {orgaoOptions.map((orgao) => (
+                <option key={orgao} value={orgao}>{orgao}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={onVincular}
+            disabled={isSaving || !logoBatchUrl || !logoBatchOrgao}
+            className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+          >
+            <Link2 size={16} />
+            Vincular
+          </button>
+        </div>
+
+        {logoBatchOrgao && selectedOrgaoLogoUrls.length > 1 && (
+          <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            Atenção: esse órgão já tem mais de uma logotipo diferente. Ao vincular, todas ficam com esta mesma URL.
+          </p>
+        )}
+      </div>
+
+      {/* Tabela: logos por órgão */}
+      <div className="rounded-[1.6rem] border border-gray-200 bg-white p-5 shadow-sm">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Situação atual</p>
+        <h3 className="mt-1 mb-4 text-xl font-semibold text-slate-900">Órgãos e suas logos</h3>
+
+        {logosByOrgao.length === 0 ? (
+          <p className="py-8 text-center text-sm font-semibold text-slate-400">Nenhum órgão cadastrado ainda.</p>
+        ) : (
+          <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100">
+            {logosByOrgao.map((item) => (
+              <div key={item.orgao} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-1">
+                  {item.url ? (
+                    <img src={item.url} alt={item.orgao} className="h-full w-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <span className="text-[9px] font-bold text-slate-400">SEM</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-slate-800">{item.orgao}</p>
+                  <p className="truncate text-xs text-slate-400">{item.concursos.length} concurso{item.concursos.length !== 1 ? 's' : ''}: {item.concursos.slice(0, 3).join(', ')}{item.concursos.length > 3 ? '…' : ''}</p>
+                </div>
+                {item.url ? (
+                  <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Logo ok</span>
+                ) : (
+                  <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">Sem logo</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

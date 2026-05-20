@@ -1,8 +1,9 @@
-/** Abas administrativas — usar para guard de rota e labels. Manter sincronizado com `Sidebar.jsx` (ADMIN_SECTION). */
+/** Abas administrativas - usar para guard de rota e labels. Manter sincronizado com `Sidebar.jsx` (ADMIN_GROUPS). */
 export const ADMIN_TAB_IDS = [
   'admin_dashboard',
   'admin_concursos',
   'admin_questoes',
+  'admin_questoes_import',
   'admin_disciplinas',
   'admin_usuarios',
   'admin_finance',
@@ -20,20 +21,52 @@ export function isAdminTab(tabId) {
   return ADMIN_TAB_IDS.includes(String(tabId || ''));
 }
 
-/** Títulos amigáveis para o cabeçalho (Área logada). */
+/** Títulos amigáveis para o cabeçalho (área logada). */
 export const ADMIN_TAB_TITLES = {
-  admin_dashboard: 'Admin · Dashboard',
-  admin_concursos: 'Admin · Concursos',
-  admin_questoes: 'Admin · Questões',
-  admin_disciplinas: 'Admin · Disciplinas',
-  admin_usuarios: 'Admin · Usuários',
-  admin_finance: 'Admin · Financeiro',
-  admin_crm: 'Admin · CRM',
-  admin_audiolivros: 'Admin · Audiolivros',
-  admin_mapas_mentais: 'Admin · Mapas mentais',
-  admin_legislacao: 'Admin · Legislação',
-  admin_beta_feedback: 'Admin · Feedback beta',
-  admin_beta_convites: 'Admin · Convites beta',
-  admin_assinaturas: 'Admin · Assinaturas',
-  admin_configuracoes: 'Admin · Configurações',
+  admin_dashboard: 'Dashboard',
+  admin_concursos: 'Concursos',
+  admin_questoes: 'Questões',
+  admin_questoes_import: 'Importar questões',
+  admin_disciplinas: 'Disciplinas',
+  admin_usuarios: 'Usuários',
+  admin_finance: 'Financeiro',
+  admin_crm: 'CRM',
+  admin_audiolivros: 'Audiolivros',
+  admin_mapas_mentais: 'Mapas mentais',
+  admin_legislacao: 'Legislação',
+  admin_beta_feedback: 'Feedback beta',
+  admin_beta_convites: 'Convites beta',
+  admin_assinaturas: 'Assinaturas',
+  admin_configuracoes: 'Configurações',
 };
+
+/** Grupo de navegação ao qual cada aba admin pertence. */
+export const ADMIN_TAB_GROUP = {
+  admin_dashboard: 'Visão Geral',
+  admin_concursos: 'Editorial',
+  admin_questoes: 'Editorial',
+  admin_questoes_import: 'Editorial',
+  admin_disciplinas: 'Editorial',
+  admin_usuarios: 'Usuários & Acesso',
+  admin_assinaturas: 'Usuários & Acesso',
+  admin_beta_convites: 'Usuários & Acesso',
+  admin_audiolivros: 'Conteúdo',
+  admin_mapas_mentais: 'Conteúdo',
+  admin_legislacao: 'Conteúdo',
+  admin_configuracoes: 'Conteúdo',
+  admin_finance: 'Negócio',
+  admin_crm: 'Negócio',
+  admin_beta_feedback: 'Negócio',
+};
+
+/**
+ * Retorna o breadcrumb para uma aba admin.
+ * Ex.: { group: 'Editorial', screen: 'Concursos' }
+ */
+export function getAdminBreadcrumb(tabId) {
+  if (!isAdminTab(tabId)) return null;
+  return {
+    group: ADMIN_TAB_GROUP[tabId] || 'Admin',
+    screen: ADMIN_TAB_TITLES[tabId] || tabId,
+  };
+}

@@ -114,6 +114,9 @@ export default function AppTabContent(props) {
     targetContestDisciplines,
     smartStudyPlan,
     dailyRoutine,
+    ultimaAnotacao,
+    editalProgresso,
+    onOpenUltimaAnotacao,
     setSelectedContestDetailId,
     handleDisciplineClick,
     startRecommendedStudySession,
@@ -353,6 +356,8 @@ export default function AppTabContent(props) {
         targetDisciplines={targetContestDisciplines}
         studyRecommendation={smartStudyPlan}
         dailyRoutine={dailyRoutine}
+        ultimaAnotacao={ultimaAnotacao}
+        editalProgresso={editalProgresso}
         onOpenTargetContest={(contestId) => {
           setSelectedContestDetailId(contestId);
           setActiveTab('concurso_detalhe');
@@ -360,6 +365,7 @@ export default function AppTabContent(props) {
         onOpenRecommendedDiscipline={handleDisciplineClick}
         onStartRecommendedSession={startRecommendedStudySession}
         onStartRoutineItem={startRecommendedStudySession}
+        onOpenUltimaAnotacao={onOpenUltimaAnotacao}
       />
     );
   }
@@ -724,7 +730,10 @@ export default function AppTabContent(props) {
         setViewingDiscipline={setViewingDiscipline}
         setEditingDiscipline={setEditingDiscipline}
         setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
+        setActiveTab={setActiveTab}
         subjectCatalog={subjectCatalog}
+        historicoReal={historicoReal}
+        studyRecommendation={smartStudyPlan}
         forcedPlanoFiltro={
           selectedCoursePlan === 'Todos' && targetContestSummary?.plano
             ? targetContestSummary.plano
@@ -883,7 +892,7 @@ export default function AppTabContent(props) {
   }
 
   if (activeTab === 'flashcards') {
-    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} />;
+    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} setActiveTab={setActiveTab} />;
   }
 
   if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} />;

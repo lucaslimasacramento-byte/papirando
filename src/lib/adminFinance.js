@@ -1,8 +1,4 @@
-export const PLAN_PRICES = {
-  gratuito: 0,
-  tatico: 59.9,
-  elite: 119.9,
-};
+export { PLAN_PRICES, getMonthlyPrice } from './planConfig.js';
 
 export function formatCurrency(value = 0) {
   return Number(value || 0).toLocaleString('pt-BR', {
@@ -15,10 +11,6 @@ export function getCurrentFinanceMonth(referenceDate = new Date()) {
   const year = referenceDate.getFullYear();
   const month = String(referenceDate.getMonth() + 1).padStart(2, '0');
   return `${year}-${month}`;
-}
-
-export function getMonthlyPrice(plan = 'gratuito') {
-  return PLAN_PRICES[plan] || 0;
 }
 
 export function normalizeExpense(expense = {}) {

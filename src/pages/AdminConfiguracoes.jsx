@@ -100,6 +100,8 @@ export default function AdminConfiguracoes({
     (Array.isArray(redacaoExpertTips) ? redacaoExpertTips : []).map((row) => normalizeRedacaoExpertTip(row))
   );
   const [redacaoTipsSaving, setRedacaoTipsSaving] = useState(false);
+  const [progressSaving, setProgressSaving] = useState(false);
+  const [wellnessSaving, setWellnessSaving] = useState(false);
   const [themeBankDraft, setThemeBankDraft] = useState(() => []);
   const [kitDraft, setKitDraft] = useState(() => mergeRedacaoKitBundle(null));
   const [audiobookCatalogDraft, setAudiobookCatalogDraft] = useState(() => []);
@@ -180,25 +182,43 @@ export default function AdminConfiguracoes({
     [wellnessDraft, wellnessInnerTab]
   );
 
-  const saveAll = async () => {
-    onSaveProgressConfig?.({ xp: xpDraft, badges: badgeDraft });
-    onSaveWellnessLibrary?.(wellnessDraft);
-    onSaveWellnessPageConfig?.(wellnessPageDraft);
-    let msg = 'Configurações salvas com sucesso.';
-    if (onSaveRedacaoExpertTips) {
-      setRedacaoTipsSaving(true);
+  const saveSection = async () => {
+    let msg = 'Salvo com sucesso.';
+    if (activeSection === 'xp' || activeSection === 'badges') {
+      setProgressSaving(true);
       try {
-        const r = await onSaveRedacaoExpertTips(redacaoTipsDraft);
-        if (r && !r.ok) msg = `Salvo com ressalvas: dicas de redação — ${r.error || 'erro desconhecido'}`;
+        await onSaveProgressConfig?.({ xp: xpDraft, badges: badgeDraft });
+        msg = activeSection === 'xp' ? 'XP e níveis salvos.' : 'Selos salvos.';
       } catch (e) {
-        msg = `Erro ao salvar dicas de redação: ${String(e?.message || e)}`;
+        msg = `Erro ao salvar: ${String(e?.message || e)}`;
       } finally {
-        setRedacaoTipsSaving(false);
+        setProgressSaving(false);
       }
+    } else if (activeSection === 'wellness') {
+      setWellnessSaving(true);
+      try {
+        await onSaveWellnessLibrary?.(wellnessDraft);
+        await onSaveWellnessPageConfig?.(wellnessPageDraft);
+        msg = 'Biblioteca de bem-estar salva.';
+      } catch (e) {
+        msg = `Erro ao salvar: ${String(e?.message || e)}`;
+      } finally {
+        setWellnessSaving(false);
+      }
+    } else {
+      return;
     }
     setSaveFeedback(msg);
     window.setTimeout(() => setSaveFeedback(''), 3200);
   };
+
+  const sectionSaveLabel = {
+    xp: 'Salvar XP e níveis',
+    badges: 'Salvar selos',
+    wellness: 'Salvar bem-estar',
+  };
+  const sectionIsSaving = progressSaving || wellnessSaving;
+  const showGlobalSave = activeSection === 'xp' || activeSection === 'badges' || activeSection === 'wellness';
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
@@ -211,17 +231,19 @@ export default function AdminConfiguracoes({
         subtitle="Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados."
       />
 
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={() => void saveAll()}
-          disabled={redacaoTipsSaving}
-          className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
-        >
-          <Save size={16} />
-          {redacaoTipsSaving ? 'Salvando…' : 'Salvar tudo'}
-        </button>
-      </div>
+      {showGlobalSave ? (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => void saveSection()}
+            disabled={sectionIsSaving}
+            className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
+          >
+            <Save size={16} />
+            {sectionIsSaving ? 'Salvando…' : (sectionSaveLabel[activeSection] || 'Salvar')}
+          </button>
+        </div>
+      ) : null}
 
       <section className="rounded-[2.2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
@@ -297,7 +319,7 @@ export default function AdminConfiguracoes({
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Navegação rápida</p>
               <h3 className="mt-1 text-2xl font-semibold text-slate-900">Onde editar cada coisa</h3>
               <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
-                Abra a seção correspondente, altere os campos e use o botão de salvar daquela área (ou &quot;Salvar tudo&quot; no topo para XP, selos, bem-estar e dicas de redação).
+                Abra a seção correspondente, altere os campos e use o botão de salvar que aparece no topo daquela seção.
               </p>
             </div>
           </div>

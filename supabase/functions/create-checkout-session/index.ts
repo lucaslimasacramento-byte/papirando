@@ -8,11 +8,39 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import Stripe from 'npm:stripe@17';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/http.ts';
+import { getCorsHeaders } from '../_shared/http.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   apiVersion: '2024-06-20',
 });
+
+const checkoutRateLimit = new Map<string, { count: number; resetAt: number }>();
+
+function json(req: Request, body: Record<string, unknown>, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+  });
+}
+
+function clientKey(req: Request, userId = ''): string {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('cf-connecting-ip') || 'unknown';
+  return `${userId || 'anon'}:${ip}`;
+}
+
+function enforceCheckoutRateLimit(req: Request, userId = '') {
+  const now = Date.now();
+  const key = clientKey(req, userId);
+  const current = checkoutRateLimit.get(key);
+  if (!current || current.resetAt <= now) {
+    checkoutRateLimit.set(key, { count: 1, resetAt: now + 10 * 60 * 1000 });
+    return;
+  }
+  current.count += 1;
+  if (current.count > 10) {
+    throw new Error('RATE_LIMITED');
+  }
+}
 
 /** Mapeia planId + billing para o price ID do Stripe */
 function resolvePriceId(planId: string, billing: string): string {
@@ -31,16 +59,17 @@ function resolvePriceId(planId: string, billing: string): string {
 serve(async (req) => {
   // CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
+    if (req.method !== 'POST') {
+      return json(req, { error: 'Metodo nao permitido' }, 405);
+    }
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Nao autorizado' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json(req, { error: 'Nao autorizado' }, 401);
     }
 
     // Valida JWT do usuário via Supabase
@@ -52,21 +81,26 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Nao autorizado' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json(req, { error: 'Nao autorizado' }, 401);
     }
 
-    const body = await req.json();
-    const planId: string = body.planId ?? 'tatico';  // tatico | elite
-    const billing: string = body.billing ?? 'monthly'; // monthly | annual
+    enforceCheckoutRateLimit(req, user.id);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return json(req, { error: 'Payload invalido' }, 400);
+    }
+    const planId = String(body.planId ?? 'tatico');  // tatico | elite
+    const billing = String(body.billing ?? 'monthly'); // monthly | annual
 
     if (!['tatico', 'elite'].includes(planId)) {
-      return new Response(JSON.stringify({ error: 'planId invalido' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json(req, { error: 'planId invalido' }, 400);
+    }
+
+    if (!['monthly', 'annual'].includes(billing)) {
+      return json(req, { error: 'billing invalido' }, 400);
     }
 
     const priceId = resolvePriceId(planId, billing);
@@ -104,14 +138,14 @@ serve(async (req) => {
       },
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return json(req, { url: session.url });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (message === 'RATE_LIMITED') {
+      console.warn('[create-checkout-session] rate limit');
+      return json(req, { error: 'Muitas tentativas. Aguarde alguns minutos.' }, 429);
+    }
+    console.error('[create-checkout-session] erro interno');
+    return json(req, { error: 'Nao foi possivel iniciar o checkout.' }, 500);
   }
 });

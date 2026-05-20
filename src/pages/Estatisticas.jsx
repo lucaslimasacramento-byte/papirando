@@ -1,25 +1,24 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  PieChart,
-  Filter,
-  Clock,
-  Flame,
-  BookOpen,
   Activity,
   ArrowUpRight,
+  BookOpen,
   BrainCircuit,
-  Layers,
   CheckCircle2,
+  Clock,
+  Filter,
+  Flame,
+  Layers,
+  PieChart,
 } from 'lucide-react';
 import {
   buildCanonicalHistory,
-  buildDisciplineSummaryFromHistory,
   calculateStudyStreak,
   formatMinutesLabel,
   parseStudyTimeToMinutes,
 } from '../lib/studyAnalytics';
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import { getSubjectColor } from '../lib/subjectPalette';
 
 export default function Estatisticas({
   setIsFilterPanelOpen,
@@ -28,381 +27,412 @@ export default function Estatisticas({
   subjectCatalog = [],
   redacaoSummary = {},
 }) {
+  const [period, setPeriod] = useState(30);
   const canonicalHistory = useMemo(
     () => buildCanonicalHistory(historicoReal, subjectCatalog),
     [historicoReal, subjectCatalog]
   );
 
-  const disciplineSummary = useMemo(
-    () => buildDisciplineSummaryFromHistory(canonicalHistory),
-    [canonicalHistory]
-  );
+  const materias = useMemo(() => {
+    const map = new Map();
+    canonicalHistory.forEach((item) => {
+      const nome = item.disciplinaCanonica || item.disciplina || item.subject || '';
+      if (!nome) return;
+      const current = map.get(nome) || { nome, tempoMin: 0, acertos: 0, erros: 0 };
+      current.tempoMin += parseStudyTimeToMinutes(item.tempo);
+      current.acertos += Number(item.acertos || 0);
+      current.erros += Number(item.erros || 0);
+      map.set(nome, current);
+    });
+    return [...map.values()]
+      .map((item) => {
+        const questions = item.acertos + item.erros;
+        return {
+          ...item,
+          questions,
+          acuracia: questions > 0 ? Math.round((item.acertos / questions) * 100) : 0,
+          color: getSubjectColor(item.nome),
+        };
+      })
+      .sort((a, b) => b.tempoMin - a.tempoMin);
+  }, [canonicalHistory]);
 
-  const stats = useMemo(() => {
-    const totalQuestoes = canonicalHistory.reduce(
-      (acc, item) => acc + Number(item.acertos || 0) + Number(item.erros || 0),
-      0
-    );
-    const acertos = canonicalHistory.reduce((acc, item) => acc + Number(item.acertos || 0), 0);
-    const erros = canonicalHistory.reduce((acc, item) => acc + Number(item.erros || 0), 0);
-    const totalMinutos = canonicalHistory.reduce((acc, item) => acc + parseStudyTimeToMinutes(item.tempo), 0);
-    const diasEstudados = new Set(canonicalHistory.map((item) => item.data).filter(Boolean)).size;
+  const totals = useMemo(() => {
+    const totalTempo = materias.reduce((acc, item) => acc + item.tempoMin, 0);
+    const totalQuestoes = materias.reduce((acc, item) => acc + item.questions, 0);
+    const totalAcertos = materias.reduce((acc, item) => acc + item.acertos, 0);
     const topicosConcluidos = bancoDisciplinas.reduce(
       (acc, disciplina) => acc + (disciplina.topicos || []).filter((topico) => topico.concluido).length,
       0
     );
-    const topicosPendentes = bancoDisciplinas.reduce(
-      (acc, disciplina) => acc + (disciplina.topicos || []).filter((topico) => !topico.concluido).length,
-      0
-    );
-    const streakDias = calculateStudyStreak(canonicalHistory);
-    const progressoEdital =
-      topicosConcluidos + topicosPendentes > 0
-        ? Math.round((topicosConcluidos / (topicosConcluidos + topicosPendentes)) * 100)
-        : 0;
-
+    const totalTopicos = bancoDisciplinas.reduce((acc, disciplina) => acc + (disciplina.topicos || []).length, 0);
     return {
+      totalTempo,
       totalQuestoes,
-      acertos,
-      erros,
-      tempoTotal: formatMinutesLabel(totalMinutos),
-      mediaDia: diasEstudados > 0 ? formatMinutesLabel(Math.round(totalMinutos / diasEstudados)) : '0h 00m',
-      diasEstudados,
-      streakDias,
-      progressoEdital,
+      totalAcertos,
+      acuraciaGlobal: totalQuestoes > 0 ? Math.round((totalAcertos / totalQuestoes) * 100) : 0,
+      streak: calculateStudyStreak(canonicalHistory),
+      edital: totalTopicos > 0 ? Math.round((topicosConcluidos / totalTopicos) * 100) : 0,
       topicosConcluidos,
-      topicosPendentes,
     };
-  }, [bancoDisciplinas, canonicalHistory]);
+  }, [bancoDisciplinas, canonicalHistory, materias]);
 
-  const percAcertos = stats.totalQuestoes > 0 ? Math.round((stats.acertos / stats.totalQuestoes) * 100) : 0;
-  const bestDiscipline = disciplineSummary[0] || null;
-  const weakestDiscipline =
-    [...disciplineSummary]
-      .filter((item) => item.questions > 0)
-      .sort((first, second) => first.accuracy - second.accuracy)[0] || null;
-
-  const topicRows = useMemo(() => {
-    return bancoDisciplinas
-      .flatMap((disciplina) =>
-        (disciplina.topicos || []).map((topico) => {
-          const total = Number(topico.acertos || 0) + Number(topico.erros || 0);
-          const pct = total > 0 ? Math.round((Number(topico.acertos || 0) / total) * 100) : 0;
-          return {
-            disc: canonicalizeSubjectName(disciplina.nome, subjectCatalog),
-            topico: topico.nome,
-            qTot: total,
-            pct,
-          };
-        })
-      )
-      .filter((item) => item.qTot > 0)
-      .sort((first, second) => second.qTot - first.qTot)
-      .slice(0, 8);
-  }, [bancoDisciplinas, subjectCatalog]);
+  const evolucao = useMemo(() => buildEvolution(canonicalHistory, period), [canonicalHistory, period]);
+  const melhor = [...materias].filter((item) => item.questions > 0).sort((a, b) => b.acuracia - a.acuracia)[0] || null;
+  const pior = [...materias].filter((item) => item.questions > 0).sort((a, b) => a.acuracia - b.acuracia)[0] || null;
+  const updatedAt = canonicalHistory.length > 0 ? 'há poucos instantes' : 'sem registros';
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremium
-        icon={PieChart}
-        badge={<PageHeadPremiumBadge icon={PieChart}>Inteligência analítica</PageHeadPremiumBadge>}
-        title="Estatísticas profundas"
-        subtitle="Gargalos e oportunidades por matéria."
-        className="gap-4 lg:!flex-row lg:!items-center lg:!justify-between"
-        leadingClassName="min-w-0 shrink-0 items-center lg:max-w-[calc(100%-38rem)] xl:max-w-[28rem]"
-        centerSlot={
-          <div className="mx-auto flex w-full max-w-[16rem] min-w-0 flex-col items-center justify-center gap-2 px-1 text-center sm:px-0">
-            <div className="text-[1.1rem] font-semibold leading-none tracking-[-0.02em] text-sky-200/95 tabular-nums sm:text-[1.25rem]">
-              {percAcertos}%
-            </div>
-            <div className="flex w-full flex-col gap-1">
-              <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400/85">
-                Desempenho geral
-              </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full border border-white/[0.06] bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.22)] transition-[width] duration-500 ease-out"
-                  style={{ width: `${percAcertos}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        }
-        trailing={(
-          <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 xl:shrink-0">
-            <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-center text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
-              Matérias padronizadas
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsFilterPanelOpen?.(true)}
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400/40 sm:w-auto sm:text-[13px]"
-            >
-              <Filter size={14} />
-              Filtros avançados
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <EstatisticasHeader onFiltros={() => setIsFilterPanelOpen?.(true)} />
+
+        <KpiStrip totals={totals} />
+
+        <SecondaryStatsStrip
+          redacaoSummary={redacaoSummary}
+          stats={{ simulados: 0, mediaSimulados: '0%' }}
+          updatedAt={updatedAt}
+        />
+
+        <section className="stats-visual-grid">
+          <EvolucaoCard data={evolucao} period={period} onPeriod={setPeriod} />
+          <DistribuicaoDonutCard materias={materias} totalTempo={totals.totalTempo} />
+        </section>
+
+        <AnaliseMateriasCard materias={materias} melhor={melhor} pior={pior} />
+
+        <BizuDiagnosticoCard
+          melhor={melhor}
+          pior={pior}
+          acuraciaGlobal={totals.acuraciaGlobal}
+          topicRows={buildTopicRows(bancoDisciplinas, subjectCatalog)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function EstatisticasHeader({ onFiltros }) {
+  return (
+    <section className="pl-card-paper" style={{ padding: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
+        <div>
+          <div className="pl-overline">Inteligência analítica</div>
+          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
+            Estatísticas profundas.
+          </h1>
+          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+            Tempo, acurácia e distribuição por matéria para enxergar onde seu estudo está rendendo.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button type="button" className="pl-btn pl-btn-ghost">Matérias padronizadas</button>
+          <button type="button" className="pl-btn pl-btn-secondary" onClick={onFiltros}>
+            <Filter size={14} />
+            Filtros avançados
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function KpiStrip({ totals }) {
+  return (
+    <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+      <StatKpi icon={Clock} label="Tempo de estudo" value={formatMinutesLabel(totals.totalTempo)} sub="volume acumulado" tone="ink" />
+      <StatKpi icon={Flame} label="Constância" value={`${totals.streak} dias`} sub="sequência atual" tone="warn" />
+      <StatKpi icon={CheckCircle2} label="Desempenho" value={`${totals.acuraciaGlobal}%`} sub={`${totals.totalAcertos}/${totals.totalQuestoes} questões`} tone="success" />
+      <StatKpi icon={Layers} label="Edital coberto" value={`${totals.edital}%`} sub={`${totals.topicosConcluidos} tópicos concluídos`} tone="accent" />
+    </section>
+  );
+}
+
+function StatKpi({ icon: Icon, label, value, sub, tone }) {
+  const toneClass = tone === 'success' ? 'pl-tag-success' : tone === 'warn' ? 'pl-tag-warn' : 'pl-tag-accent';
+  return (
+    <div className="pl-card" style={{ padding: 18, position: 'relative' }}>
+      <span className={`pl-tag ${toneClass}`}><Icon size={12} />{label}</span>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 38, lineHeight: 1 }}>{value}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>{sub}</p>
+    </div>
+  );
+}
+
+function SecondaryStatsStrip({ redacaoSummary, stats, updatedAt }) {
+  return (
+    <section className="stats-secondary-strip">
+      <MicroStat label="Redações" value={redacaoSummary.corrected || 0} />
+      <MicroStat label="Melhor nota" value={redacaoSummary.bestScore || 0} />
+      <MicroStat label="Rascunhos" value={redacaoSummary.drafts || 0} />
+      <MicroStat label="Simulados" value={stats.simulados} />
+      <MicroStat label="Média simulados" value={stats.mediaSimulados} />
+      <div style={{ flex: 1 }} />
+      <span className="pl-muted" style={{ fontSize: 12, fontWeight: 700 }}>Última atualização {updatedAt}</span>
+    </section>
+  );
+}
+
+function MicroStat({ label, value }) {
+  return (
+    <span className="stats-micro">
+      <small>{label}</small>
+      <strong>{value}</strong>
+    </span>
+  );
+}
+
+function EvolucaoCard({ data, period, onPeriod }) {
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start' }}>
+        <div>
+          <div className="pl-overline">Evolução</div>
+          <h2 className="pl-section-title" style={{ marginTop: 7 }}>Desempenho nos últimos dias</h2>
+        </div>
+        <div className="planning-segment">
+          {[7, 30, 90].map((item) => (
+            <button key={item} type="button" className={period === item ? 'is-active' : ''} onClick={() => onPeriod(item)}>
+              {item}d
             </button>
-          </div>
-        )}
-        trailingClassName="w-full min-w-0 xl:min-w-0"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[22rem] lg:self-center xl:max-w-[24rem]"
-      />
-
-      <div
-        className="-mx-1 flex min-w-0 shrink-0 gap-2 overflow-x-auto pb-1 pt-0.5 custom-scrollbar sm:mx-0 sm:grid sm:w-full sm:grid-cols-7 sm:gap-2 sm:overflow-visible sm:pb-0 [&>*]:min-w-0"
-        aria-label="Indicadores principais"
-      >
-        <MetricStripCard
-          icon={Clock}
-          title="Tempo de estudo"
-          highlight={stats.tempoTotal}
-          footerLabel="Média diária"
-          footerValue={stats.mediaDia}
-          accent="blue"
-        />
-        <MetricStripCard
-          icon={Flame}
-          title="Constância"
-          highlight={`${stats.diasEstudados} dias`}
-          footerLabel="Registros"
-          footerValue={`${canonicalHistory.length} sessões`}
-          accent="orange"
-        />
-        <MetricStripCard
-          icon={CheckCircle2}
-          title="Desempenho"
-          highlight={`${percAcertos}%`}
-          footerLabel="Acertos × erros"
-          footerValue={`${stats.acertos} / ${stats.erros}`}
-          accent="emerald"
-        />
-        <MetricStripCard
-          icon={Layers}
-          title="Edital"
-          highlight={`${stats.progressoEdital}%`}
-          footerLabel="Concluídos"
-          footerValue={`${stats.topicosConcluidos} tópicos`}
-          accent="indigo"
-        />
-        <MetricStripCard
-          icon={BrainCircuit}
-          title="Redações"
-          highlight={String(redacaoSummary.corrected || 0)}
-          footerLabel="Média atual"
-          footerValue={
-            redacaoSummary.averageScore
-              ? `${String(redacaoSummary.averageScore).replace('.', ',')} / 10`
-              : 'Sem nota ainda'
-          }
-          accent="blue"
-        />
-        <MetricStripCard
-          icon={CheckCircle2}
-          title="Melhor nota"
-          highlight={redacaoSummary.bestScore ? String(redacaoSummary.bestScore).replace('.', ',') : '0'}
-          footerLabel="Tema mais treinado"
-          footerValue={redacaoSummary.topTheme || 'Ainda não definido'}
-          accent="emerald"
-        />
-        <MetricStripCard
-          icon={BookOpen}
-          title="Rascunhos"
-          highlight={String(redacaoSummary.drafts || 0)}
-          footerLabel="Último tema"
-          footerValue={redacaoSummary.latest?.tema || 'Nenhuma redação ainda'}
-          accent="indigo"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.25fr_1fr] xl:gap-4">
-        <div className="section-card flex min-h-0 min-w-0 flex-col overflow-hidden p-4 md:p-5">
-          <div className="mb-3 shrink-0">
-            <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
-              <Activity size={18} className="text-[#2563EB]" />
-              Análise por matéria canônica
-            </h3>
-            <p className="mt-0.5 text-[11px] font-semibold text-gray-400">
-              Tempo e acurácia consolidados no mesmo nome padrão.
-            </p>
-          </div>
-
-          <div className="custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-            {disciplineSummary.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm font-semibold text-gray-400">
-                Ainda não há registros suficientes para montar as estatísticas por matéria.
-              </div>
-            ) : (
-              disciplineSummary.slice(0, 10).map((item) => (
-                <DisciplineRow
-                  key={item.name}
-                  name={item.name}
-                  timeLabel={item.timeLabel}
-                  accuracy={item.accuracy}
-                  questions={item.questions}
-                  maxMinutes={disciplineSummary[0]?.minutes || 1}
-                  minutes={item.minutes}
-                />
-              ))
-            )}
-          </div>
+          ))}
         </div>
+      </div>
+      <EvolucaoChart data={data} />
+    </section>
+  );
+}
 
-        <div className="grid min-w-0 gap-3 xl:grid-rows-[minmax(26rem,auto)_auto]">
-          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#2563EB]/15 sm:min-h-[26rem] sm:p-5">
-            <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-[#2563EB]/25 blur-3xl" />
-            <div className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full bg-[#2563EB]/10 blur-2xl" />
-            <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-              <div className="mb-2 shrink-0 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-[#2563EB]/35 bg-[#2563EB]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
-                <BrainCircuit size={12} className="shrink-0 text-[#93C5FD]" />
-                <span className="truncate">Leitura da IA</span>
-              </div>
+function EvolucaoChart({ data }) {
+  const width = 720;
+  const height = 200;
+  const left = 36;
+  const right = 14;
+  const top = 14;
+  const bottom = 28;
+  const plotW = width - left - right;
+  const plotH = height - top - bottom;
+  const points = data.length > 0 ? data : [{ dia: 1, valor: 0 }];
+  const mapped = points.map((point, index) => ({
+    x: left + (points.length === 1 ? plotW : (index / (points.length - 1)) * plotW),
+    y: top + plotH - (Math.max(0, Math.min(100, point.valor)) / 100) * plotH,
+    ...point,
+  }));
+  const pathD = mapped.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+  const first = mapped[0];
+  const last = mapped[mapped.length - 1];
+  const baselineY = top + plotH;
+  const areaD = `${pathD} L ${last.x} ${baselineY} L ${first.x} ${baselineY} Z`;
 
-              <h3 className="mb-1.5 shrink-0 text-base font-semibold tracking-tight text-white sm:text-lg">
-                Diagnóstico estratégico
-              </h3>
-              <p className="mb-3 shrink-0 text-xs font-medium leading-relaxed text-slate-300 sm:text-sm">
-                {bestDiscipline
-                  ? `${bestDiscipline.name} lidera sua dedicação atual.`
-                  : 'Assim que você registrar mais estudos, as leituras inteligentes aparecem aqui.'}
-              </p>
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="220" role="img" aria-label="Evolução de desempenho">
+      {[40, 60, 80, 100].map((guide) => {
+        const y = top + plotH - (guide / 100) * plotH;
+        return (
+          <g key={guide}>
+            <line x1={left} x2={width - right} y1={y} y2={y} stroke="var(--pl-rule)" strokeDasharray="4 5" />
+            <text x={6} y={y + 4} fill="var(--pl-ink-3)" fontSize="10" fontWeight="700">{guide}%</text>
+          </g>
+        );
+      })}
+      <path d={areaD} fill="var(--pl-ink)" opacity="0.06" />
+      <path d={pathD} fill="none" stroke="var(--pl-ink)" strokeWidth="1.7" />
+      <circle cx={last.x} cy={last.y} r="8" fill="var(--pl-ink)" opacity="0.12" />
+      <circle cx={last.x} cy={last.y} r="4" fill="var(--pl-ink)" />
+      <text x={Math.max(80, last.x - 28)} y={Math.max(24, last.y - 12)} fill="var(--pl-ink)" style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 20 }}>
+        {last.valor}%
+      </text>
+      <text x={left} y={height - 6} fill="var(--pl-ink-3)" fontSize="10" fontWeight="700">dia {points[0]?.dia || 1}</text>
+      <text x={width / 2} y={height - 6} textAnchor="middle" fill="var(--pl-ink-3)" fontSize="10" fontWeight="700">meio</text>
+      <text x={width - right} y={height - 6} textAnchor="end" fill="var(--pl-ink-3)" fontSize="10" fontWeight="700">hoje</text>
+    </svg>
+  );
+}
 
-              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5">
-                <div className="space-y-2.5 sm:space-y-3">
-                  <InsightBullet
-                    title="O que está forte"
-                    text={
-                      bestDiscipline
-                        ? `${bestDiscipline.name} acumula ${bestDiscipline.timeLabel} e ${bestDiscipline.accuracy}% de acurácia.`
-                        : 'Sem destaque suficiente por enquanto.'
-                    }
-                  />
-                  <InsightBullet
-                    title="O que pede ataque"
-                    text={
-                      weakestDiscipline
-                        ? `${weakestDiscipline.name} está pedindo reforço, com ${weakestDiscipline.accuracy}% de acurácia.`
-                        : 'Sem gargalo relevante detectado ainda.'
-                    }
-                  />
-                  <InsightBullet
-                    title="Próxima jogada"
-                    text="Use a matéria com menor acurácia como próximo bloco de revisão e mantenha as matérias mais fortes em manutenção."
-                  />
-                </div>
-              </div>
-
-              <div className="shrink-0 pt-3">
-                <div className="rounded-xl border border-[#2563EB]/25 bg-[#2563EB]/10 p-2.5 sm:p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-[#93C5FD]/90 sm:text-xs">
-                      Potencial de subida
-                    </span>
-                    <span className="flex items-center gap-1 text-base font-semibold tabular-nums text-[#BFDBFE] sm:text-lg">
-                      +{Math.max(5, 100 - percAcertos)}%
-                      <ArrowUpRight size={16} className="shrink-0 text-[#93C5FD]" strokeWidth={2.25} />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+function DistribuicaoDonutCard({ materias, totalTempo }) {
+  const top = materias.slice(0, 6);
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div className="pl-overline">Tempo por matéria</div>
+      <h2 className="pl-section-title" style={{ marginTop: 7 }}>Distribuição</h2>
+      <div className="stats-donut-wrap"><Donut materias={top} totalTempo={totalTempo} /></div>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {top.map((item) => (
+          <div key={item.nome} className="stats-donut-legend-row">
+            <span style={{ background: item.color }} />
+            <strong>{item.nome}</strong>
+            <small>{totalTempo > 0 ? Math.round((item.tempoMin / totalTempo) * 100) : 0}%</small>
           </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
-          <div className="section-card p-4 sm:p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">Tópicos mais respondidos</h3>
-            </div>
+function Donut({ materias, totalTempo }) {
+  const size = 220;
+  const cx = size / 2;
+  const cy = size / 2;
+  const rOuter = 88;
+  const rInner = 62;
+  let cum = 0;
+  const segs = materias.map((item) => {
+    const f = totalTempo > 0 ? item.tempoMin / totalTempo : 0;
+    const start = cum * 360 - 90;
+    const end = (cum + f) * 360 - 90;
+    cum += f;
+    return { ...item, start, end };
+  });
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {segs.map((seg) => (
+        <path key={seg.nome} d={arcPath(cx, cy, rOuter, seg.start, seg.end, rInner)} fill={seg.color}>
+          <title>{seg.nome}: {formatMinutesLabel(seg.tempoMin)}</title>
+        </path>
+      ))}
+      <circle cx={cx} cy={cy} r={54} fill="var(--pl-surface)" />
+      <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 24 }} fill="var(--pl-ink)">
+        {formatMinutesLabel(totalTempo)}
+      </text>
+      <text x={cx} y={cy + 18} textAnchor="middle" style={{ fontFamily: 'var(--pl-sans)', fontWeight: 800, fontSize: 9, letterSpacing: '0.12em' }} fill="var(--pl-ink-3)">
+        NO TOTAL
+      </text>
+    </svg>
+  );
+}
 
-            <div className="space-y-3">
-              {topicRows.length === 0 ? (
-                <p className="text-sm font-semibold text-gray-400">Sem tópicos suficientes com questões respondidas.</p>
-              ) : (
-                topicRows.map((item) => (
-                  <TopicRow key={`${item.disc}-${item.topico}`} item={item} />
-                ))
-              )}
-            </div>
+function AnaliseMateriasCard({ materias, melhor, pior }) {
+  const maxTempo = Math.max(...materias.map((item) => item.tempoMin), 1);
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'end', marginBottom: 16 }}>
+        <div>
+          <div className="pl-overline">Análise por matéria</div>
+          <h2 className="pl-section-title" style={{ marginTop: 7 }}>Tempo, acurácia e força por frente</h2>
+        </div>
+        <span className="pl-small-label">Ordenado por tempo</span>
+      </div>
+      <div className="stats-table">
+        <div className="stats-table-head">
+          <span>Matéria</span><span>Tempo</span><span>Acurácia</span><span>Distribuição</span><span>Força</span>
+        </div>
+        {materias.length === 0 ? (
+          <div className="planning-empty">Ainda não há registros suficientes para montar as estatísticas por matéria.</div>
+        ) : materias.map((item) => (
+          <MateriaRow key={item.nome} item={item} maxTempo={maxTempo} isBest={melhor?.nome === item.nome} isWorst={pior?.nome === item.nome} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MateriaRow({ item, maxTempo, isBest, isWorst }) {
+  const width = Math.max(4, Math.round((item.tempoMin / maxTempo) * 100));
+  const strength = Math.ceil(item.acuracia / 20);
+  const accuracyColor = item.acuracia >= 75 ? 'var(--pl-success)' : item.acuracia >= 60 ? 'var(--pl-ink)' : 'var(--pl-warn)';
+  return (
+    <div className="stats-materia-row">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+        <span className="planning-subject-bar" style={{ background: item.color }} />
+        <div style={{ minWidth: 0 }}>
+          <strong>{item.nome}</strong>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+            {isBest ? <span className="pl-tag pl-tag-success">Forte</span> : null}
+            {isWorst ? <span className="pl-tag pl-tag-warn">Gargalo</span> : null}
+            <span className="pl-muted" style={{ fontSize: 11 }}>{item.questions} questões registradas</span>
           </div>
         </div>
       </div>
+      <span className="pl-serif-number">{formatMinutesLabel(item.tempoMin)}</span>
+      <span>
+        <strong style={{ color: accuracyColor, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 19 }}>{item.acuracia}%</strong>
+        <small>{item.acertos} ✓ · {item.erros} ✕</small>
+      </span>
+      <div className="pl-progress-track" style={{ height: 6 }}><div className="pl-progress-fill" style={{ width: `${width}%`, background: item.color }} /></div>
+      <div className="stats-strength">{[1, 2, 3, 4, 5].map((bar) => <span key={bar} className={bar <= strength ? 'on' : ''} />)}</div>
     </div>
   );
 }
 
-function MetricStripCard({ icon: Icon, title, highlight, footerLabel, footerValue, accent }) {
-  const accents = {
-    blue: 'bg-[#EFF6FF] text-[#2563EB]',
-    orange: 'bg-orange-50 text-orange-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-  };
-
+function BizuDiagnosticoCard({ melhor, pior, acuraciaGlobal, topicRows }) {
+  const potential = `+${Math.max(5, 100 - acuraciaGlobal)}%`;
   return (
-    <div className="flex h-full w-full min-h-[6.75rem] min-w-[8.25rem] shrink-0 flex-col rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#2563EB]/20 hover:shadow-md sm:min-h-[6.25rem] sm:min-w-0 sm:p-2.5">
-      <div className={`mb-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md sm:mb-1.5 sm:h-7 sm:w-7 sm:rounded-lg ${accents[accent]}`}>
-        <Icon size={15} strokeWidth={2.25} />
+    <section className="pl-card-ai stats-bizu">
+      <div className="stats-bizu-head">
+        <div>
+          <span className="pl-tag-ai"><BrainCircuit size={13} /> Leitura da IA</span>
+          <h2 className="pl-section-title" style={{ marginTop: 10 }}>Diagnóstico estratégico</h2>
+        </div>
+        <span className="pl-tag pl-tag-success">Potencial de subida {potential}</span>
       </div>
-      <p className="line-clamp-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-400">{title}</p>
-      <p className="mt-0.5 line-clamp-2 text-[0.9rem] font-bold leading-tight tracking-tight text-slate-900 sm:mt-1 sm:text-[0.95rem]">
-        {highlight}
+      <p className="pl-body">
+        {melhor ? <strong>{melhor.nome}</strong> : 'Sua melhor frente'} está sustentando o desempenho.
+        {' '}O gargalo mais claro agora é {pior ? <span className="pl-mark-text">{pior.nome}</span> : 'aguardar mais dados'}.
       </p>
-      <div className="mt-auto rounded-md bg-slate-50 px-1.5 py-1 sm:rounded-lg sm:px-2 sm:py-1.5">
-        <p className="line-clamp-1 text-[8px] font-bold uppercase tracking-wider text-gray-400">{footerLabel}</p>
-        <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-snug text-gray-700">{footerValue}</p>
+      <div className="stats-bizu-grid">
+        <BizuQuadrant label="O que está forte" title={melhor?.nome || 'Sem destaque'} detail={melhor ? `${melhor.acuracia}% de acurácia em ${melhor.questions} questões.` : 'Registre mais sessões para detectar força.'} accent="var(--pl-success)" />
+        <BizuQuadrant label="O que pede ataque" title={pior?.nome || 'Sem gargalo'} detail={pior ? `${pior.acuracia}% de acurácia. Vale revisar antes de avançar.` : 'Nenhum ponto crítico detectado.'} accent="var(--pl-warn)" />
+        <BizuQuadrant label="Próxima jogada" title="Bloco dirigido" detail={pior ? `Faça 30 a 45min de questões em ${pior.nome}.` : 'Siga registrando estudos para calibrar a próxima jogada.'} accent="var(--pl-ink)" />
+        <BizuQuadrant label="Tópicos mais expandidos" title={topicRows[0]?.topico || 'Sem tópicos'} detail={topicRows[0] ? `${topicRows[0].qTot} questões em ${topicRows[0].disc}.` : 'Resolva questões por tópico para enriquecer este bloco.'} accent="var(--pl-highlight)" />
       </div>
+    </section>
+  );
+}
+
+function BizuQuadrant({ label, title, detail, accent }) {
+  return (
+    <div className="stats-bizu-quadrant" style={{ borderLeftColor: accent }}>
+      <div className="pl-eyebrow" style={{ color: accent }}>{label}</div>
+      <div className="pl-serif-number" style={{ fontSize: 20, marginTop: 7 }}>{title}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.45 }}>{detail}</p>
     </div>
   );
 }
 
-function DisciplineRow({ name, timeLabel, accuracy, questions, maxMinutes, minutes }) {
-  const width = Math.max(12, Math.round((minutes / Math.max(maxMinutes, 1)) * 100));
-
-  return (
-    <div className="rounded-2xl border border-gray-100 p-3.5 transition-all hover:border-[#2563EB]/25 hover:shadow-sm sm:p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{name}</p>
-          <p className="mt-1 text-xs font-semibold text-gray-400">{questions} questões registradas</p>
-        </div>
-        <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[#2563EB]">{timeLabel}</span>
-      </div>
-
-      <div className="mt-4">
-        <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-          <span>Tempo relativo</span>
-          <span>{accuracy}% de acurácia</span>
-        </div>
-        <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
-          <div className="h-full rounded-full bg-gradient-to-r from-[#93C5FD] to-[#2563EB]" style={{ width: `${width}%` }} />
-        </div>
-      </div>
-    </div>
-  );
+function buildEvolution(history, period) {
+  const days = new Map();
+  history.forEach((item) => {
+    const day = String(item.data || '').slice(0, 10);
+    if (!day) return;
+    const current = days.get(day) || { acertos: 0, erros: 0 };
+    current.acertos += Number(item.acertos || 0);
+    current.erros += Number(item.erros || 0);
+    days.set(day, current);
+  });
+  const sorted = [...days.entries()].sort().slice(-period);
+  return sorted.map(([_, value], index) => {
+    const total = value.acertos + value.erros;
+    return { dia: index + 1, valor: total > 0 ? Math.round((value.acertos / total) * 100) : 0 };
+  });
 }
 
-function TopicRow({ item }) {
-  const color =
-    item.pct >= 80 ? 'bg-emerald-500' : item.pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
-
-  return (
-    <div className="rounded-[1.5rem] border border-gray-100 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
-          {item.disc}
-        </span>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{item.qTot} questões</span>
-      </div>
-      <p className="mt-3 text-sm font-bold text-gray-800">{item.topico}</p>
-      <div className="mt-3 h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${item.pct}%` }} />
-      </div>
-    </div>
-  );
+function buildTopicRows(bancoDisciplinas, subjectCatalog) {
+  return bancoDisciplinas
+    .flatMap((disciplina) =>
+      (disciplina.topicos || []).map((topico) => {
+        const total = Number(topico.acertos || 0) + Number(topico.erros || 0);
+        return {
+          disc: canonicalizeSubjectName(disciplina.nome, subjectCatalog),
+          topico: topico.nome,
+          qTot: total,
+        };
+      })
+    )
+    .filter((item) => item.qTot > 0)
+    .sort((a, b) => b.qTot - a.qTot)
+    .slice(0, 8);
 }
 
-function InsightBullet({ title, text }) {
-  return (
-    <div className="rounded-xl border border-[#2563EB]/20 border-l-[3px] border-l-[#2563EB] bg-[#2563EB]/10 p-3 sm:rounded-2xl sm:p-3.5">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#93C5FD] sm:text-xs">{title}</div>
-      <p className="break-words text-[13px] font-medium leading-snug text-white/90 sm:text-sm sm:leading-relaxed">{text}</p>
-    </div>
-  );
+function arcPath(cx, cy, rOuter, start, end, rInner) {
+  const polar = (r, angle) => ({
+    x: cx + r * Math.cos((angle * Math.PI) / 180),
+    y: cy + r * Math.sin((angle * Math.PI) / 180),
+  });
+  const s1 = polar(rOuter, end);
+  const e1 = polar(rOuter, start);
+  const s2 = polar(rInner, start);
+  const e2 = polar(rInner, end);
+  const large = end - start <= 180 ? '0' : '1';
+  return `M ${s1.x} ${s1.y} A ${rOuter} ${rOuter} 0 ${large} 0 ${e1.x} ${e1.y} L ${s2.x} ${s2.y} A ${rInner} ${rInner} 0 ${large} 1 ${e2.x} ${e2.y} Z`;
 }

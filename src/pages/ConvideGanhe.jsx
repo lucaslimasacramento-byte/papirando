@@ -1,16 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ArrowRight,
   Check,
-  ChevronRight,
+  Clock,
   Copy,
   Filter,
   Gift,
   Hash,
-  HelpCircle,
   Link2,
   PartyPopper,
   Share2,
-  Sparkles,
   Trophy,
   UserPlus,
   Users,
@@ -24,7 +23,6 @@ import {
   normalizeReferralCode,
   REFERRAL_GOALS,
 } from '../lib/referrals';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const INVITE_ORIGIN = String(import.meta.env.VITE_PUBLIC_APP_ORIGIN || '').trim();
 
@@ -372,375 +370,209 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
   }
 
   return (
-    <div className="min-h-full w-full bg-[radial-gradient(ellipse_120%_80%_at_0%_-20%,rgba(59,130,246,0.12),transparent_50%),radial-gradient(ellipse_90%_60%_at_100%_0%,rgba(99,102,241,0.1),transparent_45%),linear-gradient(180deg,#eef2f9_0%,#f4f6fb_45%,#f8fafc_100%)]">
-      <div className="page-shell !max-w-[1180px] gap-6 pb-16 pt-2 sm:pt-3">
-        <PageHeadPremium
-          icon={Gift}
-          className="!items-stretch overflow-hidden !rounded-[1.75rem] !border !border-white/10 !px-5 !py-6 sm:!px-7 sm:!py-8 lg:!flex-row lg:!items-center lg:!justify-between"
-          badge={
-            <PageHeadPremiumBadge icon={Gift}>Convide e ganhe</PageHeadPremiumBadge>
-          }
-          title={(
-            <span>
-              Cada amigo que entra com seu código{' '}
-              <span className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
-                destrava benefícios
-              </span>{' '}
-              para vocês dois.
-            </span>
-          )}
-          titleAs="h1"
-          subtitle="Seu código é único, fica salvo no perfil e o progresso das metas atualiza quando a indicação é confirmada."
-          leadingClassName="min-w-0 w-full flex-1 items-center lg:max-w-none"
-          leadingExtra={(
-            <>
-              {!isLoggedIn ? (
-                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-50">
-                  <HelpCircle size={18} className="shrink-0 text-amber-200" />
-                  <span>Entre na sua conta para gerar o código oficial e ver indicações em tempo real.</span>
-                </div>
-              ) : null}
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {STEPS.map((step) => {
-                  const Icon = step.icon;
-                  return (
-                    <div
-                      key={step.n}
-                      className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm transition hover:border-white/15 hover:bg-white/[0.09]"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/80 to-indigo-600/90 text-xs font-bold text-white shadow-lg shadow-blue-950/40">
-                          {step.n}
-                        </span>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-400">
-                            <Icon size={13} className="text-blue-300" />
-                            {step.title}
-                          </div>
-                          <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-300">{step.text}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+    <div className="pl-app pl-paper-bg-soft pl-cg-shell">
+      {/* Hero unificado */}
+      <header className="pl-cg-hero">
+        <div>
+          <span className="badge"><Gift size={11} /> Convide e ganhe</span>
+          <h1>
+            Cada amigo que entra com seu código <strong>destrava benefícios</strong> para vocês dois.
+          </h1>
+          <p className="subtitle">
+            Seu código é único, fica salvo no perfil e o progresso das metas atualiza quando a indicação é confirmada.
+          </p>
+          <div className="pl-cg-steps">
+            {STEPS.map((step) => (
+              <div key={step.n} className="pl-cg-step">
+                <span className="num">{step.n}</span>
+                <p className="ttl">{step.title}</p>
+                <p>{step.text}</p>
               </div>
-            </>
-          )}
-          trailingClassName="w-full min-w-0 max-w-lg shrink-0 lg:max-w-[min(100%,24rem)] xl:max-w-md"
-          trailing={(
-            <div className="flex flex-col gap-4">
-              <div className="rounded-2xl border border-white/12 bg-[linear-gradient(165deg,rgba(255,255,255,0.09)_0%,rgba(255,255,255,0.03)_100%)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.25)] backdrop-blur-md">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Seu código</p>
-                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="flex min-h-[52px] flex-1 items-center justify-center rounded-xl border border-white/15 bg-[#0c1220] px-4 font-mono text-xl font-bold tracking-[0.12em] text-white sm:text-2xl">
-                    {resolvedReferralCode}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyCode}
-                    aria-label="Copiar código de indicação"
-                    className={`inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 ${
-                      codeCopied
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-900/30'
-                        : 'border border-white/20 bg-white/10 text-white hover:bg-white/15'
-                    }`}
-                  >
-                    {codeCopied ? <Check size={18} /> : <Hash size={18} />}
-                    {codeCopied ? 'Copiado' : 'Copiar código'}
-                  </button>
-                </div>
-
-                <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Link de convite</p>
-                <label className="mt-2 block">
-                  <span className="sr-only">URL de convite</span>
-                  <input
-                    readOnly
-                    value={inviteUrl}
-                    onFocus={(e) => e.target.select()}
-                    className="w-full cursor-text truncate rounded-xl border border-white/12 bg-[#0c1220]/90 px-4 py-3.5 font-mono text-[13px] font-semibold text-blue-200 shadow-inner focus:border-blue-400/40 focus:outline-none focus:ring-2 focus:ring-blue-500/25"
-                  />
-                </label>
-
-                <p className="mt-2 text-[11px] font-medium text-slate-500">
-                  Quem abrir esse link já entra com seu código. Origem:{' '}
-                  <span className="font-semibold text-slate-400">{inviteOriginLabel}</span>
-                </p>
-
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    aria-label="Copiar link de convite"
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 sm:flex-initial sm:min-w-[140px] ${
-                      linkCopied
-                        ? 'bg-emerald-500 text-white shadow-lg'
-                        : 'bg-white text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    {linkCopied ? <Check size={18} /> : <Copy size={18} />}
-                    {linkCopied ? 'Link copiado' : 'Copiar link'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    aria-label="Compartilhar convite"
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/20 py-3.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:flex-initial sm:min-w-[140px] ${
-                      linkShared
-                        ? 'border-emerald-400/40 bg-emerald-500/20 text-emerald-100'
-                        : 'bg-blue-600 text-white hover:bg-blue-500'
-                    }`}
-                  >
-                    <Share2 size={18} />
-                    {linkShared ? 'Enviado' : 'Compartilhar'}
-                  </button>
-                </div>
-
-                {isLoggedIn ? (
-                  <p className="mt-4 border-t border-white/10 pt-4 text-xs font-medium text-slate-400">
-                    Conta: <span className="font-semibold text-slate-200">{displayName}</span>
-                  </p>
-                ) : null}
-              </div>
-
-              {/* KPIs — contraste correto no hero escuro */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <StatCardDark
-                  label="Cadastros com seu código"
-                  hint="Perfis que informaram seu código ao entrar."
-                  value={isLoggedIn ? String(referredCount) : '—'}
-                  icon={Users}
-                />
-                <StatCardDark
-                  label="Aguardando confirmação"
-                  hint="Indicações ainda não confirmadas no programa."
-                  value={isLoggedIn ? String(pendingCount) : '—'}
-                  icon={Sparkles}
-                />
-                <StatCardDark
-                  label="Bônus recebidos"
-                  hint="Metas já creditadas na sua conta."
-                  value={isLoggedIn ? String(bonusHistory.length) : '—'}
-                  icon={Trophy}
-                />
-              </div>
-            </div>
-          )}
-        />
-
-        {/* Progress + metas + histórico */}
-        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="flex flex-col gap-6">
-            <div className="rounded-[1.75rem] border border-slate-200/90 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Progresso</p>
-                  <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
-                    Próximo benefício
-                  </h2>
-                </div>
-                <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-800">
-                  {confirmedCount} confirmada{confirmedCount === 1 ? '' : 's'}
-                </span>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50/90 to-white p-5">
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Meta em foco</p>
-                    <p className="mt-1 text-lg font-bold text-slate-900">
-                      {nextGoal ? nextGoal.titulo : 'Todas as metas atuais concluídas'}
-                    </p>
-                  </div>
-                  {nextGoal ? (
-                    <p className="text-sm font-bold text-blue-700">{missingConfirmationsLabel}</p>
-                  ) : (
-                    <p className="text-sm font-semibold text-emerald-700">Parabéns pelo programa completo!</p>
-                  )}
-                </div>
-                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200/90">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-sky-500 to-indigo-500 transition-[width] duration-700 ease-out"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Metas</p>
-                  <span className="text-[10px] font-semibold text-slate-400">Deslize no celular</span>
-                </div>
-                <div className="mt-3 flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden">
-                  {REFERRAL_GOALS.map((goal) => {
-                    const active = confirmedCount >= goal.alvo;
-                    const isNext = nextGoal?.alvo === goal.alvo;
-                    return (
-                      <div
-                        key={goal.alvo}
-                        className={`min-w-[148px] shrink-0 rounded-2xl border p-4 transition-all sm:min-w-0 ${
-                          active
-                            ? 'border-emerald-200 bg-gradient-to-b from-emerald-50/90 to-white shadow-sm'
-                            : isNext
-                              ? 'border-indigo-200 bg-gradient-to-b from-indigo-50/90 to-white shadow-md ring-2 ring-indigo-100'
-                              : 'border-slate-200 bg-slate-50/70'
-                        }`}
-                      >
-                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                          {goal.alvo} amigo{goal.alvo > 1 ? 's' : ''}
-                        </p>
-                        <p className="mt-2 min-h-[2.75rem] text-sm font-bold leading-snug text-slate-900">{goal.titulo}</p>
-                        <span
-                          className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
-                            active
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : isNext
-                                ? 'bg-indigo-100 text-indigo-800'
-                                : 'bg-white text-slate-500 ring-1 ring-slate-200'
-                          }`}
-                        >
-                          {active ? 'Liberado' : isNext ? 'Próxima meta' : 'Bloqueado'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/80 to-white p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">Último bônus</p>
-                <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800">
-                  {latestBonus
-                    ? `${latestBonus.reward_title} · ${formatReferralDate(latestBonus.created_at)}`
-                    : 'Nenhum bônus ainda — compartilhe o link para começar a contagem.'}
-                </p>
-                {bonusHistory.length > 1 ? (
-                  <ul className="mt-3 max-h-28 space-y-1.5 overflow-y-auto text-xs font-medium text-slate-600">
-                    {bonusHistory.slice(1, 8).map((b) => (
-                      <li key={b.id} className="flex justify-between gap-2 border-b border-blue-100/60 pb-1.5 last:border-0">
-                        <span className="truncate">{b.reward_title}</span>
-                        <span className="shrink-0 tabular-nums text-slate-400">{formatReferralDate(b.created_at)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </div>
+            ))}
           </div>
+        </div>
 
-          <div className="rounded-[1.75rem] border border-slate-200/90 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Histórico</p>
-                <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">Indicações</h3>
-              </div>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600">
-                {history.length} total
-              </span>
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                <Filter size={12} />
-                Filtrar
-              </span>
-              {[
-                { id: 'todos', label: 'Todos' },
-                { id: 'confirmado', label: 'Confirmados' },
-                { id: 'pendente', label: 'Pendentes' },
-              ].map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setHistoryFilter(f.id)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
-                    historyFilter === f.id
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => loadReferralData({ silent: true })}
-                disabled={reloading || loading}
-                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-100 disabled:opacity-60"
-              >
-                {reloading ? 'Atualizando...' : 'Atualizar'}
+        <div className="pl-cg-side">
+          <div className="pl-cg-code-card">
+            <div className="lab">Seu código</div>
+            <div className="pl-cg-code-row">
+              <div className="pl-cg-code">{resolvedReferralCode || '—'}</div>
+              <button type="button" onClick={handleCopyCode} style={{ background: 'none', border: 'none', padding: 0, display: 'flex' }}>
+                <span className="pl-cg-actions" style={{ margin: 0 }}>
+                  <span className="btn">
+                    {codeCopied ? <Check size={14} /> : <Hash size={14} />}
+                    {codeCopied ? 'Copiado' : 'Copiar'}
+                  </span>
+                </span>
               </button>
             </div>
-
-            {loadError ? (
-              <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-                {loadError}
+            <div style={{ marginTop: 10 }}>
+              <div className="lab">Link de convite</div>
+              <div className="pl-cg-link-row">
+                <Link2 size={12} />
+                <span>{inviteUrl}</span>
               </div>
-            ) : null}
-
-            <div className="mt-4 max-h-[min(28rem,55vh)] space-y-2.5 overflow-y-auto pr-1">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <div
-                    key={`sk-${index}`}
-                    className="h-[72px] animate-pulse rounded-2xl border border-slate-100 bg-slate-100/80"
-                  />
-                ))
-              ) : filteredHistory.length > 0 ? (
-                filteredHistory.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50/80 to-white px-4 py-3.5 transition hover:border-slate-200 hover:shadow-sm"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">{invite.name}</p>
-                      <p className="mt-0.5 text-xs font-medium text-slate-500">{invite.date}</p>
-                    </div>
-                    <span
-                      className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
-                        invite.status === 'Confirmado'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {invite.status}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-                    <Users size={26} className="text-slate-400" />
-                  </div>
-                  <p className="mt-4 max-w-sm text-sm font-bold text-slate-800">
-                    {historyFilter !== 'todos'
-                      ? 'Nada neste filtro ainda.'
-                      : 'Nenhuma indicação registrada — seu link está pronto no topo da página.'}
-                  </p>
-                  <p className="mt-2 max-w-xs text-xs font-medium text-slate-500">
-                    Dica: mande o link direto; amigos não precisam digitar o código à mão.
-                  </p>
-                </div>
-              )}
             </div>
+            <div className="pl-cg-actions">
+              <button type="button" onClick={handleCopyLink} className="btn">
+                {linkCopied ? <Check size={14} /> : <Copy size={14} />}
+                {linkCopied ? 'Copiado' : 'Copiar link'}
+              </button>
+              <button type="button" onClick={handleShare} className="btn dark">
+                <Share2 size={14} /> Compartilhar
+              </button>
+            </div>
+            <p className="pl-cg-conta">Conta: <strong>{displayName}</strong></p>
+          </div>
 
-            <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/90 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Como confirma?</p>
-              <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800">
-                A indicação aparece como pendente no cadastro e vira confirmada quando o convidado conclui a vinculação do
-                perfil no Papirando.
-              </p>
-              <a
-                href={inviteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-blue-700 hover:text-blue-800"
-              >
-                Testar meu link
-                <ChevronRight size={14} />
-              </a>
+          <div className="pl-cg-hero-kpis">
+            <div className="pl-cg-hero-kpi">
+              <span className="lab"><Users size={11} /> Cadastros</span>
+              <span className="val">{isLoggedIn ? referredCount : '—'}</span>
+            </div>
+            <div className="pl-cg-hero-kpi">
+              <span className="lab"><Clock size={11} /> Aguardando</span>
+              <span className="val">{isLoggedIn ? pendingCount : '—'}</span>
+            </div>
+            <div className="pl-cg-hero-kpi">
+              <span className="lab"><Trophy size={11} /> Bônus</span>
+              <span className="val">{isLoggedIn ? bonusHistory.length : '—'}</span>
             </div>
           </div>
         </div>
+      </header>
+
+      {/* Progresso + Histórico */}
+      <div className="pl-cg-grid">
+        {/* Progresso */}
+        <section className="pl-cg-card">
+          <div className="pl-cg-card-head">
+            <div>
+              <span className="eyebrow">Progresso</span>
+              <h3>Próximo benefício</h3>
+            </div>
+            <span className="badge-cnt">{confirmedCount} confirmada{confirmedCount === 1 ? '' : 's'}</span>
+          </div>
+
+          <div className="pl-cg-foco">
+            <span className="lab">Meta em foco</span>
+            <div className="pl-cg-foco-row">
+              <span className="target">{nextGoal ? nextGoal.titulo : 'Programa completo'}</span>
+              {nextGoal ? (
+                <span className="falta">{missingConfirmationsLabel}</span>
+              ) : (
+                <span className="falta" style={{ color: 'var(--pl-success)' }}>Parabéns!</span>
+              )}
+            </div>
+            <div className="pl-cg-foco-bar">
+              <div className="fill" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+
+          <div className="pl-cg-card-head" style={{ marginTop: 16, marginBottom: 0 }}>
+            <span className="eyebrow">Metas</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--pl-ink-3)' }}>Deslize no celular</span>
+          </div>
+          <div className="pl-cg-metas">
+            {REFERRAL_GOALS.map((goal) => {
+              const active = confirmedCount >= goal.alvo;
+              const isNext = nextGoal?.alvo === goal.alvo;
+              return (
+                <div key={goal.alvo} className={`pl-cg-meta${active ? ' active' : ''}`}>
+                  <span className="qtd">{goal.alvo} amigo{goal.alvo > 1 ? 's' : ''}</span>
+                  <p className="bonus">{goal.titulo}</p>
+                  <span className="status">{active ? 'Liberado' : isNext ? 'Próxima meta' : 'Bloqueado'}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="pl-cg-bonus-row">
+            <span className="lab">Último bônus</span>
+            <p>
+              {latestBonus
+                ? `${latestBonus.reward_title} · ${formatReferralDate(latestBonus.created_at)}`
+                : 'Nenhum bônus ainda — compartilhe o link para começar a contagem.'}
+            </p>
+          </div>
+        </section>
+
+        {/* Histórico */}
+        <section className="pl-cg-card">
+          <div className="pl-cg-card-head">
+            <div>
+              <span className="eyebrow">Histórico</span>
+              <h3>Indicações</h3>
+            </div>
+            <span className="badge-cnt" style={{ background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-3)', borderColor: 'var(--pl-rule)' }}>
+              {history.length} total
+            </span>
+          </div>
+
+          <div className="pl-cg-filters">
+            <span className="label"><Filter size={11} /> Filtrar</span>
+            <button type="button" onClick={() => setHistoryFilter('todos')} className={historyFilter === 'todos' ? 'active' : ''}>Todos</button>
+            <button type="button" onClick={() => setHistoryFilter('confirmado')} className={historyFilter === 'confirmado' ? 'active' : ''}>Confirmados</button>
+            <button type="button" onClick={() => setHistoryFilter('pendente')} className={historyFilter === 'pendente' ? 'active' : ''}>Pendentes</button>
+            <button type="button" onClick={() => loadReferralData({ silent: true })} disabled={reloading || loading} className="update">
+              {reloading ? 'Atualizando…' : 'Atualizar'}
+            </button>
+          </div>
+
+          {loadError ? (
+            <div style={{ marginBottom: 12, padding: '10px 14px', background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', borderRadius: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink)' }}>
+              {loadError}
+            </div>
+          ) : null}
+
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ height: 52, borderRadius: 5, background: 'var(--pl-bg-soft)', animation: 'pulse 1.5s infinite' }} />
+              ))}
+            </div>
+          ) : filteredHistory.length === 0 ? (
+            <div className="pl-cg-empty">
+              <div className="icon"><Users size={20} /></div>
+              <h4>{historyFilter !== 'todos' ? 'Nada neste filtro ainda.' : 'Nenhuma indicação registrada — seu link está pronto no topo.'}</h4>
+              <p>Dica: mande o link direto; amigos não precisam digitar o código à mão.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {filteredHistory.map((invite) => (
+                <div key={invite.id} style={{
+                  padding: '10px 14px',
+                  background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule)',
+                  borderRadius: 5,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{invite.name}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: 10.5, fontWeight: 600, color: 'var(--pl-ink-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+                      {invite.status} · {invite.date}
+                    </p>
+                  </div>
+                  <span style={{
+                    flexShrink: 0, padding: '3px 8px', borderRadius: 3,
+                    background: invite.status === 'Confirmado' ? 'var(--pl-success-soft)' : 'var(--pl-warn-soft)',
+                    color: invite.status === 'Confirmado' ? 'var(--pl-success)' : 'var(--pl-warn)',
+                    fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
+                  }}>
+                    {invite.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="pl-cg-howto">
+            <span className="lab">Como confirma?</span>
+            <p>A indicação aparece como pendente no cadastro e vira confirmada quando o convidado conclui a vinculação do perfil no Papirando.</p>
+            <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
+              Testar meu link <ArrowRight size={12} />
+            </a>
+          </div>
+        </section>
       </div>
     </div>
   );

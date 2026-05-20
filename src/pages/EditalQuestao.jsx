@@ -1,13 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   AlertCircle,
+  Play,
+  LayoutGrid,
+  Layers,
+  FileText,
+  Clock,
+  BarChart2,
+  AlertTriangle,
   BarChart3,
   BookOpen,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Clock3,
+  DownloadCloud,
   ExternalLink,
   FileSearch,
   Filter,
@@ -17,6 +24,7 @@ import {
   Layers3,
   PlayCircle,
   Search,
+  Settings,
   ShieldCheck,
   TrendingUp,
   Trophy,
@@ -482,27 +490,136 @@ export default function EditalQuestao({
   };
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 text-slate-900 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto flex w-full max-w-[1320px] flex-col gap-6">
-        <HeroSection computed={analytics} selectedCourse={selectedCourse} />
+    <div className="pl-app pl-paper-bg-soft pl-edital-shell">
+      {/* ═══ Hero compacto ═══ */}
+      <header className="pl-edital-hero">
+        <div>
+          <div className="lede-row">
+            <div className="pl-hero-icon">
+              <FileText size={18} strokeWidth={1.75} />
+            </div>
+            <span className="pl-eyebrow">Análise de edital</span>
+          </div>
+          <h1>Painel tático do edital<span className="dot">.</span></h1>
+          <p className="subtitle">
+            Tópicos cruzados com histórico de estudo e desempenho em questões — gargalos, revisões e prioridades em um só lugar.
+          </p>
+          {selectedCourse?.plan ? (
+            <p className="course-tag">
+              <span className="lab">Curso</span>
+              <strong>{selectedCourse.plan}</strong>
+            </p>
+          ) : null}
+        </div>
+        <div className="kpis">
+          <div className="kpi success">
+            <span className="lab"><TrendingUp /> Cobertura</span>
+            <span className="val">{analytics.cobertura}%</span>
+          </div>
+          <div className="kpi accent">
+            <span className="lab"><BarChart2 /> Precisão média</span>
+            <span className="val">{analytics.media}%</span>
+          </div>
+          <div className="kpi warn">
+            <span className="lab"><Layers /> Questões</span>
+            <span className="val">{analytics.totalQuestoes}</span>
+          </div>
+          <div className="kpi">
+            <span className="lab"><Clock /> Tempo</span>
+            <span className="val">{formatMinutes(analytics.totalMinutes)}</span>
+          </div>
+        </div>
+      </header>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,260px)_1fr] xl:items-start">
-          <aside className="order-2 min-w-0 space-y-4 xl:order-1 xl:sticky xl:top-6">
-            <SidebarPanel computed={analytics} currentCourseStats={currentCourseStats} nextCriticalTopic={nextCriticalTopic} />
-          </aside>
+      {/* ═══ Toolbar (curso + ações) ═══ */}
+      <div className="pl-edital-toolbar">
+        <div className="left">
+          <span className="lab">Curso / concurso</span>
+          {courseOptions.length > 0 ? (
+            <select
+              value={selectedPlan || ''}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+            >
+              {courseOptions.map((o) => (
+                <option key={o.plan} value={o.plan}>{o.plan}</option>
+              ))}
+            </select>
+          ) : (
+            <span className="meta">Nenhum curso cadastrado</span>
+          )}
+          {selectedCourse?.bancaLabel ? (
+            <span className="meta">{selectedCourse.bancaLabel}</span>
+          ) : null}
+        </div>
+        <div className="actions">
+          {selectedCourse?.editalUrl ? (
+            <a
+              href={selectedCourse.editalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="pl-btn pl-btn-sm"
+            >
+              <DownloadCloud size={13} /> PDF do edital
+            </a>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => onOpenPlanos?.()}
+            className="pl-btn pl-btn-sm"
+          >
+            <Settings size={13} /> Ajustar em Planos
+          </button>
+          {analytics.totalTopicos > 0 ? (
+            <button
+              type="button"
+              onClick={handleEditalAttack}
+              className="pl-btn pl-btn-sm pl-btn-primary"
+            >
+              <Play size={13} /> Atacar crítico
+            </button>
+          ) : null}
+        </div>
+      </div>
 
-          <main className="order-1 min-w-0 space-y-4 xl:order-2 xl:space-y-5">
-            <EditalNavBlock
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              selectedCourse={selectedCourse}
-              courseOptions={courseOptions}
-              selectedPlan={selectedPlan}
-              setSelectedPlan={setSelectedPlan}
-              hasTopics={analytics.totalTopicos > 0}
-              onAttack={handleEditalAttack}
-              onReviewStructure={() => setActiveTab('estrutura')}
-            />
+      {/* ═══ Aviso quando vazio ═══ */}
+      {analytics.totalTopicos === 0 && courseOptions.length > 0 ? (
+        <div className="pl-edital-warn-strip">
+          <AlertTriangle />
+          <span>
+            Edital sem tópicos aqui. Abra <strong>Planos</strong> e confira se este curso tem disciplinas e tópicos ligados ao edital.
+          </span>
+        </div>
+      ) : null}
+
+      {/* ═══ Tabs ═══ */}
+      <nav className="pl-edital-tabs">
+        {[
+          { id: 'visao-geral',  label: 'Visão geral',     icon: LayoutGrid },
+          { id: 'disciplinas',  label: 'Disciplinas',     icon: Layers },
+          { id: 'criticos',     label: 'Pontos críticos', icon: Flame },
+          { id: 'progresso',    label: 'Progresso',       icon: TrendingUp },
+          { id: 'estrutura',    label: 'Estrutura',       icon: BookOpen },
+          { id: 'conquistas',   label: 'Conquistas',      icon: Trophy },
+        ].map((t) => {
+          const Icon = t.icon;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              className={`pl-edital-tab ${activeTab === t.id ? 'active' : ''}`}
+            >
+              <Icon /> {t.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* ═══ Layout main + sidebar ═══ */}
+      <div className="pl-edital-body">
+        <main style={{ minWidth: 0 }}>
+          {/* Filtros (só pra abas que se beneficiam) */}
+          {analytics.totalTopicos > 0 && (activeTab === 'disciplinas' || activeTab === 'visao-geral') ? (
             <Toolbar
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -511,272 +628,137 @@ export default function EditalQuestao({
               showOnlyPending={showOnlyPending}
               setShowOnlyPending={setShowOnlyPending}
             />
-            {analytics.totalTopicos === 0 ? (
-              <EmptyState
-                selectedCourse={selectedCourse}
-                hasEnrolledCourses={courseOptions.length > 0}
-                onOpenPlanos={onOpenPlanos}
-              />
-            ) : (
-              renderMainContent()
-            )}
-          </main>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SidebarPanel({ computed, currentCourseStats, nextCriticalTopic }) {
-  return (
-    <>
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
-            <ShieldCheck size={20} />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Status do edital</p>
-            <h4 className="mt-1 text-base font-semibold tracking-tight text-slate-900">{currentCourseStats.status}</h4>
-          </div>
-        </div>
-        <p className="mt-3 text-xs font-medium leading-relaxed text-slate-500">{currentCourseStats.summary}</p>
-        <div className="mt-4 space-y-2.5">
-          <SidebarMiniMetric label="Cobertura" value={`${computed.cobertura}%`} hint="tópicos concluídos" />
-          <SidebarMiniMetric label="Precisão média" value={`${computed.media}%`} hint="desempenho" />
-          <SidebarMiniMetric label="Sessões" value={`${computed.totalSessions}`} hint="histórico cruzado" />
-        </div>
-      </div>
-
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Ritmo sugerido</p>
-        <div className="mt-3 space-y-2.5">
-          <QuickStep icon={Zap} title="1. Ataque o crítico" description={nextCriticalTopic ? nextCriticalTopic.nome : 'Selecione um curso com tópicos para começar.'} />
-          <QuickStep icon={History} title="2. Revise o histórico" description={`Última atividade: ${computed.lastSeenLabel}.`} />
-          <QuickStep icon={BarChart3} title="3. Releia o painel" description="A fila se reorganiza conforme você conclui e prática." />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function HeroSection({ computed, selectedCourse }) {
-  const planHint = selectedCourse?.nome || selectedCourse?.plan || 'Cadastre um curso em Planos';
-
-  const kpis = useMemo(
-    () => [
-      { icon: TrendingUp, label: 'Cobertura', value: `${computed.cobertura}%`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-      { icon: BarChart3, label: 'Precisao media', value: `${computed.media}%`, color: 'text-blue-600', bg: 'bg-blue-50' },
-      {
-        icon: Layers3,
-        label: 'Questoes',
-        value: String(computed.totalQuestoes),
-        color: computed.totalQuestoes === 0 ? 'text-orange-600' : 'text-indigo-600',
-        bg: computed.totalQuestoes === 0 ? 'bg-orange-50' : 'bg-indigo-50',
-      },
-      { icon: Clock3, label: 'Tempo liquido', value: formatMinutes(computed.totalMinutes), color: 'text-violet-600', bg: 'bg-violet-50' },
-    ],
-    [computed.cobertura, computed.media, computed.totalQuestoes, computed.totalMinutes]
-  );
-
-  return (
-    <div className="flex shrink-0 flex-col gap-4 animate-in fade-in duration-500">
-      <PageHeadPremium
-        icon={FileSearch}
-        titleAs="h1"
-        badge={
-          <PageHeadPremiumBadge icon={BookOpen}>
-            Analise de edital
-          </PageHeadPremiumBadge>
-        }
-        title="Painel tatico do edital"
-        subtitle={
-          'Topicos cruzados com historico de estudo e desempenho em questoes — gargalos, revisoes e prioridades em um so lugar. Curso: ' +
-          planHint
-        }
-      />
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {kpis.map(({ icon: Icon, label, value, color, bg }) => (
-          <div key={label} className="section-card flex items-center gap-3 py-3">
-            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${bg}`}>
-              <Icon size={18} className={color} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">{label}</p>
-              <p className={`mt-0.5 text-lg font-bold leading-none ${color}`}>{value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EditalNavBlock({
-  activeTab,
-  setActiveTab,
-  selectedCourse,
-  courseOptions,
-  selectedPlan,
-  setSelectedPlan,
-  hasTopics,
-  onAttack,
-  onReviewStructure,
-}) {
-  const attackLabel =
-    courseOptions.length === 0 ? 'Ir a Planos' : !hasTopics ? 'Completar em Planos' : 'Iniciar ataque';
-
-  const origemResumo =
-    selectedCourse?.origem === 'catalogo'
-      ? 'Importado'
-      : selectedCourse?.origem === 'ia'
-        ? 'IA'
-        : 'Seu cadastro';
-
-  return (
-    <div className="rounded-[28px] border border-slate-200/90 bg-white p-3 shadow-[0_12px_40px_rgba(15,23,42,0.07)] ring-1 ring-slate-900/[0.03] md:p-4">
-      <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Navegação</p>
-      <div className="custom-scrollbar flex flex-wrap gap-1.5 gap-y-2 overflow-x-auto pb-0.5 md:flex-nowrap md:gap-2">
-        {TAB_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveTab(item.id)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-2 text-[11px] font-bold transition sm:gap-2 sm:px-3 sm:text-xs md:text-sm ${
-                isActive ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50/80 text-slate-600 hover:border-blue-100 hover:bg-blue-50/50 hover:text-blue-700'
-              }`}
-            >
-              <Icon size={15} className="shrink-0 opacity-90 sm:h-4 sm:w-4" />
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="my-3 h-px bg-slate-100" />
-
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch lg:justify-between lg:gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div className="min-w-0 sm:max-w-[min(100%,22rem)] sm:pr-2">
-              <label className="block text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                Plano / concurso
-              </label>
-              <p className="mt-0.5 truncate text-[10px] font-medium leading-snug text-slate-600 sm:text-[11px]">
-                {(selectedCourse?.banca || 'A definir')} · {origemResumo}
-              </p>
-            </div>
-            <div className="relative w-full shrink-0 sm:w-auto sm:min-w-[11rem] sm:max-w-[min(100%,20rem)]">
-              <select
-                value={courseOptions.length === 0 ? '' : selectedPlan}
-                onChange={(event) => setSelectedPlan(event.target.value)}
-                disabled={courseOptions.length === 0}
-                className="w-full cursor-pointer appearance-none rounded-xl border border-blue-100 bg-blue-50/90 py-2 pl-3 pr-9 text-xs font-bold text-slate-800 shadow-sm outline-none transition hover:border-blue-200 hover:bg-blue-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
-                aria-label="Selecionar curso cadastrado em Planos"
-              >
-                {courseOptions.length === 0 ? (
-                  <option value="">Nenhum curso em Planos</option>
-                ) : (
-                  courseOptions.map((item) => (
-                    <option key={item.id} value={item.plan}>
-                      {item.nome}
-                    </option>
-                  ))
-                )}
-              </select>
-              <ChevronDown
-                size={15}
-                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-600 opacity-80"
-                aria-hidden
-              />
-            </div>
-          </div>
-
-          {selectedCourse?.editalUrl ? (
-            <div className="flex flex-wrap items-center gap-1.5 sm:pl-1">
-              <a
-                href={selectedCourse.editalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[10px] font-bold text-slate-600 shadow-sm hover:border-blue-200 hover:text-blue-700 sm:text-xs"
-              >
-                <ExternalLink size={12} className="shrink-0 sm:h-3.5 sm:w-3.5" />
-                PDF
-              </a>
-            </div>
           ) : null}
-        </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
-          <button
-            type="button"
-            onClick={onAttack}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-[11px] font-bold text-white shadow-sm transition hover:bg-blue-700 sm:gap-2 sm:px-3.5 sm:text-sm"
-          >
-            <PlayCircle size={15} className="shrink-0 sm:h-[17px] sm:w-[17px]" />
-            {attackLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onReviewStructure}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50/80 hover:text-blue-800 sm:gap-2 sm:text-sm"
-          >
-            <Layers3 size={15} className="shrink-0 sm:h-[17px] sm:w-[17px]" />
-            Estrutura
-          </button>
-        </div>
+          {analytics.totalTopicos === 0 ? (
+            <div className="pl-edital-empty">
+              <div className="pl-edital-empty-icon"><BookOpen /></div>
+              <h3>
+                {courseOptions.length === 0
+                  ? 'Nenhum curso cadastrado ainda.'
+                  : `Ainda não há tópicos para ${selectedCourse?.plan || 'este edital'}.`}
+              </h3>
+              <p>
+                {courseOptions.length === 0
+                  ? 'Cadastre um curso em Planos para começar a analisar o edital com disciplinas e tópicos.'
+                  : 'Abra Planos para conferir as disciplinas e estrutura desse curso. Quando os tópicos estiverem ligados, eles aparecem aqui pra acompanhar.'}
+              </p>
+              <div className="actions">
+                <button
+                  type="button"
+                  onClick={() => onOpenPlanos?.()}
+                  className="pl-btn pl-btn-primary"
+                >
+                  <Settings size={14} /> Ajustar em Planos
+                </button>
+                {selectedCourse?.editalUrl ? (
+                  <a
+                    href={selectedCourse.editalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="pl-btn"
+                  >
+                    <DownloadCloud size={14} /> Abrir edital (PDF)
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            renderMainContent()
+          )}
+        </main>
+
+        {/* Sidebar: status consolidado */}
+        <aside>
+          <div className="pl-edital-status">
+            <div>
+              <span className="eyebrow">Status do edital</span>
+              <h3 className={`status-h ${
+                analytics.criticos.length >= 8 ? 'danger' :
+                analytics.criticos.length >= 4 ? 'warn' : ''
+              }`}>
+                {currentCourseStats.status}
+              </h3>
+              <p className="summary">{currentCourseStats.summary}</p>
+            </div>
+
+            {analytics.lastSeenLabel ? (
+              <div className="last-seen">
+                <span className="lab">Última sessão</span>
+                <span className="val">{analytics.lastSeenLabel}</span>
+              </div>
+            ) : null}
+
+            <div className="sugg">
+              <span className="lab"><Flame /> Ritmo sugerido</span>
+              {nextCriticalTopic ? (
+                <>
+                  <h4>Ataque {nextCriticalTopic.nome}</h4>
+                  <p>
+                    {nextCriticalTopic.disciplinaNome} · pressão {nextCriticalTopic.pressureScore}/100. Faça uma rodada curta de questões pra subir a precisão.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handlePracticeTopic(nextCriticalTopic)}
+                    className="pl-btn pl-btn-primary pl-btn-sm"
+                  >
+                    <Play size={13} /> Treinar agora
+                  </button>
+                </>
+              ) : analytics.totalTopicos === 0 ? (
+                <>
+                  <h4>Configure o curso</h4>
+                  <p>Sem tópicos no edital ainda. Comece definindo as disciplinas em Planos.</p>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPlanos?.()}
+                    className="pl-btn pl-btn-primary pl-btn-sm"
+                  >
+                    <Settings size={13} /> Abrir Planos
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h4>Mantenha o ritmo</h4>
+                  <p>Sem tópicos críticos no momento. Use a aba "Disciplinas" pra revisar a base.</p>
+                </>
+              )}
+            </div>
+          </div>
+        </aside>
       </div>
-
-      {selectedCourse && !hasTopics ? (
-        <p className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-[11px] font-medium leading-snug text-amber-900">
-          <strong className="font-semibold">Edital sem tópicos aqui:</strong> abra <strong>Planos</strong> e confira se este curso tem disciplinas e tópicos ligados ao edital.
-        </p>
-      ) : null}
     </div>
   );
 }
 
 function Toolbar({ searchTerm, setSearchTerm, priorityFilter, setPriorityFilter, showOnlyPending, setShowOnlyPending }) {
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-5">
-      <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
-        <div className="relative">
-          <Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Buscar disciplina, tópico ou ponto vulnerável"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-600 focus:bg-white"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-          <Filter size={16} className="shrink-0 text-slate-400" />
-          <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm font-bold text-slate-700 outline-none">
-            <option value="todas">Todas as prioridades</option>
-            <option value="altissima">Altíssima</option>
-            <option value="alta">Alta</option>
-            <option value="media">Média</option>
-            <option value="baixa">Baixa</option>
-          </select>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowOnlyPending((prev) => !prev)}
-          className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${showOnlyPending ? 'bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
-        >
-          {showOnlyPending ? 'Somente pendentes' : 'Mostrar pendentes'}
-        </button>
+    <div className="pl-edital-filters">
+      <div className="search">
+        <Search />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar disciplina, tópico ou ponto vulnerável…"
+        />
       </div>
-    </section>
+      <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
+        <option value="todas">Todas as prioridades</option>
+        <option value="alta">Prioridade alta</option>
+        <option value="media">Prioridade média</option>
+        <option value="baixa">Prioridade baixa</option>
+      </select>
+      <button
+        type="button"
+        onClick={() => setShowOnlyPending((v) => !v)}
+        className={`pending ${showOnlyPending ? 'on' : ''}`}
+      >
+        {showOnlyPending ? 'Mostrando pendentes' : 'Mostrar pendentes'}
+      </button>
+    </div>
   );
 }
-
 function OverviewSection({ computed, disciplinas, onOpenDiscipline, onOpenHistory, onPracticeTopic, onRegisterStudy, setActiveTab }) {
   const topDisciplinas = [...disciplinas].sort((first, second) => first.avg - second.avg).slice(0, 4);
 

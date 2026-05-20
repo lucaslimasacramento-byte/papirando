@@ -14,12 +14,19 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import PageHeadPremium from '../components/PageHeadPremium';
 import { buildContestForRole, CONTEST_STATUS_LABELS, CONTEST_STATUS_OPTIONS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
-import { getContestAreaBackground } from '../lib/contestAreaTheme';
+import { getAreaToken } from '../lib/areaTokens';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
+const STATUS_TONE_MAP = {
+  edital_publicado: 'accent',
+  homologado: 'success',
+  previsto: 'highlight',
+  encerrado: 'neutral',
+  inscricoes_abertas: 'success',
+  prova_marcada: 'accent',
+};
 
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
@@ -231,26 +238,20 @@ export default function ConcursosDisponiveis({
     () => new Set(groupedCatalog.map((item) => item.area || 'Geral')).size,
     [groupedCatalog]
   );
-  const recommendationBuckets = useMemo(() => {
-    const buckets = [];
-    if (smartSections.proximosDaProva.length > 0) {
-      buckets.push({
-        id: 'provas',
-        title: 'Provas mais próximas',
-        emptyText: 'Os concursos com data definida vão aparecer aqui.',
-        items: smartSections.proximosDaProva,
-      });
-    }
-    if (smartSections.jaEmAndamento.length > 0) {
-      buckets.push({
-        id: 'andamento',
-        title: 'Já em andamento',
-        emptyText: 'Quando você importar concursos, eles passam a aparecer aqui.',
-        items: smartSections.jaEmAndamento,
-      });
-    }
-    return buckets;
-  }, [smartSections]);
+  const recommendationBuckets = useMemo(() => [
+    {
+      id: 'recomendado',
+      title: 'Recomendado',
+      emptyText: 'Marque concursos como favoritos ou interessados para receber recomendacoes aqui.',
+      items: smartSections.recomendados.length > 0 ? smartSections.recomendados : smartSections.proximosDaProva,
+    },
+    {
+      id: 'andamento',
+      title: 'Ja em andamento',
+      emptyText: 'Quando voce importar concursos, eles passam a aparecer aqui.',
+      items: smartSections.jaEmAndamento,
+    },
+  ], [smartSections]);
 
   const toggleArea = (area) => {
     if (area === 'Todas') {
@@ -288,375 +289,120 @@ export default function ConcursosDisponiveis({
   };
 
   return (
-    <div className="page-shell !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        className="lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={Compass}
-        titleAs="h1"
-        title="Concursos disponíveis"
-        subtitle="Encontre concursos por área, banca, cargo ou data de prova e importe os mais relevantes para o seu painel."
-        leadingClassName="lg:max-w-[calc(100%-18rem)] xl:max-w-[52rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[17rem] lg:self-center"
-        trailingClassName="xl:max-w-none xl:flex-none"
-        trailing={
-          <div className="flex w-full flex-wrap items-center justify-start gap-2 text-xs font-semibold text-slate-200 sm:w-auto sm:justify-end sm:text-[13px]">
-            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
-              {totalPublicados} publicados
-            </span>
-            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
-              {totalAreas} áreas
-            </span>
-          </div>
-        }
-      />
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <ConcursosHeader publicados={totalPublicados} areas={totalAreas} />
 
-      <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="relative max-w-xl flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por concurso, banca, cargo ou área..."
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-              />
-            </div>
+        <ConcursosFilters
+          query={query}
+          setQuery={setQuery}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          sortMode={sortMode}
+          setSortMode={setSortMode}
+          statusFiltro={statusFiltro}
+          setStatusFiltro={setStatusFiltro}
+          areaStats={areaStats}
+          areasSelecionadas={areasSelecionadas}
+          toggleArea={toggleArea}
+          onClear={() => {
+            setQuery('');
+            setStatusFiltro('Todos');
+            setSortMode('relevancia');
+            setAreasSelecionadas(['Todas']);
+          }}
+          showClear={Boolean(query || statusFiltro !== 'Todos' || (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas')))}
+        />
 
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center rounded-xl border border-gray-200 bg-white p-1">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('vitrine')}
-                  className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'vitrine' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  Vitrine
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('lista')}
-                  className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'lista' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  Lista
-                </button>
+        {!isAdmin && (
+          <div className="pl-card-paper" style={{ padding: '12px 14px', display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--pl-ink)' }}>
+                {currentCourseCount} de {currentCourseLimit} cursos ocupados
               </div>
-              <FilterSelect
-                value={sortMode}
-                onChange={setSortMode}
-                options={['relevancia', 'prova', 'salario', 'inscricao', 'nome']}
-                renderLabel={(value) => {
-                  if (value === 'relevancia') return 'Ordenar: relevância';
-                  if (value === 'prova') return 'Ordenar: prova mais próxima';
-                  if (value === 'salario') return 'Ordenar: maior salário';
-                  if (value === 'inscricao') return 'Ordenar: menor inscrição';
-                  return 'Ordenar: nome';
-                }}
-              />
-              <FilterSelect
-                value={statusFiltro}
-                onChange={setStatusFiltro}
-                options={STATUS_FILTER_OPTIONS}
-                renderLabel={(value) => (value === 'Todos' ? 'Todos os status' : STATUS_LABELS[value] || value)}
-              />
-              {(query || statusFiltro !== 'Todos' || (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas'))) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery('');
-                    setStatusFiltro('Todos');
-                    setSortMode('relevancia');
-                    setAreasSelecionadas(['Todas']);
-                  }}
-                  className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
-                >
-                  Limpar filtros
-                </button>
-              )}
+              <div style={{ marginTop: 2, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+                {limiteAtingido
+                  ? 'Importacoes bloqueadas ate voce liberar uma vaga.'
+                  : `Voce ainda tem ${remainingCourseSlots} vaga(s) para importar concursos.`}
+              </div>
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-gray-400">
-              <Filter size={14} className="text-gray-400" />
-              Áreas
+            <span className={`pl-tag ${limiteAtingido ? 'pl-tag-warn' : 'pl-tag-success'}`}>
+              {limiteAtingido ? 'Limite atingido' : 'Disponivel'}
             </span>
-            {areaStats.map((item) => (
-              <button
-                key={item.area}
-                type="button"
-                onClick={() => toggleArea(item.area)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
-                  (item.area === 'Todas' && (areasSelecionadas.includes('Todas') || areasSelecionadas.length === 0)) ||
-                  areasSelecionadas.includes(item.area)
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-gray-200 bg-gray-50/70 text-gray-600 hover:border-blue-100 hover:bg-white'
-                }`}
-              >
-                <span>{item.area}</span>
-                <span className="inline-flex min-w-[1.35rem] items-center justify-center rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] leading-none opacity-70">
-                  {item.total}
-                </span>
-              </button>
+          </div>
+        )}
+
+        <section>
+          <div style={{ marginBottom: 12 }}>
+            <div className="pl-eyebrow">Insights</div>
+            <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, color: 'var(--pl-ink)' }}>
+              Onde vale olhar primeiro
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
+            {recommendationBuckets.map((section) => (
+              <RecommendationPanel
+                key={section.id}
+                title={section.title}
+                emptyText={section.emptyText}
+                items={section.items}
+                onOpen={handleOpenContest}
+                formatDateBR={formatDateBR}
+              />
             ))}
           </div>
-
-          {!isAdmin && (
-            <div
-              className={`rounded-2xl border px-4 py-3 ${
-                limiteAtingido ? 'border-amber-200 bg-amber-50' : 'border-blue-100 bg-blue-50/70'
-              }`}
-            >
-              <p className="text-sm font-semibold text-slate-900">
-                {currentCourseCount} de {currentCourseLimit} cursos ocupados
-              </p>
-              <p className="mt-1 text-xs font-semibold text-gray-500">
-                {limiteAtingido
-                  ? 'As importações ficaram bloqueadas até você liberar uma vaga.'
-                  : `Você ainda tem ${remainingCourseSlots} vaga(s) para importar concursos.`}
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {recommendationBuckets.length > 0 && (
-        <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Insights</p>
-              <h3 className="mt-1 text-2xl font-semibold text-slate-900">Onde vale olhar primeiro</h3>
-            </div>
-          </div>
-
-          {recommendationBuckets.length > 0 ? (
-            <div
-              className={`grid gap-4 ${
-                recommendationBuckets.length === 1
-                  ? 'grid-cols-1'
-                  : recommendationBuckets.length === 2
-                    ? 'grid-cols-1 xl:grid-cols-2'
-                    : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
-              }`}
-            >
-              {recommendationBuckets.map((section) => (
-                <RecommendationPanel
-                  key={section.id}
-                  title={section.title}
-                  emptyText={section.emptyText}
-                  items={section.items}
-                  onOpen={handleOpenContest}
-                  formatDateBR={formatDateBR}
-                />
-              ))}
-            </div>
-          ) : null}
         </section>
-      )}
 
-      <div className="space-y-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
         {groupedCatalog.length === 0 ? (
           <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
             Nenhum concurso disponível no momento. Aguarde a equipe adicionar novos editais.
           </section>
         ) : null}
 
-        {displayedGroups.map(([area, contests]) => (
-          <section key={area}>
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
-                  Área
-                </p>
-                <h3 className="mt-1 text-2xl font-semibold text-slate-900">{area}</h3>
-              </div>
-              <span className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-500 shadow-sm">
-                {contests.length} concursos
-              </span>
-            </div>
-
-            {viewMode === 'vitrine' ? (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {contests.map((contest) => {
-                  const cargos = getContestRoles(contest);
-                  const hasMultipleRoles = cargos.length > 1;
-                  const allSubjects = cargos.flatMap((cargo) => cargo.disciplinas || []);
-                  const topicosCount = allSubjects.reduce((acc, subject) => acc + (subject.topicos?.length || 0), 0);
-
-                  return (
-                    <article
-                      key={contest.id}
-                      className="group overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleOpenContest(contest)}
-                        className="block w-full text-left"
-                      >
-                        <div
-                          className="relative flex h-48 items-center justify-center overflow-hidden border-b border-slate-100"
-                          style={{
-                            background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
-                          }}
-                        >
-                          <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
-                          <div className="pointer-events-none absolute -right-8 bottom-2 h-24 w-24 rounded-full bg-emerald-300/10" />
-                          <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 rounded-bl-full border-b border-l border-amber-200/30" />
-                          {contest.imagem_url ? (
-                            <img
-                              src={contest.imagem_url}
-                              alt={contest.nome}
-                              className="relative z-10 max-h-[74%] max-w-[62%] object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.32)] transition-transform duration-300 group-hover:scale-[1.06]"
-                            />
-                          ) : (
-                            <div
-                              className="relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-xl backdrop-blur"
-                              style={{
-                                color: '#fff',
-                              }}
-                            >
-                              <LibraryBig size={56} />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="p-4">
-                          <div className="mb-3 flex flex-wrap items-center gap-2">
-                            <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-                            <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
-                          </div>
-
-                          <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-slate-950">
-                            {contest.nome}
-                          </h4>
-                          <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-gray-500">
-                            {contest.cargo || contest.concurso}
-                          </p>
-                          {hasMultipleRoles && (
-                            <div className="mt-3 flex flex-wrap gap-1.5">
-                              {cargos.slice(0, 3).map((cargo) => (
-                                <span
-                                  key={cargo.id}
-                                  className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-600"
-                                >
-                                  {cargo.nome}
-                                </span>
-                              ))}
-                              {cargos.length > 3 && (
-                                <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">
-                                  +{cargos.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          <p className="mt-2 truncate text-sm font-bold text-slate-600">
-                            {contest.banca || 'Banca a definir'}
-                          </p>
-
-                          <div className="mt-4 grid grid-cols-2 gap-2">
-                            <QuickInfo label="Prova" value={formatDateBR(contest.prova_data)} />
-                            <QuickInfo label={hasMultipleRoles ? 'Salários' : 'Salário'} value={formatCurrencyBR(contest.salario)} tone="green" wide={hasMultipleRoles} />
-                            <QuickInfo label={hasMultipleRoles ? 'Inscrições' : 'Inscrição'} value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" wide={hasMultipleRoles} />
-                            <QuickInfo label="Nível" value={contest.escolaridade || 'A definir'} />
-                            <QuickInfo label={hasMultipleRoles ? 'Vagas totais' : 'Vagas'} value={contest.vagas || 'A definir'} />
-                          </div>
-
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            <MetaCounter label={hasMultipleRoles ? 'Cargos' : 'Disciplinas'} value={hasMultipleRoles ? cargos.length : contest.disciplinas?.length || 0} />
-                            <MetaCounter label={hasMultipleRoles ? 'Tópicos gerais' : 'Tópicos'} value={topicosCount} />
-                          </div>
-                        </div>
-                      </button>
-
-                      <div className="px-4 pb-4">
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenContest(contest)}
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
-                          >
-                            Ver detalhes
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleImport(contest)}
-                            disabled={importingId === contest.id || limiteAtingido}
-                            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
-                          >
-                            {limiteAtingido
-                              ? 'Limite atingido'
-                              : importingId === contest.id
-                                ? 'Importando...'
-                                : hasMultipleRoles
-                                  ? 'Escolher cargo'
-                                  : 'Adicionar aos meus cursos'}
-                            <ArrowRight size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="surface-card overflow-hidden rounded-[22px]">
-                <div className="hidden grid-cols-[2.1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 lg:grid">
-                  <span>Concurso</span>
-                  <span>Banca</span>
-                  <span>Área</span>
-                  <span>Salário</span>
-                  <span>Inscrição</span>
-                  <span>Prova</span>
-                  <span>Ações</span>
+        {displayedGroups.map(([area, contests]) => {
+          const areaToken = getAreaToken(area);
+          return (
+            <section key={area}>
+              <AreaSectionHeader area={areaToken} count={contests.length} />
+              {viewMode === 'vitrine' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, marginTop: 14 }}>
+                  {contests.map((contest) => {
+                    const imported = cursos.some(
+                      (curso) => curso.plano === contest.plano || curso.nome === contest.nome || curso.concurso === contest.concurso
+                    );
+                    return (
+                      <ConcursoCard
+                        key={contest.id}
+                        concurso={contest}
+                        area={areaToken}
+                        imported={imported}
+                        limiteAtingido={limiteAtingido}
+                        importing={importingId === contest.id}
+                        formatDateBR={formatDateBR}
+                        formatCurrencyBR={formatCurrencyBR}
+                        onOpen={() => handleOpenContest(contest)}
+                        onImport={() => handleImport(contest)}
+                      />
+                    );
+                  })}
                 </div>
-
-                <div className="divide-y divide-gray-100">
-                  {contests.map((contest) => (
-                    <div
-                      key={contest.id}
-                      className="grid gap-4 px-5 py-4 lg:grid-cols-[2.1fr_1fr_1fr_1fr_1fr_1fr_1fr] lg:items-center"
-                    >
-                      <button type="button" onClick={() => handleOpenContest(contest)} className="text-left">
-                        <p className="text-base font-semibold text-slate-900">{contest.nome}</p>
-                        <p className="mt-1 text-sm font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
-                      </button>
-
-                      <div className="text-sm font-semibold text-gray-600">{contest.banca || 'A definir'}</div>
-                      <div className="flex flex-wrap gap-2">
-                        <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-                        <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
-                      </div>
-                      <div className="text-sm font-semibold text-emerald-700">{formatCurrencyBR(contest.salario)}</div>
-                      <div className="text-sm font-semibold text-amber-700">{formatCurrencyBR(contest.inscricao_valor)}</div>
-                      <div className="text-sm font-semibold text-blue-700">{formatDateBR(contest.prova_data)}</div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenContest(contest)}
-                          className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-600"
-                        >
-                          Ver detalhes
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleImport(contest)}
-                          disabled={importingId === contest.id || limiteAtingido}
-                          className="rounded-xl bg-[#2563EB] px-3 py-2 text-sm font-bold text-white disabled:opacity-70"
-                        >
-                          {importingId === contest.id ? '...' : 'Adicionar'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </section>
-        ))}
+              ) : (
+                <ListaConcursos
+                  contests={contests}
+                  area={areaToken}
+                  cursos={cursos}
+                  limiteAtingido={limiteAtingido}
+                  importingId={importingId}
+                  formatDateBR={formatDateBR}
+                  formatCurrencyBR={formatCurrencyBR}
+                  onOpen={handleOpenContest}
+                  onImport={handleImport}
+                />
+              )}
+            </section>
+          );
+        })}
 
         {groupedCatalog.length > 0 && displayedGroups.length === 0 && (
           <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
@@ -680,6 +426,311 @@ export default function ConcursosDisponiveis({
           onImport={handleImport}
         />
       )}
+      </div>
+    </div>
+  );
+}
+
+function ConcursosHeader({ publicados, areas }) {
+  return (
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+        <div className="pl-eyebrow">Biblioteca</div>
+        <h1 className="pl-display" style={{ margin: '10px 0 0', fontSize: 56, color: 'var(--pl-ink)' }}>
+          Concursos disponiveis<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h1>
+        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 720, lineHeight: 1.5 }}>
+          Procure por area, banca, cargo ou data de prova. Importe os que valem a pena pro seu painel;
+          o resto a gente <span className="pl-mark-text">papira</span> depois.
+        </p>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <StatTile label="Publicados" value={publicados} />
+        <StatTile label="Areas" value={areas} />
+      </div>
+    </header>
+  );
+}
+
+function StatTile({ label, value }) {
+  return (
+    <div className="pl-card" style={{ minWidth: 118, padding: '12px 14px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 10 }}>{label}</div>
+      <div className="pl-num" style={{ marginTop: 4, fontSize: 28, lineHeight: 1, color: 'var(--pl-ink)' }}>{value}</div>
+    </div>
+  );
+}
+
+function ConcursosFilters({
+  query,
+  setQuery,
+  viewMode,
+  setViewMode,
+  sortMode,
+  setSortMode,
+  statusFiltro,
+  setStatusFiltro,
+  areaStats,
+  areasSelecionadas,
+  toggleArea,
+  onClear,
+  showClear,
+}) {
+  const isAreaActive = (area) =>
+    (area === 'Todas' && (areasSelecionadas.includes('Todas') || areasSelecionadas.length === 0)) ||
+    areasSelecionadas.includes(area);
+
+  return (
+    <section className="pl-card" style={{ padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 360px', height: 38, display: 'flex', alignItems: 'center', gap: 9, padding: '0 12px', borderRadius: 8, background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule)' }}>
+          <Search size={15} style={{ color: 'var(--pl-ink-3)' }} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar por concurso, banca, cargo ou area..."
+            style={{ width: '100%', border: 0, outline: 0, background: 'transparent', fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink)' }}
+          />
+        </div>
+
+        <Segmented value={viewMode} onChange={setViewMode} />
+        <FilterSelect
+          value={sortMode}
+          onChange={setSortMode}
+          options={['relevancia', 'prova', 'salario', 'inscricao', 'nome']}
+          renderLabel={(value) => {
+            if (value === 'relevancia') return 'Ordenar: relevancia';
+            if (value === 'prova') return 'Ordenar: prova';
+            if (value === 'salario') return 'Ordenar: salario';
+            if (value === 'inscricao') return 'Ordenar: inscricao';
+            return 'Ordenar: nome';
+          }}
+        />
+        <FilterSelect
+          value={statusFiltro}
+          onChange={setStatusFiltro}
+          options={STATUS_FILTER_OPTIONS}
+          renderLabel={(value) => (value === 'Todos' ? 'Todos os status' : STATUS_LABELS[value] || value)}
+        />
+        {showClear && (
+          <button type="button" className="pl-btn" onClick={onClear}>
+            <X size={13} /> Limpar
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
+        <span className="pl-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginRight: 2 }}>
+          <Filter size={13} /> Areas
+        </span>
+        {areaStats.map((item) => {
+          const token = item.area === 'Todas' ? null : getAreaToken(item.area);
+          const active = isAreaActive(item.area);
+          return (
+            <AreaFilterChip
+              key={item.area}
+              label={item.area}
+              count={item.total}
+              color={token?.cover}
+              active={active}
+              onClick={() => toggleArea(item.area)}
+            />
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Segmented({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', height: 38, padding: 3, borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-bg-soft)' }}>
+      {['vitrine', 'lista'].map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => onChange(item)}
+          style={{
+            height: 30,
+            padding: '0 12px',
+            border: 0,
+            borderRadius: 6,
+            background: value === item ? 'var(--pl-surface)' : 'transparent',
+            color: value === item ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
+            boxShadow: value === item ? 'var(--pl-sh-low)' : 'none',
+            fontSize: 12.5,
+            fontWeight: 800,
+            cursor: 'pointer',
+            textTransform: 'capitalize',
+          }}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AreaFilterChip({ label, count, color, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        height: 28,
+        padding: '0 10px',
+        borderRadius: 4,
+        border: '1px solid var(--pl-rule-2)',
+        background: active ? 'var(--pl-ink)' : 'transparent',
+        color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: 'pointer',
+      }}
+    >
+      {color && <span style={{ width: 8, height: 8, borderRadius: 2, background: color }} />}
+      {label}
+      <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: active ? 'rgba(243,239,229,0.18)' : 'var(--pl-bg-soft)', fontSize: 10 }}>
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function AreaSectionHeader({ area, count }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <span style={{ width: 10, height: 10, borderRadius: 2, background: area.cover, flexShrink: 0 }} />
+        <div>
+          <div className="pl-eyebrow">Area</div>
+          <h2 style={{ margin: '4px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 29, color: 'var(--pl-ink)' }}>
+            {area.label}
+          </h2>
+        </div>
+      </div>
+      <span className="pl-tag">{count} concursos</span>
+    </div>
+  );
+}
+
+function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, formatDateBR, formatCurrencyBR, onOpen, onImport }) {
+  const cargos = getContestRoles(concurso);
+  const hasMultipleRoles = cargos.length > 1;
+  const allSubjects = cargos.flatMap((cargo) => cargo.disciplinas || []);
+  const topicosCount = allSubjects.reduce((acc, subject) => acc + (subject.topicos?.length || 0), 0);
+  const statusKey = normalizeContestStatus(concurso.status_concurso);
+  const statusTone = STATUS_TONE_MAP[statusKey] || 'accent';
+  const stats = [
+    { label: 'Prova', value: formatDateBR(concurso.prova_data) },
+    { label: hasMultipleRoles ? 'Salarios' : 'Salario', value: formatCurrencyBR(concurso.salario), tone: 'success' },
+    { label: hasMultipleRoles ? 'Inscricoes' : 'Inscricao', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
+    { label: 'Nivel', value: concurso.escolaridade || 'A definir', tone: 'accent' },
+    { label: hasMultipleRoles ? 'Vagas totais' : 'Vagas', value: concurso.vagas || 'A definir' },
+    { label: hasMultipleRoles ? 'Cargos' : 'Disciplinas', value: hasMultipleRoles ? cargos.length : concurso.disciplinas?.length || 0 },
+    { label: hasMultipleRoles ? 'Topicos gerais' : 'Topicos', value: topicosCount },
+  ].filter((item) => item.value !== '' && item.value != null);
+
+  return (
+    <article className="pl-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: 168, position: 'relative', background: `linear-gradient(135deg, ${area.cover} 0%, ${area.coverGlow} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle, ${area.coverGlow} 0%, transparent 70%)`, opacity: 0.5 }} />
+        {concurso.imagem_url ? (
+          <img src={concurso.imagem_url} alt={concurso.nome} style={{ position: 'relative', zIndex: 1, maxWidth: 98, maxHeight: 98, objectFit: 'contain', filter: 'drop-shadow(0 18px 24px rgba(0,0,0,0.32))' }} />
+        ) : (
+          <div style={{ position: 'relative', zIndex: 1, width: 88, height: 88, borderRadius: 18, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.12)', color: '#f3efe5', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+            <LibraryBig size={48} />
+          </div>
+        )}
+        {imported && (
+          <div style={{ position: 'absolute', top: 12, right: 12, padding: '4px 8px', borderRadius: 4, background: 'rgba(243,239,229,0.15)', border: '1px solid rgba(243,239,229,0.20)', color: '#f3efe5', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', backdropFilter: 'blur(4px)' }}>
+            Importado
+          </div>
+        )}
+      </div>
+
+      <div style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <span className="pl-tag" style={{ background: area.chip, color: area.chipInk, textTransform: 'uppercase', fontSize: 10 }}>{area.label}</span>
+          <span className={`pl-tag ${statusTone === 'neutral' ? '' : `pl-tag-${statusTone}`}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>
+            {STATUS_LABELS[statusKey] || 'Previsto'}
+          </span>
+        </div>
+
+        <div>
+          <h3 style={{ margin: 0, fontSize: 20, lineHeight: 1.2, fontWeight: 800, color: 'var(--pl-ink)', letterSpacing: '-0.015em' }}>{concurso.nome}</h3>
+          <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.35, color: 'var(--pl-ink-2)', fontWeight: 600 }}>{concurso.cargo || concurso.concurso}</p>
+        </div>
+
+        {hasMultipleRoles && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+            {cargos.slice(0, 3).map((cargo) => <span key={cargo.id} className="pl-tag">{cargo.nome}</span>)}
+            {cargos.length > 3 && <span className="pl-tag">+{cargos.length - 3}</span>}
+          </div>
+        )}
+
+        <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 700 }}>{concurso.banca || 'Banca a definir'}</div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {stats.map((item) => <ContestStat key={item.label} {...item} />)}
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
+          <button className="pl-btn pl-btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={onOpen}>Ver detalhes</button>
+          <button className="pl-btn pl-btn-primary pl-btn-sm" style={{ flex: 1, justifyContent: 'center' }} disabled={importing || limiteAtingido} onClick={onImport}>
+            {limiteAtingido ? 'Limite atingido' : importing ? 'Importando...' : hasMultipleRoles ? 'Escolher cargo' : imported ? 'Abrir curso' : 'Adicionar'}
+            <ArrowRight size={13} />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function ContestStat({ label, value, tone }) {
+  const color =
+    tone === 'success' ? 'var(--pl-success)' :
+      tone === 'warn' ? 'var(--pl-warn)' :
+        tone === 'accent' ? 'var(--pl-accent-2)' :
+          'var(--pl-ink)';
+  return (
+    <div style={{ padding: '8px 10px', border: '1px solid var(--pl-rule-2)', borderRadius: 4, background: 'var(--pl-surface-2)', minWidth: 0 }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 800, marginTop: 3, color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
+    </div>
+  );
+}
+
+function ListaConcursos({ contests, area, cursos, limiteAtingido, importingId, formatDateBR, formatCurrencyBR, onOpen, onImport }) {
+  return (
+    <div className="pl-card" style={{ overflow: 'hidden', marginTop: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1.2fr', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-surface-2)' }}>
+        {['Concurso', 'Banca', 'Area', 'Salario', 'Prova', 'Acoes'].map((label) => <span key={label} className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>)}
+      </div>
+      {contests.map((contest) => {
+        const imported = cursos.some((curso) => curso.plano === contest.plano || curso.nome === contest.nome || curso.concurso === contest.concurso);
+        return (
+          <div key={contest.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1.2fr', gap: 12, alignItems: 'center', padding: '13px 16px', borderBottom: '1px solid var(--pl-rule)' }}>
+            <button type="button" onClick={() => onOpen(contest)} style={{ border: 0, background: 'transparent', textAlign: 'left', padding: 0, cursor: 'pointer' }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--pl-ink)' }}>{contest.nome}</div>
+              <div style={{ marginTop: 3, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 600 }}>{contest.cargo || contest.concurso}</div>
+            </button>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{contest.banca || 'A definir'}</div>
+            <span className="pl-tag" style={{ width: 'fit-content', background: area.chip, color: area.chipInk }}>{area.label}</span>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--pl-success)' }}>{formatCurrencyBR(contest.salario)}</div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--pl-ink-2)' }}>{formatDateBR(contest.prova_data)}</div>
+            <div style={{ display: 'flex', gap: 7 }}>
+              <button className="pl-btn pl-btn-sm" onClick={() => onOpen(contest)}>Detalhes</button>
+              <button className="pl-btn pl-btn-primary pl-btn-sm" disabled={importingId === contest.id || limiteAtingido} onClick={() => onImport(contest)}>
+                {importingId === contest.id ? '...' : imported ? 'Abrir' : 'Adicionar'}
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -689,7 +740,17 @@ function FilterSelect({ value, onChange, options, renderLabel }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+      style={{
+        height: 38,
+        border: '1px solid var(--pl-rule-strong)',
+        borderRadius: 8,
+        background: 'var(--pl-surface)',
+        color: 'var(--pl-ink)',
+        padding: '0 12px',
+        fontSize: 13,
+        fontWeight: 700,
+        outline: 'none',
+      }}
     >
       {options.map((option) => {
         const optionValue = typeof option === 'string' ? option : option.value;
@@ -707,8 +768,9 @@ function FilterSelect({ value, onChange, options, renderLabel }) {
 }
 
 function AreaBadge({ children }) {
+  const token = getAreaToken(children);
   return (
-    <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+    <span className="pl-tag" style={{ background: token.chip, color: token.chipInk, textTransform: 'uppercase', fontSize: 10 }}>
       {children}
     </span>
   );
@@ -716,7 +778,7 @@ function AreaBadge({ children }) {
 
 function StatusBadge({ children }) {
   return (
-    <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+    <span className="pl-tag pl-tag-success" style={{ textTransform: 'uppercase', fontSize: 10 }}>
       {children}
     </span>
   );
@@ -725,7 +787,7 @@ function StatusBadge({ children }) {
 function InfoPill({ icon: Icon, label }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600">
-      <Icon size={12} className="text-blue-600" />
+      <Icon size={12} style={{ color: 'var(--pl-ink-2)' }} />
       <span className="truncate">{label}</span>
     </div>
   );
@@ -831,6 +893,7 @@ function ContestPreviewModal({
   expandedSubjects,
   onToggleSubject,
 }) {
+  const areaToken = getAreaToken(contest.area || 'Geral');
   const topicosCount = (contest.disciplinas || []).reduce(
     (acc, subject) => acc + (subject.topicos?.length || 0),
     0
@@ -856,7 +919,7 @@ function ContestPreviewModal({
             <div
               className="relative flex h-48 items-center justify-center overflow-hidden rounded-[1.6rem] border border-gray-200"
               style={{
-                background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
+                background: `linear-gradient(135deg, ${areaToken.cover} 0%, ${areaToken.coverGlow} 100%)`,
               }}
             >
               <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
@@ -1008,7 +1071,7 @@ function ContestPreviewModal({
               <button
                 onClick={() => onImport(contest)}
                 disabled={importingId === contest.id || limiteAtingido}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:opacity-70"
+                className="pl-btn pl-btn-primary"
               >
                 {limiteAtingido
                   ? 'Limite atingido'

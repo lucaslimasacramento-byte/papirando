@@ -1,6 +1,7 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   BadgeCheck,
+  Download,
   MessageCircle,
   Pencil,
   Phone,
@@ -17,9 +18,9 @@ import { formatCurrency } from '../lib/adminFinance';
 const CHANNEL_OPTIONS = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'indicacao', label: 'IndicaÃ§Ã£o' },
-  { value: 'trafego_pago', label: 'TrÃ¡fego pago' },
-  { value: 'organico', label: 'OrgÃ¢nico' },
+  { value: 'indicacao', label: 'Indicação' },
+  { value: 'trafego_pago', label: 'Tráfego pago' },
+  { value: 'organico', label: 'Orgânico' },
   { value: 'outro', label: 'Outro' },
 ];
 
@@ -34,20 +35,50 @@ const EMPTY_LEAD = {
   observacao: '',
 };
 
+function exportLeadsCsv(leads) {
+  const headers = ['Nome', 'Contato', 'Canal', 'Interesse', 'Etapa', 'Valor mensal (R$)', 'Observação', 'Cadastrado em'];
+  const rows = leads.map((l) => [
+    l.nome || '',
+    l.contato || '',
+    CHANNEL_OPTIONS.find((c) => c.value === l.canal)?.label || l.canal || '',
+    l.interesse || '',
+    CRM_STAGE_OPTIONS.find((s) => s.value === l.stage)?.label || l.stage || '',
+    String(Number(l.monthly_value || 0).toFixed(2)).replace('.', ','),
+    l.observacao || '',
+    l.created_at ? String(l.created_at).slice(0, 10).split('-').reverse().join('/') : '',
+  ]);
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+    .join('\n');
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `leads_crm_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead, onDeleteLead }) {
   const [form, setForm] = useState(EMPTY_LEAD);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [filterCanal, setFilterCanal] = useState('');
+  const [filterStage, setFilterStage] = useState('');
+
   const crm = useMemo(() => buildCrmSnapshot(leads), [leads]);
 
-  const sortedLeads = useMemo(
-    () =>
-      [...leads].sort((first, second) => {
-        if (first.stage !== second.stage) return String(first.stage).localeCompare(String(second.stage));
-        return String(second.created_at || '').localeCompare(String(first.created_at || ''));
-      }),
-    [leads]
-  );
+  const filteredLeads = useMemo(() => {
+    let list = [...leads];
+    if (filterCanal) list = list.filter((l) => l.canal === filterCanal);
+    if (filterStage) list = list.filter((l) => l.stage === filterStage);
+    return list.sort((a, b) => {
+      if (a.stage !== b.stage) return String(a.stage).localeCompare(String(b.stage));
+      return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+    });
+  }, [leads, filterCanal, filterStage]);
 
   const handleSave = async () => {
     const payload = normalizeLead({
@@ -67,7 +98,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
       setForm(EMPTY_LEAD);
       setFeedback({ type: 'success', message: 'Lead salvo com sucesso.' });
     } catch (error) {
-      setFeedback({ type: 'error', message: error.message || 'NÃ£o foi possÃ­vel salvar o lead.' });
+      setFeedback({ type: 'error', message: error.message || 'Não foi possível salvar o lead.' });
     } finally {
       setSaving(false);
     }
@@ -95,7 +126,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
       if (form.id === lead.id) setForm(EMPTY_LEAD);
       setFeedback({ type: 'success', message: 'Lead removido.' });
     } catch (error) {
-      setFeedback({ type: 'error', message: error.message || 'NÃ£o foi possÃ­vel excluir o lead.' });
+      setFeedback({ type: 'error', message: error.message || 'Não foi possível excluir o lead.' });
     }
   };
 
@@ -173,7 +204,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
             <Field label="Valor mensal potencial">
               <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
-            <Field label="ObservaÃ§Ã£o">
+            <Field label="Observação">
               <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
           </div>
@@ -181,7 +212,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
           <div className="mt-6 flex flex-wrap justify-end gap-3">
             {form.id && (
               <button type="button" onClick={() => setForm(EMPTY_LEAD)} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
-                Cancelar ediÃ§Ã£o
+                Cancelar edição
               </button>
             )}
             <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70">
@@ -192,13 +223,56 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         </section>
 
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Funil comercial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Leads cadastrados</h3>
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Funil comercial</p>
+              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Leads cadastrados</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => exportLeadsCsv(filteredLeads)}
+              disabled={filteredLeads.length === 0}
+              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+            >
+              <Download size={15} />
+              Exportar CSV
+            </button>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-3">
+            <select
+              value={filterCanal}
+              onChange={(e) => setFilterCanal(e.target.value)}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-600 outline-none focus:border-blue-400"
+            >
+              <option value="">Todos os canais</option>
+              {CHANNEL_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+            <select
+              value={filterStage}
+              onChange={(e) => setFilterStage(e.target.value)}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-600 outline-none focus:border-blue-400"
+            >
+              <option value="">Todas as etapas</option>
+              {CRM_STAGE_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+            {(filterCanal || filterStage) && (
+              <button
+                type="button"
+                onClick={() => { setFilterCanal(''); setFilterStage(''); }}
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-50"
+              >
+                Limpar filtros
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
-            {sortedLeads.map((lead) => (
+            {filteredLeads.map((lead) => (
               <div key={lead.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
@@ -209,9 +283,9 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
                       </span>
                     </div>
                     <p className="mt-1 text-sm font-semibold text-gray-500">
-                      {lead.contato || 'Sem contato'} â€¢ {lead.canal} â€¢ {lead.interesse || 'Sem interesse definido'}
+                      {lead.contato || 'Sem contato'} • {CHANNEL_OPTIONS.find((c) => c.value === lead.canal)?.label || lead.canal} • {lead.interesse || 'Sem interesse definido'}
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-emerald-700">{formatCurrency(lead.monthly_value || 0)} / mÃªs</p>
+                    <p className="mt-2 text-sm font-semibold text-emerald-700">{formatCurrency(lead.monthly_value || 0)} / mês</p>
                     {lead.observacao && <p className="mt-2 text-sm font-medium text-gray-500">{lead.observacao}</p>}
                   </div>
 
@@ -229,9 +303,11 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
               </div>
             ))}
 
-            {sortedLeads.length === 0 && (
+            {filteredLeads.length === 0 && (
               <div className="rounded-[1.5rem] border border-dashed border-gray-200 bg-white px-6 py-10 text-center text-sm font-semibold text-gray-500">
-                Nenhum lead cadastrado ainda. Comece registrando os interessados que chegarem por WhatsApp, Instagram ou indicaÃ§Ã£o.
+                {leads.length === 0
+                  ? 'Nenhum lead cadastrado ainda. Comece registrando os interessados que chegarem por WhatsApp, Instagram ou indicação.'
+                  : 'Nenhum lead corresponde aos filtros selecionados.'}
               </div>
             )}
           </div>
@@ -261,5 +337,3 @@ function Field({ label, children }) {
     </div>
   );
 }
-
-

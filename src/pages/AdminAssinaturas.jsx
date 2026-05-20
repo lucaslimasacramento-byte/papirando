@@ -1,15 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Check,
   CreditCard,
   Loader2,
   Plus,
   RefreshCw,
+  Search,
   ShieldCheck,
   X,
 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
-import { adminCreateManualSubscription } from '../lib/subscriptionApi';
+import { adminCreateManualSubscription, loadAllSubscriptions } from '../lib/subscriptionApi';
 import { supabase as supabaseClient } from '../lib/supabase';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -39,8 +40,10 @@ function formatDate(iso) {
 
 export default function AdminAssinaturas() {
   const [rows, setRows] = useState([]);
+  const [emailMap, setEmailMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
 
   // Form para criar assinatura manual
   const [showForm, setShowForm] = useState(false);
@@ -54,17 +57,22 @@ export default function AdminAssinaturas() {
     setLoading(true);
     setError('');
     try {
-      // Admin view — vê todas via service role ou RLS is_app_admin
-      const { data, error: err } = await supabaseClient
-        .from('subscriptions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(500);
+      const subs = await loadAllSubscriptions();
+      setRows(subs);
 
-      if (err) throw err;
-      setRows(data || []);
+      // Enrich with emails from profiles (batch)
+      const userIds = [...new Set(subs.map((s) => s.user_id).filter(Boolean))];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabaseClient
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+        if (profiles) {
+          setEmailMap(Object.fromEntries(profiles.map((p) => [p.id, p.email || ''])));
+        }
+      }
     } catch (e) {
-      setError(e?.message || 'Nao foi possivel carregar assinaturas.');
+      setError(e?.message || 'Não foi possível carregar assinaturas.');
     } finally {
       setLoading(false);
     }
@@ -140,6 +148,15 @@ export default function AdminAssinaturas() {
     }
   };
 
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const email = (emailMap[r.user_id] || '').toLowerCase();
+      return email.includes(q) || (r.user_id || '').toLowerCase().includes(q);
+    });
+  }, [rows, emailMap, search]);
+
   // Contadores
   const activeCount = rows.filter((r) => ['active', 'trialing'].includes(r.status)).length;
   const eliteCount = rows.filter((r) => r.plan_name === 'elite').length;
@@ -195,6 +212,16 @@ export default function AdminAssinaturas() {
             {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
             Atualizar
           </button>
+          <div className="relative ml-auto">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por e-mail..."
+              className="rounded-xl border border-slate-200 bg-white py-2.5 pl-8 pr-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 w-56"
+            />
+          </div>
         </div>
 
         {/* Form nova assinatura manual */}
@@ -273,7 +300,7 @@ export default function AdminAssinaturas() {
         {/* Tabela */}
         <div className="section-card space-y-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            Lista ({rows.length})
+            Lista ({filteredRows.length}{search ? ` de ${rows.length}` : ''})
           </p>
 
           {loading ? (
@@ -281,9 +308,9 @@ export default function AdminAssinaturas() {
               <Loader2 size={18} className="animate-spin text-blue-700" />
               Carregando...
             </div>
-          ) : rows.length === 0 ? (
+          ) : filteredRows.length === 0 ? (
             <p className="py-8 text-center text-sm font-medium text-slate-500">
-              Nenhuma assinatura ainda.
+              {rows.length === 0 ? 'Nenhuma assinatura ainda.' : 'Nenhuma assinatura corresponde à busca.'}
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -298,11 +325,11 @@ export default function AdminAssinaturas() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {rows.map((row) => (
+                  {filteredRows.map((row) => (
                     <tr key={row.id} className="hover:bg-slate-50/60">
                       <td className="py-3 pr-4">
-                        <span className="max-w-[180px] truncate block text-xs font-semibold text-slate-700">
-                          {row.user_id}
+                        <span className="max-w-[200px] truncate block text-xs font-semibold text-slate-700">
+                          {emailMap[row.user_id] || row.user_id}
                         </span>
                         {row.stripe_customer_id ? (
                           <span className="text-[10px] text-slate-400">{row.stripe_customer_id}</span>

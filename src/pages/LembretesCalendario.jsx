@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlarmClock,
   CalendarDays,
@@ -8,13 +8,17 @@ import {
   Clock,
   Eye,
   ExternalLink,
+  Filter,
   Plus,
+  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
-import PageHeadPremium from '../components/PageHeadPremium';
 import { buildWeeklyStudyPlan } from '../lib/weeklyPlanner';
 import { supabase } from '../lib/supabase';
+import { getBrazilHolidays } from '../services/brasilApi';
+import { getAreaToken } from '../lib/areaTokens';
+import { generateDailyNote } from '../lib/aiClient';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -34,13 +38,22 @@ const MONTH_NAMES = [
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const WEEKDAY_IDS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 const STUDY_EVENT_COLORS = {
-  Sessão: '#CCE5FF',
-  Revisão: '#BAFFC9',
-  Questões: '#FFDFBA',
+  Sessao: '#CCE5FF',
+  Revisao: '#BAFFC9',
+  Questoes: '#FFDFBA',
   Ciclo: '#E8DAEF',
   Concurso: '#EAF2F8',
   Lembrete: '#FDEBD0',
+  Feriado: '#DCFCE7',
 };
+
+const FALLBACK_MOTIVATIONAL_QUOTES = [
+  'Pequenos avanços diários constroem grandes conquistas.',
+  'Consistência tranquila vence a pressa barulhenta.',
+  'Hoje é dia de proteger o foco e deixar o próximo passo mais leve.',
+  'Um bloco bem feito já muda a direção da semana.',
+  'A aprovação gosta de quem volta para a mesa com calma.',
+];
 
 export default function LembretesCalendario({
   notifications = [],
@@ -72,7 +85,9 @@ export default function LembretesCalendario({
     concursos: true,
     lembretes: true,
     estudos: true,
+    feriados: true,
   });
+  const [holidaysByYear, setHolidaysByYear] = useState({});
   const [reminderModalOpen, setReminderModalOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
   const [dailyAgendaDate, setDailyAgendaDate] = useState('');
@@ -121,6 +136,10 @@ export default function LembretesCalendario({
         .map((day) => new Date(calendarDate.getFullYear(), calendarDate.getMonth(), Number(day))),
     [calendarDate, currentMonthGrid]
   );
+  const visibleYears = useMemo(() => {
+    const dates = calendarViewMode === 'mes' ? currentMonthDates : currentWeek;
+    return [...new Set(dates.map((date) => date.getFullYear()))];
+  }, [calendarViewMode, currentMonthDates, currentWeek]);
 
   const datedContestEvents = useMemo(
     () =>
@@ -189,6 +208,56 @@ export default function LembretesCalendario({
     });
   }, [calendarViewMode, currentMonthDates, currentWeek, weeklyAvailability, activeCycle]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadVisibleHolidays() {
+      const missingYears = visibleYears.filter((year) => !holidaysByYear[year]);
+      if (missingYears.length === 0) return;
+
+      const entries = await Promise.all(
+        missingYears.map(async (year) => {
+          try {
+            return [year, await getBrazilHolidays(year)];
+          } catch (error) {
+            console.warn('[BrasilAPI] Falha ao carregar feriados:', year, error?.message || error);
+            return [year, []];
+          }
+        })
+      );
+
+      if (!cancelled) {
+        setHolidaysByYear((prev) => ({
+          ...prev,
+          ...Object.fromEntries(entries),
+        }));
+      }
+    }
+
+    loadVisibleHolidays();
+    return () => {
+      cancelled = true;
+    };
+  }, [visibleYears, holidaysByYear]);
+
+  const holidayEvents = useMemo(() => {
+    const dates = calendarViewMode === 'mes' ? currentMonthDates : currentWeek;
+    const visibleDateKeys = new Set(dates.map(toDateKey));
+    return visibleYears.flatMap((year) =>
+      (holidaysByYear[year] || [])
+        .filter((holiday) => visibleDateKeys.has(holiday.date))
+        .map((holiday) => ({
+          id: `holiday-${holiday.date}-${holiday.name}`,
+          titulo: holiday.name,
+          data: holiday.date,
+          hora: 'Feriado nacional',
+          tipo: 'Feriado',
+          cor: STUDY_EVENT_COLORS.Feriado,
+          detail: 'BrasilAPI Â· feriado nacional',
+        }))
+    );
+  }, [calendarViewMode, currentMonthDates, currentWeek, holidaysByYear, visibleYears]);
+
   const calendarEvents = useMemo(() => {
     const scheduleEvents =
       showStudySchedule && calendarLayers.estudos
@@ -200,6 +269,7 @@ export default function LembretesCalendario({
     return [
       ...(calendarLayers.concursos ? datedContestEvents : []),
       ...(calendarLayers.lembretes ? manualReminderEvents : []),
+      ...(calendarLayers.feriados ? holidayEvents : []),
       ...scheduleEvents,
     ];
   }, [
@@ -210,6 +280,7 @@ export default function LembretesCalendario({
     fixedStudyEvents,
     datedContestEvents,
     manualReminderEvents,
+    holidayEvents,
   ]);
 
   const contestEventCount = useMemo(
@@ -223,7 +294,12 @@ export default function LembretesCalendario({
   );
 
   const studyEventCount = useMemo(
-    () => calendarEvents.filter((event) => event.tipo !== 'Concurso' && event.tipo !== 'Lembrete').length,
+    () => calendarEvents.filter((event) => event.tipo !== 'Concurso' && event.tipo !== 'Lembrete' && event.tipo !== 'Feriado').length,
+    [calendarEvents]
+  );
+
+  const holidayEventCount = useMemo(
+    () => calendarEvents.filter((event) => event.tipo === 'Feriado').length,
     [calendarEvents]
   );
 
@@ -361,219 +437,36 @@ export default function LembretesCalendario({
   }
 
   return (
-    <div className="page-shell pb-10 !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        className="lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={AlarmClock}
-        title="Lembretes e calendário"
-        subtitle="Visualize alertas, organize pendências e acompanhe provas no calendário unificado."
-        leadingClassName="lg:max-w-[calc(100%-21rem)] xl:max-w-[52rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[20rem] lg:self-center"
-        trailing={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-slate-400">Alertas ativos</span>
-              <span className="text-sm font-semibold tabular-nums text-white">{notifications.length}</span>
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-slate-400">Provas no radar</span>
-              <span className="text-sm font-semibold tabular-nums text-white">{notificationStats.provas}</span>
-            </span>
-          </div>
-        }
+    <div className="pl-paper-bg-soft pl-lembretes-page">
+      <LembretesHeader alertasAtivos={notifications.length} provasNoRadar={notificationStats.provas} />
+
+      <LembretesFilters
+        value={filter}
+        onChange={setFilter}
+        counts={{
+          todos: notifications.length,
+          prova: notificationStats.provas,
+          task: notificationStats.pendencias,
+          status: notificationStats.status,
+        }}
+        onNovo={openNewReminder}
+        onCalendario={() => setCalendarOpen(true)}
       />
 
-      <section className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="soft-accent px-5 py-3 sm:px-6 lg:px-8">
-            <div className="flex min-h-10 flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
-              <div className="flex shrink-0 items-center gap-1.5">
-                <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Filtrar
-                </span>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <FilterPill active={filter === 'todos'} onClick={() => setFilter('todos')}>
-                    Todos
-                  </FilterPill>
-                  <FilterPill active={filter === 'prova'} onClick={() => setFilter('prova')}>
-                    Provas
-                  </FilterPill>
-                  <FilterPill active={filter === 'task'} onClick={() => setFilter('task')}>
-                    Pendências
-                  </FilterPill>
-                  <FilterPill active={filter === 'status'} onClick={() => setFilter('status')}>
-                    Status
-                  </FilterPill>
-                </div>
-              </div>
-
-              <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={openNewReminder}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-                >
-                  <Plus size={16} strokeWidth={2} />
-                  Novo lembrete
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCalendarOpen(true)}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-                >
-                  <CalendarDays size={14} />
-                  Abrir calendário
-                </button>
-              </div>
-            </div>
-        </div>
-      </section>
-
-      <div className="grid gap-3 xl:grid-cols-[1.12fr_0.88fr] xl:items-start">
-        <section className="section-card flex flex-col">
-          <div className="mb-3 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Radar ativo</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-900 lg:text-2xl">Próximos lembretes</h3>
-            </div>
-            <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-500">
-              {filteredNotifications.length} itens
-            </span>
-          </div>
-
-          {filteredNotifications.length === 0 ? (
-            <EmptyState text="Nenhum lembrete encontrado nesse filtro." />
-          ) : (
-            <div className={`custom-scrollbar space-y-2 pr-1 ${filteredNotifications.length > 3 ? 'max-h-[286px] overflow-y-auto' : ''}`}>
-              {filteredNotifications.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onOpenContest?.(item.contestId)}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        <MiniTone type={item.type} />
-                        {item.date ? <MiniDate date={item.date} /> : null}
-                      </div>
-                      {item.contestName ? (
-                        <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.contestName}</p>
-                      ) : null}
-                      <p className="mt-2 text-base font-semibold text-slate-900">{item.title}</p>
-                      <p className="mt-1 text-sm font-medium leading-relaxed text-gray-500">{item.text}</p>
-                    </div>
-                    <ExternalLink size={16} className="mt-1 shrink-0 text-gray-400" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="section-card">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <CalendarDays size={16} className="text-blue-700" />
-              <h3 className="text-lg font-semibold text-slate-900">Agenda curta</h3>
-            </div>
-            <button
-              type="button"
-              onClick={openNewReminder}
-              className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700"
-            >
-              <Plus size={12} />
-              Adicionar
-            </button>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Hoje</p>
-              <div className="mt-2">
-                <AgendaList
-                  items={todayItems}
-                  fullItems={agendaHoje}
-                  emptyText="Nenhum marco de concurso para hoje."
-                  onOpenContest={onOpenContest}
-                />
-              </div>
-            </div>
-            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Amanhã</p>
-              <div className="mt-2">
-                <AgendaList
-                  items={tomorrowItems}
-                  fullItems={agendaAmanha}
-                  emptyText="Nenhum marco de concurso para amanhã."
-                  onOpenContest={onOpenContest}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section className="section-card flex flex-col">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-emerald-500" />
-            <h3 className="text-lg font-semibold text-slate-900">Histórico e lembretes salvos</h3>
-          </div>
-          <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-500">
-            {(manualReminders || []).length} lembretes manuais
-          </span>
-        </div>
-
-        <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className={`custom-scrollbar space-y-2 pr-1 ${(manualReminders || []).length > 3 ? 'max-h-[286px] overflow-y-auto' : ''}`}>
-            {(manualReminders || []).map((item) => (
-              <div key={item.id} className="rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap gap-2">
-                      <MiniTone type={item.type || 'task'} />
-                      {item.date ? <MiniDate date={item.date} /> : null}
-                    </div>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{item.title}</p>
-                    {item.description ? <p className="mt-1 text-sm font-medium text-gray-500">{item.description}</p> : null}
-                  </div>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => openEditReminder(item)} className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
-                      Editar
-                    </button>
-                    <button type="button" onClick={() => handleDeleteManualReminder(item.id)} className="rounded-lg border border-red-100 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {(manualReminders || []).length === 0 ? <EmptyState text="Nenhum lembrete manual salvo até agora." compact /> : null}
-          </div>
-
-          <div className={`custom-scrollbar space-y-2 pr-1 ${checklistHistory.length > 4 ? 'max-h-[286px] overflow-y-auto' : ''}`}>
-            {checklistHistory.length === 0 ? (
-              <EmptyState text="As ações concluídas dos concursos vão aparecer aqui." compact />
-            ) : (
-              checklistHistory.slice(0, 8).map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onOpenContest?.(item.contestId)}
-                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-left"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-700">{item.label}</p>
-                    <p className="mt-1 text-xs font-semibold text-emerald-800/80">{item.contestName}</p>
-                  </div>
-                  <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
-                </button>
-              ))
-            )}
-          </div>
-        </div>
+      <section className="pl-reminders-layout">
+        <ProximosLembretesCard
+          lembretes={filteredNotifications}
+          contestOptions={contestOptions}
+          onOpenContest={onOpenContest}
+        />
+        <AgendaCurtaCard
+          hoje={todayItems}
+          amanha={tomorrowItems}
+          fullHoje={agendaHoje}
+          fullAmanha={agendaAmanha}
+          onAdicionar={openNewReminder}
+          onOpenContest={onOpenContest}
+        />
       </section>
 
       {calendarOpen ? (
@@ -590,6 +483,7 @@ export default function LembretesCalendario({
           contestEventCount={contestEventCount}
           manualEventCount={manualEventCount}
           studyEventCount={studyEventCount}
+          holidayEventCount={holidayEventCount}
           onOpenContest={onOpenContest}
           onOpenDiscipline={onOpenDiscipline}
           calendarLayers={calendarLayers}
@@ -626,6 +520,364 @@ export default function LembretesCalendario({
   );
 }
 
+function LembretesHeader({ alertasAtivos, provasNoRadar }) {
+  return (
+    <header className="pl-lembretes-hero">
+      <div>
+        <div className="pl-eyebrow">Lembretes</div>
+        <h1 className="pl-display pl-lembretes-title">
+          Lembretes & calendário<span style={{ color: 'var(--pl-ink)' }}>.</span>
+        </h1>
+        <p className="pl-lembretes-subtitle">
+          Visualize alertas, organize pendências e acompanhe provas no calendário unificado.
+        </p>
+      </div>
+      <div className="pl-lembretes-stats">
+        <ReminderStatTile label="Alertas ativos" value={alertasAtivos} color={alertasAtivos > 0 ? 'var(--pl-highlight-ink)' : 'var(--pl-ink)'} />
+        <ReminderStatTile label="Provas no radar" value={provasNoRadar} color="var(--pl-ink)" />
+      </div>
+    </header>
+  );
+}
+
+function ReminderStatTile({ label, value, color }) {
+  return (
+    <div className="pl-reminder-stat">
+      <div className="pl-eyebrow">{label}</div>
+      <div className="pl-num" style={{ color }}>{value}</div>
+    </div>
+  );
+}
+
+function LembretesFilters({ value, onChange, counts, onNovo, onCalendario }) {
+  const filters = [
+    { id: 'todos', label: 'Todos', count: counts.todos },
+    { id: 'prova', label: 'Provas', count: counts.prova },
+    { id: 'task', label: 'Pendências', count: counts.task },
+    { id: 'status', label: 'Status', count: counts.status },
+  ];
+
+  return (
+    <div className="pl-lembretes-filters">
+      <div className="pl-lembretes-filter-label">
+        <Filter size={12} />
+        <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Filtrar</span>
+      </div>
+      {filters.map((item) => (
+        <ReminderFilterChip key={item.id} active={value === item.id} onClick={() => onChange(item.id)} label={item.label} count={item.count} />
+      ))}
+      <div className="pl-lembretes-actions-spacer" />
+      <button className="pl-btn pl-btn-primary pl-btn-sm" onClick={onNovo}><Plus size={12} /> Novo lembrete</button>
+      <button className="pl-btn pl-btn-sm" onClick={onCalendario}><CalendarDays size={12} /> Abrir calendário</button>
+    </div>
+  );
+}
+
+function ReminderFilterChip({ active, onClick, label, count }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        height: 28,
+        padding: '0 10px',
+        borderRadius: 6,
+        border: '1px solid var(--pl-rule-2)',
+        background: active ? 'var(--pl-ink)' : 'rgba(255,255,255,0.58)',
+        color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: 'pointer',
+        transition: 'background .14s ease, border-color .14s ease, transform .14s ease, box-shadow .14s ease',
+      }}
+    >
+      {label}
+      <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: active ? 'rgba(243,239,229,0.18)' : 'var(--pl-bg-soft)', fontSize: 10 }}>
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function ProximosLembretesCard({ lembretes = [], contestOptions = [], onOpenContest }) {
+  return (
+    <div className="pl-card pl-reminders-panel">
+      <CardSectionHeader eyebrow="Radar ativo" title="Próximos lembretes" tag={`${lembretes.length} itens`} />
+      {lembretes.length === 0 ? (
+        <EmptyDashed text="Sem lembretes para esse filtro." />
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {lembretes.map((item) => (
+            <LembreteItem
+              key={item.id}
+              lembrete={item}
+              area={findReminderArea(item, contestOptions)}
+              onOpen={() => item.contestId && onOpenContest?.(item.contestId)}
+            />
+          ))}
+        </div>
+      )}
+      <DailyMotivationNote />
+    </div>
+  );
+}
+
+function DailyMotivationNote() {
+  const [quote, setQuote] = useState(() => getFallbackMotivationalQuote());
+
+  useEffect(() => {
+    let cancelled = false;
+    const todayKey = toDateKey(new Date());
+    const storageKey = `papirando_daily_motivation_${todayKey}`;
+
+    try {
+      const cached = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (cached?.quote) {
+        setQuote(String(cached.quote));
+        return;
+      }
+    } catch {
+      // Cache opcional: se quebrar, a frase local segura a UI.
+    }
+
+    generateDailyNote({
+      date: todayKey,
+      focus: 'agenda, lembretes e rotina de estudos para concurso',
+    })
+      .then((data) => {
+        const nextQuote = String(data?.quote || '').trim();
+        if (!nextQuote || cancelled) return;
+        setQuote(nextQuote);
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({ quote: nextQuote, generatedAt: new Date().toISOString() }));
+        } catch {
+          // Sem problema: a IA pode tentar novamente na próxima sessão.
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setQuote(getFallbackMotivationalQuote(todayKey));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const { lead, emphasis } = splitMotivationalQuote(quote);
+
+  return (
+    <div className="pl-reminder-tip">
+      <span className="pl-reminder-tip-icon"><Sparkles size={16} /></span>
+      <p>
+        {lead}
+        {emphasis ? <> <span className="pl-tip-emphasis">{emphasis}</span></> : null}
+      </p>
+    </div>
+  );
+}
+
+function LembreteItem({ lembrete, area, onOpen }) {
+  const token = getAreaToken(area);
+  const type = normalizeReminderType(lembrete.type);
+  const tagClass = {
+    pendencia: 'pl-tag pl-tag-highlight',
+    prova: 'pl-tag pl-tag-accent',
+    status: 'pl-tag pl-tag-success',
+    alerta: 'pl-tag pl-tag-warn',
+  }[type] || 'pl-tag';
+
+  return (
+    <div className="pl-reminder-item" style={{ borderLeftColor: token.cover }}>
+      <div className="pl-reminder-item-head">
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span className={tagClass} style={{ letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: 10 }}>
+            {getReminderTypeLabel(lembrete.type)}
+          </span>
+        </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span className="pl-reminder-status">{isReminderDueToday(lembrete) ? 'Vence hoje' : 'Em andamento'}</span>
+          <button type="button" onClick={onOpen} className="pl-reminder-open" aria-label="Abrir concurso relacionado">
+            <ExternalLink size={14} />
+          </button>
+        </div>
+      </div>
+      <div>
+        {(lembrete.contestName || area) && (
+          <div style={{ fontSize: 9.5, color: 'var(--pl-ink-3)', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>
+            {lembrete.contestName || token.label}
+          </div>
+        )}
+        <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{lembrete.title}</div>
+        <div style={{ fontSize: 12.5, color: 'var(--pl-ink-2)', fontWeight: 500, marginTop: 3, lineHeight: 1.5 }}>{lembrete.text || lembrete.description || 'Sem detalhe adicional.'}</div>
+      </div>
+    </div>
+  );
+}
+
+function AgendaCurtaCard({ hoje = [], amanha = [], fullHoje = [], fullAmanha = [], onAdicionar, onOpenContest }) {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  return (
+    <div className="pl-card-paper pl-open-agenda">
+      <div className="pl-open-agenda-head">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <CalendarDays size={16} style={{ color: 'var(--pl-ink-2)' }} />
+          <h2>Agenda aberta</h2>
+        </div>
+        <button className="pl-btn-link" style={{ fontSize: 12 }} onClick={onAdicionar}>+ Adicionar marco</button>
+      </div>
+      <div className="pl-agenda-timeline">
+        <AgendaSlot
+          label="Hoje"
+          date={today}
+          items={hoje}
+          fullItems={fullHoje}
+          emptyText="Dia livre no calendário."
+          onOpenContest={onOpenContest}
+        />
+        <AgendaSlot
+          label="Amanhã"
+          date={tomorrow}
+          items={amanha}
+          fullItems={fullAmanha}
+          emptyText="Dia livre no calendário."
+          onOpenContest={onOpenContest}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AgendaSlot({ label, date, items, fullItems, emptyText, onOpenContest }) {
+  return (
+    <div className="pl-agenda-day">
+      <div className="pl-agenda-day-marker" />
+      <div className="pl-agenda-day-body">
+        <div className="pl-agenda-day-title">
+          <span>{label}</span>
+          <small>{formatAgendaLongDate(date)}</small>
+        </div>
+        <AgendaList items={items} fullItems={fullItems} emptyText={emptyText} onOpenContest={onOpenContest} />
+      </div>
+    </div>
+  );
+}
+
+function HistoricoCard({ manuais = [], acoesConcluidas = [], onEdit, onDelete, onOpenContest }) {
+  return (
+    <section className="pl-card" style={{ padding: '20px 22px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <CheckCircle2 size={16} style={{ color: 'var(--pl-success)' }} />
+          <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 23, color: 'var(--pl-ink)' }}>Histórico e lembretes salvos</h2>
+        </div>
+        <span className="pl-tag">{manuais.length} lembretes manuais</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 16 }}>
+        {manuais.length === 0 ? (
+          <EmptyDashed text="Nenhum lembrete manual salvo até agora." />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {manuais.map((item) => (
+              <ManualReminderItem key={item.id} item={item} onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} />
+            ))}
+          </div>
+        )}
+        {acoesConcluidas.length === 0 ? (
+          <EmptyDashed text="As ações concluídas dos concursos vão aparecer aqui." />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {acoesConcluidas.slice(0, 8).map((item) => (
+              <button key={item.id} type="button" onClick={() => onOpenContest?.(item.contestId)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 14px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)', textAlign: 'left', cursor: 'pointer' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--pl-success)' }}>{item.label}</div>
+                  <div style={{ marginTop: 2, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{item.contestName}</div>
+                </div>
+                <CheckCircle2 size={15} style={{ color: 'var(--pl-success)', flexShrink: 0 }} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ManualReminderItem({ item, onEdit, onDelete }) {
+  return (
+    <div style={{ padding: '12px 14px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+        <div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <span className={`pl-tag ${normalizeReminderType(item.type) === 'prova' ? 'pl-tag-accent' : 'pl-tag-highlight'}`}>{getReminderTypeLabel(item.type)}</span>
+            {item.date ? <span className="pl-tag">{formatDateShort(item.date)}</span> : null}
+          </div>
+          <div style={{ marginTop: 8, fontSize: 13.5, fontWeight: 800, color: 'var(--pl-ink)' }}>{item.title}</div>
+          {item.description ? <div style={{ marginTop: 3, fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{item.description}</div> : null}
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button className="pl-btn pl-btn-sm" onClick={onEdit}>Editar</button>
+          <button className="pl-btn pl-btn-sm" onClick={onDelete}><Trash2 size={12} /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardSectionHeader({ eyebrow, title, tag }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+      <div>
+        <div className="pl-eyebrow">{eyebrow}</div>
+        <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 24, color: 'var(--pl-ink)' }}>{title}</h2>
+      </div>
+      <span className="pl-tag">{tag}</span>
+    </div>
+  );
+}
+
+function EmptyDashed({ text }) {
+  return (
+    <div style={{ border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface-2)', borderRadius: 5, padding: 18, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+      {text}
+    </div>
+  );
+}
+
+function normalizeReminderType(type) {
+  if (type === 'task') return 'pendencia';
+  if (type === 'prova') return 'prova';
+  if (type === 'status') return 'status';
+  if (type === 'alerta') return 'alerta';
+  return 'pendencia';
+}
+
+function getReminderTypeLabel(type) {
+  const normalized = normalizeReminderType(type);
+  if (normalized === 'prova') return 'Prova';
+  if (normalized === 'status') return 'Status';
+  if (normalized === 'alerta') return 'Alerta';
+  return 'Pendência';
+}
+
+function findReminderArea(item, contestOptions) {
+  return item.area ||
+    item.contestArea ||
+    contestOptions.find((contest) => contest.id === item.contestId || contest.nome === item.contestName)?.area ||
+    'Outros';
+}
+
+function formatDateShort(value) {
+  const [year, month, day] = String(value || '').split('-');
+  if (year && month && day) return `${day}/${month}`;
+  return value || '';
+}
+
 function FullScreenCalendarModal({
   currentDate,
   setCurrentDate,
@@ -639,6 +891,7 @@ function FullScreenCalendarModal({
   contestEventCount,
   manualEventCount,
   studyEventCount,
+  holidayEventCount,
   onOpenContest,
   onOpenDiscipline,
   calendarLayers,
@@ -713,7 +966,8 @@ function FullScreenCalendarModal({
             <TagPill label={`${events.length} blocos`} color={STUDY_EVENT_COLORS.Concurso} soft />
             <TagPill label={`${contestEventCount} concursos`} color={STUDY_EVENT_COLORS.Concurso} soft />
             <TagPill label={`${manualEventCount} lembretes`} color={STUDY_EVENT_COLORS.Lembrete} soft />
-            <TagPill label={`${studyEventCount} estudos`} color={STUDY_EVENT_COLORS.Sessão} soft />
+            <TagPill label={`${holidayEventCount} feriados`} color={STUDY_EVENT_COLORS.Feriado} soft />
+            <TagPill label={`${studyEventCount} estudos`} color={STUDY_EVENT_COLORS.Sessao} soft />
           </div>
 
           <div className="flex gap-2">
@@ -756,6 +1010,11 @@ function FullScreenCalendarModal({
             label="Cronograma"
             checked={calendarLayers.estudos}
             onChange={() => setCalendarLayers((prev) => ({ ...prev, estudos: !prev.estudos }))}
+          />
+          <CalendarToggle
+            label="Feriados"
+            checked={calendarLayers.feriados}
+            onChange={() => setCalendarLayers((prev) => ({ ...prev, feriados: !prev.feriados }))}
           />
           <CalendarToggle
             label="Mostrar estudos"
@@ -928,7 +1187,7 @@ function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDis
                 className="w-full rounded-xl border border-gray-200 bg-gray-50/70 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/60"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <TagPill label={event.tipo} color={event.cor} soft />
+                  <TagPill label={formatCalendarTypeLabel(event.tipo)} color={event.cor} soft />
                   <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
                     {event.hora}
                   </span>
@@ -1103,7 +1362,7 @@ function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline
                         className="rounded border border-white/40 px-1.5 py-0.5 text-[8px] font-semibold uppercase text-blue-950"
                         style={{ backgroundColor: event.cor }}
                       >
-                        {event.tipo}
+                        {formatCalendarTypeLabel(event.tipo)}
                       </span>
                     </div>
                   </button>
@@ -1181,32 +1440,52 @@ function MiniDate({ date }) {
   );
 }
 
+function formatCalendarTypeLabel(type) {
+  const labelMap = {
+    Sessao: 'Sessão',
+    Revisao: 'Revisão',
+    Questoes: 'Questões',
+  };
+
+  return labelMap[type] || type;
+}
+
 function AgendaList({ items = [], fullItems = [], emptyText, onOpenContest }) {
   const sourceItems = Array.isArray(fullItems) && fullItems.length > 0 ? fullItems : items;
 
   if (sourceItems.length === 0) {
-    return <EmptyState text={emptyText} compact />;
+    return <AgendaEmptyBlock title={emptyText} />;
   }
 
   return (
-    <div className={`custom-scrollbar space-y-2 pr-1 ${sourceItems.length > 3 ? 'max-h-[220px] overflow-y-auto' : ''}`}>
+    <div className={`custom-scrollbar pl-agenda-events ${sourceItems.length > 3 ? 'pl-agenda-events-scroll' : ''}`}>
       {sourceItems.map((item, index) => (
         <button
           key={`${item.titulo}-${index}`}
           type="button"
           onClick={() => item.contestId && onOpenContest?.(item.contestId)}
-          className={`w-full rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-left transition-all ${
-            item.contestId ? 'hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60' : ''
-          }`}
+          className="pl-agenda-event"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.horario || 'Agenda'}</p>
-          {item.contestName ? (
-            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.contestName}</p>
-          ) : null}
-          <p className="mt-2 text-sm font-semibold text-slate-900">{item.titulo}</p>
-          {item.detalhe ? <p className="mt-1 text-sm font-medium text-gray-500">{item.detalhe}</p> : null}
+          <span className="pl-agenda-event-dot" />
+          <span className="pl-agenda-event-time">{item.horario || item.hora || 'Agenda'}</span>
+          <span className="pl-agenda-event-copy">
+            <strong>{item.titulo}</strong>
+            <small>{[item.contestName, item.detalhe || item.detail].filter(Boolean).join(' - ') || 'Marco do calendário'}</small>
+          </span>
         </button>
       ))}
+    </div>
+  );
+}
+
+function AgendaEmptyBlock({ title }) {
+  return (
+    <div className="pl-agenda-empty">
+      <span><CalendarDays size={16} /></span>
+      <div>
+        <strong>{title}</strong>
+        <p>Considere encaixar uma revisão leve ou descanso estratégico.</p>
+      </div>
     </div>
   );
 }
@@ -1274,6 +1553,27 @@ function shiftCalendarDate(setDate, currentDate, mode, direction) {
   setDate(next);
 }
 
+function getFallbackMotivationalQuote(seed = toDateKey(new Date())) {
+  const source = String(seed || '');
+  const index = Math.abs([...source].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % FALLBACK_MOTIVATIONAL_QUOTES.length;
+  return FALLBACK_MOTIVATIONAL_QUOTES[index];
+}
+
+function splitMotivationalQuote(quote = '') {
+  const clean = String(quote || '').trim() || getFallbackMotivationalQuote();
+  const words = clean.split(/\s+/).filter(Boolean);
+
+  if (words.length <= 5) {
+    return { lead: clean, emphasis: '' };
+  }
+
+  const emphasisSize = Math.min(3, Math.max(2, Math.floor(words.length / 4)));
+  return {
+    lead: words.slice(0, -emphasisSize).join(' '),
+    emphasis: words.slice(-emphasisSize).join(' '),
+  };
+}
+
 function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
@@ -1283,6 +1583,20 @@ function formatDateBR(value) {
   const [year, month, day] = String(value).split('-');
   if (year && month && day) return `${day}/${month}/${year}`;
   return String(value);
+}
+
+function formatAgendaLongDate(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const formatted = new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(date);
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+function isReminderDueToday(lembrete) {
+  return lembrete?.date && lembrete.date === toDateKey(new Date());
 }
 
 function getWeekdayId(date) {
@@ -1296,9 +1610,9 @@ function getSlotTimeLabel(slotId) {
 }
 
 function getSessionType(session) {
-  if (session?.modeLabel === 'Revisao') return 'Revisão';
-  if (session?.modeLabel === 'Questoes') return 'Questões';
-  return 'Sessão';
+  if (session?.modeLabel === 'Revisao') return 'Revisao';
+  if (session?.modeLabel === 'Questoes') return 'Questoes';
+  return 'Sessao';
 }
 
 function getSessionColor(session, index) {
@@ -1306,8 +1620,8 @@ function getSessionColor(session, index) {
   if (directColor) return directColor;
 
   const type = getSessionType(session);
-  if (type === 'Revisão') return STUDY_EVENT_COLORS.Revisão;
-  if (type === 'Questões') return STUDY_EVENT_COLORS.Questões;
+  if (type === 'Revisao') return STUDY_EVENT_COLORS.Revisao;
+  if (type === 'Questoes') return STUDY_EVENT_COLORS.Questoes;
 
   return ['#CCE5FF', '#D7BAFF', '#FFCCE5', '#BAFFC9', '#FFDFBA', '#EAF2F8'][index % 6];
 }

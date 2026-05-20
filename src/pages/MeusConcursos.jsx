@@ -1,6 +1,5 @@
 import React from 'react';
 import { ArrowRight, CalendarDays, Crown, Heart, Layers3, Target } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function MeusConcursos({
   contests = [],
@@ -12,40 +11,50 @@ export default function MeusConcursos({
   const targetContest = contests.find((item) => item.id === targetContestId) || null;
 
   return (
-    <div className="page-shell">
-      <PageHeadPremium
-        icon={Target}
-        badge={<PageHeadPremiumBadge icon={Target}>Meus concursos</PageHeadPremiumBadge>}
-        title="Seus concursos ativos"
-        subtitle={
-          contests.length > 0
-            ? `${contests.length} concurso(s) na sua base`
-            : 'Importe um concurso para começar'
-        }
-        trailing={(
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
-              {importedCount} importado(s)
-            </span>
-            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
-              {contests.length - importedCount} no radar
-            </span>
-          </div>
-        )}
-      />
+    <div className="pl-app pl-mc-shell">
 
+      {/* ── Cabeçalho editorial ── */}
+      <header className="pl-mc-head">
+        <div className="pl-mc-head-left">
+          <span className="pl-eyebrow">
+            <Target size={12} strokeWidth={2.5} />
+            Meus concursos
+          </span>
+          <h1 className="pl-mc-title">Seus concursos ativos</h1>
+          <p className="pl-mc-subtitle">
+            {contests.length > 0
+              ? `${contests.length} concurso(s) na sua base`
+              : 'Importe um concurso para começar'}
+          </p>
+        </div>
+        <div className="pl-mc-head-stats">
+          <span className="pl-mc-stat">
+            <strong className="tabular-nums">{importedCount}</strong>
+            importado(s)
+          </span>
+          <span className="pl-mc-stat">
+            <strong className="tabular-nums">{contests.length - importedCount}</strong>
+            no radar
+          </span>
+        </div>
+      </header>
+
+      {/* ── Concurso alvo ── */}
       {targetContest && (
-        <section className="section-card soft-accent p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">Concurso alvo</p>
-          <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="pl-mc-target">
+          <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>
+            <Target size={12} strokeWidth={2.5} />
+            Concurso alvo
+          </p>
+          <div className="pl-mc-target-body">
             <div>
-              <h3 className="text-2xl font-semibold text-slate-900">{targetContest.nome}</h3>
-              <p className="mt-1 text-sm font-semibold text-gray-600">
+              <h3 className="pl-mc-target-nome">{targetContest.nome}</h3>
+              <p className="pl-mc-target-cargo">
                 {targetContest.cargo || targetContest.concurso}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <span className="rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-bold text-blue-700">
+            <div className="pl-mc-target-actions">
+              <span className="pl-mc-dias">
                 {targetContest.diasParaProva !== null
                   ? `Faltam ${targetContest.diasParaProva} dia(s)`
                   : 'Sem prova definida'}
@@ -53,7 +62,7 @@ export default function MeusConcursos({
               <button
                 type="button"
                 onClick={() => onOpenContest?.(targetContest.id)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#185FA5] px-4 py-3 text-sm font-semibold text-white hover:bg-[#0C447C]"
+                className="pl-btn pl-btn-primary pl-mc-abrir"
               >
                 Abrir concurso
                 <ArrowRight size={15} />
@@ -63,79 +72,71 @@ export default function MeusConcursos({
         </section>
       )}
 
-      <section className="section-card p-6">
-        <div className="mb-5 flex items-center justify-between gap-4">
+      {/* ── Lista de concursos ── */}
+      <section className="pl-mc-section">
+        <div className="pl-mc-section-head">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Sua base</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Concursos acompanhados</h3>
+            <p className="pl-eyebrow">Sua base</p>
+            <h3 className="pl-mc-section-title">Concursos acompanhados</h3>
           </div>
-          <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-500">
-            {contests.length} concurso(s)
-          </span>
+          <span className="pl-pill pl-pill-muted">{contests.length} concurso(s)</span>
         </div>
 
         {contests.length === 0 ? (
-          <div className="rounded-[1.4rem] border border-dashed border-gray-200 bg-gray-50/70 px-5 py-8 text-sm font-semibold text-gray-500">
+          <div className="pl-mc-empty">
             Seus concursos vão aparecer aqui quando você importar, favoritar ou marcar interesse.
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="pl-mc-grid">
             {contests.map((contest) => (
-              <article key={contest.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
-                <div className="flex flex-wrap gap-2">
+              <article key={contest.id} className="pl-mc-card">
+                <div className="pl-mc-card-tags">
                   {contest.isTarget && <Tag tone="yellow">Alvo</Tag>}
                   {contest.imported && <Tag tone="blue">Importado</Tag>}
                   {contest.favorite && <Tag tone="rose">Favorito</Tag>}
                   {contest.interested && <Tag tone="amber">Interesse</Tag>}
                 </div>
 
-                <h4 className="mt-4 text-lg font-semibold text-slate-900">{contest.nome}</h4>
-                <p className="mt-1 min-h-[40px] text-sm font-semibold text-gray-500">
+                <h4 className="pl-mc-card-nome">{contest.nome}</h4>
+                <p className="pl-mc-card-cargo">
                   {contest.cargo || contest.concurso}
                 </p>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="pl-mc-miniboxes">
                   <MiniBox
-                    icon={<CalendarDays size={14} className="text-blue-600" />}
+                    icon={<CalendarDays size={14} />}
                     label="Prova"
                     value={contest.prova_data ? String(contest.prova_data).split('-').reverse().join('/') : 'A definir'}
                   />
                   <MiniBox
-                    icon={<Layers3 size={14} className="text-blue-600" />}
+                    icon={<Layers3 size={14} />}
                     label="Checklist"
                     value={`${contest.checklistDoneCount} etapa(s)`}
                   />
-                </div>
-
-                <div className="mt-2 grid grid-cols-2 gap-2">
                   <MiniBox
-                    icon={<Crown size={14} className="text-blue-600" />}
+                    icon={<Crown size={14} />}
                     label="Disciplinas"
                     value={String(contest.disciplinas?.length || 0)}
                   />
                   <MiniBox
-                    icon={<Heart size={14} className="text-blue-600" />}
+                    icon={<Heart size={14} />}
                     label="Andamento"
                     value={`${contest.disciplinasIniciadas} iniciada(s)`}
                   />
                 </div>
 
-                <div className="mt-4 flex gap-2">
+                <div className="pl-mc-card-actions">
                   <button
                     type="button"
                     onClick={() => onSetTargetContest?.(contest.id)}
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
-                      contest.isTarget
-                        ? 'border border-yellow-200 bg-yellow-50 text-yellow-700'
-                        : 'border border-slate-200 bg-white text-slate-600'
-                    }`}
+                    className={`pl-mc-alvo-btn ${contest.isTarget ? 'is-target' : ''}`}
                   >
                     {contest.isTarget ? 'Alvo atual' : 'Definir como alvo'}
                   </button>
                   <button
                     type="button"
                     onClick={() => onOpenContest?.(contest.id)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#185FA5] px-4 py-3 text-sm font-semibold text-white hover:bg-[#0C447C]"
+                    className="pl-btn pl-btn-primary pl-mc-abrir"
                   >
                     Abrir
                     <ArrowRight size={15} />
@@ -169,12 +170,12 @@ function Tag({ children, tone = 'blue' }) {
 
 function MiniBox({ icon, label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
-      <div className="flex items-center gap-2">
+    <div>
+      <div className="mb-icon-row">
         {icon}
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+        <p className="mb-label">{label}</p>
       </div>
-      <p className="mt-2 text-sm font-semibold text-blue-900">{value}</p>
+      <p className="mb-value">{value}</p>
     </div>
   );
 }

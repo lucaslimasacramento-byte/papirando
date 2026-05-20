@@ -67,7 +67,7 @@ export default function AdminDashboard({
           supabase.from('profiles').select('id', { count: 'exact', head: true }),
           supabase.from('study_sessions').select('id', { count: 'exact', head: true }).eq('data', today),
           supabase.from('essay_submissions').select('id', { count: 'exact', head: true }),
-          supabase.from('questions').select('id', { count: 'exact', head: true }).eq('is_active', true),
+          supabase.from('questions').select('id', { count: 'exact', head: true }).eq('is_public', true),
         ]);
 
         if (usersError) throw usersError;

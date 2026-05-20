@@ -82,134 +82,41 @@ export default function SimuladosRankingPanel({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-end justify-center px-0 pt-10 pb-0 sm:items-center sm:p-6">
-      <button
-        type="button"
-        aria-label="Fechar ranking"
-        className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px] transition-opacity hover:bg-slate-950/60"
-        onClick={onClose}
-      />
-
-      <div
-        className="relative z-10 flex max-h-[min(92vh,820px)] w-full max-w-2xl flex-col overflow-hidden rounded-t-[1.75rem] border border-slate-200/90 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.18)] sm:max-h-[88vh] sm:rounded-[1.75rem]"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="ranking-dialog-title"
-      >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-blue-50/90 via-white to-transparent" />
-
-        <header className="relative flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-5 pb-4 pt-5 sm:px-7 sm:pb-5 sm:pt-6">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 shadow-sm">
-              <Sparkles size={12} className="text-blue-500" />
-              Papirando
-            </div>
-            <h2 id="ranking-dialog-title" className="page-title mt-2 text-xl tracking-tight text-slate-900 sm:text-2xl">
-              Ranking
-            </h2>
-            <p className="mt-1.5 max-w-md text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">
-              Pontuação oficial: <span className="font-semibold text-slate-700">acertos em questões</span> somados aos{' '}
-              <span className="font-semibold text-slate-700">pontos de redação</span> do seu histórico. Outros usuários
-              aparecem com base nas respostas públicas registradas na plataforma.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50/90 px-3 py-1 text-[11px] font-semibold text-blue-800">
-                <Target size={13} className="text-blue-600" />
-                Suas questões: {selfPreview.questionPts} pts
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-100 bg-violet-50/90 px-3 py-1 text-[11px] font-semibold text-violet-900">
-                <PenLine size={13} className="text-violet-600" />
-                Sua redação: {selfPreview.redacaoPts} pts
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700">
-                <BarChart2 size={13} className="text-slate-500" />
-                Total: {selfPreview.total}
-              </span>
-            </div>
+    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-[#14110d]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+      <button type="button" aria-label="Fechar ranking" className="absolute inset-0" onClick={onClose} />
+      <div className="simulados-modal-shell simulados-ranking-modal" role="dialog" aria-modal="true" aria-labelledby="ranking-dialog-title">
+        <header className="simulados-modal-head">
+          <div>
+            <div className="pl-overline">Comunidade Papirando</div>
+            <h2 id="ranking-dialog-title">Ranking.</h2>
+            <p>Pontuacao oficial: acertos em questoes somados aos pontos de redacao.</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800"
-          >
-            <X size={18} strokeWidth={2} />
-          </button>
+          <button type="button" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
         </header>
 
-        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 sm:px-6 sm:py-4">
+        <div className="simulados-ranking-stats">
+          <span><b>{selfPreview.questionPts}</b>Questoes</span>
+          <span><b>{selfPreview.redacaoPts}</b>Redacao</span>
+          <span className="is-total"><b>{selfPreview.total}</b>Total</span>
+        </div>
+
+        <div className="simulados-ranking-body">
           {loading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-20">
-              <Loader2 className="size-9 animate-spin text-blue-600" strokeWidth={2} />
-              <p className="text-sm font-medium text-slate-500">Carregando perfis oficiais…</p>
-            </div>
+            <div className="simulados-ranking-empty"><Loader2 className="animate-spin" size={28} /><p>Carregando perfis oficiais...</p></div>
           ) : loadError ? (
-            <div className="rounded-2xl border border-rose-100 bg-rose-50/80 px-4 py-6 text-center text-sm font-medium text-rose-800">
-              {loadError}
-            </div>
+            <div className="simulados-ranking-empty"><p>{loadError}</p></div>
           ) : rows.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/90 px-4 py-12 text-center">
-              <Trophy className="mx-auto size-10 text-slate-300" strokeWidth={1.25} />
-              <p className="mt-3 text-sm font-semibold text-slate-700">Nenhuma pontuação registrada ainda</p>
-              <p className="mx-auto mt-2 max-w-xs text-xs font-medium text-slate-500">
-                Responda questões no banco e envie redações corrigidas para entrar no ranking.
-              </p>
-            </div>
+            <div className="simulados-ranking-empty"><Trophy size={34} /><p>Nenhuma pontuacao registrada ainda.</p></div>
           ) : (
-            <ul className="space-y-2 sm:space-y-2.5">
+            <ul className="simulados-ranking-modal-list">
               {rows.map((row) => (
-                <li key={row.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPerson(row)}
-                    className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left shadow-sm transition sm:gap-4 sm:px-4 sm:py-3 ${
-                      row.isSelf
-                        ? 'border-blue-200/90 bg-gradient-to-r from-blue-50/90 via-white to-white ring-1 ring-blue-100/80'
-                        : 'border-slate-100 bg-white hover:border-blue-200/60 hover:shadow-md'
-                    }`}
-                  >
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold tabular-nums sm:h-10 sm:w-10 ${
-                        row.rank === 1
-                          ? 'bg-amber-100 text-amber-900'
-                          : row.rank === 2
-                            ? 'bg-slate-100 text-slate-700'
-                            : row.rank === 3
-                              ? 'bg-orange-100 text-orange-900'
-                              : 'bg-slate-50 text-slate-500'
-                      }`}
-                    >
-                      {row.rank}
-                    </div>
-                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50 shadow-inner sm:h-12 sm:w-12">
-                      <img src={avatarSrc(row)} alt="" className="h-full w-full object-cover" loading="lazy" />
-                      {row.isSelf ? (
-                        <span className="absolute bottom-0 right-0 rounded-tl-md bg-blue-600 px-1 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white">
-                          você
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-slate-900 sm:text-[15px]">{displayNameFromRow(row)}</p>
-                      </div>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium text-slate-500">
-                        <span>Questões {row.questionPoints}</span>
-                        <span className="text-slate-300">·</span>
-                        <span>
-                          Redação {row.isSelf || row.redacaoPoints > 0 ? row.redacaoPoints : '—'}
-                        </span>
-                        {row.plan ? (
-                          <>
-                            <span className="text-slate-300">·</span>
-                            <span className="capitalize">{row.plan}</span>
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-lg font-bold tabular-nums tracking-tight text-slate-900 sm:text-xl">{row.totalScore}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">pts</p>
-                    </div>
+                <li key={row.id} className={row.isSelf ? 'is-self' : ''}>
+                  <button type="button" onClick={() => setSelectedPerson(row)}>
+                    <span className="rank">{String(row.rank).padStart(2, '0')}</span>
+                    <img src={avatarSrc(row)} alt="" loading="lazy" />
+                    <span className="person"><b>{displayNameFromRow(row)}</b><em>Questoes {row.questionPoints} / Redacao {row.isSelf || row.redacaoPoints > 0 ? row.redacaoPoints : '-'}</em></span>
+                    {row.isSelf && <span className="self-badge">VOCE</span>}
+                    <strong>{row.totalScore}</strong>
                   </button>
                 </li>
               ))}
@@ -217,16 +124,11 @@ export default function SimuladosRankingPanel({
           )}
         </div>
 
-        <footer className="relative shrink-0 border-t border-slate-100 bg-slate-50/80 px-5 py-3 text-center sm:px-7">
-          <p className="text-[11px] font-medium text-slate-400">
-            Redação de outros candidatos só entra na conta quando o histórico público estiver disponível para o ranking.
-          </p>
+        <footer className="simulados-modal-footer">
+          <p>Redacao de outros candidatos entra quando o historico publico estiver disponivel.</p>
         </footer>
       </div>
-
-      {selectedPerson ? (
-        <MiniProfileSheet person={selectedPerson} profile={profile} onClose={() => setSelectedPerson(null)} />
-      ) : null}
+      {selectedPerson ? <MiniProfileSheet person={selectedPerson} profile={profile} onClose={() => setSelectedPerson(null)} /> : null}
     </div>
   );
 }

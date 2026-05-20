@@ -12,21 +12,14 @@ import {
   ArrowUpRight,
   Filter,
   BarChart3,
-  TrendingUp,
   BrainCircuit,
   AlertTriangle,
-  Flame,
   Crosshair,
   Layers,
+  Sparkles,
+  Play,
 } from 'lucide-react';
-import PageHeadPremium, {
-  PageHeadPremiumBadge,
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
-} from '../components/PageHeadPremium';
-
-/** Tom primário alinhado ao design system (`btn-primary` = blue-700). */
-const DISCIPLINE_ACCENT_FALLBACK = '#1d4ed8';
+import { getAreaToken } from '../lib/areaTokens';
 
 export default function Disciplinas({
   bancoDisciplinas = [],
@@ -34,7 +27,10 @@ export default function Disciplinas({
   setEditingDiscipline,
   setViewingDiscipline,
   setRegistroEstudoModalOpen,
+  setActiveTab,
   subjectCatalog = [],
+  historicoReal = [],
+  studyRecommendation = null,
   forcedPlanoFiltro = 'Todos',
 }) {
   const [query, setQuery] = useState('');
@@ -148,91 +144,22 @@ export default function Disciplinas({
     });
   }, [bancoDisciplinas, query, planoFiltro]);
 
-  const iaInsights = useMemo(() => {
-    if (!bancoDisciplinas || bancoDisciplinas.length === 0) {
-      return {
-        tracao: {
-          titulo: 'Sem dados',
-          texto: 'Adicione disciplinas para ver análises.',
-          icon: Flame,
-          color: 'text-gray-400',
-        },
-        alerta: {
-          titulo: 'Sem dados',
-          texto: 'Aguardando informações do edital.',
-          icon: Clock3,
-          color: 'text-gray-400',
-        },
-        dificuldade: {
-          titulo: 'Sem dados',
-          texto: 'Comece a resolver questões nos tópicos.',
-          icon: AlertTriangle,
-          color: 'text-gray-400',
-        },
-        potencial: '0%',
-      };
-    }
+  const enrichedDisciplinas = useMemo(
+    () => enrichDisciplines(bancoDisciplinas, historicoReal, studyRecommendation),
+    [bancoDisciplinas, historicoReal, studyRecommendation]
+  );
 
-    const stats = bancoDisciplinas.map((d) => {
-      const topicos = d.topicos || [];
-      const concluidos = topicos.filter((t) => t.concluido).length;
-      const total = topicos.length;
-      const progresso = total > 0 ? Math.round((concluidos / total) * 100) : 0;
+  const enrichedFiltered = useMemo(() => {
+    const allowed = new Set(disciplinasFiltradas.map((disciplina) => disciplina.id || disciplina.nome));
+    return enrichedDisciplinas.filter((disciplina) => allowed.has(disciplina.id || disciplina.nome));
+  }, [disciplinasFiltradas, enrichedDisciplinas]);
 
-      const acertos = topicos.reduce((acc, t) => acc + (Number(t.acertos) || 0), 0);
-      const erros = topicos.reduce((acc, t) => acc + (Number(t.erros) || 0), 0);
-      const totalQuestoes = acertos + erros;
-      const taxaErro = totalQuestoes > 0 ? Math.round((erros / totalQuestoes) * 100) : 0;
-
-      return { ...d, progresso, acertos, erros, taxaErro, total, concluidos };
-    });
-
-    const maisAvancada = [...stats].filter((d) => d.total > 0).sort((a, b) => b.progresso - a.progresso)[0];
-    const maisAtrasada = [...stats].filter((d) => d.total > 0).sort((a, b) => a.progresso - b.progresso)[0];
-    const comQuestoes = stats.filter((d) => d.acertos + d.erros > 0);
-    const maisDificil = comQuestoes.length > 0 ? [...comQuestoes].sort((a, b) => b.taxaErro - a.taxaErro)[0] : null;
-
-    return {
-      tracao: {
-        titulo: 'Puxando a fila',
-        texto:
-          maisAvancada && maisAvancada.progresso > 0
-            ? `Sua melhor execução está em ${maisAvancada.nome} (${maisAvancada.progresso}% concluído).`
-            : 'Você ainda não iniciou os tópicos do edital.',
-        icon: Flame,
-        color: 'text-orange-400',
-      },
-      alerta: {
-        titulo: 'Atenção urgente',
-        texto:
-          maisAtrasada && (maisAvancada?.id !== maisAtrasada?.id || maisAtrasada.progresso === 0)
-            ? `${maisAtrasada.nome} está ficando para trás (${maisAtrasada.progresso}%).`
-            : 'Todas as disciplinas estão caminhando de forma equilibrada.',
-        icon: Crosshair,
-        color: 'text-emerald-400',
-      },
-      dificuldade: {
-        titulo: 'Ponto de atrito',
-        texto:
-          maisDificil && maisDificil.taxaErro > 20
-            ? `${maisDificil.nome} está exigindo reforço (${maisDificil.taxaErro}% de erro).`
-            : maisDificil
-            ? 'Seu aproveitamento geral está bom. Nenhuma disciplina crítica detectada.'
-            : 'Preencha acertos e erros nos tópicos para mapear suas dificuldades.',
-        icon: AlertTriangle,
-        color: 'text-red-400',
-      },
-      potencial:
-        totalTopicos > 0
-          ? `+${Math.min(99, Math.max(10, Math.round((totalPendentes / totalTopicos) * 100)))}%`
-          : '0%',
-    };
-  }, [bancoDisciplinas, totalTopicos, totalPendentes]);
+  const isEmpty = !loadingDisciplinas && bancoDisciplinas.length === 0;
 
   const handleDeleteDiscipline = async (disciplina) => {
     const totalTopicosDisciplina = disciplina.topicos?.length || 0;
     const confirmar = window.confirm(
-      `Excluir a disciplina "${disciplina.nome}"? Você perderá ${totalTopicosDisciplina} tópicos e o progresso associado a ela.`
+      `Excluir a disciplina "${disciplina.nome}"? Voce perdera ${totalTopicosDisciplina} topicos e o progresso associado a ela.`
     );
     if (!confirmar) return;
 
@@ -252,326 +179,474 @@ export default function Disciplinas({
       }
     } catch (error) {
       console.error('Erro ao excluir disciplina:', error);
-      alert('Não foi possível excluir a disciplina.');
+      alert('Nao foi possivel excluir a disciplina.');
     }
   };
 
   return (
-    <div className="page-shell animate-in fade-in duration-500 pb-16 !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        className="lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={Layers}
-        badge={<PageHeadPremiumBadge icon={BarChart3}>Gestão do edital</PageHeadPremiumBadge>}
-        title="Disciplinas"
-        subtitle="Abra uma disciplina para editar a estrutura, adicionar tópicos e acompanhar a execução do edital por aqui."
-        leadingClassName="items-center lg:max-w-[calc(100%-29rem)] xl:max-w-[52rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[28rem] lg:self-center"
-        trailing={(
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-            <button
-              type="button"
-              onClick={() => setRegistroEstudoModalOpen && setRegistroEstudoModalOpen(true)}
-              className={PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS}
-            >
-              <Plus size={14} strokeWidth={2} />
-              Registrar estudo
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditingDiscipline && setEditingDiscipline({})}
-              className={PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS}
-            >
-              <Edit3 size={14} strokeWidth={2} />
-              Nova disciplina
-            </button>
-          </div>
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <DisciplinasHeader
+          avancoGlobal={progressoGeral}
+          onRegistrarEstudo={() => setRegistroEstudoModalOpen?.(true)}
+          onNovaDisciplina={() => setEditingDiscipline?.({})}
+        />
+
+        <KpiStrip
+          totalDisciplinas={totalDisciplinas}
+          totalConcluidos={totalConcluidos}
+          totalPendentes={totalPendentes}
+          progressoGeral={progressoGeral}
+        />
+
+        {isEmpty ? (
+          <DisciplinasEmptyState
+            onNovaDisciplina={() => setEditingDiscipline?.({})}
+            onAbrirBiblioteca={() => setActiveTab?.('concursos')}
+            onRegistrarEstudo={() => setRegistroEstudoModalOpen?.(true)}
+          />
+        ) : (
+          <>
+            <TabelaDisciplinas
+              data={enrichedFiltered}
+              loading={loadingDisciplinas}
+              query={query}
+              setQuery={setQuery}
+              planoFiltro={planoFiltro}
+              setPlanoFiltro={setPlanoFiltro}
+              planos={planos}
+              totalCount={bancoDisciplinas.length}
+              onOpen={(disciplina) => setViewingDiscipline?.(disciplina)}
+              onEdit={(disciplina) => setEditingDiscipline?.(disciplina)}
+              onDelete={handleDeleteDiscipline}
+            />
+
+            {bancoDisciplinas.length > 0 && (
+              <BizuDiagnostico
+                disciplinas={enrichedDisciplinas}
+                onStart={() => setRegistroEstudoModalOpen?.(true)}
+              />
+            )}
+          </>
         )}
-      />
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Disciplinas" value={totalDisciplinas} sub="Base total organizada" accent="blue" icon={BookOpen} />
-        <KpiCard label="Tópicos concluídos" value={totalConcluidos} sub="Já estudados e marcados" accent="emerald" icon={CheckCircle2} />
-        <KpiCard label="Tópicos pendentes" value={totalPendentes} sub="Ainda sem execução" accent="orange" icon={Clock3} />
-        <KpiCard label="Aproveitamento" value={`${progressoGeral}%`} sub="Cobertura real da base" accent="indigo" icon={TrendingUp} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.75fr)_330px]">
-        <div className="section-card flex flex-col overflow-hidden p-0">
-          <div className="border-b border-slate-200 px-5 py-5 sm:px-6 sm:py-6">
-            <div className="soft-accent rounded-xl p-4">
-              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-2xs font-semibold uppercase tracking-wider text-slate-500">Avanço global</p>
-                </div>
-                <div className="flex items-baseline gap-1 tabular-nums">
-                  <span className="text-2xl font-semibold leading-none text-blue-900">{progressoGeral}</span>
-                  <span className="text-sm font-semibold text-blue-900">%</span>
-                </div>
-              </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-blue-100/80">
-                <div className="h-full rounded-full bg-blue-700 transition-all duration-700" style={{ width: `${progressoGeral}%` }} />
-              </div>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative max-w-md flex-1">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar disciplina..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition-all duration-300 hover:border-blue-200 focus:border-blue-700 focus:ring-4 focus:ring-blue-50"
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                  <Filter size={12} />
-                  Plano
-                </div>
-                <button
-                  onClick={() => setPlanoFiltro('Todos')}
-                  className={`rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
-                    planoFiltro === 'Todos'
-                      ? 'border border-blue-100 bg-blue-50 text-blue-700'
-                      : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  Todos
-                </button>
-                {planos.map((plano) => (
-                  <button
-                    key={plano}
-                    onClick={() => setPlanoFiltro(plano)}
-                    className={`max-w-[240px] truncate rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
-                      planoFiltro === plano
-                        ? 'border border-blue-100 bg-blue-50 text-blue-700'
-                        : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                    }`}
-                    title={plano}
-                  >
-                    {plano}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="scrollbar-thin overflow-x-auto">
-            <table className="min-w-[1120px] w-full table-fixed">
-              <thead className="bg-slate-50/80">
-                <tr className="border-b border-slate-200 text-left">
-                  <th className="w-[38%] px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Disciplina</th>
-                  <th className="w-[22%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Plano</th>
-                  <th className="w-[8%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Tópicos</th>
-                  <th className="w-[10%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Concluídos</th>
-                  <th className="w-[14%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Progresso</th>
-                  <th className="w-[210px] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Ações</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {loadingDisciplinas && (
-                  <tr>
-                    <td colSpan={6} className="px-8 py-20 text-center">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-                        <BrainCircuit size={22} />
-                      </div>
-                      <div className="mt-4 text-sm font-semibold text-slate-500">Carregando disciplinas...</div>
-                    </td>
-                  </tr>
-                )}
-
-                {!loadingDisciplinas &&
-                  disciplinasFiltradas.map((disciplina, idx) => {
-                    const topicos = disciplina.topicos || [];
-                    const concluidos = topicos.filter((t) => t.concluido).length;
-                    const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
-
-                    return (
-                      <tr key={disciplina.id || idx} className="border-b border-slate-100 transition-all duration-300 hover:bg-blue-50/30">
-                        <td className="px-8 py-4">
-                          <div className="flex items-center gap-4">
-                            <div
-                              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
-                              style={{ backgroundColor: disciplina.cor || DISCIPLINE_ACCENT_FALLBACK }}
-                            >
-                              <BookOpen size={20} />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="truncate text-base font-semibold text-slate-900">{disciplina.nome}</div>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4 align-top">
-                          <span
-                            title={disciplina.plano || 'Geral'}
-                            className="inline-flex max-w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-700"
-                          >
-                            {disciplina.plano || 'Geral'}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="text-sm font-semibold text-slate-800">{topicos.length}</span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="text-sm font-semibold text-emerald-600">{concluidos}</span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                <div
-                                  className="h-full rounded-full transition-all duration-500"
-                                  style={{
-                                    width: `${progresso}%`,
-                                    backgroundColor: disciplina.cor || DISCIPLINE_ACCENT_FALLBACK,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <span
-                              className="w-10 text-right text-sm font-semibold"
-                              style={{ color: disciplina.cor || DISCIPLINE_ACCENT_FALLBACK }}
-                            >
-                              {progresso}%
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setViewingDiscipline && setViewingDiscipline(disciplina)}
-                              className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-semibold text-blue-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100"
-                            >
-                              Abrir
-                              <ArrowUpRight size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingDiscipline && setEditingDiscipline(disciplina)}
-                              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition-all duration-300 hover:border-blue-700 hover:bg-blue-700 hover:text-white"
-                              title="Editar disciplina"
-                            >
-                              <Edit3 size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteDiscipline(disciplina)}
-                              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition-all duration-300 hover:border-red-600 hover:bg-red-600 hover:text-white"
-                              title="Excluir disciplina"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-
-                {!loadingDisciplinas && disciplinasFiltradas.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-8 py-20 text-center">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-                        <BrainCircuit size={22} />
-                      </div>
-                      <div className="mt-4 text-sm font-semibold text-slate-500">Nenhuma disciplina encontrada.</div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="border-t border-slate-100 bg-slate-50/60 px-8 py-4 text-xs font-semibold text-slate-500">
-            Mostrando {disciplinasFiltradas.length} disciplinas.
-          </div>
-        </div>
-
-        <div className="section-card soft-accent sticky top-6 h-fit p-5">
-
-          <div>
-            <div className="brand-badge gap-2 px-3 py-1.5 font-semibold tracking-[0.18em]">
-              <BrainCircuit size={12} />
-              Raio-X do edital
-            </div>
-
-            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Diagnóstico inteligente</h3>
-            <p className="mt-3 text-sm font-medium leading-relaxed text-white/70">
-              Análise em tempo real do seu desempenho nas matérias cadastradas.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              <InsightCard
-                icon={iaInsights.tracao.icon}
-                iconColor={iaInsights.tracao.color}
-                title={iaInsights.tracao.titulo}
-                text={iaInsights.tracao.texto}
-              />
-              <InsightCard
-                icon={iaInsights.alerta.icon}
-                iconColor={iaInsights.alerta.color}
-                title={iaInsights.alerta.titulo}
-                text={iaInsights.alerta.texto}
-              />
-              <InsightCard
-                icon={iaInsights.dificuldade.icon}
-                iconColor={iaInsights.dificuldade.color}
-                title={iaInsights.dificuldade.titulo}
-                text={iaInsights.dificuldade.texto}
-              />
-            </div>
-
-            <div className="mt-6 flex items-center justify-between rounded-xl border border-blue-100 bg-white/90 px-4 py-4 shadow-sm">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Potencial em aberto</span>
-              <div className="flex items-center gap-2 text-3xl font-semibold text-blue-900">
-                {iaInsights.potencial}
-                <ArrowUpRight size={22} className="text-emerald-500" />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
 }
 
-function InsightCard({ title, text, icon: Icon, iconColor }) {
+function DisciplinasHeader({ avancoGlobal, onRegistrarEstudo, onNovaDisciplina }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/90 p-3.5 shadow-sm transition-all duration-300 hover:bg-white">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 ${iconColor}`}>
-          <Icon size={14} strokeWidth={3} />
+    <section className="pl-card-paper" style={{ padding: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 24, alignItems: 'end' }}>
+        <div>
+          <div className="pl-overline">Estudos / Disciplinas</div>
+          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
+            Matérias no ponto.
+          </h1>
+          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+            Organize o edital por disciplina, avance por tópicos e deixe a rotina puxar o que precisa de revisão.
+          </p>
+          <div style={{ marginTop: 18, maxWidth: 620 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+              <span className="pl-small-label">Cobertura global do edital</span>
+              <span className="pl-small-label" style={{ color: 'var(--pl-ink)' }}>{avancoGlobal}%</span>
+            </div>
+            <div className="pl-progress-track">
+              <div className="pl-progress-fill" style={{ width: `${avancoGlobal}%` }} />
+            </div>
+          </div>
         </div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">{title}</p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifySelf: 'end', width: '100%' }}>
+          <button type="button" className="pl-btn pl-btn-primary" onClick={onRegistrarEstudo}>
+            <Play size={15} fill="currentColor" />
+            Registrar estudo
+          </button>
+          <button type="button" className="pl-btn pl-btn-secondary" onClick={onNovaDisciplina}>
+            <Plus size={15} />
+            Nova disciplina
+          </button>
+        </div>
       </div>
-      <p className="mt-3 text-sm font-semibold leading-relaxed text-slate-500">{text}</p>
+    </section>
+  );
+}
+
+function KpiStrip({ totalDisciplinas, totalConcluidos, totalPendentes, progressoGeral }) {
+  return (
+    <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+      <Kpi icon={BookOpen} label="Disciplinas" value={totalDisciplinas} sub="base ativa" />
+      <Kpi icon={CheckCircle2} label="Concluídos" value={totalConcluidos} sub="tópicos finalizados" />
+      <Kpi icon={Clock3} label="Pendentes" value={totalPendentes} sub="a executar" />
+      <Kpi icon={BarChart3} label="Cobertura" value={`${progressoGeral}%`} sub="do edital" />
+    </section>
+  );
+}
+
+function Kpi({ icon: Icon, label, value, sub }) {
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <span className="pl-small-label">{label}</span>
+        <Icon size={16} color="var(--pl-muted)" />
+      </div>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 44, lineHeight: 1 }}>
+        {value}
+      </div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>{sub}</p>
     </div>
   );
 }
 
-function KpiCard({ icon: Icon, label, value, sub, accent }) {
-  const styles = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    orange: 'bg-orange-50 text-orange-600 border-orange-100',
-  };
+function TabelaDisciplinas({
+  data,
+  loading,
+  query,
+  setQuery,
+  planoFiltro,
+  setPlanoFiltro,
+  planos,
+  totalCount,
+  onOpen,
+  onEdit,
+  onDelete,
+}) {
+  return (
+    <section className="pl-card" style={{ overflow: 'hidden' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(260px, 1fr) auto',
+          gap: 14,
+          alignItems: 'center',
+          padding: '16px 18px',
+          borderBottom: '1px solid var(--pl-rule)',
+        }}
+      >
+        <div>
+          <div className="pl-overline">Biblioteca do edital</div>
+          <h2 className="pl-section-title" style={{ marginTop: 6 }}>Suas disciplinas</h2>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <label className="pl-search-control" style={{ width: 290 }}>
+            <Search size={16} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar disciplina..."
+            />
+          </label>
+          <span className="pl-filter-label"><Filter size={13} /> Plano</span>
+          <button
+            type="button"
+            className={planoFiltro === 'Todos' ? 'pl-chip is-active' : 'pl-chip'}
+            onClick={() => setPlanoFiltro('Todos')}
+          >
+            Todos
+          </button>
+          {planos.map((plano) => (
+            <button
+              key={plano}
+              type="button"
+              title={plano}
+              className={planoFiltro === plano ? 'pl-chip is-active' : 'pl-chip'}
+              onClick={() => setPlanoFiltro(plano)}
+            >
+              {plano}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table className="pl-editorial-table">
+          <thead>
+            <tr>
+              <th>Disciplina</th>
+              <th>Plano</th>
+              <th>Tópicos</th>
+              <th>Concluídos</th>
+              <th>Progresso</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && (
+              <tr>
+                <td colSpan={6}>
+                  <EmptyDashed icon={BrainCircuit} title="Carregando disciplinas..." />
+                </td>
+              </tr>
+            )}
+
+            {!loading && data.map((disciplina, index) => (
+              <DisciplinaRow
+                key={disciplina.id || disciplina.nome || index}
+                disciplina={disciplina}
+                index={index}
+                onOpen={onOpen}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+
+            {!loading && data.length === 0 && (
+              <tr>
+                <td colSpan={6}>
+                  <EmptyDashed icon={Search} title="Nenhuma disciplina encontrada." />
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ padding: '12px 18px', borderTop: '1px solid var(--pl-rule)', color: 'var(--pl-muted)', fontSize: 13 }}>
+        Mostrando {data.length} de {totalCount} disciplinas.
+      </div>
+    </section>
+  );
+}
+
+function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete }) {
+  const token = getAreaToken(disciplina.areaKey || disciplina.area || inferAreaFromText(disciplina.nome, disciplina.plano));
+  const topicos = disciplina.topicos || [];
+  const concluidos = topicos.filter((topico) => topico.concluido).length;
+  const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : Number(disciplina.percentual || 0);
 
   return (
-    <div className="kpi-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${styles[accent]}`}>
-        <Icon size={12} />
-        {label}
+    <tr className={index % 2 === 1 ? 'is-striped' : undefined}>
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 13, minWidth: 300 }}>
+          <span className="pl-area-marker" style={{ background: token.cover }} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 750, color: 'var(--pl-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {disciplina.nome}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 5 }}>
+              <span className="pl-mini-chip" style={{ background: token.chip, color: token.chipInk }}>{token.label}</span>
+              {disciplina.needsReview && <span className="pl-mini-chip is-warning">revisão urgente</span>}
+              <span className="pl-muted" style={{ fontSize: 12 }}>
+                {disciplina.lastStudyLabel ? `último estudo ${disciplina.lastStudyLabel}` : 'sem estudo recente'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span className="pl-pill-muted">{disciplina.plano || 'Geral'}</span>
+      </td>
+      <td>{topicos.length}</td>
+      <td>{concluidos}</td>
+      <td>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 42px', alignItems: 'center', gap: 10, minWidth: 160 }}>
+          <div className="pl-progress-track">
+            <div className="pl-progress-fill" style={{ width: `${progresso}%`, background: token.cover }} />
+          </div>
+          <strong style={{ color: token.cover, textAlign: 'right' }}>{progresso}%</strong>
+        </div>
+      </td>
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button type="button" className="pl-btn pl-btn-compact pl-btn-primary" onClick={() => onOpen(disciplina)}>
+            Abrir
+            <ArrowUpRight size={13} />
+          </button>
+          <button type="button" className="pl-icon-button" title="Editar disciplina" onClick={() => onEdit(disciplina)}>
+            <Edit3 size={14} />
+          </button>
+          <button type="button" className="pl-icon-button" title="Excluir disciplina" onClick={() => onDelete(disciplina)}>
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function BizuDiagnostico({ disciplinas, onStart }) {
+  const ordered = [...disciplinas].sort((a, b) => {
+    if (a.needsReview !== b.needsReview) return a.needsReview ? -1 : 1;
+    return a.coverage - b.coverage;
+  });
+  const critical = ordered[0];
+  const best = [...disciplinas].sort((a, b) => b.coverage - a.coverage)[0];
+  const suggestions = ordered.slice(0, 3);
+
+  return (
+    <section className="pl-card-ai" style={{ padding: 22 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.75fr)', gap: 22 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span className="pl-tag-ai"><Sparkles size={13} /> Bizu IA</span>
+            <span className="pl-small-label">Diagnóstico das disciplinas</span>
+          </div>
+          <h3 className="pl-section-title" style={{ marginTop: 14 }}>
+            {critical?.needsReview ? `Reforce ${critical.nome}` : 'Base estável para continuar'}
+          </h3>
+          <p className="pl-body" style={{ maxWidth: 780, marginTop: 8 }}>
+            {critical?.needsReview
+              ? `Essa disciplina combina baixa cobertura com pouco estudo recente. Vale encaixar uma sessão curta antes de avançar para novos tópicos.`
+              : best
+              ? `${best.nome} está puxando a fila. Use esse ritmo para destravar as matérias com menor cobertura.`
+              : 'Cadastre disciplinas e registre estudo para a IA montar um diagnóstico útil.'}
+          </p>
+          <div style={{ marginTop: 18 }}>
+            <button type="button" className="pl-btn-ai" onClick={onStart}>
+              <Sparkles size={15} />
+              Registrar sessão guiada
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gap: 10 }}>
+          <Insight label="Cobertura mais baixa" value={critical ? `${critical.coverage}%` : '0%'} detail={critical?.nome || 'Sem dados'} />
+          <Insight label="Melhor tração" value={best ? `${best.coverage}%` : '0%'} detail={best?.nome || 'Sem dados'} />
+          <Insight label="Sugestões ativas" value={suggestions.length} detail="ordem sugerida para revisar" />
+        </div>
       </div>
-      <p className="mt-5 text-3xl font-semibold leading-none text-blue-900 sm:text-4xl">{value}</p>
-      <p className="mt-2 text-sm font-semibold text-slate-500">{sub}</p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginTop: 18 }}>
+        {suggestions.map((disciplina, index) => (
+          <SuggestionRow key={disciplina.id || disciplina.nome} disciplina={disciplina} index={index} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Insight({ label, value, detail }) {
+  return (
+    <div className="pl-ai-mini">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{detail}</small>
     </div>
   );
+}
+
+function SuggestionRow({ disciplina, index }) {
+  const token = getAreaToken(disciplina.areaKey || disciplina.area || inferAreaFromText(disciplina.nome, disciplina.plano));
+
+  return (
+    <div className="pl-ai-suggestion">
+      <span className="pl-serif-number">{index + 1}</span>
+      <div>
+        <strong>{disciplina.nome}</strong>
+        <p>{disciplina.needsReview ? 'Revisar antes de avançar' : `${disciplina.coverage}% de cobertura`}</p>
+      </div>
+      <span className="pl-area-dot" style={{ background: token.cover }} />
+    </div>
+  );
+}
+
+function DisciplinasEmptyState({ onNovaDisciplina, onAbrirBiblioteca, onRegistrarEstudo }) {
+  return (
+    <section className="pl-card-paper" style={{ padding: 28 }}>
+      <div className="pl-overline">Primeiro mapa do edital</div>
+      <h2 className="pl-section-title" style={{ marginTop: 10 }}>Monte suas disciplinas em três passos.</h2>
+      <p className="pl-body" style={{ marginTop: 8, maxWidth: 720 }}>
+        Sem disciplinas cadastradas ainda. Comece pela estrutura do edital, conecte ao concurso e registre a primeira sessão para ativar os diagnósticos.
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, marginTop: 22 }}>
+        <EmptyAction number="1" title="Criar disciplina" text="Cadastre a matéria e seus tópicos principais." action="Nova disciplina" onClick={onNovaDisciplina} />
+        <EmptyAction number="2" title="Abrir biblioteca" text="Use o concurso-alvo como referência de organização." action="Ver concursos" onClick={onAbrirBiblioteca} />
+        <EmptyAction number="3" title="Registrar estudo" text="Alimente o histórico para a IA sugerir prioridades." action="Registrar" onClick={onRegistrarEstudo} />
+      </div>
+    </section>
+  );
+}
+
+function EmptyAction({ number, title, text, action, onClick }) {
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <span className="pl-empty-number">{number}</span>
+      <h3 style={{ margin: '14px 0 6px', fontWeight: 800 }}>{title}</h3>
+      <p className="pl-muted" style={{ minHeight: 42, margin: 0 }}>{text}</p>
+      <button type="button" className="pl-btn pl-btn-secondary" style={{ marginTop: 16, width: '100%' }} onClick={onClick}>
+        {action}
+      </button>
+    </div>
+  );
+}
+
+function EmptyDashed({ icon: Icon, title }) {
+  return (
+    <div style={{ padding: 48, textAlign: 'center', color: 'var(--pl-muted)' }}>
+      <div
+        style={{
+          width: 54,
+          height: 54,
+          margin: '0 auto 12px',
+          border: '1px dashed var(--pl-rule-strong)',
+          display: 'grid',
+          placeItems: 'center',
+          borderRadius: 999,
+        }}
+      >
+        <Icon size={20} />
+      </div>
+      <strong>{title}</strong>
+    </div>
+  );
+}
+
+function enrichDisciplines(disciplinas, historicoReal, studyRecommendation) {
+  return disciplinas.map((disciplina) => {
+    const relatedHistory = (historicoReal || []).filter((item) => sameSubject(item, disciplina));
+    const sortedHistory = relatedHistory
+      .filter((item) => item.data || item.created_at || item.date)
+      .sort((a, b) => new Date(b.data || b.created_at || b.date) - new Date(a.data || a.created_at || a.date));
+    const lastDate = sortedHistory[0]?.data || sortedHistory[0]?.created_at || sortedHistory[0]?.date;
+    const coverage = getCoverage(disciplina);
+    const recommendedSubject = studyRecommendation?.subject || studyRecommendation?.disciplina || studyRecommendation?.materia;
+    const isRecommended = recommendedSubject && sameSubject({ disciplina: recommendedSubject, materia: recommendedSubject, subject: recommendedSubject }, disciplina);
+
+    return {
+      ...disciplina,
+      coverage,
+      lastStudyLabel: formatRelativeDate(lastDate),
+      needsReview: isRecommended || coverage < 35 || relatedHistory.length === 0,
+      areaKey: disciplina.area || disciplina.categoria || inferAreaFromText(disciplina.nome, disciplina.plano),
+    };
+  });
+}
+
+function sameSubject(item, disciplina) {
+  const source = String(item?.disciplina || item?.materia || item?.subject || item?.nome || '').toLowerCase();
+  const target = String(disciplina?.nome || '').toLowerCase();
+  return Boolean(source && target && (source.includes(target) || target.includes(source)));
+}
+
+function getCoverage(disciplina) {
+  const topicos = disciplina.topicos || [];
+  if (topicos.length > 0) {
+    const concluidos = topicos.filter((topico) => topico.concluido).length;
+    return Math.round((concluidos / topicos.length) * 100);
+  }
+  return Number(disciplina.percentual || 0);
+}
+
+function inferAreaFromText(nome = '', plano = '') {
+  const text = `${nome} ${plano}`.toLowerCase();
+  if (/militar|soldado|pm|bombeiro|marinha|exercito|aeronautica/.test(text)) return 'militar';
+  if (/policia|policial|pc-|pf|prf|delegado|investigador/.test(text)) return 'policial';
+  if (/fiscal|tributario|receita|sefaz|auditor/.test(text)) return 'fiscal';
+  if (/tribunal|tj|trf|tre|mp|promotor|analista/.test(text)) return 'tribunais';
+  if (/saude|sus|enfermagem|medicina/.test(text)) return 'saude';
+  return 'outros';
+}
+
+function formatRelativeDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const today = new Date();
+  const diffMs = today.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
+  const diffDays = Math.max(0, Math.round(diffMs / 86400000));
+  if (diffDays === 0) return 'hoje';
+  if (diffDays === 1) return 'ontem';
+  return `ha ${diffDays} dias`;
 }

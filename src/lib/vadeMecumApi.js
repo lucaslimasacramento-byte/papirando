@@ -288,6 +288,13 @@ export async function uploadVadeMecumPdf({ file, currentDocument, currentUserId 
   if (!file) throw new Error('Selecione um arquivo PDF.');
 
   const extension = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+  if (extension !== 'pdf' || String(file.type || '').toLowerCase() !== 'application/pdf') {
+    throw new Error('Envie um PDF valido.');
+  }
+  if (Number(file.size || 0) > 50 * 1024 * 1024) {
+    throw new Error('O PDF deve ter no maximo 50 MB.');
+  }
+
   const safeBaseName = buildSafeFileName(file.name) || 'vade-mecum';
   const filePath = `vade-mecum/${Date.now()}-${safeBaseName}.${extension}`;
 

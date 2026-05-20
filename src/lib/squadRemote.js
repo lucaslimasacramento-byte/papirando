@@ -46,8 +46,8 @@ export function splitSquadForCommunityPostUpdate(squad) {
 }
 
 export async function fetchSquadRowByInviteCode(supabaseClient, code) {
-  const c = String(code || '').trim();
-  if (!c || c.length < 4) return { row: null, error: new Error('Código inválido') };
+  const c = String(code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 32);
+  if (!c || c.length < 6) return { row: null, error: new Error('Codigo invalido') };
   const { data, error } = await supabaseClient.rpc('resolve_squad_invite', { p_code: c });
   if (error) return { row: null, error };
   const row = Array.isArray(data) ? data[0] : data;

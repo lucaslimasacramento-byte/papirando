@@ -1,30 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Calendar as CalendarIcon,
   CalendarDays,
-  Check,
   ChevronLeft,
   ChevronRight,
-  Clock,
-  Columns,
-  MoreHorizontal,
+  Edit3,
   Play,
+  RefreshCw,
   RotateCcw,
-  Sparkles,
-  Target,
+  Settings2,
   Trash2,
   X,
 } from 'lucide-react';
 import { buildWeeklyStudyPlan, WEEKDAY_BLUEPRINT } from '../lib/weeklyPlanner';
 import { mergeDisciplinesByCanonical } from '../lib/studyRecommendation';
 import { supabase } from '../lib/supabase';
-import Ciclos from './Ciclos';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS,
-  PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS,
-  PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS,
-} from '../components/PageHeadPremium';
+import { getSubjectColor } from '../lib/subjectPalette';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -719,6 +709,24 @@ function PlanejamentoContent({
     closeWizard();
   }
 
+  const planejamentoMode = studyMode === 'fixo' ? 'fixo' : 'flexivel';
+  const cycleRows = useMemo(
+    () => buildCycleRows(safeCycleProps.activeCycle, cycleCanonicalDisciplines),
+    [safeCycleProps.activeCycle, cycleCanonicalDisciplines]
+  );
+  const totalPrevistoCiclo = cycleRows.reduce((acc, item) => acc + item.previstaMin, 0);
+  const totalFeitoCiclo = cycleRows.reduce((acc, item) => acc + item.feitaMin, 0);
+  const cycleProgress = totalPrevistoCiclo > 0 ? Math.round((totalFeitoCiclo / totalPrevistoCiclo) * 100) : 0;
+  const ciclosCompletos = Number(safeCycleProps.ciclosCompletos || safeCycleProps.completedCycles || 0);
+  const fixedStats = {
+    weeklyLabel: summary.weeklyLabel || formatMinutes(Number(summary.weeklyMinutes || 0)),
+    sessions: Number(summary.totalSessions || filteredCalendarEvents.length || 0),
+    pending: Number(summary.pendingTopics || 0),
+    required: summary.requiredPerWeekLabel || '0h 00m',
+    activeDays,
+    pace: summary.paceLabel || 'ritmo sob controle',
+  };
+
   function handleStatusChange(taskId, status) {
     setTaskStatusMap((prev) => ({ ...prev, [taskId]: status }));
 
@@ -768,721 +776,42 @@ function PlanejamentoContent({
   }
 
   return (
-    <div
-      className={`page-shell animate-in fade-in duration-500 !pt-4 sm:!pt-5 ${
-        studyMode === 'fixo' ? 'min-h-full pb-20' : 'h-full overflow-hidden pb-4'
-      }`}
-    >
-      <PageHeadPremium
-        className={`${studyMode === 'fixo' ? 'mb-6' : 'mb-3'} lg:!flex-row lg:!items-center lg:!justify-between`}
-        icon={CalendarIcon}
-        title="Planejamento"
-        leadingClassName="items-center lg:max-w-[calc(100%-38rem)] xl:max-w-[50rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[37rem] lg:self-center"
-        trailingClassName="xl:max-w-none xl:flex-none"
-        subtitle={
-          studyMode === 'fixo'
-            ? 'Planeje por ciclo ou agenda fixa, sem duplicar matérias equivalentes entre cursos.'
-            : undefined
-        }
-        trailing={
-          <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain sm:w-auto sm:justify-end sm:gap-3 sm:overflow-visible">
-            <div className={PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS}>
-              <button
-                type="button"
-                onClick={openWizard}
-                className={
-                  studyMode === 'ciclo'
-                    ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
-                    : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
-                }
-              >
-                <RotateCcw size={14} />
-                Ciclo flexível
-              </button>
-              <button
-                type="button"
-                onClick={openWizard}
-                className={
-                  studyMode === 'fixo'
-                    ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
-                    : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
-                }
-              >
-                <CalendarDays size={14} />
-                Planejamento fixo
-              </button>
-            </div>
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <PlanejamentoHeader
+          mode={planejamentoMode}
+          setMode={(nextMode) => setStudyMode?.(nextMode === 'fixo' ? 'fixo' : 'ciclo')}
+          onConfigurar={openWizard}
+        />
 
-            {studyMode === 'fixo' ? (
-              <div className={PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS}>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('calendario')}
-                  className={
-                    agendaViewMode === 'calendario'
-                      ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
-                      : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
-                  }
-                >
-                  <CalendarDays size={14} />
-                  Calendário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('kanban')}
-                  className={
-                    agendaViewMode === 'kanban'
-                      ? PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_ACTIVE_CLASS
-                      : PAGE_HEAD_PREMIUM_TOGGLE_BUTTON_CLASS
-                  }
-                >
-                  <Columns size={14} />
-                  Kanban
-                </button>
-              </div>
-            ) : null}
-          </div>
-        }
-      />
-
-      {studyMode === 'fixo' ? (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="flex flex-col gap-5">
-            <button
-              onClick={openWizard}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full text-base`}
-            >
-              <Sparkles size={20} strokeWidth={3} />
-              Editar planejamento
-            </button>
-
-            <div className="section-card rounded-2xl p-5 flex flex-col gap-3">
-              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-100 pb-2">
-                Filtros de exibição
-              </h4>
-              <FilterLine
-                checked={planningFilters.sessao}
-                onChange={() => setPlanningFilters((prev) => ({ ...prev, sessao: !prev.sessao }))}
-                color={PLANNING_TYPE_COLORS.Sessao}
-                label="Sessões de teoria"
-              />
-              <FilterLine
-                checked={planningFilters.revisao}
-                onChange={() => setPlanningFilters((prev) => ({ ...prev, revisao: !prev.revisao }))}
-                color={PLANNING_TYPE_COLORS.Revisao}
-                label="Revisões"
-              />
-              <FilterLine
-                checked={planningFilters.questoes}
-                onChange={() => setPlanningFilters((prev) => ({ ...prev, questoes: !prev.questoes }))}
-                color={PLANNING_TYPE_COLORS.Questoes}
-                label="Questões"
-              />
-            </div>
-
-            <InfoCard
-              title="Escopo salvo"
-              items={[
-                `${selectedCourseLabels.length} curso(s) no plano`,
-                `${safeTargetDisciplines.length} matéria(s) únicas`,
-                summary.weeklyLabel || '0h 00m por semana',
-              ]}
-            >
-              <div className="flex flex-wrap gap-2">
-                {selectedCourseLabels.length > 0 ? (
-                  selectedCourseLabels.map((course) => (
-                    <span
-                      key={course.plano}
-                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-gray-100 bg-blue-50 text-[#2563EB]"
-                    >
-                      {course.nome}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-sm font-semibold text-gray-500">Nenhum curso selecionado ainda.</span>
-                )}
-              </div>
-            </InfoCard>
-
-            <div className="surface-card rounded-[22px] p-5">
-              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">
-                Configurações do plano
-              </h4>
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-gray-600">{targetContest?.nome || 'Sem concurso-alvo'}</p>
-                <p className="text-sm font-semibold text-gray-600">
-                  Sessões de {formatMinutesShort(safePlanningSessionWindow.minMinutes)} a{' '}
-                  {formatMinutesShort(safePlanningSessionWindow.maxMinutes)}
-                </p>
-                <p className="text-sm font-semibold text-gray-600">
-                  {safePlanningSessionWindow.subjectsPerDay} matéria(s) por dia
-                </p>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={openWizard}
-                  className="inline-flex items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-bold text-[#2563EB] transition hover:border-blue-200 hover:bg-blue-100"
-                >
-                  Reabrir ajuste
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentDate(new Date())}
-                  className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition hover:border-[#2563EB] hover:text-[#2563EB]"
-                >
-                  Ir para hoje
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('calendario')}
-                  className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
-                    agendaViewMode === 'calendario'
-                      ? 'bg-[#2563EB] text-white shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#2563EB] hover:text-[#2563EB]'
-                  }`}
-                >
-                  Calendário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('kanban')}
-                  className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
-                    agendaViewMode === 'kanban'
-                      ? 'bg-[#2563EB] text-white shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#2563EB] hover:text-[#2563EB]'
-                  }`}
-                >
-                  Kanban
-                </button>
-              </div>
-              <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${rhythmPercent}%` }} />
-              </div>
-              <p className="mt-3 text-xs font-semibold leading-5 text-gray-500">
-                A IA do plano consolida matérias iguais entre cursos antes de montar agenda e kanban.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex min-h-0 flex-col gap-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              <InfoCard
-                title="Carga da semana"
-                items={[
-                  summary.weeklyLabel || '0h 00m',
-                  `${summary.totalSessions || 0} bloco(s) planejados`,
-                ]}
-              />
-              <InfoCard
-                title="Tópicos em aberto"
-                items={[
-                  `${summary.pendingTopics || 0} pendente(s)`,
-                  summary.requiredPerWeekLabel ? `${summary.requiredPerWeekLabel}/semana` : 'Ritmo livre',
-                ]}
-              />
-              <InfoCard
-                title="Leitura rápida"
-                items={[
-                  `${activeDays} dia(s) ativos`,
-                  `${turnosAtivos} turno(s) ocupados`,
-                  summary.paceLabel || 'Plano em montagem',
-                ]}
-              />
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-hidden flex min-h-0 flex-1 flex-col">
-            {agendaViewMode === 'calendario' && (
-              <div className="flex flex-col h-full animate-in fade-in duration-300">
-                <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-50/50">
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-4">
-                      <h3 className="text-2xl font-extrabold text-gray-800 capitalize min-w-[220px]">
-                        {calViewMode === 'mes'
-                          ? `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`
-                          : `Semana de ${currentWeek[0].getDate()}/${currentWeek[0].getMonth() + 1}`}
-                      </h3>
-                      <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
-                        <button
-                          onClick={() => setCalViewMode('mes')}
-                          className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                            calViewMode === 'mes' ? 'bg-blue-50 text-[#2563EB]' : 'text-gray-500 hover:bg-gray-50'
-                          }`}
-                        >
-                          Mês
-                        </button>
-                        <button
-                          onClick={() => setCalViewMode('semana')}
-                          className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                            calViewMode === 'semana' ? 'bg-blue-50 text-[#2563EB]' : 'text-gray-500 hover:bg-gray-50'
-                          }`}
-                        >
-                          Semana
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <TagPill label={`${filteredCalendarEvents.length} blocos`} color={PLANNING_TYPE_COLORS.Blocos} soft />
-                      <TagPill
-                        label={`${filteredCalendarEvents.filter((event) => event.tipo === 'Sessao').length} teoria`}
-                        color={PLANNING_TYPE_COLORS.Sessao}
-                        soft
-                      />
-                      <TagPill
-                        label={`${filteredCalendarEvents.filter((event) => event.tipo === 'Revisao').length} revisões`}
-                        color={PLANNING_TYPE_COLORS.Revisao}
-                        soft
-                      />
-                      <TagPill
-                        label={`${filteredCalendarEvents.filter((event) => event.tipo === 'Questoes').length} questões`}
-                        color={PLANNING_TYPE_COLORS.Questoes}
-                        soft
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
-                    {summary.paceLabel || 'Ritmo sob controle'}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => shiftCalendarDate(setCurrentDate, currentDate, calViewMode, -1)}
-                      className="px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      onClick={() => setCurrentDate(new Date())}
-                      className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm shadow-sm hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
-                    >
-                      Hoje
-                    </button>
-                    <button
-                      onClick={() => shiftCalendarDate(setCurrentDate, currentDate, calViewMode, 1)}
-                      className="px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {calViewMode === 'mes' ? (
-                  <div className="flex-1 flex flex-col bg-gray-50">
-                    <div className="grid grid-cols-7 border-b border-gray-200 bg-white shadow-sm z-10">
-                      {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map((label) => (
-                        <div
-                          key={label}
-                          className="p-3 text-center text-[10px] font-semibold text-gray-500 uppercase tracking-widest border-r border-gray-100 last:border-0"
-                        >
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div
-                      className="flex-1 grid grid-cols-7 bg-gray-200 gap-[1px]"
-                      style={{ gridTemplateRows: `repeat(${Math.ceil(currentMonthGrid.length / 7)}, minmax(104px, 1fr))` }}
-                    >
-                      {currentMonthGrid.map((day, index) => {
-                        const valid = day !== null;
-                        const date = valid
-                          ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-                          : null;
-                        const dateKey = valid ? toDateKey(date) : '';
-                        const events = valid
-                          ? filteredCalendarEvents.filter((event) => event.data === dateKey)
-                          : [];
-                        const isToday = valid ? dateKey === toDateKey(new Date()) : false;
-
-                        return (
-                          <div
-                            key={`${dateKey || 'blank'}-${index}`}
-                            className={`bg-white p-2 flex flex-col transition-colors overflow-hidden group relative ${
-                              !valid ? 'bg-gray-50/50' : 'hover:bg-blue-50/30'
-                            }`}
-                          >
-                            {valid ? (
-                              <>
-                                <div className="flex justify-between items-start mb-2">
-                                  <span
-                                    className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${
-                                      isToday ? 'bg-[#2563EB] text-white shadow-md' : 'text-gray-600'
-                                    }`}
-                                  >
-                                    {day}
-                                  </span>
-                                </div>
-
-                                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-1 relative z-10">
-                                  {events.map((event) => (
-                                    <button
-                                      key={event.id}
-                                      onClick={() => handlePlanAction(event, 'open', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full px-2 py-1.5 rounded-lg border border-white/40 text-[10px] font-bold text-slate-900 shadow-sm truncate text-left hover:-translate-y-0.5 transition-transform flex items-center gap-1.5"
-                                      style={{ backgroundColor: event.cor }}
-                                    >
-                                      <div className="w-1.5 h-1.5 rounded-full bg-slate-900/20 shrink-0" />
-                                      <span className="truncate">{event.hora} - {event.titulo}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              </>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
-                    <div className="grid grid-cols-7 border-b border-gray-200 bg-white shadow-sm z-10">
-                      {currentWeek.map((date) => {
-                        const dateKey = toDateKey(date);
-                        const isToday = dateKey === toDateKey(new Date());
-                        return (
-                          <div key={dateKey} className="p-3 text-center border-r border-gray-100 last:border-0">
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'][date.getDay()]}
-                            </div>
-                            <div
-                              className={`mx-auto w-8 h-8 flex items-center justify-center rounded-full text-lg font-semibold ${
-                                isToday ? 'bg-[#2563EB] text-white shadow-md' : 'text-gray-800'
-                              }`}
-                            >
-                              {date.getDate()}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex-1 grid grid-cols-7 bg-gray-200 gap-[1px]">
-                      {currentWeek.map((date) => {
-                        const dateKey = toDateKey(date);
-                        const events = filteredCalendarEvents.filter((event) => event.data === dateKey);
-
-                        return (
-                          <div key={dateKey} className="bg-white p-2 flex flex-col transition-colors hover:bg-blue-50/20">
-                            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 mt-2">
-                              {events.map((event) => (
-                                <button
-                                  key={event.id}
-                                  onClick={() => handlePlanAction(event, 'start', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                  className="w-full p-2.5 rounded-xl border border-gray-100 shadow-sm bg-white text-left hover:shadow-md transition-all border-l-4"
-                                  style={{ borderLeftColor: event.cor }}
-                                >
-                                  <div className="text-[10px] font-bold text-gray-500 mb-1 flex items-center gap-1">
-                                    <Clock size={10} />
-                                    {event.hora}
-                                  </div>
-                                  <div className="text-xs font-bold text-gray-800 leading-snug">{event.titulo}</div>
-                                  <div className="flex flex-wrap gap-1 mt-2">
-                                    <span
-                                      className="text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded border border-white/40 text-slate-900"
-                                      style={{ backgroundColor: event.cor }}
-                                    >
-                                      {event.tipo}
-                                    </span>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {agendaViewMode === 'kanban' && (
-              <div className="flex min-h-0 flex-1 flex-col animate-in fade-in duration-300 bg-gray-50">
-                <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-5 md:py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-base md:text-lg font-extrabold text-gray-800 flex items-center gap-2">
-                      <Columns size={18} className="text-[#2563EB] shrink-0" />
-                      Quadro de Etapas
-                    </h3>
-                    <p className="text-[11px] md:text-xs font-semibold text-gray-500 leading-snug mt-0.5">
-                      Arraste entre colunas. Cartões compactos para ver o quadro sem rolar a página.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3 w-full sm:w-56 shrink-0 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="w-8 h-8 rounded-full bg-[#D5F5E3] text-slate-900 flex items-center justify-center shrink-0">
-                      <Check size={16} strokeWidth={3} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">
-                        <span>Concluídas</span>
-                        <span className="text-slate-900">{buildKanbanProgress(kanbanTasks)}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${buildKanbanProgress(kanbanTasks)}%`, backgroundColor: '#D5F5E3' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid min-h-0 min-w-0 flex-1 grid-cols-3 gap-3 px-3 py-3 md:gap-4 md:px-4 md:py-3 items-stretch">
-                  {KANBAN_COLUMNS.map((column) => {
-                    const tasks = kanbanTasks.filter((task) => task.status === column.nome);
-                    const isActiveDrop = dragOverColumn === column.nome;
-
-                    return (
-                      <div
-                        key={column.id}
-                        className="flex min-h-0 min-w-0 flex-col"
-                        onDragOver={(event) => {
-                          event.preventDefault();
-                          setDragOverColumn(column.nome);
-                        }}
-                        onDragLeave={() => setDragOverColumn('')}
-                        onDrop={(event) => handleDrop(event, column.nome)}
-                      >
-                        <div
-                          className="bg-white rounded-t-xl px-3 py-2 border border-gray-200 border-b-0 flex justify-between items-center shrink-0 shadow-sm z-10"
-                          style={{ borderTopWidth: '3px', borderTopColor: column.cor }}
-                        >
-                          <h4 className="text-sm font-extrabold text-gray-800">{column.nome}</h4>
-                          <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-md">
-                            {tasks.length}
-                          </span>
-                        </div>
-
-                        <div
-                          className={`min-h-0 flex-1 border border-gray-200 border-t-0 rounded-b-xl p-2 overflow-y-auto custom-scrollbar space-y-2 transition-colors duration-200 ${
-                            isActiveDrop ? 'border-dashed border-2 brightness-95' : ''
-                          }`}
-                          style={{ backgroundColor: `${column.cor}15` }}
-                        >
-                          {tasks.map((task) => (
-                            <div
-                              key={task.id}
-                              draggable
-                              onDragStart={(event) => handleDragStart(event, task.id)}
-                              className={`bg-white rounded-lg p-2 shadow-sm border border-gray-200 cursor-grab active:cursor-grabbing hover:shadow transition-all group relative overflow-visible ${
-                                task.status === 'Concluido' ? 'opacity-70 hover:opacity-100' : ''
-                              }`}
-                            >
-                              <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg" style={{ backgroundColor: task.cor }} />
-                              <div className="pl-1.5 pr-14">
-                                <div className="flex flex-wrap gap-1 mb-1">
-                                  <span
-                                    className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-px rounded border border-white/40 text-slate-900 shadow-sm"
-                                    style={{ backgroundColor: task.cor }}
-                                  >
-                                    {task.tipo}
-                                  </span>
-                                </div>
-                                <div className="flex items-start gap-1.5">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleStatusChange(
-                                        task.id,
-                                        task.status === 'Concluido' ? 'A Fazer' : 'Concluido'
-                                      )
-                                    }
-                                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-px transition-colors ${
-                                      task.status === 'Concluido'
-                                        ? 'bg-[#D5F5E3] border-[#D5F5E3] text-slate-900'
-                                        : 'border-gray-300 text-transparent hover:border-[#D5F5E3]'
-                                    }`}
-                                  >
-                                    <Check size={10} strokeWidth={4} />
-                                  </button>
-                                  <div className="min-w-0 flex-1">
-                                    <h5
-                                      className={`font-bold text-[11px] leading-tight ${
-                                        task.status === 'Concluido' ? 'text-gray-400 line-through' : 'text-gray-800'
-                                      }`}
-                                    >
-                                      {task.titulo}
-                                    </h5>
-                                    <p className="mt-0.5 text-[10px] text-gray-500 line-clamp-2 leading-snug">{task.detail}</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center gap-2 mt-1.5 border-t border-gray-50 pt-1.5">
-                                  <div className="flex items-center gap-1 text-[10px] font-semibold text-gray-500 min-w-0">
-                                    <CalendarIcon size={10} className="shrink-0" />
-                                    <span className="truncate">
-                                      {formatDateShort(task.data)} / {task.hora}
-                                    </span>
-                                  </div>
-                                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: task.cor }} />
-                                </div>
-                              </div>
-
-                              <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
-                                <button
-                                  type="button"
-                                  onMouseDown={(event) => event.stopPropagation()}
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    handleRemovePlanningTask(task.id);
-                                  }}
-                                  className="text-gray-400 hover:text-red-600 p-1 bg-white/90 rounded-md border border-transparent hover:border-red-100 transition-all opacity-80 group-hover:opacity-100"
-                                  title="Excluir bloco"
-                                >
-                                  <Trash2 size={14} strokeWidth={2.25} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onMouseDown={(event) => event.stopPropagation()}
-                                  onClick={() => setKanbanMenuOpen(kanbanMenuOpen === task.id ? '' : task.id)}
-                                  className="text-gray-400 hover:text-[#2563EB] p-1 bg-white/90 rounded-md border border-transparent hover:border-gray-200 transition-all opacity-80 group-hover:opacity-100"
-                                  title="Mais ações"
-                                >
-                                  <MoreHorizontal size={15} />
-                                </button>
-                                {kanbanMenuOpen === task.id ? (
-                                  <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-[100] py-1 overflow-hidden">
-                                    <button
-                                      type="button"
-                                      onClick={() => handlePlanAction(task, 'start', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-blue-50 hover:text-[#2563EB] flex items-center gap-2 transition-colors"
-                                    >
-                                      <Play size={14} />
-                                      Iniciar sessão
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handlePlanAction(task, 'open', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-blue-50 hover:text-[#2563EB] flex items-center gap-2 transition-colors"
-                                    >
-                                      <Target size={14} />
-                                      Abrir disciplina
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemovePlanningTask(task.id)}
-                                      className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50"
-                                    >
-                                      <Trash2 size={14} />
-                                      Excluir bloco
-                                    </button>
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          ))}
-
-                          {tasks.length === 0 && !isActiveDrop ? (
-                            <div className="h-16 flex items-center justify-center border-2 border-dashed border-gray-300/50 rounded-lg text-gray-500/70 text-[10px] font-bold">
-                              Sem blocos
-                            </div>
-                          ) : null}
-
-                          {isActiveDrop ? (
-                            <div className="h-16 flex items-center justify-center border-2 border-dashed border-[#2563EB] bg-[#2563EB]/10 rounded-lg text-[#2563EB] text-[10px] font-bold shadow-inner">
-                              Soltar aqui
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-          </div>
-        </div>
-      ) : (
-        <div className="grid min-h-0 flex-1 gap-3 overflow-hidden">
-          <div className="rounded-[1.15rem] border border-gray-100 bg-white px-3.5 py-2.5 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-[1.05rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
-                  <span className="text-[0.92rem] font-medium text-gray-500">
-                    Ideal para rotina variável, estudo sem dias fixos e prioridade automática das matérias mais importantes.
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={safeCycleProps.onRestartCycle}
-                  disabled={!Array.isArray(safeCycleProps.activeCycle) || safeCycleProps.activeCycle.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <RotateCcw size={16} />
-                  Recomeçar Ciclo
-                </button>
-                <button
-                  type="button"
-                  onClick={openWizard}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]"
-                >
-                  Replanejar
-                </button>
-                <button
-                  type="button"
-                  onClick={safeCycleProps.onRemoveCycle}
-                  disabled={!Array.isArray(safeCycleProps.activeCycle) || safeCycleProps.activeCycle.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Remover
-                </button>
-              </div>
-            </div>
-          </div>
-          {safeCycleProps?.showCycleGuide ? (
-          <div className="rounded-[1.6rem] border border-gray-100 bg-white px-5 py-4 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <TagPill label="Ciclo flexível" color="#2563EB" soft />
-                  <TagPill label={targetContest?.nome || 'Sem alvo'} color="#2563EB" soft />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <h2 className="text-[1.65rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
-                  <span className="text-sm font-medium text-gray-500">Ideal para rotina variável e estudo sem dias fixos.</span>
-                </div>
-                <div className="mt-3 grid gap-2 md:grid-cols-2">
-                  <div className="rounded-[1rem] border border-gray-200 bg-[#F8FAFD] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Melhor para quem</p>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">Tem rotina variável, turnos instáveis ou precisa seguir a fila de matérias sem prender o estudo ao calendário.</p>
-                  </div>
-                  <div className="rounded-[1rem] border border-gray-200 bg-[#F8FAFD] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Quando usar o fixo</p>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">Quando a semana é previsível e você prefere enxergar matéria por dia no planejamento.</p>
-                  </div>
-                </div>
-              </div>
-              {typeof safeCycleProps.onResetCycle === 'function' ? (
-                <button
-                  type="button"
-                  onClick={safeCycleProps.onResetCycle}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:border-[#2563EB] hover:text-[#2563EB]"
-                >
-                  <RotateCcw size={16} />
-                  Reiniciar ciclo
-                </button>
-              ) : null}
-            </div>
-          </div>
-          ) : null}
-
-          <Ciclos
-            {...safeCycleProps}
-            bancoDisciplinas={cycleSourceDisciplines}
-            targetContest={targetContest}
-            targetDisciplines={cycleCanonicalDisciplines}
-            studyRecommendation={studyRecommendation}
-            embedded
+        {planejamentoMode === 'flexivel' ? (
+          <CicloFlexivel
+            disciplinas={cycleRows}
+            ciclosCompletos={ciclosCompletos}
+            totalFeitoMin={totalFeitoCiclo}
+            totalPrevistoMin={totalPrevistoCiclo}
+            acumuladoMin={Number(safeCycleProps.minConcluidosCiclo || 0)}
+            progress={cycleProgress}
+            onRecomecar={safeCycleProps.onRestartCycle}
+            onReplanejar={openWizard}
+            onRemover={safeCycleProps.onRemoveCycle}
+            onEditar={openWizard}
+            onStart={onStartRecommendedSession || safeCycleProps.openTimerSetup}
+            onManual={() => safeCycleProps.setRegistroEstudoModalOpen?.(true)}
+            onHistory={onOpenRecommendedDiscipline}
           />
-        </div>
-      )}
-
+        ) : (
+          <PlanejamentoFixo
+            stats={fixedStats}
+            currentDate={currentDate}
+            currentWeek={currentWeek}
+            currentMonthGrid={currentMonthGrid}
+            calViewMode={calViewMode}
+            setCalViewMode={setCalViewMode}
+            setCurrentDate={setCurrentDate}
+            events={filteredCalendarEvents}
+          />
+        )}
       {wizardOpen ? (
         <div className="fixed inset-0 z-[120]">
           <div
@@ -1846,7 +1175,404 @@ function PlanejamentoContent({
         </div>
       ) : null}
     </div>
+    </div>
   );
+}
+
+function PlanejamentoHeader({ mode, setMode, onConfigurar }) {
+  return (
+    <section className="pl-card-paper" style={{ padding: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
+        <div>
+          <div className="pl-overline">Planejamento</div>
+          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
+            Plano de estudos.
+          </h1>
+          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+            Escolha entre uma rotação flexível para rotina variável ou uma agenda fixa para semanas previsíveis.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <div className="pl-card planning-mode-toggle">
+            <button type="button" className={mode === 'flexivel' ? 'is-active' : ''} onClick={() => setMode('flexivel')}>
+              <RefreshCw size={15} />
+              Ciclo flexível
+            </button>
+            <button type="button" className={mode === 'fixo' ? 'is-active' : ''} onClick={() => setMode('fixo')}>
+              <CalendarDays size={15} />
+              Planejamento fixo
+            </button>
+          </div>
+          <button type="button" className="pl-btn pl-btn-secondary" onClick={onConfigurar}>
+            <Settings2 size={14} />
+            Configurar
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CicloFlexivel({
+  disciplinas,
+  ciclosCompletos,
+  totalFeitoMin,
+  totalPrevistoMin,
+  acumuladoMin,
+  progress,
+  onRecomecar,
+  onReplanejar,
+  onRemover,
+  onEditar,
+  onStart,
+  onManual,
+  onHistory,
+}) {
+  const activeIndex = disciplinas.findIndex((disciplina) => disciplina.feitaMin < disciplina.previstaMin);
+  const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <section className="planning-cycle-strip">
+        <CiclosCompletosCard value={ciclosCompletos} />
+        <ProgressoCicloCard
+          feitoMin={totalFeitoMin}
+          previstoMin={totalPrevistoMin}
+          acumuladoMin={acumuladoMin}
+          progress={progress}
+        />
+        <CicloActions onRecomecar={onRecomecar} onReplanejar={onReplanejar} onRemover={onRemover} disabled={disciplinas.length === 0} />
+      </section>
+
+      <section className="planning-main-grid">
+        <SequenciaDosEstudosCard
+          disciplinas={disciplinas}
+          activeIndex={currentIndex}
+          onEditar={onEditar}
+          onStart={onStart}
+          onManual={onManual}
+          onHistory={onHistory}
+        />
+        <DistribuicaoDonutCard disciplinas={disciplinas} totalMin={totalPrevistoMin} />
+      </section>
+    </div>
+  );
+}
+
+function CiclosCompletosCard({ value }) {
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <div className="pl-small-label">Ciclos completos</div>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 48, lineHeight: 1 }}>{value}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>desde que começou</p>
+    </div>
+  );
+}
+
+function ProgressoCicloCard({ feitoMin, previstoMin, acumuladoMin, progress }) {
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+        <div className="pl-small-label">Progresso do ciclo atual</div>
+        <div className="pl-serif-number" style={{ fontSize: 24, lineHeight: 1 }}>{progress}%</div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', marginTop: 16 }}>
+        <span className="planning-time-label">{formatMinutes(feitoMin)}</span>
+        <div className="pl-progress-track">
+          <div className="pl-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <span className="planning-time-label">{formatMinutes(previstoMin)}</span>
+      </div>
+      <p className="pl-muted" style={{ margin: '12px 0 0', fontSize: 13 }}>
+        Acumulado total ao longo de todos os ciclos: {formatMinutes(acumuladoMin)}
+      </p>
+    </div>
+  );
+}
+
+function CicloActions({ onRecomecar, onReplanejar, onRemover, disabled }) {
+  return (
+    <div className="pl-card planning-cycle-actions">
+      <button type="button" className="pl-btn pl-btn-sm" onClick={onRecomecar} disabled={disabled}>
+        <RotateCcw size={13} />
+        Recomeçar
+      </button>
+      <button type="button" className="pl-btn pl-btn-sm" onClick={onReplanejar}>
+        <Settings2 size={13} />
+        Replanejar
+      </button>
+      <button type="button" className="pl-btn pl-btn-sm" onClick={onRemover} disabled={disabled} style={{ color: 'var(--pl-danger)' }}>
+        <Trash2 size={13} />
+        Remover
+      </button>
+    </div>
+  );
+}
+
+function SequenciaDosEstudosCard({ disciplinas, activeIndex, onEditar, onStart, onManual, onHistory }) {
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'end' }}>
+        <div>
+          <div className="pl-overline">Sequência dos estudos</div>
+          <h2 className="pl-section-title" style={{ marginTop: 7 }}>{disciplinas.length} matérias na rotação</h2>
+        </div>
+        <button type="button" className="pl-btn-link">Ver finalizadas →</button>
+      </div>
+
+      <div style={{ display: 'grid', gap: 8, marginTop: 18 }}>
+        {disciplinas.length === 0 ? (
+          <div className="planning-empty">Nenhuma matéria no ciclo ainda. Configure o planejamento para montar a rotação.</div>
+        ) : (
+          disciplinas.map((disciplina, index) => (
+            <CicloRow
+              key={disciplina.key}
+              disciplina={disciplina}
+              active={index === activeIndex}
+              onStart={onStart}
+              onManual={onManual}
+              onHistory={onHistory}
+            />
+          ))
+        )}
+      </div>
+
+      <button type="button" className="pl-btn pl-btn-secondary" style={{ marginTop: 18 }} onClick={onEditar}>
+        <Edit3 size={14} />
+        Editar ciclo
+      </button>
+    </section>
+  );
+}
+
+function CicloRow({ disciplina, active, onStart, onManual, onHistory }) {
+  const pct = disciplina.previstaMin > 0 ? Math.round((disciplina.feitaMin / disciplina.previstaMin) * 100) : 0;
+
+  return (
+    <article className={active ? 'planning-cycle-row is-active' : 'planning-cycle-row'}>
+      <div className="planning-cycle-row-main">
+        <span className="planning-subject-bar" style={{ background: disciplina.cor }} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <strong>{disciplina.nome}</strong>
+            {active && <span className="pl-tag pl-tag-highlight">Agora</span>}
+          </div>
+          {active && (
+            <div className="pl-progress-track" style={{ marginTop: 9 }}>
+              <div className="pl-progress-fill" style={{ width: `${pct}%`, background: disciplina.cor }} />
+            </div>
+          )}
+        </div>
+        <span className="planning-time-label">{formatMinutes(disciplina.feitaMin)} / {formatMinutes(disciplina.previstaMin)}</span>
+      </div>
+
+      {active && (
+        <div className="planning-cycle-row-actions">
+          <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={() => onStart?.(disciplina)}>
+            <Play size={13} fill="currentColor" />
+            Iniciar estudo
+          </button>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={onManual}>Adicionar manual</button>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={() => onHistory?.(disciplina.nome)}>Últimos estudos</button>
+        </div>
+      )}
+    </article>
+  );
+}
+
+function DistribuicaoDonutCard({ disciplinas, totalMin }) {
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div className="pl-overline">Ciclo · distribuição</div>
+      <h2 className="pl-section-title" style={{ marginTop: 7 }}>Como o seu tempo se reparte</h2>
+      <div className="planning-donut-wrap">
+        <Donut disciplinas={disciplinas} totalMin={totalMin} />
+      </div>
+      <div className="planning-donut-legend">
+        {disciplinas.map((disciplina) => (
+          <div key={disciplina.key}>
+            <span style={{ background: disciplina.cor }} />
+            <strong>{disciplina.nome}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Donut({ disciplinas, totalMin }) {
+  const size = 280;
+  const rOuter = 110;
+  const rInner = 90;
+  const cx = size / 2;
+  const cy = size / 2;
+  const total = disciplinas.reduce((acc, item) => acc + item.previstaMin, 0);
+  let cum = 0;
+
+  const segs = disciplinas.map((disciplina) => {
+    const f = total > 0 ? disciplina.previstaMin / total : 0;
+    const start = cum * 360 - 90;
+    const end = (cum + f) * 360 - 90;
+    cum += f;
+    const doneF = disciplina.previstaMin > 0 ? Math.min(1, disciplina.feitaMin / disciplina.previstaMin) : 0;
+    return { ...disciplina, start, end, doneEnd: start + (end - start) * doneF };
+  });
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Distribuição do ciclo">
+      {segs.map((seg, index) => (
+        <path key={`outer-${seg.key}-${index}`} d={arcPath(cx, cy, rOuter, seg.start, seg.end, rInner)} fill={seg.cor} opacity="0.45">
+          <title>{seg.nome}: {formatMinutes(seg.feitaMin)} / {formatMinutes(seg.previstaMin)}</title>
+        </path>
+      ))}
+      {segs.map((seg, index) => (
+        seg.doneEnd > seg.start ? (
+          <path key={`done-${seg.key}-${index}`} d={arcPath(cx, cy, rOuter, seg.start, seg.doneEnd, rInner)} fill={seg.cor}>
+            <title>{seg.nome}: {formatMinutes(seg.feitaMin)} / {formatMinutes(seg.previstaMin)}</title>
+          </path>
+        ) : null
+      ))}
+      <circle cx={cx} cy={cy} r={72} fill="var(--pl-surface)" />
+      <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 26 }} fill="var(--pl-ink)">
+        {formatMinutes(totalMin)}
+      </text>
+      <text x={cx} y={cy + 20} textAnchor="middle" style={{ fontFamily: 'var(--pl-sans)', fontWeight: 700, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }} fill="var(--pl-ink-3)">
+        planejadas
+      </text>
+    </svg>
+  );
+}
+
+function PlanejamentoFixo({ stats, currentDate, currentWeek, currentMonthGrid, calViewMode, setCalViewMode, setCurrentDate, events }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+        <FixoStat label="Carga da semana" value={stats.weeklyLabel} sub={`${stats.sessions} blocos planejados`} tone="ink" />
+        <FixoStat label="Tópicos em aberto" value={stats.pending} sub={`${stats.required} / semana`} tone="warn" />
+        <FixoStat label="Leitura rápida" value={stats.activeDays} sub={`dias ativos · ${stats.pace}`} tone="success" />
+      </section>
+      <CalendarCard
+        currentDate={currentDate}
+        currentWeek={currentWeek}
+        currentMonthGrid={currentMonthGrid}
+        calViewMode={calViewMode}
+        setCalViewMode={setCalViewMode}
+        setCurrentDate={setCurrentDate}
+        events={events}
+      />
+    </div>
+  );
+}
+
+function FixoStat({ label, value, sub, tone }) {
+  const toneClass = tone === 'success' ? 'pl-tag-success' : tone === 'warn' ? 'pl-tag-warn' : 'pl-tag-accent';
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <span className={`pl-tag ${toneClass}`}>{label}</span>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 36, lineHeight: 1 }}>{value}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>{sub}</p>
+    </div>
+  );
+}
+
+function CalendarCard({ currentDate, currentWeek, currentMonthGrid, calViewMode, setCalViewMode, setCurrentDate, events }) {
+  const monthTitle =
+    calViewMode === 'mes'
+      ? `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+      : `Semana de ${currentWeek[0].getDate()}/${currentWeek[0].getMonth() + 1}`;
+  const cells =
+    calViewMode === 'mes'
+      ? currentMonthGrid.map((day, index) => (day ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day) : null))
+      : currentWeek;
+
+  return (
+    <section className="pl-card planning-calendar-card">
+      <div className="planning-calendar-head">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <h2 className="pl-section-title">{monthTitle}</h2>
+          <div className="planning-segment">
+            <button type="button" className={calViewMode === 'mes' ? 'is-active' : ''} onClick={() => setCalViewMode('mes')}>Mês</button>
+            <button type="button" className={calViewMode === 'semana' ? 'is-active' : ''} onClick={() => setCalViewMode('semana')}>Semana</button>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="pl-btn pl-btn-sm" onClick={() => shiftCalendarDate(setCurrentDate, currentDate, calViewMode, -1)}><ChevronLeft size={14} /></button>
+          <button type="button" className="pl-btn pl-btn-sm" onClick={() => setCurrentDate(new Date())}>Hoje</button>
+          <button type="button" className="pl-btn pl-btn-sm" onClick={() => shiftCalendarDate(setCurrentDate, currentDate, calViewMode, 1)}><ChevronRight size={14} /></button>
+        </div>
+      </div>
+
+      <div className="planning-calendar-grid">
+        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((label) => (
+          <div key={label} className="planning-calendar-weekday">{label}</div>
+        ))}
+        {cells.map((date, index) => {
+          const dateKey = date ? toDateKey(date) : '';
+          const dayEvents = date ? events.filter((event) => event.data === dateKey).slice(0, 4) : [];
+          return (
+            <div key={`${dateKey}-${index}`} className="planning-calendar-cell">
+              {date ? <span>{date.getDate()}</span> : null}
+              {dayEvents.map((event) => (
+                <div key={event.id} className="planning-calendar-pill" style={{ borderColor: event.cor, background: `${event.cor}55` }}>
+                  {event.hora} · {event.titulo}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function buildCycleRows(activeCycle, fallbackDisciplines) {
+  const source = Array.isArray(activeCycle) && activeCycle.length > 0 ? activeCycle : [];
+  if (source.length === 0) {
+    return (Array.isArray(fallbackDisciplines) ? fallbackDisciplines : []).map((disciplina, index) => {
+      const nome = disciplina?.nome || `Matéria ${index + 1}`;
+      return {
+        key: String(disciplina?.id || disciplina?.canonicalName || nome),
+        nome,
+        cor: getSubjectColor(disciplina?.canonicalName || nome),
+        previstaMin: Number(disciplina?.minutos || disciplina?.tempoMin || 60),
+        feitaMin: 0,
+      };
+    });
+  }
+
+  const groups = new Map();
+  source.filter(Boolean).forEach((item, index) => {
+    const nome = item?.materia || item?.nome || item?.canonicalName || `Matéria ${index + 1}`;
+    const key = String(item?.canonicalName || nome);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        nome,
+        cor: getSubjectColor(key),
+        previstaMin: 0,
+        feitaMin: 0,
+      });
+    }
+    const group = groups.get(key);
+    const minutos = Number(item?.minutos || item?.duracao || 0);
+    group.previstaMin += minutos;
+    if (item?.concluido) group.feitaMin += minutos;
+  });
+  return Array.from(groups.values());
+}
+
+function arcPath(cx, cy, rOuter, start, end, rInner) {
+  const polar = (r, angle) => ({
+    x: cx + r * Math.cos((angle * Math.PI) / 180),
+    y: cy + r * Math.sin((angle * Math.PI) / 180),
+  });
+  const s1 = polar(rOuter, end);
+  const e1 = polar(rOuter, start);
+  const s2 = polar(rInner, start);
+  const e2 = polar(rInner, end);
+  const large = end - start <= 180 ? '0' : '1';
+  return `M ${s1.x} ${s1.y} A ${rOuter} ${rOuter} 0 ${large} 0 ${e1.x} ${e1.y} L ${s2.x} ${s2.y} A ${rInner} ${rInner} 0 ${large} 1 ${e2.x} ${e2.y} Z`;
 }
 
 function FilterLine({ checked, onChange, color, label }) {

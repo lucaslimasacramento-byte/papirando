@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import {
   clearInvalidSupabaseAuthStorage,
@@ -186,6 +186,76 @@ function resolveCycleWeightKey(input) {
   }
 
   return String(input || '');
+}
+
+function EditorialTopStrip({ activeTab, setActiveTab }) {
+  const tabs = [
+    { id: 'home', label: 'Dashboard' },
+    { id: 'questoes', label: 'Questões' },
+    { id: 'sessoes', label: 'Resolver questão' },
+    { id: 'planejamento', label: 'Plano' },
+  ];
+
+  const activeId = activeTab === 'home'
+    ? 'home'
+    : activeTab === 'questoes'
+      ? 'questoes'
+      : activeTab === 'planejamento'
+        ? 'planejamento'
+        : activeTab === 'sessoes'
+          ? 'sessoes'
+          : '';
+
+  return (
+    <div
+      className="fixed inset-x-0 top-0 z-[70] flex h-11 items-center border-b"
+      style={{
+        background: 'var(--pl-ink, #14110d)',
+        borderColor: 'rgba(243, 239, 229, 0.12)',
+        color: 'var(--pl-bg, #f3efe5)',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setActiveTab('home')}
+        className="flex h-full w-[88px] items-center justify-center border-r"
+        style={{ borderColor: 'rgba(243, 239, 229, 0.12)' }}
+        aria-label="Papirando"
+      >
+        <span style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1 }}>P</span>
+      </button>
+      <nav className="flex h-full min-w-0 flex-1 items-center">
+        {tabs.map((tab) => {
+          const isActive = activeId === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className="relative flex h-full items-center px-6 text-sm font-semibold transition"
+              style={{
+                color: isActive ? 'var(--pl-bg, #f3efe5)' : 'rgba(243, 239, 229, 0.55)',
+              }}
+            >
+              {tab.label}
+              {isActive ? (
+                <span
+                  className="absolute inset-x-5 bottom-0 h-px"
+                  style={{ background: 'var(--pl-bg, #f3efe5)' }}
+                />
+              ) : null}
+            </button>
+          );
+        })}
+      </nav>
+      <div className="hidden shrink-0 items-center gap-2 px-5 text-[11px] font-semibold md:flex" style={{ color: 'rgba(243, 239, 229, 0.55)' }}>
+        <span style={{ color: 'rgba(243, 239, 229, 0.38)' }}>✣</span>
+        Aplicação editorial · 16 mai 2026
+      </div>
+    </div>
+  );
 }
 
 function parseCycleDurationLabel(label, fallback = 90) {
@@ -5903,6 +5973,59 @@ export default function App() {
   };
 
   const progGeralEdital = 42;
+  const ultimaAnotacao = useMemo(() => {
+    const fontes = (Array.isArray(redacoes) ? redacoes : [])
+      .map((redacao) => {
+        const texto = String(redacao?.resumo || redacao?.texto || redacao?.content || '').trim();
+        const data = String(
+          redacao?.atualizado_em ||
+          redacao?.updated_at ||
+          redacao?.created_at ||
+          redacao?.data ||
+          ''
+        ).trim();
+        return {
+          kind: 'redacao',
+          titulo: String(redacao?.tema || redacao?.titulo || 'Redacao sem titulo').trim(),
+          disciplina: String(redacao?.disciplina || redacao?.banca || 'Redacao').trim(),
+          excerpt: texto ? `${texto.slice(0, 220)}${texto.length > 220 ? '...' : ''}` : 'Continue de onde parou.',
+          data,
+          acaoLabel: 'Continuar redacao',
+        };
+      })
+      .filter((item) => item.titulo || item.excerpt);
+
+    if (fontes.length === 0) return null;
+
+    fontes.sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')));
+    const top = fontes[0];
+    return {
+      ...top,
+      data: top.data
+        ? new Date(top.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+        : '',
+    };
+  }, [redacoes]);
+
+  const editalProgresso = useMemo(() => {
+    const targetDiscs = Array.isArray(targetContestDisciplines) ? targetContestDisciplines : [];
+    if (!targetContestSummary || targetDiscs.length === 0) return null;
+
+    const porDisciplina = targetDiscs
+      .map((disciplina) => ({
+        nome: String(disciplina?.nome || disciplina?.disciplina || 'Disciplina').trim(),
+        pct: Math.round(Number(disciplina?.percentual || disciplina?.progresso || 0)),
+      }))
+      .filter((item) => item.nome)
+      .sort((a, b) => b.pct - a.pct || a.nome.localeCompare(b.nome, 'pt-BR'))
+      .slice(0, 8);
+
+    return {
+      geral: progGeralEdital,
+      porDisciplina,
+    };
+  }, [targetContestSummary, targetContestDisciplines, progGeralEdital]);
+
   const currentCourseLimit = getCourseLimitFromProfile(currentProfile);
   const currentCourseCount = cursos.filter((course) => course.origem !== 'inferido').length;
   const remainingCourseSlots = isAdmin ? 999 : Math.max(currentCourseLimit - currentCourseCount, 0);
@@ -5957,6 +6080,9 @@ export default function App() {
     targetContestDisciplines,
     smartStudyPlan,
     dailyRoutine,
+    ultimaAnotacao,
+    editalProgresso,
+    onOpenUltimaAnotacao: () => setActiveTab('redacoes'),
     setSelectedContestDetailId,
     handleDisciplineClick,
     startRecommendedStudySession,
@@ -6157,9 +6283,10 @@ export default function App() {
     <ErrorBoundary>
       <ToastProvider>
       <div
-        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
-        style={{ backgroundColor: theme.bg }}
+        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden pt-11 font-sans text-slate-800"
+        style={{ backgroundColor: 'var(--pl-bg, #f3efe5)' }}
       >
+      <EditorialTopStrip activeTab={activeTab} setActiveTab={setActiveTab} />
       {chartTooltip && (
         <div
           className="pointer-events-none fixed z-[9999] flex -translate-x-1/2 -translate-y-full transform items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-lg mt-[-10px]"
@@ -6219,12 +6346,15 @@ export default function App() {
 
         <div
           ref={contentScrollRef}
-          className={`scrollbar-thin relative min-h-0 flex-1 px-3 pt-2 sm:px-4 md:px-5 ${
+          className={`pl-paper-bg-soft scrollbar-thin relative min-h-0 flex-1 ${
+            ['home', 'questoes', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades', 'esquadroes'].includes(activeTab) ? 'px-0 pt-0 sm:px-0 md:px-0' : 'px-3 pt-2 sm:px-4 md:px-5'
+          } ${
             activeTab === 'historico' ||
             activeTab === 'questoes' ||
-            activeTab === 'comunidades'
+            activeTab === 'comunidades' ||
+            activeTab === 'perfil'
               ? `flex flex-col overflow-hidden ${activeTab === 'comunidades' ? 'pb-2' : 'pb-6'}`
-              : `overflow-y-auto ${activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
+              : `overflow-y-auto overflow-x-hidden ${['home', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades', 'esquadroes'].includes(activeTab) ? 'pb-0' : activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}
         >
           <CheckoutResultBanner onSuccess={refreshSubscription} />
@@ -6235,9 +6365,13 @@ export default function App() {
 
           <Suspense
             fallback={
-              <div className="page-shell">
-                <div className="section-card flex min-h-[240px] items-center justify-center text-sm font-semibold text-slate-500">
-                  Carregando área...
+              <div className="pl-app pl-paper-bg-soft pl-loading-shell">
+                <div className="pl-loading-panel">
+                  <div className="pl-loading-stack">
+                    <div className="pl-loading-spinner" aria-hidden />
+                    <span className="eyebrow">Papirando</span>
+                    <p className="title">Carregando área.</p>
+                  </div>
                 </div>
               </div>
             }

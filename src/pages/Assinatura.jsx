@@ -228,6 +228,13 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
       return;
     }
 
+    // CPF obrigatório para emissão de nota fiscal
+    const cpfDigits = (currentProfile?.cpf || '').replace(/\D/g, '');
+    if (cpfDigits.length !== 11) {
+      setCheckoutError('Preencha seu CPF no Perfil antes de assinar. Ele é necessário para emissão de nota fiscal.');
+      return;
+    }
+
     setLoadingPlan(planId);
     setFeedback('');
     setCheckoutError('');

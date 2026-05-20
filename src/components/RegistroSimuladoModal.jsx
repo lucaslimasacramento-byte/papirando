@@ -140,17 +140,21 @@ export default function RegistroSimuladoModal({
   if (!registroSimuladoModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-500">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-white px-10 py-8">
-          <h2 className="text-3xl font-black tracking-tight text-gray-700">Novo Simulado</h2>
-          <button onClick={closeModal} className="rounded-xl p-2 text-[#10B981]/60 transition-all hover:text-[#10B981]">
-            <X size={40} strokeWidth={2.5} />
+    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-[#14110d]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+      <div className="simulados-modal-shell simulados-registro-modal">
+        <div className="simulados-modal-head">
+          <div>
+            <div className="pl-overline">Registrar prova</div>
+            <h2>Novo simulado.</h2>
+            <p>Informe a prova, distribua as linhas por disciplina e salve o resultado consolidado.</p>
+          </div>
+          <button type="button" onClick={closeModal} aria-label="Fechar">
+            <X size={18} />
           </button>
         </div>
 
-        <div className="custom-scrollbar flex-1 space-y-10 overflow-y-auto p-10">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
+        <div className="simulados-modal-body">
+          <div className="simulados-registro-meta">
             <Field className="md:col-span-3" label="Data">
               <input type="date" value={simuladoData} onChange={(e) => setSimuladoData(e.target.value)} className={inputClass()} />
             </Field>
@@ -171,15 +175,15 @@ export default function RegistroSimuladoModal({
             </Field>
           </div>
 
-          <div>
-            <div className="grid grid-cols-12 items-center gap-4 border-b border-gray-200 pb-4">
-              <div className="col-span-4 text-[12px] font-black text-gray-800">Disciplina / assunto</div>
-              <div className="col-span-2 text-center text-[12px] font-black text-gray-800">Peso</div>
-              <div className="col-span-1 flex justify-center text-gray-400" title="Em Branco"><Edit3 size={18} /></div>
-              <div className="col-span-1 flex justify-center text-emerald-500" title="Acertos"><Check size={20} strokeWidth={3} /></div>
-              <div className="col-span-1 flex justify-center text-red-500" title="Erros"><X size={20} strokeWidth={3} /></div>
-              <div className="col-span-1 flex justify-center text-gray-400" title="Total"><FileText size={18} /></div>
-              <div className="col-span-2 text-center text-[12px] font-black text-gray-800">% Acertos</div>
+          <div className="simulados-registro-table">
+            <div className="simulados-registro-table-head">
+              <div>Disciplina / assunto</div>
+              <div>Peso</div>
+              <div title="Em Branco"><Edit3 size={15} /></div>
+              <div className="is-success" title="Acertos"><Check size={16} /></div>
+              <div className="is-danger" title="Erros"><X size={16} /></div>
+              <div title="Total"><FileText size={15} /></div>
+              <div>%</div>
             </div>
 
             {simuladoRows.map((row) => {
@@ -187,8 +191,8 @@ export default function RegistroSimuladoModal({
               const pct = total > 0 ? Math.round((Number(row.acertos) / total) * 100) : 0;
 
               return (
-                <div key={row.id} className="grid grid-cols-12 items-start gap-4 border-b border-gray-100 py-4">
-                  <div className="col-span-4 flex flex-col gap-2">
+                <div key={row.id} className="simulados-registro-row">
+                  <div className="simulados-registro-subject">
                     <select
                       className={inputClass()}
                       value={row.disciplina}
@@ -220,25 +224,23 @@ export default function RegistroSimuladoModal({
                     ) : null}
                   </div>
 
-                  <CellInput value={row.peso} onChange={(value) => updateSimuladoRow(row.id, 'peso', value)} min="1" className="col-span-2" />
-                  <CellInput value={row.brancos} onChange={(value) => updateSimuladoRow(row.id, 'brancos', value)} className="col-span-1" />
-                  <CellInput value={row.acertos} onChange={(value) => updateSimuladoRow(row.id, 'acertos', value)} className="col-span-1" />
-                  <CellInput value={row.erros} onChange={(value) => updateSimuladoRow(row.id, 'erros', value)} className="col-span-1" />
-                  <div className="col-span-1 pt-2 text-center text-lg font-black text-gray-400">{total}</div>
-                  <div className="col-span-2 pt-2 text-center text-lg font-black text-emerald-500">{pct}%</div>
+                  <CellInput value={row.peso} onChange={(value) => updateSimuladoRow(row.id, 'peso', value)} min="1" />
+                  <CellInput value={row.brancos} onChange={(value) => updateSimuladoRow(row.id, 'brancos', value)} />
+                  <CellInput value={row.acertos} onChange={(value) => updateSimuladoRow(row.id, 'acertos', value)} />
+                  <CellInput value={row.erros} onChange={(value) => updateSimuladoRow(row.id, 'erros', value)} />
+                  <div className="simulados-registro-total">{total}</div>
+                  <div className={`simulados-registro-pct ${pct >= 80 ? 'is-success' : pct >= 65 ? 'is-accent' : 'is-warn'}`}>{pct}%</div>
                 </div>
               );
             })}
 
-            <div className="mt-6 grid grid-cols-12 items-center gap-4 rounded-xl bg-emerald-50/50 py-6">
-              <div className="col-span-6 pr-6 text-right text-[11px] font-black uppercase tracking-widest text-gray-400">
-                Resultado final
-              </div>
-              <div className="col-span-1 text-center text-xl font-black text-gray-800">{totals.brancos}</div>
-              <div className="col-span-1 text-center text-xl font-black text-emerald-600">{totals.acertos}</div>
-              <div className="col-span-1 text-center text-xl font-black text-red-500">{totals.erros}</div>
-              <div className="col-span-1 text-center text-xl font-black text-gray-800">{totals.total}</div>
-              <div className="col-span-2 text-center text-xl font-black text-emerald-600">{totals.pct}%</div>
+            <div className="simulados-registro-result">
+              <span>Resultado final</span>
+              <b>{totals.brancos} brancos</b>
+              <b className="is-success">{totals.acertos} acertos</b>
+              <b className="is-danger">{totals.erros} erros</b>
+              <b>{totals.total} total</b>
+              <strong>{totals.pct}%</strong>
             </div>
           </div>
 
@@ -253,16 +255,16 @@ export default function RegistroSimuladoModal({
           </Field>
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-gray-100 bg-white px-10 py-6">
-          <button onClick={addSimuladoRow} className="flex items-center gap-2 rounded-2xl border-2 border-[#10B981] px-8 py-3 text-sm font-black text-[#10B981] transition-all hover:bg-emerald-50">
+        <div className="simulados-modal-footer">
+          <button onClick={addSimuladoRow} className="pl-btn pl-btn-sm">
             <Plus size={16} strokeWidth={3} />
             Adicionar disciplina
           </button>
-          <div className="flex gap-4">
-            <button onClick={closeModal} className="rounded-2xl border-2 border-emerald-500 px-8 py-3 text-sm font-black text-emerald-500 transition-all hover:bg-emerald-50">
+          <div>
+            <button onClick={closeModal} className="pl-btn">
               Cancelar
             </button>
-            <button onClick={handleSave} disabled={saving} className="rounded-2xl bg-[#10B981] px-12 py-3 text-sm font-black text-white shadow-xl shadow-emerald-100 transition-all hover:bg-[#0E9F6E] disabled:opacity-60">
+            <button onClick={handleSave} disabled={saving} className="pl-btn pl-btn-primary">
               {saving ? 'Salvando...' : 'Salvar Simulado'}
             </button>
           </div>
@@ -274,8 +276,8 @@ export default function RegistroSimuladoModal({
 
 function Field({ label, className = '', children }) {
   return (
-    <div className={className}>
-      <label className="mb-2 block text-[11px] font-black uppercase tracking-widest text-gray-400">{label}</label>
+    <div className={`simulados-modal-field ${className}`}>
+      <label>{label}</label>
       {children}
     </div>
   );
@@ -296,9 +298,9 @@ function CellInput({ className = '', value, onChange, min = '0' }) {
 }
 
 function inputClass() {
-  return 'w-full rounded-xl border-2 border-emerald-400/30 bg-transparent py-3 text-lg font-bold text-gray-700 outline-none transition-colors hover:border-emerald-400 focus:border-emerald-500';
+  return 'simulados-register-input';
 }
 
 function secondaryInputClass() {
-  return 'w-full rounded-xl border-2 border-emerald-100 bg-transparent py-2 text-xs font-bold text-gray-500 outline-none transition-colors focus:border-emerald-300';
+  return 'simulados-register-input is-secondary';
 }
