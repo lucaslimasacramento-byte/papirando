@@ -119,7 +119,7 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
     <div
       className={cx(
         'rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md',
-        redditDark ? 'border-[#343536] bg-[#272729]' : 'border-slate-100 bg-slate-50'
+        redditDark ? 'border-[#3a3530] bg-[#211c16]' : 'border-slate-100 bg-slate-50'
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -127,14 +127,14 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
           <div
             className={cx(
               'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-xs font-semibold',
-              redditDark ? 'bg-[#1a1a1b] text-[#D7DADC]' : 'bg-slate-200 text-slate-700'
+              redditDark ? 'bg-[#1a1612] text-[#ece4d2]' : 'bg-slate-200 text-slate-700'
             )}
           >
             {comment.avatar ? <img src={comment.avatar} alt="" className="h-full w-full rounded-2xl object-cover" /> : initials(comment.author)}
           </div>
           <div className="min-w-0">
-            <p className={cx('truncate text-sm font-semibold', redditDark ? 'text-[#D7DADC]' : 'text-slate-800')}>{comment.author}</p>
-            <p className={cx('text-[10px] font-semibold uppercase tracking-[0.16em]', redditDark ? 'text-[#818384]' : 'text-slate-400')}>
+            <p className={cx('truncate text-sm font-semibold', redditDark ? 'text-[#ece4d2]' : 'text-slate-800')}>{comment.author}</p>
+            <p className={cx('text-[10px] font-semibold uppercase tracking-[0.16em]', redditDark ? 'text-[#8e8675]' : 'text-slate-400')}>
               {formatCommunityRelativeTime(comment.createdAt)}
             </p>
           </div>
@@ -160,7 +160,7 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
           </div>
         ) : null}
       </div>
-      <p className={cx('mt-3 text-sm leading-relaxed', redditDark ? 'text-[#D7DADC]' : 'text-slate-600')}>{comment.content}</p>
+      <p className={cx('mt-3 text-sm leading-relaxed', redditDark ? 'text-[#ece4d2]' : 'text-slate-600')}>{comment.content}</p>
     </div>
   );
 }
@@ -192,8 +192,8 @@ function PostCard({
         'overflow-hidden rounded-[2rem] border transition-shadow duration-200',
         rd
           ? featured
-            ? 'border-[#ff4500]/50 bg-[#1a1a1b] ring-1 ring-[#ff4500]/30'
-            : 'border-[#343536] bg-[#1a1a1b] hover:border-[#818384]'
+            ? 'border-[#1d4ed8]/50 bg-[#1a1612] ring-1 ring-[#1d4ed8]/30'
+            : 'border-[#3a3530] bg-[#1a1612] hover:border-[#8e8675]'
           : featured
             ? 'border-amber-200 bg-white shadow-sm ring-1 ring-amber-100/80'
             : 'border-gray-100 bg-white shadow-sm hover:shadow-md'
@@ -203,7 +203,7 @@ function PostCard({
         <div
           className={cx(
             'flex flex-row items-center justify-center gap-2 border-b px-3 py-2 sm:w-[52px] sm:flex-col sm:gap-1 sm:border-b-0 sm:border-r sm:px-1 sm:py-3',
-            rd ? 'border-[#343536] bg-[#0d0d0d] sm:border-[#343536] sm:bg-transparent' : 'border-slate-100 bg-slate-50/60 sm:border-slate-100 sm:bg-transparent'
+            rd ? 'border-[#3a3530] bg-[#14110d] sm:border-[#3a3530] sm:bg-transparent' : 'border-slate-100 bg-slate-50/60 sm:border-slate-100 sm:bg-transparent'
           )}
         >
           <button
@@ -213,25 +213,25 @@ function PostCard({
               'flex h-9 w-9 items-center justify-center rounded-lg transition sm:h-8 sm:w-8',
               post.upvotedByCurrentUser
                 ? rd
-                  ? 'bg-[#ff4500]/20 text-[#ff4500]'
+                  ? 'bg-[#1d4ed8]/20 text-[#1d4ed8]'
                   : 'bg-orange-100 text-orange-700'
                 : rd
-                  ? 'text-[#818384] hover:bg-[#272729]'
+                  ? 'text-[#8e8675] hover:bg-[#211c16]'
                   : 'text-slate-500 hover:bg-slate-200'
             )}
             aria-label="Dar apoio"
           >
             <ArrowBigUp size={20} className="sm:h-[18px] sm:w-[18px]" />
           </button>
-          <span className={cx('min-w-[1.5rem] text-center text-sm font-bold tabular-nums', rd ? 'text-[#D7DADC]' : 'text-slate-800')}>{post.upvotesCount}</span>
+          <span className={cx('min-w-[1.5rem] text-center text-sm font-bold tabular-nums', rd ? 'text-[#ece4d2]' : 'text-slate-800')}>{post.upvotesCount}</span>
         </div>
 
         <div className="min-w-0 flex-1 px-3 py-3 sm:px-4 sm:py-3">
-          <div className={cx('flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-tight', rd ? 'text-[#818384]' : 'text-slate-500')}>
+          <div className={cx('flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-tight', rd ? 'text-[#8e8675]' : 'text-slate-500')}>
             <div
               className={cx(
                 'flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-bold',
-                rd ? 'bg-[#272729] text-[#D7DADC]' : 'bg-slate-200 text-slate-600'
+                rd ? 'bg-[#211c16] text-[#ece4d2]' : 'bg-slate-200 text-slate-600'
               )}
             >
               {post.avatar ? <img src={post.avatar} alt="" className="h-full w-full object-cover" /> : initials(post.author)}
@@ -239,23 +239,23 @@ function PostCard({
             <button
               type="button"
               onClick={() => onRoomClick?.(slug, post.category)}
-              className={cx('font-semibold hover:underline', rd ? 'text-[#D7DADC]' : 'text-slate-900')}
+              className={cx('font-semibold hover:underline', rd ? 'text-[#ece4d2]' : 'text-slate-900')}
             >
               {roomPath}
             </button>
-            <span className={rd ? 'text-[#343536]' : 'text-slate-300'} aria-hidden>
+            <span className={rd ? 'text-[#3a3530]' : 'text-slate-300'} aria-hidden>
               ·
             </span>
             <span className="truncate">{formatCommunityRelativeTime(post.createdAt)}</span>
-            <span className={cx('hidden sm:inline', rd ? 'text-[#343536]' : 'text-slate-300')} aria-hidden>
+            <span className={cx('hidden sm:inline', rd ? 'text-[#3a3530]' : 'text-slate-300')} aria-hidden>
               ·
             </span>
-            <span className={cx('max-w-[140px] truncate sm:max-w-[200px]', rd ? 'text-[#818384]' : 'text-slate-500')}>por {post.author}</span>
+            <span className={cx('max-w-[140px] truncate sm:max-w-[200px]', rd ? 'text-[#8e8675]' : 'text-slate-500')}>por {post.author}</span>
             {post.isPinned ? (
               <span
                 className={cx(
                   'inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                  rd ? 'bg-[#ff4500]/15 text-[#ff4500]' : 'bg-amber-100 text-amber-800'
+                  rd ? 'bg-[#1d4ed8]/15 text-[#1d4ed8]' : 'bg-amber-100 text-amber-800'
                 )}
               >
                 <Flame size={10} />
@@ -269,10 +269,10 @@ function PostCard({
                 'ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition',
                 post.savedByCurrentUser
                   ? rd
-                    ? 'text-[#4fbcff]'
+                    ? 'text-[#93b4ff]'
                     : 'text-blue-600'
                   : rd
-                    ? 'text-[#818384] hover:bg-[#272729] hover:text-[#D7DADC]'
+                    ? 'text-[#8e8675] hover:bg-[#211c16] hover:text-[#ece4d2]'
                     : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
               )}
               aria-label={post.savedByCurrentUser ? 'Remover dos salvos' : 'Salvar'}
@@ -284,7 +284,7 @@ function PostCard({
           <h2
             className={cx(
               'mt-2 font-bold leading-snug tracking-tight',
-              rd ? 'text-[#D7DADC]' : 'text-slate-900',
+              rd ? 'text-[#ece4d2]' : 'text-slate-900',
               featured ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
             )}
           >
@@ -298,7 +298,7 @@ function PostCard({
               {post.author}
             </p>
           </div>
-          <p className={cx('mt-2 line-clamp-5 whitespace-pre-wrap text-[15px] leading-relaxed', rd ? 'text-[#818384]' : 'text-slate-600')}>{post.content}</p>
+          <p className={cx('mt-2 line-clamp-5 whitespace-pre-wrap text-[15px] leading-relaxed', rd ? 'text-[#8e8675]' : 'text-slate-600')}>{post.content}</p>
 
           {isAdmin ? (
             <div
@@ -317,7 +317,7 @@ function PostCard({
                 onClick={() => onAdminPostAction?.(post, 'pin')}
                 className={cx(
                   'rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide disabled:opacity-50',
-                  rd ? 'border-[#343536] bg-[#272729] text-[#D7DADC] hover:bg-[#343536]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 )}
               >
                 <Pin size={11} className="mr-0.5 inline" />
@@ -329,7 +329,7 @@ function PostCard({
                 onClick={() => onAdminPostAction?.(post, 'hide')}
                 className={cx(
                   'rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide disabled:opacity-50',
-                  rd ? 'border-[#343536] bg-[#272729] text-[#D7DADC] hover:bg-[#343536]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 )}
               >
                 Ocultar
@@ -353,19 +353,19 @@ function PostCard({
             </div>
           ) : null}
 
-          <div className={cx('mt-4 flex flex-wrap items-center gap-2 border-t pt-4', rd ? 'border-[#343536]' : 'border-slate-100')}>
+          <div className={cx('mt-4 flex flex-wrap items-center gap-2 border-t pt-4', rd ? 'border-[#3a3530]' : 'border-slate-100')}>
             <button
               type="button"
               onClick={onToggleExpand}
               className={cx(
                 'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition',
-                rd ? 'border-[#343536] bg-[#272729] text-[#D7DADC] hover:bg-[#343536]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
               )}
             >
               <MessageCircle size={16} />
               {post.commentsCount} comentários
             </button>
-            <span className={cx('inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium', rd ? 'text-[#818384]' : 'text-slate-500')}>
+            <span className={cx('inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium', rd ? 'text-[#8e8675]' : 'text-slate-500')}>
               <Eye size={15} />
               {post.viewsCount} leituras
             </span>
@@ -386,7 +386,7 @@ function PostCard({
             <div
               className={cx(
                 'mt-4 space-y-3 rounded-[1.4rem] border p-3 sm:p-4',
-                rd ? 'border-[#343536] bg-[#0d0d0d]' : 'border-slate-100 bg-slate-50/80'
+                rd ? 'border-[#3a3530] bg-[#14110d]' : 'border-slate-100 bg-slate-50/80'
               )}
             >
               <div className="space-y-3">
@@ -406,14 +406,14 @@ function PostCard({
                   <div
                     className={cx(
                       'rounded-lg border border-dashed px-3 py-4 text-sm font-medium',
-                      rd ? 'border-[#343536] bg-[#1a1a1b] text-[#818384]' : 'border-slate-200 bg-white text-slate-500'
+                      rd ? 'border-[#3a3530] bg-[#1a1612] text-[#8e8675]' : 'border-slate-200 bg-white text-slate-500'
                     )}
                   >
                     Seja a primeira pessoa a comentar neste tópico.
                   </div>
                 )}
               </div>
-              <div className={cx('rounded-2xl border p-3', rd ? 'border-[#343536] bg-[#1a1a1b]' : 'border-slate-200 bg-white')}>
+              <div className={cx('rounded-2xl border p-3', rd ? 'border-[#3a3530] bg-[#1a1612]' : 'border-slate-200 bg-white')}>
                 <textarea
                   rows="3"
                   value={commentDraft}
@@ -422,7 +422,7 @@ function PostCard({
                   className={cx(
                     'w-full resize-none rounded-xl border p-3 text-sm outline-none transition',
                     rd
-                      ? 'border-[#343536] bg-[#272729] text-[#D7DADC] placeholder:text-[#818384] focus:border-[#ff4500] focus:ring-1 focus:ring-[#ff4500]/40'
+                      ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] placeholder:text-[#8e8675] focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]/40'
                       : 'border-slate-200 bg-slate-50 text-slate-700 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100'
                   )}
                 />
@@ -432,7 +432,7 @@ function PostCard({
                     onClick={onSubmitComment}
                     className={cx(
                       'inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition',
-                      rd ? 'bg-[#ff4500] text-white hover:bg-[#ff5414]' : 'bg-slate-900 text-white hover:bg-slate-950'
+                      rd ? 'bg-[#1d4ed8] text-white hover:bg-[#ff5414]' : 'bg-slate-900 text-white hover:bg-slate-950'
                     )}
                   >
                     <Send size={15} />
