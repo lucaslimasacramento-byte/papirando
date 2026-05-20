@@ -92,7 +92,7 @@ export default function AdminUsuarios({
         }
       />
 
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
+      <section className="rounded-[2.4rem] border border-ink-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
         <div className="grid gap-4 md:grid-cols-4">
           <SummaryCard icon={UserRound} label="Usuários" value={summary.total} />
           <SummaryCard icon={ShieldCheck} label="Admins" value={summary.admins} />
@@ -107,20 +107,20 @@ export default function AdminUsuarios({
         </div>
       ) : null}
 
-      <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Base de perfis</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Base de perfis</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Usuários cadastrados</h3>
           </div>
 
           <div className="relative max-w-md flex-1">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por nome, email, plano ou papel..."
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
             />
           </div>
         </div>
@@ -128,32 +128,32 @@ export default function AdminUsuarios({
         <div className="overflow-x-auto">
           <table className="min-w-[1080px] w-full">
             <thead>
-              <tr className="border-b border-gray-100 text-left">
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Usuário</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Papel</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Plano</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Status</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Limite de cursos</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Acesso</th>
+              <tr className="border-b border-ink-100 text-left">
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Usuário</th>
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Papel</th>
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Plano</th>
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Status</th>
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Limite de cursos</th>
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Acesso</th>
               </tr>
             </thead>
 
             <tbody>
               {isLoading &&
                 Array.from({ length: 4 }).map((_, index) => (
-                  <tr key={`loading-${index}`} className="border-b border-gray-100 align-top">
+                  <tr key={`loading-${index}`} className="border-b border-ink-100 align-top">
                     <td colSpan={6} className="px-4 py-4">
-                      <div className="h-12 animate-pulse rounded-2xl bg-gray-100" />
+                      <div className="h-12 animate-pulse rounded-2xl bg-ink-100" />
                     </td>
                   </tr>
                 ))}
 
               {filteredProfiles.map((profile) => (
-                <tr key={profile.id} className="border-b border-gray-100 align-top">
+                <tr key={profile.id} className="border-b border-ink-100 align-top">
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-semibold text-ink-900">{profile.nome || 'Sem nome'}</p>
-                      <p className="mt-1 text-sm font-semibold text-gray-500">{profile.email || 'Sem email'}</p>
+                      <p className="mt-1 text-sm font-semibold text-ink-500">{profile.email || 'Sem email'}</p>
                     </div>
                   </td>
 
@@ -191,12 +191,12 @@ export default function AdminUsuarios({
                       value={profile.max_courses ?? 3}
                       disabled={savingId === profile.id}
                       onChange={(e) => handleFieldChange(profile, 'max_courses', Number(e.target.value || 0))}
-                      className="w-28 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                      className="w-28 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
                     />
                   </td>
 
                   <td className="px-4 py-4">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-semibold text-ink-600">
                       <WalletCards size={13} className="text-blue-600" />
                       {savingId === profile.id ? 'Salvando...' : 'Configurável'}
                     </div>
@@ -206,7 +206,7 @@ export default function AdminUsuarios({
 
               {!isLoading && filteredProfiles.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm font-semibold text-gray-500">
+                  <td colSpan={6} className="px-4 py-10 text-center text-sm font-semibold text-ink-500">
                     Nenhum usuário encontrado.
                   </td>
                 </tr>
@@ -221,7 +221,7 @@ export default function AdminUsuarios({
 
 function SummaryCard({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
+    <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
       <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
         <Icon size={12} />
         {label}
@@ -237,7 +237,7 @@ function SelectCell({ value, options, onChange, disabled }) {
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+      className="rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>

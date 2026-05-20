@@ -672,10 +672,10 @@ export default function Audiobooks(props) {
             </div>
           </div>
 
-          <div className="rounded-[2.2rem] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+          <div className="rounded-[2.2rem] border border-ink-100 bg-white p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Categorias</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Categorias</p>
                 <h3 className="mt-2 text-lg font-semibold text-ink-900">Navegação por matéria</h3>
               </div>
 
@@ -729,11 +729,11 @@ export default function Audiobooks(props) {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-gray-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="overflow-hidden rounded-[2.5rem] border border-ink-100 bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-ink-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-ink-900">Continuar da biblioteca</h3>
-                <p className="mt-1 text-sm font-medium text-gray-500">
+                <p className="mt-1 text-sm font-medium text-ink-500">
                   Cada item salva favoritos, faixa ativa e ponto de escuta por usuario.
                 </p>
               </div>
@@ -743,7 +743,7 @@ export default function Audiobooks(props) {
               </div>
             </div>
 
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-ink-100">
               {filteredLibrary.length > 0 ? (
                 filteredLibrary.map((item) => (
                   <AudioListItem
@@ -764,15 +764,15 @@ export default function Audiobooks(props) {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-gray-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="overflow-hidden rounded-[2.5rem] border border-ink-100 bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-ink-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
                   <ListMusic size={12} />
                   playlists
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-ink-900">Retomadas prontas</h3>
-                <p className="mt-1 text-sm font-medium text-gray-500">
+                <p className="mt-1 text-sm font-medium text-ink-500">
                   Blocos rapidos montados com base na sua biblioteca atual.
                 </p>
               </div>
@@ -802,7 +802,7 @@ export default function Audiobooks(props) {
 
               <h3 className="mt-4 text-2xl font-semibold tracking-tight text-ink-900">Fila ativa do player</h3>
 
-              <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">
+              <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">
                 A retomada acontece pela faixa exata que você deixou aberta, inclusive depois de trocar de página.
               </p>
 
@@ -820,10 +820,10 @@ export default function Audiobooks(props) {
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="rounded-[2.5rem] border border-ink-100 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Integrações</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Integrações</p>
                 <h3 className="mt-2 text-lg font-semibold text-ink-900">Perfil e materiais</h3>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink-100 text-ink-600">
@@ -889,7 +889,7 @@ function AudioListItem({ item, isActive, onContinue, onToggleFavorite, onSelect,
   const styles = resolveAccentStyles(item.accent);
 
   return (
-    <div className={`group flex flex-col gap-4 px-5 py-5 transition-all duration-300 hover:bg-gray-50 sm:flex-row sm:items-center ${isActive ? 'bg-blue-50/40' : ''}`}>
+    <div className={`group flex flex-col gap-4 px-5 py-5 transition-all duration-300 hover:bg-ink-50 sm:flex-row sm:items-center ${isActive ? 'bg-blue-50/40' : ''}`}>
       <button
         type="button"
         onClick={onSelect}
@@ -917,22 +917,22 @@ function AudioListItem({ item, isActive, onContinue, onToggleFavorite, onSelect,
         <h4 className={`mt-3 truncate text-base font-semibold text-ink-900 transition-colors duration-300 ${styles.text}`}>
           {item.title}
         </h4>
-        <p className="mt-1 truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">{item.subtitle}</p>
+        <p className="mt-1 truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-400">{item.subtitle}</p>
         <p className="mt-2 truncate text-sm font-semibold text-ink-500">
           {item.linkedDiscipline?.nome || item.disciplineName}
           {item.linkedTopic?.nome ? ` · ${item.linkedTopic.nome}` : ''}
         </p>
 
         <div className="mt-3 flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100">
             <div className={`h-full rounded-full ${styles.progress}`} style={{ width: `${item.progressPercent}%` }} />
           </div>
-          <span className="text-[10px] font-semibold tabular-nums text-gray-500">{item.progressPercent}%</span>
+          <span className="text-[10px] font-semibold tabular-nums text-ink-500">{item.progressPercent}%</span>
         </div>
       </div>
 
       <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end">
-        <span className="flex items-center gap-1 text-xs font-bold text-gray-500">
+        <span className="flex items-center gap-1 text-xs font-bold text-ink-500">
           <Clock3 size={12} />
           {formatDurationLabel(item.remainingSeconds)}
         </span>

@@ -138,16 +138,16 @@ export default function AdminDisciplinasPadrao({
       />
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
-        <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="rounded-[2rem] border border-ink-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Biblioteca</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Biblioteca</p>
               <h3 className="mt-2 text-2xl font-semibold text-ink-900">Por área</h3>
             </div>
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600"
+              className="rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-bold text-ink-600"
             >
               Novo
             </button>
@@ -157,8 +157,8 @@ export default function AdminDisciplinasPadrao({
             {groupedCatalog.map(([area, entries]) => (
               <div key={area}>
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">{area}</p>
-                  <span className="text-xs font-bold text-gray-400">{entries.length}</span>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-400">{area}</p>
+                  <span className="text-xs font-bold text-ink-400">{entries.length}</span>
                 </div>
 
                 <div className="space-y-2">
@@ -168,7 +168,7 @@ export default function AdminDisciplinasPadrao({
                       className={`rounded-[1.2rem] border px-3 py-3 transition-all ${
                         selectedId === entry.id
                           ? 'border-blue-200 bg-blue-50 shadow-sm'
-                          : 'border-gray-200 bg-gray-50/70'
+                          : 'border-ink-200 bg-ink-50/70'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -178,7 +178,7 @@ export default function AdminDisciplinasPadrao({
                           className="min-w-0 flex-1 text-left"
                         >
                           <p className="truncate text-sm font-semibold text-ink-900">{entry.nome}</p>
-                          <p className="mt-1 text-xs font-semibold text-gray-500">
+                          <p className="mt-1 text-xs font-semibold text-ink-500">
                             {entry.aliases?.length || 0} aliases
                           </p>
                         </button>
@@ -187,7 +187,7 @@ export default function AdminDisciplinasPadrao({
                           <button
                             type="button"
                             onClick={() => handleEdit(entry)}
-                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-700"
+                            className="rounded-lg p-2 text-ink-400 transition-colors hover:bg-blue-100 hover:text-blue-700"
                             title={`Editar ${entry.nome}`}
                           >
                             <Pencil size={14} />
@@ -195,7 +195,7 @@ export default function AdminDisciplinasPadrao({
                           <button
                             type="button"
                             onClick={() => handleDelete(entry)}
-                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            className="rounded-lg p-2 text-ink-400 transition-colors hover:bg-red-50 hover:text-red-600"
                             title={`Excluir ${entry.nome}`}
                           >
                             <Trash2 size={14} />
@@ -210,10 +210,10 @@ export default function AdminDisciplinasPadrao({
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-5">
+        <div className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4 border-b border-ink-100 pb-5">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Editor</p>
               <h3 className="mt-2 text-3xl font-semibold text-ink-900">
                 {form.id ? 'Editar disciplina padrão' : 'Nova disciplina padrão'}
               </h3>
@@ -222,7 +222,7 @@ export default function AdminDisciplinasPadrao({
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-600"
+                className="rounded-xl border border-ink-200 bg-ink-50 px-4 py-2 text-sm font-bold text-ink-600"
               >
                 <X size={14} className="mr-2 inline-block" />
                 Limpar
@@ -235,7 +235,7 @@ export default function AdminDisciplinasPadrao({
               <input
                 value={form.nome}
                 onChange={(event) => setForm((prev) => ({ ...prev, nome: event.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder="Ex: Língua Portuguesa"
               />
             </Field>
@@ -244,7 +244,7 @@ export default function AdminDisciplinasPadrao({
               <select
                 value={form.area}
                 onChange={(event) => setForm((prev) => ({ ...prev, area: event.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               >
                 {AREA_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -261,15 +261,15 @@ export default function AdminDisciplinasPadrao({
                 rows={12}
                 value={form.aliasesText}
                 onChange={(event) => setForm((prev) => ({ ...prev, aliasesText: event.target.value }))}
-                className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder={`Um alias por linha\nPortugues\nLingua portuguesa\nPortugues gramatica`}
               />
             </Field>
           </div>
 
-          <div className="mt-6 rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Como isso funciona</p>
-            <div className="mt-3 space-y-2 text-sm font-semibold text-gray-600">
+          <div className="mt-6 rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Como isso funciona</p>
+            <div className="mt-3 space-y-2 text-sm font-semibold text-ink-600">
               <p>1. O admin cadastra o nome padrão da disciplina.</p>
               <p>2. Os nomes alternativos entram como aliases.</p>
               <p>3. Ao salvar um novo concurso, o sistema converte o nome digitado para o padrão cadastrado.</p>
@@ -277,12 +277,12 @@ export default function AdminDisciplinasPadrao({
             </div>
           </div>
 
-          <div className="mt-6 border-t border-gray-200 pt-4">
+          <div className="mt-6 border-t border-ink-200 pt-4">
             <div className="flex flex-wrap justify-end gap-3">
               <button
                 type="button"
                 onClick={resetForm}
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-600"
+                className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-semibold text-ink-600"
               >
                 <Plus size={16} />
                 Nova disciplina
@@ -307,7 +307,7 @@ export default function AdminDisciplinasPadrao({
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{label}</label>
       {children}
     </div>
   );

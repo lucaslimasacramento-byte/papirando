@@ -5889,7 +5889,7 @@ export default function App() {
   if (loadingSession) {
     return (
       <div className="h-screen flex items-center justify-center" style={{ backgroundColor: theme.bg }}>
-        <span className="text-gray-400 font-bold">Carregando...</span>
+        <span className="text-ink-400 font-bold">Carregando...</span>
       </div>
     );
   }
@@ -6867,9 +6867,9 @@ export default function App() {
             'convide_ganhe',
             'perfil',
           ].includes(activeTab) && (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400 p-10">
+            <div className="h-full flex flex-col items-center justify-center text-ink-400 p-10">
               <Target size={40} className="text-[#1d4ed8] mb-6" />
-              <h2 className="text-3xl font-black text-gray-800 mb-2">Construção em Progresso!</h2>
+              <h2 className="text-3xl font-black text-ink-800 mb-2">Construção em Progresso!</h2>
               <button
                 onClick={() => setActiveTab('home')}
                 className="bg-[#1d4ed8] text-white px-6 py-2.5 rounded-xl font-bold"

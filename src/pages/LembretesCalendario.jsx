@@ -432,10 +432,10 @@ export default function LembretesCalendario({
         <section className="section-card flex flex-col">
           <div className="mb-3 flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Radar ativo</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Radar ativo</p>
               <h3 className="mt-2 text-xl font-semibold text-ink-900 lg:text-2xl">Próximos lembretes</h3>
             </div>
-            <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-500">
+            <span className="rounded-full border border-ink-200 bg-ink-50 px-4 py-2 text-sm font-semibold text-ink-500">
               {filteredNotifications.length} itens
             </span>
           </div>
@@ -449,7 +449,7 @@ export default function LembretesCalendario({
                   key={item.id}
                   type="button"
                   onClick={() => onOpenContest?.(item.contestId)}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60"
+                  className="w-full rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -458,12 +458,12 @@ export default function LembretesCalendario({
                         {item.date ? <MiniDate date={item.date} /> : null}
                       </div>
                       {item.contestName ? (
-                        <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.contestName}</p>
+                        <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{item.contestName}</p>
                       ) : null}
                       <p className="mt-2 text-base font-semibold text-ink-900">{item.title}</p>
-                      <p className="mt-1 text-sm font-medium leading-relaxed text-gray-500">{item.text}</p>
+                      <p className="mt-1 text-sm font-medium leading-relaxed text-ink-500">{item.text}</p>
                     </div>
-                    <ExternalLink size={16} className="mt-1 shrink-0 text-gray-400" />
+                    <ExternalLink size={16} className="mt-1 shrink-0 text-ink-400" />
                   </div>
                 </button>
               ))}
@@ -488,8 +488,8 @@ export default function LembretesCalendario({
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Hoje</p>
+            <div className="rounded-xl border border-ink-200 bg-ink-50/60 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Hoje</p>
               <div className="mt-2">
                 <AgendaList
                   items={todayItems}
@@ -499,8 +499,8 @@ export default function LembretesCalendario({
                 />
               </div>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Amanhã</p>
+            <div className="rounded-xl border border-ink-200 bg-ink-50/60 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Amanhã</p>
               <div className="mt-2">
                 <AgendaList
                   items={tomorrowItems}
@@ -520,7 +520,7 @@ export default function LembretesCalendario({
             <CheckCircle2 size={16} className="text-emerald-500" />
             <h3 className="text-lg font-semibold text-ink-900">Histórico e lembretes salvos</h3>
           </div>
-          <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-500">
+          <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-semibold text-ink-500">
             {(manualReminders || []).length} lembretes manuais
           </span>
         </div>
@@ -528,7 +528,7 @@ export default function LembretesCalendario({
         <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
           <div className={`custom-scrollbar space-y-2 pr-1 ${(manualReminders || []).length > 3 ? 'max-h-[286px] overflow-y-auto' : ''}`}>
             {(manualReminders || []).map((item) => (
-              <div key={item.id} className="rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3">
+              <div key={item.id} className="rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap gap-2">
@@ -536,10 +536,10 @@ export default function LembretesCalendario({
                       {item.date ? <MiniDate date={item.date} /> : null}
                     </div>
                     <p className="mt-2 text-sm font-semibold text-ink-900">{item.title}</p>
-                    {item.description ? <p className="mt-1 text-sm font-medium text-gray-500">{item.description}</p> : null}
+                    {item.description ? <p className="mt-1 text-sm font-medium text-ink-500">{item.description}</p> : null}
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => openEditReminder(item)} className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
+                    <button type="button" onClick={() => openEditReminder(item)} className="rounded-lg border border-ink-200 bg-white px-3 py-1 text-xs font-semibold text-ink-600">
                       Editar
                     </button>
                     <button type="button" onClick={() => handleDeleteManualReminder(item.id)} className="rounded-lg border border-red-100 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
@@ -652,7 +652,7 @@ function FullScreenCalendarModal({
   return (
     <div className="fixed inset-0 z-[220] bg-ink-950/55 backdrop-blur-sm">
       <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)]">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-200 bg-white px-4 py-2 shadow-sm md:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-ink-200 bg-white px-4 py-2 shadow-sm md:px-6">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
                 <CalendarDays size={12} />
@@ -663,7 +663,7 @@ function FullScreenCalendarModal({
                 ? `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`
                 : `Semana de ${String(currentWeek[0].getDate()).padStart(2, '0')}/${String(currentWeek[0].getMonth() + 1).padStart(2, '0')}`}
             </h3>
-            <p className="mt-1 text-[12px] font-medium text-gray-500">
+            <p className="mt-1 text-[12px] font-medium text-ink-500">
               {studyPlanningMode === 'ciclo'
                   ? 'Mesmo calendário do planejamento, com o ciclo distribuído conforme sua disponibilidade.'
                   : 'Mesmo calendário do planejamento fixo, com sincronização total entre as abas.'}
@@ -671,12 +671,12 @@ function FullScreenCalendarModal({
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-3">
-            <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
+            <div className="flex gap-1 rounded-xl border border-ink-200 bg-white p-1">
               <button
                 type="button"
                 onClick={() => setViewMode('mes')}
                 className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                  viewMode === 'mes' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
+                  viewMode === 'mes' ? 'bg-blue-50 text-blue-700' : 'text-ink-500 hover:bg-ink-50'
                 }`}
               >
                 Mês
@@ -685,7 +685,7 @@ function FullScreenCalendarModal({
                 type="button"
                 onClick={() => setViewMode('semana')}
                 className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                  viewMode === 'semana' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
+                  viewMode === 'semana' ? 'bg-blue-50 text-blue-700' : 'text-ink-500 hover:bg-ink-50'
                 }`}
               >
                 Semana
@@ -700,7 +700,7 @@ function FullScreenCalendarModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-ink-600 transition hover:bg-ink-50"
             >
               <X size={16} />
               Fechar
@@ -708,7 +708,7 @@ function FullScreenCalendarModal({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-1.5 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-200 bg-white px-4 py-1.5 md:px-6">
           <div className="flex flex-wrap gap-2">
             <TagPill label={`${events.length} blocos`} color={STUDY_EVENT_COLORS.Concurso} soft />
             <TagPill label={`${contestEventCount} concursos`} color={STUDY_EVENT_COLORS.Concurso} soft />
@@ -720,28 +720,28 @@ function FullScreenCalendarModal({
             <button
               type="button"
               onClick={() => shiftCalendarDate(setCurrentDate, currentDate, viewMode, -1)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-gray-600 shadow-sm transition hover:bg-gray-50"
+              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-ink-600 shadow-sm transition hover:bg-ink-50"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               type="button"
               onClick={() => setCurrentDate(new Date())}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-1.5 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-600 hover:text-blue-700"
+              className="rounded-xl border border-ink-200 bg-white px-4 py-1.5 text-sm font-semibold text-ink-600 shadow-sm transition hover:border-blue-600 hover:text-blue-700"
             >
               Hoje
             </button>
             <button
               type="button"
               onClick={() => shiftCalendarDate(setCurrentDate, currentDate, viewMode, 1)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-gray-600 shadow-sm transition hover:bg-gray-50"
+              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-ink-600 shadow-sm transition hover:bg-ink-50"
             >
               <ChevronRight size={16} />
             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-1.5 md:px-6">
+        <div className="flex flex-wrap items-center gap-2 border-b border-ink-200 bg-white px-4 py-1.5 md:px-6">
           <CalendarToggle
             label="Concursos"
             checked={calendarLayers.concursos}
@@ -765,7 +765,7 @@ function FullScreenCalendarModal({
         </div>
 
         <div className="min-h-0 flex-1 p-1.5">
-          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm">
             {viewMode === 'mes' ? (
               <MonthCalendarView
                 currentDate={currentDate}
@@ -796,10 +796,10 @@ function FullScreenCalendarModal({
 function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], editing = false }) {
   return (
     <div className="fixed inset-0 z-[230] flex items-center justify-center bg-ink-950/55 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-ink-100 px-6 py-5">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Lembrete manual</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Lembrete manual</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">
               {editing ? 'Editar lembrete' : 'Novo lembrete'}
             </h3>
@@ -807,7 +807,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500"
+            className="rounded-xl border border-ink-200 bg-white p-2 text-ink-500"
           >
             <X size={18} />
           </button>
@@ -820,14 +820,14 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
                 type="text"
                 value={form.title}
                 onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
               />
             </Field>
             <Field label="Tipo">
               <select
                 value={form.type}
                 onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
               >
             <option value="task">Pendência</option>
                 <option value="prova">Prova</option>
@@ -842,7 +842,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
                 type="date"
                 value={form.date}
                 onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
               />
             </Field>
             <Field label="Hora">
@@ -850,7 +850,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
                 type="time"
                 value={form.time}
                 onChange={(event) => setForm((prev) => ({ ...prev, time: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
               />
             </Field>
           </div>
@@ -860,7 +860,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
               rows="3"
               value={form.description}
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-              className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 outline-none focus:border-blue-600"
+              className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-medium text-ink-700 outline-none focus:border-blue-600"
             />
           </Field>
 
@@ -868,7 +868,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
             <select
               value={form.contestId}
               onChange={(event) => setForm((prev) => ({ ...prev, contestId: event.target.value }))}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+              className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
             >
               <option value="">Sem vínculo específico</option>
               {contestOptions.map((contest) => (
@@ -879,18 +879,18 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
             </select>
           </Field>
 
-          <label className="inline-flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4 text-sm font-semibold text-gray-700">
+          <label className="inline-flex items-center gap-3 rounded-2xl border border-ink-100 bg-ink-50 px-4 py-4 text-sm font-semibold text-ink-700">
             <input
               type="checkbox"
               checked={form.showOnCalendar}
               onChange={() => setForm((prev) => ({ ...prev, showOnCalendar: !prev.showOnCalendar }))}
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-ink-300"
             />
             Exibir este lembrete no calendário compartilhado
           </label>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-ink-100 bg-ink-50 px-6 py-4">
           <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5">
             Cancelar
           </button>
@@ -906,13 +906,13 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
 function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDiscipline }) {
   return (
     <div className="fixed inset-0 z-[231] flex items-center justify-center bg-ink-950/55 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+      <div className="flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-ink-100 px-6 py-5">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Agenda diária</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Agenda diária</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">{formatDateBR(date)}</h3>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500">
+          <button type="button" onClick={onClose} className="rounded-xl border border-ink-200 bg-white p-2 text-ink-500">
             <X size={18} />
           </button>
         </div>
@@ -925,16 +925,16 @@ function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDis
                 key={event.id}
                 type="button"
                 onClick={() => openCalendarEvent(event, onOpenContest, onOpenDiscipline)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/70 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/60"
+                className="w-full rounded-xl border border-ink-200 bg-ink-50/70 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/60"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <TagPill label={event.tipo} color={event.cor} soft />
-                  <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                  <span className="rounded-full border border-ink-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">
                     {event.hora}
                   </span>
                 </div>
                 <p className="mt-3 text-base font-semibold text-ink-900">{event.titulo}</p>
-                {event.detail ? <p className="mt-1 text-sm font-medium text-gray-500">{event.detail}</p> : null}
+                {event.detail ? <p className="mt-1 text-sm font-medium text-ink-500">{event.detail}</p> : null}
               </button>
             ))
           )}
@@ -946,12 +946,12 @@ function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDis
 
 function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateReminder, onOpenDailyAgenda }) {
   return (
-    <div className="flex h-full flex-col bg-gray-50">
-      <div className="grid grid-cols-7 border-b border-gray-200 bg-white shadow-sm">
+    <div className="flex h-full flex-col bg-ink-50">
+      <div className="grid grid-cols-7 border-b border-ink-200 bg-white shadow-sm">
         {WEEKDAY_LABELS.map((label) => (
           <div
             key={label}
-            className="border-r border-gray-100 p-2 text-center text-[10px] font-semibold uppercase tracking-widest text-gray-500 last:border-r-0"
+            className="border-r border-ink-100 p-2 text-center text-[10px] font-semibold uppercase tracking-widest text-ink-500 last:border-r-0"
           >
             {label}
           </div>
@@ -959,7 +959,7 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
       </div>
 
       <div
-        className="grid flex-1 grid-cols-7 gap-[1px] bg-gray-200"
+        className="grid flex-1 grid-cols-7 gap-[1px] bg-ink-200"
         style={{ gridTemplateRows: `repeat(${Math.ceil(currentMonthGrid.length / 7)}, minmax(0, 1fr))` }}
       >
         {currentMonthGrid.map((day, index) => {
@@ -972,14 +972,14 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
           return (
             <div
               key={`${dateKey || 'blank'}-${index}`}
-              className={`group flex min-h-0 flex-col overflow-hidden bg-white p-[3px] transition-colors ${isValid ? 'hover:bg-blue-50/30' : 'bg-gray-50/60'}`}
+              className={`group flex min-h-0 flex-col overflow-hidden bg-white p-[3px] transition-colors ${isValid ? 'hover:bg-blue-50/30' : 'bg-ink-50/60'}`}
             >
               {isValid ? (
                 <>
                   <div className="mb-1 flex items-start justify-between gap-1">
                     <span
                       className={`flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-semibold ${
-                        isToday ? 'bg-blue-700 text-white shadow-md' : 'text-gray-600'
+                        isToday ? 'bg-blue-700 text-white shadow-md' : 'text-ink-600'
                       }`}
                     >
                       {day}
@@ -989,7 +989,7 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
                         <button
                           type="button"
                           onClick={() => onOpenDailyAgenda?.(dateKey)}
-                          className="flex h-4.5 w-4.5 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 opacity-0 transition group-hover:opacity-100 hover:text-blue-700"
+                          className="flex h-4.5 w-4.5 items-center justify-center rounded-md border border-ink-200 bg-white text-ink-500 opacity-0 transition group-hover:opacity-100 hover:text-blue-700"
                           title="Abrir agenda do dia"
                         >
                           <Eye size={10} />
@@ -1025,20 +1025,20 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
 
 function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline, onCreateReminder, onOpenDailyAgenda }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-gray-50">
-      <div className="grid grid-cols-7 border-b border-gray-200 bg-white shadow-sm">
+    <div className="flex h-full flex-col overflow-hidden bg-ink-50">
+      <div className="grid grid-cols-7 border-b border-ink-200 bg-white shadow-sm">
         {currentWeek.map((date) => {
           const dateKey = toDateKey(date);
           const isToday = dateKey === toDateKey(new Date());
           return (
-            <div key={dateKey} className="group border-r border-gray-100 p-2 text-center last:border-r-0">
-              <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+            <div key={dateKey} className="group border-r border-ink-100 p-2 text-center last:border-r-0">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-ink-400">
                 {WEEKDAY_LABELS[date.getDay()]}
               </div>
               <div className="flex items-center justify-center gap-2">
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold ${
-                    isToday ? 'bg-blue-700 text-white shadow-md' : 'text-gray-800'
+                    isToday ? 'bg-blue-700 text-white shadow-md' : 'text-ink-800'
                   }`}
                 >
                   {date.getDate()}
@@ -1057,7 +1057,7 @@ function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline
         })}
       </div>
 
-      <div className="grid flex-1 grid-cols-7 gap-[1px] bg-gray-200">
+      <div className="grid flex-1 grid-cols-7 gap-[1px] bg-ink-200">
         {currentWeek.map((date) => {
           const dateKey = toDateKey(date);
           const dayEvents = events.filter((event) => event.data === dateKey);
@@ -1069,7 +1069,7 @@ function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline
                   <button
                     type="button"
                     onClick={() => onOpenDailyAgenda?.(dateKey)}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 opacity-0 transition group-hover:opacity-100 hover:text-blue-700"
+                    className="flex h-6 w-6 items-center justify-center rounded-md border border-ink-200 bg-white text-ink-500 opacity-0 transition group-hover:opacity-100 hover:text-blue-700"
                     title="Abrir agenda do dia"
                   >
                     <Eye size={13} />
@@ -1090,14 +1090,14 @@ function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline
                     key={event.id}
                     type="button"
                     onClick={() => openCalendarEvent(event, onOpenContest, onOpenDiscipline)}
-                    className="w-full rounded-xl border border-gray-100 border-l-4 bg-white p-2.5 text-left shadow-sm transition-all hover:shadow-md"
+                    className="w-full rounded-xl border border-ink-100 border-l-4 bg-white p-2.5 text-left shadow-sm transition-all hover:shadow-md"
                     style={{ borderLeftColor: event.cor }}
                   >
-                    <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold text-gray-500">
+                    <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold text-ink-500">
                       <Clock size={10} />
                       {event.hora}
                     </div>
-                    <div className="text-xs font-semibold leading-snug text-gray-800">{event.titulo}</div>
+                    <div className="text-xs font-semibold leading-snug text-ink-800">{event.titulo}</div>
                     <div className="mt-2 flex flex-wrap gap-1">
                       <span
                         className="rounded border border-white/40 px-1.5 py-0.5 text-[8px] font-semibold uppercase text-blue-950"
@@ -1146,8 +1146,8 @@ function FilterPill({ active, onClick, children }) {
 
 function CalendarToggle({ label, checked, onChange }) {
   return (
-    <label className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-600">
-      <input type="checkbox" checked={checked} onChange={onChange} className="h-4 w-4 rounded border-gray-300" />
+    <label className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-600">
+      <input type="checkbox" checked={checked} onChange={onChange} className="h-4 w-4 rounded border-ink-300" />
       {label}
     </label>
   );
@@ -1175,7 +1175,7 @@ function MiniTone({ type }) {
 
 function MiniDate({ date }) {
   return (
-    <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+    <span className="rounded-full border border-ink-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
       {formatDateBR(date)}
     </span>
   );
@@ -1195,16 +1195,16 @@ function AgendaList({ items = [], fullItems = [], emptyText, onOpenContest }) {
           key={`${item.titulo}-${index}`}
           type="button"
           onClick={() => item.contestId && onOpenContest?.(item.contestId)}
-          className={`w-full rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-left transition-all ${
+          className={`w-full rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-left transition-all ${
             item.contestId ? 'hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60' : ''
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.horario || 'Agenda'}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{item.horario || 'Agenda'}</p>
           {item.contestName ? (
-            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.contestName}</p>
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{item.contestName}</p>
           ) : null}
           <p className="mt-2 text-sm font-semibold text-ink-900">{item.titulo}</p>
-          {item.detalhe ? <p className="mt-1 text-sm font-medium text-gray-500">{item.detalhe}</p> : null}
+          {item.detalhe ? <p className="mt-1 text-sm font-medium text-ink-500">{item.detalhe}</p> : null}
         </button>
       ))}
     </div>
@@ -1213,7 +1213,7 @@ function AgendaList({ items = [], fullItems = [], emptyText, onOpenContest }) {
 
 function EmptyState({ text, compact = false }) {
   return (
-    <div className={`rounded-xl border border-dashed border-gray-200 bg-gray-50/70 text-sm font-semibold text-gray-500 ${compact ? 'px-4 py-4' : 'px-5 py-6'}`}>
+    <div className={`rounded-xl border border-dashed border-ink-200 bg-ink-50/70 text-sm font-semibold text-ink-500 ${compact ? 'px-4 py-4' : 'px-5 py-6'}`}>
       {text}
     </div>
   );
@@ -1237,7 +1237,7 @@ function TagPill({ label, color, soft = false }) {
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</span>
+      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</span>
       {children}
     </label>
   );

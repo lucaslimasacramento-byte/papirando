@@ -2237,12 +2237,12 @@ export default function Esquadroes({
 
       <div className="flex w-full flex-col gap-6">
           {!selectedSquad ? (
-            <div className="flex min-h-[520px] flex-col items-center justify-center rounded-[2rem] border border-gray-100 bg-white px-6 text-center shadow-sm">
+            <div className="flex min-h-[520px] flex-col items-center justify-center rounded-[2rem] border border-ink-100 bg-white px-6 text-center shadow-sm">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                 <Shield size={28} />
               </div>
               <h3 className="mt-5 text-2xl font-semibold text-ink-900">Escolha um esquadrão</h3>
-              <p className="mt-2 max-w-lg text-sm font-medium leading-relaxed text-gray-500">
+              <p className="mt-2 max-w-lg text-sm font-medium leading-relaxed text-ink-500">
                 Selecione um esquadrão para abrir a comunidade privada da turma.
               </p>
             </div>
@@ -2250,10 +2250,10 @@ export default function Esquadroes({
             <>
               {activeSection === 'dashboard' && (
                 <div className="animate-in fade-in flex flex-col gap-6">
-                  <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                  <section className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Dashboard do esquadrão</p>
                     <h3 className="mt-1 text-2xl font-semibold text-ink-900">Visão geral do {selectedSquad.name}</h3>
-                    <p className="mt-2 text-sm font-medium text-gray-600">
+                    <p className="mt-2 text-sm font-medium text-ink-600">
                       Painel de apresentação do cursinho com foco em engajamento, operação e próximos passos da turma.
                     </p>
                     <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -2264,16 +2264,16 @@ export default function Esquadroes({
                     </div>
                   </section>
                   <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                       <h4 className="text-lg font-semibold text-ink-900">Próximas ações do curso</h4>
-                      <ul className="mt-3 space-y-2 text-sm font-medium text-gray-600">
+                      <ul className="mt-3 space-y-2 text-sm font-medium text-ink-600">
                         <li>- Publicar aviso de rotina da semana no Mural.</li>
                         <li>- Revisar cronograma e confirmar próximos simulados.</li>
                         <li>- Atualizar banco de Questões da turma.</li>
                         <li>- Monitorar dúvidas mais frequentes no Fórum.</li>
                       </ul>
                     </div>
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                       <h4 className="text-lg font-semibold text-ink-900">Acesso da turma</h4>
                       <div className="mt-3 space-y-3">
                         <SummaryInfo label="Código de entrada" value={selectedSquad.inviteCode || '---'} />
@@ -2342,7 +2342,7 @@ export default function Esquadroes({
                   ) : null}
 
                   {!forumFocusedPost ? (
-                    <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
+                    <section className="rounded-[2rem] border border-ink-100 bg-white p-5 shadow-sm">
                     <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Busca e filtros</p>
@@ -2353,7 +2353,7 @@ export default function Esquadroes({
                     <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
                       <div className="space-y-4">
                         <div className="relative">
-                          <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
                           <input
                             type="text"
                             value={forumQuery}
@@ -2362,7 +2362,7 @@ export default function Esquadroes({
                               setForumPage(1);
                             }}
                             placeholder="Buscar por dúvida, autor, matéria, resumo, aviso..."
-                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-500 focus:bg-white"
+                            className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-medium text-ink-700 outline-none transition focus:border-indigo-500 focus:bg-white"
                           />
                         </div>
 
@@ -2385,7 +2385,7 @@ export default function Esquadroes({
                               className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition ${
                                 forumFilter === item.id
                                   ? 'bg-ink-900 text-white'
-                                  : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                                  : 'border border-ink-200 bg-white text-ink-600 hover:bg-ink-50'
                               }`}
                             >
                               {item.label}
@@ -2395,8 +2395,8 @@ export default function Esquadroes({
                       </div>
 
                       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+                        <div className="rounded-2xl border border-ink-100 bg-ink-50 p-4">
+                          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             <Filter size={12} />
                             Ordenar
                           </div>
@@ -2406,7 +2406,7 @@ export default function Esquadroes({
                               setForumSort(e.target.value);
                               setForumPage(1);
                             }}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-bold text-gray-700 outline-none transition focus:border-indigo-500"
+                            className="w-full rounded-xl border border-ink-200 bg-white px-3 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-indigo-500"
                           >
                             <option value="recentes">Mais recentes</option>
                             <option value="populares">Mais úteis</option>
@@ -2415,13 +2415,13 @@ export default function Esquadroes({
                           </select>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+                        <div className="rounded-2xl border border-ink-100 bg-ink-50 p-4">
+                          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             <Bookmark size={12} />
                             Resultado
                           </div>
                           <p className="text-2xl font-semibold text-ink-900">{filteredForumPosts.length}</p>
-                          <p className="mt-1 text-sm font-medium text-gray-500">tópicos encontrados</p>
+                          <p className="mt-1 text-sm font-medium text-ink-500">tópicos encontrados</p>
                         </div>
                       </div>
                     </div>
@@ -2443,11 +2443,11 @@ export default function Esquadroes({
                         value={newForumPost}
                         onChange={(e) => setNewForumPost(e.target.value)}
                         placeholder="Abra um novo tópico do esquadrão sem precisar voltar para a home."
-                        className="w-full resize-none rounded-2xl border border-transparent bg-gray-50 p-4 text-sm font-medium text-gray-700 outline-none transition-all hover:border-gray-200 hover:bg-white focus:border-indigo-500 focus:bg-white"
+                        className="w-full resize-none rounded-2xl border border-transparent bg-ink-50 p-4 text-sm font-medium text-ink-700 outline-none transition-all hover:border-ink-200 hover:bg-white focus:border-indigo-500 focus:bg-white"
                       />
                     </div>
                     <div className="flex items-center justify-between pl-16">
-                      <p className="text-xs font-bold text-gray-400">O tópico publicado aparece no fórum interno e permanece salvo na comunidade.</p>
+                      <p className="text-xs font-bold text-ink-400">O tópico publicado aparece no fórum interno e permanece salvo na comunidade.</p>
                       <button
                         type="button"
                         onClick={handlePublishForumPost}
@@ -2494,12 +2494,12 @@ export default function Esquadroes({
                       ))}
 
                     {filteredForumPosts.length === 0 ? (
-                      <div className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center shadow-sm">
+                      <div className="rounded-[2rem] border border-dashed border-ink-200 bg-white p-10 text-center shadow-sm">
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                           <Search size={22} />
                         </div>
                         <h4 className="mt-4 text-xl font-semibold text-ink-900">Nada encontrado</h4>
-                        <p className="mt-2 text-sm font-medium text-gray-500">
+                        <p className="mt-2 text-sm font-medium text-ink-500">
                           Ajusta a busca ou o filtro. O fórum não sumiu, só ficou mais criterioso.
                         </p>
                       </div>
@@ -2591,7 +2591,7 @@ export default function Esquadroes({
                     );
                   })}
                   {!displayNotices.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-white p-8 text-center text-sm font-medium text-ink-500">
                       Nenhum aviso publicado ainda.
                     </div>
                   ) : null}
@@ -2600,10 +2600,10 @@ export default function Esquadroes({
 
               {activeSection === 'cronograma' && (
                 <div className="space-y-4">
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                  <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Cronograma interno</p>
                     <h3 className="mt-1 text-2xl font-semibold text-ink-900">Planejamento da turma</h3>
-                    <p className="mt-2 text-sm font-medium text-gray-600">
+                    <p className="mt-2 text-sm font-medium text-ink-600">
                       Aqui o cursinho concentra calendario de atividades, simulados e marcos da turma no proprio esquadrao.
                     </p>
                   </div>
@@ -2664,7 +2664,7 @@ export default function Esquadroes({
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-white p-8 text-center text-sm font-medium text-ink-500">
                       Sem itens no cronograma ainda. Use Atividades e Simulados para preencher esta agenda.
                     </div>
                   )}
@@ -2742,7 +2742,7 @@ export default function Esquadroes({
                     );
                   })}
                   {!displayActivities.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-white p-8 text-center text-sm font-medium text-ink-500">
                       Sem atividades no momento.
                     </div>
                   ) : null}
@@ -2751,7 +2751,7 @@ export default function Esquadroes({
 
               {activeSection === 'praticas' && (
                 <div className="space-y-4">
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                  <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <h4 className="text-lg font-semibold text-ink-900">Listas com maior engajamento</h4>
                       <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
@@ -2925,7 +2925,7 @@ export default function Esquadroes({
                     );
                   })}
                   {!displaySimulados.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-white p-8 text-center text-sm font-medium text-ink-500">
                       Nenhum simulado cadastrado ainda.
                     </div>
                   ) : null}
@@ -2934,7 +2934,7 @@ export default function Esquadroes({
 
               {activeSection === 'configuracao' && (
                 <div className="space-y-6">
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                  <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Governança do esquadrão</p>
                     <h3 className="mt-1 text-2xl font-semibold text-ink-900">Papéis, permissões e convite</h3>
                     <p className="mt-2 text-sm font-medium text-ink-600">
@@ -2994,7 +2994,7 @@ export default function Esquadroes({
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                  <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Estrutura acadêmica</p>
                     <h4 className="mt-1 text-lg font-semibold text-ink-900">Funções do cursinho e turmas</h4>
                     <p className="mt-2 text-sm font-medium text-ink-600">
@@ -3049,7 +3049,7 @@ export default function Esquadroes({
                     <TeacherCard key={teacher.id} teacher={teacher} />
                   ))}
 
-                  <div className="rounded-[2rem] border border-dashed border-gray-200 bg-gray-50 p-6 text-sm font-medium leading-relaxed text-gray-600 md:col-span-2">
+                  <div className="rounded-[2rem] border border-dashed border-ink-200 bg-ink-50 p-6 text-sm font-medium leading-relaxed text-ink-600 md:col-span-2">
                     O dono do esquadrão define aqui os professores responsáveis, as matérias da equipa e a trilha do cursinho.
                   </div>
                 </div>
@@ -3060,10 +3060,10 @@ export default function Esquadroes({
                   <MembersHero squad={selectedSquad} canManageSquad={canManageSquad} />
 
                   <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                       <div className="mb-5 flex items-center justify-between">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Membros internos</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Membros internos</p>
                           <h3 className="mt-1 text-xl font-semibold text-ink-900">Pessoas do esquadrão</h3>
                         </div>
 
@@ -3101,9 +3101,9 @@ export default function Esquadroes({
                     </div>
 
                     <div className="space-y-6">
-                      <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                      <div className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                         <div className="mb-5">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Permissões visuais</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Permissões visuais</p>
                           <h3 className="mt-1 text-xl font-semibold text-ink-900">Quem pode fazer o quê</h3>
                         </div>
 
@@ -3149,7 +3149,7 @@ export default function Esquadroes({
                     <RankingRow key={item.id} item={item} />
                   ))}
                   {!displayRanking.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-white p-8 text-center text-sm font-medium text-ink-500">
                       O ranking interno aparece quando a turma comeca a responder atividades e simulados.
                     </div>
                   ) : null}
@@ -3158,7 +3158,7 @@ export default function Esquadroes({
 
               {activeSection === 'admin' && canManageSquad && (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
-                  <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                  <section className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Dados do esquadrão</p>
                     <h3 className="mt-1 text-2xl font-semibold tracking-tight text-ink-900">Configurações gerais</h3>
                     <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -3223,7 +3223,7 @@ export default function Esquadroes({
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Administração do esquadrão</p>
                         <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900">Controle central do ambiente</h3>
-                        <p className="mt-1 max-w-2xl text-sm font-medium text-gray-500">
+                        <p className="mt-1 max-w-2xl text-sm font-medium text-ink-500">
                           Organize pessoas, publique conteúdo e ajuste permissões sem sair do fluxo atual.
                         </p>
                       </div>
@@ -3348,7 +3348,7 @@ export default function Esquadroes({
 
                         <div className="mt-4 rounded-[1.4rem] border border-dashed border-indigo-200 bg-indigo-50/60 p-4">
                           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Ajuste rápido</p>
-                          <p className="mt-2 text-sm font-medium leading-relaxed text-gray-600">
+                          <p className="mt-2 text-sm font-medium leading-relaxed text-ink-600">
                             Precisa trocar um membro para professor ou mexer em escopo? Abre o fluxo de permissões e resolve sem gambiarra.
                           </p>
                           <button
@@ -3477,8 +3477,8 @@ function MiniHeroStat({ label, value, accent = 'slate' }) {
 
 function QuickStatCard({ icon, label, value }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+    <div className="rounded-2xl border border-ink-100 bg-ink-50 p-4">
+      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
         {icon}
         {label}
       </div>
@@ -3503,11 +3503,11 @@ function ForumPostFeatured({ post }) {
         <div className="flex min-w-0 items-center gap-3">
           <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-12 w-12 rounded-full object-cover" />
           <div className="min-w-0">
-            <h5 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
+            <h5 className="flex items-center gap-1 text-sm font-semibold text-ink-800">
               <span className="truncate">{post.author}</span>
               {post.badge ? <Shield size={12} className="shrink-0 text-blue-500" fill="currentColor" /> : null}
             </h5>
-            <p className="text-[10px] font-bold text-gray-400">
+            <p className="text-[10px] font-bold text-ink-400">
               {post.createdAt} • {post.section}
             </p>
           </div>
@@ -3522,20 +3522,20 @@ function ForumPostFeatured({ post }) {
         <span className="rounded bg-amber-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700">
           {post.category}
         </span>
-        <span className="rounded bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+        <span className="rounded bg-ink-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
           {post.subject}
         </span>
       </div>
 
       <h4 className="text-xl font-semibold text-ink-900">{post.title}</h4>
-      <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
+      <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{post.message}</p>
 
       <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-indigo-100 pt-4">
-        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+        <div className="flex items-center gap-2 text-xs font-semibold text-ink-500">
           <ThumbsUp size={14} />
           {post.helpful}
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+        <div className="flex items-center gap-2 text-xs font-semibold text-ink-500">
           <MessageCircle size={14} />
           {post.replies} respostas
         </div>
@@ -3546,19 +3546,19 @@ function ForumPostFeatured({ post }) {
 
 function ForumPostCompact({ post }) {
   return (
-    <div className="w-full rounded-[1.4rem] border border-gray-100 bg-gray-50 p-4 text-left transition hover:bg-white hover:shadow-sm">
+    <div className="w-full rounded-[1.4rem] border border-ink-100 bg-ink-50 p-4 text-left transition hover:bg-white hover:shadow-sm">
       <div className="flex items-start gap-3">
         <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-10 w-10 rounded-full object-cover" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-gray-800">{post.author}</p>
-            <span className="rounded bg-gray-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
+            <p className="text-sm font-semibold text-ink-800">{post.author}</p>
+            <span className="rounded bg-ink-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-600">
               {post.subject}
             </span>
           </div>
           <h5 className="mt-2 truncate text-base font-semibold text-ink-900">{post.title}</h5>
-          <p className="mt-1 line-clamp-2 text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
-          <div className="mt-3 flex items-center gap-4 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+          <p className="mt-1 line-clamp-2 text-sm font-medium leading-relaxed text-ink-600">{post.message}</p>
+          <div className="mt-3 flex items-center gap-4 text-[10px] font-semibold uppercase tracking-widest text-ink-400">
             <span>{post.createdAt}</span>
             <span>{post.replies} respostas</span>
           </div>
@@ -3570,16 +3570,16 @@ function ForumPostCompact({ post }) {
 
 function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
   return (
-    <article className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+    <article className="rounded-[2rem] border border-ink-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-11 w-11 rounded-full object-cover" />
           <div className="min-w-0">
-            <h5 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
+            <h5 className="flex items-center gap-1 text-sm font-semibold text-ink-800">
               <span className="truncate">{post.author}</span>
               {post.badge ? <Shield size={12} className="text-blue-500" fill="currentColor" /> : null}
             </h5>
-            <p className="text-[10px] font-bold text-gray-400">
+            <p className="text-[10px] font-bold text-ink-400">
               {post.createdAt} • {post.section}
             </p>
           </div>
@@ -3596,7 +3596,7 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
               Resolvido
             </span>
           ) : null}
-          <button className="text-gray-400 hover:text-gray-600">
+          <button className="text-ink-400 hover:text-ink-600">
             <MoreHorizontal size={18} />
           </button>
         </div>
@@ -3612,25 +3612,25 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
                   ? 'bg-amber-50 text-amber-700'
                   : post.category === 'Resumo'
                     ? 'bg-emerald-50 text-emerald-600'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-ink-100 text-ink-600'
             }`}
           >
             {post.category}
           </span>
-          <span className="rounded bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+          <span className="rounded bg-ink-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
             {post.subject}
           </span>
         </div>
 
         <h4 className="mb-2 text-xl font-semibold text-ink-900">{post.title}</h4>
-        <p className="text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
+        <p className="text-sm font-medium leading-relaxed text-ink-600">{post.message}</p>
       </div>
 
-      <div className="mb-5 flex flex-wrap items-center gap-5 border-y border-gray-100 py-4">
-        <button className="group flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-blue-600">
+      <div className="mb-5 flex flex-wrap items-center gap-5 border-y border-ink-100 py-4">
+        <button className="group flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-blue-600">
           <ThumbsUp size={16} className="transition-transform group-hover:-translate-y-1" /> {post.helpful}
         </button>
-        <button className="flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-indigo-600">
+        <button className="flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-indigo-600">
           <MessageCircle size={16} /> {post.replies} respostas
         </button>
         <button
@@ -3640,10 +3640,10 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
         >
           Abrir tópico
         </button>
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+        <div className="flex items-center gap-2 text-xs font-bold text-ink-500">
           <Eye size={16} /> {post.views} visualizações
         </div>
-        <button className="ml-auto flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-gray-800">
+        <button className="ml-auto flex items-center gap-2 text-xs font-bold text-ink-500 transition-colors hover:text-ink-800">
           <Share2 size={16} /> Partilhar
         </button>
       </div>
@@ -3653,23 +3653,23 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
           <div className="mb-3 flex items-center gap-3">
             <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-9 w-9 rounded-full object-cover" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-800">{post.author}</p>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Responder no tópico</p>
+              <p className="truncate text-sm font-semibold text-ink-800">{post.author}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400">Responder no tópico</p>
             </div>
           </div>
 
           <textarea
             rows="3"
             placeholder="Escreve uma resposta, complementa a explicação ou salva um colega do desespero..."
-            className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-500"
+            className="w-full resize-none rounded-2xl border border-ink-200 bg-white p-4 text-sm font-medium text-ink-700 outline-none transition focus:border-indigo-500"
           />
 
           <div className="mt-3 flex items-center justify-between">
             <div className="flex gap-2">
-              <button className="rounded-lg p-2 text-gray-400 transition hover:text-indigo-600">
+              <button className="rounded-lg p-2 text-ink-400 transition hover:text-indigo-600">
                 <Camera size={16} />
               </button>
-              <button className="rounded-lg p-2 text-gray-400 transition hover:text-indigo-600">
+              <button className="rounded-lg p-2 text-ink-400 transition hover:text-indigo-600">
                 <Target size={16} />
               </button>
             </div>
@@ -3683,14 +3683,14 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Comentários</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Comentários</p>
             <h5 className="mt-1 text-lg font-semibold text-ink-900">{post.comments?.length || 0} respostas principais</h5>
           </div>
 
           <button
             type="button"
             onClick={onToggleReplies}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            className="rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-ink-50"
           >
             {expanded ? 'Ocultar respostas' : 'Ver comentários'}
           </button>
@@ -3713,27 +3713,27 @@ function CommentThread({ comment, level = 0 }) {
 
   return (
     <div className={`${level > 0 ? 'ml-6 border-l border-indigo-100 pl-4' : ''}`}>
-      <div className="rounded-[1.4rem] border border-gray-100 bg-gray-50 p-4">
+      <div className="rounded-[1.4rem] border border-ink-100 bg-ink-50 p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <img src={comment.avatar || 'https://i.pravatar.cc/150?img=1'} alt={comment.author} className="h-9 w-9 rounded-full object-cover" />
             <div className="min-w-0">
-              <h6 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
+              <h6 className="flex items-center gap-1 text-sm font-semibold text-ink-800">
                 <span className="truncate">{comment.author}</span>
                 {comment.badge ? <Shield size={11} className="text-blue-500" fill="currentColor" /> : null}
               </h6>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{comment.createdAt}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400">{comment.createdAt}</p>
             </div>
           </div>
 
-          <button className="text-gray-400 transition hover:text-gray-600">
+          <button className="text-ink-400 transition hover:text-ink-600">
             <MoreHorizontal size={16} />
           </button>
         </div>
 
-        <p className="text-sm font-medium leading-relaxed text-gray-600">{comment.content}</p>
+        <p className="text-sm font-medium leading-relaxed text-ink-600">{comment.content}</p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-gray-500">
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-ink-500">
           <button className="inline-flex items-center gap-2 transition hover:text-blue-600">
             <ThumbsUp size={14} />
             {comment.likes || 0}
@@ -3764,7 +3764,7 @@ function CommentThread({ comment, level = 0 }) {
 
 function TeacherCard({ teacher }) {
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm transition-all hover:shadow-lg">
+    <div className="overflow-hidden rounded-[2rem] border border-ink-100 bg-white shadow-sm transition-all hover:shadow-lg">
       <div className="relative h-20 bg-gradient-to-r from-ink-100 via-white to-blue-50">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_34%)]" />
         <div className="absolute -bottom-10 left-6 h-20 w-20 rounded-2xl border-4 border-white bg-white p-1 shadow-md">
@@ -3782,7 +3782,7 @@ function TeacherCard({ teacher }) {
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="break-words text-xl font-semibold leading-tight text-ink-900">{teacher.name}</h3>
-            <p className="mt-1 break-words text-sm font-medium leading-relaxed text-gray-500">{teacher.subject}</p>
+            <p className="mt-1 break-words text-sm font-medium leading-relaxed text-ink-500">{teacher.subject}</p>
           </div>
           <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-600">
             Selo Papirando
@@ -3790,14 +3790,14 @@ function TeacherCard({ teacher }) {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-100 bg-ink-50 px-4 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Selo · matéria</p>
+          <div className="rounded-2xl border border-ink-100 bg-ink-50 px-4 py-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Selo · matéria</p>
             <p className="mt-2 break-words text-sm font-semibold leading-snug text-ink-700">{teacher.subject}</p>
             {teacher.bio ? <p className="mt-2 text-xs font-medium leading-relaxed text-ink-600">{teacher.bio}</p> : null}
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-ink-50 px-4 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Ambiente</p>
+          <div className="rounded-2xl border border-ink-100 bg-ink-50 px-4 py-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Ambiente</p>
             <span className="mt-2 inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700">
               Esquadrão Papirando
             </span>
@@ -3810,7 +3810,7 @@ function TeacherCard({ teacher }) {
 
 function TeacherMiniCard({ teacher }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 transition-colors hover:bg-white">
+    <div className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-ink-50 p-3 transition-colors hover:bg-white">
       <div className="h-12 w-12 rounded-full bg-white p-1 shadow-sm">
         {teacher.avatar ? (
           <img src={teacher.avatar} alt={teacher.name} className="h-full w-full rounded-full object-cover" />
@@ -3821,8 +3821,8 @@ function TeacherMiniCard({ teacher }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-gray-800">{teacher.name}</p>
-        <p className="break-words text-[10px] font-bold text-gray-400">{teacher.subject}</p>
+        <p className="truncate text-sm font-semibold text-ink-800">{teacher.name}</p>
+        <p className="break-words text-[10px] font-bold text-ink-400">{teacher.subject}</p>
       </div>
     </div>
   );
@@ -3830,20 +3830,20 @@ function TeacherMiniCard({ teacher }) {
 
 function SummaryInfo({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-gray-800">{value}</p>
+    <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-ink-800">{value}</p>
     </div>
   );
 }
 
 function RankingRow({ item }) {
   return (
-    <div className={`flex items-center gap-4 rounded-2xl p-4 transition-colors ${item.rank === 1 ? 'relative overflow-hidden border border-yellow-200 bg-gradient-to-r from-yellow-50 to-white shadow-sm' : 'border border-gray-100 bg-white hover:bg-gray-50'}`}>
+    <div className={`flex items-center gap-4 rounded-2xl p-4 transition-colors ${item.rank === 1 ? 'relative overflow-hidden border border-yellow-200 bg-gradient-to-r from-yellow-50 to-white shadow-sm' : 'border border-ink-100 bg-white hover:bg-ink-50'}`}>
       {item.rank === 1 ? <div className="absolute bottom-0 left-0 top-0 w-1 bg-yellow-400" /> : null}
 
       <div className="relative">
-        <div className={`rounded-full bg-white p-1 ${item.rank === 1 ? 'h-12 w-12 border-2 border-yellow-400' : item.rank === 2 ? 'h-10 w-10 border-2 border-gray-300' : 'h-10 w-10 border-2 border-orange-300'}`}>
+        <div className={`rounded-full bg-white p-1 ${item.rank === 1 ? 'h-12 w-12 border-2 border-yellow-400' : item.rank === 2 ? 'h-10 w-10 border-2 border-ink-300' : 'h-10 w-10 border-2 border-orange-300'}`}>
           {item.avatar ? (
             <img src={item.avatar} alt={item.name} className="h-full w-full rounded-full object-cover" />
           ) : (
@@ -3852,19 +3852,19 @@ function RankingRow({ item }) {
             </div>
           )}
         </div>
-        <div className={`absolute -bottom-2 -right-2 flex items-center justify-center rounded-full border-2 border-white text-white ${item.rank === 1 ? 'h-6 w-6 bg-yellow-500 text-xs font-semibold' : item.rank === 2 ? 'h-5 w-5 bg-gray-400 text-[10px] font-semibold' : 'h-5 w-5 bg-orange-400 text-[10px] font-semibold'}`}>
+        <div className={`absolute -bottom-2 -right-2 flex items-center justify-center rounded-full border-2 border-white text-white ${item.rank === 1 ? 'h-6 w-6 bg-yellow-500 text-xs font-semibold' : item.rank === 2 ? 'h-5 w-5 bg-ink-400 text-[10px] font-semibold' : 'h-5 w-5 bg-orange-400 text-[10px] font-semibold'}`}>
           {item.rank}
         </div>
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className={`truncate text-sm ${item.rank === 1 ? 'font-semibold text-gray-800' : 'font-bold text-gray-700'}`}>{item.name}</p>
-        <p className="text-[10px] font-bold text-gray-400">{item.tier}</p>
+        <p className={`truncate text-sm ${item.rank === 1 ? 'font-semibold text-ink-800' : 'font-bold text-ink-700'}`}>{item.name}</p>
+        <p className="text-[10px] font-bold text-ink-400">{item.tier}</p>
       </div>
 
       <div className="text-right">
-        <p className={`text-sm font-semibold ${item.rank === 1 ? 'text-yellow-600' : 'text-gray-600'}`}>{item.metric}</p>
-        <p className={`text-[9px] font-bold uppercase tracking-widest ${item.rank === 1 ? 'text-yellow-500' : 'text-gray-400'}`}>XP</p>
+        <p className={`text-sm font-semibold ${item.rank === 1 ? 'text-yellow-600' : 'text-ink-600'}`}>{item.metric}</p>
+        <p className={`text-[9px] font-bold uppercase tracking-widest ${item.rank === 1 ? 'text-yellow-500' : 'text-ink-400'}`}>XP</p>
       </div>
     </div>
   );
@@ -3903,7 +3903,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
     String(member.role || '').toLowerCase().includes('diretor');
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-gray-50 p-4 lg:flex-row lg:items-center">
+    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-ink-100 bg-ink-50 p-4 lg:flex-row lg:items-center">
       <div className="flex flex-1 items-center gap-4">
         <div className="h-12 w-12 rounded-full bg-white p-1 shadow-sm">
           {member.avatar ? (
@@ -3916,8 +3916,8 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
         </div>
 
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{member.name}</p>
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">{member.role}</p>
+          <p className="truncate text-sm font-semibold text-ink-800">{member.name}</p>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-ink-400">{member.role}</p>
           {member.subject ? (
             <p className="mt-0.5 text-[11px] font-semibold text-indigo-600">Matéria: {member.subject}</p>
           ) : null}
@@ -3958,7 +3958,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
               <button
                 type="button"
                 onClick={() => onToggleProfessor?.(member)}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 transition hover:bg-ink-50"
               >
                 {isProfessor ? 'Remover selo' : 'Dar selo'}
               </button>
@@ -3966,7 +3966,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
             <button
               type="button"
               onClick={() => onOpenPermissions?.()}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+              className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 transition hover:bg-ink-50"
             >
               Permissões
             </button>
@@ -4005,15 +4005,15 @@ function AdminHero({ squad }) {
 
 function AdminPanel({ icon, title, subtitle, children }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
-      <div className="border-b border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
+    <section className="overflow-hidden rounded-[2rem] border border-ink-100 bg-white shadow-sm">
+      <div className="border-b border-ink-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             {icon}
           </div>
           <div>
             <h4 className="text-lg font-semibold text-ink-900">{title}</h4>
-            <p className="mt-1 text-sm font-medium text-gray-500">{subtitle}</p>
+            <p className="mt-1 text-sm font-medium text-ink-500">{subtitle}</p>
           </div>
         </div>
       </div>
@@ -4026,7 +4026,7 @@ function AdminMemberRow({ member, onManagePermissions }) {
   const role = normalizeRoleLabel(member.role);
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 transition hover:shadow-sm lg:flex-row lg:items-center">
+    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-ink-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 transition hover:shadow-sm lg:flex-row lg:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <div className="h-12 w-12 rounded-full bg-white p-1 shadow-sm">
           {member.avatar ? (
@@ -4039,7 +4039,7 @@ function AdminMemberRow({ member, onManagePermissions }) {
         </div>
 
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{member.name}</p>
+          <p className="truncate text-sm font-semibold text-ink-800">{member.name}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <span
               className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${getRolePillClass(role)}`}
@@ -4058,7 +4058,7 @@ function AdminMemberRow({ member, onManagePermissions }) {
       <button
         type="button"
         onClick={onManagePermissions}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-gray-700 transition hover:bg-gray-50"
+        className="inline-flex items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-ink-700 transition hover:bg-ink-50"
       >
         Gerir permissões
       </button>
@@ -4071,7 +4071,7 @@ function ActionChip({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 transition hover:bg-gray-50"
+      className="rounded-xl border border-ink-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-ink-700 transition hover:bg-ink-50"
     >
       {label}
     </button>
@@ -4080,14 +4080,14 @@ function ActionChip({ label, onClick }) {
 
 function AdminActionCard({ title, helper, badge, onClick }) {
   return (
-    <div className="flex min-h-[236px] flex-col rounded-[1.5rem] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="flex min-h-[236px] flex-col rounded-[1.5rem] border border-ink-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h5 className="pr-2 text-lg font-semibold leading-tight text-ink-900">{title}</h5>
         <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
           {badge}
         </span>
       </div>
-      <p className="mt-2 text-sm font-medium leading-7 text-gray-500">{helper}</p>
+      <p className="mt-2 text-sm font-medium leading-7 text-ink-500">{helper}</p>
       <button
         type="button"
         onClick={onClick}
@@ -4101,8 +4101,8 @@ function AdminActionCard({ title, helper, badge, onClick }) {
 
 function PermissionItem({ label, value }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-      <span className="text-sm font-bold text-gray-700">{label}</span>
+    <div className="flex items-center justify-between rounded-xl border border-ink-100 bg-ink-50 px-4 py-3">
+      <span className="text-sm font-bold text-ink-700">{label}</span>
       <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
         {value}
       </span>
@@ -4112,8 +4112,8 @@ function PermissionItem({ label, value }) {
 
 function AdminMetric({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-4">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
+    <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-4">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-ink-900">{value}</p>
     </div>
   );
@@ -4125,13 +4125,13 @@ function AdminCommandCard({ icon, title, description, actionLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[228px] h-full flex-col rounded-[1.6rem] border border-gray-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex min-h-[228px] h-full flex-col rounded-[1.6rem] border border-ink-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
         {icon}
       </div>
       <h4 className="mt-5 text-lg font-semibold leading-tight tracking-tight text-ink-900">{title}</h4>
-      <p className="mt-3 text-sm font-medium leading-relaxed text-gray-500">{description}</p>
+      <p className="mt-3 text-sm font-medium leading-relaxed text-ink-500">{description}</p>
       <span className="mt-auto inline-flex items-center gap-2 pt-4 text-xs font-semibold uppercase tracking-widest text-indigo-600">
         {actionLabel}
         <ArrowRight size={13} />
@@ -4167,7 +4167,7 @@ function AdminDangerZone({ onDelete }) {
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-500">Danger zone</p>
             <h4 className="mt-1 text-lg font-semibold text-ink-900">Excluir esquadrão</h4>
-            <p className="mt-1 text-sm font-medium text-gray-500">
+            <p className="mt-1 text-sm font-medium text-ink-500">
               Área separada para ação crítica. Nada de misturar isso com o resto e clicar errado num dia torto.
             </p>
           </div>
@@ -4191,10 +4191,10 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <div className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-[2rem] border border-ink-100 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Paginação</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Paginação</p>
           <h4 className="mt-1 text-lg font-semibold text-ink-900">Página {page} de {totalPages}</h4>
         </div>
 
@@ -4203,7 +4203,7 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
             type="button"
             onClick={onPrev}
             disabled={page <= 1}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition enabled:hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition enabled:hover:bg-ink-50 disabled:cursor-not-allowed disabled:opacity-45"
           >
             <span className="inline-flex items-center gap-2">
               <ArrowLeft size={14} />
@@ -4217,7 +4217,7 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
               type="button"
               onClick={() => onPick(item)}
               className={`h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition ${
-                item === page ? 'bg-ink-900 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                item === page ? 'bg-ink-900 text-white' : 'border border-ink-200 bg-white text-ink-700 hover:bg-ink-50'
               }`}
             >
               {item}
@@ -4228,7 +4228,7 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
             type="button"
             onClick={onNext}
             disabled={page >= totalPages}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition enabled:hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition enabled:hover:bg-ink-50 disabled:cursor-not-allowed disabled:opacity-45"
           >
             <span className="inline-flex items-center gap-2">
               Próxima

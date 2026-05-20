@@ -562,7 +562,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       type="button"
                       onClick={handleResetDocument}
                       disabled={isUploading}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 disabled:opacity-70"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 disabled:opacity-70"
                     >
                       <RefreshCw size={16} />
                       Base oficial
@@ -603,19 +603,19 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
             <div className="grid gap-3 lg:grid-cols-[0.45fr_0.55fr]">
               <div className="relative">
-                <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Buscar bloco legislativo..."
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm font-bold text-gray-700 outline-none focus:border-blue-600"
+                  className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-bold text-ink-700 outline-none focus:border-blue-600"
                 />
               </div>
 
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
                   <input
                     type="text"
                     value={pdfSearchDraft}
@@ -624,7 +624,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       if (event.key === 'Enter') submitPdfSearch();
                     }}
                     placeholder="Buscar texto no PDF..."
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm font-bold text-gray-700 outline-none focus:border-blue-600"
+                    className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-bold text-ink-700 outline-none focus:border-blue-600"
                   />
                 </div>
                 <button type="button" onClick={submitPdfSearch} className="btn-primary rounded-2xl px-4 py-3">
@@ -644,7 +644,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                     className={`shrink-0 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
                       selectedSection === section
                         ? 'border-blue-200 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-gray-50/70 text-gray-700 hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-700'
+                        : 'border-ink-200 bg-ink-50/70 text-ink-700 hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-700'
                     }`}
                   >
                     <span>{section}</span>
@@ -677,13 +677,13 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               </div>
             ) : null}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-gray-200 bg-gray-50/70 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-3">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage <= 1}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-600 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-bold text-ink-600 disabled:opacity-50"
                 >
                   <ChevronLeft size={15} />
                   Anterior
@@ -692,7 +692,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   type="button"
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={maxPage != null && currentPage >= maxPage}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-600 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-bold text-ink-600 disabled:opacity-50"
                 >
                   Próxima
                   <ChevronRight size={15} />
@@ -704,7 +704,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-xs font-bold">
-                <span className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-gray-500">
+                <span className="rounded-full border border-ink-200 bg-white px-3 py-1.5 text-ink-500">
                   PDF indexado: {pdfStats.indexedPages}/{pdfStats.pages || '...'}
                 </span>
                 {isIndexingPdf ? (
@@ -783,16 +783,16 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       ) : (
         <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-[1.55fr_0.45fr]">
           <section className="flex min-h-[calc(100vh-320px)] flex-col overflow-hidden rounded-[28px] border border-ink-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-            <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
+            <div className="flex items-center justify-between gap-4 border-b border-ink-100 px-5 py-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Leitura principal</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Leitura principal</p>
                 <h3 className="mt-1 text-xl font-semibold text-ink-900">{selectedSection}</h3>
               </div>
               <a
                 href={activePdfUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
               >
                 <DownloadCloud size={15} />
                 Abrir PDF
@@ -804,14 +804,14 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                 key={`${selectedSection}-${currentPage}`}
                 title="Vade Mecum"
                 src={iframePdfUrl}
-                className="h-full w-full rounded-[1.5rem] border border-gray-200 bg-white"
+                className="h-full w-full rounded-[1.5rem] border border-ink-200 bg-white"
               />
             </div>
           </section>
 
           <aside className="flex min-h-[calc(100vh-320px)] flex-col gap-6">
             <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Bloco ativo</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Bloco ativo</p>
               <h3 className="mt-2 text-xl font-semibold text-ink-900">{selectedSection}</h3>
 
               <div className="mt-5 flex flex-wrap gap-2">
@@ -830,7 +830,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               </div>
 
               <div className="mt-5">
-                <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
                   Anotação rápida
                 </label>
                 <textarea
@@ -838,7 +838,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   value={currentSectionState.note || ''}
                   onChange={(event) => updateSectionState({ note: event.target.value })}
                   placeholder="Escreva observações, links mentais, jurisprudência ou pontos para revisar depois."
-                  className="mt-2 w-full rounded-[1.4rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-medium leading-relaxed text-gray-600 outline-none focus:border-blue-600"
+                  className="mt-2 w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-medium leading-relaxed text-ink-600 outline-none focus:border-blue-600"
                 />
               </div>
             </section>
@@ -846,7 +846,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
             <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2">
                 <Highlighter size={16} className="text-blue-700" />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Marcações</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Marcações</p>
               </div>
 
               <div className="mt-4 grid gap-3">
@@ -854,14 +854,14 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   value={markerDraft.label}
                   onChange={(event) => setMarkerDraft((prev) => ({ ...prev, label: event.target.value }))}
                   placeholder="Título da marcação"
-                  className="rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                  className="rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                 />
                 <textarea
                   rows="3"
                   value={markerDraft.excerpt}
                   onChange={(event) => setMarkerDraft((prev) => ({ ...prev, excerpt: event.target.value }))}
                   placeholder="Trecho, lembrete ou fundamento da marcação"
-                  className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-medium text-gray-700 outline-none focus:border-blue-600"
+                  className="rounded-[1.2rem] border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-medium text-ink-700 outline-none focus:border-blue-600"
                 />
                 <div className="flex flex-wrap gap-2">
                   {MARKER_COLORS.map((color) => (
@@ -883,10 +883,10 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
               <div className="custom-scrollbar mt-5 max-h-64 space-y-3 overflow-y-auto pr-1">
                 {markersForCurrentSection.length === 0 ? (
-                  <p className="text-sm font-medium text-gray-500">Nenhuma marcação salva neste bloco ainda.</p>
+                  <p className="text-sm font-medium text-ink-500">Nenhuma marcação salva neste bloco ainda.</p>
                 ) : (
                   markersForCurrentSection.map((marker) => (
-                    <div key={marker.id} className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
+                    <div key={marker.id} className="rounded-[1.2rem] border border-ink-200 bg-ink-50/70 p-4">
                       <div className="flex items-start justify-between gap-3">
                         <button
                           type="button"
@@ -897,15 +897,15 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: marker.color }} />
                             <p className="truncate font-semibold text-ink-900">{marker.label || `Página ${marker.page}`}</p>
                           </div>
-                          <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{marker.excerpt}</p>
-                          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
+                          <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{marker.excerpt}</p>
+                          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
                             Página {marker.page}
                           </p>
                         </button>
                         <button
                           type="button"
                           onClick={() => removeMarker(marker.id)}
-                          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                          className="rounded-lg p-2 text-ink-400 transition-colors hover:bg-red-50 hover:text-red-500"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -919,7 +919,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
             <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2">
                 <NotebookPen size={16} className="text-blue-700" />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Busca e resumo</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Busca e resumo</p>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -931,7 +931,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
               {vadeState.searchHistory.length > 0 ? (
                 <div className="mt-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Últimas buscas</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Últimas buscas</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {vadeState.searchHistory.map((item) => (
                       <button
@@ -941,7 +941,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                           setPdfSearchDraft(item);
                           setPdfSearch(item);
                         }}
-                        className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-600"
+                        className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1.5 text-xs font-bold text-ink-600"
                       >
                         {item}
                       </button>
@@ -952,7 +952,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
               {pdfSearch ? (
                 <div className="mt-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">
                     Resultados da busca
                   </p>
                   <div className="custom-scrollbar mt-3 max-h-72 space-y-3 overflow-y-auto pr-1">
@@ -964,12 +964,12 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                           key={`${result.page}-${idx}-${result.excerpt.slice(0, 24)}`}
                           type="button"
                           onClick={() => goToPage(result.page)}
-                          className="w-full rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4 text-left transition-colors hover:border-blue-200 hover:bg-blue-50/50"
+                          className="w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4 text-left transition-colors hover:border-blue-200 hover:bg-blue-50/50"
                         >
                           <p className="font-semibold text-ink-900">
                             Página {result.page} · {result.section}
                           </p>
-                          <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{result.excerpt}</p>
+                          <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{result.excerpt}</p>
                         </button>
                       ))
                     )}
@@ -1006,8 +1006,8 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-[1.3rem] border border-gray-200 bg-gray-50/70 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">{label}</p>
+    <div className="rounded-[1.3rem] border border-ink-200 bg-ink-50/70 p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-ink-900">{value}</p>
     </div>
   );
@@ -1021,7 +1021,7 @@ function ActionPill({ active, icon: Icon, label, onClick }) {
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${
         active
           ? 'border-blue-200 bg-blue-50 text-blue-700'
-          : 'border-gray-200 bg-white text-gray-500 hover:border-blue-100 hover:text-blue-700'
+          : 'border-ink-200 bg-white text-ink-500 hover:border-blue-100 hover:text-blue-700'
       }`}
     >
       <Icon size={13} className={active ? 'fill-current' : ''} />
@@ -1032,9 +1032,9 @@ function ActionPill({ active, icon: Icon, label, onClick }) {
 
 function RoadmapCard({ title, text }) {
   return (
-    <div className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
+    <div className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
       <p className="font-semibold text-ink-900">{title}</p>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{text}</p>
+      <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{text}</p>
     </div>
   );
 }

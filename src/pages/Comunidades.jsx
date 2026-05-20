@@ -196,7 +196,7 @@ function PostCard({
             : 'border-[#3a3530] bg-[#1a1612] hover:border-[#8e8675]'
           : featured
             ? 'border-amber-200 bg-white shadow-sm ring-1 ring-amber-100/80'
-            : 'border-gray-100 bg-white shadow-sm hover:shadow-md'
+            : 'border-ink-100 bg-white shadow-sm hover:shadow-md'
       )}
     >
       <div className="flex flex-col sm:flex-row">

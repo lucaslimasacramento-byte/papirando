@@ -314,22 +314,22 @@ export default function ConcursosDisponiveis({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="relative max-w-xl flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar por concurso, banca, cargo ou área..."
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center rounded-xl border border-gray-200 bg-white p-1">
+              <div className="flex items-center rounded-xl border border-ink-200 bg-white p-1">
                 <button
                   type="button"
                   onClick={() => setViewMode('vitrine')}
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'vitrine' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
+                    viewMode === 'vitrine' ? 'bg-blue-50 text-blue-700' : 'text-ink-500 hover:bg-ink-50'
                   }`}
                 >
                   Vitrine
@@ -338,7 +338,7 @@ export default function ConcursosDisponiveis({
                   type="button"
                   onClick={() => setViewMode('lista')}
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'lista' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
+                    viewMode === 'lista' ? 'bg-blue-50 text-blue-700' : 'text-ink-500 hover:bg-ink-50'
                   }`}
                 >
                   Lista
@@ -371,7 +371,7 @@ export default function ConcursosDisponiveis({
                     setSortMode('relevancia');
                     setAreasSelecionadas(['Todas']);
                   }}
-                  className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
+                  className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600 transition-colors hover:bg-ink-50"
                 >
                   Limpar filtros
                 </button>
@@ -380,8 +380,8 @@ export default function ConcursosDisponiveis({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-gray-400">
-              <Filter size={14} className="text-gray-400" />
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-ink-400">
+              <Filter size={14} className="text-ink-400" />
               Áreas
             </span>
             {areaStats.map((item) => (
@@ -393,7 +393,7 @@ export default function ConcursosDisponiveis({
                   (item.area === 'Todas' && (areasSelecionadas.includes('Todas') || areasSelecionadas.length === 0)) ||
                   areasSelecionadas.includes(item.area)
                     ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-gray-200 bg-gray-50/70 text-gray-600 hover:border-blue-100 hover:bg-white'
+                    : 'border-ink-200 bg-ink-50/70 text-ink-600 hover:border-blue-100 hover:bg-white'
                 }`}
               >
                 <span>{item.area}</span>
@@ -413,7 +413,7 @@ export default function ConcursosDisponiveis({
               <p className="text-sm font-semibold text-ink-900">
                 {currentCourseCount} de {currentCourseLimit} cursos ocupados
               </p>
-              <p className="mt-1 text-xs font-semibold text-gray-500">
+              <p className="mt-1 text-xs font-semibold text-ink-500">
                 {limiteAtingido
                   ? 'As importações ficaram bloqueadas até você liberar uma vaga.'
                   : `Você ainda tem ${remainingCourseSlots} vaga(s) para importar concursos.`}
@@ -427,7 +427,7 @@ export default function ConcursosDisponiveis({
         <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Insights</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Insights</p>
               <h3 className="mt-1 text-2xl font-semibold text-ink-900">Onde vale olhar primeiro</h3>
             </div>
           </div>
@@ -459,7 +459,7 @@ export default function ConcursosDisponiveis({
 
       <div className="space-y-8">
         {groupedCatalog.length === 0 ? (
-          <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
+          <section className="rounded-[2rem] border border-dashed border-ink-200 bg-white p-10 text-center text-sm font-semibold text-ink-500">
             Nenhum concurso disponível no momento. Aguarde a equipe adicionar novos editais.
           </section>
         ) : null}
@@ -468,12 +468,12 @@ export default function ConcursosDisponiveis({
           <section key={area}>
             <div className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">
                   Área
                 </p>
                 <h3 className="mt-1 text-2xl font-semibold text-ink-900">{area}</h3>
               </div>
-              <span className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-500 shadow-sm">
+              <span className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-bold text-ink-500 shadow-sm">
                 {contests.length} concursos
               </span>
             </div>
@@ -532,7 +532,7 @@ export default function ConcursosDisponiveis({
                           <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-ink-950">
                             {contest.nome}
                           </h4>
-                          <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-gray-500">
+                          <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-ink-500">
                             {contest.cargo || contest.concurso}
                           </p>
                           {hasMultipleRoles && (
@@ -603,7 +603,7 @@ export default function ConcursosDisponiveis({
               </div>
             ) : (
               <div className="surface-card overflow-hidden rounded-[22px]">
-                <div className="hidden grid-cols-[2.1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 lg:grid">
+                <div className="hidden grid-cols-[2.1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-ink-200 bg-ink-50 px-5 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400 lg:grid">
                   <span>Concurso</span>
                   <span>Banca</span>
                   <span>Área</span>
@@ -613,7 +613,7 @@ export default function ConcursosDisponiveis({
                   <span>Ações</span>
                 </div>
 
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-ink-100">
                   {contests.map((contest) => (
                     <div
                       key={contest.id}
@@ -621,10 +621,10 @@ export default function ConcursosDisponiveis({
                     >
                       <button type="button" onClick={() => handleOpenContest(contest)} className="text-left">
                         <p className="text-base font-semibold text-ink-900">{contest.nome}</p>
-                        <p className="mt-1 text-sm font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
+                        <p className="mt-1 text-sm font-semibold text-ink-500">{contest.cargo || contest.concurso}</p>
                       </button>
 
-                      <div className="text-sm font-semibold text-gray-600">{contest.banca || 'A definir'}</div>
+                      <div className="text-sm font-semibold text-ink-600">{contest.banca || 'A definir'}</div>
                       <div className="flex flex-wrap gap-2">
                         <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
                         <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
@@ -637,7 +637,7 @@ export default function ConcursosDisponiveis({
                         <button
                           type="button"
                           onClick={() => handleOpenContest(contest)}
-                          className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-600"
+                          className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-bold text-ink-600"
                         >
                           Ver detalhes
                         </button>
@@ -659,7 +659,7 @@ export default function ConcursosDisponiveis({
         ))}
 
         {groupedCatalog.length > 0 && displayedGroups.length === 0 && (
-          <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
+          <section className="rounded-[2rem] border border-dashed border-ink-200 bg-white p-10 text-center text-sm font-semibold text-ink-500">
             Nenhum concurso encontrado com esses filtros.
           </section>
         )}
@@ -689,7 +689,7 @@ function FilterSelect({ value, onChange, options, renderLabel }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+      className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
     >
       {options.map((option) => {
         const optionValue = typeof option === 'string' ? option : option.value;
@@ -724,7 +724,7 @@ function StatusBadge({ children }) {
 
 function InfoPill({ icon: Icon, label }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600">
+    <div className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-bold text-ink-600">
       <Icon size={12} className="text-blue-600" />
       <span className="truncate">{label}</span>
     </div>
@@ -733,8 +733,8 @@ function InfoPill({ icon: Icon, label }) {
 
 function MetaCounter({ label, value }) {
   return (
-    <div className="rounded-[14px] border border-gray-200 bg-ink-50 px-3 py-2.5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
+    <div className="rounded-[14px] border border-ink-200 bg-ink-50 px-3 py-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
       <p className="mt-1 text-base font-semibold text-ink-900">{value}</p>
     </div>
   );
@@ -772,8 +772,8 @@ function QuickTag({ children, tone = 'blue' }) {
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-3 py-2">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gray-400">{label}</p>
+    <div className="rounded-xl border border-ink-200 bg-white px-3 py-2">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-400">{label}</p>
       <p className="mt-1 text-sm font-semibold text-ink-900">{value}</p>
     </div>
   );
@@ -792,7 +792,7 @@ function RecommendationPanel({ title, items = [], emptyText, onOpen, formatDateB
       ) : null}
 
       {visibleItems.length === 0 ? (
-        <div className="rounded-[1.4rem] border border-dashed border-gray-200 bg-gray-50/70 px-4 py-6 text-sm font-semibold text-gray-500">
+        <div className="rounded-[1.4rem] border border-dashed border-ink-200 bg-ink-50/70 px-4 py-6 text-sm font-semibold text-ink-500">
           {emptyText}
         </div>
       ) : (
@@ -802,12 +802,12 @@ function RecommendationPanel({ title, items = [], emptyText, onOpen, formatDateB
               key={`rec-${title}-${item.id}`}
               type="button"
               onClick={() => onOpen(item)}
-              className={`w-full rounded-[1.4rem] border border-gray-200 bg-gray-50/70 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm ${
+              className={`w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm ${
                 isHorizontal ? 'min-h-[120px] p-4' : 'min-h-[120px] p-4'
               }`}
             >
               <p className="line-clamp-2 text-sm font-semibold text-ink-900">{item.nome}</p>
-              <p className="mt-1 text-xs font-semibold text-gray-500">{item.cargo || item.concurso}</p>
+              <p className="mt-1 text-xs font-semibold text-ink-500">{item.cargo || item.concurso}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {item.prova_data && <QuickTag tone="blue">{formatDateBR(item.prova_data)}</QuickTag>}
                 {item.importedCount > 0 && <QuickTag tone="green">Já importado</QuickTag>}
@@ -838,15 +838,15 @@ function ContestPreviewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/45 p-4">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-gray-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/95 px-6 py-4 backdrop-blur">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-ink-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-ink-100 bg-white/95 px-6 py-4 backdrop-blur">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">
               Detalhes do concurso
             </p>
             <h3 className="mt-1 text-2xl font-semibold text-ink-900">{contest.nome}</h3>
           </div>
-          <button onClick={onClose} className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500">
+          <button onClick={onClose} className="rounded-xl border border-ink-200 bg-white p-2 text-ink-500">
             <X size={18} />
           </button>
         </div>
@@ -854,7 +854,7 @@ function ContestPreviewModal({
         <div className="grid gap-6 p-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <div className="space-y-4">
             <div
-              className="relative flex h-48 items-center justify-center overflow-hidden rounded-[1.6rem] border border-gray-200"
+              className="relative flex h-48 items-center justify-center overflow-hidden rounded-[1.6rem] border border-ink-200"
               style={{
                 background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
               }}
@@ -894,19 +894,19 @@ function ContestPreviewModal({
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
-            <p className="mt-1 text-sm font-medium text-gray-500">{contest.banca || 'Banca a definir'}</p>
+            <p className="text-sm font-semibold text-ink-500">{contest.cargo || contest.concurso}</p>
+            <p className="mt-1 text-sm font-medium text-ink-500">{contest.banca || 'Banca a definir'}</p>
 
             {contest.descricao && (
-              <div className="mt-5 rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Resumo</p>
-                <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">{contest.descricao}</p>
+              <div className="mt-5 rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Resumo</p>
+                <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{contest.descricao}</p>
               </div>
             )}
 
             {(contest.vagas || contest.lotacao || contest.etapas || contest.etapas_tags?.length > 0) && (
-              <div className="mt-5 rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+              <div className="mt-5 rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">
                   Informações do concurso
                 </p>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -935,7 +935,7 @@ function ContestPreviewModal({
                       {contest.taf_itens.map((item) => (
                         <span
                           key={item}
-                          className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-700"
+                          className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-ink-700"
                         >
                           {item}
                         </span>
@@ -946,33 +946,33 @@ function ContestPreviewModal({
               </div>
             )}
 
-            <div className="mt-5 rounded-[1.4rem] border border-gray-200 bg-white p-4">
+            <div className="mt-5 rounded-[1.4rem] border border-ink-200 bg-white p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">
                     Estrutura base
                   </p>
                   <h4 className="mt-1 text-lg font-semibold text-ink-900">Disciplinas do concurso</h4>
                 </div>
-                <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500">
+                <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-bold text-ink-500">
                   {contest.disciplinas?.length || 0} disciplinas
                 </span>
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
                 {(contest.disciplinas || []).map((disciplina) => (
-                  <div key={disciplina.nome} className="rounded-[1.1rem] border border-gray-200 bg-gray-50/70 px-4 py-3">
+                  <div key={disciplina.nome} className="rounded-[1.1rem] border border-ink-200 bg-ink-50/70 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-bold text-ink-900">{disciplina.nome}</p>
-                        <p className="mt-1 text-xs font-semibold text-gray-500">
+                        <p className="mt-1 text-xs font-semibold text-ink-500">
                           {disciplina.topicos?.length || 0} tópicos mapeados
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => onToggleSubject(disciplina.nome)}
-                        className="rounded-xl border border-gray-200 bg-white p-2 text-gray-600"
+                        className="rounded-xl border border-ink-200 bg-white p-2 text-ink-600"
                       >
                         <Plus
                           size={14}
@@ -982,18 +982,18 @@ function ContestPreviewModal({
                     </div>
 
                     {expandedSubjects[disciplina.nome] && (
-                      <div className="mt-3 space-y-2 border-t border-gray-200 pt-3">
+                      <div className="mt-3 space-y-2 border-t border-ink-200 pt-3">
                         {(disciplina.topicos || []).length > 0 ? (
                           (disciplina.topicos || []).map((topico) => (
                             <div
                               key={topico.id || topico.nome}
-                              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600"
+                              className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-600"
                             >
                               {topico.nome}
                             </div>
                           ))
                         ) : (
-                          <div className="rounded-xl border border-dashed border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-500">
+                          <div className="rounded-xl border border-dashed border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-500">
                             Nenhum tópico detalhado ainda.
                           </div>
                         )}
@@ -1021,7 +1021,7 @@ function ContestPreviewModal({
               {contest.edital_url && (
                 <button
                   onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
+                  className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600"
                 >
                   Edital
                   <ExternalLink size={15} />
@@ -1037,8 +1037,8 @@ function ContestPreviewModal({
 
 function DetailBox({ label, value }) {
   return (
-    <div className="rounded-[1rem] border border-gray-200 bg-white px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
+    <div className="rounded-[1rem] border border-ink-200 bg-white px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
       <p className="mt-2 text-sm font-bold text-ink-900">{value}</p>
     </div>
   );

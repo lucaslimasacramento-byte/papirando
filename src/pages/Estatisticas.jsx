@@ -220,14 +220,14 @@ export default function Estatisticas({
               <Activity size={18} className="text-[#1d4ed8]" />
               Análise por matéria canônica
             </h3>
-            <p className="mt-0.5 text-[11px] font-semibold text-gray-400">
+            <p className="mt-0.5 text-[11px] font-semibold text-ink-400">
               Tempo e acurácia consolidados no mesmo nome padrão.
             </p>
           </div>
 
           <div className="custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             {disciplineSummary.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm font-semibold text-gray-400">
+              <div className="rounded-2xl border border-dashed border-ink-200 bg-ink-50 p-6 text-center text-sm font-semibold text-ink-400">
                 Ainda não há registros suficientes para montar as estatísticas por matéria.
               </div>
             ) : (
@@ -313,7 +313,7 @@ export default function Estatisticas({
 
             <div className="space-y-3">
               {topicRows.length === 0 ? (
-                <p className="text-sm font-semibold text-gray-400">Sem tópicos suficientes com questões respondidas.</p>
+                <p className="text-sm font-semibold text-ink-400">Sem tópicos suficientes com questões respondidas.</p>
               ) : (
                 topicRows.map((item) => (
                   <TopicRow key={`${item.disc}-${item.topico}`} item={item} />
@@ -336,17 +336,17 @@ function MetricStripCard({ icon: Icon, title, highlight, footerLabel, footerValu
   };
 
   return (
-    <div className="flex h-full w-full min-h-[6.75rem] min-w-[8.25rem] shrink-0 flex-col rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#1d4ed8]/20 hover:shadow-md sm:min-h-[6.25rem] sm:min-w-0 sm:p-2.5">
+    <div className="flex h-full w-full min-h-[6.75rem] min-w-[8.25rem] shrink-0 flex-col rounded-xl border border-ink-100 bg-white p-2 shadow-sm transition-all hover:border-[#1d4ed8]/20 hover:shadow-md sm:min-h-[6.25rem] sm:min-w-0 sm:p-2.5">
       <div className={`mb-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md sm:mb-1.5 sm:h-7 sm:w-7 sm:rounded-lg ${accents[accent]}`}>
         <Icon size={15} strokeWidth={2.25} />
       </div>
-      <p className="line-clamp-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-400">{title}</p>
+      <p className="line-clamp-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-ink-400">{title}</p>
       <p className="mt-0.5 line-clamp-2 text-[0.9rem] font-bold leading-tight tracking-tight text-ink-900 sm:mt-1 sm:text-[0.95rem]">
         {highlight}
       </p>
       <div className="mt-auto rounded-md bg-ink-50 px-1.5 py-1 sm:rounded-lg sm:px-2 sm:py-1.5">
-        <p className="line-clamp-1 text-[8px] font-bold uppercase tracking-wider text-gray-400">{footerLabel}</p>
-        <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-snug text-gray-700">{footerValue}</p>
+        <p className="line-clamp-1 text-[8px] font-bold uppercase tracking-wider text-ink-400">{footerLabel}</p>
+        <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-snug text-ink-700">{footerValue}</p>
       </div>
     </div>
   );
@@ -356,21 +356,21 @@ function DisciplineRow({ name, timeLabel, accuracy, questions, maxMinutes, minut
   const width = Math.max(12, Math.round((minutes / Math.max(maxMinutes, 1)) * 100));
 
   return (
-    <div className="rounded-2xl border border-gray-100 p-3.5 transition-all hover:border-[#1d4ed8]/25 hover:shadow-sm sm:p-4">
+    <div className="rounded-2xl border border-ink-100 p-3.5 transition-all hover:border-[#1d4ed8]/25 hover:shadow-sm sm:p-4">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{name}</p>
-          <p className="mt-1 text-xs font-semibold text-gray-400">{questions} questões registradas</p>
+          <p className="truncate text-sm font-semibold text-ink-800">{name}</p>
+          <p className="mt-1 text-xs font-semibold text-ink-400">{questions} questões registradas</p>
         </div>
         <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">{timeLabel}</span>
       </div>
 
       <div className="mt-4">
-        <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+        <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-ink-400">
           <span>Tempo relativo</span>
           <span>{accuracy}% de acurácia</span>
         </div>
-        <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-2.5 w-full rounded-full bg-ink-100 overflow-hidden">
           <div className="h-full rounded-full bg-gradient-to-r from-[#93C5FD] to-[#1d4ed8]" style={{ width: `${width}%` }} />
         </div>
       </div>
@@ -383,15 +383,15 @@ function TopicRow({ item }) {
     item.pct >= 80 ? 'bg-emerald-500' : item.pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
 
   return (
-    <div className="rounded-[1.5rem] border border-gray-100 p-4">
+    <div className="rounded-[1.5rem] border border-ink-100 p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+        <span className="rounded-full bg-ink-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
           {item.disc}
         </span>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{item.qTot} questões</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">{item.qTot} questões</span>
       </div>
-      <p className="mt-3 text-sm font-bold text-gray-800">{item.topico}</p>
-      <div className="mt-3 h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
+      <p className="mt-3 text-sm font-bold text-ink-800">{item.topico}</p>
+      <div className="mt-3 h-2.5 w-full rounded-full bg-ink-100 overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${item.pct}%` }} />
       </div>
     </div>

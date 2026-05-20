@@ -129,7 +129,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         }
       />
 
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
+      <section className="rounded-[2.4rem] border border-ink-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
         <div className="grid gap-4 md:grid-cols-5">
           <SummaryCard icon={Users} label="Leads" value={crm.total} />
           <SummaryCard icon={MessageCircle} label="Em contato" value={crm.emContato} />
@@ -140,47 +140,47 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
       </section>
 
       <div className="grid gap-8 xl:grid-cols-[0.8fr_1.2fr]">
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cadastro comercial</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Cadastro comercial</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">{form.id ? 'Editar lead' : 'Novo lead'}</h3>
           </div>
 
           <div className="grid gap-4">
             <Field label="Nome">
-              <input value={form.nome} onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))} className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.nome} onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
             <Field label="Contato">
-              <input value={form.contato} onChange={(e) => setForm((prev) => ({ ...prev, contato: e.target.value }))} placeholder="Telefone, e-mail ou @usuario" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.contato} onChange={(e) => setForm((prev) => ({ ...prev, contato: e.target.value }))} placeholder="Telefone, e-mail ou @usuario" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
             <Field label="Canal">
-              <select value={form.canal} onChange={(e) => setForm((prev) => ({ ...prev, canal: e.target.value }))} className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500">
+              <select value={form.canal} onChange={(e) => setForm((prev) => ({ ...prev, canal: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500">
                 {CHANNEL_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Interesse principal">
-              <input value={form.interesse} onChange={(e) => setForm((prev) => ({ ...prev, interesse: e.target.value }))} placeholder="Ex: PMAL, carreiras policiais, plano elite" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.interesse} onChange={(e) => setForm((prev) => ({ ...prev, interesse: e.target.value }))} placeholder="Ex: PMAL, carreiras policiais, plano elite" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
             <Field label="Etapa do funil">
-              <select value={form.stage} onChange={(e) => setForm((prev) => ({ ...prev, stage: e.target.value }))} className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500">
+              <select value={form.stage} onChange={(e) => setForm((prev) => ({ ...prev, stage: e.target.value }))} className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500">
                 {CRM_STAGE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Valor mensal potencial">
-              <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
             <Field label="ObservaÃ§Ã£o">
-              <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
           </div>
 
           <div className="mt-6 flex flex-wrap justify-end gap-3">
             {form.id && (
-              <button type="button" onClick={() => setForm(EMPTY_LEAD)} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
+              <button type="button" onClick={() => setForm(EMPTY_LEAD)} className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-bold text-ink-600">
                 Cancelar ediÃ§Ã£o
               </button>
             )}
@@ -191,15 +191,15 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Funil comercial</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Funil comercial</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Leads cadastrados</h3>
           </div>
 
           <div className="space-y-3">
             {sortedLeads.map((lead) => (
-              <div key={lead.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
+              <div key={lead.id} className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -208,15 +208,15 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
                         {CRM_STAGE_OPTIONS.find((option) => option.value === lead.stage)?.label || lead.stage}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">
+                    <p className="mt-1 text-sm font-semibold text-ink-500">
                       {lead.contato || 'Sem contato'} â€¢ {lead.canal} â€¢ {lead.interesse || 'Sem interesse definido'}
                     </p>
                     <p className="mt-2 text-sm font-semibold text-emerald-700">{formatCurrency(lead.monthly_value || 0)} / mÃªs</p>
-                    {lead.observacao && <p className="mt-2 text-sm font-medium text-gray-500">{lead.observacao}</p>}
+                    {lead.observacao && <p className="mt-2 text-sm font-medium text-ink-500">{lead.observacao}</p>}
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => handleEdit(lead)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600">
+                    <button type="button" onClick={() => handleEdit(lead)} className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-600">
                       <Pencil size={15} />
                       Editar
                     </button>
@@ -230,7 +230,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
             ))}
 
             {sortedLeads.length === 0 && (
-              <div className="rounded-[1.5rem] border border-dashed border-gray-200 bg-white px-6 py-10 text-center text-sm font-semibold text-gray-500">
+              <div className="rounded-[1.5rem] border border-dashed border-ink-200 bg-white px-6 py-10 text-center text-sm font-semibold text-ink-500">
                 Nenhum lead cadastrado ainda. Comece registrando os interessados que chegarem por WhatsApp, Instagram ou indicaÃ§Ã£o.
               </div>
             )}
@@ -243,7 +243,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
 
 function SummaryCard({ icon: Icon, label, value }) {
   return (
-      <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
+      <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
       <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
         <Icon size={12} />
         {label}
@@ -256,7 +256,7 @@ function SummaryCard({ icon: Icon, label, value }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{label}</label>
       {children}
     </div>
   );

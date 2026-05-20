@@ -149,10 +149,10 @@ export default function DisciplinaDetalhe({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-6 py-4">
+      <div className="overflow-hidden rounded-[2rem] border border-ink-100 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-ink-100 bg-ink-50/60 px-6 py-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Mapa da disciplina</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Mapa da disciplina</p>
             <h4 className="mt-1 text-lg font-semibold text-ink-900">Tópicos cadastrados</h4>
           </div>
           <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
@@ -165,7 +165,7 @@ export default function DisciplinaDetalhe({
             <div
               key={topico?.id || index}
               id={topico?.id ? `disciplina-topico-${topico.id}` : undefined}
-              className={`border-b border-gray-100 px-6 py-4 transition-all duration-300 hover:bg-gray-50/80 ${
+              className={`border-b border-ink-100 px-6 py-4 transition-all duration-300 hover:bg-ink-50/80 ${
                 String(topico?.id || '') === String(highlightedTopicId || '')
                   ? 'bg-blue-50/80 ring-1 ring-inset ring-blue-200'
                   : ''
@@ -179,7 +179,7 @@ export default function DisciplinaDetalhe({
                     className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${
                       topico?.concluido
                         ? 'border-emerald-500 bg-emerald-500 text-white'
-                        : 'border-gray-300 bg-white text-transparent hover:border-emerald-400'
+                        : 'border-ink-300 bg-white text-transparent hover:border-emerald-400'
                     }`}
                     aria-label={topico?.concluido ? 'Desmarcar tópico como concluído' : 'Marcar tópico como concluído'}
                   >
@@ -188,7 +188,7 @@ export default function DisciplinaDetalhe({
 
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      <span className="rounded-full bg-ink-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
                         #{index + 1}
                       </span>
                       {topico?.concluido ? (
@@ -206,7 +206,7 @@ export default function DisciplinaDetalhe({
 
                     <span
                       className={`text-sm font-bold leading-relaxed ${
-                        topico?.concluido ? 'text-gray-400 line-through' : 'text-gray-800'
+                        topico?.concluido ? 'text-ink-400 line-through' : 'text-ink-800'
                       }`}
                     >
                       {topico?.nome || 'Tópico sem nome'}
@@ -218,11 +218,11 @@ export default function DisciplinaDetalhe({
           ))
         ) : (
           <div className="px-6 py-14 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-ink-100 text-ink-400">
               <Plus size={18} />
             </div>
             <h4 className="mt-4 text-base font-semibold text-ink-900">Nenhum tópico cadastrado ainda</h4>
-            <p className="mt-2 text-sm font-medium text-gray-500">
+            <p className="mt-2 text-sm font-medium text-ink-500">
               Use o botão acima para começar a estruturar essa disciplina.
             </p>
           </div>

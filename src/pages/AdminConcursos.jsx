@@ -1722,7 +1722,7 @@ export default function AdminConcursos({
         <InsightCard title="Sem tópicos" value={stats.semTopicos} text="Disciplinas ainda superficiais." />
       </div>
 
-      <div className="rounded-[1.6rem] border border-gray-200 bg-white p-2 shadow-sm">
+      <div className="rounded-[1.6rem] border border-ink-200 bg-white p-2 shadow-sm">
         <div className="flex flex-wrap gap-2">
           {[
             { id: 'concursos', label: 'Concursos', icon: LibraryBig },
@@ -1739,7 +1739,7 @@ export default function AdminConcursos({
                 className={`inline-flex items-center gap-2 rounded-[1rem] px-4 py-3 text-sm font-semibold transition-all ${
                   active
                     ? 'bg-[#1e40af] text-white shadow-sm'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-[#1e40af]'
+                    : 'text-ink-500 hover:bg-ink-50 hover:text-[#1e40af]'
                 }`}
               >
                 <Icon size={16} />
@@ -1752,23 +1752,23 @@ export default function AdminConcursos({
 
       {activePanel === 'concursos' ? (
       <div className="space-y-6">
-        <div className="rounded-[1.6rem] border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-[1.6rem] border border-ink-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Biblioteca de concursos</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Biblioteca de concursos</p>
               <h3 className="mt-1 text-xl font-semibold text-ink-900">Buscar e editar cadastro existente</h3>
             </div>
 
             <div className="grid gap-3 md:grid-cols-[minmax(240px,360px)_190px_auto]">
               <div>
-                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Busca</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Busca</label>
                 <div className="relative">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
                   <input
                     value={contestQuery}
                     onChange={(event) => setContestQuery(event.target.value)}
                     placeholder="Nome, cargo, órgão ou banca"
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                   />
                 </div>
               </div>
@@ -1793,28 +1793,28 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          <div className="mt-4 max-h-[360px] overflow-y-auto rounded-[1.3rem] border border-gray-200">
+          <div className="mt-4 max-h-[360px] overflow-y-auto rounded-[1.3rem] border border-ink-200">
             {filteredContestCatalog.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm font-semibold text-gray-500">
+              <div className="px-5 py-10 text-center text-sm font-semibold text-ink-500">
                 Nenhum concurso encontrado com os filtros atuais.
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-ink-100">
                 {contestSections.map(([area, templates]) => (
                   <div key={area}>
-                    <div className="sticky top-0 z-10 flex items-center justify-between bg-gray-50/95 px-4 py-2 backdrop-blur">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">{area}</p>
-                      <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-gray-500 shadow-sm">
+                    <div className="sticky top-0 z-10 flex items-center justify-between bg-ink-50/95 px-4 py-2 backdrop-blur">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">{area}</p>
+                      <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-ink-500 shadow-sm">
                         {templates.length}
                       </span>
                     </div>
 
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-ink-100">
                       {templates.map((template) => (
                         <div
                           key={template.id}
                           className={`grid gap-3 px-4 py-3 transition-colors lg:grid-cols-[minmax(0,1.7fr)_minmax(160px,0.8fr)_150px_110px_44px] lg:items-center ${
-                            selectedTemplateId === template.id ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'
+                            selectedTemplateId === template.id ? 'bg-blue-50' : 'bg-white hover:bg-ink-50'
                           }`}
                         >
                           <button
@@ -1823,10 +1823,10 @@ export default function AdminConcursos({
                             className="min-w-0 text-left"
                           >
                             <p className="truncate text-sm font-bold text-ink-900">{template.nome}</p>
-                            <p className="mt-1 truncate text-xs font-semibold text-gray-500">{template.concurso}</p>
+                            <p className="mt-1 truncate text-xs font-semibold text-ink-500">{template.concurso}</p>
                           </button>
-                          <p className="truncate text-sm font-semibold text-gray-600">{template.cargo || 'Cargo a definir'}</p>
-                          <p className="truncate text-sm font-semibold text-gray-500">{template.banca || 'A definir'}</p>
+                          <p className="truncate text-sm font-semibold text-ink-600">{template.cargo || 'Cargo a definir'}</p>
+                          <p className="truncate text-sm font-semibold text-ink-500">{template.banca || 'A definir'}</p>
                           <div className="flex flex-wrap gap-2">
                             <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${template.is_public ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                               {template.is_public ? 'Publicado' : 'Rascunho'}
@@ -1835,7 +1835,7 @@ export default function AdminConcursos({
                           <button
                             type="button"
                             onClick={() => handleDeleteSelected(template)}
-                            className="h-10 w-10 rounded-xl text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            className="h-10 w-10 rounded-xl text-ink-400 transition-colors hover:bg-red-50 hover:text-red-600"
                             title={`Excluir ${template.nome}`}
                           >
                             <Trash2 size={15} className="mx-auto" />
@@ -1850,14 +1850,14 @@ export default function AdminConcursos({
           </div>
         </div>
 
-        <div className="rounded-[1.8rem] border border-gray-200 bg-white p-4 shadow-sm md:p-6">
+        <div className="rounded-[1.8rem] border border-ink-200 bg-white p-4 shadow-sm md:p-6">
           <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor do concurso</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Editor do concurso</p>
               <h3 className="mt-2 text-2xl font-semibold text-ink-900">
                 {form.id ? 'Editando concurso' : 'Novo concurso'}
               </h3>
-              <p className="mt-2 text-sm font-semibold text-gray-500">
+              <p className="mt-2 text-sm font-semibold text-ink-500">
                 {form.id
                   ? 'As ações principais ficam aqui em cima: salvar, duplicar ou excluir.'
                   : 'Preencha os dados principais e depois monte as disciplinas e tópicos.'}
@@ -1907,7 +1907,7 @@ export default function AdminConcursos({
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Preencher com IA</p>
                 <h4 className="mt-1 text-lg font-semibold text-ink-900">Colar formulário analisado do edital</h4>
-                <p className="mt-1 text-sm font-semibold text-gray-500">
+                <p className="mt-1 text-sm font-semibold text-ink-500">
                   Use o formulário estruturado que veio da análise do edital. A IA organiza os campos, disciplinas e tópicos no rascunho.
                 </p>
               </div>
@@ -1982,7 +1982,7 @@ export default function AdminConcursos({
                   setContestFormOptions([]);
                 }}
                 placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
-                className="mt-2 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                className="mt-2 w-full rounded-[1.4rem] border border-indigo-100 bg-white px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
               />
             ) : (
               <div className="mt-2">
@@ -2074,12 +2074,12 @@ export default function AdminConcursos({
                         key={`${option.nome || option.cargo || 'opcao'}-${optionIndex}`}
                         type="button"
                         onClick={() => applyContestFormTemplate({ templates: contestFormOptions }, optionIndex)}
-                        className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50"
+                        className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50"
                       >
                         <span className="line-clamp-2 text-sm font-bold text-ink-900">
                           {option.nome || option.cargo || `Opção ${optionIndex + 1}`}
                         </span>
-                        <span className="mt-2 block text-xs font-semibold text-gray-500">
+                        <span className="mt-2 block text-xs font-semibold text-ink-500">
                           {subjectCount} disciplina(s) · {topicCount} tópico(s)
                         </span>
                       </button>
@@ -2091,20 +2091,20 @@ export default function AdminConcursos({
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
+            <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Mídia e arquivos</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Mídia e arquivos</p>
                   <h4 className="mt-1 text-base font-semibold text-ink-900">Capa e edital oficial</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {form.imagem_url && (
-                    <button type="button" onClick={() => window.open(form.imagem_url, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600">
+                    <button type="button" onClick={() => window.open(form.imagem_url, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-600">
                       Abrir imagem
                     </button>
                   )}
                   {form.edital_url && (
-                    <button type="button" onClick={() => window.open(form.edital_url, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600">
+                    <button type="button" onClick={() => window.open(form.edital_url, '_blank', 'noopener,noreferrer')} className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-600">
                       Abrir edital
                     </button>
                   )}
@@ -2112,7 +2112,7 @@ export default function AdminConcursos({
               </div>
 
               <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-                <div className="overflow-hidden rounded-[1.2rem] border border-gray-200 bg-white">
+                <div className="overflow-hidden rounded-[1.2rem] border border-ink-200 bg-white">
                 {form.imagem_url ? (
                   <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-36 w-full object-cover" />
                 ) : (
@@ -2135,7 +2135,7 @@ export default function AdminConcursos({
                     <input
                       value={form.imagem_url}
                       onChange={(e) => updateFormField('imagem_url', e.target.value)}
-                      className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                       placeholder="URL final da imagem"
                     />
                     {form.imagem_url && (
@@ -2154,7 +2154,7 @@ export default function AdminConcursos({
                     <input
                       value={form.edital_url}
                       onChange={(e) => updateFormField('edital_url', e.target.value)}
-                      className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                       placeholder="URL final do edital PDF"
                     />
                     {form.edital_url && (
@@ -2168,9 +2168,9 @@ export default function AdminConcursos({
             </div>
 
             <div className="space-y-5">
-              <div className="rounded-[1.5rem] border border-gray-200 bg-white p-4">
+              <div className="rounded-[1.5rem] border border-ink-200 bg-white p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Dados principais</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Dados principais</p>
                   <h4 className="mt-1 text-base font-semibold text-ink-900">Identificação e vitrine</h4>
                 </div>
 
@@ -2209,10 +2209,10 @@ export default function AdminConcursos({
                 </div>
               </div>
 
-              <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
+              <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
                 <div className="flex flex-col gap-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas do concurso</p>
-                  <p className="text-xs font-semibold text-gray-500">Marque as etapas comuns ou adicione uma etapa específica do edital.</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Etapas do concurso</p>
+                  <p className="text-xs font-semibold text-ink-500">Marque as etapas comuns ou adicione uma etapa específica do edital.</p>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {ETAPA_OPTIONS.map((option) => {
@@ -2223,7 +2223,7 @@ export default function AdminConcursos({
                         type="button"
                         onClick={() => toggleEtapaTag(option.value)}
                         className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                          active ? 'bg-blue-600 text-white' : 'border border-gray-200 bg-white text-gray-600'
+                          active ? 'bg-blue-600 text-white' : 'border border-ink-200 bg-white text-ink-600'
                         }`}
                       >
                         {option.label}
@@ -2243,7 +2243,7 @@ export default function AdminConcursos({
                       }
                     }}
                     placeholder="Ex.: Avaliação curricular, prova prática, títulos, perícia médica"
-                    className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                   />
                   <button
                     type="button"
@@ -2279,7 +2279,7 @@ export default function AdminConcursos({
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-ink-900">Itens do TAF</p>
-                        <p className="mt-1 text-xs font-semibold text-gray-500">Adicione as provas físicas que fazem parte do teste.</p>
+                        <p className="mt-1 text-xs font-semibold text-ink-500">Adicione as provas físicas que fazem parte do teste.</p>
                       </div>
                       <button type="button" onClick={addTafItem} className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700">
                         + Item
@@ -2293,7 +2293,7 @@ export default function AdminConcursos({
                             value={item}
                             onChange={(e) => updateTafItem(index, e.target.value)}
                             placeholder="Ex.: Corrida de 12 minutos"
-                            className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                            className="flex-1 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
                           />
                           <button
                             type="button"
@@ -2329,18 +2329,18 @@ export default function AdminConcursos({
 
               <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div>
-                  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Descrição curta</label>
+                  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Descrição curta</label>
                   <textarea
                     rows={4}
                     value={form.descricao}
                     onChange={(e) => updateFormField('descricao', e.target.value)}
-                    className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                   />
                 </div>
 
-                <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Checklist editorial</p>
-                  <div className="mt-4 space-y-3 text-sm font-semibold text-gray-600">
+                <div className="rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Checklist editorial</p>
+                  <div className="mt-4 space-y-3 text-sm font-semibold text-ink-600">
                     <ChecklistRow ok={Boolean(form.area)} label="Área definida" />
                     <ChecklistRow ok={Boolean(form.cargo)} label="Cargo identificado" />
                     <ChecklistRow ok={Boolean(form.prova_data)} label="Data da prova preenchida" />
@@ -2354,7 +2354,7 @@ export default function AdminConcursos({
               <div>
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Conteúdo programático</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Conteúdo programático</p>
                     <h4 className="mt-1 text-lg font-semibold text-ink-900">Disciplinas e tópicos</h4>
                   </div>
 
@@ -2366,14 +2366,14 @@ export default function AdminConcursos({
 
                 <div className="space-y-4">
                   {form.disciplinas.map((subject, index) => (
-                    <div key={`subject-${index}`} className="rounded-[1.6rem] border border-gray-200 bg-white p-4">
+                    <div key={`subject-${index}`} className="rounded-[1.6rem] border border-ink-200 bg-white p-4">
                       {(() => {
                         const matchedSubject = resolveSubjectCatalogEntry(subject.nome, subjectCatalog);
                         return (
                           <>
                       <div className="mb-4 flex items-center justify-between gap-4">
                         <p className="text-sm font-semibold text-ink-900">Disciplina {index + 1}</p>
-                        <button type="button" onClick={() => removeSubject(index)} className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500" title="Remover disciplina">
+                        <button type="button" onClick={() => removeSubject(index)} className="rounded-xl p-2 text-ink-400 transition-colors hover:bg-red-50 hover:text-red-500" title="Remover disciplina">
                           <X size={16} />
                         </button>
                       </div>
@@ -2392,7 +2392,7 @@ export default function AdminConcursos({
                               <option key={`${index}-${item}`} value={item} />
                             ))}
                           </datalist>
-                          <p className="mt-2 text-xs font-semibold text-gray-500">
+                          <p className="mt-2 text-xs font-semibold text-ink-500">
                             {matchedSubject
                               ? `Padrão encontrado: ${matchedSubject.nome}`
                               : 'Sem correspondência no banco padrão. Se necessário, cadastre em Admin > Banco de disciplinas.'}
@@ -2402,13 +2402,13 @@ export default function AdminConcursos({
                       </div>
 
                       <div className="mt-4">
-                        <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Tópicos da disciplina</label>
+                        <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Tópicos da disciplina</label>
                         <textarea
                           rows={6}
                           value={subject.topicosTexto}
                           onChange={(e) => updateSubjectField(index, 'topicosTexto', e.target.value)}
                           placeholder={`Um tópico por linha\nConceitos iniciais\nPoder de polícia\nAtos administrativos`}
-                          className="w-full rounded-[1.4rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                          className="w-full rounded-[1.4rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                         />
                       </div>
                           </>
@@ -2422,10 +2422,10 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          <div className="mt-6 border-t border-gray-200 pt-4">
+          <div className="mt-6 border-t border-ink-200 pt-4">
             <div className="flex flex-wrap justify-end gap-3">
               {form.id && (
-                <button type="button" onClick={resetForm} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
+                <button type="button" onClick={resetForm} className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-bold text-ink-600">
                   Cancelar edição
                 </button>
               )}
@@ -2459,9 +2459,9 @@ export default function AdminConcursos({
       </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-          <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
             <div className="mb-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Banco de questões</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Banco de questões</p>
               <h3 className="mt-2 text-2xl font-semibold text-ink-900">Cadastrar nova questão</h3>
             </div>
 
@@ -2472,17 +2472,17 @@ export default function AdminConcursos({
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Enunciado</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Enunciado</label>
                 <textarea
                   rows={6}
                   value={questionForm.enunciado}
                   onChange={(e) => setQuestionForm((prev) => ({ ...prev, enunciado: e.target.value }))}
-                  className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 />
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Alternativas</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Alternativas</p>
                 {QUESTION_LABELS.map((label, index) => (
                   <div key={label} className="flex items-center gap-3">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-blue-700">
@@ -2491,7 +2491,7 @@ export default function AdminConcursos({
                     <input
                       value={questionForm.alternativas[index]}
                       onChange={(e) => updateQuestionAlternative(index, e.target.value)}
-                      className="flex-1 rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="flex-1 rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                       placeholder={`Alternativa ${label}`}
                     />
                   </div>
@@ -2527,12 +2527,12 @@ export default function AdminConcursos({
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Comentário</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Comentário</label>
                 <textarea
                   rows={5}
                   value={questionForm.comentario}
                   onChange={(e) => setQuestionForm((prev) => ({ ...prev, comentario: e.target.value }))}
-                  className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-[1.5rem] border border-ink-200 bg-ink-50/70 px-4 py-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 />
               </div>
             </div>
@@ -2550,10 +2550,10 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Listagem</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Listagem</p>
                 <h3 className="mt-2 text-2xl font-semibold text-ink-900">Questões cadastradas</h3>
               </div>
               <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
@@ -2566,12 +2566,12 @@ export default function AdminConcursos({
                 <Loader2 size={24} className="animate-spin text-blue-500" />
               </div>
             ) : visibleQuestions.length === 0 ? (
-              <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-gray-50/70 px-6 py-12 text-center">
-                <p className="text-sm font-semibold text-gray-500">Nenhuma questão cadastrada ainda.</p>
+              <div className="rounded-[1.6rem] border border-dashed border-ink-200 bg-ink-50/70 px-6 py-12 text-center">
+                <p className="text-sm font-semibold text-ink-500">Nenhuma questão cadastrada ainda.</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-[1.6rem] border border-gray-200">
-                <div className="grid grid-cols-[120px_140px_minmax(0,1fr)_100px_100px] gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+              <div className="overflow-hidden rounded-[1.6rem] border border-ink-200">
+                <div className="grid grid-cols-[120px_140px_minmax(0,1fr)_100px_100px] gap-3 border-b border-ink-200 bg-ink-50 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">
                   <span>Banca</span>
                   <span>Disciplina</span>
                   <span>Enunciado</span>
@@ -2579,15 +2579,15 @@ export default function AdminConcursos({
                   <span>Ações</span>
                 </div>
 
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-ink-200">
                   {visibleQuestions.map((question) => (
                     <div
                       key={question.id}
-                      className="grid grid-cols-[120px_140px_minmax(0,1fr)_100px_100px] gap-3 px-4 py-4 text-sm font-semibold text-gray-700"
+                      className="grid grid-cols-[120px_140px_minmax(0,1fr)_100px_100px] gap-3 px-4 py-4 text-sm font-semibold text-ink-700"
                     >
                       <span>{question.banca || '-'}</span>
                       <span>{question.disciplina || '-'}</span>
-                      <span className="text-gray-600">{truncateQuestionText(question.enunciado, 80)}</span>
+                      <span className="text-ink-600">{truncateQuestionText(question.enunciado, 80)}</span>
                       <span>{normalizeQuestionNivel(question.dificuldade || question.nivel)}</span>
                       <button
                         type="button"
@@ -2695,10 +2695,10 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
 
 function InsightCard({ title, value, text }) {
   return (
-    <div className="rounded-[1.6rem] border border-gray-200 bg-white p-5 shadow-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{title}</p>
+    <div className="rounded-[1.6rem] border border-ink-200 bg-white p-5 shadow-sm">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{title}</p>
       <p className="mt-3 text-3xl font-semibold text-ink-900">{value}</p>
-      <p className="mt-2 text-sm font-semibold text-gray-500">{text}</p>
+      <p className="mt-2 text-sm font-semibold text-ink-500">{text}</p>
     </div>
   );
 }
@@ -2706,15 +2706,15 @@ function InsightCard({ title, value, text }) {
 function TextField({ label, value, onChange, placeholder = '', icon: Icon = null, listId = '' }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{label}</label>
       <div className="relative">
-        {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />}
+        {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />}
         <input
           value={value}
           placeholder={placeholder}
           list={listId || undefined}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
         />
       </div>
     </div>
@@ -2724,13 +2724,13 @@ function TextField({ label, value, onChange, placeholder = '', icon: Icon = null
 function SelectField({ label, value, onChange, options, icon: Icon = null }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{label}</label>
       <div className="relative">
-        {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />}
+        {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />}
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50 ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -2746,14 +2746,14 @@ function SelectField({ label, value, onChange, options, icon: Icon = null }) {
 function ColorField({ value, onChange, compact = false }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">
         {compact ? 'Cor da disciplina' : 'Cor'}
       </label>
       <input
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full rounded-2xl border border-gray-200 bg-white p-2 ${compact ? 'h-12' : 'h-12'}`}
+        className={`w-full rounded-2xl border border-ink-200 bg-white p-2 ${compact ? 'h-12' : 'h-12'}`}
       />
     </div>
   );
@@ -2762,14 +2762,14 @@ function ColorField({ value, onChange, compact = false }) {
 function DateField({ value, onChange }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Data da prova</label>
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Data da prova</label>
       <div className="relative">
-        <CalendarDays size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+        <CalendarDays size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
         <input
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+          className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
         />
       </div>
     </div>

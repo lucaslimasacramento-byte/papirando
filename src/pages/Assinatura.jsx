@@ -140,9 +140,9 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         premium: false,
         popular: false,
         icon: <ThemeIcon size={24} aria-hidden="true" />,
-        iconWrapperClass: 'bg-gray-100 text-gray-500',
+        iconWrapperClass: 'bg-ink-100 text-ink-500',
         cardClass:
-          'bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1',
+          'bg-white rounded-[2.5rem] p-8 border border-ink-100 shadow-sm flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1',
         features: [
           { text: 'Cronômetro de Estudos', available: true },
           { text: 'Edital Verticalizado Básico', available: true },
@@ -184,7 +184,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         iconWrapperClass:
           'bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-md shadow-yellow-500/20',
         cardClass:
-          'bg-gradient-to-b from-white to-gray-50 rounded-[2.5rem] p-8 border border-yellow-200 shadow-lg flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+          'bg-gradient-to-b from-white to-ink-50 rounded-[2.5rem] p-8 border border-yellow-200 shadow-lg flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
         features: [
           { text: `Tudo do plano ${nomePlano2}`, available: true, color: 'text-yellow-500' },
           { text: 'Correção de Redações por IA', available: true, color: 'text-yellow-500' },
@@ -265,7 +265,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         label: 'Ativar plano',
         disabled: false,
         className:
-          'mb-8 w-full rounded-2xl border-2 border-gray-200 bg-white py-4 font-semibold text-gray-600 transition-colors hover:border-gray-400 hover:bg-gray-50',
+          'mb-8 w-full rounded-2xl border-2 border-ink-200 bg-white py-4 font-semibold text-ink-600 transition-colors hover:border-ink-400 hover:bg-ink-50',
       };
     }
 
@@ -282,7 +282,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         label: 'Ativar plano',
         disabled: false,
         className:
-          'mb-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gray-900 py-4 font-semibold text-white shadow-md transition-colors hover:bg-black',
+          'mb-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-ink-900 py-4 font-semibold text-white shadow-md transition-colors hover:bg-black',
         icon: <Zap size={18} className="text-yellow-400" aria-hidden="true" />,
       };
     }
@@ -291,12 +291,12 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
       label: 'Ativar plano',
       disabled: false,
       className:
-        'mb-8 w-full rounded-2xl border-2 border-gray-200 bg-white py-4 font-semibold text-gray-600 transition-colors hover:border-gray-400 hover:bg-gray-50',
+        'mb-8 w-full rounded-2xl border-2 border-ink-200 bg-white py-4 font-semibold text-ink-600 transition-colors hover:border-ink-400 hover:bg-ink-50',
     };
   }
 
   return (
-    <div className="page-shell animate-in fade-in slide-in-from-bottom-6 mx-auto flex w-full max-w-[1320px] flex-col gap-8 pb-16 text-gray-800 duration-700">
+    <div className="page-shell animate-in fade-in slide-in-from-bottom-6 mx-auto flex w-full max-w-[1320px] flex-col gap-8 pb-16 text-ink-800 duration-700">
       <PageHeadPremium
         icon={ThemeIcon}
         badge={
@@ -332,7 +332,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
       ) : null}
 
       {activePlanId !== 'gratuito' && (
-        <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm p-8 lg:p-10 mb-4 flex flex-col lg:flex-row gap-8 justify-between items-center">
+        <div className="bg-white rounded-[2.5rem] border border-ink-200 shadow-sm p-8 lg:p-10 mb-4 flex flex-col lg:flex-row gap-8 justify-between items-center">
           <div className="flex items-center gap-6 w-full lg:w-auto">
             <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
               <Crown size={36} aria-hidden="true" />
@@ -340,36 +340,36 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
 
             <div>
               <div className="flex items-center gap-3 mb-1 flex-wrap">
-                <h3 className="text-2xl font-semibold text-gray-800">{getCurrentPlanName()}</h3>
+                <h3 className="text-2xl font-semibold text-ink-800">{getCurrentPlanName()}</h3>
                 <span className="flex items-center gap-1 rounded-md bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-emerald-700">
                   <Check size={12} aria-hidden="true" /> Ativo
                 </span>
               </div>
 
-              <p className="text-sm font-semibold text-gray-500">
+              <p className="text-sm font-semibold text-ink-500">
                 Ciclo de faturamento:{' '}
-                <span className="text-gray-800">
+                <span className="text-ink-800">
                   {subscription?.billing_cycle === 'annual' ? 'Anual' : 'Mensal'}
                 </span>
               </p>
             </div>
           </div>
 
-          <div className="hidden lg:block w-px h-20 bg-gray-100" />
+          <div className="hidden lg:block w-px h-20 bg-ink-100" />
 
           <div className="flex flex-col gap-3 w-full lg:w-auto">
-            <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
+            <div className="flex items-center gap-3 text-sm font-semibold text-ink-600">
               <Calendar size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
               Próxima cobrança:{' '}
-              <span className="text-gray-800">
+              <span className="text-ink-800">
                 {subscription?.current_period_end ? formatPeriodEnd(subscription.current_period_end) : '—'}
               </span>
             </div>
 
-            <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
+            <div className="flex items-center gap-3 text-sm font-semibold text-ink-600">
               <CreditCard size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
               Provedor:{' '}
-              <span className="text-gray-800">
+              <span className="text-ink-800">
                 {subscription?.provider === 'manual' ? 'Acesso beta' : 'Stripe'}
               </span>
             </div>
@@ -390,7 +390,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
           <div className="flex flex-col gap-3 w-full lg:w-auto shrink-0">
             <button
               type="button"
-              className="rounded-xl bg-gray-100 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+              className="rounded-xl bg-ink-100 px-6 py-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-200"
             >
               Ver faturas e recibos
             </button>
@@ -398,7 +398,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
             <button
               type="button"
               onClick={handleCancelSubscription}
-              className="flex items-center justify-center gap-1.5 rounded-xl px-6 py-2 text-xs font-semibold text-gray-400 transition-colors hover:text-red-500"
+              className="flex items-center justify-center gap-1.5 rounded-xl px-6 py-2 text-xs font-semibold text-ink-400 transition-colors hover:text-red-500"
             >
               <AlertTriangle size={14} aria-hidden="true" />
               Cancelar Assinatura
@@ -413,7 +413,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
 
       <div className="flex justify-center mb-4 relative z-10">
         <div
-          className="bg-gray-100 p-1.5 rounded-2xl flex items-center relative w-[300px]"
+          className="bg-ink-100 p-1.5 rounded-2xl flex items-center relative w-[300px]"
           role="group"
           aria-label="Alternar entre cobrança mensal e anual"
         >
@@ -428,7 +428,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
             aria-pressed={!planoAnual}
             onClick={() => setPlanoAnual(false)}
             className={`z-10 flex-1 rounded-xl py-3 text-sm font-semibold transition-colors ${
-              !planoAnual ? 'text-white' : 'text-gray-500 hover:text-gray-800'
+              !planoAnual ? 'text-white' : 'text-ink-500 hover:text-ink-800'
             }`}
           >
             Mensal
@@ -439,7 +439,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
             aria-pressed={planoAnual}
             onClick={() => setPlanoAnual(true)}
             className={`z-10 flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-colors ${
-              planoAnual ? 'text-white' : 'text-gray-500 hover:text-gray-800'
+              planoAnual ? 'text-white' : 'text-ink-500 hover:text-ink-800'
             }`}
           >
             Anual
@@ -505,13 +505,13 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
                   {plano.icon}
                 </div>
 
-                <h3 className={`mb-2 text-2xl font-semibold ${plano.destaque ? 'text-white' : 'text-gray-800'}`}>
+                <h3 className={`mb-2 text-2xl font-semibold ${plano.destaque ? 'text-white' : 'text-ink-800'}`}>
                   {plano.nome}
                 </h3>
 
                 <p
                   className={`text-sm font-medium h-10 ${
-                    plano.destaque ? theme.ui.accentLightText : 'text-gray-500'
+                    plano.destaque ? theme.ui.accentLightText : 'text-ink-500'
                   }`}
                 >
                   {plano.descricao}
@@ -522,7 +522,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
                 {planoAnual && plano.preco.antigo && (
                   <span
                     className={`${
-                      plano.destaque ? theme.ui.accentMidText : 'text-gray-400'
+                      plano.destaque ? theme.ui.accentMidText : 'text-ink-400'
                     } text-sm font-bold line-through mb-1`}
                   >
                     De R$ {plano.preco.antigo}
@@ -530,10 +530,10 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
                 )}
 
                 <div>
-                  <span className={`text-5xl font-semibold ${plano.destaque ? 'text-white' : 'text-gray-800'}`}>
+                  <span className={`text-5xl font-semibold ${plano.destaque ? 'text-white' : 'text-ink-800'}`}>
                     R$ {price}
                   </span>
-                  <span className={`${plano.destaque ? theme.ui.accentMidText : 'text-gray-500'} font-semibold`}>
+                  <span className={`${plano.destaque ? theme.ui.accentMidText : 'text-ink-500'} font-semibold`}>
                     /mês
                   </span>
                 </div>
@@ -582,7 +582,7 @@ function Feature({ text, available, color = 'text-green-500' }) {
   if (!available) {
     return (
       <div className="flex items-start gap-3 opacity-50 grayscale">
-        <X size={18} strokeWidth={3} className="text-gray-400 shrink-0 mt-0.5" aria-hidden="true" />
+        <X size={18} strokeWidth={3} className="text-ink-400 shrink-0 mt-0.5" aria-hidden="true" />
         <span className="text-sm font-semibold">{text}</span>
       </div>
     );

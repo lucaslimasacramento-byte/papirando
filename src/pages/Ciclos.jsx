@@ -185,16 +185,16 @@ export default function Ciclos({
   if (planWizardStep > 0) {
     return (
       <div className={`${embedded ? 'flex min-h-0 flex-col gap-6' : 'mx-auto flex max-w-[1400px] min-h-0 flex-col gap-6'} animate-in fade-in duration-500`}>
-        <div className="rounded-[2rem] border border-gray-200 bg-white p-8 shadow-sm md:p-10">
+        <div className="rounded-[2rem] border border-ink-200 bg-white p-8 shadow-sm md:p-10">
           <div className="relative mx-auto mb-12 flex max-w-2xl items-center justify-between">
-            <div className="absolute left-0 right-0 top-1/2 -z-10 h-1 -translate-y-1/2 rounded-full bg-gray-100" />
+            <div className="absolute left-0 right-0 top-1/2 -z-10 h-1 -translate-y-1/2 rounded-full bg-ink-100" />
             <div className="absolute left-0 top-1/2 -z-10 h-1 -translate-y-1/2 rounded-full bg-[#1d4ed8] transition-all duration-500" style={{ width: `${((planWizardStep - 1) / 3) * 100}%` }} />
             {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex flex-col items-center">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full border-4 border-white text-sm font-black transition-colors ${planWizardStep >= step ? 'bg-[#1d4ed8] text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full border-4 border-white text-sm font-black transition-colors ${planWizardStep >= step ? 'bg-[#1d4ed8] text-white shadow-md' : 'bg-ink-100 text-ink-400'}`}>
                   {String(step).padStart(2, '0')}
                 </div>
-                <span className={`mt-2 text-[10px] font-bold uppercase tracking-widest ${planWizardStep >= step ? 'text-[#1d4ed8]' : 'text-gray-400'}`}>
+                <span className={`mt-2 text-[10px] font-bold uppercase tracking-widest ${planWizardStep >= step ? 'text-[#1d4ed8]' : 'text-ink-400'}`}>
                   {step === 1 ? 'Organização' : step === 2 ? 'Disciplinas' : step === 3 ? 'Relevância' : 'Horários'}
                 </span>
               </div>
@@ -204,7 +204,7 @@ export default function Ciclos({
           {planWizardStep === 1 ? (
             <div className="mx-auto max-w-3xl">
               <div className="mb-8 text-center">
-                <p className="font-semibold text-gray-500">Para iniciar o seu planejamento, escolha a melhor forma de visualização para você:</p>
+                <p className="font-semibold text-ink-500">Para iniciar o seu planejamento, escolha a melhor forma de visualização para você:</p>
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <WizardModeCard title="Ciclo de Estudos" description="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina." icon={RefreshCw} selected={safeWizData.tipo === 'ciclo'} onClick={() => { setWizData((prev) => ({ ...prev, tipo: 'ciclo' })); setPlanWizardStep(2); }} />
@@ -216,12 +216,12 @@ export default function Ciclos({
           {planWizardStep === 2 ? (
             <div className="mx-auto max-w-4xl">
               <div className="mb-8 text-center">
-                <p className="font-semibold text-gray-500">Selecione quais das <strong className="text-gray-800">suas disciplinas</strong> deseja colocar no seu <strong className="text-gray-800">planejamento</strong>.</p>
+                <p className="font-semibold text-ink-500">Selecione quais das <strong className="text-ink-800">suas disciplinas</strong> deseja colocar no seu <strong className="text-ink-800">planejamento</strong>.</p>
               </div>
-              <div className="mb-10 rounded-[2rem] border border-gray-200 bg-gray-50 p-6 md:p-8">
+              <div className="mb-10 rounded-[2rem] border border-ink-200 bg-ink-50 p-6 md:p-8">
                 <div className="grid max-h-[320px] grid-cols-2 gap-4 overflow-y-auto pr-2 custom-scrollbar md:grid-cols-3">
                   {safeDisciplines.map((discipline) => (
-                    <button key={getWeightKey(discipline)} type="button" onClick={() => toggleWizMateria(discipline)} className={`truncate rounded-xl border-2 px-4 py-3.5 text-center text-sm font-bold shadow-sm transition-all hover:-translate-y-0.5 ${isSelected(discipline) ? 'border-[#1d4ed8] bg-[#1d4ed8]/10 text-[#1d4ed8]' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}>
+                    <button key={getWeightKey(discipline)} type="button" onClick={() => toggleWizMateria(discipline)} className={`truncate rounded-xl border-2 px-4 py-3.5 text-center text-sm font-bold shadow-sm transition-all hover:-translate-y-0.5 ${isSelected(discipline) ? 'border-[#1d4ed8] bg-[#1d4ed8]/10 text-[#1d4ed8]' : 'border-ink-200 bg-white text-ink-600 hover:border-ink-300'}`}>
                       {discipline.nome}
                     </button>
                   ))}
@@ -234,7 +234,7 @@ export default function Ciclos({
           {planWizardStep === 3 ? (
             <div className="mx-auto max-w-5xl">
               <div className="mb-8 text-center">
-                <p className="font-semibold text-gray-500">Para cada disciplina, selecione a <strong className="text-gray-800">importância</strong> e o seu <strong className="text-gray-800">grau de conhecimento</strong>.</p>
+                <p className="font-semibold text-ink-500">Para cada disciplina, selecione a <strong className="text-ink-800">importância</strong> e o seu <strong className="text-ink-800">grau de conhecimento</strong>.</p>
               </div>
               <div className="mb-10 flex flex-col gap-8 lg:flex-row">
                 <div className="grid max-h-[450px] flex-1 grid-cols-1 gap-6 overflow-y-auto pr-2 custom-scrollbar md:grid-cols-2">
@@ -242,8 +242,8 @@ export default function Ciclos({
                     const key = getWeightKey(discipline);
                     const currentPeso = safeWizData.pesos?.[key] || { imp: 5, con: 1.5 };
                     return (
-                      <div key={key} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-[#1d4ed8]/30">
-                        <h4 className="mb-6 text-center font-bold text-gray-800">{discipline.nome}</h4>
+                      <div key={key} className="rounded-2xl border border-ink-200 bg-white p-6 shadow-sm transition-colors hover:border-[#1d4ed8]/30">
+                        <h4 className="mb-6 text-center font-bold text-ink-800">{discipline.nome}</h4>
                         <div className="space-y-6">
                           <SliderRow label="Importância" value={Number(currentPeso.imp || 5)} max={5} step={1} onChange={(value) => handlePesoChange(discipline, 'imp', value)} />
                           <SliderRow label="Conhecimento" value={Number(currentPeso.con || 1.5)} max={5} step={0.5} onChange={(value) => handlePesoChange(discipline, 'con', value)} />
@@ -253,8 +253,8 @@ export default function Ciclos({
                   })}
                 </div>
 
-                <div className="w-full shrink-0 rounded-2xl border border-gray-200 bg-gray-50 p-6 lg:w-72">
-                  <h4 className="mb-4 border-b border-gray-200 pb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Pré-visualização do ciclo</h4>
+                <div className="w-full shrink-0 rounded-2xl border border-ink-200 bg-ink-50 p-6 lg:w-72">
+                  <h4 className="mb-4 border-b border-ink-200 pb-2 text-[10px] font-bold uppercase tracking-widest text-ink-400">Pré-visualização do ciclo</h4>
                   <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar">
                     {selectedSubjects.map((discipline, index) => {
                       const key = getWeightKey(discipline);
@@ -262,11 +262,11 @@ export default function Ciclos({
                       const weight = Number(currentPeso.imp || 5) * (6 - Number(currentPeso.con || 1.5));
                       const pct = previewWeightTotal > 0 ? Math.round((weight / previewWeightTotal) * 100) : 0;
                       return (
-                        <div key={key} className="flex h-12 items-stretch overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-                          <div className="flex w-14 shrink-0 items-center justify-center font-black text-gray-800" style={{ backgroundColor: discipline.cor || buildDistinctPastelColor(index, selectedSubjects.length || 1) }}>
+                        <div key={key} className="flex h-12 items-stretch overflow-hidden rounded-xl border border-ink-100 bg-white shadow-sm">
+                          <div className="flex w-14 shrink-0 items-center justify-center font-black text-ink-800" style={{ backgroundColor: discipline.cor || buildDistinctPastelColor(index, selectedSubjects.length || 1) }}>
                             {pct}%
                           </div>
-                          <div className="flex flex-1 items-center truncate px-3 text-xs font-bold text-gray-700">{discipline.nome}</div>
+                          <div className="flex flex-1 items-center truncate px-3 text-xs font-bold text-ink-700">{discipline.nome}</div>
                         </div>
                       );
                     })}
@@ -281,30 +281,30 @@ export default function Ciclos({
             <div className="mx-auto max-w-3xl">
               <div className="mb-10 space-y-10">
                 <div>
-                  <label className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                    Quantas horas, em média, pretende estudar <strong className="text-gray-800">por semana</strong>?
-                    <HelpCircle size={14} className="text-gray-400" />
+                  <label className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink-600">
+                    Quantas horas, em média, pretende estudar <strong className="text-ink-800">por semana</strong>?
+                    <HelpCircle size={14} className="text-ink-400" />
                   </label>
-                  <input type="number" value={Number(safeWizData.horasSemana || 18)} onChange={(event) => setWizData((prev) => ({ ...prev, horasSemana: Number(event.target.value || 0) }))} className="w-32 border-b-2 border-[#1d4ed8] pb-1 text-2xl font-black text-gray-800 outline-none" />
+                  <input type="number" value={Number(safeWizData.horasSemana || 18)} onChange={(event) => setWizData((prev) => ({ ...prev, horasSemana: Number(event.target.value || 0) }))} className="w-32 border-b-2 border-[#1d4ed8] pb-1 text-2xl font-black text-ink-800 outline-none" />
                 </div>
                 <div>
-                  <label className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                    Qual duração <strong className="text-gray-800">mínima</strong> e <strong className="text-gray-800">máxima</strong> pretende para uma sessão?
-                    <HelpCircle size={14} className="text-gray-400" />
+                  <label className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink-600">
+                    Qual duração <strong className="text-ink-800">mínima</strong> e <strong className="text-ink-800">máxima</strong> pretende para uma sessão?
+                    <HelpCircle size={14} className="text-ink-400" />
                   </label>
                   <div className="flex flex-wrap items-center gap-4">
-                    <select value={safeWizData.minSessao || '1h 30m'} onChange={(event) => setWizData((prev) => ({ ...prev, minSessao: event.target.value }))} className="border-b-2 border-[#1d4ed8] bg-transparent pb-1 text-lg font-bold text-gray-800 outline-none">
+                    <select value={safeWizData.minSessao || '1h 30m'} onChange={(event) => setWizData((prev) => ({ ...prev, minSessao: event.target.value }))} className="border-b-2 border-[#1d4ed8] bg-transparent pb-1 text-lg font-bold text-ink-800 outline-none">
                       {['45m', '1h', '1h 30m', '2h'].map((option) => <option key={`min-${option}`} value={option}>{option}</option>)}
                     </select>
-                    <span className="font-bold text-gray-400">a</span>
-                    <select value={safeWizData.maxSessao || '2h 00m'} onChange={(event) => setWizData((prev) => ({ ...prev, maxSessao: event.target.value }))} className="border-b-2 border-[#1d4ed8] bg-transparent pb-1 text-lg font-bold text-gray-800 outline-none">
+                    <span className="font-bold text-ink-400">a</span>
+                    <select value={safeWizData.maxSessao || '2h 00m'} onChange={(event) => setWizData((prev) => ({ ...prev, maxSessao: event.target.value }))} className="border-b-2 border-[#1d4ed8] bg-transparent pb-1 text-lg font-bold text-ink-800 outline-none">
                       {['2h', '2h 30m', '3h', '4h'].map((option) => <option key={`max-${option}`} value={option}>{option}</option>)}
                     </select>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-4 border-t border-gray-100 pt-6">
-                <button type="button" onClick={() => setPlanWizardStep(3)} className="rounded-xl border-2 border-gray-200 px-8 py-3.5 font-bold text-gray-500 transition-colors hover:bg-gray-50">Voltar</button>
+              <div className="flex items-center justify-end gap-4 border-t border-ink-100 pt-6">
+                <button type="button" onClick={() => setPlanWizardStep(3)} className="rounded-xl border-2 border-ink-200 px-8 py-3.5 font-bold text-ink-500 transition-colors hover:bg-ink-50">Voltar</button>
                 <button type="button" onClick={onFinalizeCycle} className="rounded-xl bg-[#1d4ed8] px-10 py-3.5 font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-colors hover:bg-[#1D4ED8]">Concluir</button>
               </div>
             </div>
@@ -327,36 +327,36 @@ export default function Ciclos({
         <div className="flex min-h-0 flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <div className="col-span-1 flex flex-col items-center justify-center rounded-[1.35rem] border border-[#1d4ed8]/15 bg-white p-3 shadow-sm">
-              <span className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Ciclos completos</span>
+              <span className="mb-2 text-[10px] font-bold uppercase tracking-widest text-ink-400">Ciclos completos</span>
               <div className="flex h-[66px] w-[66px] items-center justify-center rounded-full border-[4px] border-[#1d4ed8] text-[1.85rem] font-black text-[#1d4ed8]">{completedCycles}</div>
             </div>
-            <div className="col-span-1 rounded-[1.35rem] border border-gray-200 bg-white p-4 shadow-sm md:col-span-3">
+            <div className="col-span-1 rounded-[1.35rem] border border-ink-200 bg-white p-4 shadow-sm md:col-span-3">
               <div className="mb-1.5 flex items-end justify-between gap-3">
                 <div>
-                  <h3 className="mb-1 text-[10px] font-black uppercase tracking-widest text-gray-400">Progresso do ciclo atual</h3>
-                  <p className="text-sm font-semibold text-gray-500">{formatMinutes(minConcluidosCiclo)} / {formatMinutes(totMinutosCiclo)}</p>
+                  <h3 className="mb-1 text-[10px] font-black uppercase tracking-widest text-ink-400">Progresso do ciclo atual</h3>
+                  <p className="text-sm font-semibold text-ink-500">{formatMinutes(minConcluidosCiclo)} / {formatMinutes(totMinutosCiclo)}</p>
                 </div>
                 <div className="flex items-baseline">
                   <span className="text-[2rem] font-black leading-none text-[#1d4ed8]">{progressoCiclo}</span>
                   <span className="ml-0.5 text-base font-bold text-[#1d4ed8]">%</span>
                 </div>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-100 shadow-inner">
                 <div className="h-full rounded-full bg-[#1d4ed8] transition-all duration-1000 ease-out" style={{ width: `${progressoCiclo}%` }} />
               </div>
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-100 px-3.5 py-3">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-500">Sequência dos Estudos</h3>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-ink-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-ink-100 px-3.5 py-3">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.24em] text-ink-500">Sequência dos Estudos</h3>
               {!isEditingCycle ? (
                 <label className="group flex cursor-pointer items-center gap-2">
-                  <input type="checkbox" checked={!showFinishedSessions} onChange={() => setShowFinishedSessions(!showFinishedSessions)} className="h-4 w-4 rounded border-gray-300 text-[#1d4ed8] focus:ring-[#1d4ed8]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-colors group-hover:text-gray-600">Ocultar Finalizados</span>
+                  <input type="checkbox" checked={!showFinishedSessions} onChange={() => setShowFinishedSessions(!showFinishedSessions)} className="h-4 w-4 rounded border-ink-300 text-[#1d4ed8] focus:ring-[#1d4ed8]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-400 transition-colors group-hover:text-ink-600">Ocultar Finalizados</span>
                 </label>
               ) : (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Ações</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-ink-400">Ações</span>
               )}
             </div>
 
@@ -369,14 +369,14 @@ export default function Ciclos({
             </div>
 
             {!isEditingCycle ? (
-              <div className="flex items-center justify-end border-t border-gray-100 px-3.5 py-2.5">
+              <div className="flex items-center justify-end border-t border-ink-100 px-3.5 py-2.5">
                 <button type="button" onClick={() => setIsEditingCycle(true)} className="flex items-center gap-2 rounded-xl bg-[#1d4ed8] px-5 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]">Editar Ciclo</button>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/50 px-6 py-4 md:flex-row">
+              <div className="flex flex-col items-center justify-between gap-4 border-t border-ink-100 bg-ink-50/50 px-6 py-4 md:flex-row">
                 <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#1d4ed8] bg-white px-6 py-3 text-sm font-bold text-[#1d4ed8] transition-colors hover:bg-blue-50 md:w-auto"><Plus size={16} /> Adicionar Disciplina</button>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={onResetCycle} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-500 transition-colors hover:text-red-500">Reiniciar</button>
+                  <button type="button" onClick={onResetCycle} className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-bold text-ink-500 transition-colors hover:text-red-500">Reiniciar</button>
                   <button type="button" onClick={() => setIsEditingCycle(false)} className="rounded-xl bg-[#1d4ed8] px-8 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]">Salvar Alterações</button>
                 </div>
               </div>
@@ -385,8 +385,8 @@ export default function Ciclos({
         </div>
 
         <div className="min-h-0">
-          <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[1.45rem] border border-gray-200 bg-white px-2 py-2.5 shadow-sm">
-            <h3 className="mb-1.5 px-1 text-left text-[11px] font-black uppercase tracking-[0.24em] text-gray-500">Ciclo</h3>
+          <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[1.45rem] border border-ink-200 bg-white px-2 py-2.5 shadow-sm">
+            <h3 className="mb-1.5 px-1 text-left text-[11px] font-black uppercase tracking-[0.24em] text-ink-500">Ciclo</h3>
             <div className="flex min-h-0 flex-1 items-center justify-center">
               <div className="relative aspect-square w-full max-w-[640px]">
                 <svg viewBox="0 0 120 120" className="h-full w-full overflow-visible drop-shadow-md">
@@ -481,20 +481,20 @@ export default function Ciclos({
 
 function WizardModeCard({ title, description, icon: Icon, selected, onClick }) {
   return (
-    <div onClick={onClick} className={`cursor-pointer rounded-[2rem] border-2 p-8 text-center transition-all ${selected ? 'border-[#1d4ed8] bg-[#1d4ed8]/5 shadow-md' : 'border-gray-200 hover:border-[#1d4ed8]/50'}`}>
-      <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${selected ? 'bg-[#1d4ed8] text-white' : 'bg-gray-100 text-[#1d4ed8]'}`}>
+    <div onClick={onClick} className={`cursor-pointer rounded-[2rem] border-2 p-8 text-center transition-all ${selected ? 'border-[#1d4ed8] bg-[#1d4ed8]/5 shadow-md' : 'border-ink-200 hover:border-[#1d4ed8]/50'}`}>
+      <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${selected ? 'bg-[#1d4ed8] text-white' : 'bg-ink-100 text-[#1d4ed8]'}`}>
         <Icon size={36} strokeWidth={2.5} />
       </div>
-      <h4 className="mb-2 text-xl font-bold text-gray-800">{title}</h4>
-      <p className="text-sm font-medium text-gray-500">{description}</p>
+      <h4 className="mb-2 text-xl font-bold text-ink-800">{title}</h4>
+      <p className="text-sm font-medium text-ink-500">{description}</p>
     </div>
   );
 }
 
 function WizardFooter({ onBack, onNext, nextDisabled = false }) {
   return (
-    <div className="flex items-center justify-end gap-4 border-t border-gray-100 pt-6">
-      <button type="button" onClick={onBack} className="rounded-xl border-2 border-gray-200 px-8 py-3.5 font-bold text-gray-500 transition-colors hover:bg-gray-50">Voltar</button>
+    <div className="flex items-center justify-end gap-4 border-t border-ink-100 pt-6">
+      <button type="button" onClick={onBack} className="rounded-xl border-2 border-ink-200 px-8 py-3.5 font-bold text-ink-500 transition-colors hover:bg-ink-50">Voltar</button>
       <button type="button" onClick={onNext} disabled={nextDisabled} className="rounded-xl bg-[#1d4ed8] px-10 py-3.5 font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-colors hover:bg-[#1D4ED8] disabled:opacity-50">Próximo</button>
     </div>
   );
@@ -503,7 +503,7 @@ function WizardFooter({ onBack, onNext, nextDisabled = false }) {
 function SliderRow({ label, value, max, step, onChange }) {
   return (
     <div>
-      <div className="mb-2 flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
+      <div className="mb-2 flex justify-between text-[10px] font-bold uppercase tracking-widest text-ink-400">
         <span>{label}</span>
         <span className="text-[#1d4ed8]">{value}</span>
       </div>
@@ -526,7 +526,7 @@ function CycleRow({ item, onStart, onRegister, onHistory = () => {}, timeLabel }
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-3">
-              <h4 className={`truncate text-[0.94rem] font-bold ${item.concluido ? 'text-gray-500 line-through' : 'text-[#243A5A]'}`}>{item.materia}</h4>
+              <h4 className={`truncate text-[0.94rem] font-bold ${item.concluido ? 'text-ink-500 line-through' : 'text-[#243A5A]'}`}>{item.materia}</h4>
               <span className="flex shrink-0 items-center gap-1 text-[0.8rem] font-medium text-[#50607A]"><Clock size={13} /> {item.concluido ? 'Finalizado' : timeLabel}</span>
             </div>
             <div className="mt-2 h-[0.34rem] w-full overflow-hidden rounded-full bg-[#E9EEF5]">
@@ -552,22 +552,22 @@ function CycleRow({ item, onStart, onRegister, onHistory = () => {}, timeLabel }
 
 function EditableCycleRow({ item }) {
   return (
-    <div className="flex flex-col justify-between gap-6 rounded-2xl border border-gray-200 bg-gray-50/50 p-5 shadow-sm md:flex-row md:items-center">
+    <div className="flex flex-col justify-between gap-6 rounded-2xl border border-ink-200 bg-ink-50/50 p-5 shadow-sm md:flex-row md:items-center">
       <div className="flex w-full flex-1 items-center gap-4">
         <div className="h-16 w-1.5 rounded-full" style={{ backgroundColor: item.cor }} />
         <div className="flex-1">
-          <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-gray-400">Disciplina</label>
-          <div className="border-b-2 border-gray-300 pb-1.5 text-sm font-bold text-gray-800">{item.materia}</div>
+          <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-ink-400">Disciplina</label>
+          <div className="border-b-2 border-ink-300 pb-1.5 text-sm font-bold text-ink-800">{item.materia}</div>
         </div>
       </div>
-      <div className="flex w-full items-center justify-between gap-6 md:w-auto md:border-l md:border-gray-200 md:pl-6">
+      <div className="flex w-full items-center justify-between gap-6 md:w-auto md:border-l md:border-ink-200 md:pl-6">
         <div className="w-24">
-          <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-gray-400">Minutos</label>
-          <div className="border-b-2 border-gray-300 pb-1.5 text-center text-sm font-bold text-gray-800">{item.minutos}</div>
+          <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-ink-400">Minutos</label>
+          <div className="border-b-2 border-ink-300 pb-1.5 text-center text-sm font-bold text-ink-800">{item.minutos}</div>
         </div>
         <div className="flex flex-col gap-2">
-          <button type="button" className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[10px] font-bold text-gray-500 shadow-sm transition-colors hover:text-gray-800">Duplicar</button>
-          <button type="button" className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[10px] font-bold text-gray-500 shadow-sm transition-colors hover:text-red-500">Remover</button>
+          <button type="button" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:text-ink-800">Duplicar</button>
+          <button type="button" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:text-red-500">Remover</button>
         </div>
       </div>
     </div>

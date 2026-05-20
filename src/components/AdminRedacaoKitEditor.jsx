@@ -22,7 +22,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
           Esse bloco não aparece mais na aba Dicas do aluno; serve para organizar o material e exportação. Checklist pode virar referência interna ou futura landing.
         </p>
         <label className="mt-4 block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Título</span>
           <input
             type="text"
             value={vf.titulo}
@@ -32,11 +32,11 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, titulo: e.target.value },
               }))
             }
-            className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
           />
         </label>
         <label className="mt-3 block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Subtítulo</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Subtítulo</span>
           <textarea
             rows={3}
             value={vf.subtitulo}
@@ -46,11 +46,11 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, subtitulo: e.target.value },
               }))
             }
-            className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium leading-relaxed text-gray-700 outline-none focus:border-blue-600"
+            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-medium leading-relaxed text-ink-700 outline-none focus:border-blue-600"
           />
         </label>
         <div className="mt-4">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Checklist</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Checklist</span>
           <ul className="mt-2 space-y-2">
             {(vf.checklist || []).map((line, i) => (
               <li key={`chk-${i}`} className="flex gap-2">
@@ -67,7 +67,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       },
                     }));
                   }}
-                  className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-blue-600"
+                  className="min-w-0 flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-blue-600"
                 />
                 <button
                   type="button"
@@ -122,12 +122,12 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
 
       <div>
         <h4 className="text-sm font-bold text-ink-900">Modelos decoráveis</h4>
-        <p className="mt-1 text-xs font-medium text-gray-500">Texto completo do modelo (faixas 4+7+7+4 etc.).</p>
+        <p className="mt-1 text-xs font-medium text-ink-500">Texto completo do modelo (faixas 4+7+7+4 etc.).</p>
         <div className="mt-4 space-y-4">
           {modelos.map((m, i) => (
-            <div key={m.id || i} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
+            <div key={m.id || i} className="rounded-2xl border border-ink-200 bg-ink-50/70 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Modelo {i + 1}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Modelo {i + 1}</span>
                 <button
                   type="button"
                   onClick={() =>
@@ -144,7 +144,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <label className="sm:col-span-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">id</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">id</span>
                   <input
                     type="text"
                     value={m.id}
@@ -155,11 +155,11 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                         modelos: d.modelos.map((x, j) => (j === i ? { ...x, id: v } : x)),
                       }));
                     }}
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-gray-800 outline-none focus:border-blue-600"
+                    className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-ink-800 outline-none focus:border-blue-600"
                   />
                 </label>
                 <label className="sm:col-span-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Título</span>
                   <input
                     type="text"
                     value={m.titulo}
@@ -170,12 +170,12 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                         modelos: d.modelos.map((x, j) => (j === i ? { ...x, titulo: v } : x)),
                       }));
                     }}
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+                    className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
                   />
                 </label>
               </div>
               <label className="mt-3 block">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Badge (opcional)</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Badge (opcional)</span>
                 <input
                   type="text"
                   value={m.badge || ''}
@@ -186,11 +186,11 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       modelos: d.modelos.map((x, j) => (j === i ? { ...x, badge: v || undefined } : x)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-medium text-ink-700 outline-none focus:border-blue-600"
                 />
               </label>
               <label className="mt-3 block">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Corpo</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Corpo</span>
                 <textarea
                   rows={14}
                   value={m.corpo}
@@ -202,7 +202,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                     }));
                   }}
                   spellCheck={false}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-gray-800 outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-ink-800 outline-none focus:border-blue-600"
                 />
               </label>
             </div>
@@ -238,12 +238,12 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
   return (
     <div>
       <h4 className="text-sm font-bold text-ink-900">{title}</h4>
-      <p className="mt-1 text-xs font-medium text-gray-500">{hint}</p>
+      <p className="mt-1 text-xs font-medium text-ink-500">{hint}</p>
       <div className="mt-4 space-y-4">
         {list.map((bloco, i) => (
-          <div key={bloco.id || `${field}-${i}`} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
+          <div key={bloco.id || `${field}-${i}`} className="rounded-2xl border border-ink-200 bg-ink-50/70 p-4">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
                 {title} · {i + 1}
               </span>
               <button
@@ -262,7 +262,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">id</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">id</span>
                 <input
                   type="text"
                   value={bloco.id}
@@ -273,11 +273,11 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                       [field]: d[field].map((b, j) => (j === i ? { ...b, id: v } : b)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-gray-800 outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-ink-800 outline-none focus:border-blue-600"
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Emoji</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Emoji</span>
                 <input
                   type="text"
                   value={bloco.emoji || ''}
@@ -288,12 +288,12 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                       [field]: d[field].map((b, j) => (j === i ? { ...b, emoji: v || '📌' } : b)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
+                  className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
                 />
               </label>
             </div>
             <label className="mt-3 block">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título do grupo</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Título do grupo</span>
               <input
                 type="text"
                 value={bloco.titulo}
@@ -304,11 +304,11 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                     [field]: d[field].map((b, j) => (j === i ? { ...b, titulo: v } : b)),
                   }));
                 }}
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
               />
             </label>
             <label className="mt-3 block">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Itens (um por linha)</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Itens (um por linha)</span>
               <textarea
                 rows={8}
                 value={(bloco.itens || []).join('\n')}
@@ -323,7 +323,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                   }));
                 }}
                 spellCheck={false}
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-gray-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-ink-800 outline-none focus:border-blue-600"
               />
             </label>
           </div>

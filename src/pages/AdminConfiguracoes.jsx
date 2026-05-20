@@ -223,8 +223,8 @@ export default function AdminConfiguracoes({
         </button>
       </div>
 
-      <section className="rounded-[2.2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
+      <section className="rounded-[2.2rem] border border-ink-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap gap-2 rounded-2xl bg-ink-100 p-1.5">
           <ConfigTab
             active={activeSection === 'conteudo'}
             onClick={() => setActiveSection('conteudo')}
@@ -249,15 +249,15 @@ export default function AdminConfiguracoes({
         ) : null}
       </section>
 
-      <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Inteligência Artificial</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Inteligência Artificial</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Status do motor de IA</h3>
-            <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
+            <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-ink-500">
               A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
             </p>
-            <p className="mt-1 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
+            <p className="mt-1 max-w-3xl text-sm font-medium leading-relaxed text-ink-500">
               Configure AI_PROVIDER, AI_FALLBACK_PROVIDER e as chaves dos provedores nas variáveis de ambiente da Vercel.
             </p>
           </div>
@@ -265,7 +265,7 @@ export default function AdminConfiguracoes({
           <button
             type="button"
             onClick={refreshAiHealth}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
           >
             <Wand2 size={15} />
             {aiLoading ? 'Testando...' : 'Testar conexão'}
@@ -288,15 +288,15 @@ export default function AdminConfiguracoes({
       </section>
 
       {activeSection === 'conteudo' ? (
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink-900 text-white">
               <LayoutGrid size={22} strokeWidth={1.75} />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Navegação rápida</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Navegação rápida</p>
               <h3 className="mt-1 text-2xl font-semibold text-ink-900">Onde editar cada coisa</h3>
-              <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
+              <p className="mt-2 max-w-3xl text-sm font-medium text-ink-500">
                 Abra a seção correspondente, altere os campos e use o botão de salvar daquela área (ou &quot;Salvar tudo&quot; no topo para XP, selos, bem-estar e dicas de redação).
               </p>
             </div>
@@ -309,7 +309,7 @@ export default function AdminConfiguracoes({
             >
               <PanelLeft className="text-indigo-700" size={22} />
               <span className="text-sm font-bold text-ink-900">Menu lateral</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">
+              <span className="text-xs font-medium leading-relaxed text-ink-600">
                 Nomes das páginas exibidos no menu (Início, Disciplinas, Audiolivros, etc.).
               </span>
             </button>
@@ -320,7 +320,7 @@ export default function AdminConfiguracoes({
             >
               <Lightbulb className="text-rose-600" size={22} />
               <span className="text-sm font-bold text-ink-900">Redações · dicas</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Textos de apoio e esqueletos que aparecem na aba Dicas.</span>
+              <span className="text-xs font-medium leading-relaxed text-ink-600">Textos de apoio e esqueletos que aparecem na aba Dicas.</span>
             </button>
             <button
               type="button"
@@ -329,7 +329,7 @@ export default function AdminConfiguracoes({
             >
               <FileSignature className="text-sky-700" size={22} />
               <span className="text-sm font-bold text-ink-900">Redações · banco</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">
+              <span className="text-xs font-medium leading-relaxed text-ink-600">
                 Temas do banco, kit (conectivos e modelos) e catálogo de audiolivros — tudo em formulário, sem JSON.
               </span>
             </button>
@@ -340,7 +340,7 @@ export default function AdminConfiguracoes({
             >
               <Music4 className="text-emerald-700" size={22} />
               <span className="text-sm font-bold text-ink-900">Bem-estar</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Áudios e vídeos da biblioteca de bem-estar.</span>
+              <span className="text-xs font-medium leading-relaxed text-ink-600">Áudios e vídeos da biblioteca de bem-estar.</span>
             </button>
             <button
               type="button"
@@ -349,7 +349,7 @@ export default function AdminConfiguracoes({
             >
               <Sparkles className="text-amber-700" size={22} />
               <span className="text-sm font-bold text-ink-900">XP e níveis</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Pontos por ação e curva de progressão.</span>
+              <span className="text-xs font-medium leading-relaxed text-ink-600">Pontos por ação e curva de progressão.</span>
             </button>
             <button
               type="button"
@@ -358,7 +358,7 @@ export default function AdminConfiguracoes({
             >
               <Trophy className="text-violet-700" size={22} />
               <span className="text-sm font-bold text-ink-900">Selos</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Conquistas e metas por métrica.</span>
+              <span className="text-xs font-medium leading-relaxed text-ink-600">Conquistas e metas por métrica.</span>
             </button>
           </div>
         </section>
@@ -372,7 +372,7 @@ export default function AdminConfiguracoes({
               Navegação
             </p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Nomes no menu lateral</h3>
-            <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
+            <p className="mt-2 max-w-3xl text-sm font-medium text-ink-500">
               Cada linha corresponde a um item do menu. O id interno não muda (é o que o app usa para abrir a página); só o
               texto exibido ao usuário é personalizável.
             </p>
@@ -386,8 +386,8 @@ export default function AdminConfiguracoes({
 
       {activeSection === 'xp' ? (
         <div className="grid gap-8 xl:grid-cols-[0.92fr_1.08fr]">
-          <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Motor base</p>
+          <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Motor base</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">XP e progressão</h3>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <NumberField label="XP por minuto" value={xpDraft.perMinute || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, perMinute: value }))} />
@@ -401,10 +401,10 @@ export default function AdminConfiguracoes({
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">XP extra</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">XP extra</p>
                 <h3 className="mt-2 text-2xl font-semibold text-ink-900">Regras por escopo</h3>
               </div>
               <button
@@ -420,7 +420,7 @@ export default function AdminConfiguracoes({
                   }));
                   setOpenXpRules((prev) => [...prev, id]);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
               >
                 <Plus size={15} />
                 Nova regra
@@ -459,13 +459,13 @@ export default function AdminConfiguracoes({
                         type="text"
                         value={rule.name || ''}
                         onChange={(event) => updateXpRule(rule.id, { name: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                         placeholder="Nome da regra"
                       />
                       <select
                         value={rule.metric || 'minutes'}
                         onChange={(event) => updateXpRule(rule.id, { metric: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       >
                         {PROGRESS_METRIC_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>{option.label}</option>
@@ -477,7 +477,7 @@ export default function AdminConfiguracoes({
                         step="1"
                         value={rule.multiplier ?? 1}
                         onChange={(event) => updateXpRule(rule.id, { multiplier: Number(event.target.value || 0) }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                         placeholder="XP"
                       />
                     </div>
@@ -486,7 +486,7 @@ export default function AdminConfiguracoes({
                       <select
                         value={rule.plan || ''}
                         onChange={(event) => updateXpRule(rule.id, { plan: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       >
                         <option value="">Todos os concursos</option>
                         {planOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
@@ -494,7 +494,7 @@ export default function AdminConfiguracoes({
                       <select
                         value={rule.subject || ''}
                         onChange={(event) => updateXpRule(rule.id, { subject: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       >
                         <option value="">Todas as disciplinas</option>
                         {subjectOptions.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
@@ -503,7 +503,7 @@ export default function AdminConfiguracoes({
                         type="text"
                         value={rule.topic || ''}
                         onChange={(event) => updateXpRule(rule.id, { topic: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                         placeholder="Tópico contém..."
                       />
                     </div>
@@ -520,12 +520,12 @@ export default function AdminConfiguracoes({
       ) : null}
 
       {activeSection === 'badges' ? (
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Selos</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Selos</p>
               <h3 className="mt-2 text-2xl font-semibold text-ink-900">Selos personalizados</h3>
-              <p className="mt-2 text-sm font-medium text-gray-500">
+              <p className="mt-2 text-sm font-medium text-ink-500">
                 A regra pode abranger a plataforma inteira, um concurso, uma disciplina, um tópico ou, no futuro, um esquadrão.
               </p>
             </div>
@@ -539,7 +539,7 @@ export default function AdminConfiguracoes({
                 ]);
                 setOpenBadges((prev) => [...prev, id]);
               }}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
             >
               <Plus size={15} />
               Novo selo
@@ -575,13 +575,13 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={badge.nome || ''}
                       onChange={(event) => updateBadge(badge.id, { nome: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Nome do selo"
                     />
                     <select
                       value={badge.metric || 'sessions'}
                       onChange={(event) => updateBadge(badge.id, { metric: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                     >
                       {PROGRESS_METRIC_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>{option.label}</option>
@@ -593,21 +593,21 @@ export default function AdminConfiguracoes({
                       step="1"
                       value={badge.target ?? 1}
                       onChange={(event) => updateBadge(badge.id, { target: Number(event.target.value || 1) }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                     />
                   </div>
                   <textarea
                     rows="2"
                     value={badge.descricao || ''}
                     onChange={(event) => updateBadge(badge.id, { descricao: event.target.value }, setBadgeDraft)}
-                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 outline-none focus:border-blue-600"
+                    className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-600 outline-none focus:border-blue-600"
                     placeholder="Descrição do selo"
                   />
                   <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     <select
                       value={badge.plan || ''}
                       onChange={(event) => updateBadge(badge.id, { plan: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                     >
                       <option value="">Todos os concursos</option>
                       {planOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
@@ -615,7 +615,7 @@ export default function AdminConfiguracoes({
                     <select
                       value={badge.subject || ''}
                       onChange={(event) => updateBadge(badge.id, { subject: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                     >
                       <option value="">Todas as disciplinas</option>
                       {subjectOptions.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
@@ -624,14 +624,14 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={badge.topic || ''}
                       onChange={(event) => updateBadge(badge.id, { topic: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Tópico contém..."
                     />
                     <input
                       type="text"
                       value={badge.color || ''}
                       onChange={(event) => updateBadge(badge.id, { color: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Cor"
                     />
                   </div>
@@ -643,8 +643,8 @@ export default function AdminConfiguracoes({
       ) : null}
 
       {activeSection === 'wellness' ? (
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex flex-wrap gap-2 rounded-2xl bg-ink-100 p-1.5">
             <ConfigTab active={wellnessInnerTab === 'audio'} onClick={() => setWellnessInnerTab('audio')} label="Meditações" />
             <ConfigTab active={wellnessInnerTab === 'video'} onClick={() => setWellnessInnerTab('video')} label="Pausas rápidas" />
             <ConfigTab active={wellnessInnerTab === 'page'} onClick={() => setWellnessInnerTab('page')} label="Página Bem-estar" />
@@ -653,9 +653,9 @@ export default function AdminConfiguracoes({
           {wellnessInnerTab === 'page' ? (
             <>
               <div className="mb-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Conteúdo editorial</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Conteúdo editorial</p>
                 <h3 className="mt-2 text-2xl font-semibold text-ink-900">Textos e blocos da aba Bem-estar</h3>
-                <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
+                <p className="mt-2 max-w-3xl text-sm font-medium text-ink-500">
                   Hero, métricas, CVV, visão geral, respirações e rótulos exibidos na página. A biblioteca de áudio/vídeo continua nas abas
                   Meditações e Pausas rápidas.
                 </p>
@@ -668,11 +668,11 @@ export default function AdminConfiguracoes({
             <>
               <div className="mb-5 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Biblioteca de bem-estar</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Biblioteca de bem-estar</p>
                   <h3 className="mt-2 text-2xl font-semibold text-ink-900">
                     {wellnessInnerTab === 'video' ? 'Biblioteca de pausas rápidas' : 'Biblioteca de meditações'}
                   </h3>
-                  <p className="mt-2 text-sm font-medium text-gray-500">
+                  <p className="mt-2 text-sm font-medium text-ink-500">
                     {wellnessInnerTab === 'video'
                       ? 'Cadastre vídeos curtos de descanso, pausa ativa, alongamento e reset cognitivo.'
                       : 'Cadastre áudios e trilhas de meditação com capa, créditos e duração.'}
@@ -701,7 +701,7 @@ export default function AdminConfiguracoes({
                     ]);
                     setOpenTracks((prev) => [...prev, id]);
                   }}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+                  className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
                 >
                   <Plus size={15} />
                   {wellnessInnerTab === 'video' ? 'Adicionar pausa rápida' : 'Adicionar meditação'}
@@ -737,13 +737,13 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.title || ''}
                       onChange={(event) => updateTrack(track.id, { title: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Título"
                     />
                     <select
                       value={track.mediaType || 'audio'}
                       onChange={(event) => updateTrack(track.id, { mediaType: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                     >
                       <option value="audio">Audio</option>
                       <option value="video">Video</option>
@@ -752,7 +752,7 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.category || ''}
                       onChange={(event) => updateTrack(track.id, { category: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Categoria"
                     />
                   </div>
@@ -760,7 +760,7 @@ export default function AdminConfiguracoes({
                     rows="2"
                     value={track.description || ''}
                     onChange={(event) => updateTrack(track.id, { description: event.target.value }, setWellnessDraft)}
-                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 outline-none focus:border-blue-600"
+                    className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-600 outline-none focus:border-blue-600"
                     placeholder="Descrição"
                   />
                   <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -768,7 +768,7 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.durationLabel || ''}
                       onChange={(event) => updateTrack(track.id, { durationLabel: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Duração"
                     />
                     <input
@@ -783,31 +783,31 @@ export default function AdminConfiguracoes({
                           setWellnessDraft
                         )
                       }
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder={track.mediaType === 'video' ? 'https://.../video.mp4 ou embed' : '/assets/wellness/arquivo.mp3'}
                     />
                     <input
                       type="text"
                       value={track.coverUrl || ''}
                       onChange={(event) => updateTrack(track.id, { coverUrl: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="/assets/wellness/capa.jpg"
                     />
                     <input
                       type="text"
                       value={track.credits || ''}
                       onChange={(event) => updateTrack(track.id, { credits: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
                       placeholder="Créditos"
                     />
                   </div>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <label className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600">
+                    <label className="rounded-xl border border-dashed border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600">
                       {track.mediaType === 'video' ? 'Upload do vídeo' : 'Upload da meditação'}
                       <input
                         type="file"
                         accept={track.mediaType === 'video' ? 'video/*' : 'audio/*'}
-                        className="mt-2 block w-full text-xs font-medium text-gray-500"
+                        className="mt-2 block w-full text-xs font-medium text-ink-500"
                         onChange={async (event) => {
                           const file = event.target.files?.[0];
                           if (!file) return;
@@ -820,12 +820,12 @@ export default function AdminConfiguracoes({
                         }}
                       />
                     </label>
-                    <label className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600">
+                    <label className="rounded-xl border border-dashed border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600">
                       Upload da capa
                       <input
                         type="file"
                         accept="image/*"
-                        className="mt-2 block w-full text-xs font-medium text-gray-500"
+                        className="mt-2 block w-full text-xs font-medium text-ink-500"
                         onChange={async (event) => {
                           const file = event.target.files?.[0];
                           if (!file) return;
@@ -861,7 +861,7 @@ export default function AdminConfiguracoes({
                 Conteúdo operacional
               </p>
               <h3 className="mt-2 text-2xl font-semibold text-ink-900">Dicas e esqueletos de redação</h3>
-              <p className="mt-2 max-w-2xl text-sm font-medium text-gray-500">
+              <p className="mt-2 max-w-2xl text-sm font-medium text-ink-500">
                 Cadastre padrões (CESPE, FCC, etc.). Os alunos veem na aba &quot;Dicas de especialista&quot; em Redações. Os dados ficam na tabela{' '}
                 <code className="rounded bg-ink-100 px-1 text-xs">redacao_expert_tips</code> no Supabase (rode o SQL em{' '}
                 <code className="rounded bg-ink-100 px-1 text-xs">supabase/redacao_expert_tips.sql</code>).
@@ -873,7 +873,7 @@ export default function AdminConfiguracoes({
                 const id = normalizeRedacaoExpertTip({ title: 'Novo esqueleto', body: '' }).id;
                 setRedacaoTipsDraft((prev) => [...prev, { id, title: 'Novo esqueleto', body: '', sort_order: prev.length }]);
               }}
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
             >
               <Plus size={15} />
               Adicionar
@@ -882,9 +882,9 @@ export default function AdminConfiguracoes({
 
           <div className="custom-scrollbar max-h-[min(70vh,640px)] space-y-3 overflow-y-auto pr-2">
             {redacaoTipsDraft.map((tip, index) => (
-              <div key={tip.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
+              <div key={tip.id} className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Item {index + 1}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Item {index + 1}</span>
                   <button
                     type="button"
                     onClick={() => setRedacaoTipsDraft((prev) => prev.filter((t) => t.id !== tip.id))}
@@ -901,7 +901,7 @@ export default function AdminConfiguracoes({
                     const v = e.target.value;
                     setRedacaoTipsDraft((prev) => prev.map((t) => (t.id === tip.id ? { ...t, title: v } : t)));
                   }}
-                  className="mb-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+                  className="mb-2 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
                   placeholder="Título ex.: Padrão CESPE — dissertação"
                 />
                 <textarea
@@ -911,7 +911,7 @@ export default function AdminConfiguracoes({
                     const v = e.target.value;
                     setRedacaoTipsDraft((prev) => prev.map((t) => (t.id === tip.id ? { ...t, body: v } : t)));
                   }}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium leading-relaxed text-gray-700 outline-none focus:border-blue-600"
+                  className="w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium leading-relaxed text-ink-700 outline-none focus:border-blue-600"
                   placeholder="Texto completo: estrutura de parágrafos, conectivos, avisos da banca..."
                 />
               </div>
@@ -955,11 +955,11 @@ export default function AdminConfiguracoes({
               Redações · dados vivos
             </p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Banco de temas e kit (conectivos / modelos)</h3>
-            <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
-              Salve no Supabase (tabela <code className="rounded bg-gray-100 px-1 text-xs">redacao_site_content</code>
-              — rode <code className="rounded bg-gray-100 px-1 text-xs">supabase/redacao_site_content.sql</code>
+            <p className="mt-2 max-w-3xl text-sm font-medium text-ink-500">
+              Salve no Supabase (tabela <code className="rounded bg-ink-100 px-1 text-xs">redacao_site_content</code>
+              — rode <code className="rounded bg-ink-100 px-1 text-xs">supabase/redacao_site_content.sql</code>
               {'; para a coluna de catálogo de audiolivros, rode '}
-              <code className="rounded bg-gray-100 px-1 text-xs">supabase/redacao_site_content_audiobooks.sql</code>).{' '}
+              <code className="rounded bg-ink-100 px-1 text-xs">supabase/redacao_site_content_audiobooks.sql</code>).{' '}
               Temas, kit e audiolivros são editados nos blocos abaixo; nada de JSON manual.
             </p>
           </div>
@@ -991,12 +991,12 @@ export default function AdminConfiguracoes({
               <Headphones className="text-violet-700" size={18} />
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-700">Catálogo de audiolivros</p>
             </div>
-            <p className="text-xs font-medium leading-relaxed text-gray-600">
+            <p className="text-xs font-medium leading-relaxed text-ink-600">
               Se você ainda não gravou nada no Supabase, o app mostra o catálogo de demonstração embutido no código (
               <code className="text-xs">buildDefaultAudiobookCatalog</code> em <code className="text-xs">src/lib/audiobooks.js</code>
               ) — o mesmo que aparece aqui ao abrir esta aba. Depois de salvar obras válidas, passa a valer o que está no banco.
             </p>
-            <p className="mt-2 text-xs font-medium leading-relaxed text-gray-600">
+            <p className="mt-2 text-xs font-medium leading-relaxed text-ink-600">
               URLs de áudio públicas (<code className="text-xs">https://</code>) ou arquivos estáticos (<code className="text-xs">/assets/...</code>). Se nenhuma obra
               válida restar após salvar, o app volta ao catálogo embutido. Para editar só audiolivros, use também o menu Admin → Audiolivros.
             </p>
@@ -1102,7 +1102,7 @@ function ConfigTab({ active, onClick, label }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${active ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500'}`}
+      className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${active ? 'bg-white text-blue-700 shadow-sm' : 'text-ink-500'}`}
     >
       {label}
     </button>
@@ -1121,8 +1121,8 @@ function formatProviderLabel(provider) {
 
 function AiStatusCard({ label, value, dotTone = '' }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
+    <div className="rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
       <div className="mt-2 flex items-center gap-2">
         {dotTone ? <span className={`h-2.5 w-2.5 rounded-full ${dotTone}`} /> : null}
         <p className="text-sm font-semibold text-ink-900">{value}</p>
@@ -1134,14 +1134,14 @@ function AiStatusCard({ label, value, dotTone = '' }) {
 function NumberField({ label, value, onChange }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</span>
+      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</span>
       <input
         type="number"
         min="0"
         step="1"
         value={value}
         onChange={(event) => onChange(Number(event.target.value || 0))}
-        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+        className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-600"
       />
     </label>
   );
@@ -1149,28 +1149,28 @@ function NumberField({ label, value, onChange }) {
 
 function CollapsibleCard({ isOpen, onToggle, title, subtitle, actions, children }) {
   return (
-    <div className="overflow-hidden rounded-[1.4rem] border border-gray-200 bg-gray-50/70">
+    <div className="overflow-hidden rounded-[1.4rem] border border-ink-200 bg-ink-50/70">
       <button type="button" onClick={onToggle} className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-ink-900">{title}</p>
-          <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">{subtitle}</p>
+          <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">{subtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {actions}
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-ink-200 bg-white text-ink-500">
             {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </span>
         </div>
       </button>
-      {isOpen ? <div className="border-t border-gray-200 px-4 py-4">{children}</div> : null}
+      {isOpen ? <div className="border-t border-ink-200 px-4 py-4">{children}</div> : null}
     </div>
   );
 }
 
 function ToggleChip({ label, checked, onChange }) {
   return (
-    <label className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600">
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 rounded border-gray-300" />
+    <label className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-600">
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 rounded border-ink-300" />
       {label}
     </label>
   );
@@ -1178,7 +1178,7 @@ function ToggleChip({ label, checked, onChange }) {
 
 function EmptyState({ text }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-gray-200 bg-gray-50/70 px-5 py-6 text-sm font-semibold text-gray-500">
+    <div className="rounded-[1.4rem] border border-dashed border-ink-200 bg-ink-50/70 px-5 py-6 text-sm font-semibold text-ink-500">
       {text}
     </div>
   );

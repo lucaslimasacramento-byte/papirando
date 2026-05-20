@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Pause, Play, X } from 'lucide-react';
 import RegistroSimuladoModal from './RegistroSimuladoModal';
 import RegistroEstudoModal from './RegistroEstudoModal';
@@ -12,7 +12,7 @@ function WellnessMiniPlayer({ track, isPlaying, onTogglePlay, onClose }) {
   if (!track) return null;
 
   return (
-    <div className="pointer-events-auto fixed bottom-6 left-1/2 z-[180] flex w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 items-center gap-3 rounded-[1.4rem] border border-gray-200 bg-white/95 px-4 py-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-md">
+    <div className="pointer-events-auto fixed bottom-6 left-1/2 z-[180] flex w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 items-center gap-3 rounded-[1.4rem] border border-ink-200 bg-white/95 px-4 py-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-md">
       <button
         type="button"
         onClick={onTogglePlay}
@@ -22,14 +22,14 @@ function WellnessMiniPlayer({ track, isPlaying, onTogglePlay, onClose }) {
       </button>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-black text-[#1e40af]">{track.title}</p>
-        <p className="mt-1 truncate text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">
+        <p className="mt-1 truncate text-[10px] font-black uppercase tracking-[0.16em] text-ink-400">
           {track.category || 'Faixa'} · {track.durationLabel || 'Duracao livre'}
         </p>
       </div>
       <button
         type="button"
         onClick={onClose}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ink-200 bg-white text-ink-500"
       >
         <X size={16} />
       </button>

@@ -1604,7 +1604,7 @@ export default function Conciliador({
       </div>
 
       {comparisonHistory.length > 0 ? (
-        <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-100 bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-ink-900">Histórico de comparações</h3>
             <span className="text-xs font-medium text-ink-500">{comparisonHistory.length} salvas</span>

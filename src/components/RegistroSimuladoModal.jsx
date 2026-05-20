@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Edit3, FileText, Plus, X } from 'lucide-react';
 
 const DEFAULT_ROW = { id: 1, disciplina: '', topico: '', peso: 1, brancos: 0, acertos: 0, erros: 0 };
@@ -142,8 +142,8 @@ export default function RegistroSimuladoModal({
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-500">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-white px-10 py-8">
-          <h2 className="text-3xl font-black tracking-tight text-gray-700">Novo Simulado</h2>
+        <div className="flex items-center justify-between border-b border-ink-100 bg-white px-10 py-8">
+          <h2 className="text-3xl font-black tracking-tight text-ink-700">Novo Simulado</h2>
           <button onClick={closeModal} className="rounded-xl p-2 text-[#4d7c3f]/60 transition-all hover:text-[#4d7c3f]">
             <X size={40} strokeWidth={2.5} />
           </button>
@@ -172,14 +172,14 @@ export default function RegistroSimuladoModal({
           </div>
 
           <div>
-            <div className="grid grid-cols-12 items-center gap-4 border-b border-gray-200 pb-4">
-              <div className="col-span-4 text-[12px] font-black text-gray-800">Disciplina / assunto</div>
-              <div className="col-span-2 text-center text-[12px] font-black text-gray-800">Peso</div>
-              <div className="col-span-1 flex justify-center text-gray-400" title="Em Branco"><Edit3 size={18} /></div>
+            <div className="grid grid-cols-12 items-center gap-4 border-b border-ink-200 pb-4">
+              <div className="col-span-4 text-[12px] font-black text-ink-800">Disciplina / assunto</div>
+              <div className="col-span-2 text-center text-[12px] font-black text-ink-800">Peso</div>
+              <div className="col-span-1 flex justify-center text-ink-400" title="Em Branco"><Edit3 size={18} /></div>
               <div className="col-span-1 flex justify-center text-emerald-500" title="Acertos"><Check size={20} strokeWidth={3} /></div>
               <div className="col-span-1 flex justify-center text-red-500" title="Erros"><X size={20} strokeWidth={3} /></div>
-              <div className="col-span-1 flex justify-center text-gray-400" title="Total"><FileText size={18} /></div>
-              <div className="col-span-2 text-center text-[12px] font-black text-gray-800">% Acertos</div>
+              <div className="col-span-1 flex justify-center text-ink-400" title="Total"><FileText size={18} /></div>
+              <div className="col-span-2 text-center text-[12px] font-black text-ink-800">% Acertos</div>
             </div>
 
             {simuladoRows.map((row) => {
@@ -187,7 +187,7 @@ export default function RegistroSimuladoModal({
               const pct = total > 0 ? Math.round((Number(row.acertos) / total) * 100) : 0;
 
               return (
-                <div key={row.id} className="grid grid-cols-12 items-start gap-4 border-b border-gray-100 py-4">
+                <div key={row.id} className="grid grid-cols-12 items-start gap-4 border-b border-ink-100 py-4">
                   <div className="col-span-4 flex flex-col gap-2">
                     <select
                       className={inputClass()}
@@ -224,20 +224,20 @@ export default function RegistroSimuladoModal({
                   <CellInput value={row.brancos} onChange={(value) => updateSimuladoRow(row.id, 'brancos', value)} className="col-span-1" />
                   <CellInput value={row.acertos} onChange={(value) => updateSimuladoRow(row.id, 'acertos', value)} className="col-span-1" />
                   <CellInput value={row.erros} onChange={(value) => updateSimuladoRow(row.id, 'erros', value)} className="col-span-1" />
-                  <div className="col-span-1 pt-2 text-center text-lg font-black text-gray-400">{total}</div>
+                  <div className="col-span-1 pt-2 text-center text-lg font-black text-ink-400">{total}</div>
                   <div className="col-span-2 pt-2 text-center text-lg font-black text-emerald-500">{pct}%</div>
                 </div>
               );
             })}
 
             <div className="mt-6 grid grid-cols-12 items-center gap-4 rounded-xl bg-emerald-50/50 py-6">
-              <div className="col-span-6 pr-6 text-right text-[11px] font-black uppercase tracking-widest text-gray-400">
+              <div className="col-span-6 pr-6 text-right text-[11px] font-black uppercase tracking-widest text-ink-400">
                 Resultado final
               </div>
-              <div className="col-span-1 text-center text-xl font-black text-gray-800">{totals.brancos}</div>
+              <div className="col-span-1 text-center text-xl font-black text-ink-800">{totals.brancos}</div>
               <div className="col-span-1 text-center text-xl font-black text-emerald-600">{totals.acertos}</div>
               <div className="col-span-1 text-center text-xl font-black text-red-500">{totals.erros}</div>
-              <div className="col-span-1 text-center text-xl font-black text-gray-800">{totals.total}</div>
+              <div className="col-span-1 text-center text-xl font-black text-ink-800">{totals.total}</div>
               <div className="col-span-2 text-center text-xl font-black text-emerald-600">{totals.pct}%</div>
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function RegistroSimuladoModal({
           </Field>
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-gray-100 bg-white px-10 py-6">
+        <div className="flex items-center justify-between gap-4 border-t border-ink-100 bg-white px-10 py-6">
           <button onClick={addSimuladoRow} className="flex items-center gap-2 rounded-2xl border-2 border-[#4d7c3f] px-8 py-3 text-sm font-black text-[#4d7c3f] transition-all hover:bg-emerald-50">
             <Plus size={16} strokeWidth={3} />
             Adicionar disciplina
@@ -275,7 +275,7 @@ export default function RegistroSimuladoModal({
 function Field({ label, className = '', children }) {
   return (
     <div className={className}>
-      <label className="mb-2 block text-[11px] font-black uppercase tracking-widest text-gray-400">{label}</label>
+      <label className="mb-2 block text-[11px] font-black uppercase tracking-widest text-ink-400">{label}</label>
       {children}
     </div>
   );
@@ -296,9 +296,9 @@ function CellInput({ className = '', value, onChange, min = '0' }) {
 }
 
 function inputClass() {
-  return 'w-full rounded-xl border-2 border-emerald-400/30 bg-transparent py-3 text-lg font-bold text-gray-700 outline-none transition-colors hover:border-emerald-400 focus:border-emerald-500';
+  return 'w-full rounded-xl border-2 border-emerald-400/30 bg-transparent py-3 text-lg font-bold text-ink-700 outline-none transition-colors hover:border-emerald-400 focus:border-emerald-500';
 }
 
 function secondaryInputClass() {
-  return 'w-full rounded-xl border-2 border-emerald-100 bg-transparent py-2 text-xs font-bold text-gray-500 outline-none transition-colors focus:border-emerald-300';
+  return 'w-full rounded-xl border-2 border-emerald-100 bg-transparent py-2 text-xs font-bold text-ink-500 outline-none transition-colors focus:border-emerald-300';
 }

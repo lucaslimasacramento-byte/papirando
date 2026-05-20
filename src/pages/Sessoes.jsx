@@ -167,7 +167,7 @@ export default function Sessoes({
         <div className="flex flex-col gap-2.5">
           <div className="section-card p-4 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
+              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-ink-400">
                 <LayoutGrid size={16} className="text-[#1d4ed8]" />
                 Métodos de estudo
               </h3>
@@ -252,7 +252,7 @@ export default function Sessoes({
           <div className="section-card p-4 sm:p-5">
             <div className="mb-3 flex items-center gap-2">
               <Clock size={16} className="text-[#1d4ed8]" />
-              <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Últimas sessões</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-400">Últimas sessões</h3>
             </div>
 
             {recentSessions.length === 0 ? (
@@ -429,7 +429,7 @@ function MiniInfo({ label, value }) {
 
 function MethodPill({ icon: Icon, text }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-gray-600 shadow-sm">
+    <div className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-ink-600 shadow-sm">
       <Icon size={13} className="text-[#1d4ed8]" />
       {text}
     </div>
@@ -438,7 +438,7 @@ function MethodPill({ icon: Icon, text }) {
 
 function MethodCard({ icon: Icon, iconWrap, glow, title, description, hoverClass, onClick }) {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
+    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
       <div className={`absolute -mr-8 -mt-8 h-20 w-20 rounded-bl-[3rem] transition-transform group-hover:scale-110 ${glow} right-0 top-0`} />
 
       <div className={`relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-xl sm:mb-5 sm:h-14 sm:w-14 sm:rounded-2xl ${iconWrap}`}>
@@ -446,12 +446,12 @@ function MethodCard({ icon: Icon, iconWrap, glow, title, description, hoverClass
       </div>
 
       <h4 className="compact-title mb-1.5 text-base sm:text-lg">{title}</h4>
-      <p className="mb-5 flex-1 text-xs font-bold leading-relaxed text-gray-400 sm:mb-6 sm:text-sm">{description}</p>
+      <p className="mb-5 flex-1 text-xs font-bold leading-relaxed text-ink-400 sm:mb-6 sm:text-sm">{description}</p>
 
       <button
         type="button"
         onClick={onClick}
-        className={`group/button flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white shadow-md transition-all sm:rounded-2xl sm:py-3.5 sm:text-base ${hoverClass}`}
+        className={`group/button flex w-full items-center justify-center gap-2 rounded-xl bg-ink-900 py-3 text-sm font-semibold text-white shadow-md transition-all sm:rounded-2xl sm:py-3.5 sm:text-base ${hoverClass}`}
       >
         Iniciar
         <ArrowRight size={18} className="transition-transform group-hover/button:translate-x-2" />

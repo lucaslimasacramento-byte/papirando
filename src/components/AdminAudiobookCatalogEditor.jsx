@@ -8,7 +8,7 @@ const ACCENTS = [
 ];
 
 function inputCls() {
-  return 'mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-violet-500';
+  return 'mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-violet-500';
 }
 
 function getBookMeta(book, index) {
@@ -97,16 +97,16 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Obras</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Obras</p>
             <p className="mt-2 text-2xl font-semibold text-ink-900">{books.length}</p>
           </div>
           <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Faixas</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Faixas</p>
             <p className="mt-2 text-2xl font-semibold text-ink-900">{totalTracks}</p>
           </div>
         </div>
 
-        <p className="mt-4 text-sm font-medium leading-relaxed text-gray-600">
+        <p className="mt-4 text-sm font-medium leading-relaxed text-ink-600">
           Cadastre uma obra por vez. A lista lateral vira o índice do catálogo já salvo no rascunho atual.
         </p>
 
@@ -128,9 +128,9 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink-900">{meta.title}</p>
-                    <p className="mt-1 text-xs font-medium text-gray-500">{meta.category}</p>
+                    <p className="mt-1 text-xs font-medium text-ink-500">{meta.category}</p>
                   </div>
-                  <div className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <div className="rounded-full border border-ink-200 bg-ink-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
                     {meta.trackCount} faixas
                   </div>
                 </div>
@@ -142,20 +142,20 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
             <div className="rounded-[1.4rem] border border-dashed border-violet-200 bg-white/70 px-4 py-8 text-center">
               <BookMarked className="mx-auto text-violet-400" size={20} />
               <p className="mt-3 text-sm font-semibold text-ink-800">Nenhuma obra cadastrada</p>
-              <p className="mt-1 text-xs font-medium text-gray-500">Crie a primeira obra para começar o catálogo.</p>
+              <p className="mt-1 text-xs font-medium text-ink-500">Crie a primeira obra para começar o catálogo.</p>
             </div>
           )}
         </div>
       </aside>
 
-      <section className="rounded-[1.8rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="rounded-[1.8rem] border border-ink-200 bg-white p-5 shadow-sm sm:p-6">
         {selectedBook ? (
           <>
-            <div className="mb-6 flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-4">
+            <div className="mb-6 flex flex-wrap items-start justify-between gap-3 border-b border-ink-100 pb-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor da obra</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Editor da obra</p>
                 <h3 className="mt-2 text-2xl font-semibold text-ink-900">{selectedBook.title || 'Nova obra'}</h3>
-                <p className="mt-2 text-sm font-medium text-gray-500">
+                <p className="mt-2 text-sm font-medium text-ink-500">
                   Ajuste os dados principais e depois organize as faixas de áudio da obra selecionada.
                 </p>
               </div>
@@ -171,7 +171,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">ID</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">ID</span>
                 <input
                   type="text"
                   value={selectedBook.id}
@@ -180,7 +180,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Categoria</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Categoria</span>
                 <input
                   type="text"
                   value={selectedBook.category || ''}
@@ -189,7 +189,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Cor da interface</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Cor da interface</span>
                 <select
                   value={selectedBook.accent || 'blue'}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, accent: e.target.value }))}
@@ -203,7 +203,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 </select>
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Título</span>
                 <input
                   type="text"
                   value={selectedBook.title}
@@ -212,7 +212,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Subtítulo</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Subtítulo</span>
                 <input
                   type="text"
                   value={selectedBook.subtitle || ''}
@@ -221,7 +221,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Disciplina vinculada</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Disciplina vinculada</span>
                 <input
                   type="text"
                   value={selectedBook.disciplineName || ''}
@@ -231,7 +231,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Rótulo do material</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Rótulo do material</span>
                 <input
                   type="text"
                   value={selectedBook.materialLabel || ''}
@@ -240,7 +240,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Descrição</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Descrição</span>
                 <textarea
                   rows={3}
                   value={selectedBook.description || ''}
@@ -250,10 +250,10 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
               </label>
             </div>
 
-            <div className="mt-6 border-t border-gray-100 pt-5">
+            <div className="mt-6 border-t border-ink-100 pt-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Faixas</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Faixas</p>
                   <h4 className="mt-1 text-lg font-semibold text-ink-900">
                     {(selectedBook.tracks || []).length} {(selectedBook.tracks || []).length === 1 ? 'faixa' : 'faixas'}
                   </h4>
@@ -283,7 +283,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
 
               <ul className="space-y-3">
                 {(selectedBook.tracks || []).map((track, trackIndex) => (
-                  <li key={track.id || trackIndex} className="rounded-[1.4rem] border border-gray-100 bg-gray-50/80 p-4">
+                  <li key={track.id || trackIndex} className="rounded-[1.4rem] border border-ink-100 bg-ink-50/80 p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-ink-900">{track.title || `Faixa ${trackIndex + 1}`}</p>
                       <button
@@ -302,7 +302,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <label className="sm:col-span-2">
-                        <span className="text-[10px] font-semibold text-gray-400">URL do áudio</span>
+                        <span className="text-[10px] font-semibold text-ink-400">URL do áudio</span>
                         <input
                           type="text"
                           value={track.audioUrl || ''}
@@ -319,7 +319,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                         />
                       </label>
                       <label>
-                        <span className="text-[10px] font-semibold text-gray-400">ID da faixa</span>
+                        <span className="text-[10px] font-semibold text-ink-400">ID da faixa</span>
                         <input
                           type="text"
                           value={track.id}
@@ -335,7 +335,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                         />
                       </label>
                       <label>
-                        <span className="text-[10px] font-semibold text-gray-400">Duração</span>
+                        <span className="text-[10px] font-semibold text-ink-400">Duração</span>
                         <input
                           type="text"
                           value={track.durationLabel || ''}
@@ -352,7 +352,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                         />
                       </label>
                       <label className="sm:col-span-2">
-                        <span className="text-[10px] font-semibold text-gray-400">Título da faixa</span>
+                        <span className="text-[10px] font-semibold text-ink-400">Título da faixa</span>
                         <input
                           type="text"
                           value={track.title}
@@ -374,11 +374,11 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
             </div>
           </>
         ) : (
-          <div className="flex min-h-[420px] items-center justify-center rounded-[1.6rem] border border-dashed border-gray-200 bg-gray-50/60 px-6 text-center">
+          <div className="flex min-h-[420px] items-center justify-center rounded-[1.6rem] border border-dashed border-ink-200 bg-ink-50/60 px-6 text-center">
             <div>
               <BookMarked className="mx-auto text-violet-400" size={24} />
               <h3 className="mt-4 text-xl font-semibold text-ink-900">Selecione uma obra</h3>
-              <p className="mt-2 text-sm font-medium text-gray-500">Escolha um item na biblioteca lateral ou crie uma nova obra.</p>
+              <p className="mt-2 text-sm font-medium text-ink-500">Escolha um item na biblioteca lateral ou crie uma nova obra.</p>
             </div>
           </div>
         )}

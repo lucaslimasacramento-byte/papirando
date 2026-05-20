@@ -155,19 +155,19 @@ export default function Disciplinas({
           titulo: 'Sem dados',
           texto: 'Adicione disciplinas para ver análises.',
           icon: Flame,
-          color: 'text-gray-400',
+          color: 'text-ink-400',
         },
         alerta: {
           titulo: 'Sem dados',
           texto: 'Aguardando informações do edital.',
           icon: Clock3,
-          color: 'text-gray-400',
+          color: 'text-ink-400',
         },
         dificuldade: {
           titulo: 'Sem dados',
           texto: 'Comece a resolver questões nos tópicos.',
           icon: AlertTriangle,
-          color: 'text-gray-400',
+          color: 'text-ink-400',
         },
         potencial: '0%',
       };
@@ -325,7 +325,7 @@ export default function Disciplinas({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                <div className="inline-flex items-center gap-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
                   <Filter size={12} />
                   Plano
                 </div>

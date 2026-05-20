@@ -40,7 +40,7 @@ export default function MeusConcursos({
           <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-2xl font-semibold text-ink-900">{targetContest.nome}</h3>
-              <p className="mt-1 text-sm font-semibold text-gray-600">
+              <p className="mt-1 text-sm font-semibold text-ink-600">
                 {targetContest.cargo || targetContest.concurso}
               </p>
             </div>
@@ -66,16 +66,16 @@ export default function MeusConcursos({
       <section className="section-card p-6">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Sua base</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Sua base</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Concursos acompanhados</h3>
           </div>
-          <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-500">
+          <span className="rounded-full border border-ink-200 bg-ink-50 px-4 py-2 text-sm font-bold text-ink-500">
             {contests.length} concurso(s)
           </span>
         </div>
 
         {contests.length === 0 ? (
-          <div className="rounded-[1.4rem] border border-dashed border-gray-200 bg-gray-50/70 px-5 py-8 text-sm font-semibold text-gray-500">
+          <div className="rounded-[1.4rem] border border-dashed border-ink-200 bg-ink-50/70 px-5 py-8 text-sm font-semibold text-ink-500">
             Seus concursos vão aparecer aqui quando você importar, favoritar ou marcar interesse.
           </div>
         ) : (
@@ -90,7 +90,7 @@ export default function MeusConcursos({
                 </div>
 
                 <h4 className="mt-4 text-lg font-semibold text-ink-900">{contest.nome}</h4>
-                <p className="mt-1 min-h-[40px] text-sm font-semibold text-gray-500">
+                <p className="mt-1 min-h-[40px] text-sm font-semibold text-ink-500">
                   {contest.cargo || contest.concurso}
                 </p>
 

@@ -453,7 +453,7 @@ export default function Revisoes({
       <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="min-w-0 pr-1">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
+            <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-ink-400">
               <ListOrdered size={18} className="text-blue-600" />
               Fila de revisão
             </h3>
@@ -474,7 +474,7 @@ export default function Revisoes({
                 <Sparkles size={22} />
               </div>
               <h4 className="mt-3 text-lg font-semibold text-ink-900">Nenhuma revisão inteligente por enquanto</h4>
-              <p className="mx-auto mt-2 max-w-2xl text-sm font-medium text-gray-500">
+              <p className="mx-auto mt-2 max-w-2xl text-sm font-medium text-ink-500">
                 Registre mais sessões, questões e flashcards para o app entender melhor o que merece reforço.
               </p>
             </div>
@@ -560,7 +560,7 @@ function ReviewCard({
   return (
     <div
       className={`group relative flex flex-col gap-4 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all hover:shadow-md sm:flex-row sm:items-center ${
-        isUrgent ? 'border-red-200 hover:border-red-300' : 'border-gray-100 hover:border-blue-200'
+        isUrgent ? 'border-red-200 hover:border-red-300' : 'border-ink-100 hover:border-blue-200'
       }`}
     >
       <div className={`absolute bottom-0 left-0 top-0 w-1.5 ${isUrgent ? 'bg-red-500' : 'bg-blue-500'}`} />
@@ -578,21 +578,21 @@ function ReviewCard({
           >
             {badgeText}
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">
             Sessão sugerida: {cycle}
           </span>
         </div>
 
-        <h4 className="text-base font-semibold tracking-tight text-gray-800">{title}</h4>
-        <p className="text-sm font-medium text-gray-500">{subject}</p>
-        <p className="mt-1.5 text-sm font-medium text-gray-500">{description}</p>
+        <h4 className="text-base font-semibold tracking-tight text-ink-800">{title}</h4>
+        <p className="text-sm font-medium text-ink-500">{subject}</p>
+        <p className="mt-1.5 text-sm font-medium text-ink-500">{description}</p>
       </div>
 
       <div className="mt-2 flex w-full items-center gap-2.5 sm:mt-0 sm:w-auto">
         <button
           type="button"
           onClick={onOpen}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 transition-all hover:border-blue-600 hover:text-blue-600 sm:flex-none sm:text-sm"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-ink-200 px-4 py-2 text-xs font-semibold text-ink-500 transition-all hover:border-blue-600 hover:text-blue-600 sm:flex-none sm:text-sm"
         >
           <CheckSquare size={16} />
           Abrir

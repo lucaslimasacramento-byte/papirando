@@ -159,9 +159,9 @@ export default function AdminFinance({
         }
       />
       <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Lançamentos</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Lançamentos</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">{form.id ? 'Editar despesa' : 'Nova despesa'}</h3>
           </div>
 
@@ -170,7 +170,7 @@ export default function AdminFinance({
               <input
                 value={form.descricao}
                 onChange={(e) => setForm((prev) => ({ ...prev, descricao: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder="Ex: Supabase, domínio, anúncios"
               />
             </Field>
@@ -179,7 +179,7 @@ export default function AdminFinance({
               <select
                 value={form.categoria}
                 onChange={(e) => setForm((prev) => ({ ...prev, categoria: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
               >
                 {CATEGORY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -193,7 +193,7 @@ export default function AdminFinance({
               <input
                 value={form.valor}
                 onChange={(e) => setForm((prev) => ({ ...prev, valor: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder="0,00"
               />
             </Field>
@@ -203,7 +203,7 @@ export default function AdminFinance({
                 type="month"
                 value={form.competencia}
                 onChange={(e) => setForm((prev) => ({ ...prev, competencia: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
               />
             </Field>
 
@@ -211,7 +211,7 @@ export default function AdminFinance({
               <select
                 value={form.status}
                 onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -225,7 +225,7 @@ export default function AdminFinance({
               <input
                 value={form.observacao}
                 onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="w-full rounded-2xl border border-ink-200 bg-ink-50/70 px-4 py-3 text-sm font-semibold text-ink-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 placeholder="Opcional"
               />
             </Field>
@@ -236,7 +236,7 @@ export default function AdminFinance({
               <button
                 type="button"
                 onClick={() => setForm(EMPTY_EXPENSE)}
-                className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-600"
+                className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-semibold text-ink-600"
               >
                 Cancelar edição
               </button>
@@ -253,29 +253,29 @@ export default function AdminFinance({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Assinaturas e resultado</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Assinaturas e resultado</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Plano comercial e comportamento mensal</h3>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
             {planMix.map((item) => (
-              <div key={item.plan} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{item.plan}</p>
+              <div key={item.plan} className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{item.plan}</p>
                 <p className="mt-2 text-2xl font-semibold text-ink-900">{item.count}</p>
-                <p className="mt-1 text-sm font-semibold text-gray-500">{item.price > 0 ? `${formatCurrency(item.price)}/mês` : 'Plano sem cobrança'}</p>
+                <p className="mt-1 text-sm font-semibold text-ink-500">{item.price > 0 ? `${formatCurrency(item.price)}/mês` : 'Plano sem cobrança'}</p>
               </div>
             ))}
           </div>
 
           <div className="mt-6 space-y-3">
             {monthlySeries.map((item) => (
-              <div key={item.key} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
+              <div key={item.key} className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-ink-900">{item.label}</p>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">
+                    <p className="mt-1 text-sm font-semibold text-ink-500">
                       Receita {formatCurrency(item.receita)} • Despesas {formatCurrency(item.despesas)}
                     </p>
                   </div>
@@ -290,14 +290,14 @@ export default function AdminFinance({
         </section>
       </div>
 
-      <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Histórico financeiro</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Histórico financeiro</p>
             <h3 className="mt-2 text-2xl font-semibold text-ink-900">Despesas cadastradas</h3>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-600">
+          <div className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50 px-4 py-2 text-xs font-semibold text-ink-600">
             <CalendarDays size={13} className="text-blue-600" />
             Competência atual {finance.currentMonth}
           </div>
@@ -305,7 +305,7 @@ export default function AdminFinance({
 
         <div className="space-y-3">
           {recentExpenses.map((expense) => (
-            <div key={expense.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
+            <div key={expense.id} className="rounded-[1.4rem] border border-ink-200 bg-ink-50/70 p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -314,17 +314,17 @@ export default function AdminFinance({
                       {expense.status}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-gray-500">
+                  <p className="mt-1 text-sm font-semibold text-ink-500">
                     {expense.categoria} • {expense.competencia} • {formatCurrency(expense.valor)}
                   </p>
-                  {expense.observacao && <p className="mt-2 text-sm font-medium text-gray-500">{expense.observacao}</p>}
+                  {expense.observacao && <p className="mt-2 text-sm font-medium text-ink-500">{expense.observacao}</p>}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => handleEdit(expense)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600"
+                    className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-600"
                   >
                     <Pencil size={15} />
                     Editar
@@ -343,7 +343,7 @@ export default function AdminFinance({
           ))}
 
           {recentExpenses.length === 0 && (
-            <div className="rounded-[1.5rem] border border-dashed border-gray-200 bg-white px-6 py-10 text-center text-sm font-semibold text-gray-500">
+            <div className="rounded-[1.5rem] border border-dashed border-ink-200 bg-white px-6 py-10 text-center text-sm font-semibold text-ink-500">
               Nenhuma despesa cadastrada ainda. Comece pelos custos mensais do site para montar seu saldo real.
             </div>
           )}
@@ -356,7 +356,7 @@ export default function AdminFinance({
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">{label}</label>
       {children}
     </div>
   );

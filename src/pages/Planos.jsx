@@ -430,50 +430,50 @@ export default function Planos({
 
           <div className="space-y-6">
             {contestSections.map(([area, templates]) => (
-              <div key={area} className="overflow-hidden rounded-[1.6rem] border border-gray-200 bg-white shadow-sm">
+              <div key={area} className="overflow-hidden rounded-[1.6rem] border border-ink-200 bg-white shadow-sm">
                 <button
                   type="button"
                   onClick={() => toggleCatalogArea(area)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-gray-50"
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-ink-50"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[#1d4ed8]">
                       <LibraryBig size={18} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400">{area}</p>
-                      <p className="mt-1 text-sm font-semibold text-gray-500">
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ink-400">{area}</p>
+                      <p className="mt-1 text-sm font-semibold text-ink-500">
                         {templates.length} concurso(s) disponíveis
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500">
+                    <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-bold text-ink-500">
                       {templates.length}
                     </span>
                     {expandedCatalogAreas[area] ? (
-                      <ChevronDown size={18} className="text-gray-400" />
+                      <ChevronDown size={18} className="text-ink-400" />
                     ) : (
-                      <ChevronRight size={18} className="text-gray-400" />
+                      <ChevronRight size={18} className="text-ink-400" />
                     )}
                   </div>
                 </button>
 
                 {expandedCatalogAreas[area] && (
-                  <div className="border-t border-gray-100 bg-gray-50/60 p-4">
+                  <div className="border-t border-ink-100 bg-ink-50/60 p-4">
                     <div className="space-y-3">
                       {templates.map((template) => (
                         <div
                           key={template.id}
-                          className="flex flex-col gap-4 rounded-[1.4rem] border border-gray-200 bg-white px-4 py-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                          className="flex flex-col gap-4 rounded-[1.4rem] border border-ink-200 bg-white px-4 py-4 shadow-sm md:flex-row md:items-center md:justify-between"
                         >
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-base font-semibold text-ink-900">{template.nome}</p>
-                            <p className="mt-1 truncate text-sm font-semibold text-gray-500">
+                            <p className="mt-1 truncate text-sm font-semibold text-ink-500">
                               {template.concurso}
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                              <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-600">
                                 {formatStatusLabel(template.status_concurso || 'edital_publicado')}
                               </span>
                               <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
@@ -518,14 +518,14 @@ export default function Planos({
           </div>
 
           <div className="mt-5">
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">PDF do edital</label>
+            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-ink-400">PDF do edital</label>
             <label className="mb-4 flex cursor-pointer items-center justify-center gap-3 rounded-[1.75rem] border-2 border-dashed border-blue-200 bg-blue-50/50 px-5 py-5 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
               <Upload size={18} />
               {isAnalyzing ? 'Lendo PDF e analisando com IA...' : uploadedFileName ? `PDF carregado: ${uploadedFileName}` : 'Selecionar PDF'}
               <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handlePdfUpload(e.target.files?.[0])} />
             </label>
 
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">Texto do edital</label>
+            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-ink-400">Texto do edital</label>
             <textarea
               rows={12}
               value={iaForm.editalText}
@@ -534,7 +534,7 @@ export default function Planos({
                 setIaForm((prev) => ({ ...prev, editalText: value }));
                 setAnalysisError('');
               }}
-              className="w-full rounded-[1.75rem] border border-gray-200 bg-gray-50/60 px-5 py-4 text-sm font-medium text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              className="w-full rounded-[1.75rem] border border-ink-200 bg-ink-50/60 px-5 py-4 text-sm font-medium text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
             />
             <div className="mt-3 flex justify-end">
               <SecondaryButton onClick={() => runAnalysis(iaForm.editalText, { overwriteFields: true })} disabled={isAnalyzing}>
@@ -557,11 +557,11 @@ export default function Planos({
               </p>
 
               <div className="mt-4">
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">Qual concurso deseja importar?</label>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-ink-400">Qual concurso deseja importar?</label>
                 <select
                   value={selectedContestId}
                   onChange={(e) => applyAnalysisToForm(analysisResult, { overwriteFields: true, preferredContestId: e.target.value })}
-                  className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
                 >
                   {analysisResult.contests.map((contest) => (
                     <option key={contest.id} value={contest.id}>
@@ -870,7 +870,7 @@ function CreatePlanCard({ icon: Icon, iconWrap, title, text, badge, decorated = 
   return (
     <button
       onClick={onClick}
-      className="group relative flex flex-col items-center overflow-hidden rounded-[2rem] border border-gray-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+      className="group relative flex flex-col items-center overflow-hidden rounded-[2rem] border border-ink-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
     >
       {decorated && <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[100px] bg-indigo-100 opacity-60" />}
       {badge && (
@@ -881,17 +881,17 @@ function CreatePlanCard({ icon: Icon, iconWrap, title, text, badge, decorated = 
       <div className={`relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition-transform group-hover:scale-110 ${iconWrap}`}>
         <Icon size={28} />
       </div>
-      <h3 className="relative z-10 mb-2 text-lg font-bold text-gray-800">{title}</h3>
-      <p className="relative z-10 text-sm font-medium text-gray-500">{text}</p>
+      <h3 className="relative z-10 mb-2 text-lg font-bold text-ink-800">{title}</h3>
+      <p className="relative z-10 text-sm font-medium text-ink-500">{text}</p>
     </button>
   );
 }
 
 function MetricMiniCard({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-      <p className="mb-1 text-[10px] font-bold uppercase text-gray-400">{label}</p>
-      <p className="text-lg font-semibold leading-none text-gray-700">{value}</p>
+    <div className="rounded-xl border border-ink-100 bg-ink-50 p-3">
+      <p className="mb-1 text-[10px] font-bold uppercase text-ink-400">{label}</p>
+      <p className="text-lg font-semibold leading-none text-ink-700">{value}</p>
     </div>
   );
 }
@@ -900,12 +900,12 @@ function ModalShell({ title, subtitle, children, onClose }) {
   return (
     <div className="fixed inset-0 z-[220] flex items-center justify-center bg-ink-900/60 p-4 backdrop-blur-sm">
       <div className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl">
-        <div className="mb-0 flex items-start justify-between gap-4 border-b border-gray-100 p-6">
+        <div className="mb-0 flex items-start justify-between gap-4 border-b border-ink-100 p-6">
           <div>
             <h3 className="text-2xl font-semibold text-ink-900">{title}</h3>
-            <p className="mt-2 text-sm font-medium text-gray-500">{subtitle}</p>
+            <p className="mt-2 text-sm font-medium text-ink-500">{subtitle}</p>
           </div>
-          <button onClick={onClose} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+          <button onClick={onClose} className="rounded-xl border border-ink-200 px-4 py-2 text-sm font-bold text-ink-600">
             Fechar
           </button>
         </div>
@@ -918,12 +918,12 @@ function ModalShell({ title, subtitle, children, onClose }) {
 function InputField({ label, value, onChange, placeholder = '' }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</label>
+      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-ink-400">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-gray-200 bg-gray-50/60 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+        className="w-full rounded-2xl border border-ink-200 bg-ink-50/60 px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
       />
     </div>
   );
@@ -946,7 +946,7 @@ function SecondaryButton({ children, onClick, disabled = false }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-bold text-ink-600 transition-colors hover:bg-ink-50 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
     </button>

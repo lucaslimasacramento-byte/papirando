@@ -300,7 +300,7 @@ export default function ConcursoDetalhe({
   if (!contest) {
     return (
       <div className="page-shell min-h-full items-center justify-center text-center">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">Concurso</p>
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-ink-400">Concurso</p>
         <h2 className="text-3xl font-semibold text-ink-900">Nenhum concurso selecionado</h2>
         <button
           type="button"
@@ -442,9 +442,9 @@ export default function ConcursoDetalhe({
           <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent" />
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cargos do concurso</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Cargos do concurso</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">Escolha o cargo para ver o edital correto</h2>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-gray-500">
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-ink-500">
                 Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
               </p>
             </div>
@@ -514,7 +514,7 @@ export default function ConcursoDetalhe({
 
       <section className="section-card overflow-hidden p-0">
         <div className="grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="border-b border-gray-100 bg-gray-50 xl:border-b-0 xl:border-r">
+          <div className="border-b border-ink-100 bg-ink-50 xl:border-b-0 xl:border-r">
             {contest.imagem_url && !imageError ? (
               <img
                 src={contest.imagem_url}
@@ -541,9 +541,9 @@ export default function ConcursoDetalhe({
             </div>
 
             {contest.descricao && (
-              <div className="mt-6 rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Resumo</p>
-                <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">{contest.descricao}</p>
+              <div className="mt-6 rounded-[1.5rem] border border-ink-200 bg-ink-50/70 p-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Resumo</p>
+                <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{contest.descricao}</p>
               </div>
             )}
 
@@ -578,7 +578,7 @@ export default function ConcursoDetalhe({
                 <button
                   type="button"
                   onClick={() => onOpenDisciplinas?.(contest)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
+                  className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600"
                 >
                   Abrir disciplinas desse concurso
                   <ArrowRight size={15} />
@@ -593,10 +593,10 @@ export default function ConcursoDetalhe({
         <section className="section-card p-6">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Estrutura do edital</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Estrutura do edital</p>
               <h2 className="mt-2 text-2xl font-semibold text-ink-900">Disciplinas e tópicos</h2>
             </div>
-            <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-500">
+            <span className="rounded-full border border-ink-200 bg-ink-50 px-4 py-2 text-sm font-bold text-ink-500">
               {contest.disciplinas?.length || 0} disciplinas
             </span>
           </div>
@@ -609,7 +609,7 @@ export default function ConcursoDetalhe({
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold text-ink-900">{disciplina.nome}</p>
-                      <p className="mt-1 text-xs font-semibold text-gray-500">
+                      <p className="mt-1 text-xs font-semibold text-ink-500">
                         {disciplina.topicos?.length || 0} tópicos mapeados
                       </p>
                     </div>
@@ -629,7 +629,7 @@ export default function ConcursoDetalhe({
                   </div>
 
                   {isExpanded && (
-                    <div className="mt-4 space-y-2 border-t border-gray-200 pt-4">
+                    <div className="mt-4 space-y-2 border-t border-ink-200 pt-4">
                       {(disciplina.topicos || []).length > 0 ? (
                         (disciplina.topicos || []).map((topico) => (
                           <div
@@ -654,7 +654,7 @@ export default function ConcursoDetalhe({
 
         <section className="section-card p-6">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas e contexto</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Etapas e contexto</p>
             <h2 className="mt-2 text-2xl font-semibold text-ink-900">Leitura rápida</h2>
           </div>
 
@@ -667,7 +667,7 @@ export default function ConcursoDetalhe({
 
           {contestAlerts.length > 0 && (
             <div className="mt-6 rounded-2xl border border-ink-200 bg-ink-50/70 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Alertas do concurso</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Alertas do concurso</p>
               <div className="mt-4 space-y-3">
                 {contestAlerts.map((alert) => (
                   <div
@@ -683,11 +683,11 @@ export default function ConcursoDetalhe({
           )}
 
           <div className="mt-6 rounded-2xl border border-ink-200 bg-white p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Agenda essencial</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Agenda essencial</p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {agendaItems.map((item) => (
                 <div key={item.label} className="rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.label}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{item.label}</p>
                   <p className="mt-2 text-sm font-bold text-ink-900">{item.value}</p>
                 </div>
               ))}
@@ -697,7 +697,7 @@ export default function ConcursoDetalhe({
           <div className="mt-6 rounded-2xl border border-ink-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Próximos passos</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Próximos passos</p>
                 <p className="mt-2 text-lg font-semibold text-ink-900">Checklist de acompanhamento</p>
               </div>
               <span className="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
@@ -719,13 +719,13 @@ export default function ConcursoDetalhe({
                 >
                   <div>
                     <p className={`text-sm font-semibold ${item.done ? 'text-emerald-700' : 'text-ink-900'}`}>{item.label}</p>
-                    <p className="mt-1 text-sm font-medium text-gray-500">{item.hint}</p>
+                    <p className="mt-1 text-sm font-medium text-ink-500">{item.hint}</p>
                   </div>
                   <span
                     className={`mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full border px-2 text-xs font-semibold ${
                       item.done
                         ? 'border-emerald-200 bg-white text-emerald-700'
-                        : 'border-gray-200 bg-white text-gray-400'
+                        : 'border-ink-200 bg-white text-ink-400'
                     }`}
                   >
                     {item.done ? 'OK' : ''}
@@ -737,8 +737,8 @@ export default function ConcursoDetalhe({
 
           {(contest.etapas || contest.etapas_tags?.length > 0) && (
             <div className="mt-6 rounded-2xl border border-ink-200 bg-ink-50/70 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas</p>
-              <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Etapas</p>
+              <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">
                 {contest.etapas || 'Etapas não detalhadas.'}
               </p>
 
@@ -762,7 +762,7 @@ export default function ConcursoDetalhe({
                     {contest.taf_itens.map((item) => (
                       <span
                         key={item}
-                        className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-700"
+                        className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-ink-700"
                       >
                         {item}
                       </span>
@@ -795,8 +795,8 @@ function CargoInfo({ label, value, tone = 'slate' }) {
 
 function StatBox({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
-      <div className="flex items-center gap-2 text-gray-400">
+    <div className="rounded-[1.2rem] border border-ink-200 bg-ink-50/70 p-4">
+      <div className="flex items-center gap-2 text-ink-400">
         <Icon size={14} />
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</p>
       </div>
@@ -807,8 +807,8 @@ function StatBox({ label, value, icon: Icon }) {
 
 function InfoCard({ label, value }) {
   return (
-    <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
+    <div className="rounded-[1.2rem] border border-ink-200 bg-ink-50/70 p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
       <p className="mt-2 text-sm font-bold text-[#0C447C]">{value}</p>
     </div>
   );
@@ -816,7 +816,7 @@ function InfoCard({ label, value }) {
 
 function StatusPanel({ label, value, tone = 'gray' }) {
   const toneClasses = {
-    gray: 'border-gray-200 bg-gray-50 text-gray-700',
+    gray: 'border-ink-200 bg-ink-50 text-ink-700',
     blue: 'border-blue-100 bg-blue-50 text-blue-700',
     green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
     amber: 'border-amber-100 bg-amber-50 text-amber-700',
@@ -835,5 +835,5 @@ const momentToneClasses = {
   amber: 'border-amber-100 bg-amber-50 text-amber-700',
   red: 'border-red-100 bg-red-50 text-red-700',
   green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-  gray: 'border-gray-200 bg-gray-50 text-gray-700',
+  gray: 'border-ink-200 bg-ink-50 text-ink-700',
 };

@@ -348,7 +348,7 @@ export default function Questoes({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative min-w-0 flex-1">
             <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center sm:left-4">
-              <Search className="text-gray-400" size={16} />
+              <Search className="text-ink-400" size={16} />
             </div>
 
             <input
@@ -423,7 +423,7 @@ export default function Questoes({
               <h3 className="text-sm font-semibold text-ink-900 sm:text-base">
                 {dbQuestions.length === 0 ? 'Nenhuma questão disponível' : 'Nenhuma questão encontrada'}
               </h3>
-              <p className="mt-1 max-w-sm px-2 text-xs text-gray-500">
+              <p className="mt-1 max-w-sm px-2 text-xs text-ink-500">
                 {dbQuestions.length === 0
                   ? 'O banco online será populado pelo administrador; até lá você vê questões de demonstração.'
                   : 'Tente limpar filtros ou ampliar a busca.'}
@@ -585,7 +585,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
 
   return (
     <div
-      className={`relative flex h-full min-h-0 max-h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-shadow duration-300 sm:rounded-2xl ${submitted ? (wasCorrect ? 'border border-emerald-200 shadow-md' : 'border border-rose-200 shadow-md') : 'border border-gray-100 hover:shadow-lg'}`}
+      className={`relative flex h-full min-h-0 max-h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-shadow duration-300 sm:rounded-2xl ${submitted ? (wasCorrect ? 'border border-emerald-200 shadow-md' : 'border border-rose-200 shadow-md') : 'border border-ink-100 hover:shadow-lg'}`}
     >
       {submitted ? (
         <div className={`absolute right-0 top-0 z-10 flex items-center gap-1 rounded-bl-lg px-3 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white shadow-sm sm:rounded-bl-xl sm:px-4 sm:py-1 sm:text-[10px] ${wasCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`}>
@@ -594,30 +594,30 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         </div>
       ) : null}
 
-      <div className={`shrink-0 border-b px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') : 'border-gray-100 bg-gray-50/50'}`}>
+      <div className={`shrink-0 border-b px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') : 'border-ink-100 bg-ink-50/50'}`}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs ${submitted ? (wasCorrect ? 'bg-emerald-100 text-ink-900' : 'bg-rose-100 text-ink-900') : 'bg-blue-100 text-ink-900'}`}>
               {question.id}
             </span>
-            <span className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
+            <span className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-wide text-ink-500 sm:text-xs">
               {question.disciplina}
             </span>
-            <ChevronRight size={12} className="hidden shrink-0 text-gray-300 sm:inline sm:size-[14px]" />
-            <span className="hidden max-w-[140px] truncate text-[10px] font-bold text-gray-500 sm:inline md:max-w-[220px]">{question.topico}</span>
+            <ChevronRight size={12} className="hidden shrink-0 text-ink-300 sm:inline sm:size-[14px]" />
+            <span className="hidden max-w-[140px] truncate text-[10px] font-bold text-ink-500 sm:inline md:max-w-[220px]">{question.topico}</span>
           </div>
 
           <div className="flex shrink-0 gap-1.5">
-            <span className="max-w-[100px] truncate rounded border border-gray-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-400 sm:max-w-none sm:px-2 sm:text-[10px]">
+            <span className="max-w-[100px] truncate rounded border border-ink-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-400 sm:max-w-none sm:px-2 sm:text-[10px]">
               {question.banca}
             </span>
-            <span className="rounded border border-gray-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-400 sm:px-2 sm:text-[10px]">{question.ano}</span>
+            <span className="rounded border border-ink-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-400 sm:px-2 sm:text-[10px]">{question.ano}</span>
           </div>
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 sm:px-4 sm:py-3">
-        <p className="mb-3 text-sm font-medium leading-snug text-gray-700 sm:text-base sm:leading-relaxed">{question.statement}</p>
+        <p className="mb-3 text-sm font-medium leading-snug text-ink-700 sm:text-base sm:leading-relaxed">{question.statement}</p>
 
         <div className="flex flex-col gap-2 sm:gap-2.5">
           {question.options.map((option) => (
@@ -647,7 +647,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         ) : null}
       </div>
 
-      <div className={`shrink-0 border-t px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/50' : 'border-rose-100 bg-rose-50/50') : 'border-gray-100 bg-gray-50/50'}`}>
+      <div className={`shrink-0 border-t px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/50' : 'border-rose-100 bg-rose-50/50') : 'border-ink-100 bg-ink-50/50'}`}>
         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
           <InlineAction Icon={Bookmark} text="Salvar" />
           <InlineAction Icon={MessageSquare} text="Comentários" />
@@ -704,8 +704,8 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
 function FilterField({ label, options }) {
   return (
     <div className="flex flex-col">
-      <label className="mb-2 ml-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</label>
-      <select className="w-full cursor-pointer appearance-none rounded-xl border-2 border-transparent bg-gray-50 p-3.5 font-bold text-gray-700 outline-none transition-colors hover:border-gray-200 focus:border-blue-600">
+      <label className="mb-2 ml-2 text-[10px] font-semibold uppercase tracking-widest text-ink-400">{label}</label>
+      <select className="w-full cursor-pointer appearance-none rounded-xl border-2 border-transparent bg-ink-50 p-3.5 font-bold text-ink-700 outline-none transition-colors hover:border-ink-200 focus:border-blue-600">
         {options.map((option) => (
           <option key={option}>{option}</option>
         ))}
@@ -715,9 +715,9 @@ function FilterField({ label, options }) {
 }
 
 function AnswerOption({ label, text, selected = false, submitted = false, isCorrect = false, isWrongSelection = false, onClick }) {
-  let tone = 'border-gray-100 hover:border-blue-400 hover:bg-blue-50';
-  let markerTone = 'border-gray-300 text-gray-400 group-hover/option:border-blue-500 group-hover/option:text-blue-600';
-  let textTone = 'text-gray-600 group-hover/option:text-blue-900';
+  let tone = 'border-ink-100 hover:border-blue-400 hover:bg-blue-50';
+  let markerTone = 'border-ink-300 text-ink-400 group-hover/option:border-blue-500 group-hover/option:text-blue-600';
+  let textTone = 'text-ink-600 group-hover/option:text-blue-900';
 
   if (submitted && isCorrect) {
     tone = 'border-emerald-500 bg-emerald-50';
@@ -745,7 +745,7 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
 
 function InlineAction({ Icon, text }) {
   return (
-    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-gray-500 transition-colors hover:bg-ink-100 hover:text-blue-700">
+    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-ink-500 transition-colors hover:bg-ink-100 hover:text-blue-700">
       {React.createElement(Icon, { size: 16 })}
       {text}
     </button>
@@ -754,7 +754,7 @@ function InlineAction({ Icon, text }) {
 
 function InlineReport() {
   return (
-    <button type="button" className="ml-1 flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-gray-500 transition-colors hover:bg-red-50 hover:text-red-500">
+    <button type="button" className="ml-1 flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-ink-500 transition-colors hover:bg-red-50 hover:text-red-500">
       <Flag size={14} />
       Reportar
     </button>
@@ -769,11 +769,11 @@ function SidebarFolder({ Icon, iconWrap, title, subtitle }) {
           {React.createElement(Icon, { size: 18 })}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-700 group-hover:text-blue-900">{title}</p>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{subtitle}</p>
+          <p className="text-sm font-semibold text-ink-700 group-hover:text-blue-900">{title}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400">{subtitle}</p>
         </div>
       </div>
-      <ChevronRight size={18} className="text-gray-300 transition-colors group-hover:text-blue-500" />
+      <ChevronRight size={18} className="text-ink-300 transition-colors group-hover:text-blue-500" />
     </div>
   );
 }

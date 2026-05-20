@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { REDACAO_BANCA_OPTIONS } from '../data/redacaoBancaGuides';
 
@@ -11,7 +11,7 @@ const EIXO_OPTIONS = [
 ];
 
 function inputCls() {
-  return 'mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-blue-500';
+  return 'mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-blue-500';
 }
 
 /**
@@ -24,7 +24,7 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-gray-600">
+        <p className="text-xs font-medium text-ink-600">
           Cada item vira um card no banco de temas (aba Redações). Use o botão &quot;Salvar banco, kit e audiolivros&quot; na página de configurações.
         </p>
         <button
@@ -50,9 +50,9 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
 
       <div className="max-h-[min(70vh,520px)] space-y-3 overflow-y-auto pr-1">
         {rows.map((row, index) => (
-          <div key={row.id || index} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div key={row.id || index} className="rounded-2xl border border-ink-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Tema {index + 1}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-ink-400">Tema {index + 1}</span>
               <button
                 type="button"
                 onClick={() => onDraftChange((prev) => prev.filter((_, i) => i !== index))}
@@ -64,7 +64,7 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="sm:col-span-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">id</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">id</span>
                 <input
                   type="text"
                   value={row.id}
@@ -76,7 +76,7 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Eixo</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Eixo</span>
                 <select
                   value={row.eixo || ''}
                   onChange={(e) => {
@@ -93,7 +93,7 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                 </select>
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Banca</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Banca</span>
                 <select
                   value={row.banca || ''}
                   onChange={(e) => {
@@ -110,7 +110,7 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                 </select>
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título da proposta</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Título da proposta</span>
                 <input
                   type="text"
                   value={row.title}
@@ -122,7 +122,7 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                 />
               </label>
               <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Descrição / comando</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Descrição / comando</span>
                 <textarea
                   rows={3}
                   value={row.description}
