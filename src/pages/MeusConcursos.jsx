@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ArrowRight, CalendarDays, Crown, Heart, Layers3, Target } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
@@ -24,10 +24,10 @@ export default function MeusConcursos({
         }
         trailing={(
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-ink-200 sm:px-4 sm:py-2 sm:text-sm">
               {importedCount} importado(s)
             </span>
-            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold tabular-nums text-ink-200 sm:px-4 sm:py-2 sm:text-sm">
               {contests.length - importedCount} no radar
             </span>
           </div>
@@ -39,7 +39,7 @@ export default function MeusConcursos({
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">Concurso alvo</p>
           <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h3 className="text-2xl font-semibold text-slate-900">{targetContest.nome}</h3>
+              <h3 className="text-2xl font-semibold text-ink-900">{targetContest.nome}</h3>
               <p className="mt-1 text-sm font-semibold text-gray-600">
                 {targetContest.cargo || targetContest.concurso}
               </p>
@@ -67,7 +67,7 @@ export default function MeusConcursos({
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Sua base</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Concursos acompanhados</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Concursos acompanhados</h3>
           </div>
           <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-500">
             {contests.length} concurso(s)
@@ -81,7 +81,7 @@ export default function MeusConcursos({
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {contests.map((contest) => (
-              <article key={contest.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+              <article key={contest.id} className="rounded-2xl border border-ink-200 bg-ink-50/70 p-5">
                 <div className="flex flex-wrap gap-2">
                   {contest.isTarget && <Tag tone="yellow">Alvo</Tag>}
                   {contest.imported && <Tag tone="blue">Importado</Tag>}
@@ -89,7 +89,7 @@ export default function MeusConcursos({
                   {contest.interested && <Tag tone="amber">Interesse</Tag>}
                 </div>
 
-                <h4 className="mt-4 text-lg font-semibold text-slate-900">{contest.nome}</h4>
+                <h4 className="mt-4 text-lg font-semibold text-ink-900">{contest.nome}</h4>
                 <p className="mt-1 min-h-[40px] text-sm font-semibold text-gray-500">
                   {contest.cargo || contest.concurso}
                 </p>
@@ -127,7 +127,7 @@ export default function MeusConcursos({
                     className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
                       contest.isTarget
                         ? 'border border-yellow-200 bg-yellow-50 text-yellow-700'
-                        : 'border border-slate-200 bg-white text-slate-600'
+                        : 'border border-ink-200 bg-white text-ink-600'
                     }`}
                   >
                     {contest.isTarget ? 'Alvo atual' : 'Definir como alvo'}
@@ -169,10 +169,10 @@ function Tag({ children, tone = 'blue' }) {
 
 function MiniBox({ icon, label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
+    <div className="rounded-xl border border-ink-200 bg-white px-3 py-3">
       <div className="flex items-center gap-2">
         {icon}
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
       </div>
       <p className="mt-2 text-sm font-semibold text-blue-900">{value}</p>
     </div>

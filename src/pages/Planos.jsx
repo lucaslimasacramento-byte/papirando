@@ -468,7 +468,7 @@ export default function Planos({
                           className="flex flex-col gap-4 rounded-[1.4rem] border border-gray-200 bg-white px-4 py-4 shadow-sm md:flex-row md:items-center md:justify-between"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-base font-semibold text-slate-900">{template.nome}</p>
+                            <p className="truncate text-base font-semibold text-ink-900">{template.nome}</p>
                             <p className="mt-1 truncate text-sm font-semibold text-gray-500">
                               {template.concurso}
                             </p>
@@ -898,11 +898,11 @@ function MetricMiniCard({ label, value }) {
 
 function ModalShell({ title, subtitle, children, onClose }) {
   return (
-    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-ink-900/60 p-4 backdrop-blur-sm">
       <div className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl">
         <div className="mb-0 flex items-start justify-between gap-4 border-b border-gray-100 p-6">
           <div>
-            <h3 className="text-2xl font-semibold text-slate-900">{title}</h3>
+            <h3 className="text-2xl font-semibold text-ink-900">{title}</h3>
             <p className="mt-2 text-sm font-medium text-gray-500">{subtitle}</p>
           </div>
           <button onClick={onClose} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-600">

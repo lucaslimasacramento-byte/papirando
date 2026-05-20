@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { Loader2, MessageSquare, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import { deleteBetaFeedbackItem, loadBetaFeedback } from '../lib/betaFeedbackApi';
@@ -8,7 +8,7 @@ const TIPO_COLORS = {
   bug: 'border-red-200 bg-red-50 text-red-700',
   sugestao: 'border-blue-200 bg-blue-50 text-blue-700',
   elogio: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  geral: 'border-slate-200 bg-slate-50 text-slate-600',
+  geral: 'border-ink-200 bg-ink-50 text-ink-600',
 };
 
 function formatDate(iso) {
@@ -81,7 +81,7 @@ export default function AdminBetaFeedback() {
         />
 
         <div className="section-card flex items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-ink-600">
             Feedbacks enviados pelos usuarios beta via widget in-app.
           </p>
           <button
@@ -102,23 +102,23 @@ export default function AdminBetaFeedback() {
         ) : null}
 
         <div className="section-card space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
             Respostas ({rows.length})
           </p>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-slate-500">
+            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
               <Loader2 size={18} className="animate-spin text-blue-700" />
               Carregando...
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-8 text-center text-sm font-medium text-slate-500">
+            <p className="py-8 text-center text-sm font-medium text-ink-500">
               Nenhum feedback ainda. Compartilhe o app com os usuarios beta!
             </p>
           ) : (
             <ul className="space-y-3">
               {rows.map((row) => (
-                <li key={row.id} className="rounded-xl border border-slate-200 bg-white p-4">
+                <li key={row.id} className="rounded-xl border border-ink-200 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
@@ -130,17 +130,17 @@ export default function AdminBetaFeedback() {
                           {TIPO_LABELS[row.tipo] || row.tipo}
                         </span>
                         {row.page ? (
-                          <span className="text-[10px] font-medium text-slate-400">
+                          <span className="text-[10px] font-medium text-ink-400">
                             /{row.page}
                           </span>
                         ) : null}
-                        <span className="text-[10px] text-slate-400">{formatDate(row.created_at)}</span>
+                        <span className="text-[10px] text-ink-400">{formatDate(row.created_at)}</span>
                       </div>
-                      <p className="whitespace-pre-wrap text-sm font-medium text-slate-800">
+                      <p className="whitespace-pre-wrap text-sm font-medium text-ink-800">
                         {row.mensagem}
                       </p>
                       {row.email ? (
-                        <p className="text-xs text-slate-400">{row.email}</p>
+                        <p className="text-xs text-ink-400">{row.email}</p>
                       ) : null}
                     </div>
                     <button

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import {
   BookOpen,
   Check,
@@ -45,7 +45,7 @@ function emptyForm() {
 }
 
 function inputCls(extra = '') {
-  return `w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 ${extra}`;
+  return `w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-2.5 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 ${extra}`;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ function inputCls(extra = '') {
 function Field({ label, children, required }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+      <label className="text-xs font-bold uppercase tracking-wide text-ink-500">
         {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
@@ -181,7 +181,7 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all ${
                   form.gabarito === alt.id
                     ? 'border-emerald-500 bg-emerald-500 text-white'
-                    : 'border-slate-300 text-slate-400 hover:border-slate-400'
+                    : 'border-ink-300 text-ink-400 hover:border-ink-400'
                 }`}
               >
                 {alt.id}
@@ -194,10 +194,10 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
                   placeholder={`Alternativa ${alt.id}`}
                 />
               ) : (
-                <span className="flex-1 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-600">{alt.label}</span>
+                <span className="flex-1 rounded-xl border-2 border-ink-100 bg-ink-50 px-4 py-2.5 text-sm font-semibold text-ink-600">{alt.label}</span>
               )}
               {form.tipo === 'multipla_escolha' && idx > 1 && (
-                <button onClick={() => removeAlternativa(idx)} className="rounded-lg p-1.5 text-slate-400 hover:text-red-400">
+                <button onClick={() => removeAlternativa(idx)} className="rounded-lg p-1.5 text-ink-400 hover:text-red-400">
                   <X size={14} />
                 </button>
               )}
@@ -224,11 +224,11 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
           checked={form.is_public}
           onChange={(e) => set('is_public', e.target.checked)}
         />
-        <label htmlFor="is_public" className="text-sm font-semibold text-slate-700">Questão pública (visível a todos os alunos)</label>
+        <label htmlFor="is_public" className="text-sm font-semibold text-ink-700">Questão pública (visível a todos os alunos)</label>
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
-        <button onClick={onCancel} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+        <button onClick={onCancel} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
           Cancelar
         </button>
         <button
@@ -404,9 +404,9 @@ export default function AdminQuestoes() {
       />
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-100 bg-slate-50 px-6 py-3">
+      <div className="flex flex-wrap gap-2 border-b border-ink-100 bg-ink-50 px-6 py-3">
         <input
-          className="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400 w-44"
+          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-400 w-44"
           placeholder="Disciplina..."
           value={filterDisc}
           onChange={(e) => { setFilterDisc(e.target.value); setPage(0); }}
@@ -415,7 +415,7 @@ export default function AdminQuestoes() {
         <datalist id="disc-opts">{discOptions.map((d) => <option key={d} value={d} />)}</datalist>
 
         <input
-          className="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400 w-40"
+          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-400 w-40"
           placeholder="Banca..."
           value={filterBanca}
           onChange={(e) => { setFilterBanca(e.target.value); setPage(0); }}
@@ -424,7 +424,7 @@ export default function AdminQuestoes() {
         <datalist id="banca-opts">{bancaOptions.map((b) => <option key={b} value={b} />)}</datalist>
 
         <select
-          className="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-400"
+          className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 outline-none focus:border-blue-400"
           value={filterTipo}
           onChange={(e) => { setFilterTipo(e.target.value); setPage(0); }}
         >
@@ -435,7 +435,7 @@ export default function AdminQuestoes() {
         {(filterDisc || filterBanca || filterTipo) && (
           <button
             onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterTipo(''); setPage(0); }}
-            className="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
+            className="rounded-xl border-2 border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-600 hover:bg-ink-100"
           >
             Limpar filtros
           </button>
@@ -445,7 +445,7 @@ export default function AdminQuestoes() {
       {/* Create form */}
       {createOpen && (
         <div className="border-b border-blue-100 bg-blue-50 px-6 py-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-800">Nova Questão</h3>
+          <h3 className="mb-4 text-sm font-semibold text-ink-800">Nova Questão</h3>
           <QuestionForm
             onSave={handleCreate}
             onCancel={() => setCreateOpen(false)}
@@ -463,15 +463,15 @@ export default function AdminQuestoes() {
           </div>
         ) : questions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <BookOpen size={40} className="text-slate-300" />
-            <p className="font-bold text-slate-500">Nenhuma questão encontrada.</p>
+            <BookOpen size={40} className="text-ink-300" />
+            <p className="font-bold text-ink-500">Nenhuma questão encontrada.</p>
             <button onClick={() => { setFormErr(''); setCreateOpen(true); }} className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">
               <Plus size={15} />
               Cadastrar primeira questão
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-ink-100">
             {questions.map((q) => {
               const isExpanded = expandedId === q.id;
               const isEditing  = editingId === q.id;
@@ -481,7 +481,7 @@ export default function AdminQuestoes() {
                 <div key={q.id} className="px-6 py-4">
                   {isEditing ? (
                     <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-5">
-                      <p className="mb-4 text-sm font-semibold text-slate-800">Editando questão</p>
+                      <p className="mb-4 text-sm font-semibold text-ink-800">Editando questão</p>
                       <QuestionForm
                         initial={{ ...q, alternativas: alts }}
                         onSave={handleEdit}
@@ -500,10 +500,10 @@ export default function AdminQuestoes() {
                               <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">{q.disciplina}</span>
                             )}
                             {q.banca && (
-                              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600">{q.banca}</span>
+                              <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-[11px] font-bold text-ink-600">{q.banca}</span>
                             )}
                             {q.ano && (
-                              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-500">{q.ano}</span>
+                              <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-[11px] font-bold text-ink-500">{q.ano}</span>
                             )}
                             <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                               q.dificuldade === 'Facil' ? 'bg-emerald-100 text-emerald-700' :
@@ -511,28 +511,28 @@ export default function AdminQuestoes() {
                               'bg-amber-100 text-amber-700'
                             }`}>{q.dificuldade}</span>
                             {!q.is_public && (
-                              <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-[11px] font-bold text-white">Privada</span>
+                              <span className="rounded-full bg-ink-800 px-2.5 py-0.5 text-[11px] font-bold text-white">Privada</span>
                             )}
                           </div>
-                          <p className="text-sm font-semibold text-slate-700 line-clamp-2">{q.enunciado}</p>
+                          <p className="text-sm font-semibold text-ink-700 line-clamp-2">{q.enunciado}</p>
                         </div>
 
                         <div className="flex items-center gap-1 shrink-0">
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : q.id)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                            className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-600"
                           >
                             {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                           </button>
                           <button
                             onClick={() => { setFormErr(''); setEditingId(q.id); setExpandedId(null); }}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-500"
+                            className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-blue-500"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => handleDelete(q.id)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-400"
+                            className="rounded-lg p-1.5 text-ink-400 hover:bg-red-50 hover:text-red-400"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -541,8 +541,8 @@ export default function AdminQuestoes() {
 
                       {/* Expanded detail */}
                       {isExpanded && (
-                        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                          <p className="text-sm text-slate-700 font-medium leading-relaxed">{q.enunciado}</p>
+                        <div className="mt-3 rounded-xl border border-ink-200 bg-ink-50 p-4 space-y-3">
+                          <p className="text-sm text-ink-700 font-medium leading-relaxed">{q.enunciado}</p>
                           <div className="space-y-1.5">
                             {alts.map((alt) => (
                               <div
@@ -550,11 +550,11 @@ export default function AdminQuestoes() {
                                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold ${
                                   alt.isCorrect
                                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                    : 'text-slate-600'
+                                    : 'text-ink-600'
                                 }`}
                               >
                                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
-                                  alt.isCorrect ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 text-slate-500'
+                                  alt.isCorrect ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-ink-300 text-ink-500'
                                 }`}>{alt.id}</span>
                                 {alt.label}
                                 {alt.isCorrect && <Check size={14} className="ml-auto text-emerald-600" />}
@@ -564,7 +564,7 @@ export default function AdminQuestoes() {
                           {q.explicacao && (
                             <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
                               <p className="text-xs font-bold uppercase tracking-wide text-blue-500 mb-1">Explicação</p>
-                              <p className="text-sm text-slate-700">{q.explicacao}</p>
+                              <p className="text-sm text-ink-700">{q.explicacao}</p>
                             </div>
                           )}
                         </div>
@@ -580,13 +580,13 @@ export default function AdminQuestoes() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-100 px-6 py-3 bg-white">
-          <p className="text-xs font-semibold text-slate-500">{total} questões • página {page + 1} de {totalPages}</p>
+        <div className="flex items-center justify-between border-t border-ink-100 px-6 py-3 bg-white">
+          <p className="text-xs font-semibold text-ink-500">{total} questões • página {page + 1} de {totalPages}</p>
           <div className="flex gap-2">
-            <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
+            <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} className="rounded-xl border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-600 hover:bg-ink-50 disabled:opacity-40">
               Anterior
             </button>
-            <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
+            <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="rounded-xl border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-600 hover:bg-ink-50 disabled:opacity-40">
               Próxima
             </button>
           </div>

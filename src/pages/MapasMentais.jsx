@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   Copy,
@@ -569,7 +569,7 @@ export default function MapasMentais({
           leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
           leadingExtra={
             galleryMaps.length > 0 ? (
-              <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
+              <p className="text-[11px] font-medium text-ink-500 sm:text-xs">
                 {`${galleryMaps.length} modelo(s) da equipe disponível(is) abaixo — copie para editar na sua biblioteca.`}
               </p>
             ) : null
@@ -609,12 +609,12 @@ export default function MapasMentais({
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-700">Mapas da equipe · Papirando</p>
-              <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900 md:text-xl">
+              <h2 className="mt-1 text-lg font-semibold tracking-tight text-ink-900 md:text-xl">
                 Prontos para quem não quer montar do zero
               </h2>
-              <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-slate-600">
+              <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-ink-600">
                 Estes mapas são publicados pelos administradores na galeria global. Abra para ver no estúdio (somente leitura) ou use{' '}
-                <strong className="font-semibold text-slate-800">Copiar para minha biblioteca</strong> para editar, favoritar e vincular ao seu fluxo.
+                <strong className="font-semibold text-ink-800">Copiar para minha biblioteca</strong> para editar, favoritar e vincular ao seu fluxo.
               </p>
             </div>
             {isAdmin && typeof onOpenAdminMindMaps === 'function' ? (
@@ -631,7 +631,7 @@ export default function MapasMentais({
 
           {galeriaFiltrada.length === 0 ? (
             <div className="mt-5 rounded-xl border border-dashed border-indigo-200 bg-white/70 px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-ink-700">
                 {galleryMaps.length === 0
                   ? 'Nenhum mapa da equipe publicado ainda. Quando o admin subir modelos na galeria, eles aparecem aqui para todos.'
                   : 'Nenhum modelo da equipe corresponde à busca ou aos filtros da biblioteca. Limpe a busca ou ajuste categoria/plano.'}
@@ -648,13 +648,13 @@ export default function MapasMentais({
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-600">Equipe · {mapa.categoria || 'Geral'}</p>
-                      <h3 className="mt-1 line-clamp-2 text-base font-semibold text-slate-900">{mapa.titulo}</h3>
+                      <h3 className="mt-1 line-clamp-2 text-base font-semibold text-ink-900">{mapa.titulo}</h3>
                     </div>
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                       <button
                         type="button"
                         onClick={() => openGalleryMap(mapa)}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-800 transition hover:bg-slate-100"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-ink-200 bg-ink-50 py-2.5 text-xs font-bold text-ink-800 transition hover:bg-ink-100"
                       >
                         <Eye size={14} />
                         Ver no estúdio
@@ -677,12 +677,12 @@ export default function MapasMentais({
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
           <div className="space-y-6">
-            <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-5">
+            <div className="rounded-[28px] border border-ink-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Editor</p>
-                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">{mapaAtivo?.titulo || 'Nenhum mapa selecionado'}</h2>
-                  <p className="mt-1 text-sm font-medium text-slate-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-400">Editor</p>
+                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink-900">{mapaAtivo?.titulo || 'Nenhum mapa selecionado'}</h2>
+                  <p className="mt-1 text-sm font-medium text-ink-500">
                     {mapaAtivo?.categoria || 'Sem categoria'} · {formatMindMapTimestamp(mapaAtivo?.ultimoAcessoEm || mapaAtivo?.atualizadoEm)}
                   </p>
                 </div>
@@ -696,10 +696,10 @@ export default function MapasMentais({
               <input ref={importedInputRef} type="file" accept="application/json" onChange={handleImportFile} className="hidden" />
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-6">
+            <div className="rounded-[28px] border border-ink-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-6">
               <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center">
-                <div className="flex-1 rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3">
-                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Gerar novo mapa</label>
+                <div className="flex-1 rounded-[22px] border border-ink-200 bg-ink-50 px-4 py-3">
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Gerar novo mapa</label>
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <input
                       id="mapa-prompt-input"
@@ -707,7 +707,7 @@ export default function MapasMentais({
                       value={promptMapa}
                       onChange={(event) => setPromptMapa(event.target.value)}
                       placeholder="Digite um tema ou um resumo curto para criar um mapa conectado ao seu conteudo"
-                      className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none placeholder:text-slate-300"
+                      className="w-full bg-transparent text-sm font-semibold text-ink-700 outline-none placeholder:text-ink-300"
                     />
                     <button
                       type="button"
@@ -747,14 +747,14 @@ export default function MapasMentais({
                 </div>
               ) : null}
 
-              <div className="relative rounded-[26px] border border-slate-200 bg-slate-50/80 p-3">
+              <div className="relative rounded-[26px] border border-ink-200 bg-ink-50/80 p-3">
                 {mapaAtivo ? (
                   <>
                     {!isGalleryView ? (
                       <button
                         type="button"
                         onClick={() => handleToggleFavorite(mapaAtivo.id)}
-                        className={`absolute right-5 top-5 z-10 inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm transition ${mapaAtivo.favorito ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white text-slate-500'}`}
+                        className={`absolute right-5 top-5 z-10 inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm transition ${mapaAtivo.favorito ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-ink-200 bg-white text-ink-500'}`}
                       >
                         <Heart size={14} className={mapaAtivo.favorito ? 'fill-current' : ''} />
                         {mapaAtivo.favorito ? 'Favorito' : 'Favoritar'}
@@ -776,18 +776,18 @@ export default function MapasMentais({
             </div>
           </div>
           <aside className="space-y-6">
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Biblioteca</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">Seus mapas</h3>
+            <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-400">Biblioteca</p>
+              <h3 className="mt-1 text-xl font-semibold tracking-tight text-ink-900">Seus mapas</h3>
 
               <div className="relative mt-4">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" size={17} />
                 <input
                   type="text"
                   value={filters.query}
                   onChange={(event) => setFilters((prev) => ({ ...prev, query: event.target.value }))}
                   placeholder="Buscar mapas, categorias, topicos ou concursos"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500"
+                  className="w-full rounded-2xl border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-sm font-semibold text-ink-700 outline-none transition focus:border-blue-500"
                 />
               </div>
 
@@ -798,7 +798,7 @@ export default function MapasMentais({
                     setPlanFilterDirty(true);
                     setFilters((prev) => ({ ...prev, plan: event.target.value }));
                   }}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none"
+                  className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none"
                 >
                   <option value="Todos">Todos os planos</option>
                   {[...new Set(bancoDisciplinas.map((discipline) => discipline.plano || 'Geral'))].map((plan) => (
@@ -811,7 +811,7 @@ export default function MapasMentais({
                 <select
                   value={filters.contestId}
                   onChange={(event) => setFilters((prev) => ({ ...prev, contestId: event.target.value }))}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none"
+                  className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-700 outline-none"
                 >
                   <option value="Todos">Todos os concursos</option>
                   {contestOptions.map((contest) => (
@@ -824,27 +824,27 @@ export default function MapasMentais({
                 <button
                   type="button"
                   onClick={() => setFilters((prev) => ({ ...prev, favoritesOnly: !prev.favoritesOnly }))}
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${filters.favoritesOnly ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${filters.favoritesOnly ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-ink-200 bg-ink-50 text-ink-600'}`}
                 >
                   {filters.favoritesOnly ? 'Mostrando apenas favoritos' : 'Exibir somente favoritos'}
                 </button>
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+            <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="mb-4 flex items-center gap-2">
-                <Folder size={16} className="text-slate-400" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Categorias</p>
+                <Folder size={16} className="text-ink-400" />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-400">Categorias</p>
               </div>
 
               <div className="space-y-2">
                 <button
                   type="button"
                   onClick={() => setFilters((prev) => ({ ...prev, category: 'Todas' }))}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === 'Todas' ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100'}`}
+                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === 'Todas' ? 'border-blue-200 bg-blue-50' : 'border-ink-200 bg-ink-50 hover:border-ink-300 hover:bg-ink-100'}`}
                 >
-                  <span className="text-sm font-semibold text-slate-700">Todas</span>
-                  <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-400 shadow-sm">{syncedMaps.length}</span>
+                  <span className="text-sm font-semibold text-ink-700">Todas</span>
+                  <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-400 shadow-sm">{syncedMaps.length}</span>
                 </button>
 
                 {categoryCounts.map((categoria) => (
@@ -852,22 +852,22 @@ export default function MapasMentais({
                     key={categoria.nome}
                     type="button"
                     onClick={() => setFilters((prev) => ({ ...prev, category: categoria.nome }))}
-                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === categoria.nome ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100'}`}
+                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === categoria.nome ? 'border-blue-200 bg-blue-50' : 'border-ink-200 bg-ink-50 hover:border-ink-300 hover:bg-ink-100'}`}
                   >
-                    <span className="text-sm font-semibold text-slate-700">{categoria.nome}</span>
-                    <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-400 shadow-sm">{categoria.quantidade}</span>
+                    <span className="text-sm font-semibold text-ink-700">{categoria.nome}</span>
+                    <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-400 shadow-sm">{categoria.quantidade}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+            <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Armazenados</p>
-                  <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Lista de mapas</h3>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-400">Armazenados</p>
+                  <h3 className="mt-1 text-lg font-semibold tracking-tight text-ink-900">Lista de mapas</h3>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
+                <span className="rounded-full bg-ink-100 px-3 py-1 text-[11px] font-semibold text-ink-500">
                   {galeriaFiltrada.length + mapasFiltrados.length}
                 </span>
               </div>
@@ -878,17 +878,17 @@ export default function MapasMentais({
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">Modelos da equipe (atalho)</p>
                     <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">{galeriaFiltrada.length}</span>
                   </div>
-                  <p className="text-[11px] font-medium text-slate-500">A lista completa com cards está na faixa roxa acima.</p>
+                  <p className="text-[11px] font-medium text-ink-500">A lista completa com cards está na faixa roxa acima.</p>
                   {galeriaFiltrada.map((mapa) => {
                     const ativo = mapa.id === mapaAtivo?.id && isGalleryView;
                     return (
                       <div
                         key={mapa.id}
-                        className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50'}`}
+                        className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-indigo-300 bg-indigo-50' : 'border-ink-200 bg-white hover:border-indigo-200 hover:bg-ink-50'}`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <button type="button" onClick={() => openGalleryMap(mapa)} className="min-w-0 flex-1 text-left">
-                            <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-indigo-950' : 'text-slate-800'}`}>{mapa.titulo}</h4>
+                            <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-indigo-950' : 'text-ink-800'}`}>{mapa.titulo}</h4>
                             <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-indigo-600/90">Oficial · {mapa.categoria}</p>
                           </button>
                         </div>
@@ -907,57 +907,57 @@ export default function MapasMentais({
               ) : null}
 
               <div className="space-y-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Meus mapas</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Meus mapas</p>
                 {mapasFiltrados.map((mapa) => {
                   const ativo = mapa.id === mapaAtivo?.id && !isGalleryView;
 
                   return (
-                    <div key={mapa.id} className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}>
+                    <div key={mapa.id} className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-blue-200 bg-blue-50' : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50'}`}>
                       <div className="flex items-start justify-between gap-3">
                         <button type="button" onClick={() => openMap(mapa)} className="min-w-0 flex-1 text-left">
-                          <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-blue-950' : 'text-slate-800'}`}>{mapa.titulo}</h4>
-                          <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${ativo ? 'text-blue-600/80' : 'text-slate-400'}`}>{mapa.categoria}</p>
-                          <p className="mt-2 text-xs font-semibold text-slate-500">{mapa.plano || 'Geral'} · {Math.max(0, Number(mapa.totalAberturas || 0))} abertura(s)</p>
+                          <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-blue-950' : 'text-ink-800'}`}>{mapa.titulo}</h4>
+                          <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${ativo ? 'text-blue-600/80' : 'text-ink-400'}`}>{mapa.categoria}</p>
+                          <p className="mt-2 text-xs font-semibold text-ink-500">{mapa.plano || 'Geral'} · {Math.max(0, Number(mapa.totalAberturas || 0))} abertura(s)</p>
                         </button>
 
-                        <button type="button" onClick={() => handleToggleFavorite(mapa.id)} className={`rounded-full p-2 ${mapa.favorito ? 'text-rose-500' : 'text-slate-300'}`} title="Favoritar mapa">
+                        <button type="button" onClick={() => handleToggleFavorite(mapa.id)} className={`rounded-full p-2 ${mapa.favorito ? 'text-rose-500' : 'text-ink-300'}`} title="Favoritar mapa">
                           <Heart size={16} className={mapa.favorito ? 'fill-current' : ''} />
                         </button>
                       </div>
 
-                      <button type="button" onClick={() => openMap(mapa)} className={`mt-3 flex h-14 w-full items-center justify-center rounded-2xl border ${ativo ? 'border-blue-100 bg-white' : 'border-slate-200 bg-slate-50'}`}>
-                        <Network size={22} className={ativo ? 'text-blue-300' : 'text-slate-300'} />
+                      <button type="button" onClick={() => openMap(mapa)} className={`mt-3 flex h-14 w-full items-center justify-center rounded-2xl border ${ativo ? 'border-blue-100 bg-white' : 'border-ink-200 bg-ink-50'}`}>
+                        <Network size={22} className={ativo ? 'text-blue-300' : 'text-ink-300'} />
                       </button>
                     </div>
                   );
                 })}
 
                 {mapasFiltrados.length === 0 && galeriaFiltrada.length === 0 ? (
-                  <div className="rounded-[22px] border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm font-semibold text-slate-400">
+                  <div className="rounded-[22px] border border-dashed border-ink-200 bg-ink-50 px-4 py-10 text-center text-sm font-semibold text-ink-400">
                     Nenhum mapa encontrado com os filtros atuais.
                   </div>
                 ) : null}
                 {mapasFiltrados.length === 0 && galeriaFiltrada.length > 0 ? (
-                  <p className="text-center text-xs font-medium text-slate-500">Nenhum mapa seu com estes filtros; veja a galeria acima.</p>
+                  <p className="text-center text-xs font-medium text-ink-500">Nenhum mapa seu com estes filtros; veja a galeria acima.</p>
                 ) : null}
               </div>
             </div>
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Vinculos</p>
-              <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Disciplina, topicos e concursos</h3>
+            <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-400">Vinculos</p>
+              <h3 className="mt-1 text-lg font-semibold tracking-tight text-ink-900">Disciplina, topicos e concursos</h3>
               {mapaAtivo ? (
                 <div className="mt-4 space-y-4">
                   <InfoBlock label="Disciplina" value={mapaAtivo.disciplinaNome || 'Nao vinculada'} />
                   <InfoBlock label="Plano" value={mapaAtivo.plano || 'Geral'} />
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Topicos do mapa</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Topicos do mapa</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {mapaAtivo.nodes.map((node) => (
                         <button
                           key={node.id}
                           type="button"
                           onClick={() => node.topicId && mapaAtivo.disciplinaId && onOpenDiscipline?.(activeDiscipline || { id: mapaAtivo.disciplinaId }, node.topicId)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-bold ${node.topicId ? 'border-blue-100 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-bold ${node.topicId ? 'border-blue-100 bg-blue-50 text-blue-700' : 'border-ink-200 bg-ink-50 text-ink-500'}`}
                         >
                           {node.label}
                         </button>
@@ -965,7 +965,7 @@ export default function MapasMentais({
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Concursos relacionados</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Concursos relacionados</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {relatedContests.length > 0 ? (
                         relatedContests.map((contest) => (
@@ -980,7 +980,7 @@ export default function MapasMentais({
                           </button>
                         ))
                       ) : (
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-500">Nenhum concurso vinculado</span>
+                        <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1.5 text-xs font-bold text-ink-500">Nenhum concurso vinculado</span>
                       )}
                     </div>
                   </div>
@@ -996,25 +996,25 @@ export default function MapasMentais({
                   ) : null}
                 </div>
               ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm font-semibold text-slate-400">
+                <div className="mt-4 rounded-2xl border border-dashed border-ink-200 bg-ink-50 px-4 py-8 text-center text-sm font-semibold text-ink-400">
                   Selecione um mapa para ver os vinculos.
                 </div>
               )}
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Historico de uso</p>
-              <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Atividades recentes</h3>
+            <div className="rounded-[28px] border border-ink-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-400">Historico de uso</p>
+              <h3 className="mt-1 text-lg font-semibold tracking-tight text-ink-900">Atividades recentes</h3>
               <div className="mt-4 space-y-3">
                 {recentHistory.length > 0 ? (
                   recentHistory.map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                      <p className="text-sm font-semibold text-slate-800">{item.titulo}</p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">{translateAction(item.action)} · {formatMindMapTimestamp(item.timestamp)}</p>
+                    <div key={item.id} className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3">
+                      <p className="text-sm font-semibold text-ink-800">{item.titulo}</p>
+                      <p className="mt-1 text-xs font-semibold text-ink-500">{translateAction(item.action)} · {formatMindMapTimestamp(item.timestamp)}</p>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm font-semibold text-slate-400">
+                  <div className="rounded-2xl border border-dashed border-ink-200 bg-ink-50 px-4 py-8 text-center text-sm font-semibold text-ink-400">
                     As aberturas, downloads e criacoes de mapas vao aparecer aqui.
                   </div>
                 )}
@@ -1034,7 +1034,7 @@ function ActionButton({ icon, text, primary = false, onClick, disabled = false }
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${primary ? 'bg-blue-800 text-white hover:bg-blue-900' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${primary ? 'bg-blue-800 text-white hover:bg-blue-900' : 'border border-ink-200 bg-white text-ink-700 hover:bg-ink-50'} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
     >
       <IconComponent size={16} />
       {text}
@@ -1045,7 +1045,7 @@ function ActionButton({ icon, text, primary = false, onClick, disabled = false }
 function MiniToolbarButton({ icon, label, onClick }) {
   const IconComponent = icon;
   return (
-    <button type="button" onClick={onClick} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100">
+    <button type="button" onClick={onClick} className="inline-flex items-center gap-2 rounded-2xl border border-ink-200 bg-ink-50 px-3 py-2 text-xs font-semibold text-ink-600 transition hover:bg-ink-100">
       <IconComponent size={14} />
       {label}
     </button>
@@ -1054,18 +1054,18 @@ function MiniToolbarButton({ icon, label, onClick }) {
 
 function InfoBlock({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-800">{value}</p>
+    <div className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink-800">{value}</p>
     </div>
   );
 }
 
 function EmptyCanvas() {
   return (
-    <div className="rounded-[28px] border border-dashed border-slate-200 bg-white/80 px-8 py-12 text-center shadow-sm">
-      <p className="text-lg font-semibold text-slate-800">Nenhum mapa pronto ainda</p>
-      <p className="mt-2 text-sm font-semibold text-slate-500">Gere um mapa pelo campo acima ou importe um JSON da biblioteca.</p>
+    <div className="rounded-[28px] border border-dashed border-ink-200 bg-white/80 px-8 py-12 text-center shadow-sm">
+      <p className="text-lg font-semibold text-ink-800">Nenhum mapa pronto ainda</p>
+      <p className="mt-2 text-sm font-semibold text-ink-500">Gere um mapa pelo campo acima ou importe um JSON da biblioteca.</p>
     </div>
   );
 }

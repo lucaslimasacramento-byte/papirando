@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CircleDot,
   LayoutDashboard,
@@ -212,8 +212,8 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/90 px-3 py-2.5">
-        <span className="mr-1 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-ink-200 bg-ink-50/90 px-3 py-2.5">
+        <span className="mr-1 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-ink-400">
           <MousePointer2 size={12} />
           {readOnly ? 'Visualizacao' : 'Ferramentas'}
         </span>
@@ -235,7 +235,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                 setSelectedId(null);
               }}
             />
-            <span className="mx-1 hidden h-6 w-px bg-slate-200 sm:inline-block" />
+            <span className="mx-1 hidden h-6 w-px bg-ink-200 sm:inline-block" />
           </>
         ) : null}
         <ToolbarBtn icon={ZoomIn} label="Mais zoom" onClick={() => setZoom((z) => clamp(z + 0.1, 0.35, 2.2))} />
@@ -249,8 +249,8 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
         ) : null}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-inner">
-        <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+      <div className="rounded-2xl border border-ink-200 bg-gradient-to-b from-ink-50 to-white p-3 shadow-inner">
+        <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-ink-500">
           <Sparkles size={14} className="text-indigo-500" />
           {readOnly
             ? 'Mapa oficial (somente leitura). Use Copiar na biblioteca para editar o seu.'
@@ -259,7 +259,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
 
         <div
           ref={viewportRef}
-          className="relative h-[min(72vh,640px)] min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white touch-none"
+          className="relative h-[min(72vh,640px)] min-h-[420px] overflow-hidden rounded-2xl border border-ink-200 bg-white touch-none"
           style={{
             backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
             backgroundSize: '20px 20px',
@@ -352,7 +352,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                       onKeyDown={(ev) => {
                         if (ev.key === 'Enter' || ev.key === 'Escape') ev.target.blur();
                       }}
-                      className="min-w-[140px] max-w-[260px] rounded-xl border-2 border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-lg outline-none"
+                      className="min-w-[140px] max-w-[260px] rounded-xl border-2 border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-ink-800 shadow-lg outline-none"
                     />
                   ) : (
                     <div
@@ -389,7 +389,7 @@ function ToolbarBtn({ icon: Icon, label, onClick, disabled, danger }) {
       className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-bold transition ${
         danger
           ? 'border-rose-200 bg-white text-rose-700 hover:bg-rose-50 disabled:opacity-40'
-          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40'
+          : 'border-ink-200 bg-white text-ink-700 hover:bg-ink-50 disabled:opacity-40'
       }`}
     >
       <Icon size={14} />

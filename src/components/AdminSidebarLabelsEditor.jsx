@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { RotateCcw, Save } from 'lucide-react';
 import { getSidebarNavLabelSchema } from '../lib/sidebarNavLabels';
 
@@ -50,7 +50,7 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
 
       <div className="max-h-[min(70vh,560px)] overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full min-w-[520px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-[1] bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <thead className="sticky top-0 z-[1] bg-ink-50 text-[10px] font-bold uppercase tracking-wider text-ink-500">
             <tr>
               <th className="border-b border-gray-200 px-3 py-2.5">Seção</th>
               <th className="border-b border-gray-200 px-3 py-2.5">Id (interno)</th>
@@ -62,15 +62,15 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
           <tbody>
             {schema.map((row) => (
               <tr key={row.id} className="border-b border-gray-100 last:border-0">
-                <td className="px-3 py-2 text-xs font-semibold text-slate-600">{row.sectionTitle}</td>
-                <td className="px-3 py-2 font-mono text-[11px] text-slate-500">{row.id}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{row.defaultLabel}</td>
+                <td className="px-3 py-2 text-xs font-semibold text-ink-600">{row.sectionTitle}</td>
+                <td className="px-3 py-2 font-mono text-[11px] text-ink-500">{row.id}</td>
+                <td className="px-3 py-2 text-xs text-ink-500">{row.defaultLabel}</td>
                 <td className="px-3 py-2">
                   <input
                     type="text"
                     value={draftById[row.id] ?? ''}
                     onChange={(e) => setDraftById((prev) => ({ ...prev, [row.id]: e.target.value }))}
-                    className="w-full min-w-[140px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-800 outline-none focus:border-blue-500"
+                    className="w-full min-w-[140px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-ink-800 outline-none focus:border-blue-500"
                     aria-label={`Nome no menu para ${row.id}`}
                   />
                 </td>
@@ -84,7 +84,7 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
                         [row.id]: row.defaultLabel,
                       }))
                     }
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-slate-500 transition hover:bg-gray-50"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-ink-500 transition hover:bg-gray-50"
                   >
                     <RotateCcw size={15} />
                   </button>

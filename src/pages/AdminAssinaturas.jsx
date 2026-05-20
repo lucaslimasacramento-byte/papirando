@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import {
   Check,
   CreditCard,
@@ -25,7 +25,7 @@ const STATUS_COLORS = {
 const PLAN_COLORS = {
   elite: 'border-yellow-200 bg-yellow-50 text-yellow-800',
   tatico: 'border-blue-200 bg-blue-50 text-blue-700',
-  gratuito: 'border-slate-200 bg-slate-50 text-slate-600',
+  gratuito: 'border-ink-200 bg-ink-50 text-ink-600',
 };
 
 function formatDate(iso) {
@@ -167,10 +167,10 @@ export default function AdminAssinaturas() {
             { label: 'Ativas', value: activeCount, cls: 'text-emerald-700' },
             { label: 'Elite', value: eliteCount, cls: 'text-yellow-700' },
             { label: 'Tatico', value: taticoCount, cls: 'text-blue-700' },
-            { label: 'Total', value: rows.length, cls: 'text-slate-700' },
+            { label: 'Total', value: rows.length, cls: 'text-ink-700' },
           ].map(({ label, value, cls }) => (
             <div key={label} className="section-card flex flex-col gap-1 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
               <p className={`text-2xl font-bold ${cls}`}>{loading ? '–' : value}</p>
             </div>
           ))}
@@ -200,29 +200,29 @@ export default function AdminAssinaturas() {
         {/* Form nova assinatura manual */}
         {showForm ? (
           <div className="section-card space-y-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
               Nova assinatura manual
             </p>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">E-mail do usuário *</label>
+                  <label className="text-xs font-semibold text-ink-600">E-mail do usuário *</label>
                   <input
                     type="email"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
                     placeholder="usuario@email.com"
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     required
                     disabled={creating}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Plano</label>
+                  <label className="text-xs font-semibold text-ink-600">Plano</label>
                   <select
                     value={formPlan}
                     onChange={(e) => setFormPlan(e.target.value)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
                     disabled={creating}
                   >
                     <option value="tatico">Tatico</option>
@@ -230,11 +230,11 @@ export default function AdminAssinaturas() {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Ciclo</label>
+                  <label className="text-xs font-semibold text-ink-600">Ciclo</label>
                   <select
                     value={formBilling}
                     onChange={(e) => setFormBilling(e.target.value)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
                     disabled={creating}
                   >
                     <option value="monthly">Mensal</option>
@@ -272,40 +272,40 @@ export default function AdminAssinaturas() {
 
         {/* Tabela */}
         <div className="section-card space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
             Lista ({rows.length})
           </p>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-slate-500">
+            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
               <Loader2 size={18} className="animate-spin text-blue-700" />
               Carregando...
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-8 text-center text-sm font-medium text-slate-500">
+            <p className="py-8 text-center text-sm font-medium text-ink-500">
               Nenhuma assinatura ainda.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100">
+                  <tr className="border-b border-ink-100">
                     {['Usuário', 'Plano', 'Status', 'Provedor', 'Início', 'Fim', 'Ações'].map((h) => (
-                      <th key={h} className="pb-2 pr-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      <th key={h} className="pb-2 pr-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-ink-50">
                   {rows.map((row) => (
-                    <tr key={row.id} className="hover:bg-slate-50/60">
+                    <tr key={row.id} className="hover:bg-ink-50/60">
                       <td className="py-3 pr-4">
-                        <span className="max-w-[180px] truncate block text-xs font-semibold text-slate-700">
+                        <span className="max-w-[180px] truncate block text-xs font-semibold text-ink-700">
                           {row.user_id}
                         </span>
                         {row.stripe_customer_id ? (
-                          <span className="text-[10px] text-slate-400">{row.stripe_customer_id}</span>
+                          <span className="text-[10px] text-ink-400">{row.stripe_customer_id}</span>
                         ) : null}
                       </td>
                       <td className="py-3 pr-4">
@@ -323,7 +323,7 @@ export default function AdminAssinaturas() {
                         <select
                           value={row.status}
                           onChange={(e) => handleChangeStatus(row.id, e.target.value)}
-                          className={`rounded-lg border px-2 py-1 text-[11px] font-bold focus:outline-none ${STATUS_COLORS[row.status] || 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                          className={`rounded-lg border px-2 py-1 text-[11px] font-bold focus:outline-none ${STATUS_COLORS[row.status] || 'border-ink-200 bg-ink-50 text-ink-600'}`}
                         >
                           <option value="active">Active</option>
                           <option value="trialing">Trialing</option>
@@ -332,9 +332,9 @@ export default function AdminAssinaturas() {
                           <option value="unpaid">Unpaid</option>
                         </select>
                       </td>
-                      <td className="py-3 pr-4 text-[11px] text-slate-500">{row.provider}</td>
-                      <td className="py-3 pr-4 text-[11px] text-slate-500">{formatDate(row.current_period_start)}</td>
-                      <td className="py-3 pr-4 text-[11px] text-slate-500">{formatDate(row.current_period_end)}</td>
+                      <td className="py-3 pr-4 text-[11px] text-ink-500">{row.provider}</td>
+                      <td className="py-3 pr-4 text-[11px] text-ink-500">{formatDate(row.current_period_start)}</td>
+                      <td className="py-3 pr-4 text-[11px] text-ink-500">{formatDate(row.current_period_end)}</td>
                       <td className="py-3">
                         <button
                           type="button"

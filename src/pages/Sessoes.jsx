@@ -256,7 +256,7 @@ export default function Sessoes({
             </div>
 
             {recentSessions.length === 0 ? (
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-ink-500">
                 Nenhuma sessão registrada ainda. Inicie seu primeiro timer!
               </p>
             ) : (
@@ -264,10 +264,10 @@ export default function Sessoes({
                 {recentSessions.map((session, index) => (
                   <div
                     key={`${session.disciplina || 'sessao'}-${session.data || index}-${index}`}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3"
                   >
-                    <p className="text-sm font-semibold text-slate-800">{session.disciplina || 'Sessão'}</p>
-                    <p className="text-sm font-semibold text-slate-500">
+                    <p className="text-sm font-semibold text-ink-800">{session.disciplina || 'Sessão'}</p>
+                    <p className="text-sm font-semibold text-ink-500">
                       {session.tipo || 'Estudo'} | {session.tempo || '00:00:00'} | {session.data || 'Sem data'}
                     </p>
                   </div>
@@ -295,7 +295,7 @@ function LiveSessionCard({
   onRegister,
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-5 text-white shadow-md ring-1 ring-[#1d4ed8]/20 sm:p-6">
+    <div className="relative overflow-hidden rounded-xl border border-ink-800 bg-ink-900 p-5 text-white shadow-md ring-1 ring-[#1d4ed8]/20 sm:p-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.12),transparent_55%)]" />
       <div className="relative z-10">
       <div className="inline-flex items-center gap-2 rounded-full border border-[#1d4ed8]/35 bg-[#1d4ed8]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
@@ -306,7 +306,7 @@ function LiveSessionCard({
       <h3 className="mt-4 text-xl font-semibold sm:text-2xl">
         {isTimerRunning ? 'Timer ativo agora' : 'Nenhuma sessão rodando'}
       </h3>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-slate-300">
+      <p className="mt-2 text-sm font-medium leading-relaxed text-ink-300">
         {studySessionDraft?.material
           ? `${studySessionDraft.material} | ${studySessionDraft.categoria || 'Estudo'}`
           : 'Abra um timer, retome do overlay global ou registre a sessão manualmente.'}
@@ -318,7 +318,7 @@ function LiveSessionCard({
           <span>{plannedDurationLabel}</span>
         </div>
         <div className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{activeTimerLabel}</div>
-        <p className="mt-2 text-sm text-slate-300">Tempo acumulado: {elapsedLabel}</p>
+        <p className="mt-2 text-sm text-ink-300">Tempo acumulado: {elapsedLabel}</p>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
@@ -326,7 +326,7 @@ function LiveSessionCard({
           <button
             type="button"
             onClick={onPause}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-ink-900 transition hover:bg-ink-100"
           >
             <Pause size={16} />
             Pausar
@@ -335,7 +335,7 @@ function LiveSessionCard({
           <button
             type="button"
             onClick={onResume}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-ink-900 transition hover:bg-ink-100"
           >
             <Play size={16} fill="currentColor" />
             Retomar
@@ -363,7 +363,7 @@ function LiveSessionCard({
         <button
           type="button"
           onClick={onRegister}
-          className="rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-bold text-slate-200 transition hover:bg-white/10 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
+          className="rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-bold text-ink-200 transition hover:bg-white/10 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
         >
           Registrar manual
         </button>
@@ -376,21 +376,21 @@ function LiveSessionCard({
 function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenRegister }) {
   return (
     <div className="section-card min-h-0 border-blue-100/50 p-3">
-      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
         <BookOpen size={13} className="text-[#1d4ed8]" />
         Próxima sessão sugerida
       </div>
 
-      <h3 className="mt-2 text-base font-semibold leading-tight text-slate-900 sm:text-lg">
+      <h3 className="mt-2 text-base font-semibold leading-tight text-ink-900 sm:text-lg">
         {recommendation?.nome || 'Sem recomendação suficiente ainda'}
       </h3>
-      <p className="mt-1 text-xs leading-snug text-slate-500">
+      <p className="mt-1 text-xs leading-snug text-ink-500">
         {recommendation
           ? `${recommendation.studyModeLabel} | ${recommendation.reason}`
           : 'Registre mais histórico para o motor inteligente entender o melhor bloco para agora.'}
       </p>
 
-      <div className="mt-2 grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+      <div className="mt-2 grid grid-cols-3 gap-2 rounded-xl border border-ink-200 bg-ink-50 p-2.5">
         <MiniInfo label="Tópico" value={recommendation?.nextTopic?.nome || 'Aguardando dados'} />
         <MiniInfo label="Duração" value={recommendation?.suggestedDurationLabel || '0h 45m'} />
         <MiniInfo label="Modo" value={recommendation?.studyModeLabel || 'Teoria'} />
@@ -408,7 +408,7 @@ function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenReg
         <button
           type="button"
           onClick={onOpenRegister}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 sm:text-xs"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-ink-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-ink-700 transition hover:bg-ink-50 sm:text-xs"
         >
           Registrar
           <ArrowRight size={13} />
@@ -421,8 +421,8 @@ function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenReg
 function MiniInfo({ label, value }) {
   return (
     <div className="min-w-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-800 sm:text-xs">{value}</p>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-400">{label}</p>
+      <p className="mt-0.5 truncate text-[11px] font-semibold text-ink-800 sm:text-xs">{value}</p>
     </div>
   );
 }

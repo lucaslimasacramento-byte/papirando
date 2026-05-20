@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { APLICATIVOS_LINKS } from '../config/aplicativosLinks';
 import {
   Smartphone,
@@ -61,7 +61,7 @@ export default function Aplicativos() {
         trailingClassName="w-full min-w-0 sm:w-auto"
       />
 
-      <div className="group relative flex flex-col items-center justify-between gap-14 overflow-hidden rounded-[3.5rem] bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 p-8 text-white shadow-2xl md:p-10 lg:flex-row lg:p-16">
+      <div className="group relative flex flex-col items-center justify-between gap-14 overflow-hidden rounded-[3.5rem] bg-gradient-to-br from-ink-900 via-ink-800 to-blue-900 p-8 text-white shadow-2xl md:p-10 lg:flex-row lg:p-16">
         <div className="pointer-events-none absolute -mr-20 -mt-20 h-[520px] w-[520px] rounded-full bg-blue-400/20 blur-[110px]" />
         <div className="pointer-events-none absolute -mb-10 -ml-10 bottom-0 left-0 h-[320px] w-[320px] rounded-full bg-cyan-400/10 blur-[100px]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:34px_34px] opacity-[0.08]" />
@@ -84,7 +84,7 @@ export default function Aplicativos() {
           <div className="flex flex-wrap items-center justify-center gap-4 lg:justify-start">
             <LinkOrStaticButton
               href={APLICATIVOS_LINKS.appStore}
-              className="flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-lg font-semibold text-slate-900 shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-lg font-semibold text-ink-900 shadow-[0_10px_25px_rgba(255,255,255,0.18)] transition-all hover:scale-105 active:scale-95"
             >
               <DownloadCloud size={22} />
               App Store
@@ -146,7 +146,7 @@ export default function Aplicativos() {
                     </div>
                   </div>
 
-                  <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-slate-900 p-4 text-white shadow-md">
+                  <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-ink-900 p-4 text-white shadow-md">
                     <div className="absolute right-0 top-0 h-16 w-16 rounded-full bg-white/10 blur-xl" />
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
                       <Mic2 size={16} />
@@ -227,7 +227,7 @@ export default function Aplicativos() {
             Emparelhamento instantâneo
           </div>
 
-          <h3 className="mb-3 text-2xl font-semibold tracking-tight text-slate-900 lg:text-3xl">
+          <h3 className="mb-3 text-2xl font-semibold tracking-tight text-ink-900 lg:text-3xl">
             Já instalou o aplicativo?
           </h3>
 

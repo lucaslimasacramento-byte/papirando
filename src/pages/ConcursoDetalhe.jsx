@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -301,7 +301,7 @@ export default function ConcursoDetalhe({
     return (
       <div className="page-shell min-h-full items-center justify-center text-center">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">Concurso</p>
-        <h2 className="text-3xl font-semibold text-slate-900">Nenhum concurso selecionado</h2>
+        <h2 className="text-3xl font-semibold text-ink-900">Nenhum concurso selecionado</h2>
         <button
           type="button"
           onClick={onBack}
@@ -342,13 +342,13 @@ export default function ConcursoDetalhe({
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100"
+              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-ink-100"
             >
               <ArrowLeft size={14} />
               Voltar para concursos
             </button>
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-200">
                 {contest.area || 'Geral'}
               </span>
               <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
@@ -374,7 +374,7 @@ export default function ConcursoDetalhe({
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
                 isFavorite
                   ? 'border-rose-300/50 bg-rose-500/20 text-rose-100'
-                  : 'border-white/20 bg-white/5 text-slate-100'
+                  : 'border-white/20 bg-white/5 text-ink-100'
               }`}
             >
               <Heart size={14} className={isFavorite ? 'fill-current' : ''} />
@@ -396,7 +396,7 @@ export default function ConcursoDetalhe({
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
                 isInterested
                   ? 'border-amber-300/50 bg-amber-500/20 text-amber-100'
-                  : 'border-white/20 bg-white/5 text-slate-100'
+                  : 'border-white/20 bg-white/5 text-ink-100'
               }`}
             >
               <Bookmark size={14} className={isInterested ? 'fill-current' : ''} />
@@ -408,7 +408,7 @@ export default function ConcursoDetalhe({
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
                 isTargetContest
                   ? 'border-yellow-300/50 bg-yellow-500/20 text-yellow-100'
-                  : 'border-white/20 bg-white/5 text-slate-100'
+                  : 'border-white/20 bg-white/5 text-ink-100'
               }`}
             >
               <BadgeCheck size={14} className={isTargetContest ? 'fill-current' : ''} />
@@ -427,7 +427,7 @@ export default function ConcursoDetalhe({
               <button
                 type="button"
                 onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100 sm:text-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-ink-100 sm:text-sm"
               >
                 Edital
                 <ExternalLink size={14} />
@@ -438,12 +438,12 @@ export default function ConcursoDetalhe({
       />
 
       {roles.length > 1 && (
-        <section className="relative z-10 overflow-visible rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
+        <section className="relative z-10 overflow-visible rounded-[1.5rem] border border-ink-200 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
           <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent" />
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cargos do concurso</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Escolha o cargo para ver o edital correto</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">Escolha o cargo para ver o edital correto</h2>
               <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-gray-500">
                 Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
               </p>
@@ -464,12 +464,12 @@ export default function ConcursoDetalhe({
                   className={`min-h-[155px] rounded-[1.25rem] border p-4 text-left transition-all ${
                     selected
                       ? 'border-blue-300 bg-blue-50 shadow-[0_16px_34px_rgba(37,99,235,0.14)]'
-                      : 'border-slate-200 bg-slate-50/60 hover:border-blue-200 hover:bg-white'
+                      : 'border-ink-200 bg-ink-50/60 hover:border-blue-200 hover:bg-white'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-base font-bold leading-snug text-slate-950">{role.nome}</p>
-                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-blue-600' : 'bg-slate-300'}`} />
+                    <p className="text-base font-bold leading-snug text-ink-950">{role.nome}</p>
+                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-blue-600' : 'bg-ink-300'}`} />
                   </div>
                   <div className="mt-4 grid gap-2 text-[11px] font-bold sm:grid-cols-2">
                     {role.salario && <CargoInfo label="Salário" value={role.salario} tone="green" />}
@@ -488,8 +488,8 @@ export default function ConcursoDetalhe({
         <section className="relative z-10 rounded-[1.5rem] border border-blue-100 bg-blue-50/50 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Concursos relacionados</p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Outros editais da mesma instituição</h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink-950">Outros editais da mesma instituição</h2>
+            <p className="mt-1 text-sm font-semibold text-ink-500">
               Assim Oficial, Praça, PM e Bombeiros ficam vinculados, mas sem virar cargo um do outro.
             </p>
           </div>
@@ -501,8 +501,8 @@ export default function ConcursoDetalhe({
                 onClick={() => onOpenRelatedContest?.(item)}
                 className="rounded-2xl border border-blue-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
               >
-                <p className="line-clamp-2 text-sm font-bold text-slate-950">{item.nome}</p>
-                <p className="mt-2 text-xs font-semibold text-slate-500">{item.cargo || item.banca || 'Concurso relacionado'}</p>
+                <p className="line-clamp-2 text-sm font-bold text-ink-950">{item.nome}</p>
+                <p className="mt-2 text-xs font-semibold text-ink-500">{item.cargo || item.banca || 'Concurso relacionado'}</p>
                 <span className="mt-3 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-700">
                   {STATUS_LABELS[normalizeContestStatus(item.status_concurso)] || 'Previsto'}
                 </span>
@@ -594,7 +594,7 @@ export default function ConcursoDetalhe({
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Estrutura do edital</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900">Disciplinas e tópicos</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-ink-900">Disciplinas e tópicos</h2>
             </div>
             <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-500">
               {contest.disciplinas?.length || 0} disciplinas
@@ -605,10 +605,10 @@ export default function ConcursoDetalhe({
             {(contest.disciplinas || []).map((disciplina) => {
               const isExpanded = Boolean(expandedSubjects[disciplina.nome]);
               return (
-                <div key={disciplina.nome} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div key={disciplina.nome} className="rounded-2xl border border-ink-200 bg-ink-50/70 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-slate-900">{disciplina.nome}</p>
+                      <p className="font-semibold text-ink-900">{disciplina.nome}</p>
                       <p className="mt-1 text-xs font-semibold text-gray-500">
                         {disciplina.topicos?.length || 0} tópicos mapeados
                       </p>
@@ -622,7 +622,7 @@ export default function ConcursoDetalhe({
                           [disciplina.nome]: !prev[disciplina.nome],
                         }))
                       }
-                      className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600"
+                      className="rounded-xl border border-ink-200 bg-white p-2 text-ink-600"
                     >
                       <Plus size={16} className={`transition-transform ${isExpanded ? 'rotate-45' : ''}`} />
                     </button>
@@ -634,13 +634,13 @@ export default function ConcursoDetalhe({
                         (disciplina.topicos || []).map((topico) => (
                           <div
                             key={topico.id || topico.nome}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600"
+                            className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-600"
                           >
                             {topico.nome}
                           </div>
                         ))
                       ) : (
-                        <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-500">
+                        <div className="rounded-xl border border-dashed border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-500">
                           Nenhum tópico detalhado ainda.
                         </div>
                       )}
@@ -655,7 +655,7 @@ export default function ConcursoDetalhe({
         <section className="section-card p-6">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas e contexto</p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Leitura rápida</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-ink-900">Leitura rápida</h2>
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -666,7 +666,7 @@ export default function ConcursoDetalhe({
           </div>
 
           {contestAlerts.length > 0 && (
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+            <div className="mt-6 rounded-2xl border border-ink-200 bg-ink-50/70 p-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Alertas do concurso</p>
               <div className="mt-4 space-y-3">
                 {contestAlerts.map((alert) => (
@@ -682,23 +682,23 @@ export default function ConcursoDetalhe({
             </div>
           )}
 
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="mt-6 rounded-2xl border border-ink-200 bg-white p-5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Agenda essencial</p>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {agendaItems.map((item) => (
-                <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-4">
+                <div key={item.label} className="rounded-xl border border-ink-200 bg-ink-50/70 px-4 py-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.label}</p>
-                  <p className="mt-2 text-sm font-bold text-slate-900">{item.value}</p>
+                  <p className="mt-2 text-sm font-bold text-ink-900">{item.value}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="mt-6 rounded-2xl border border-ink-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Próximos passos</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">Checklist de acompanhamento</p>
+                <p className="mt-2 text-lg font-semibold text-ink-900">Checklist de acompanhamento</p>
               </div>
               <span className="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
                 {checklistDoneCount}/{actionChecklist.length} concluído(s)
@@ -714,11 +714,11 @@ export default function ConcursoDetalhe({
                   className={`flex w-full items-start justify-between gap-4 rounded-xl border px-4 py-4 text-left transition-all ${
                     item.done
                       ? 'border-emerald-100 bg-emerald-50'
-                      : 'border-slate-200 bg-slate-50/70 hover:border-blue-200 hover:bg-blue-50/60'
+                      : 'border-ink-200 bg-ink-50/70 hover:border-blue-200 hover:bg-blue-50/60'
                   }`}
                 >
                   <div>
-                    <p className={`text-sm font-semibold ${item.done ? 'text-emerald-700' : 'text-slate-900'}`}>{item.label}</p>
+                    <p className={`text-sm font-semibold ${item.done ? 'text-emerald-700' : 'text-ink-900'}`}>{item.label}</p>
                     <p className="mt-1 text-sm font-medium text-gray-500">{item.hint}</p>
                   </div>
                   <span
@@ -736,7 +736,7 @@ export default function ConcursoDetalhe({
           </div>
 
           {(contest.etapas || contest.etapas_tags?.length > 0) && (
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+            <div className="mt-6 rounded-2xl border border-ink-200 bg-ink-50/70 p-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas</p>
               <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">
                 {contest.etapas || 'Etapas não detalhadas.'}
@@ -782,7 +782,7 @@ function CargoInfo({ label, value, tone = 'slate' }) {
   const toneClasses = {
     green: 'bg-emerald-50 text-emerald-700',
     blue: 'bg-blue-50 text-blue-700',
-    slate: 'bg-white text-slate-700',
+    slate: 'bg-white text-ink-700',
   };
 
   return (

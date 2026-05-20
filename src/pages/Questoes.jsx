@@ -257,7 +257,7 @@ export default function Questoes({
         leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
         leadingExtra={(
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Meta do dia</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">Meta do dia</span>
             {isEditingMeta ? (
               <input
                 type="number"
@@ -273,15 +273,15 @@ export default function Questoes({
               <button
                 type="button"
                 onClick={() => setIsEditingMeta(true)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold text-slate-100 transition hover:bg-white/15"
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold text-ink-100 transition hover:bg-white/15"
               >
                 <span className="tabular-nums">{questionsToday}</span>
-                <span className="text-slate-500">/</span>
+                <span className="text-ink-500">/</span>
                 <span className="tabular-nums">{metaDiariaQuestoes}</span>
-                <Edit3 size={12} className="text-slate-400" aria-hidden />
+                <Edit3 size={12} className="text-ink-400" aria-hidden />
               </button>
             )}
-            <span className="text-[10px] text-slate-500">resolvidas · clique para editar a meta</span>
+            <span className="text-[10px] text-ink-500">resolvidas · clique para editar a meta</span>
           </div>
         )}
         statsStackBelowTrailing
@@ -356,7 +356,7 @@ export default function Questoes({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Palavras-chave, lei, artigo, código..."
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-24 text-xs font-semibold text-slate-700 outline-none transition-all placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-700 focus:bg-white sm:pl-11 sm:text-sm"
+              className="w-full rounded-lg border border-ink-200 bg-ink-50 py-2 pl-10 pr-24 text-xs font-semibold text-ink-700 outline-none transition-all placeholder:font-medium placeholder:text-ink-400 hover:border-ink-300 focus:border-blue-700 focus:bg-white sm:pl-11 sm:text-sm"
             />
 
             <button type="button" className={buttonClass('primary', 'absolute inset-y-1 right-1 px-3 py-1 text-[10px] sm:text-xs')}>
@@ -414,13 +414,13 @@ export default function Questoes({
           {dbLoading && (
             <div className="flex flex-1 items-center justify-center gap-2 py-4">
               <Loader2 size={18} className="animate-spin text-blue-500" />
-              <span className="text-xs font-semibold text-slate-500">Carregando questões...</span>
+              <span className="text-xs font-semibold text-ink-500">Carregando questões...</span>
             </div>
           )}
           {!dbLoading && filteredQuestions.length === 0 && (
             <div className="flex flex-1 flex-col items-center justify-center py-6 text-center">
               <p className="mb-2 text-2xl">📚</p>
-              <h3 className="text-sm font-semibold text-slate-900 sm:text-base">
+              <h3 className="text-sm font-semibold text-ink-900 sm:text-base">
                 {dbQuestions.length === 0 ? 'Nenhuma questão disponível' : 'Nenhuma questão encontrada'}
               </h3>
               <p className="mt-1 max-w-sm px-2 text-xs text-gray-500">
@@ -443,7 +443,7 @@ export default function Questoes({
                 }}
               />
               {!hasFiveOptionQuestion ? (
-                <p className="mt-1 shrink-0 text-[10px] font-semibold text-slate-500 sm:text-xs">
+                <p className="mt-1 shrink-0 text-[10px] font-semibold text-ink-500 sm:text-xs">
                   Dica: não há questão A–E neste resultado; ajuste filtros se quiser esse formato.
                 </p>
               ) : null}
@@ -453,36 +453,36 @@ export default function Questoes({
       </div>
 
       {filtersOpen ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:p-5">
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/55 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-3xl rounded-2xl border border-ink-200 bg-white p-4 shadow-xl sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Filtro de questoes</p>
-                <h3 className="text-lg font-semibold text-slate-900">Refinar banco de questoes</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">Filtro de questoes</p>
+                <h3 className="text-lg font-semibold text-ink-900">Refinar banco de questoes</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition hover:border-ink-300 hover:bg-ink-50"
                 aria-label="Fechar filtros"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <p className="mb-3 text-xs font-medium text-slate-500">
+            <p className="mb-3 text-xs font-medium text-ink-500">
               Disciplina e banca são escolhas do cadastro da plataforma (catálogo padrão de disciplinas e catálogo de
               bancas). Listas vazias somem após o administrador incluir registros.
             </p>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-disciplina">
+                <label className="text-xs font-semibold text-ink-500" htmlFor="questoes-filter-disciplina">
                   Disciplina
                 </label>
                 <select
                   id="questoes-filter-disciplina"
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white"
+                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-blue-400 focus:bg-white"
                   value={filterDisc}
                   onChange={(e) => setFilterDisc(e.target.value)}
                 >
@@ -501,12 +501,12 @@ export default function Questoes({
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-banca">
+                <label className="text-xs font-semibold text-ink-500" htmlFor="questoes-filter-banca">
                   Banca
                 </label>
                 <select
                   id="questoes-filter-banca"
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white"
+                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-blue-400 focus:bg-white"
                   value={filterBanca}
                   onChange={(e) => setFilterBanca(e.target.value)}
                 >
@@ -525,12 +525,12 @@ export default function Questoes({
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-nivel">
+                <label className="text-xs font-semibold text-ink-500" htmlFor="questoes-filter-nivel">
                   Nivel
                 </label>
                 <select
                   id="questoes-filter-nivel"
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white"
+                  className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2.5 text-sm font-semibold text-ink-700 outline-none focus:border-blue-400 focus:bg-white"
                   value={filterDif}
                   onChange={(e) => setFilterDif(e.target.value)}
                 >
@@ -597,7 +597,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
       <div className={`shrink-0 border-b px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') : 'border-gray-100 bg-gray-50/50'}`}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs ${submitted ? (wasCorrect ? 'bg-emerald-100 text-slate-900' : 'bg-rose-100 text-slate-900') : 'bg-blue-100 text-slate-900'}`}>
+            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs ${submitted ? (wasCorrect ? 'bg-emerald-100 text-ink-900' : 'bg-rose-100 text-ink-900') : 'bg-blue-100 text-ink-900'}`}>
               {question.id}
             </span>
             <span className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
@@ -642,7 +642,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
             <p className={`text-[9px] font-semibold uppercase tracking-widest sm:text-[10px] ${wasCorrect ? 'text-emerald-600' : 'text-rose-600'}`}>
               Comentário
             </p>
-            <p className="mt-1 text-xs font-medium leading-relaxed text-slate-700 sm:text-sm">{question.explanation}</p>
+            <p className="mt-1 text-xs font-medium leading-relaxed text-ink-700 sm:text-sm">{question.explanation}</p>
           </div>
         ) : null}
       </div>
@@ -690,7 +690,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
             disabled={!submitted && !selectedOptionId}
             className={buttonClass(
               'primary',
-              'order-1 w-full px-4 py-2 text-xs disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:hover:border-slate-200 disabled:hover:bg-slate-100 disabled:hover:shadow-sm sm:order-2 sm:w-auto sm:py-2.5 sm:text-sm'
+              'order-1 w-full px-4 py-2 text-xs disabled:cursor-not-allowed disabled:border-ink-200 disabled:bg-ink-100 disabled:text-ink-400 disabled:hover:border-ink-200 disabled:hover:bg-ink-100 disabled:hover:shadow-sm sm:order-2 sm:w-auto sm:py-2.5 sm:text-sm'
             )}
           >
             {submitted ? 'Próxima questão' : 'Responder'}
@@ -745,7 +745,7 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
 
 function InlineAction({ Icon, text }) {
   return (
-    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-gray-500 transition-colors hover:bg-slate-100 hover:text-blue-700">
+    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-gray-500 transition-colors hover:bg-ink-100 hover:text-blue-700">
       {React.createElement(Icon, { size: 16 })}
       {text}
     </button>
@@ -784,8 +784,8 @@ function InsightCard({ title, text }) {
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
         <AlertTriangle size={18} />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm font-medium leading-snug text-slate-500">{text}</p>
+      <h3 className="text-lg font-semibold text-ink-900">{title}</h3>
+      <p className="mt-2 text-sm font-medium leading-snug text-ink-500">{text}</p>
     </div>
   );
 }
@@ -797,7 +797,7 @@ function buttonClass(tone = 'primary', extra = '') {
     primary:
       'border border-blue-700 bg-blue-700 text-white hover:border-blue-800 hover:bg-blue-800 hover:shadow-md',
     secondary:
-      'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+      'border border-ink-200 bg-white text-ink-700 hover:border-ink-300 hover:bg-ink-50',
   };
 
   return `${base} ${tones[tone] || tones.primary} ${extra}`.trim();

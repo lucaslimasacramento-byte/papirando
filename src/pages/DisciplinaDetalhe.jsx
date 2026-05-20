@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import {
   ArrowUpRight,
   BookOpen,
@@ -74,7 +74,7 @@ export default function DisciplinaDetalhe({
         leadingClassName="min-w-0 flex-1"
         leadingExtra={(
           <div className="mt-2 max-w-xl">
-            <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+            <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase tracking-widest text-ink-500">
               <span>Progresso</span>
               <span className="text-emerald-300">{progressoPercentual}%</span>
             </div>
@@ -104,7 +104,7 @@ export default function DisciplinaDetalhe({
             <button
               type="button"
               onClick={() => setLinkModalOpen?.(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-100 transition hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-ink-100 transition hover:bg-white/10"
             >
               <Calculator size={16} />
               Relacionar
@@ -112,7 +112,7 @@ export default function DisciplinaDetalhe({
             <button
               type="button"
               onClick={() => setViewingDiscipline(null)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-100 transition hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-ink-100 transition hover:bg-white/10"
             >
               <X size={16} />
               Fechar
@@ -153,7 +153,7 @@ export default function DisciplinaDetalhe({
         <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-6 py-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Mapa da disciplina</p>
-            <h4 className="mt-1 text-lg font-semibold text-slate-900">Tópicos cadastrados</h4>
+            <h4 className="mt-1 text-lg font-semibold text-ink-900">Tópicos cadastrados</h4>
           </div>
           <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
             {totalDeTopicos} tópicos
@@ -221,7 +221,7 @@ export default function DisciplinaDetalhe({
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
               <Plus size={18} />
             </div>
-            <h4 className="mt-4 text-base font-semibold text-slate-900">Nenhum tópico cadastrado ainda</h4>
+            <h4 className="mt-4 text-base font-semibold text-ink-900">Nenhum tópico cadastrado ainda</h4>
             <p className="mt-2 text-sm font-medium text-gray-500">
               Use o botão acima para começar a estruturar essa disciplina.
             </p>

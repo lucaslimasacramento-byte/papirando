@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
   PageHeadPremiumBadge,
@@ -35,7 +35,7 @@ export default function AdminPageHeader({
                 {title}
               </h2>
               {subtitle ? (
-                <p className="mt-1 text-[13px] font-medium leading-relaxed text-slate-300/90 sm:text-[14px]">{subtitle}</p>
+                <p className="mt-1 text-[13px] font-medium leading-relaxed text-ink-300/90 sm:text-[14px]">{subtitle}</p>
               ) : null}
             </div>
           </div>

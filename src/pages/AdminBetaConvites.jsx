@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { Check, Clock, Copy, Loader2, Mail, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
@@ -134,22 +134,22 @@ export default function AdminBetaConvites() {
                 'Mensagem de boas-vindas acolhedora logo no cadastro',
                 'Feedbacks acumulam descontos para o fim do período de testes',
               ].map((item) => (
-                <div key={item} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                <div key={item} className="rounded-2xl border border-ink-100 bg-ink-50 px-4 py-4">
                   <Check size={16} className="mb-3 text-emerald-600" />
-                  <p className="text-sm font-semibold leading-relaxed text-slate-700">{item}</p>
+                  <p className="text-sm font-semibold leading-relaxed text-ink-700">{item}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="section-card space-y-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
               Texto sugerido
             </p>
             <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm font-semibold leading-relaxed text-blue-950">
               Você recebeu um convite para testar o Papirando por 3 meses com acesso completo. Use tudo, mande feedbacks sinceros e acumule descontos para continuar quando o beta terminar.
             </div>
-            <p className="text-xs font-medium leading-relaxed text-slate-500">
+            <p className="text-xs font-medium leading-relaxed text-ink-500">
               O link gerado abaixo já leva a pessoa para a apresentação do beta e valida o e-mail no cadastro.
             </p>
           </div>
@@ -157,30 +157,30 @@ export default function AdminBetaConvites() {
 
         {/* Progress bar */}
         <div className="section-card space-y-2">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+          <div className="flex items-center justify-between text-xs font-semibold text-ink-500">
             <span>{rows.length} convidados</span>
             <span>{slotsLeft} slots restantes</span>
           </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-100">
             <div
               className="h-full rounded-full bg-blue-600 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <p className="text-[10px] text-slate-400">
+          <p className="text-[10px] text-ink-400">
             Limite de {MAX_SLOTS} usuarios para o beta fechado.
           </p>
         </div>
 
         {/* Add form */}
         <div className="section-card space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
             Adicionar convite
           </p>
           <form onSubmit={handleCreate} className="flex flex-col gap-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-600" htmlFor="invite-email">
+                <label className="text-xs font-semibold text-ink-600" htmlFor="invite-email">
                   E-mail *
                 </label>
                 <input
@@ -189,13 +189,13 @@ export default function AdminBetaConvites() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@email.com"
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                   required
                   disabled={creating || rows.length >= MAX_SLOTS}
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-600" htmlFor="invite-nome">
+                <label className="text-xs font-semibold text-ink-600" htmlFor="invite-nome">
                   Nome (opcional)
                 </label>
                 <input
@@ -204,13 +204,13 @@ export default function AdminBetaConvites() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome do convidado"
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                   disabled={creating || rows.length >= MAX_SLOTS}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600" htmlFor="invite-obs">
+              <label className="text-xs font-semibold text-ink-600" htmlFor="invite-obs">
                 Observacao (opcional)
               </label>
               <input
@@ -219,7 +219,7 @@ export default function AdminBetaConvites() {
                 value={observacao}
                 onChange={(e) => setObservacao(e.target.value)}
                 placeholder="Ex: amigo, influencer, parceiro..."
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 disabled={creating || rows.length >= MAX_SLOTS}
               />
             </div>
@@ -260,17 +260,17 @@ export default function AdminBetaConvites() {
 
         {/* List */}
         <div className="section-card space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
             Lista de convidados ({rows.length})
           </p>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-slate-500">
+            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
               <Loader2 size={18} className="animate-spin text-blue-700" />
               Carregando...
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-8 text-center text-sm font-medium text-slate-500">
+            <p className="py-8 text-center text-sm font-medium text-ink-500">
               Nenhum convite ainda. Adicione o primeiro acima!
             </p>
           ) : (
@@ -278,7 +278,7 @@ export default function AdminBetaConvites() {
               {rows.map((row) => (
                 <li
                   key={row.id}
-                  className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-xl border border-ink-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   {/* Left: info */}
                   <div className="min-w-0 flex-1 space-y-0.5">
@@ -294,12 +294,12 @@ export default function AdminBetaConvites() {
                           Pendente
                         </span>
                       )}
-                      <span className="truncate text-sm font-semibold text-slate-800">{row.email}</span>
+                      <span className="truncate text-sm font-semibold text-ink-800">{row.email}</span>
                       {row.nome ? (
-                        <span className="text-xs text-slate-500">({row.nome})</span>
+                        <span className="text-xs text-ink-500">({row.nome})</span>
                       ) : null}
                     </div>
-                    <div className="flex flex-wrap gap-3 text-[10px] text-slate-400">
+                    <div className="flex flex-wrap gap-3 text-[10px] text-ink-400">
                       {row.observacao ? <span>{row.observacao}</span> : null}
                       <span>Convidado: {formatDate(row.invited_at)}</span>
                       {row.used_at ? <span>Acessou: {formatDate(row.used_at)}</span> : null}
@@ -311,7 +311,7 @@ export default function AdminBetaConvites() {
                     <button
                       type="button"
                       onClick={() => handleCopy(row.token)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-bold text-ink-600 hover:bg-ink-50"
                     >
                       {copiedId === row.token ? (
                         <>

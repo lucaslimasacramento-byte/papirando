@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlarmClock,
   CalendarDays,
@@ -371,23 +371,23 @@ export default function LembretesCalendario({
         trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[20rem] lg:self-center"
         trailing={
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-slate-400">Alertas ativos</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-ink-100 sm:text-[13px]">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Alertas ativos</span>
               <span className="text-sm font-semibold tabular-nums text-white">{notifications.length}</span>
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-slate-400">Provas no radar</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-ink-100 sm:text-[13px]">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Provas no radar</span>
               <span className="text-sm font-semibold tabular-nums text-white">{notificationStats.provas}</span>
             </span>
           </div>
         }
       />
 
-      <section className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <section className="mb-6 overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm">
         <div className="soft-accent px-5 py-3 sm:px-6 lg:px-8">
             <div className="flex min-h-10 flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
               <div className="flex shrink-0 items-center gap-1.5">
-                <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-500">
                   Filtrar
                 </span>
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -410,7 +410,7 @@ export default function LembretesCalendario({
                 <button
                   type="button"
                   onClick={openNewReminder}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-ink-200 bg-white px-3 text-sm font-semibold leading-none text-ink-700 shadow-sm transition hover:border-ink-300 hover:bg-ink-50"
                 >
                   <Plus size={16} strokeWidth={2} />
                   Novo lembrete
@@ -418,7 +418,7 @@ export default function LembretesCalendario({
                 <button
                   type="button"
                   onClick={() => setCalendarOpen(true)}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-ink-200 bg-white px-3 text-sm font-semibold leading-none text-ink-700 shadow-sm transition hover:border-ink-300 hover:bg-ink-50"
                 >
                   <CalendarDays size={14} />
                   Abrir calendário
@@ -433,7 +433,7 @@ export default function LembretesCalendario({
           <div className="mb-3 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Radar ativo</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-900 lg:text-2xl">Próximos lembretes</h3>
+              <h3 className="mt-2 text-xl font-semibold text-ink-900 lg:text-2xl">Próximos lembretes</h3>
             </div>
             <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-500">
               {filteredNotifications.length} itens
@@ -460,7 +460,7 @@ export default function LembretesCalendario({
                       {item.contestName ? (
                         <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.contestName}</p>
                       ) : null}
-                      <p className="mt-2 text-base font-semibold text-slate-900">{item.title}</p>
+                      <p className="mt-2 text-base font-semibold text-ink-900">{item.title}</p>
                       <p className="mt-1 text-sm font-medium leading-relaxed text-gray-500">{item.text}</p>
                     </div>
                     <ExternalLink size={16} className="mt-1 shrink-0 text-gray-400" />
@@ -475,7 +475,7 @@ export default function LembretesCalendario({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-blue-700" />
-              <h3 className="text-lg font-semibold text-slate-900">Agenda curta</h3>
+              <h3 className="text-lg font-semibold text-ink-900">Agenda curta</h3>
             </div>
             <button
               type="button"
@@ -518,7 +518,7 @@ export default function LembretesCalendario({
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={16} className="text-emerald-500" />
-            <h3 className="text-lg font-semibold text-slate-900">Histórico e lembretes salvos</h3>
+            <h3 className="text-lg font-semibold text-ink-900">Histórico e lembretes salvos</h3>
           </div>
           <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-500">
             {(manualReminders || []).length} lembretes manuais
@@ -535,7 +535,7 @@ export default function LembretesCalendario({
                       <MiniTone type={item.type || 'task'} />
                       {item.date ? <MiniDate date={item.date} /> : null}
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{item.title}</p>
+                    <p className="mt-2 text-sm font-semibold text-ink-900">{item.title}</p>
                     {item.description ? <p className="mt-1 text-sm font-medium text-gray-500">{item.description}</p> : null}
                   </div>
                   <div className="flex gap-2">
@@ -650,7 +650,7 @@ function FullScreenCalendarModal({
   const currentMonthGrid = useMemo(() => buildMonthGrid(currentDate), [currentDate]);
 
   return (
-    <div className="fixed inset-0 z-[220] bg-slate-950/55 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[220] bg-ink-950/55 backdrop-blur-sm">
       <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)]">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-200 bg-white px-4 py-2 shadow-sm md:px-6">
           <div>
@@ -658,7 +658,7 @@ function FullScreenCalendarModal({
                 <CalendarDays size={12} />
                 Calendário ampliado
             </div>
-            <h3 className="mt-1.5 text-xl font-semibold text-slate-900 sm:text-[1.45rem]">
+            <h3 className="mt-1.5 text-xl font-semibold text-ink-900 sm:text-[1.45rem]">
               {viewMode === 'mes'
                 ? `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`
                 : `Semana de ${String(currentWeek[0].getDate()).padStart(2, '0')}/${String(currentWeek[0].getMonth() + 1).padStart(2, '0')}`}
@@ -795,12 +795,12 @@ function FullScreenCalendarModal({
 
 function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], editing = false }) {
   return (
-    <div className="fixed inset-0 z-[230] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[230] flex items-center justify-center bg-ink-950/55 p-4 backdrop-blur-sm">
       <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Lembrete manual</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">
               {editing ? 'Editar lembrete' : 'Novo lembrete'}
             </h3>
           </div>
@@ -905,12 +905,12 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
 
 function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDiscipline }) {
   return (
-    <div className="fixed inset-0 z-[231] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[231] flex items-center justify-center bg-ink-950/55 p-4 backdrop-blur-sm">
       <div className="flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Agenda diária</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">{formatDateBR(date)}</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">{formatDateBR(date)}</h3>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500">
             <X size={18} />
@@ -933,7 +933,7 @@ function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDis
                     {event.hora}
                   </span>
                 </div>
-                <p className="mt-3 text-base font-semibold text-slate-900">{event.titulo}</p>
+                <p className="mt-3 text-base font-semibold text-ink-900">{event.titulo}</p>
                 {event.detail ? <p className="mt-1 text-sm font-medium text-gray-500">{event.detail}</p> : null}
               </button>
             ))
@@ -1136,7 +1136,7 @@ function FilterPill({ active, onClick, children }) {
       className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all ${
         active
           ? 'border-blue-200 bg-blue-50 text-blue-700'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-700'
+          : 'border-ink-200 bg-white text-ink-600 hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-700'
       }`}
     >
       {children}
@@ -1203,7 +1203,7 @@ function AgendaList({ items = [], fullItems = [], emptyText, onOpenContest }) {
           {item.contestName ? (
             <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.contestName}</p>
           ) : null}
-          <p className="mt-2 text-sm font-semibold text-slate-900">{item.titulo}</p>
+          <p className="mt-2 text-sm font-semibold text-ink-900">{item.titulo}</p>
           {item.detalhe ? <p className="mt-1 text-sm font-medium text-gray-500">{item.detalhe}</p> : null}
         </button>
       ))}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { AlertTriangle, Database, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../../components/PageHeadPremium';
 import { getEnemExams, getOpenTriviaQuestions, normalizeOpenTriviaQuestion } from '../../services/questionsApi';
@@ -76,14 +76,14 @@ export default function QuestionImportPage() {
       />
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-ink-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <label className="flex flex-1 flex-col gap-2 text-sm font-bold text-slate-700">
+            <label className="flex flex-1 flex-col gap-2 text-sm font-bold text-ink-700">
               Ano do ENEM
               <select
                 value={year}
                 onChange={(event) => setYear(Number(event.target.value))}
-                className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-12 rounded-2xl border border-ink-200 bg-ink-50 px-4 text-sm font-bold text-ink-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               >
                 {YEARS.map((item) => (
                   <option key={item} value={item}>ENEM {item}</option>
@@ -102,9 +102,9 @@ export default function QuestionImportPage() {
             </button>
           </div>
 
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Importação completa</p>
-            <p className="text-sm font-semibold leading-relaxed text-slate-600">
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-ink-200 bg-ink-50 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-400">Importação completa</p>
+            <p className="text-sm font-semibold leading-relaxed text-ink-600">
               Tenta todos os anos de 2009 até 2023, incluindo idiomas estrangeiros, e usa pausa entre chamadas para respeitar limite da API.
             </p>
             <button
@@ -139,9 +139,9 @@ export default function QuestionImportPage() {
           ) : null}
         </div>
 
-        <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Fontes públicas</p>
-          <div className="mt-3 space-y-3 text-sm font-semibold leading-relaxed text-slate-600">
+        <aside className="rounded-2xl border border-ink-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-400">Fontes públicas</p>
+          <div className="mt-3 space-y-3 text-sm font-semibold leading-relaxed text-ink-600">
             <p>{apiSummary}</p>
             <p>
               A ENEM API separa por área/disciplina macro e idioma. Espanhol/Inglês entram com o idioma no campo de assunto.
@@ -156,12 +156,12 @@ export default function QuestionImportPage() {
           </div>
 
           {triviaPreview.length > 0 ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">OpenTrivia preview</p>
+            <div className="mt-4 rounded-2xl border border-ink-200 bg-ink-50 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">OpenTrivia preview</p>
               <div className="mt-2 space-y-2">
                 {triviaPreview.map((item) => (
-                  <div key={item.external_id} className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-600">
-                    <span className="text-slate-400">{item.subject}</span>
+                  <div key={item.external_id} className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-ink-600">
+                    <span className="text-ink-400">{item.subject}</span>
                     <p className="mt-1 line-clamp-2">{item.statement}</p>
                   </div>
                 ))}

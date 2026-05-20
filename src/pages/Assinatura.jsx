@@ -309,7 +309,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
           <button
             type="button"
             onClick={() => setActiveTab('perfil')}
-            className="text-left text-sm font-semibold text-slate-300 hover:text-white"
+            className="text-left text-sm font-semibold text-ink-300 hover:text-white"
             aria-label="Voltar para o perfil"
           >
             ← Voltar para o Perfil
@@ -407,7 +407,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
         </div>
       )}
 
-      <h2 className="page-title text-center text-3xl font-semibold tracking-tight text-slate-900">
+      <h2 className="page-title text-center text-3xl font-semibold tracking-tight text-ink-900">
         Conheça os outros <span className={theme.ui.accentText}>planos</span>
       </h2>
 

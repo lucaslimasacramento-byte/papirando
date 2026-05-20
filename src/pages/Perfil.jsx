@@ -26,7 +26,7 @@ import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
 
 /** Paleta alinhada ao app (--accent #1d4ed8, superfícies frias). */
 const HERO_BAR =
-  'bg-gradient-to-br from-slate-900 via-[#14110d] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+  'bg-gradient-to-br from-ink-900 via-[#14110d] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
 const ACCENT_BTN = 'bg-blue-700 hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500/40';
 const PAGE_BG = 'bg-[var(--bg-canvas)]';
 
@@ -95,7 +95,7 @@ function Card({ children, className = '' }) {
   return (
     <div
       className={cn(
-        'rounded-[30px] border border-slate-200/80 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]',
+        'rounded-[30px] border border-ink-200/80 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]',
         className
       )}
     >
@@ -106,7 +106,7 @@ function Card({ children, className = '' }) {
 
 function Badge({ children, tone = 'neutral' }) {
   const tones = {
-    neutral: 'border-slate-200 bg-slate-100 text-slate-700',
+    neutral: 'border-ink-200 bg-ink-100 text-ink-700',
     blue: 'border-blue-200 bg-blue-50 text-blue-700',
     green: 'border-emerald-200 bg-emerald-50 text-emerald-700',
     gold: 'border-amber-200 bg-amber-50 text-amber-700',
@@ -129,9 +129,9 @@ function SectionHeader({ eyebrow, title, subtitle, action }) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-slate-500">{eyebrow}</p>
-        <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-slate-600">{subtitle}</p> : null}
+        <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-ink-500">{eyebrow}</p>
+        <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-ink-950">{title}</h2>
+        {subtitle ? <p className="mt-1 text-sm text-ink-600">{subtitle}</p> : null}
       </div>
       {action}
     </div>
@@ -217,7 +217,7 @@ function getBadgeTone(unlocked, color) {
 function Field({ label, value, onChange, placeholder, disabled = false, type = 'text', autoComplete }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">{label}</span>
+      <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.24em] text-ink-500">{label}</span>
       <input
         type={type}
         value={value}
@@ -225,7 +225,7 @@ function Field({ label, value, onChange, placeholder, disabled = false, type = '
         placeholder={placeholder}
         disabled={disabled}
         autoComplete={autoComplete}
-        className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15 disabled:cursor-not-allowed disabled:bg-slate-50"
+        className="w-full rounded-[20px] border border-ink-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15 disabled:cursor-not-allowed disabled:bg-ink-50"
       />
     </label>
   );
@@ -240,7 +240,7 @@ function ToggleChip({ active, onClick, children }) {
         'rounded-2xl border px-4 py-2.5 text-sm font-semibold transition',
         active
           ? 'border-blue-700 bg-blue-700 text-white shadow-sm'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:text-blue-700'
+          : 'border-ink-200 bg-white text-ink-700 hover:border-blue-200 hover:text-blue-700'
       )}
     >
       {children}
@@ -251,15 +251,15 @@ function ToggleChip({ active, onClick, children }) {
 function InfoTile({ label, value, helper, icon }) {
   const IconComponent = icon;
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+    <div className="rounded-[22px] border border-ink-200 bg-ink-50/70 p-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-          {IconComponent ? <IconComponent className="h-4 w-4 text-slate-900" /> : null}
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-ink-200">
+          {IconComponent ? <IconComponent className="h-4 w-4 text-ink-900" /> : null}
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-950">{label}</p>
-          <p className="mt-1 text-sm text-slate-700">{value}</p>
-          <p className="mt-1 text-sm text-slate-500">{helper}</p>
+          <p className="text-sm font-bold text-ink-950">{label}</p>
+          <p className="mt-1 text-sm text-ink-700">{value}</p>
+          <p className="mt-1 text-sm text-ink-500">{helper}</p>
         </div>
       </div>
     </div>
@@ -269,15 +269,15 @@ function InfoTile({ label, value, helper, icon }) {
 function SecurityRow({ icon, label, value, helper }) {
   const IconComponent = icon;
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
+    <div className="rounded-[22px] border border-ink-200 bg-ink-50/70 p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-          {IconComponent ? <IconComponent className="h-4 w-4 text-slate-900" /> : null}
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-ink-200">
+          {IconComponent ? <IconComponent className="h-4 w-4 text-ink-900" /> : null}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-slate-950">{label}</p>
-          <p className="mt-1 break-all text-sm text-slate-700">{value}</p>
-          <p className="mt-1 text-sm text-slate-500">{helper}</p>
+          <p className="text-sm font-bold text-ink-950">{label}</p>
+          <p className="mt-1 break-all text-sm text-ink-700">{value}</p>
+          <p className="mt-1 text-sm text-ink-500">{helper}</p>
         </div>
       </div>
     </div>
@@ -291,13 +291,13 @@ function ActionTile({ icon, title, desc, actionLabel, onClick, disabled = false 
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-[24px] border border-ink-200 bg-ink-50/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-        {IconComponent ? <IconComponent className="h-4 w-4 text-slate-900" /> : null}
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-ink-200">
+        {IconComponent ? <IconComponent className="h-4 w-4 text-ink-900" /> : null}
       </div>
-      <p className="mt-4 text-sm font-bold text-slate-950">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{desc}</p>
+      <p className="mt-4 text-sm font-bold text-ink-950">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-ink-600">{desc}</p>
       <p className="mt-4 text-sm font-semibold text-blue-700">{actionLabel}</p>
     </button>
   );
@@ -672,7 +672,7 @@ export default function Perfil(props) {
     saveState.type === 'success' ? 'green' : saveState.type === 'error' ? 'red' : saveState.type === 'warning' ? 'gold' : 'blue';
 
   return (
-    <div className={cn('min-h-screen text-slate-900', PAGE_BG)}>
+    <div className={cn('min-h-screen text-ink-900', PAGE_BG)}>
       <div className="mx-auto max-w-[1540px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
         <div className="grid gap-6 xl:grid-cols-[285px_minmax(0,1fr)]">
           <aside className="space-y-5">
@@ -688,7 +688,7 @@ export default function Perfil(props) {
               </div>
 
               <div className="p-4">
-                <div className="relative h-44 overflow-hidden rounded-[26px] border border-slate-200 bg-slate-100 shadow-sm sm:h-52 lg:h-48">
+                <div className="relative h-44 overflow-hidden rounded-[26px] border border-ink-200 bg-ink-100 shadow-sm sm:h-52 lg:h-48">
                   {profileData?.avatar_url ? (
                     <img
                       src={profileData.avatar_url}
@@ -696,7 +696,7 @@ export default function Perfil(props) {
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-900 to-indigo-700 text-5xl font-bold text-white">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ink-950 via-blue-900 to-indigo-700 text-5xl font-bold text-white">
                       {avatarInitials}
                     </div>
                   )}
@@ -707,7 +707,7 @@ export default function Perfil(props) {
                     className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/80 bg-white/95 shadow-lg backdrop-blur disabled:opacity-60"
                     aria-label="Alterar foto do perfil"
                   >
-                    <Camera className="h-4 w-4 text-slate-900" />
+                    <Camera className="h-4 w-4 text-ink-900" />
                   </button>
                 </div>
 
@@ -724,16 +724,16 @@ export default function Perfil(props) {
                           'flex w-full items-center justify-between rounded-[22px] px-4 py-3.5 text-left transition-all',
                           active
                             ? 'bg-blue-700 text-white shadow-sm'
-                            : 'border border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-blue-200 hover:text-slate-950 hover:shadow-sm'
+                            : 'border border-ink-200 bg-white text-ink-700 hover:-translate-y-0.5 hover:border-blue-200 hover:text-ink-950 hover:shadow-sm'
                         )}
                       >
                         <span className="flex items-center gap-3">
-                          <span className={cn('flex h-10 w-10 items-center justify-center rounded-2xl', active ? 'bg-white/10' : 'bg-slate-100')}>
+                          <span className={cn('flex h-10 w-10 items-center justify-center rounded-2xl', active ? 'bg-white/10' : 'bg-ink-100')}>
                             <Icon className="h-4 w-4" />
                           </span>
                           <span className="text-sm font-semibold">{item.label}</span>
                         </span>
-                        <ChevronRight className={cn('h-4 w-4', active ? 'text-white/70' : 'text-slate-400')} />
+                        <ChevronRight className={cn('h-4 w-4', active ? 'text-white/70' : 'text-ink-400')} />
                       </button>
                     );
                   })}
@@ -744,17 +744,17 @@ export default function Perfil(props) {
             </Card>
 
             <Card className="p-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Snapshot</p>
-              <h3 className="mt-3 text-xl font-bold text-slate-950">Leitura rápida</h3>
+              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ink-500">Snapshot</p>
+              <h3 className="mt-3 text-xl font-bold text-ink-950">Leitura rápida</h3>
               <div className="mt-4 space-y-3">
                 {[
                   ['Ranking atual', rankingPreview],
                   ['Esquadrões', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vinculo'],
                   ['Proxima meta', `${formatNumber(xpSummary.nextLevelXp || 0)} XP`],
                 ].map(([label, value]) => (
-                  <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                    <span className="text-sm text-slate-600">{label}</span>
-                    <span className="block min-w-0 truncate text-right text-sm font-bold text-slate-950" title={String(value || '')}>
+                  <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-3 rounded-2xl bg-ink-50 px-4 py-3">
+                    <span className="text-sm text-ink-600">{label}</span>
+                    <span className="block min-w-0 truncate text-right text-sm font-bold text-ink-950" title={String(value || '')}>
                       {value}
                     </span>
                   </div>
@@ -793,9 +793,9 @@ export default function Perfil(props) {
                     <ToneIconWrap tone={saveTone}>
                       <CheckCircle2 className="h-5 w-5" />
                     </ToneIconWrap>
-                    <p className="text-sm font-semibold text-slate-700">{saveState.message}</p>
+                    <p className="text-sm font-semibold text-ink-700">{saveState.message}</p>
                   </div>
-                  <button type="button" onClick={() => setSaveState({ type: '', message: '' })} className="text-sm font-semibold text-slate-500 hover:text-slate-900">
+                  <button type="button" onClick={() => setSaveState({ type: '', message: '' })} className="text-sm font-semibold text-ink-500 hover:text-ink-900">
                     Fechar
                   </button>
                 </div>
@@ -859,9 +859,9 @@ export default function Perfil(props) {
                           className={cn(
                             'mt-2 text-xs font-semibold',
                             cpfDigitsPreview.length === 0
-                              ? 'text-slate-500'
+                              ? 'text-ink-500'
                               : cpfDigitsPreview.length < 11
-                                ? 'text-slate-500'
+                                ? 'text-ink-500'
                                 : cpfLooksValid
                                   ? 'text-emerald-600'
                                   : 'text-red-600'
@@ -878,11 +878,11 @@ export default function Perfil(props) {
                       </div>
                     </div>
 
-                    <div className="mt-5 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                    <div className="mt-5 rounded-[24px] border border-ink-200 bg-ink-50 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Preferencia de ranking</p>
-                          <p className="mt-2 text-sm text-slate-600">Escolha como seu nome aparece nos rankings e areas sociais.</p>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-500">Preferencia de ranking</p>
+                          <p className="mt-2 text-sm text-ink-600">Escolha como seu nome aparece nos rankings e areas sociais.</p>
                         </div>
                         <Badge tone="blue">{rankingPreview}</Badge>
                       </div>
@@ -933,10 +933,10 @@ export default function Perfil(props) {
 
                       <div className="mt-5 grid gap-4 sm:grid-cols-2">
                         {kpis.map((item) => (
-                          <div key={item.label} className="rounded-[22px] border border-slate-200 bg-slate-50 p-5">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">{item.label}</p>
-                            <p className="mt-3 text-3xl font-extrabold text-slate-950">{item.value}</p>
-                            <p className="mt-2 text-sm text-slate-600">{item.helper}</p>
+                          <div key={item.label} className="rounded-[22px] border border-ink-200 bg-ink-50 p-5">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-500">{item.label}</p>
+                            <p className="mt-3 text-3xl font-extrabold text-ink-950">{item.value}</p>
+                            <p className="mt-2 text-sm text-ink-600">{item.helper}</p>
                           </div>
                         ))}
                       </div>
@@ -952,13 +952,13 @@ export default function Perfil(props) {
                         </p>
                       </div>
                       <div className="p-6">
-                        <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-3 overflow-hidden rounded-full bg-ink-100">
                           <div
                             className="h-full rounded-full bg-[linear-gradient(90deg,#1e3a8a,#1d4ed8)]"
                             style={{ width: `${Math.max(0, Math.min(100, Number(xpSummary.progressPercent || 0)))}%` }}
                           />
                         </div>
-                        <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+                        <div className="mt-3 flex items-center justify-between text-sm text-ink-600">
                           <span>XP atual</span>
                           <span className="font-semibold">{formatNumber(xpSummary.progressPercent || 0)}%</span>
                         </div>
@@ -982,8 +982,8 @@ export default function Perfil(props) {
                           <ToneIconWrap tone={item.tone}>
                             <Icon className="h-5 w-5" />
                           </ToneIconWrap>
-                          <h3 className="mt-5 text-lg font-bold text-slate-950">{item.title}</h3>
-                          <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
+                          <h3 className="mt-5 text-lg font-bold text-ink-950">{item.title}</h3>
+                          <p className="mt-2 text-sm leading-6 text-ink-600">{item.text}</p>
                         </Card>
                       );
                     })}
@@ -1011,16 +1011,16 @@ export default function Perfil(props) {
                             {badge.unlocked ? 'Desbloqueado' : `${formatNumber(badge.progressPercent)}%`}
                           </Badge>
                         </div>
-                        <h3 className="mt-5 text-lg font-bold text-slate-950">{badge.nome}</h3>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{badge.descricao}</p>
-                        <p className="mt-4 text-sm font-semibold text-slate-700">
+                        <h3 className="mt-5 text-lg font-bold text-ink-950">{badge.nome}</h3>
+                        <p className="mt-2 text-sm leading-6 text-ink-600">{badge.descricao}</p>
+                        <p className="mt-4 text-sm font-semibold text-ink-700">
                           Progresso: {formatNumber(badge.current)} / {formatNumber(badge.target)}
                         </p>
                       </Card>
                     ))
                   ) : (
                     <Card className="p-6 md:col-span-2 2xl:col-span-3">
-                      <p className="text-sm font-semibold text-slate-600">Ainda não existem selos configurados para esta conta.</p>
+                      <p className="text-sm font-semibold text-ink-600">Ainda não existem selos configurados para esta conta.</p>
                     </Card>
                   )}
                 </div>
@@ -1034,9 +1034,9 @@ export default function Perfil(props) {
                         ['Esquadrões', formatNumber(memberships.length)],
                         ['Nivel atual', formatNumber(xpSummary.level || 1)],
                       ].map(([label, value]) => (
-                          <div key={label} className="rounded-2xl bg-slate-50 p-5">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">{label}</p>
-                          <p className="mt-3 text-3xl font-extrabold text-slate-950">{value}</p>
+                          <div key={label} className="rounded-2xl bg-ink-50 p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-500">{label}</p>
+                          <p className="mt-3 text-3xl font-extrabold text-ink-950">{value}</p>
                         </div>
                       ))}
                     </div>
@@ -1049,23 +1049,23 @@ export default function Perfil(props) {
                         memberships.map((membership) => (
                           <div
                             key={membership.id}
-                            className="flex flex-col gap-4 rounded-[22px] border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between"
+                            className="flex flex-col gap-4 rounded-[22px] border border-ink-200 bg-ink-50/70 p-4 sm:flex-row sm:items-center sm:justify-between"
                           >
                             <div>
-                              <p className="text-sm font-bold text-slate-950">{membership.name || membership.id}</p>
-                              <p className="mt-1 text-sm text-slate-600">Papel: {membership.role || 'Membro'} · Status: {membership.status || 'Ativo'}</p>
+                              <p className="text-sm font-bold text-ink-950">{membership.name || membership.id}</p>
+                              <p className="mt-1 text-sm text-ink-600">Papel: {membership.role || 'Membro'} · Status: {membership.status || 'Ativo'}</p>
                             </div>
                             <button
                               type="button"
                               onClick={() => onOpenSquad?.(membership.id)}
-                              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                              className="rounded-2xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:border-blue-200 hover:text-blue-700"
                             >
                               Abrir esquadrao
                             </button>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm font-semibold text-slate-600">Nenhum esquadrao vinculado a esta conta.</p>
+                        <p className="text-sm font-semibold text-ink-600">Nenhum esquadrao vinculado a esta conta.</p>
                       )}
                     </div>
                   </Card>
@@ -1125,15 +1125,15 @@ export default function Perfil(props) {
                   </div>
                 </Card>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-200 bg-white px-4 py-3 sm:px-5">
-                  <p className="text-sm font-semibold text-slate-700">Preços exibidos por mês (referência)</p>
-                  <div className="flex rounded-2xl border border-slate-200 bg-slate-50 p-1">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-ink-200 bg-white px-4 py-3 sm:px-5">
+                  <p className="text-sm font-semibold text-ink-700">Preços exibidos por mês (referência)</p>
+                  <div className="flex rounded-2xl border border-ink-200 bg-ink-50 p-1">
                     <button
                       type="button"
                       onClick={() => setPlanoPrecoAnual(false)}
                       className={cn(
                         'rounded-xl px-3 py-2 text-xs font-bold transition',
-                        !planoPrecoAnual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+                        !planoPrecoAnual ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500'
                       )}
                     >
                       Mensal
@@ -1143,7 +1143,7 @@ export default function Perfil(props) {
                       onClick={() => setPlanoPrecoAnual(true)}
                       className={cn(
                         'rounded-xl px-3 py-2 text-xs font-bold transition',
-                        planoPrecoAnual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+                        planoPrecoAnual ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500'
                       )}
                     >
                       Anual
@@ -1170,7 +1170,7 @@ export default function Perfil(props) {
                           isTatico &&
                             !isElite &&
                             'border-blue-400/50 bg-gradient-to-b from-blue-700 to-blue-900 text-white shadow-[0_16px_40px_rgba(30,58,138,0.35)] ring-1 ring-blue-400/40',
-                          !isTatico && !isElite && 'border-slate-200/90',
+                          !isTatico && !isElite && 'border-ink-200/90',
                           isCurrent && 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-white'
                         )}
                       >
@@ -1196,26 +1196,26 @@ export default function Perfil(props) {
                           </span>
                         ) : null}
 
-                        <div className={cn('mt-8 flex h-12 w-12 items-center justify-center rounded-2xl', isTatico ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-700', isElite && 'bg-amber-500/20 text-amber-900')}>
+                        <div className={cn('mt-8 flex h-12 w-12 items-center justify-center rounded-2xl', isTatico ? 'bg-white/15 text-white' : 'bg-ink-100 text-ink-700', isElite && 'bg-amber-500/20 text-amber-900')}>
                           <Icon className="h-6 w-6" strokeWidth={2} />
                         </div>
-                        <h3 className={cn('mt-5 text-xl font-extrabold', isTatico ? 'text-white' : 'text-slate-950')}>{plano.nome}</h3>
-                        <p className={cn('mt-2 text-sm leading-relaxed', isTatico ? 'text-blue-100' : 'text-slate-600')}>{plano.descricao}</p>
-                        <p className={cn('mt-5 text-3xl font-black tracking-tight', isTatico ? 'text-white' : 'text-slate-950')}>
+                        <h3 className={cn('mt-5 text-xl font-extrabold', isTatico ? 'text-white' : 'text-ink-950')}>{plano.nome}</h3>
+                        <p className={cn('mt-2 text-sm leading-relaxed', isTatico ? 'text-blue-100' : 'text-ink-600')}>{plano.descricao}</p>
+                        <p className={cn('mt-5 text-3xl font-black tracking-tight', isTatico ? 'text-white' : 'text-ink-950')}>
                           {precoValor}
                           {plano.id !== 'gratuito' ? (
-                            <span className={cn('text-sm font-semibold', isTatico ? 'text-blue-200' : 'text-slate-500')}>/mês</span>
+                            <span className={cn('text-sm font-semibold', isTatico ? 'text-blue-200' : 'text-ink-500')}>/mês</span>
                           ) : null}
                         </p>
                         {plano.id !== 'gratuito' && planoPrecoAnual ? (
-                          <p className={cn('text-xs font-medium', isTatico ? 'text-blue-200/90' : 'text-slate-500')}>Valores na cobrança anual (referência da página de assinatura).</p>
+                          <p className={cn('text-xs font-medium', isTatico ? 'text-blue-200/90' : 'text-ink-500')}>Valores na cobrança anual (referência da página de assinatura).</p>
                         ) : null}
 
                         <ul className="mt-6 flex-1 space-y-3">
                           {plano.features.map((line) => (
                             <li key={line} className="flex gap-2.5 text-sm">
                               <Check className={cn('mt-0.5 h-4 w-4 shrink-0', isTatico ? 'text-emerald-300' : 'text-emerald-600')} strokeWidth={2.5} />
-                              <span className={cn('leading-snug', isTatico ? 'text-blue-50' : 'text-slate-700')}>{line}</span>
+                              <span className={cn('leading-snug', isTatico ? 'text-blue-50' : 'text-ink-700')}>{line}</span>
                             </li>
                           ))}
                         </ul>
@@ -1226,7 +1226,7 @@ export default function Perfil(props) {
                           className={cn(
                             'mt-8 w-full rounded-2xl py-3.5 text-sm font-bold transition',
                             isCurrent
-                              ? 'border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                              ? 'border border-ink-200 bg-ink-50 text-ink-700 hover:bg-ink-100'
                               : isTatico
                                 ? 'bg-white text-blue-900 shadow-md hover:bg-blue-50'
                                 : isElite
@@ -1242,8 +1242,8 @@ export default function Perfil(props) {
                 </div>
 
                 <Card className="p-6">
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    Dúvidas sobre cobrança, nota fiscal ou troca de cartão use a página <strong className="font-semibold text-slate-800">Assinatura</strong> do app
+                  <p className="text-sm leading-relaxed text-ink-600">
+                    Dúvidas sobre cobrança, nota fiscal ou troca de cartão use a página <strong className="font-semibold text-ink-800">Assinatura</strong> do app
                     (mesmo menu onde você acessa este perfil). Os preços finais podem incluir promoções ativas no checkout.
                   </p>
                 </Card>
@@ -1298,9 +1298,9 @@ export default function Perfil(props) {
                         placeholder="voce@exemplo.com"
                         autoComplete="email"
                       />
-                      <p className="text-xs text-slate-600">
+                      <p className="text-xs text-ink-600">
                         E-mail atual:{' '}
-                        <span className="font-semibold text-slate-800">{profileData?.email || currentUserEmail || '—'}</span>
+                        <span className="font-semibold text-ink-800">{profileData?.email || currentUserEmail || '—'}</span>
                       </p>
                       <button
                         type="button"
@@ -1371,9 +1371,9 @@ export default function Perfil(props) {
                   </Card>
 
                   <Card className="overflow-hidden">
-                    <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Base da conta</p>
-                      <h3 className="mt-2 text-xl font-bold text-slate-950">Sinais de integracao</h3>
+                    <div className="border-b border-ink-200 bg-ink-50 px-6 py-5">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ink-500">Base da conta</p>
+                      <h3 className="mt-2 text-xl font-bold text-ink-950">Sinais de integracao</h3>
                     </div>
                     <div className="space-y-4 p-6">
                       {[
@@ -1381,11 +1381,11 @@ export default function Perfil(props) {
                         { label: 'Username', value: profileData?.username || 'Não informado', tone: profileData?.username ? 'blue' : 'red' },
                         { label: 'Referral code', value: profileData?.referral_code || 'Não gerado', tone: profileData?.referral_code ? 'green' : 'red' },
                       ].map((item) => (
-                        <div key={item.label} className="rounded-[22px] border border-slate-200 bg-white p-4">
+                        <div key={item.label} className="rounded-[22px] border border-ink-200 bg-white p-4">
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                              <p className="text-sm font-bold text-slate-950">{item.label}</p>
-                              <p className="mt-1 text-sm text-slate-600">{item.value}</p>
+                              <p className="text-sm font-bold text-ink-950">{item.label}</p>
+                              <p className="mt-1 text-sm text-ink-600">{item.value}</p>
                             </div>
                             <Badge tone={item.tone}>{item.value}</Badge>
                           </div>

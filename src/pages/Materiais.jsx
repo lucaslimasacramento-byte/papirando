@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Bookmark,
@@ -46,7 +46,7 @@ const MATERIAL_MARKER_COLORS = ['#1d4ed8', '#b45309', '#4d7c3f', '#EC4899'];
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
+  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
 }
 
 function formatFileSize(bytes) {
@@ -411,29 +411,29 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   });
 
   return (
-    <div className="flex h-full flex-col bg-slate-100">
+    <div className="flex h-full flex-col bg-ink-100">
       {/* Top bar */}
-      <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-3 border-b border-ink-200 bg-white px-4 py-3 shadow-sm">
         <button
           onClick={onBack}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+          className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-slate-800 truncate">{material.title}</p>
+          <p className="text-sm font-bold text-ink-800 truncate">{material.title}</p>
           {material.disciplina && (
-            <p className="text-xs text-slate-500">{material.disciplina}</p>
+            <p className="text-xs text-ink-500">{material.disciplina}</p>
           )}
         </div>
 
         {/* Zoom controls */}
-        <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-1">
-          <button onClick={() => setScale((s) => Math.max(0.5, s - 0.2))} className="rounded-lg p-1.5 text-slate-600 hover:bg-white">
+        <div className="flex items-center gap-1 rounded-xl border border-ink-200 bg-ink-50 px-1">
+          <button onClick={() => setScale((s) => Math.max(0.5, s - 0.2))} className="rounded-lg p-1.5 text-ink-600 hover:bg-white">
             <ZoomOut size={15} />
           </button>
-          <span className="text-xs font-bold text-slate-700 w-12 text-center">{Math.round(scale * 100)}%</span>
-          <button onClick={() => setScale((s) => Math.min(3, s + 0.2))} className="rounded-lg p-1.5 text-slate-600 hover:bg-white">
+          <span className="text-xs font-bold text-ink-700 w-12 text-center">{Math.round(scale * 100)}%</span>
+          <button onClick={() => setScale((s) => Math.min(3, s + 0.2))} className="rounded-lg p-1.5 text-ink-600 hover:bg-white">
             <ZoomIn size={15} />
           </button>
         </div>
@@ -441,7 +441,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
         {/* Note button */}
         <button
           onClick={() => { setNotePageTarget(page); setNoteContent(''); setNoteModal(true); }}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+          className="flex items-center gap-1.5 rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-bold text-ink-700 hover:bg-ink-50"
         >
           <NotebookPen size={14} />
           Anotar
@@ -463,12 +463,12 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
           {loading && !pdfErr && (
             <div className="flex items-center gap-3 mt-16">
               <Loader2 size={22} className="animate-spin text-blue-500" />
-              <span className="text-sm font-semibold text-slate-600">Carregando PDF...</span>
+              <span className="text-sm font-semibold text-ink-600">Carregando PDF...</span>
             </div>
           )}
 
           {!pdfErr && (
-            <div className="rounded-lg shadow-xl overflow-hidden ring-1 ring-slate-300">
+            <div className="rounded-lg shadow-xl overflow-hidden ring-1 ring-ink-300">
               <canvas ref={canvasRef} />
             </div>
           )}
@@ -479,17 +479,17 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                className="rounded-xl border border-ink-200 bg-white p-2 text-ink-600 hover:bg-ink-50 disabled:opacity-30"
               >
                 <ChevronLeft size={18} />
               </button>
-              <span className="text-sm font-bold text-slate-700">
+              <span className="text-sm font-bold text-ink-700">
                 {page} / {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                className="rounded-xl border border-ink-200 bg-white p-2 text-ink-600 hover:bg-ink-50 disabled:opacity-30"
               >
                 <ChevronRight size={18} />
               </button>
@@ -498,27 +498,27 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
         </div>
 
         {/* Sidebar — marcações (DB), grifos e anotações por página */}
-        <div className="flex w-[min(100vw-2rem,22rem)] shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white sm:min-w-[280px]">
-          <div className="shrink-0 space-y-3 border-b border-slate-100 px-4 py-4">
+        <div className="flex w-[min(100vw-2rem,22rem)] shrink-0 flex-col overflow-hidden border-l border-ink-200 bg-white sm:min-w-[280px]">
+          <div className="shrink-0 space-y-3 border-b border-ink-100 px-4 py-4">
             <div className="flex items-center gap-2">
               <Bookmark size={15} className="text-blue-600" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Marcações</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500">Marcações</p>
             </div>
-            <p className="text-[11px] font-medium leading-snug text-slate-500">
+            <p className="text-[11px] font-medium leading-snug text-ink-500">
               Salvas na sua conta (uma por linha no banco), como na Legislação — título, trecho e cor por página.
             </p>
             <input
               value={markerDraft.label}
               onChange={(e) => setMarkerDraft((prev) => ({ ...prev, label: e.target.value }))}
               placeholder="Título da marcação"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2 text-xs font-semibold text-ink-800 outline-none focus:border-blue-500"
             />
             <textarea
               rows={2}
               value={markerDraft.excerpt}
               onChange={(e) => setMarkerDraft((prev) => ({ ...prev, excerpt: e.target.value }))}
               placeholder="Trecho, lembrete ou fundamento"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-blue-500"
+              className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2 text-xs font-medium text-ink-700 outline-none focus:border-blue-500"
             />
             <div className="flex flex-wrap gap-2">
               {MATERIAL_MARKER_COLORS.map((color) => (
@@ -526,7 +526,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                   key={color}
                   type="button"
                   onClick={() => setMarkerDraft((prev) => ({ ...prev, color }))}
-                  className={`h-7 w-7 rounded-full border-2 ${markerDraft.color === color ? 'border-slate-800' : 'border-transparent opacity-80'}`}
+                  className={`h-7 w-7 rounded-full border-2 ${markerDraft.color === color ? 'border-ink-800' : 'border-transparent opacity-80'}`}
                   style={{ backgroundColor: color }}
                   aria-label={`Cor ${color}`}
                 />
@@ -545,12 +545,12 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
             {markersSorted.length > 0 ? (
               <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Todas ({markersSorted.length})</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400">Todas ({markersSorted.length})</p>
                 {markersSorted.map((m) => (
                   <div
                     key={m.id}
                     className={`group flex items-start gap-2 rounded-xl border p-2.5 ${
-                      m.page_num === page ? 'border-blue-200 bg-blue-50/80' : 'border-slate-100 bg-slate-50/60'
+                      m.page_num === page ? 'border-blue-200 bg-blue-50/80' : 'border-ink-100 bg-ink-50/60'
                     }`}
                   >
                     <button
@@ -560,17 +560,17 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                     >
                       <div className="flex items-center gap-2">
                         <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: m.color }} />
-                        <span className="truncate text-xs font-bold text-slate-800">{m.label || `Página ${m.page_num}`}</span>
+                        <span className="truncate text-xs font-bold text-ink-800">{m.label || `Página ${m.page_num}`}</span>
                       </div>
                       {m.excerpt ? (
-                        <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-relaxed text-slate-600">{m.excerpt}</p>
+                        <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-relaxed text-ink-600">{m.excerpt}</p>
                       ) : null}
-                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Página {m.page_num}</p>
+                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-ink-400">Página {m.page_num}</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteMaterialMarker(m.id)}
-                      className="shrink-0 rounded p-1 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                      className="shrink-0 rounded p-1 text-ink-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
                       aria-label="Excluir marcação"
                     >
                       <Trash2 size={13} />
@@ -579,19 +579,19 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-[11px] font-medium text-slate-400">Nenhuma marcação neste PDF ainda.</p>
+              <p className="text-center text-[11px] font-medium text-ink-400">Nenhuma marcação neste PDF ainda.</p>
             )}
           </div>
 
-          <div className="shrink-0 border-t border-slate-100 px-4 py-3">
+          <div className="shrink-0 border-t border-ink-100 px-4 py-3">
           {pageHighlights.length > 0 && (
             <div className="pt-1">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">Grifos — p. {page}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-ink-500 mb-2">Grifos — p. {page}</p>
               <div className="space-y-2">
                 {pageHighlights.map((h) => (
                   <div key={h.id} className="group flex items-start gap-2 rounded-xl p-2.5" style={{ backgroundColor: h.color + '44' }}>
-                    <p className="flex-1 text-xs font-semibold text-slate-700 leading-relaxed line-clamp-3">{h.text}</p>
-                    <button onClick={() => deleteHighlight(h.id)} className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 text-slate-400 hover:text-red-400">
+                    <p className="flex-1 text-xs font-semibold text-ink-700 leading-relaxed line-clamp-3">{h.text}</p>
+                    <button onClick={() => deleteHighlight(h.id)} className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 text-ink-400 hover:text-red-400">
                       <Trash2 size={12} />
                     </button>
                   </div>
@@ -602,12 +602,12 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 
           {pageNotes.length > 0 && (
             <div className="pt-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">Anotações — p. {page}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-ink-500 mb-2">Anotações — p. {page}</p>
               <div className="space-y-2">
                 {pageNotes.map((n) => (
                   <div key={n.id} className="group flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-2.5">
-                    <p className="flex-1 text-xs text-slate-700 leading-relaxed">{n.content}</p>
-                    <button onClick={() => deleteNote(n.id)} className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 text-slate-400 hover:text-red-400">
+                    <p className="flex-1 text-xs text-ink-700 leading-relaxed">{n.content}</p>
+                    <button onClick={() => deleteNote(n.id)} className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 text-ink-400 hover:text-red-400">
                       <Trash2 size={12} />
                     </button>
                   </div>
@@ -618,8 +618,8 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 
           {pageHighlights.length === 0 && pageNotes.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
-              <Highlighter size={22} className="text-slate-300" />
-              <p className="px-2 text-[11px] font-semibold leading-snug text-slate-400">
+              <Highlighter size={22} className="text-ink-300" />
+              <p className="px-2 text-[11px] font-semibold leading-snug text-ink-400">
                 Nesta página: selecione texto para grifar ou use flashcards com IA. Use marcações acima para lembretes por página.
               </p>
             </div>
@@ -631,7 +631,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
       {/* Floating selection toolbar */}
       {showHlToolbar && (
         <div
-          className="fixed z-50 flex items-center gap-1.5 rounded-2xl bg-slate-800 px-3 py-2 shadow-2xl"
+          className="fixed z-50 flex items-center gap-1.5 rounded-2xl bg-ink-800 px-3 py-2 shadow-2xl"
           style={{ left: toolbarPos.x - 100, top: toolbarPos.y }}
         >
           {/* Color dots */}
@@ -644,10 +644,10 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
               title={c.label}
             />
           ))}
-          <div className="w-px h-5 bg-slate-600 mx-1" />
+          <div className="w-px h-5 bg-ink-600 mx-1" />
           <button
             onClick={saveHighlight}
-            className="flex items-center gap-1 rounded-lg bg-yellow-400 px-2.5 py-1 text-xs font-bold text-slate-900 hover:bg-yellow-300"
+            className="flex items-center gap-1 rounded-lg bg-yellow-400 px-2.5 py-1 text-xs font-bold text-ink-900 hover:bg-yellow-300"
           >
             <Highlighter size={12} />
             Grifar
@@ -661,7 +661,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
           </button>
           <button
             onClick={() => { setShowHlToolbar(false); window.getSelection()?.removeAllRanges(); }}
-            className="rounded-lg p-1 text-slate-400 hover:text-white"
+            className="rounded-lg p-1 text-ink-400 hover:text-white"
           >
             <X size={13} />
           </button>
@@ -671,10 +671,10 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
       {/* Note modal */}
       {noteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">Anotação — Página {notePageTarget}</h3>
-              <button onClick={() => setNoteModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-ink-200">
+            <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
+              <h3 className="text-base font-bold text-ink-800">Anotação — Página {notePageTarget}</h3>
+              <button onClick={() => setNoteModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100">
                 <X size={16} />
               </button>
             </div>
@@ -688,8 +688,8 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                 onChange={(e) => setNoteContent(e.target.value)}
               />
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setNoteModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <div className="flex justify-end gap-2 border-t border-ink-100 px-6 py-4">
+              <button onClick={() => setNoteModal(false)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                 Cancelar
               </button>
               <button
@@ -708,24 +708,24 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
       {/* AI Flashcard modal */}
       {aiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">Grifar e criar Flashcard com IA</h3>
-              <button onClick={() => setAiModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-ink-200">
+            <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
+              <h3 className="text-base font-bold text-ink-800">Grifar e criar Flashcard com IA</h3>
+              <button onClick={() => setAiModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100">
                 <X size={16} />
               </button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <ErrBanner msg={aiErr} />
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Trecho selecionado</label>
-                <div className="mt-1.5 rounded-xl border-2 border-slate-200 bg-yellow-50 px-4 py-3 text-sm text-slate-700 leading-relaxed max-h-32 overflow-y-auto">
-                  {aiText || <span className="text-slate-400 italic">Nenhum texto selecionado</span>}
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Trecho selecionado</label>
+                <div className="mt-1.5 rounded-xl border-2 border-ink-200 bg-yellow-50 px-4 py-3 text-sm text-ink-700 leading-relaxed max-h-32 overflow-y-auto">
+                  {aiText || <span className="text-ink-400 italic">Nenhum texto selecionado</span>}
                 </div>
               </div>
               {decks.length > 0 && (
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Deck de destino</label>
+                  <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Deck de destino</label>
                   <select
                     className={`${inputCls()} mt-1.5`}
                     value={aiDeckId}
@@ -743,8 +743,8 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                 </p>
               )}
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setAiModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <div className="flex justify-end gap-2 border-t border-ink-100 px-6 py-4">
+              <button onClick={() => setAiModal(false)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                 Cancelar
               </button>
               <button
@@ -848,7 +848,7 @@ export default function Materiais({ currentUserId }) {
 
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
+      <div className="flex h-full items-center justify-center text-ink-400">
         <p className="text-sm">Faça login para acessar seus materiais.</p>
       </div>
     );
@@ -922,12 +922,12 @@ export default function Materiais({ currentUserId }) {
           </div>
         ) : materials.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100">
-              <FileText size={36} className="text-slate-400" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-ink-100">
+              <FileText size={36} className="text-ink-400" />
             </div>
             <div className="text-center">
-              <p className="font-bold text-slate-700">Nenhum material ainda</p>
-              <p className="text-sm text-slate-500 mt-1">Envie PDFs de apostilas, leis ou resumos para estudar com IA.</p>
+              <p className="font-bold text-ink-700">Nenhum material ainda</p>
+              <p className="text-sm text-ink-500 mt-1">Envie PDFs de apostilas, leis ou resumos para estudar com IA.</p>
             </div>
             <button
               type="button"
@@ -952,20 +952,20 @@ export default function Materiais({ currentUserId }) {
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(m); }}
-                    className="opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all"
+                    className="opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-ink-300 hover:text-red-400 hover:bg-red-50 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold leading-tight text-slate-900">{m.title}</h3>
+                  <h3 className="font-semibold leading-tight text-ink-900">{m.title}</h3>
                   {m.disciplina && (
                     <p className="text-xs font-bold text-blue-600 mt-0.5">{m.disciplina}</p>
                   )}
                 </div>
 
-                <div className="flex items-center gap-3 mt-auto pt-1 text-xs text-slate-500 font-semibold">
+                <div className="flex items-center gap-3 mt-auto pt-1 text-xs text-ink-500 font-semibold">
                   {m.page_count > 0 && <span>{m.page_count} páginas</span>}
                   {m.file_size > 0 && <span>{formatFileSize(m.file_size)}</span>}
                   {m.last_page > 1 && (
@@ -981,10 +981,10 @@ export default function Materiais({ currentUserId }) {
       {/* Upload modal */}
       {uploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">Enviar PDF</h3>
-              <button onClick={() => setUploadModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-ink-200">
+            <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
+              <h3 className="text-base font-bold text-ink-800">Enviar PDF</h3>
+              <button onClick={() => setUploadModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100">
                 <X size={16} />
               </button>
             </div>
@@ -992,7 +992,7 @@ export default function Materiais({ currentUserId }) {
               <ErrBanner msg={uploadErr} />
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Título *</label>
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Título *</label>
                 <input
                   type="text"
                   className={inputCls()}
@@ -1003,7 +1003,7 @@ export default function Materiais({ currentUserId }) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Disciplina</label>
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Disciplina</label>
                 <input
                   type="text"
                   className={inputCls()}
@@ -1014,7 +1014,7 @@ export default function Materiais({ currentUserId }) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Arquivo PDF *</label>
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Arquivo PDF *</label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1024,18 +1024,18 @@ export default function Materiais({ currentUserId }) {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:border-blue-400 transition-all"
+                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-ink-300 bg-ink-50 px-4 py-4 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:border-blue-400 transition-all"
                 >
-                  <Upload size={18} className="text-slate-400" />
+                  <Upload size={18} className="text-ink-400" />
                   {uploadFile ? uploadFile.name : 'Clique para selecionar o PDF'}
                 </button>
                 {uploadFile && (
-                  <p className="text-xs text-slate-500 font-semibold">{formatFileSize(uploadFile.size)}</p>
+                  <p className="text-xs text-ink-500 font-semibold">{formatFileSize(uploadFile.size)}</p>
                 )}
               </div>
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setUploadModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <div className="flex justify-end gap-2 border-t border-ink-100 px-6 py-4">
+              <button onClick={() => setUploadModal(false)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                 Cancelar
               </button>
               <button

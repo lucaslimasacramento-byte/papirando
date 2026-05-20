@@ -86,7 +86,7 @@ export default function AdminUsuarios({
         trailingClassName="xl:max-w-[16rem]"
         trailing={
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Gerindo como</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Gerindo como</p>
             <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
         }
@@ -111,7 +111,7 @@ export default function AdminUsuarios({
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Base de perfis</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Usuários cadastrados</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Usuários cadastrados</h3>
           </div>
 
           <div className="relative max-w-md flex-1">
@@ -152,7 +152,7 @@ export default function AdminUsuarios({
                 <tr key={profile.id} className="border-b border-gray-100 align-top">
                   <td className="px-4 py-4">
                     <div>
-                      <p className="font-semibold text-slate-900">{profile.nome || 'Sem nome'}</p>
+                      <p className="font-semibold text-ink-900">{profile.nome || 'Sem nome'}</p>
                       <p className="mt-1 text-sm font-semibold text-gray-500">{profile.email || 'Sem email'}</p>
                     </div>
                   </td>
@@ -226,7 +226,7 @@ function SummaryCard({ icon: Icon, label, value }) {
         <Icon size={12} />
         {label}
       </div>
-      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-3 text-3xl font-semibold text-ink-900">{value}</p>
     </div>
   );
 }

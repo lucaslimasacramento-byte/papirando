@@ -5899,7 +5899,7 @@ export default function App() {
       <Suspense
         fallback={
           <div className="flex h-screen items-center justify-center" style={{ backgroundColor: theme.bg }}>
-            <span className="text-sm font-semibold text-slate-400">Carregando login...</span>
+            <span className="text-sm font-semibold text-ink-400">Carregando login...</span>
           </div>
         }
       >
@@ -6136,12 +6136,12 @@ export default function App() {
     <ErrorBoundary>
       <ToastProvider>
       <div
-        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
+        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-ink-800"
         style={{ backgroundColor: theme.bg }}
       >
       {chartTooltip && (
         <div
-          className="pointer-events-none fixed z-[9999] flex -translate-x-1/2 -translate-y-full transform items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-lg mt-[-10px]"
+          className="pointer-events-none fixed z-[9999] flex -translate-x-1/2 -translate-y-full transform items-center gap-2 rounded-lg bg-ink-800 px-3 py-2 text-xs font-semibold text-white shadow-lg mt-[-10px]"
           style={{ left: chartTooltip.x, top: chartTooltip.y }}
         >
           <div className="h-3 w-3 rounded-sm shadow-sm" style={{ backgroundColor: chartTooltip.cor }} />
@@ -6152,7 +6152,7 @@ export default function App() {
       {mobileNavOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-slate-900/25 backdrop-blur-[1px] lg:hidden"
+          className="fixed inset-0 z-40 bg-ink-900/25 backdrop-blur-[1px] lg:hidden"
           aria-label="Fechar menu de navegação"
           onClick={() => setMobileNavOpen(false)}
         />
@@ -6215,7 +6215,7 @@ export default function App() {
           <Suspense
             fallback={
               <div className="page-shell">
-                <div className="section-card flex min-h-[240px] items-center justify-center text-sm font-semibold text-slate-500">
+                <div className="section-card flex min-h-[240px] items-center justify-center text-sm font-semibold text-ink-500">
                   Carregando área...
                 </div>
               </div>

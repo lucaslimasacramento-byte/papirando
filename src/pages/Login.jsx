@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { normalizeBetaInviteToken } from '../lib/betaInvitesApi';
@@ -302,7 +302,7 @@ export default function Login({
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] font-sans text-slate-900 animate-in fade-in duration-500 lg:flex">
+    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] font-sans text-ink-900 animate-in fade-in duration-500 lg:flex">
       <section className="relative flex h-[42vh] min-h-[340px] w-full flex-col justify-center overflow-hidden bg-[radial-gradient(circle_at_18%_10%,rgba(96,165,250,0.28),transparent_28%),radial-gradient(circle_at_82%_78%,rgba(37,99,235,0.38),transparent_34%),linear-gradient(135deg,#081a3b_0%,#102A56_44%,#1D4ED8_100%)] px-6 py-6 sm:px-10 lg:h-screen lg:w-[55%] lg:px-10 lg:py-6 xl:px-14">
         <div className="pointer-events-none absolute inset-0 opacity-[0.12] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
         <div className="pointer-events-none absolute -left-28 top-16 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" />
@@ -410,7 +410,7 @@ export default function Login({
         <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-sky-100/70 blur-3xl" />
         <div className="pointer-events-none absolute right-16 top-1/4 h-40 w-40 rounded-full border border-blue-100/60" />
         <div className="relative z-10 mb-4 flex w-full max-w-xl justify-center lg:absolute lg:right-8 lg:top-8 lg:mb-0 lg:max-w-none lg:justify-end">
-          <div className="rounded-full border border-slate-200/80 bg-white/85 px-4 py-2 text-sm font-bold text-slate-500 shadow-[0_14px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-full border border-ink-200/80 bg-white/85 px-4 py-2 text-sm font-bold text-ink-500 shadow-[0_14px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             {isLoginMode ? 'Ainda não tem conta?' : 'Já possui conta?'}
             <button
               type="button"
@@ -554,7 +554,7 @@ export default function Login({
                   type="button"
                   onClick={handleToggleMode}
                   disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3.5 text-sm font-bold text-slate-700 transition-all duration-300 hover:bg-slate-50 hover:shadow-sm disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-ink-200 bg-white py-3.5 text-sm font-bold text-ink-700 transition-all duration-300 hover:bg-ink-50 hover:shadow-sm disabled:opacity-60"
                 >
                   <ArrowLeft size={16} />
                   Voltar para login
@@ -562,12 +562,12 @@ export default function Login({
               )}
 
               <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm font-bold text-slate-600">
+                <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm font-bold text-ink-600">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
-                    className="h-5 w-5 rounded-md border-slate-300 text-[#1d4ed8] shadow-sm focus:ring-4 focus:ring-blue-500/20"
+                    className="h-5 w-5 rounded-md border-ink-300 text-[#1d4ed8] shadow-sm focus:ring-4 focus:ring-blue-500/20"
                   />
                   Manter sessão ativa
                 </label>
@@ -598,8 +598,8 @@ export default function Login({
             </form>
           </div>
 
-          <p className="hidden items-center justify-center gap-2 text-center text-xs font-semibold text-slate-500 sm:flex">
-            <Lock size={14} className="text-slate-400" />
+          <p className="hidden items-center justify-center gap-2 text-center text-xs font-semibold text-ink-500 sm:flex">
+            <Lock size={14} className="text-ink-400" />
             Seus dados estão protegidos com criptografia de ponta.
           </p>
         </div>
@@ -644,11 +644,11 @@ function BetaInviteWelcome() {
 
       <div className="space-y-3 px-5 py-5">
         {benefits.map((item) => (
-          <div key={item} className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3">
+          <div key={item} className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-ink-50 px-3 py-3">
             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
               <CheckCircle2 size={14} />
             </span>
-            <p className="text-sm font-semibold leading-relaxed text-slate-700">{item}</p>
+            <p className="text-sm font-semibold leading-relaxed text-ink-700">{item}</p>
           </div>
         ))}
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-900">
@@ -674,11 +674,11 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+      <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.16em] text-ink-500">
         {label}
       </label>
       <div className="relative">
-        <Icon size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Icon size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
         <input
           type={type}
           placeholder={placeholder}
@@ -689,10 +689,10 @@ function InputField({
           maxLength={maxLength}
           max={max}
           readOnly={readOnly}
-          className={`h-[52px] w-full rounded-2xl border border-[#E2E8F0] py-3 pl-12 pr-4 text-base font-semibold text-slate-800 outline-none transition-all placeholder:text-slate-400 xl:h-[60px] xl:py-4 ${
+          className={`h-[52px] w-full rounded-2xl border border-[#E2E8F0] py-3 pl-12 pr-4 text-base font-semibold text-ink-800 outline-none transition-all placeholder:text-ink-400 xl:h-[60px] xl:py-4 ${
             readOnly
               ? 'bg-blue-50 text-blue-900'
-              : 'bg-slate-50/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-blue-500/15'
+              : 'bg-ink-50/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-blue-500/15'
           }`}
         />
       </div>
@@ -714,7 +714,7 @@ function PasswordField({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <label className="block text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+        <label className="block text-[11px] font-black uppercase tracking-[0.16em] text-ink-500">
           {label}
         </label>
 
@@ -731,20 +731,20 @@ function PasswordField({
       </div>
 
       <div className="relative">
-        <Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
         <input
           type={showPassword ? 'text' : 'password'}
           placeholder="••••••••"
           required
           value={value}
           onChange={onChange}
-          className="h-[52px] w-full rounded-2xl border border-[#E2E8F0] bg-slate-50/80 py-3 pl-12 pr-12 text-base font-semibold text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all placeholder:text-slate-400 focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-blue-500/15 xl:h-[60px] xl:py-4"
+          className="h-[52px] w-full rounded-2xl border border-[#E2E8F0] bg-ink-50/80 py-3 pl-12 pr-12 text-base font-semibold text-ink-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition-all placeholder:text-ink-400 focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-blue-500/15 xl:h-[60px] xl:py-4"
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
           disabled={loading}
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-xl p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-60"
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-xl p-1 text-ink-400 transition hover:bg-ink-100 hover:text-ink-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-60"
           aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
         >
           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}

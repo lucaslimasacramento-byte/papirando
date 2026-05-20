@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -84,8 +84,8 @@ function getCalmStatTone(label) {
       card: "border-sky-200/80 bg-gradient-to-br from-sky-50/90 via-white to-cyan-50/60",
       iconWrap: "bg-sky-100 text-sky-700",
       label: "text-sky-700",
-      value: "text-slate-900",
-      helper: "text-slate-600",
+      value: "text-ink-900",
+      helper: "text-ink-600",
     };
   }
   if (key.includes("press") || key.includes("reserva")) {
@@ -93,8 +93,8 @@ function getCalmStatTone(label) {
       card: "border-indigo-200/80 bg-gradient-to-br from-indigo-50/85 via-white to-violet-50/55",
       iconWrap: "bg-indigo-100 text-indigo-700",
       label: "text-indigo-700",
-      value: "text-slate-900",
-      helper: "text-slate-600",
+      value: "text-ink-900",
+      helper: "text-ink-600",
     };
   }
   if (key.includes("foco") || key.includes("mental")) {
@@ -102,16 +102,16 @@ function getCalmStatTone(label) {
       card: "border-teal-200/80 bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/55",
       iconWrap: "bg-teal-100 text-teal-700",
       label: "text-teal-700",
-      value: "text-slate-900",
-      helper: "text-slate-600",
+      value: "text-ink-900",
+      helper: "text-ink-600",
     };
   }
   return {
-    card: "border-slate-200 bg-white/90",
-    iconWrap: "bg-slate-100 text-slate-700",
-    label: "text-slate-700",
-    value: "text-slate-900",
-    helper: "text-slate-600",
+    card: "border-ink-200 bg-white/90",
+    iconWrap: "bg-ink-100 text-ink-700",
+    label: "text-ink-700",
+    value: "text-ink-900",
+    helper: "text-ink-600",
   };
 }
 
@@ -312,10 +312,10 @@ export default function SaudeMentalEFoco({
           leadingClassName="w-full items-center xl:max-w-[min(100%,46rem)]"
           leadingExtra={(
             <div className="mt-2 sm:mt-3">
-              <p className="flex items-start gap-2 border-l-2 border-white/20 pl-2.5 text-[11px] font-medium leading-snug text-slate-300 sm:pl-3 sm:text-xs">
-                <Quote size={14} className="mt-0.5 shrink-0 text-slate-400" aria-hidden />
+              <p className="flex items-start gap-2 border-l-2 border-white/20 pl-2.5 text-[11px] font-medium leading-snug text-ink-300 sm:pl-3 sm:text-xs">
+                <Quote size={14} className="mt-0.5 shrink-0 text-ink-400" aria-hidden />
                 <span>
-                  <span className="font-semibold text-slate-200">{cfg.quote.prefix} </span>
+                  <span className="font-semibold text-ink-200">{cfg.quote.prefix} </span>
                   {cfg.quote.body}
                 </span>
               </p>
@@ -324,7 +324,7 @@ export default function SaudeMentalEFoco({
         />
 
         <div className="flex flex-col gap-4">
-          <section className="rounded-2xl border border-slate-200/90 bg-white p-2.5 shadow-sm sm:p-3">
+          <section className="rounded-2xl border border-ink-200/90 bg-white p-2.5 shadow-sm sm:p-3">
             <div className="grid w-full min-w-0 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {cfg.statusCards.map(({ label, value, helper, icon }) => {
                 const Icon = wellnessIconComponent(icon);
@@ -335,7 +335,7 @@ export default function SaudeMentalEFoco({
             </div>
           </section>
 
-          <div className="shrink-0 rounded-2xl border border-cyan-100/90 bg-gradient-to-r from-white via-slate-50/85 to-cyan-50/35 p-2 shadow-sm ring-1 ring-cyan-100/70 sm:p-2.5">
+          <div className="shrink-0 rounded-2xl border border-cyan-100/90 bg-gradient-to-r from-white via-ink-50/85 to-cyan-50/35 p-2 shadow-sm ring-1 ring-cyan-100/70 sm:p-2.5">
             <div className="mb-1 px-1 sm:px-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-800/85">Navegação</p>
             </div>
@@ -352,8 +352,8 @@ export default function SaudeMentalEFoco({
                     onClick={() => setCurrentView(id)}
                     className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition sm:gap-2 sm:px-3.5 sm:text-sm ${
                       active
-                        ? "bg-slate-900 text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                        ? "bg-ink-900 text-white shadow-sm"
+                        : "bg-ink-100 text-ink-600 hover:bg-ink-200 hover:text-ink-900"
                     }`}
                   >
                     <Icon size={16} className="shrink-0 opacity-90" />
@@ -364,10 +364,10 @@ export default function SaudeMentalEFoco({
             </nav>
           </div>
 
-          <div className="rounded-xl border border-slate-200/90 bg-white/95 px-2.5 py-2 shadow-sm sm:px-3">
+          <div className="rounded-xl border border-ink-200/90 bg-white/95 px-2.5 py-2 shadow-sm sm:px-3">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
-              <p className="min-w-0 shrink-0 text-[11px] font-medium leading-snug text-slate-600 md:max-w-[13rem] lg:max-w-[15.5rem]">
-                <span className="font-semibold text-slate-800">{cfg.resumo.introLead} </span>
+              <p className="min-w-0 shrink-0 text-[11px] font-medium leading-snug text-ink-600 md:max-w-[13rem] lg:max-w-[15.5rem]">
+                <span className="font-semibold text-ink-800">{cfg.resumo.introLead} </span>
                 {cfg.resumo.intro}
               </p>
               <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden">
@@ -376,17 +376,17 @@ export default function SaudeMentalEFoco({
                   return (
                   <div
                     key={title}
-                    className="flex min-w-[9.5rem] flex-1 flex-col justify-center gap-0.5 rounded-lg border border-slate-200/80 bg-slate-50/95 px-2 py-1.5 shadow-sm sm:min-w-0"
+                    className="flex min-w-[9.5rem] flex-1 flex-col justify-center gap-0.5 rounded-lg border border-ink-200/80 bg-ink-50/95 px-2 py-1.5 shadow-sm sm:min-w-0"
                   >
                     <div className="flex items-center gap-1.5">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white text-blue-700 shadow-sm">
                         <Icon size={12} strokeWidth={2.25} />
                       </span>
-                      <span className="truncate text-[10px] font-bold uppercase tracking-wide text-slate-900">
+                      <span className="truncate text-[10px] font-bold uppercase tracking-wide text-ink-900">
                         {title}
                       </span>
                     </div>
-                    <p className="line-clamp-2 text-[9px] font-medium leading-snug text-slate-500">{text}</p>
+                    <p className="line-clamp-2 text-[9px] font-medium leading-snug text-ink-500">{text}</p>
                   </div>
                 );
                 })}
@@ -488,7 +488,7 @@ function OverviewSection({
             key={id}
             type="button"
             onClick={() => setCurrentView(id)}
-            className="group overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white text-left shadow-[0_14px_34px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-[0_20px_40px_rgba(37,99,235,0.08)]"
+            className="group overflow-hidden rounded-[1.8rem] border border-ink-200 bg-white text-left shadow-[0_14px_34px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:border-blue-100 hover:shadow-[0_20px_40px_rgba(37,99,235,0.08)]"
           >
             <div className={`h-1.5 w-full bg-gradient-to-r ${accent}`} />
             <div className="p-6">
@@ -496,13 +496,13 @@ function OverviewSection({
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 shadow-sm">
                   <Icon size={20} />
                 </div>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">
                   {eyebrow}
                 </span>
               </div>
 
-              <h3 className="mt-5 text-xl font-semibold text-slate-900">{title}</h3>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">{text}</p>
+              <h3 className="mt-5 text-xl font-semibold text-ink-900">{title}</h3>
+              <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{text}</p>
 
               <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
                 Abrir área
@@ -514,16 +514,16 @@ function OverviewSection({
         })}
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
+      <div className="overflow-hidden rounded-[2rem] border border-ink-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
         <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="p-6 lg:p-7">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
               {cfg.overviewDirection.eyebrow}
             </p>
-            <h3 className="mt-2 text-[1.9rem] font-semibold leading-tight text-slate-900">
+            <h3 className="mt-2 text-[1.9rem] font-semibold leading-tight text-ink-900">
               {cfg.overviewDirection.title}
             </h3>
-            <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-500">
+            <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-ink-500">
               {cfg.overviewDirection.body}
             </p>
 
@@ -538,8 +538,8 @@ function OverviewSection({
             </div>
           </div>
 
-          <div className="border-t border-slate-200 bg-[linear-gradient(135deg,#f8fbff_0%,#eef5ff_100%)] p-6 lg:border-l lg:border-t-0 lg:p-7">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <div className="border-t border-ink-200 bg-[linear-gradient(135deg,#f8fbff_0%,#eef5ff_100%)] p-6 lg:border-l lg:border-t-0 lg:p-7">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
               {cfg.overviewReadingsEyebrow}
             </p>
 
@@ -586,7 +586,7 @@ function BreathingSection({
   setBreathingState,
 }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[#0B1322] text-white shadow-[0_24px_60px_rgba(2,6,23,0.35)]">
+    <section className="overflow-hidden rounded-[2rem] border border-ink-200 bg-[#0B1322] text-white shadow-[0_24px_60px_rgba(2,6,23,0.35)]">
       <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="border-b border-white/10 p-6 lg:border-b-0 lg:border-r lg:p-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
@@ -635,10 +635,10 @@ function BreathingSection({
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_280px]">
             <div>
-              <p className="text-sm font-medium leading-relaxed text-slate-300">
+              <p className="text-sm font-medium leading-relaxed text-ink-300">
                 {activeTechniqueData.descricao}
               </p>
-              <p className="mt-3 text-xs font-semibold leading-relaxed text-slate-400">
+              <p className="mt-3 text-xs font-semibold leading-relaxed text-ink-400">
                 {activeTechniqueData.comoFazer}
               </p>
             </div>
@@ -660,7 +660,7 @@ function BreathingSection({
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
                   isBreathing && breathingState.phaseIndex === index
                     ? "border-blue-400/20 bg-blue-500/10 text-white"
-                    : "border-white/10 bg-white/5 text-slate-200"
+                    : "border-white/10 bg-white/5 text-ink-200"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -668,7 +668,7 @@ function BreathingSection({
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
                       isBreathing && breathingState.phaseIndex === index
                         ? "bg-white/15 text-white"
-                        : "bg-white/10 text-slate-200"
+                        : "bg-white/10 text-ink-200"
                     }`}
                   >
                     {index + 1}
@@ -736,13 +736,13 @@ function AudioLibrarySection({
   const canPlayActiveTrack = Boolean(activeTrack?.id && activeTrackUrl);
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
+    <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
             {audioEyebrow}
           </p>
-          <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+          <h3 className="mt-2 text-2xl font-semibold text-ink-900">
             {audioTitle}
           </h3>
         </div>
@@ -751,7 +751,7 @@ function AudioLibrarySection({
           <button
             type="button"
             onClick={() => setFocusModeOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700"
+            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-bold text-ink-700"
           >
             <Expand size={15} />
             Tela cheia
@@ -774,7 +774,7 @@ function AudioLibrarySection({
         <div className="space-y-4 pr-0 lg:pr-1">
           {Object.entries(groupedTracks).map(([category, items]) => (
             <div key={category}>
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
                 {category}
               </p>
 
@@ -787,7 +787,7 @@ function AudioLibrarySection({
                     className={`relative flex w-full items-center gap-3 overflow-hidden rounded-[1.4rem] border px-4 py-4 text-left transition ${
                       activeTrack?.id === track.id
                         ? "border-blue-200 bg-blue-50/70 shadow-sm"
-                        : "border-slate-200 bg-slate-50/70 hover:border-blue-100"
+                        : "border-ink-200 bg-ink-50/70 hover:border-blue-100"
                     }`}
                   >
                     <div
@@ -799,12 +799,12 @@ function AudioLibrarySection({
                       <Headphones size={18} />
                     </div>
                     <div className="relative z-10 min-w-0 flex-1">
-                      <p className="truncate font-semibold text-slate-900">{track.title}</p>
-                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      <p className="truncate font-semibold text-ink-900">{track.title}</p>
+                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">
                         {track.durationLabel || "Sem duração"}
                       </p>
                     </div>
-                    <ChevronRight size={16} className="relative z-10 text-slate-400" />
+                    <ChevronRight size={16} className="relative z-10 text-ink-400" />
                   </button>
                 ))}
               </div>
@@ -812,7 +812,7 @@ function AudioLibrarySection({
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-[1.7rem] border border-slate-200 bg-slate-50/70">
+        <div className="overflow-hidden rounded-[1.7rem] border border-ink-200 bg-ink-50/70">
           <div className="relative aspect-[16/8.4] bg-[#18365C]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(96,165,250,0.55),rgba(24,54,92,1)_70%)]" />
             <div className="relative z-10 flex h-full items-center justify-center">
@@ -823,20 +823,20 @@ function AudioLibrarySection({
           <div className="p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
                   {activeTrack?.category || "Biblioteca"}
                 </p>
-                <h4 className="mt-2 text-2xl font-semibold text-slate-900">
+                <h4 className="mt-2 text-2xl font-semibold text-ink-900">
                   {activeTrack?.title || "Nenhuma faixa disponível"}
                 </h4>
               </div>
 
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <span className="rounded-full border border-ink-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">
                 {activeTrack?.durationLabel || "Sem duração"}
               </span>
             </div>
 
-            <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500">
+            <p className="mt-3 text-sm font-medium leading-relaxed text-ink-500">
               {activeTrack?.description || "A biblioteca pode ser atualizada pelo administrador."}
             </p>
 
@@ -854,7 +854,7 @@ function AudioLibrarySection({
                 className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white transition ${
                   canPlayActiveTrack
                     ? "bg-blue-600 hover:bg-blue-700"
-                    : "cursor-not-allowed bg-slate-300"
+                    : "cursor-not-allowed bg-ink-300"
                 }`}
               >
                 <Play size={15} fill="currentColor" />
@@ -864,7 +864,7 @@ function AudioLibrarySection({
               <button
                 type="button"
                 onClick={() => setFocusModeOpen(true)}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700"
+                className="inline-flex items-center gap-2 rounded-2xl border border-ink-200 bg-white px-5 py-3 text-sm font-bold text-ink-700"
               >
                 <Expand size={15} />
                 Relaxar em tela cheia
@@ -872,8 +872,8 @@ function AudioLibrarySection({
             </div>
 
             {activeTrack?.credits ? (
-              <details className="mt-4 text-xs font-medium text-slate-400">
-                <summary className="cursor-pointer list-none font-bold text-slate-500">
+              <details className="mt-4 text-xs font-medium text-ink-400">
+                <summary className="cursor-pointer list-none font-bold text-ink-500">
                   Créditos
                 </summary>
                 <p className="mt-2 leading-relaxed">{activeTrack.credits}</p>
@@ -888,19 +888,19 @@ function AudioLibrarySection({
 
 function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTracks, setActiveTab, onOpenPause }) {
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
+    <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <Activity size={18} className="text-emerald-500" />
-            <h3 className="text-xl font-semibold text-slate-900">{videoTitle}</h3>
+            <h3 className="text-xl font-semibold text-ink-900">{videoTitle}</h3>
           </div>
-          <p className="mt-2 text-sm font-medium text-slate-500">
+          <p className="mt-2 text-sm font-medium text-ink-500">
             {videoBody}
           </p>
         </div>
 
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <span className="rounded-full border border-ink-200 bg-ink-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">
           {videoBadge}
         </span>
       </div>
@@ -909,7 +909,7 @@ function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTrac
         {publicVideoTracks.map((item) => (
           <div
             key={item.id}
-            className="group overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50/70 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(15,23,42,0.08)]"
+            className="group overflow-hidden rounded-[1.6rem] border border-ink-200 bg-ink-50/70 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(15,23,42,0.08)]"
           >
             <div className="aspect-[16/9] bg-[#18365C]">
               <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.35),rgba(24,54,92,1)_74%)]">
@@ -919,13 +919,13 @@ function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTrac
 
             <div className="p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold text-slate-900">{item.title}</p>
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <p className="font-semibold text-ink-900">{item.title}</p>
+                <span className="rounded-full border border-ink-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">
                   {item.durationLabel || "Vídeo"}
                 </span>
               </div>
 
-              <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">
+              <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">
                 {item.description || "Vídeo curto para pausar, soltar tensão e voltar melhor."}
               </p>
 
@@ -934,14 +934,14 @@ function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTrac
                   <button
                     type="button"
                     onClick={() => onOpenPause?.(item.id)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700"
+                    className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700"
                   >
                     <Play size={15} fill="currentColor" />
                     Abrir pausa
                   </button>
                 ) : null}
 
-                <span className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                <span className="inline-flex items-center rounded-xl border border-ink-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {item.category || "Micro pausa"}
                 </span>
               </div>
@@ -950,7 +950,7 @@ function QuickPausesSection({ videoTitle, videoBody, videoBadge, publicVideoTrac
         ))}
 
         {publicVideoTracks.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/60 p-5 text-sm font-medium text-slate-500 md:col-span-2 xl:col-span-3">
+          <div className="rounded-[1.5rem] border border-dashed border-ink-200 bg-ink-50/60 p-5 text-sm font-medium text-ink-500 md:col-span-2 xl:col-span-3">
             Nenhum vídeo de pausa foi cadastrado ainda. O administrador poderá subir a biblioteca
             depois pelo fluxo real em{" "}
             <button
@@ -1003,7 +1003,7 @@ function FocusMode({ track, onPlayTrack, onClose }) {
             onClick={() => onPlayTrack?.(track.id)}
             disabled={!canPlayTrack}
             className={`inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-semibold text-white ${
-              canPlayTrack ? "bg-blue-600" : "cursor-not-allowed bg-slate-500"
+              canPlayTrack ? "bg-blue-600" : "cursor-not-allowed bg-ink-500"
             }`}
           >
             <Play size={16} fill="currentColor" />
@@ -1073,8 +1073,8 @@ function CvvKpiStripCard({ cvv }) {
         <HeartHandshake size={13} className="shrink-0" />
         <p className="text-[9px] font-semibold uppercase tracking-[0.12em]">{cvv?.eyebrow || 'Apoio CVV'}</p>
       </div>
-      <p className="mt-2 text-lg font-semibold tracking-tight text-slate-900">{cvv?.phone || '188'}</p>
-      <p className="mt-0.5 flex-1 text-[10px] font-semibold leading-snug text-slate-600 line-clamp-3">
+      <p className="mt-2 text-lg font-semibold tracking-tight text-ink-900">{cvv?.phone || '188'}</p>
+      <p className="mt-0.5 flex-1 text-[10px] font-semibold leading-snug text-ink-600 line-clamp-3">
         {cvv?.helper || ''}
       </p>
       <p className="mt-auto inline-flex items-center gap-0.5 pt-2 text-[10px] font-semibold text-rose-600 group-hover:text-rose-700">
@@ -1088,15 +1088,15 @@ function CvvKpiStripCard({ cvv }) {
 function FatigueKpiStripCard({ score }) {
   const meta = fatigueStripMeta(score);
   return (
-    <div className="flex min-h-[142px] flex-col rounded-2xl border border-slate-200 bg-white/90 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] min-w-0">
+    <div className="flex min-h-[142px] flex-col rounded-2xl border border-ink-200 bg-white/90 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] min-w-0">
       <div className="flex items-center gap-1.5 text-indigo-700">
         <Activity size={13} className="shrink-0" />
         <p className="text-[9px] font-semibold uppercase tracking-[0.12em]">Carga mental</p>
       </div>
-      <p className="mt-2 text-lg font-semibold tracking-tight text-slate-900">{score}%</p>
-      <p className="mt-0.5 flex-1 text-[10px] font-medium leading-snug text-slate-500 line-clamp-3">{meta.helper}</p>
+      <p className="mt-2 text-lg font-semibold tracking-tight text-ink-900">{score}%</p>
+      <p className="mt-0.5 flex-1 text-[10px] font-medium leading-snug text-ink-500 line-clamp-3">{meta.helper}</p>
       <div className="mt-auto flex min-h-[22px] flex-col justify-end pt-2">
-        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/90">
+        <div className="h-1.5 overflow-hidden rounded-full bg-ink-200/90">
           <div
             className={`h-full rounded-full bg-gradient-to-r ${meta.tone} transition-all duration-700`}
             style={{ width: `${score}%` }}
@@ -1129,7 +1129,7 @@ function SurfaceStat({ icon: Icon, label, value, helper, compact = false, stripE
 
   return (
     <div
-      className={`group rounded-2xl border border-slate-200 bg-white/85 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.08)] ${
+      className={`group rounded-2xl border border-ink-200 bg-white/85 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.08)] ${
         compact ? "p-2.5 sm:p-3" : "p-4"
       }`}
     >
@@ -1139,8 +1139,8 @@ function SurfaceStat({ icon: Icon, label, value, helper, compact = false, stripE
           {label}
         </p>
       </div>
-      <p className={`mt-2 font-semibold text-slate-900 ${compact ? "text-base sm:text-lg" : "text-[1.75rem]"}`}>{value}</p>
-      <p className={`mt-0.5 font-semibold leading-snug text-slate-500 ${compact ? "text-[10px] sm:text-[11px]" : "text-xs"}`}>
+      <p className={`mt-2 font-semibold text-ink-900 ${compact ? "text-base sm:text-lg" : "text-[1.75rem]"}`}>{value}</p>
+      <p className={`mt-0.5 font-semibold leading-snug text-ink-500 ${compact ? "text-[10px] sm:text-[11px]" : "text-xs"}`}>
         {helper}
       </p>
     </div>
@@ -1149,22 +1149,22 @@ function SurfaceStat({ icon: Icon, label, value, helper, compact = false, stripE
 
 function MiniPill({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <div className="rounded-[1.2rem] border border-ink-200 bg-white px-4 py-3 shadow-sm">
       <div className="flex items-center gap-2 text-blue-700">
         <Icon size={14} />
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">{label}</p>
       </div>
-      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
+      <p className="mt-2 text-sm font-semibold text-ink-900">{value}</p>
     </div>
   );
 }
 
 function DashboardInfoCard({ label, value, helper }) {
   return (
-    <div className="rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
-      <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p>
+    <div className="rounded-[1.3rem] border border-ink-200 bg-white p-4 shadow-sm">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-400">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-ink-900">{value}</p>
+      <p className="mt-1 text-xs font-semibold text-ink-500">{helper}</p>
     </div>
   );
 }
@@ -1180,10 +1180,10 @@ function DashboardBar({ label, value, tone = "default" }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-slate-900">{label}</p>
-        <span className="text-xs font-semibold text-slate-500">{value}%</span>
+        <p className="text-sm font-semibold text-ink-900">{label}</p>
+        <span className="text-xs font-semibold text-ink-500">{value}%</span>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-slate-200">
+      <div className="h-2.5 overflow-hidden rounded-full bg-ink-200">
         <div className={`h-full rounded-full bg-gradient-to-r ${gradient}`} style={{ width: `${value}%` }} />
       </div>
     </div>
@@ -1192,9 +1192,9 @@ function DashboardBar({ label, value, tone = "default" }) {
 
 function InfoTiny({ label, value }) {
   return (
-    <div className="rounded-[1.1rem] border border-slate-200 bg-white p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    <div className="rounded-[1.1rem] border border-ink-200 bg-white p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink-900">{value}</p>
     </div>
   );
 }

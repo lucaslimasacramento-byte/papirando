@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -253,7 +253,7 @@ export default function AdminConfiguracoes({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Inteligência Artificial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Status do motor de IA</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Status do motor de IA</h3>
             <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
               A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
             </p>
@@ -278,7 +278,7 @@ export default function AdminConfiguracoes({
           <AiStatusCard
             label="Status"
             value={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'Online' : 'Offline'}
-            dotTone={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'bg-emerald-500' : 'bg-slate-400'}
+            dotTone={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'bg-emerald-500' : 'bg-ink-400'}
           />
           <AiStatusCard
             label="Gateway"
@@ -290,12 +290,12 @@ export default function AdminConfiguracoes({
       {activeSection === 'conteudo' ? (
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink-900 text-white">
               <LayoutGrid size={22} strokeWidth={1.75} />
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Navegação rápida</p>
-              <h3 className="mt-1 text-2xl font-semibold text-slate-900">Onde editar cada coisa</h3>
+              <h3 className="mt-1 text-2xl font-semibold text-ink-900">Onde editar cada coisa</h3>
               <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
                 Abra a seção correspondente, altere os campos e use o botão de salvar daquela área (ou &quot;Salvar tudo&quot; no topo para XP, selos, bem-estar e dicas de redação).
               </p>
@@ -308,7 +308,7 @@ export default function AdminConfiguracoes({
               className="flex flex-col items-start gap-2 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-5 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
             >
               <PanelLeft className="text-indigo-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Menu lateral</span>
+              <span className="text-sm font-bold text-ink-900">Menu lateral</span>
               <span className="text-xs font-medium leading-relaxed text-gray-600">
                 Nomes das páginas exibidos no menu (Início, Disciplinas, Audiolivros, etc.).
               </span>
@@ -319,7 +319,7 @@ export default function AdminConfiguracoes({
               className="flex flex-col items-start gap-2 rounded-2xl border border-rose-100 bg-rose-50/60 p-5 text-left transition hover:border-rose-200 hover:bg-rose-50"
             >
               <Lightbulb className="text-rose-600" size={22} />
-              <span className="text-sm font-bold text-slate-900">Redações · dicas</span>
+              <span className="text-sm font-bold text-ink-900">Redações · dicas</span>
               <span className="text-xs font-medium leading-relaxed text-gray-600">Textos de apoio e esqueletos que aparecem na aba Dicas.</span>
             </button>
             <button
@@ -328,7 +328,7 @@ export default function AdminConfiguracoes({
               className="flex flex-col items-start gap-2 rounded-2xl border border-sky-100 bg-sky-50/60 p-5 text-left transition hover:border-sky-200 hover:bg-sky-50"
             >
               <FileSignature className="text-sky-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Redações · banco</span>
+              <span className="text-sm font-bold text-ink-900">Redações · banco</span>
               <span className="text-xs font-medium leading-relaxed text-gray-600">
                 Temas do banco, kit (conectivos e modelos) e catálogo de audiolivros — tudo em formulário, sem JSON.
               </span>
@@ -339,7 +339,7 @@ export default function AdminConfiguracoes({
               className="flex flex-col items-start gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5 text-left transition hover:border-emerald-200 hover:bg-emerald-50"
             >
               <Music4 className="text-emerald-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Bem-estar</span>
+              <span className="text-sm font-bold text-ink-900">Bem-estar</span>
               <span className="text-xs font-medium leading-relaxed text-gray-600">Áudios e vídeos da biblioteca de bem-estar.</span>
             </button>
             <button
@@ -348,7 +348,7 @@ export default function AdminConfiguracoes({
               className="flex flex-col items-start gap-2 rounded-2xl border border-amber-100 bg-amber-50/60 p-5 text-left transition hover:border-amber-200 hover:bg-amber-50"
             >
               <Sparkles className="text-amber-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">XP e níveis</span>
+              <span className="text-sm font-bold text-ink-900">XP e níveis</span>
               <span className="text-xs font-medium leading-relaxed text-gray-600">Pontos por ação e curva de progressão.</span>
             </button>
             <button
@@ -357,7 +357,7 @@ export default function AdminConfiguracoes({
               className="flex flex-col items-start gap-2 rounded-2xl border border-violet-100 bg-violet-50/60 p-5 text-left transition hover:border-violet-200 hover:bg-violet-50"
             >
               <Trophy className="text-violet-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Selos</span>
+              <span className="text-sm font-bold text-ink-900">Selos</span>
               <span className="text-xs font-medium leading-relaxed text-gray-600">Conquistas e metas por métrica.</span>
             </button>
           </div>
@@ -371,7 +371,7 @@ export default function AdminConfiguracoes({
               <PanelLeft size={14} />
               Navegação
             </p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Nomes no menu lateral</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Nomes no menu lateral</h3>
             <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
               Cada linha corresponde a um item do menu. O id interno não muda (é o que o app usa para abrir a página); só o
               texto exibido ao usuário é personalizável.
@@ -388,7 +388,7 @@ export default function AdminConfiguracoes({
         <div className="grid gap-8 xl:grid-cols-[0.92fr_1.08fr]">
           <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Motor base</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">XP e progressão</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">XP e progressão</h3>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <NumberField label="XP por minuto" value={xpDraft.perMinute || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, perMinute: value }))} />
               <NumberField label="XP por questão" value={xpDraft.perQuestion || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, perQuestion: value }))} />
@@ -405,7 +405,7 @@ export default function AdminConfiguracoes({
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">XP extra</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Regras por escopo</h3>
+                <h3 className="mt-2 text-2xl font-semibold text-ink-900">Regras por escopo</h3>
               </div>
               <button
                 type="button"
@@ -524,7 +524,7 @@ export default function AdminConfiguracoes({
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Selos</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Selos personalizados</h3>
+              <h3 className="mt-2 text-2xl font-semibold text-ink-900">Selos personalizados</h3>
               <p className="mt-2 text-sm font-medium text-gray-500">
                 A regra pode abranger a plataforma inteira, um concurso, uma disciplina, um tópico ou, no futuro, um esquadrão.
               </p>
@@ -654,7 +654,7 @@ export default function AdminConfiguracoes({
             <>
               <div className="mb-5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Conteúdo editorial</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Textos e blocos da aba Bem-estar</h3>
+                <h3 className="mt-2 text-2xl font-semibold text-ink-900">Textos e blocos da aba Bem-estar</h3>
                 <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
                   Hero, métricas, CVV, visão geral, respirações e rótulos exibidos na página. A biblioteca de áudio/vídeo continua nas abas
                   Meditações e Pausas rápidas.
@@ -669,7 +669,7 @@ export default function AdminConfiguracoes({
               <div className="mb-5 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Biblioteca de bem-estar</p>
-                  <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+                  <h3 className="mt-2 text-2xl font-semibold text-ink-900">
                     {wellnessInnerTab === 'video' ? 'Biblioteca de pausas rápidas' : 'Biblioteca de meditações'}
                   </h3>
                   <p className="mt-2 text-sm font-medium text-gray-500">
@@ -860,11 +860,11 @@ export default function AdminConfiguracoes({
                 <FileSignature size={14} />
                 Conteúdo operacional
               </p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Dicas e esqueletos de redação</h3>
+              <h3 className="mt-2 text-2xl font-semibold text-ink-900">Dicas e esqueletos de redação</h3>
               <p className="mt-2 max-w-2xl text-sm font-medium text-gray-500">
                 Cadastre padrões (CESPE, FCC, etc.). Os alunos veem na aba &quot;Dicas de especialista&quot; em Redações. Os dados ficam na tabela{' '}
-                <code className="rounded bg-slate-100 px-1 text-xs">redacao_expert_tips</code> no Supabase (rode o SQL em{' '}
-                <code className="rounded bg-slate-100 px-1 text-xs">supabase/redacao_expert_tips.sql</code>).
+                <code className="rounded bg-ink-100 px-1 text-xs">redacao_expert_tips</code> no Supabase (rode o SQL em{' '}
+                <code className="rounded bg-ink-100 px-1 text-xs">supabase/redacao_expert_tips.sql</code>).
               </p>
             </div>
             <button
@@ -954,7 +954,7 @@ export default function AdminConfiguracoes({
               <FileSignature size={14} />
               Redações · dados vivos
             </p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Banco de temas e kit (conectivos / modelos)</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Banco de temas e kit (conectivos / modelos)</h3>
             <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
               Salve no Supabase (tabela <code className="rounded bg-gray-100 px-1 text-xs">redacao_site_content</code>
               — rode <code className="rounded bg-gray-100 px-1 text-xs">supabase/redacao_site_content.sql</code>
@@ -971,13 +971,13 @@ export default function AdminConfiguracoes({
                 <AdminRedacaoThemeBankEditor draft={themeBankDraft} onDraftChange={setThemeBankDraft} />
               </div>
             </div>
-            <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5">
+            <div className="min-w-0 rounded-2xl border border-ink-200 bg-ink-50/50 p-4 sm:p-5">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Kit (aba Dicas)</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-500">Kit (aba Dicas)</span>
                 <button
                   type="button"
                   onClick={() => setKitDraft(mergeRedacaoKitBundle(redacaoKitOverride))}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 transition hover:border-slate-300"
+                  className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-[11px] font-bold text-ink-600 transition hover:border-ink-300"
                 >
                   Descartar edição local
                 </button>
@@ -1125,7 +1125,7 @@ function AiStatusCard({ label, value, dotTone = '' }) {
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
       <div className="mt-2 flex items-center gap-2">
         {dotTone ? <span className={`h-2.5 w-2.5 rounded-full ${dotTone}`} /> : null}
-        <p className="text-sm font-semibold text-slate-900">{value}</p>
+        <p className="text-sm font-semibold text-ink-900">{value}</p>
       </div>
     </div>
   );
@@ -1152,7 +1152,7 @@ function CollapsibleCard({ isOpen, onToggle, title, subtitle, actions, children 
     <div className="overflow-hidden rounded-[1.4rem] border border-gray-200 bg-gray-50/70">
       <button type="button" onClick={onToggle} className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
+          <p className="truncate text-sm font-semibold text-ink-900">{title}</p>
           <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">{subtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">

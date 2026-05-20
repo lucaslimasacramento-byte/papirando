@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { WELLNESS_PAGE_ICON_KEYS } from '../lib/wellnessPageConfig';
 
@@ -129,8 +129,8 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-gray-200 bg-slate-50/80 p-4">
-        <h4 className="text-sm font-bold text-slate-900">Topo da página</h4>
+      <div className="rounded-2xl border border-gray-200 bg-ink-50/80 p-4">
+        <h4 className="text-sm font-bold text-ink-900">Topo da página</h4>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div>
             <FieldLabel>Etiqueta (badge)</FieldLabel>
@@ -234,10 +234,10 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Quatro cartões de status (grade superior)</h4>
+        <h4 className="text-sm font-bold text-ink-900">Quatro cartões de status (grade superior)</h4>
         <div className="mt-3 space-y-3">
           {c.statusCards.map((card, index) => (
-            <div key={`st-${index}`} className="grid gap-2 rounded-xl border border-gray-100 bg-slate-50/60 p-3 md:grid-cols-12 md:items-end">
+            <div key={`st-${index}`} className="grid gap-2 rounded-xl border border-gray-100 bg-ink-50/60 p-3 md:grid-cols-12 md:items-end">
               <div className="md:col-span-3">
                 <FieldLabel>Rótulo</FieldLabel>
                 <input
@@ -275,7 +275,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Bloco “Resumo” (chips)</h4>
+        <h4 className="text-sm font-bold text-ink-900">Bloco “Resumo” (chips)</h4>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div>
             <FieldLabel>Destaque antes do texto</FieldLabel>
@@ -298,7 +298,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
         </div>
         <div className="mt-4 space-y-3">
           {c.wellbeingPlan.map((chip, index) => (
-            <div key={`wb-${index}`} className="grid gap-2 rounded-xl border border-gray-100 bg-slate-50/60 p-3 md:grid-cols-12 md:items-end">
+            <div key={`wb-${index}`} className="grid gap-2 rounded-xl border border-gray-100 bg-ink-50/60 p-3 md:grid-cols-12 md:items-end">
               <div className="md:col-span-2">
                 <FieldLabel>Título</FieldLabel>
                 <input
@@ -327,11 +327,11 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Visão geral — três cartões grandes</h4>
+        <h4 className="text-sm font-bold text-ink-900">Visão geral — três cartões grandes</h4>
         <p className="mt-1 text-xs font-medium text-gray-500">Os ids fixos ligam aos botões de navegação (respiracao, meditacoes, pausas).</p>
         <div className="mt-3 space-y-4">
           {c.overviewCards.map((card) => (
-            <div key={card.id} className="rounded-xl border border-gray-100 bg-slate-50/60 p-3">
+            <div key={card.id} className="rounded-xl border border-gray-100 bg-ink-50/60 p-3">
               <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">{card.id}</p>
               <div className="mt-2 grid gap-2 md:grid-cols-2">
                 <div>
@@ -381,7 +381,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Texto do painel “Direcionamento”</h4>
+        <h4 className="text-sm font-bold text-ink-900">Texto do painel “Direcionamento”</h4>
         <div className="mt-3 grid gap-3">
           <div>
             <FieldLabel>Etiqueta</FieldLabel>
@@ -432,10 +432,10 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Barras “Leitura do dia”</h4>
+        <h4 className="text-sm font-bold text-ink-900">Barras “Leitura do dia”</h4>
         <div className="mt-3 space-y-3">
           {c.dailySignals.map((row, index) => (
-            <div key={`sig-${index}`} className="grid gap-2 rounded-xl border border-gray-100 bg-slate-50/60 p-3 md:grid-cols-12 md:items-end">
+            <div key={`sig-${index}`} className="grid gap-2 rounded-xl border border-gray-100 bg-ink-50/60 p-3 md:grid-cols-12 md:items-end">
               <div className="md:col-span-5">
                 <FieldLabel>Rótulo</FieldLabel>
                 <input
@@ -474,7 +474,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Rótulos da navegação</h4>
+        <h4 className="text-sm font-bold text-ink-900">Rótulos da navegação</h4>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {Object.entries(c.navLabels).map(([key, label]) => (
             <div key={key}>
@@ -491,7 +491,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-bold text-slate-900">Títulos das seções (áudio / vídeo / respiração)</h4>
+        <h4 className="text-sm font-bold text-ink-900">Títulos das seções (áudio / vídeo / respiração)</h4>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div>
             <FieldLabel>Badge respiração guiada</FieldLabel>
@@ -552,7 +552,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
 
       <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h4 className="text-sm font-bold text-slate-900">Respirações guiadas</h4>
+          <h4 className="text-sm font-bold text-ink-900">Respirações guiadas</h4>
           <button
             type="button"
             onClick={addTechnique}
@@ -566,7 +566,7 @@ export default function AdminWellnessPageConfigEditor({ config, setConfig }) {
           {c.breathingTechniques.map((tech) => (
             <div key={tech.id} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-bold text-slate-900">
+                <p className="text-sm font-bold text-ink-900">
                   {tech.nome || tech.id}
                   <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{tech.id}</span>
                 </p>

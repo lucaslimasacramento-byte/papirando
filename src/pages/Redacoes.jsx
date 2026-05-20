@@ -75,7 +75,7 @@ function RedacaoPartesGutter({ linePx, partes, totalHeightPx }) {
   let yCursor = 0;
   return (
     <div
-      className="shrink-0 select-none border-r border-slate-200/90 bg-slate-50/80"
+      className="shrink-0 select-none border-r border-ink-200/90 bg-ink-50/80"
       style={{ width: w, minHeight: svgH }}
       aria-hidden
     >
@@ -131,8 +131,8 @@ function RedacaoPartesGuiasPanel({
   disabled,
 }) {
   const row = (key, short) => (
-    <label key={key} className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-600">
-      <span className="w-8 shrink-0 text-slate-500">{short}</span>
+    <label key={key} className="flex items-center gap-1.5 text-[10px] font-semibold text-ink-600">
+      <span className="w-8 shrink-0 text-ink-500">{short}</span>
       <input
         type="number"
         min={2}
@@ -140,14 +140,14 @@ function RedacaoPartesGuiasPanel({
         value={partesLinhas[key]}
         disabled={disabled}
         onChange={(e) => onChangeParte(key, e.target.value)}
-        className="w-full min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-center font-mono text-[11px] text-slate-800 outline-none focus:border-indigo-400 disabled:opacity-50"
+        className="w-full min-w-0 rounded border border-ink-200 bg-white px-1 py-0.5 text-center font-mono text-[11px] text-ink-800 outline-none focus:border-indigo-400 disabled:opacity-50"
       />
     </label>
   );
 
   return (
-    <div className="flex flex-col gap-2 border-b border-slate-200/80 pb-2">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Partes · linhas</p>
+    <div className="flex flex-col gap-2 border-b border-ink-200/80 pb-2">
+      <p className="text-[9px] font-bold uppercase tracking-wide text-ink-500">Partes · linhas</p>
       <div className="grid grid-cols-1 gap-1">
         {row('intro', 'Int')}
         {row('d1', 'D1')}
@@ -161,19 +161,19 @@ function RedacaoPartesGuiasPanel({
             type="button"
             disabled={disabled}
             onClick={() => onPreset(p.v)}
-            className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50/50 disabled:opacity-50"
+            className="rounded border border-ink-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-ink-600 transition hover:border-indigo-200 hover:bg-indigo-50/50 disabled:opacity-50"
           >
             {p.label}
           </button>
         ))}
       </div>
-      <label className="flex cursor-pointer items-center gap-1.5 text-[10px] font-semibold text-slate-600">
+      <label className="flex cursor-pointer items-center gap-1.5 text-[10px] font-semibold text-ink-600">
         <input
           type="checkbox"
           checked={partesGuiasAtivas}
           disabled={disabled}
           onChange={(e) => onToggleGuias(e.target.checked)}
-          className="rounded border-slate-300 text-indigo-600"
+          className="rounded border-ink-300 text-indigo-600"
         />
         Setas na margem
       </label>
@@ -191,8 +191,8 @@ function RedacaoPartesGuiasPanel({
 
 function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) {
   return (
-    <aside className="flex flex-shrink-0 flex-row gap-1 overflow-x-auto border-t-0 border-slate-200 bg-transparent p-2 md:w-full md:flex-col md:gap-1 md:overflow-y-auto md:pl-2 md:pt-0">
-      <p className="hidden w-full text-[9px] font-bold uppercase tracking-wide text-slate-500 md:block">Esqueleto</p>
+    <aside className="flex flex-shrink-0 flex-row gap-1 overflow-x-auto border-t-0 border-ink-200 bg-transparent p-2 md:w-full md:flex-col md:gap-1 md:overflow-y-auto md:pl-2 md:pt-0">
+      <p className="hidden w-full text-[9px] font-bold uppercase tracking-wide text-ink-500 md:block">Esqueleto</p>
       <button
         type="button"
         disabled={disabled}
@@ -200,7 +200,7 @@ function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) 
         className={`flex min-w-[4.5rem] shrink-0 items-center justify-center gap-1 rounded-lg border px-2 py-2 text-left text-[11px] font-bold transition md:w-full md:justify-start ${
           activeId == null
             ? 'border-blue-300 bg-blue-50 text-blue-900'
-            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+            : 'border-ink-200 bg-white text-ink-600 hover:border-ink-300'
         } disabled:opacity-50`}
       >
         <span className="font-mono text-xs opacity-70">∅</span>
@@ -219,12 +219,12 @@ function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) 
             className={`flex min-w-[7.5rem] shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-left transition md:w-full ${
               active
                 ? 'border-blue-400 bg-blue-600 text-white shadow-sm'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50/50'
+                : 'border-ink-200 bg-white text-ink-700 hover:border-blue-200 hover:bg-blue-50/50'
             } disabled:opacity-50`}
           >
             <span
               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-[11px] font-bold ${
-                active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                active ? 'bg-white/20 text-white' : 'bg-ink-100 text-ink-600'
               }`}
             >
               {n}
@@ -233,7 +233,7 @@ function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) 
           </button>
         );
       })}
-      <p className="hidden pt-1 text-[9px] font-medium leading-snug text-slate-400 md:block">
+      <p className="hidden pt-1 text-[9px] font-medium leading-snug text-ink-400 md:block">
         4+7+7+4 linhas + faixas. Est. 15–20 min.
       </p>
     </aside>
@@ -274,8 +274,8 @@ function eixoTagClasses(eixo) {
     educacao: 'bg-amber-100 text-amber-800',
   }[eixo];
   return {
-    axis: axis || 'bg-slate-100 text-slate-600',
-    banca: 'bg-slate-100 text-slate-500',
+    axis: axis || 'bg-ink-100 text-ink-600',
+    banca: 'bg-ink-100 text-ink-500',
   };
 }
 
@@ -696,7 +696,7 @@ export default function Redacoes({
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <div className="w-fit max-w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+          <div className="w-fit max-w-full overflow-x-auto rounded-2xl border border-ink-200 bg-white p-2 shadow-sm">
             <div className="flex gap-2 flex-wrap">
               <PremiumTabButton
                 active={redacaoInnerTab === 'correcao'}
@@ -723,9 +723,9 @@ export default function Redacoes({
             <>
               <section className="section-card relative flex flex-col overflow-hidden p-4 md:p-5 animate-in fade-in zoom-in-95 duration-300">
                 <div className="relative z-10 flex flex-col">
-                  <div className="border-b border-slate-100 pb-4">
-                    <h2 className="text-lg font-semibold tracking-tight text-slate-900 md:text-xl">Nova correção</h2>
-                    <p className="mt-0.5 text-xs font-medium text-slate-500">
+                  <div className="border-b border-ink-100 pb-4">
+                    <h2 className="text-lg font-semibold tracking-tight text-ink-900 md:text-xl">Nova correção</h2>
+                    <p className="mt-0.5 text-xs font-medium text-ink-500">
                       Escolha a banca, digite ou envie o texto e corrija com IA. Dicas por banca no ícone de ajuda (?).
                     </p>
                   </div>
@@ -741,7 +741,7 @@ export default function Redacoes({
                             setBancaHelpTab(redacaoBanca);
                             setBancaHelpOpen(true);
                           }}
-                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-bold text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ink-200 bg-white text-sm font-bold text-ink-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
                           aria-label="Parâmetros da banca"
                         >
                           <CircleHelp size={18} strokeWidth={2} />
@@ -751,7 +751,7 @@ export default function Redacoes({
                       <select
                         value={redacaoBanca}
                         onChange={(e) => setRedacaoBanca(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 md:max-w-xl"
+                        className="w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-3 text-sm font-semibold text-ink-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 md:max-w-xl"
                       >
                         {REDACAO_BANCA_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -762,7 +762,7 @@ export default function Redacoes({
                     </FieldBlock>
                   </div>
 
-                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-1.5 w-fit max-w-full overflow-x-auto">
+                  <div className="mt-3 rounded-xl border border-ink-200 bg-ink-50 p-1.5 w-fit max-w-full overflow-x-auto">
                     <div className="flex flex-wrap gap-2">
                       <PremiumTabButton
                         active={redacaoInputMode === 'text'}
@@ -786,22 +786,22 @@ export default function Redacoes({
 
                   <div className="mt-4 flex flex-col">
                     {redacaoInputMode === 'text' ? (
-                      <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#f8fafc] shadow-sm">
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 bg-white px-3 py-1.5">
+                      <div className="flex flex-col overflow-hidden rounded-2xl border border-ink-200 bg-[#f8fafc] shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-200/80 bg-white px-3 py-1.5">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Sua redação</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Sua redação</span>
                             {esqueletoAtivoId ? (
                               <span className="truncate rounded-md border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-800">
                                 {esqueletosParaEditor.find((e) => e.id === esqueletoAtivoId)?.titulo || 'Esqueleto'}
                               </span>
                             ) : null}
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-600">
-                            <span className="tabular-nums text-slate-800">
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-ink-600">
+                            <span className="tabular-nums text-ink-800">
                               {linhasTexto} linha{linhasTexto === 1 ? '' : 's'}
                             </span>
-                            <span className="text-slate-400">·</span>
-                            <span className="text-slate-500">
+                            <span className="text-ink-400">·</span>
+                            <span className="text-ink-500">
                               Pauta mín. {REDACAO_EDITOR_LINE_MIN} linhas · referência até {REDACAO_EDITOR_LINE_MAX} · sem rolagem interna · ~{REDACAO_CHARS_PER_LINE_REF}{' '}
                               chars/linha
                             </span>
@@ -825,14 +825,14 @@ export default function Redacoes({
                                   }}
                                   placeholder="Escreva ou cole a sua redação aqui…"
                                   style={textareaEssayStyle}
-                                  className="redacao-essay-input box-border min-w-0 w-full max-w-[72ch] flex-1 resize-none border-0 border-l-[3px] border-l-sky-200/90 bg-transparent px-2 py-0 font-serif text-[15px] font-medium text-slate-800 outline-none ring-0 placeholder:text-slate-400 focus:ring-0"
+                                  className="redacao-essay-input box-border min-w-0 w-full max-w-[72ch] flex-1 resize-none border-0 border-l-[3px] border-l-sky-200/90 bg-transparent px-2 py-0 font-serif text-[15px] font-medium text-ink-800 outline-none ring-0 placeholder:text-ink-400 focus:ring-0"
                                   spellCheck
                                   disabled={corrigindo}
                                 />
                               </div>
                             </div>
-                            <div className="flex shrink-0 flex-col border-t border-slate-200 bg-slate-50/95 md:w-[200px] md:border-l md:border-t-0">
-                              <div className="border-b border-slate-200/80 px-2 pb-2 pt-2">
+                            <div className="flex shrink-0 flex-col border-t border-ink-200 bg-ink-50/95 md:w-[200px] md:border-l md:border-t-0">
+                              <div className="border-b border-ink-200/80 px-2 pb-2 pt-2">
                                 <RedacaoPartesGuiasPanel
                                   partesLinhas={partesLinhas}
                                   onChangeParte={handleParteLinhaChange}
@@ -877,30 +877,30 @@ export default function Redacoes({
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="group flex w-full flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/80 p-5 text-center transition hover:border-blue-200"
+                            className="group flex w-full flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-ink-200 bg-ink-50/80 p-5 text-center transition hover:border-blue-200"
                           >
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-blue-700 shadow-sm transition group-hover:scale-105">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-ink-200 bg-white text-blue-700 shadow-sm transition group-hover:scale-105">
                               <UploadCloud size={22} />
                             </div>
-                            <h4 className="mt-3 text-sm font-semibold text-slate-900">
+                            <h4 className="mt-3 text-sm font-semibold text-ink-900">
                               Clique para anexar foto ou PDF da redação
                             </h4>
-                            <p className="mt-1 text-xs font-medium text-slate-500">
+                            <p className="mt-1 text-xs font-medium text-ink-500">
                               JPG, PNG ou PDF. Depois você revisa a transcrição antes da correção.
                             </p>
                           </button>
                         )}
 
                         {uploadStatus === 'loading' && (
-                          <div className="flex min-h-[200px] w-full flex-1 flex-col items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-center">
+                          <div className="flex min-h-[200px] w-full flex-1 flex-col items-center justify-center rounded-2xl border border-ink-200 bg-ink-50 text-center">
                             <Loader2 size={36} className="animate-spin text-blue-700" />
-                            <h4 className="mt-3 text-sm font-semibold text-slate-900">Lendo anexo…</h4>
-                            <p className="mt-1 text-xs font-medium text-slate-500">Aguarde alguns segundos.</p>
+                            <h4 className="mt-3 text-sm font-semibold text-ink-900">Lendo anexo…</h4>
+                            <p className="mt-1 text-xs font-medium text-ink-500">Aguarde alguns segundos.</p>
                           </div>
                         )}
 
                         {uploadStatus === 'review' && (
-                          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#f8fafc] shadow-sm animate-in fade-in duration-500">
+                          <div className="flex flex-col overflow-hidden rounded-2xl border border-ink-200 bg-[#f8fafc] shadow-sm animate-in fade-in duration-500">
                             <div className="border-b border-amber-100 bg-amber-50/90 px-3 py-1.5">
                               <div className="flex gap-2">
                                 <AlertTriangle className="shrink-0 text-amber-500" size={16} />
@@ -909,11 +909,11 @@ export default function Redacoes({
                                 </p>
                               </div>
                             </div>
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 bg-white px-3 py-1.5">
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Transcrição</span>
-                              <span className="text-[11px] font-semibold text-slate-600">
-                                <span className="tabular-nums text-slate-800">{linhasTexto} linhas</span>
-                                <span className="text-slate-400"> · </span>
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-200/80 bg-white px-3 py-1.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Transcrição</span>
+                              <span className="text-[11px] font-semibold text-ink-600">
+                                <span className="tabular-nums text-ink-800">{linhasTexto} linhas</span>
+                                <span className="text-ink-400"> · </span>
                                 Pauta mín. {REDACAO_EDITOR_LINE_MIN} · até {REDACAO_EDITOR_LINE_MAX} linhas (ref.) · sem rolagem interna · ~{REDACAO_CHARS_PER_LINE_REF}{' '}
                                 chars/linha
                               </span>
@@ -933,14 +933,14 @@ export default function Redacoes({
                                       value={transcribedText}
                                       onChange={(e) => setTranscribedText(e.target.value)}
                                       style={textareaEssayStyle}
-                                      className="redacao-essay-input box-border min-w-0 w-full max-w-[72ch] flex-1 resize-none border-0 border-l-[3px] border-l-sky-200/90 bg-transparent px-2 py-0 font-serif text-[15px] font-medium text-slate-800 outline-none ring-0 focus:ring-0"
+                                      className="redacao-essay-input box-border min-w-0 w-full max-w-[72ch] flex-1 resize-none border-0 border-l-[3px] border-l-sky-200/90 bg-transparent px-2 py-0 font-serif text-[15px] font-medium text-ink-800 outline-none ring-0 focus:ring-0"
                                       spellCheck
                                       disabled={corrigindo}
                                     />
                                   </div>
                                 </div>
-                                <div className="flex shrink-0 flex-col border-t border-slate-200 bg-slate-50/95 md:w-[200px] md:border-l md:border-t-0">
-                                  <div className="border-b border-slate-200/80 px-2 pb-2 pt-2">
+                                <div className="flex shrink-0 flex-col border-t border-ink-200 bg-ink-50/95 md:w-[200px] md:border-l md:border-t-0">
+                                  <div className="border-b border-ink-200/80 px-2 pb-2 pt-2">
                                     <RedacaoPartesGuiasPanel
                                       partesLinhas={partesLinhas}
                                       onChangeParte={handleParteLinhaChange}
@@ -995,7 +995,7 @@ export default function Redacoes({
                             Gerando parecer…
                           </span>
                         ) : (
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Critérios da banca</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Critérios da banca</p>
                         )}
                       </div>
                       <button
@@ -1015,25 +1015,25 @@ export default function Redacoes({
               {latestCorrection ? (
               <section className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400">
+                  <h3 className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-400">
                     <CheckCircle2 size={15} className="text-emerald-500" />
                     Última correção
                   </h3>
-                  <span className="text-xs font-bold text-slate-400">
+                  <span className="text-xs font-bold text-ink-400">
                     {formatRelativeTimePt(displaySnapshot?.at) || '—'}
                   </span>
                 </div>
 
-                <div className="rounded-[1.25rem] border border-slate-200 bg-white p-6 md:p-8 xl:p-10 shadow-[0_25px_60px_-42px_rgba(15,23,42,0.35)]">
-                  <div className="flex flex-col gap-6 border-b border-slate-100 pb-8 md:flex-row md:items-center md:justify-between">
+                <div className="rounded-[1.25rem] border border-ink-200 bg-white p-6 md:p-8 xl:p-10 shadow-[0_25px_60px_-42px_rgba(15,23,42,0.35)]">
+                  <div className="flex flex-col gap-6 border-b border-ink-100 pb-8 md:flex-row md:items-center md:justify-between">
                     <div className="min-w-0 flex-1">
-                      <span className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      <span className="inline-flex items-center rounded-xl border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-500">
                         {displaySnapshot?.banca || 'CESPE / CEBRASPE'}
                       </span>
-                      <h3 className="mt-4 text-2xl md:text-[2rem] font-semibold tracking-tight text-slate-900">
+                      <h3 className="mt-4 text-2xl md:text-[2rem] font-semibold tracking-tight text-ink-900">
                         {displaySnapshot?.tema || 'Redação'}
                       </h3>
-                      <p className="mt-2 text-sm font-medium text-slate-500">
+                      <p className="mt-2 text-sm font-medium text-ink-500">
                         {displaySnapshot
                           ? `${displaySnapshot.lines} linhas estimadas • ${displaySnapshot.paragraphs} parágrafos • critérios da banca`
                           : '—'}
@@ -1080,7 +1080,7 @@ export default function Redacoes({
                           <BrainCircuit size={20} />
                           Análise do tutor IA
                         </h4>
-                        <p className="mt-1 text-sm font-medium text-slate-500">
+                        <p className="mt-1 text-sm font-medium text-ink-500">
                           Resumo, pontos fortes e ajustes objetivos.
                         </p>
                       </div>
@@ -1104,7 +1104,7 @@ export default function Redacoes({
                         custom
                         text={
                           grammarFeedbackItems.length > 0 ? (
-                            <ul className="ml-2 list-disc space-y-1 text-sm font-medium leading-relaxed text-slate-700">
+                            <ul className="ml-2 list-disc space-y-1 text-sm font-medium leading-relaxed text-ink-700">
                               {grammarFeedbackItems.map((item) => (
                                 <li key={item.id}>
                                   {item.excerpt ? <span className="line-through text-red-400">{item.excerpt}</span> : 'Trecho'}
@@ -1150,23 +1150,23 @@ export default function Redacoes({
 
           {redacaoInnerTab === 'temas' && (
             <section className="animate-in fade-in zoom-in-95 duration-300 flex flex-col gap-6">
-              <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_20px_55px_-42px_rgba(15,23,42,0.35)]">
+              <div className="rounded-[2rem] border border-ink-200 bg-white p-5 shadow-[0_20px_55px_-42px_rgba(15,23,42,0.35)]">
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_250px]">
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" size={18} />
                     <input
                       type="search"
                       value={temaBankQuery}
                       onChange={(e) => setTemaBankQuery(e.target.value)}
                       placeholder="Procurar tema de redação..."
-                      className="w-full rounded-[1.2rem] border border-slate-200 bg-slate-50 py-3.5 pl-12 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                      className="w-full rounded-[1.2rem] border border-ink-200 bg-ink-50 py-3.5 pl-12 pr-4 text-sm font-bold text-ink-700 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50"
                     />
                   </div>
 
                   <select
                     value={temaBankEixo}
                     onChange={(e) => setTemaBankEixo(e.target.value)}
-                    className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-bold text-slate-600 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                    className="rounded-[1.2rem] border border-ink-200 bg-ink-50 px-4 py-3.5 text-sm font-bold text-ink-600 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50"
                   >
                     {REDACAO_EIXO_FILTERS.map((opt) => (
                       <option key={opt.id || 'all'} value={opt.id}>
@@ -1178,10 +1178,10 @@ export default function Redacoes({
               </div>
 
               {temasFiltrados.length === 0 ? (
-                <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50/80 px-6 py-14 text-center">
-                  <List className="mx-auto text-slate-300" size={36} strokeWidth={1.5} />
-                  <p className="mt-3 text-sm font-semibold text-slate-700">Nenhum tema com esses filtros</p>
-                  <p className="mx-auto mt-1 max-w-sm text-xs font-medium text-slate-500">
+                <div className="rounded-[1.5rem] border border-dashed border-ink-200 bg-ink-50/80 px-6 py-14 text-center">
+                  <List className="mx-auto text-ink-300" size={36} strokeWidth={1.5} />
+                  <p className="mt-3 text-sm font-semibold text-ink-700">Nenhum tema com esses filtros</p>
+                  <p className="mx-auto mt-1 max-w-sm text-xs font-medium text-ink-500">
                     Limpe a busca ou escolha outro eixo para ver sugestões do banco.
                   </p>
                   <button
@@ -1259,7 +1259,7 @@ export default function Redacoes({
             description="Abra no editor para revisar o texto ou excluir itens que não precisa mais guardar."
           >
             {historicoRecente.length === 0 ? (
-              <p className="rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-xs font-medium text-slate-500">
+              <p className="rounded-[1.2rem] border border-dashed border-ink-200 bg-ink-50 px-4 py-6 text-center text-xs font-medium text-ink-500">
                 Nada salvo ainda. Corrija uma redação para ver o histórico aqui.
               </p>
             ) : (
@@ -1276,12 +1276,12 @@ export default function Redacoes({
                   return (
                     <li
                       key={item.id}
-                      className="rounded-[1.15rem] border border-slate-100 bg-slate-50/90 px-3 py-2.5"
+                      className="rounded-[1.15rem] border border-ink-100 bg-ink-50/90 px-3 py-2.5"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold leading-snug text-slate-800">{temaShort}</p>
-                          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          <p className="text-xs font-semibold leading-snug text-ink-800">{temaShort}</p>
+                          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
                             {nota} · {formatRelativeTimePt(item.updated_at || item.created_at)}
                           </p>
                         </div>
@@ -1289,7 +1289,7 @@ export default function Redacoes({
                           <button
                             type="button"
                             onClick={() => openRedacaoInEditor(item)}
-                            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
+                            className="rounded-lg border border-ink-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
                           >
                             Abrir
                           </button>
@@ -1297,7 +1297,7 @@ export default function Redacoes({
                             <button
                               type="button"
                               onClick={() => handleDeleteRedacao(item)}
-                              className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                              className="rounded-lg border border-ink-200 bg-white p-1.5 text-ink-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                               aria-label="Excluir redação"
                             >
                               <Trash2 size={14} />
@@ -1321,7 +1321,7 @@ export default function Redacoes({
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-600">
                 Ajuste crítico
               </p>
-              <p className="mt-2 text-sm font-bold leading-relaxed text-slate-700">
+              <p className="mt-2 text-sm font-bold leading-relaxed text-ink-700">
                 Detalhar agente, ação e finalidade costuma valer mais que adornar o primeiro parágrafo.
               </p>
             </div>
@@ -1333,23 +1333,23 @@ export default function Redacoes({
         <div className="fixed inset-0 z-[90] flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-950/55 backdrop-blur-sm"
+            className="absolute inset-0 bg-ink-950/55 backdrop-blur-sm"
             aria-label="Fechar"
             onClick={() => setExpertModalTip(null)}
           />
-          <div className="relative z-10 flex max-h-[min(88vh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:rounded-2xl">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
-              <h3 className="pr-8 text-base font-semibold text-slate-900">{expertModalTip.title}</h3>
+          <div className="relative z-10 flex max-h-[min(88vh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-ink-200 bg-white shadow-2xl sm:rounded-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-ink-100 px-4 py-3 sm:px-5">
+              <h3 className="pr-8 text-base font-semibold text-ink-900">{expertModalTip.title}</h3>
               <button
                 type="button"
                 onClick={() => setExpertModalTip(null)}
-                className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="shrink-0 rounded-lg border border-ink-200 px-2 py-1 text-xs font-semibold text-ink-600 hover:bg-ink-50"
               >
                 Fechar
               </button>
             </div>
             <div className="overflow-y-auto px-4 py-4 sm:px-5">
-              <pre className="whitespace-pre-wrap font-sans text-sm font-medium leading-relaxed text-slate-700">
+              <pre className="whitespace-pre-wrap font-sans text-sm font-medium leading-relaxed text-ink-700">
                 {expertModalTip.body || 'Sem conteúdo cadastrado.'}
               </pre>
             </div>
@@ -1361,27 +1361,27 @@ export default function Redacoes({
         <div className="fixed inset-0 z-[92] flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-950/55 backdrop-blur-sm"
+            className="absolute inset-0 bg-ink-950/55 backdrop-blur-sm"
             aria-label="Fechar"
             onClick={() => setBancaHelpOpen(false)}
           />
-          <div className="relative z-10 flex max-h-[min(92vh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:rounded-2xl">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
+          <div className="relative z-10 flex max-h-[min(92vh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-ink-200 bg-white shadow-2xl sm:rounded-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-ink-100 px-4 py-3 sm:px-5">
               <div>
-                <h3 className="text-base font-semibold text-slate-900">Parâmetros por banca</h3>
-                <p className="mt-0.5 text-xs font-medium text-slate-500">
+                <h3 className="text-base font-semibold text-ink-900">Parâmetros por banca</h3>
+                <p className="mt-0.5 text-xs font-medium text-ink-500">
                   Estilo de cobrança, checklist e um exemplo nível prova (~25–30 linhas).
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setBancaHelpOpen(false)}
-                className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="shrink-0 rounded-lg border border-ink-200 px-2 py-1 text-xs font-semibold text-ink-600 hover:bg-ink-50"
               >
                 Fechar
               </button>
             </div>
-            <div className="border-b border-slate-100 bg-slate-50/80 px-3 py-2">
+            <div className="border-b border-ink-100 bg-ink-50/80 px-3 py-2">
               <div className="flex gap-1.5 overflow-x-auto pb-0.5">
                 {REDACAO_BANCA_OPTIONS.map((opt) => (
                   <button
@@ -1390,8 +1390,8 @@ export default function Redacoes({
                     onClick={() => setBancaHelpTab(opt.value)}
                     className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
                       bancaHelpTab === opt.value
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'border border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:text-blue-800'
+                        ? 'bg-ink-900 text-white shadow-sm'
+                        : 'border border-ink-200 bg-white text-ink-600 hover:border-blue-200 hover:text-blue-800'
                     }`}
                   >
                     {opt.value === 'CESPE / CEBRASPE' ? 'CEBRASPE' : opt.value}
@@ -1403,17 +1403,17 @@ export default function Redacoes({
               {(() => {
                 const g = REDACAO_BANCA_GUIDES[bancaHelpTab];
                 if (!g) {
-                  return <p className="text-sm font-medium text-slate-500">Sem guia para esta banca.</p>;
+                  return <p className="text-sm font-medium text-ink-500">Sem guia para esta banca.</p>;
                 }
                 return (
                   <div className="space-y-4">
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Estilo</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-800">{g.estilo}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Estilo</p>
+                      <p className="mt-1 text-sm font-semibold text-ink-800">{g.estilo}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">O que costuma pesar</p>
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-medium leading-relaxed text-slate-700">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">O que costuma pesar</p>
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-medium leading-relaxed text-ink-700">
                         {g.bullets.map((b) => (
                           <li key={b}>{b}</li>
                         ))}
@@ -1424,8 +1424,8 @@ export default function Redacoes({
                       <p className="mt-1 text-sm font-bold text-emerald-950">{g.resumo}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Exemplo nível prova</p>
-                      <pre className="mt-2 max-h-[min(38vh,280px)] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-3 font-sans text-[13px] font-medium leading-relaxed text-slate-700">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Exemplo nível prova</p>
+                      <pre className="mt-2 max-h-[min(38vh,280px)] overflow-y-auto whitespace-pre-wrap rounded-xl border border-ink-200 bg-ink-50 p-3 font-sans text-[13px] font-medium leading-relaxed text-ink-700">
                         {g.exemplo}
                       </pre>
                     </div>
@@ -1433,9 +1433,9 @@ export default function Redacoes({
                 );
               })()}
             </div>
-            <div className="shrink-0 border-t border-slate-100 bg-slate-50 px-4 py-3 sm:px-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Comparação rápida e estratégia</p>
-              <pre className="mt-1.5 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-sans text-[11px] font-semibold leading-relaxed text-slate-600">
+            <div className="shrink-0 border-t border-ink-100 bg-ink-50 px-4 py-3 sm:px-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Comparação rápida e estratégia</p>
+              <pre className="mt-1.5 max-h-[28vh] overflow-y-auto whitespace-pre-wrap font-sans text-[11px] font-semibold leading-relaxed text-ink-600">
                 {COMPARACAO_BANCAS}
               </pre>
             </div>
@@ -1454,7 +1454,7 @@ function PremiumTabButton({ active, onClick, icon: Icon, label, compact = false 
       className={`inline-flex items-center gap-2 rounded-[1rem] px-4 ${compact ? 'py-3' : 'py-3.5'} text-sm font-semibold transition-all ${
         active
           ? 'bg-[linear-gradient(135deg,#14110d_0%,#1d4ed8_100%)] text-white shadow-[0_16px_35px_-22px_rgba(37,99,235,0.7)]'
-          : 'text-slate-500 hover:bg-white hover:text-slate-900'
+          : 'text-ink-500 hover:bg-white hover:text-ink-900'
       }`}
     >
       <Icon size={16} />
@@ -1467,7 +1467,7 @@ function FieldBlock({ label, action, children }) {
   return (
     <div className="flex flex-col">
       <div className="mb-2 flex items-center justify-between gap-1.5 px-1">
-        <label className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+        <label className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-400">
           {label}
         </label>
         {action}
@@ -1479,15 +1479,15 @@ function FieldBlock({ label, action, children }) {
 
 function CriterionBar({ label, score, scoreClass, barClass, note, progress }) {
   return (
-    <div className="rounded-[1.45rem] border border-slate-100 bg-slate-50/80 p-4">
-      <div className="mb-2 flex justify-between text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-700">
+    <div className="rounded-[1.45rem] border border-ink-100 bg-ink-50/80 p-4">
+      <div className="mb-2 flex justify-between text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-700">
         <span>{label}</span>
         <span className={scoreClass}>{score}</span>
       </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200/70">
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-200/70">
         <div className={`h-full rounded-full ${barClass}`} style={progress != null ? { width: `${progress}%` } : undefined} />
       </div>
-      <p className="mt-2 text-[11px] font-semibold text-slate-400">{note}</p>
+      <p className="mt-2 text-[11px] font-semibold text-ink-400">{note}</p>
     </div>
   );
 }
@@ -1505,7 +1505,7 @@ function FeedbackCard({ title, tone, icon: Icon, text, custom = false }) {
         <Icon size={15} />
         {title}
       </h5>
-      <div className="mt-4 text-sm leading-relaxed text-slate-700 font-medium">
+      <div className="mt-4 text-sm leading-relaxed text-ink-700 font-medium">
         {custom ? text : <p>{text}</p>}
       </div>
     </div>
@@ -1514,7 +1514,7 @@ function FeedbackCard({ title, tone, icon: Icon, text, custom = false }) {
 
 function ThemeCard({ tags, title, description, onClick }) {
   return (
-    <div className="group flex flex-col rounded-[1.9rem] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-34px_rgba(37,99,235,0.3)]">
+    <div className="group flex flex-col rounded-[1.9rem] border border-ink-200 bg-white p-6 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-34px_rgba(37,99,235,0.3)]">
       <div className="mb-4 flex flex-wrap items-center gap-1.5">
         {tags.map((tag) => (
           <span
@@ -1526,11 +1526,11 @@ function ThemeCard({ tags, title, description, onClick }) {
         ))}
       </div>
 
-      <h4 className="text-xl font-semibold tracking-tight text-slate-900 transition-colors group-hover:text-[#1e40af] line-clamp-2">
+      <h4 className="text-xl font-semibold tracking-tight text-ink-900 transition-colors group-hover:text-[#1e40af] line-clamp-2">
         {title}
       </h4>
 
-      <p className="mt-3 flex-1 text-sm font-medium leading-relaxed text-slate-500 line-clamp-3">
+      <p className="mt-3 flex-1 text-sm font-medium leading-relaxed text-ink-500 line-clamp-3">
         {description}
       </p>
 
@@ -1548,10 +1548,10 @@ function ThemeCard({ tags, title, description, onClick }) {
 
 function SidebarCard({ eyebrow, title, description, children }) {
   return (
-    <div className="rounded-[1.9rem] border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">{eyebrow}</p>
-      <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">{description}</p>
+    <div className="rounded-[1.9rem] border border-ink-200 bg-white p-5 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-400">{eyebrow}</p>
+      <h3 className="mt-2 text-xl font-semibold tracking-tight text-ink-900">{title}</h3>
+      <p className="mt-2 text-sm font-medium leading-relaxed text-ink-500">{description}</p>
       <div className="mt-5">{children}</div>
     </div>
   );
@@ -1559,12 +1559,12 @@ function SidebarCard({ eyebrow, title, description, children }) {
 
 function SidebarStat({ label, value, helper }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-slate-100 bg-slate-50 px-4 py-3.5">
+    <div className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-ink-100 bg-ink-50 px-4 py-3.5">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
-        <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">{label}</p>
+        <p className="mt-1 text-xs font-semibold text-ink-500">{helper}</p>
       </div>
-      <div className="text-lg font-semibold tracking-tight text-slate-900">{value}</div>
+      <div className="text-lg font-semibold tracking-tight text-ink-900">{value}</div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PageHeadPremium, {
   PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
   PageHeadPremiumBadge,
@@ -467,8 +467,8 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
   if (isBootstrapping) {
     return (
       <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6">
-        <div className="app-main-shell flex min-h-[calc(100vh-140px)] items-center justify-center rounded-[28px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-          <div className="flex items-center gap-3 text-sm font-semibold text-slate-500">
+        <div className="app-main-shell flex min-h-[calc(100vh-140px)] items-center justify-center rounded-[28px] border border-ink-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+          <div className="flex items-center gap-3 text-sm font-semibold text-ink-500">
             <Loader2 size={18} className="animate-spin text-blue-700" />
             Carregando Vade Mecum...
           </div>
@@ -494,9 +494,9 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
           leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
           leadingExtra={
             <div className="max-w-md">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <div className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
                 <span>Revisão por bloco</span>
-                <span className="tabular-nums text-slate-400">
+                <span className="tabular-nums text-ink-400">
                   {reviewedCount}/{orderedSections.length} ({reviewProgressPct}%)
                 </span>
               </div>
@@ -530,7 +530,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       )}
 
       {!focusMode && (
-        <section className="rounded-[28px] border border-slate-200/90 bg-white p-4 shadow-[0_12px_44px_rgba(15,23,42,0.07)] ring-1 ring-slate-900/[0.03] md:p-6">
+        <section className="rounded-[28px] border border-ink-200/90 bg-white p-4 shadow-[0_12px_44px_rgba(15,23,42,0.07)] ring-1 ring-ink-900/[0.03] md:p-6">
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-3.5">
@@ -538,9 +538,9 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   <Scale size={22} className="sm:h-6 sm:w-6" strokeWidth={2} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Arquivo ativo</p>
-                  <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">{documentMeta?.title}</h3>
-                  <p className="mt-1 text-sm font-medium leading-relaxed text-slate-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Arquivo ativo</p>
+                  <h3 className="mt-1 text-lg font-semibold tracking-tight text-ink-900 sm:text-xl">{documentMeta?.title}</h3>
+                  <p className="mt-1 text-sm font-medium leading-relaxed text-ink-500">
                     {documentMeta?.edition} · {documentMeta?.source} · Atualizado em {documentMeta?.updatedAtLabel}
                   </p>
                 </div>
@@ -583,7 +583,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                 <button
                   type="button"
                   onClick={() => setFocusMode(true)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700"
                 >
                   <Focus size={16} />
                   Modo foco
@@ -741,12 +741,12 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       ) : null}
 
       {focusMode ? (
-        <section className="flex min-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-[2.2rem] border border-slate-900 bg-[#050816] shadow-[0_24px_80px_rgba(2,6,23,0.4)]">
-          <div className="flex items-center justify-between gap-4 border-b border-slate-800 bg-[#0b1220] px-5 py-4">
+        <section className="flex min-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-[2.2rem] border border-ink-900 bg-[#050816] shadow-[0_24px_80px_rgba(2,6,23,0.4)]">
+          <div className="flex items-center justify-between gap-4 border-b border-ink-800 bg-[#0b1220] px-5 py-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Modo foco</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">Modo foco</p>
               <h3 className="mt-1 text-xl font-semibold text-white">{selectedSection}</h3>
-              <p className="mt-1 text-xs font-medium text-slate-500">Pressione Esc para sair do modo foco</p>
+              <p className="mt-1 text-xs font-medium text-ink-500">Pressione Esc para sair do modo foco</p>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -754,7 +754,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                 href={activePdfUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-bold text-slate-200"
+                className="inline-flex items-center gap-2 rounded-xl border border-ink-700 bg-ink-900 px-4 py-2.5 text-sm font-bold text-ink-200"
               >
                 <DownloadCloud size={15} />
                 Abrir PDF
@@ -776,17 +776,17 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               key={`focus-${selectedSection}-${currentPage}`}
               title="Vade Mecum foco"
               src={iframePdfUrl}
-              className="h-full w-full rounded-[1.4rem] border border-slate-800 bg-white"
+              className="h-full w-full rounded-[1.4rem] border border-ink-800 bg-white"
             />
           </div>
         </section>
       ) : (
         <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-[1.55fr_0.45fr]">
-          <section className="flex min-h-[calc(100vh-320px)] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+          <section className="flex min-h-[calc(100vh-320px)] flex-col overflow-hidden rounded-[28px] border border-ink-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
             <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Leitura principal</p>
-                <h3 className="mt-1 text-xl font-semibold text-slate-900">{selectedSection}</h3>
+                <h3 className="mt-1 text-xl font-semibold text-ink-900">{selectedSection}</h3>
               </div>
               <a
                 href={activePdfUrl}
@@ -810,9 +810,9 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
           </section>
 
           <aside className="flex min-h-[calc(100vh-320px)] flex-col gap-6">
-            <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Bloco ativo</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-900">{selectedSection}</h3>
+              <h3 className="mt-2 text-xl font-semibold text-ink-900">{selectedSection}</h3>
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <ActionPill
@@ -843,7 +843,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               </div>
             </section>
 
-            <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2">
                 <Highlighter size={16} className="text-blue-700" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Marcações</p>
@@ -869,7 +869,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       key={color}
                       type="button"
                       onClick={() => setMarkerDraft((prev) => ({ ...prev, color }))}
-                      className={`h-8 w-8 rounded-full border-2 ${markerDraft.color === color ? 'border-slate-700' : 'border-white'}`}
+                      className={`h-8 w-8 rounded-full border-2 ${markerDraft.color === color ? 'border-ink-700' : 'border-white'}`}
                       style={{ backgroundColor: color }}
                       aria-label={`Selecionar cor ${color}`}
                     />
@@ -895,7 +895,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                         >
                           <div className="flex items-center gap-2">
                             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: marker.color }} />
-                            <p className="truncate font-semibold text-slate-900">{marker.label || `Página ${marker.page}`}</p>
+                            <p className="truncate font-semibold text-ink-900">{marker.label || `Página ${marker.page}`}</p>
                           </div>
                           <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{marker.excerpt}</p>
                           <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
@@ -916,7 +916,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               </div>
             </section>
 
-            <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[28px] border border-ink-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
               <div className="flex items-center gap-2">
                 <NotebookPen size={16} className="text-blue-700" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Busca e resumo</p>
@@ -966,7 +966,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                           onClick={() => goToPage(result.page)}
                           className="w-full rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4 text-left transition-colors hover:border-blue-200 hover:bg-blue-50/50"
                         >
-                          <p className="font-semibold text-slate-900">
+                          <p className="font-semibold text-ink-900">
                             Página {result.page} · {result.section}
                           </p>
                           <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{result.excerpt}</p>
@@ -1008,7 +1008,7 @@ function MiniStat({ label, value }) {
   return (
     <div className="rounded-[1.3rem] border border-gray-200 bg-gray-50/70 p-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-2 text-2xl font-semibold text-ink-900">{value}</p>
     </div>
   );
 }
@@ -1033,7 +1033,7 @@ function ActionPill({ active, icon: Icon, label, onClick }) {
 function RoadmapCard({ title, text }) {
   return (
     <div className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-      <p className="font-semibold text-slate-900">{title}</p>
+      <p className="font-semibold text-ink-900">{title}</p>
       <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{text}</p>
     </div>
   );

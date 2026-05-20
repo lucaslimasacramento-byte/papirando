@@ -57,13 +57,13 @@ function hotEngagementScore(post) {
 
 function CommunityTopTenSidebar({ posts = [], tags = [], onPickTrend, className = '' }) {
   return (
-    <div className={cx('flex min-h-0 flex-1 flex-col rounded-[20px] border border-slate-200 bg-white', className)}>
-      <div className="shrink-0 border-b border-slate-100 px-4 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Top 10</p>
-        <p className="mt-0.5 text-sm font-bold text-slate-900">Tópicos mais engajados</p>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">Clique para abrir no feed central.</p>
+    <div className={cx('flex min-h-0 flex-1 flex-col rounded-[20px] border border-ink-200 bg-white', className)}>
+      <div className="shrink-0 border-b border-ink-100 px-4 py-3">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">Top 10</p>
+        <p className="mt-0.5 text-sm font-bold text-ink-900">Tópicos mais engajados</p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-500">Clique para abrir no feed central.</p>
       </div>
-      <ul className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain">
+      <ul className="min-h-0 flex-1 divide-y divide-ink-100 overflow-y-auto overscroll-contain">
         {posts.map((tp, idx) => {
           const slug = String(tp.categorySlug || 'geral').toLowerCase();
           return (
@@ -71,21 +71,21 @@ function CommunityTopTenSidebar({ posts = [], tags = [], onPickTrend, className 
               <button
                 type="button"
                 onClick={() => onPickTrend?.({ type: 'post', post: tp, tags })}
-                className="flex w-full gap-3 px-3 py-3 text-left transition hover:bg-slate-50"
+                className="flex w-full gap-3 px-3 py-3 text-left transition hover:bg-ink-50"
               >
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-slate-100">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-ink-100">
                   {tp.avatar ? (
                     <img src={tp.avatar} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-[11px] font-bold text-slate-500">{initials(tp.author)}</span>
+                    <span className="flex h-full w-full items-center justify-center text-[11px] font-bold text-ink-500">{initials(tp.author)}</span>
                   )}
-                  <span className="absolute -bottom-0.5 -right-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-slate-200 bg-white px-0.5 text-[10px] font-bold text-slate-700">
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-ink-200 bg-white px-0.5 text-[10px] font-bold text-ink-700">
                     {idx + 1}
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-xs font-semibold leading-snug text-slate-800">{tp.title}</p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                  <p className="line-clamp-2 text-xs font-semibold leading-snug text-ink-800">{tp.title}</p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-ink-500">
                     s/{slug} · {formatCommunityRelativeTime(tp.createdAt)} · {Number(tp.upvotesCount || 0)} apoios · {Number(tp.commentsCount || 0)} com.
                   </p>
                 </div>
@@ -119,7 +119,7 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
     <div
       className={cx(
         'rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md',
-        redditDark ? 'border-[#3a3530] bg-[#211c16]' : 'border-slate-100 bg-slate-50'
+        redditDark ? 'border-[#3a3530] bg-[#211c16]' : 'border-ink-100 bg-ink-50'
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -127,14 +127,14 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
           <div
             className={cx(
               'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-xs font-semibold',
-              redditDark ? 'bg-[#1a1612] text-[#ece4d2]' : 'bg-slate-200 text-slate-700'
+              redditDark ? 'bg-[#1a1612] text-[#ece4d2]' : 'bg-ink-200 text-ink-700'
             )}
           >
             {comment.avatar ? <img src={comment.avatar} alt="" className="h-full w-full rounded-2xl object-cover" /> : initials(comment.author)}
           </div>
           <div className="min-w-0">
-            <p className={cx('truncate text-sm font-semibold', redditDark ? 'text-[#ece4d2]' : 'text-slate-800')}>{comment.author}</p>
-            <p className={cx('text-[10px] font-semibold uppercase tracking-[0.16em]', redditDark ? 'text-[#8e8675]' : 'text-slate-400')}>
+            <p className={cx('truncate text-sm font-semibold', redditDark ? 'text-[#ece4d2]' : 'text-ink-800')}>{comment.author}</p>
+            <p className={cx('text-[10px] font-semibold uppercase tracking-[0.16em]', redditDark ? 'text-[#8e8675]' : 'text-ink-400')}>
               {formatCommunityRelativeTime(comment.createdAt)}
             </p>
           </div>
@@ -160,7 +160,7 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
           </div>
         ) : null}
       </div>
-      <p className={cx('mt-3 text-sm leading-relaxed', redditDark ? 'text-[#ece4d2]' : 'text-slate-600')}>{comment.content}</p>
+      <p className={cx('mt-3 text-sm leading-relaxed', redditDark ? 'text-[#ece4d2]' : 'text-ink-600')}>{comment.content}</p>
     </div>
   );
 }
@@ -203,7 +203,7 @@ function PostCard({
         <div
           className={cx(
             'flex flex-row items-center justify-center gap-2 border-b px-3 py-2 sm:w-[52px] sm:flex-col sm:gap-1 sm:border-b-0 sm:border-r sm:px-1 sm:py-3',
-            rd ? 'border-[#3a3530] bg-[#14110d] sm:border-[#3a3530] sm:bg-transparent' : 'border-slate-100 bg-slate-50/60 sm:border-slate-100 sm:bg-transparent'
+            rd ? 'border-[#3a3530] bg-[#14110d] sm:border-[#3a3530] sm:bg-transparent' : 'border-ink-100 bg-ink-50/60 sm:border-ink-100 sm:bg-transparent'
           )}
         >
           <button
@@ -217,21 +217,21 @@ function PostCard({
                   : 'bg-orange-100 text-orange-700'
                 : rd
                   ? 'text-[#8e8675] hover:bg-[#211c16]'
-                  : 'text-slate-500 hover:bg-slate-200'
+                  : 'text-ink-500 hover:bg-ink-200'
             )}
             aria-label="Dar apoio"
           >
             <ArrowBigUp size={20} className="sm:h-[18px] sm:w-[18px]" />
           </button>
-          <span className={cx('min-w-[1.5rem] text-center text-sm font-bold tabular-nums', rd ? 'text-[#ece4d2]' : 'text-slate-800')}>{post.upvotesCount}</span>
+          <span className={cx('min-w-[1.5rem] text-center text-sm font-bold tabular-nums', rd ? 'text-[#ece4d2]' : 'text-ink-800')}>{post.upvotesCount}</span>
         </div>
 
         <div className="min-w-0 flex-1 px-3 py-3 sm:px-4 sm:py-3">
-          <div className={cx('flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-tight', rd ? 'text-[#8e8675]' : 'text-slate-500')}>
+          <div className={cx('flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-tight', rd ? 'text-[#8e8675]' : 'text-ink-500')}>
             <div
               className={cx(
                 'flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-bold',
-                rd ? 'bg-[#211c16] text-[#ece4d2]' : 'bg-slate-200 text-slate-600'
+                rd ? 'bg-[#211c16] text-[#ece4d2]' : 'bg-ink-200 text-ink-600'
               )}
             >
               {post.avatar ? <img src={post.avatar} alt="" className="h-full w-full object-cover" /> : initials(post.author)}
@@ -239,18 +239,18 @@ function PostCard({
             <button
               type="button"
               onClick={() => onRoomClick?.(slug, post.category)}
-              className={cx('font-semibold hover:underline', rd ? 'text-[#ece4d2]' : 'text-slate-900')}
+              className={cx('font-semibold hover:underline', rd ? 'text-[#ece4d2]' : 'text-ink-900')}
             >
               {roomPath}
             </button>
-            <span className={rd ? 'text-[#3a3530]' : 'text-slate-300'} aria-hidden>
+            <span className={rd ? 'text-[#3a3530]' : 'text-ink-300'} aria-hidden>
               ·
             </span>
             <span className="truncate">{formatCommunityRelativeTime(post.createdAt)}</span>
-            <span className={cx('hidden sm:inline', rd ? 'text-[#3a3530]' : 'text-slate-300')} aria-hidden>
+            <span className={cx('hidden sm:inline', rd ? 'text-[#3a3530]' : 'text-ink-300')} aria-hidden>
               ·
             </span>
-            <span className={cx('max-w-[140px] truncate sm:max-w-[200px]', rd ? 'text-[#8e8675]' : 'text-slate-500')}>por {post.author}</span>
+            <span className={cx('max-w-[140px] truncate sm:max-w-[200px]', rd ? 'text-[#8e8675]' : 'text-ink-500')}>por {post.author}</span>
             {post.isPinned ? (
               <span
                 className={cx(
@@ -273,7 +273,7 @@ function PostCard({
                     : 'text-blue-600'
                   : rd
                     ? 'text-[#8e8675] hover:bg-[#211c16] hover:text-[#ece4d2]'
-                    : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                    : 'text-ink-400 hover:bg-ink-100 hover:text-ink-600'
               )}
               aria-label={post.savedByCurrentUser ? 'Remover dos salvos' : 'Salvar'}
             >
@@ -284,21 +284,21 @@ function PostCard({
           <h2
             className={cx(
               'mt-2 font-bold leading-snug tracking-tight',
-              rd ? 'text-[#ece4d2]' : 'text-slate-900',
+              rd ? 'text-[#ece4d2]' : 'text-ink-900',
               featured ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
             )}
           >
             {post.title}
           </h2>
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-[11px] font-bold text-slate-600">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-ink-200 bg-ink-100 text-[11px] font-bold text-ink-600">
               {post.avatar ? <img src={post.avatar} alt={`Avatar de ${post.author}`} className="h-full w-full object-cover" /> : initials(post.author)}
             </div>
-            <p className="truncate text-sm font-medium text-slate-600">
+            <p className="truncate text-sm font-medium text-ink-600">
               {post.author}
             </p>
           </div>
-          <p className={cx('mt-2 line-clamp-5 whitespace-pre-wrap text-[15px] leading-relaxed', rd ? 'text-[#8e8675]' : 'text-slate-600')}>{post.content}</p>
+          <p className={cx('mt-2 line-clamp-5 whitespace-pre-wrap text-[15px] leading-relaxed', rd ? 'text-[#8e8675]' : 'text-ink-600')}>{post.content}</p>
 
           {isAdmin ? (
             <div
@@ -317,7 +317,7 @@ function PostCard({
                 onClick={() => onAdminPostAction?.(post, 'pin')}
                 className={cx(
                   'rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide disabled:opacity-50',
-                  rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-ink-200 bg-white text-ink-700 hover:bg-ink-50'
                 )}
               >
                 <Pin size={11} className="mr-0.5 inline" />
@@ -329,7 +329,7 @@ function PostCard({
                 onClick={() => onAdminPostAction?.(post, 'hide')}
                 className={cx(
                   'rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide disabled:opacity-50',
-                  rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-ink-200 bg-white text-ink-700 hover:bg-ink-50'
                 )}
               >
                 Ocultar
@@ -353,19 +353,19 @@ function PostCard({
             </div>
           ) : null}
 
-          <div className={cx('mt-4 flex flex-wrap items-center gap-2 border-t pt-4', rd ? 'border-[#3a3530]' : 'border-slate-100')}>
+          <div className={cx('mt-4 flex flex-wrap items-center gap-2 border-t pt-4', rd ? 'border-[#3a3530]' : 'border-ink-100')}>
             <button
               type="button"
               onClick={onToggleExpand}
               className={cx(
                 'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition',
-                rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                rd ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] hover:bg-[#3a3530]' : 'border-ink-200 bg-white text-ink-700 hover:bg-ink-50'
               )}
             >
               <MessageCircle size={16} />
               {post.commentsCount} comentários
             </button>
-            <span className={cx('inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium', rd ? 'text-[#8e8675]' : 'text-slate-500')}>
+            <span className={cx('inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium', rd ? 'text-[#8e8675]' : 'text-ink-500')}>
               <Eye size={15} />
               {post.viewsCount} leituras
             </span>
@@ -374,7 +374,7 @@ function PostCard({
               onClick={() => onToggleSave(post, !post.savedByCurrentUser)}
               className={cx(
                 'ml-auto inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition',
-                post.savedByCurrentUser ? 'text-blue-700' : 'text-slate-500 hover:text-slate-700'
+                post.savedByCurrentUser ? 'text-blue-700' : 'text-ink-500 hover:text-ink-700'
               )}
             >
               <Bookmark size={15} />
@@ -386,7 +386,7 @@ function PostCard({
             <div
               className={cx(
                 'mt-4 space-y-3 rounded-[1.4rem] border p-3 sm:p-4',
-                rd ? 'border-[#3a3530] bg-[#14110d]' : 'border-slate-100 bg-slate-50/80'
+                rd ? 'border-[#3a3530] bg-[#14110d]' : 'border-ink-100 bg-ink-50/80'
               )}
             >
               <div className="space-y-3">
@@ -406,14 +406,14 @@ function PostCard({
                   <div
                     className={cx(
                       'rounded-lg border border-dashed px-3 py-4 text-sm font-medium',
-                      rd ? 'border-[#3a3530] bg-[#1a1612] text-[#8e8675]' : 'border-slate-200 bg-white text-slate-500'
+                      rd ? 'border-[#3a3530] bg-[#1a1612] text-[#8e8675]' : 'border-ink-200 bg-white text-ink-500'
                     )}
                   >
                     Seja a primeira pessoa a comentar neste tópico.
                   </div>
                 )}
               </div>
-              <div className={cx('rounded-2xl border p-3', rd ? 'border-[#3a3530] bg-[#1a1612]' : 'border-slate-200 bg-white')}>
+              <div className={cx('rounded-2xl border p-3', rd ? 'border-[#3a3530] bg-[#1a1612]' : 'border-ink-200 bg-white')}>
                 <textarea
                   rows="3"
                   value={commentDraft}
@@ -423,7 +423,7 @@ function PostCard({
                     'w-full resize-none rounded-xl border p-3 text-sm outline-none transition',
                     rd
                       ? 'border-[#3a3530] bg-[#211c16] text-[#ece4d2] placeholder:text-[#8e8675] focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]/40'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100'
+                      : 'border-ink-200 bg-ink-50 text-ink-700 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100'
                   )}
                 />
                 <div className="mt-2 flex items-center justify-end">
@@ -432,7 +432,7 @@ function PostCard({
                     onClick={onSubmitComment}
                     className={cx(
                       'inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition',
-                      rd ? 'bg-[#1d4ed8] text-white hover:bg-[#ff5414]' : 'bg-slate-900 text-white hover:bg-slate-950'
+                      rd ? 'bg-[#1d4ed8] text-white hover:bg-[#ff5414]' : 'bg-ink-900 text-white hover:bg-ink-950'
                     )}
                   >
                     <Send size={15} />
@@ -998,27 +998,27 @@ export default function Comunidades({
   if (communityLoading) {
     return (
       <div className="page-shell animate-in fade-in slide-in-from-bottom-6 duration-700 flex-row gap-6 p-4 lg:p-6">
-        <div className="w-full rounded-[30px] border border-slate-200 bg-white p-10 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-          <p className="mt-4 text-sm font-semibold text-slate-500">Carregando comunidade...</p>
+        <div className="w-full rounded-[30px] border border-ink-200 bg-white p-10 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-ink-200 border-t-ink-900" />
+          <p className="mt-4 text-sm font-semibold text-ink-500">Carregando comunidade...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="-mx-3 flex min-h-0 flex-1 animate-in fade-in flex-col bg-[var(--bg-canvas)] text-slate-800 duration-300 sm:-mx-4 md:-mx-5">
+    <div className="-mx-3 flex min-h-0 flex-1 animate-in fade-in flex-col bg-[var(--bg-canvas)] text-ink-800 duration-300 sm:-mx-4 md:-mx-5">
       <div
         className={cx(
           'flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row',
           'xl:grid xl:grid-cols-[280px_minmax(0,1fr)]'
         )}
       >
-        <aside className="order-2 hidden min-h-0 w-full shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-slate-200 bg-white lg:order-1 lg:flex lg:max-w-[280px]">
+        <aside className="order-2 hidden min-h-0 w-full shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-ink-200 bg-white lg:order-1 lg:flex lg:max-w-[280px]">
           <div className="p-3">
-            <h1 className="px-2 text-lg font-bold tracking-tight text-slate-900">Comunidade</h1>
-            <p className="mt-1 px-2 text-xs text-slate-500">
-              <span className="font-semibold text-slate-800">{displayName}</span>
+            <h1 className="px-2 text-lg font-bold tracking-tight text-ink-900">Comunidade</h1>
+            <p className="mt-1 px-2 text-xs text-ink-500">
+              <span className="font-semibold text-ink-800">{displayName}</span>
               {communitySchemaReady ? ' · nuvem' : ' · local'}
             </p>
             <div className="mt-3 flex items-center gap-3 rounded-md bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700">
@@ -1029,8 +1029,8 @@ export default function Comunidades({
             </div>
           </div>
 
-          <div className="border-t border-slate-200 p-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Ordenação e filtros</p>
+          <div className="border-t border-ink-200 p-3">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">Ordenação e filtros</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {isAdmin ? (
                 <button
@@ -1042,7 +1042,7 @@ export default function Comunidades({
                   Admin
                 </button>
               ) : null}
-              <div className="inline-flex flex-wrap gap-1 rounded border border-slate-200 bg-slate-50 p-0.5">
+              <div className="inline-flex flex-wrap gap-1 rounded border border-ink-200 bg-ink-50 p-0.5">
                 {FEED_FILTERS.map((filter) => {
                   const isHot = filter.id === 'hot';
                   const active = activeFilter === filter.id;
@@ -1054,8 +1054,8 @@ export default function Comunidades({
                       className={cx(
                         'inline-flex items-center gap-1 rounded px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide transition',
                         active && isHot && 'bg-orange-500 text-white',
-                        active && !isHot && 'bg-slate-900 text-white',
-                        !active && 'text-slate-500 hover:text-slate-900'
+                        active && !isHot && 'bg-ink-900 text-white',
+                        !active && 'text-ink-500 hover:text-ink-900'
                       )}
                     >
                       {isHot ? <Flame size={12} /> : null}
@@ -1073,7 +1073,7 @@ export default function Comunidades({
                   onClick={() => setActiveTag(tag)}
                   className={cx(
                     'mr-1 inline-block rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition',
-                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-transparent bg-slate-100 text-slate-600 hover:border-slate-200'
+                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-transparent bg-ink-100 text-ink-600 hover:border-ink-200'
                   )}
                 >
                   {tag}
@@ -1082,7 +1082,7 @@ export default function Comunidades({
             </div>
           </div>
 
-          <div className="border-t border-slate-200 p-3">
+          <div className="border-t border-ink-200 p-3">
             <CommunityTopTenSidebar posts={trendingFeedPosts} tags={tags} onPickTrend={handlePickTrend} />
           </div>
 
@@ -1091,7 +1091,7 @@ export default function Comunidades({
       <main
         className="order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--bg-canvas)] lg:order-2"
       >
-          <div className="shrink-0 border-b border-slate-200/80 px-1 pb-0 pt-1 sm:px-2 sm:pt-2">
+          <div className="shrink-0 border-b border-ink-200/80 px-1 pb-0 pt-1 sm:px-2 sm:pt-2">
             <PageHeadPremium
               icon={MessageCircle}
               badge={
@@ -1102,21 +1102,21 @@ export default function Comunidades({
               title="Comunidade"
               subtitle={
                 <span>
-                  Conectado como <span className="font-semibold text-slate-200">{displayName}</span>
+                  Conectado como <span className="font-semibold text-ink-200">{displayName}</span>
                 </span>
               }
               className="!rounded-2xl lg:!flex-row lg:!items-center lg:!justify-between"
               leadingClassName="items-center lg:max-w-[52rem]"
             />
           </div>
-          <div className="shrink-0 space-y-2 border-b border-slate-200 bg-white px-2 py-2 lg:hidden">
+          <div className="shrink-0 space-y-2 border-b border-ink-200 bg-white px-2 py-2 lg:hidden">
             <div className="relative">
-              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
               <input
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
                 placeholder="Buscar…"
-                className="h-10 w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400"
+                className="h-10 w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-10 pr-3 text-sm text-ink-700 outline-none placeholder:text-ink-400 focus:border-blue-400"
               />
             </div>
             <button type="button" className="btn-secondary w-full rounded-full" onClick={openComposerModal}>
@@ -1132,10 +1132,10 @@ export default function Comunidades({
                     type="button"
                     onClick={() => setActiveFilter(filter.id)}
                     className={cx(
-                      'inline-flex items-center gap-1 rounded border border-slate-200 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide',
+                      'inline-flex items-center gap-1 rounded border border-ink-200 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide',
                       active && isHot && 'border-orange-500 bg-orange-500 text-white',
-                      active && !isHot && 'border-slate-900 bg-slate-900 text-white',
-                      !active && 'bg-white text-slate-500'
+                      active && !isHot && 'border-ink-900 bg-ink-900 text-white',
+                      !active && 'bg-white text-ink-500'
                     )}
                   >
                     {isHot ? <Flame size={12} /> : null}
@@ -1152,7 +1152,7 @@ export default function Comunidades({
                   onClick={() => setActiveTag(tag)}
                   className={cx(
                     'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide',
-                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500'
+                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-ink-200 text-ink-500'
                   )}
                 >
                   {tag}
@@ -1161,15 +1161,15 @@ export default function Comunidades({
             </div>
           </div>
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="hidden shrink-0 border-b border-slate-200 bg-white px-4 py-3 lg:block">
+            <div className="hidden shrink-0 border-b border-ink-200 bg-white px-4 py-3 lg:block">
               <div className="mx-auto flex w-full max-w-[980px] items-center gap-3">
                 <div className="relative min-w-0 flex-1">
-                  <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
                   <input
                     value={searchValue}
                     onChange={(event) => setSearchValue(event.target.value)}
                     placeholder="Encontre de tudo"
-                    className="h-12 w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-11 pr-4 text-[15px] font-medium text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    className="h-12 w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-11 pr-4 text-[15px] font-medium text-ink-700 outline-none placeholder:text-ink-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
                 <button type="button" className="btn-secondary h-12 rounded-full px-6" onClick={openComposerModal}>
@@ -1179,25 +1179,25 @@ export default function Comunidades({
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pb-4 sm:px-2">
               <div className="mb-3 xl:hidden">
-                <div className="rounded border border-slate-200 bg-white p-3">
+                <div className="rounded border border-ink-200 bg-white p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700">Top 10 (mobile)</p>
                     <Flame size={16} className="text-blue-700" />
                   </div>
-                  <ul className="mt-2 divide-y divide-slate-100">
+                  <ul className="mt-2 divide-y divide-ink-100">
                     {trendingFeedPosts.map((tp, idx) => (
                       <li key={tp.id}>
                         <button
                           type="button"
                           onClick={() => handlePickTrend({ type: 'post', post: tp, tags })}
-                          className="flex w-full items-start gap-2 py-2 text-left transition hover:bg-slate-50"
+                          className="flex w-full items-start gap-2 py-2 text-left transition hover:bg-ink-50"
                         >
-                          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-100 text-[11px] font-bold text-slate-700">
+                          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-ink-100 text-[11px] font-bold text-ink-700">
                             {idx + 1}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="line-clamp-2 text-xs font-semibold text-slate-800">{tp.title}</span>
-                            <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                            <span className="line-clamp-2 text-xs font-semibold text-ink-800">{tp.title}</span>
+                            <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-ink-500">
                               #{tp.category} · {Math.round(hotEngagementScore(tp))} pts
                             </span>
                           </span>
@@ -1210,7 +1210,7 @@ export default function Comunidades({
 
           <section className="grid gap-4">
             {activeTag !== 'Todos' ? (
-              <div className="flex flex-wrap items-center gap-2 rounded border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="flex flex-wrap items-center gap-2 rounded border border-ink-200 bg-white px-3 py-2 text-sm">
                 <button
                   type="button"
                   onClick={() => {
@@ -1221,8 +1221,8 @@ export default function Comunidades({
                 >
                   Todas as salas
                 </button>
-                <ChevronRight size={14} className="shrink-0 text-slate-400" aria-hidden />
-                <span className="font-bold tracking-tight text-slate-800">{activeTag}</span>
+                <ChevronRight size={14} className="shrink-0 text-ink-400" aria-hidden />
+                <span className="font-bold tracking-tight text-ink-800">{activeTag}</span>
               </div>
             ) : null}
             <div className="flex flex-col gap-2">
@@ -1246,12 +1246,12 @@ export default function Comunidades({
                 />
               ))}
               {!filteredPosts.length ? (
-                <div className="rounded border border-dashed border-slate-300 bg-white p-10 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                <div className="rounded border border-dashed border-ink-300 bg-white p-10 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-100 text-ink-500">
                     <Sparkles size={22} />
                   </div>
-                  <h3 className="mt-4 text-xl font-semibold text-slate-800">Nada encontrado por aqui</h3>
-                  <p className="mt-2 text-sm leading-7 text-slate-500">Experimente outra tag, limpe a busca ou volte a Todas as salas.</p>
+                  <h3 className="mt-4 text-xl font-semibold text-ink-800">Nada encontrado por aqui</h3>
+                  <p className="mt-2 text-sm leading-7 text-ink-500">Experimente outra tag, limpe a busca ou volte a Todas as salas.</p>
                 </div>
               ) : null}
             </div>
@@ -1260,18 +1260,18 @@ export default function Comunidades({
           </div>
 
         {isComposerOpen ? (
-          <div className="fixed inset-0 z-[185] flex items-end justify-center bg-slate-950/55 p-4 backdrop-blur-sm sm:items-center">
-            <div className="w-full max-w-2xl rounded-[26px] border border-slate-200 bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
+          <div className="fixed inset-0 z-[185] flex items-end justify-center bg-ink-950/55 p-4 backdrop-blur-sm sm:items-center">
+            <div className="w-full max-w-2xl rounded-[26px] border border-ink-200 bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4 sm:px-6">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Novo tópico</p>
-                  <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Perguntar na comunidade</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-400">Novo tópico</p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight text-ink-900">Perguntar na comunidade</h2>
                 </div>
                 <button
                   type="button"
                   onClick={closeComposerModal}
                   disabled={composerSubmitting}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-ink-200 bg-white text-ink-500 transition hover:bg-ink-50"
                   aria-label="Fechar modal"
                 >
                   <X size={16} />
@@ -1286,7 +1286,7 @@ export default function Comunidades({
                   onChange={(event) => setDraftTitle(event.target.value)}
                   placeholder="Título da pergunta"
                   disabled={composerSubmitting}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition placeholder:text-ink-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                 />
                 <textarea
                   rows={6}
@@ -1294,14 +1294,14 @@ export default function Comunidades({
                   onChange={(event) => setDraftContent(event.target.value)}
                   placeholder="Descreva seu contexto para a comunidade ajudar melhor."
                   disabled={composerSubmitting}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm leading-7 text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                 />
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <select
                     value={draftCategory}
                     onChange={(event) => setDraftCategory(event.target.value)}
                     disabled={composerSubmitting}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-slate-600"
+                    className="rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-ink-600"
                   >
                     {categories.map((category) => (
                       <option key={category.slug} value={category.name}>
@@ -1328,24 +1328,24 @@ export default function Comunidades({
 
         {adminPanelOpen ? (
           <div
-            className="fixed inset-0 z-[180] flex items-end justify-center bg-slate-900/50 p-4 sm:items-center"
+            className="fixed inset-0 z-[180] flex items-end justify-center bg-ink-900/50 p-4 sm:items-center"
             role="dialog"
             aria-modal="true"
             aria-labelledby="community-admin-title"
           >
-            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white shadow-2xl">
-              <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-6">
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-ink-200 bg-white shadow-2xl">
+              <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-ink-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-6">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-rose-600">Administração</p>
-                  <h2 id="community-admin-title" className="text-lg font-semibold text-slate-900">
+                  <h2 id="community-admin-title" className="text-lg font-semibold text-ink-900">
                     Salas do fórum
                   </h2>
-                  <p className="mt-1 text-xs font-medium text-slate-500">Renomeie, crie ou desative salas. Moderação de tópicos fica nos cards (fixar, ocultar, censurar, excluir).</p>
+                  <p className="mt-1 text-xs font-medium text-ink-500">Renomeie, crie ou desative salas. Moderação de tópicos fica nos cards (fixar, ocultar, censurar, excluir).</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAdminPanelOpen(false)}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-ink-200 bg-white text-ink-600 transition hover:bg-ink-50"
                   aria-label="Fechar painel admin"
                 >
                   <X size={18} />
@@ -1354,12 +1354,12 @@ export default function Comunidades({
               <div className="space-y-4 px-5 py-5 sm:px-6">
                 {adminNotice ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{adminNotice}</p> : null}
                 {adminPanelLoading ? (
-                  <p className="text-sm font-medium text-slate-500">Carregando salas…</p>
+                  <p className="text-sm font-medium text-ink-500">Carregando salas…</p>
                 ) : null}
                 {adminCategoriesDraft.map((row) => (
-                  <div key={row.id} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">slug · {row.slug}</p>
-                    <label className="mt-2 block text-xs font-semibold text-slate-600" htmlFor={`room-name-${row.id}`}>
+                  <div key={row.id} className="rounded-2xl border border-ink-200 bg-ink-50/50 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">slug · {row.slug}</p>
+                    <label className="mt-2 block text-xs font-semibold text-ink-600" htmlFor={`room-name-${row.id}`}>
                       Nome exibido
                     </label>
                     <input
@@ -1368,9 +1368,9 @@ export default function Comunidades({
                       onChange={(e) =>
                         setAdminCategoriesDraft((prev) => prev.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
                       }
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     />
-                    <label className="mt-3 block text-xs font-semibold text-slate-600" htmlFor={`room-desc-${row.id}`}>
+                    <label className="mt-3 block text-xs font-semibold text-ink-600" htmlFor={`room-desc-${row.id}`}>
                       Descrição
                     </label>
                     <textarea
@@ -1380,14 +1380,14 @@ export default function Comunidades({
                       onChange={(e) =>
                         setAdminCategoriesDraft((prev) => prev.map((r) => (r.id === row.id ? { ...r, description: e.target.value } : r)))
                       }
-                      className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-1 w-full resize-none rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     />
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         type="button"
                         disabled={adminBusyId === String(row.id)}
                         onClick={() => handleSaveAdminCategoryRow(row)}
-                        className="rounded-full bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-slate-950 disabled:opacity-50"
+                        className="rounded-full bg-ink-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-ink-950 disabled:opacity-50"
                       >
                         Salvar sala
                       </button>
@@ -1402,20 +1402,20 @@ export default function Comunidades({
                     </div>
                   </div>
                 ))}
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Nova sala</p>
+                <div className="rounded-2xl border border-dashed border-ink-300 bg-white p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-500">Nova sala</p>
                   <input
                     value={newRoomName}
                     onChange={(e) => setNewRoomName(e.target.value)}
                     placeholder="Nome da nova sala"
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-400"
+                    className="mt-2 w-full rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-400"
                   />
                   <textarea
                     value={newRoomDescription}
                     onChange={(e) => setNewRoomDescription(e.target.value)}
                     placeholder="Descrição curta (opcional)"
                     rows={2}
-                    className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400"
+                    className="mt-2 w-full resize-none rounded-xl border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700 outline-none focus:border-blue-400"
                   />
                   <button
                     type="button"

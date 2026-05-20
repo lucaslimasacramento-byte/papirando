@@ -123,7 +123,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         trailingClassName="xl:max-w-[16rem]"
         trailing={
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Operando como</p>
             <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
         }
@@ -143,7 +143,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cadastro comercial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">{form.id ? 'Editar lead' : 'Novo lead'}</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">{form.id ? 'Editar lead' : 'Novo lead'}</h3>
           </div>
 
           <div className="grid gap-4">
@@ -194,7 +194,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Funil comercial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Leads cadastrados</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Leads cadastrados</h3>
           </div>
 
           <div className="space-y-3">
@@ -203,7 +203,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-slate-900">{lead.nome}</p>
+                      <p className="font-semibold text-ink-900">{lead.nome}</p>
                       <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
                         {CRM_STAGE_OPTIONS.find((option) => option.value === lead.stage)?.label || lead.stage}
                       </span>
@@ -248,7 +248,7 @@ function SummaryCard({ icon: Icon, label, value }) {
         <Icon size={12} />
         {label}
       </div>
-      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-3 text-3xl font-semibold text-ink-900">{value}</p>
     </div>
   );
 }

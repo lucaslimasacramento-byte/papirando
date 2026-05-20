@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import {
   PieChart,
   Filter,
@@ -116,7 +116,7 @@ export default function Estatisticas({
               {percAcertos}%
             </div>
             <div className="flex w-full flex-col gap-1">
-              <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400/85">
+              <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-ink-400/85">
                 Desempenho geral
               </div>
               <div className="h-2.5 w-full overflow-hidden rounded-full border border-white/[0.06] bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
@@ -130,7 +130,7 @@ export default function Estatisticas({
         }
         trailing={(
           <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 xl:shrink-0">
-            <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-center text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
+            <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-center text-xs font-semibold text-ink-200 sm:py-2 sm:text-[13px]">
               Matérias padronizadas
             </div>
             <button
@@ -216,7 +216,7 @@ export default function Estatisticas({
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.25fr_1fr] xl:gap-4">
         <div className="section-card flex min-h-0 min-w-0 flex-col overflow-hidden p-4 md:p-5">
           <div className="mb-3 shrink-0">
-            <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+            <h3 className="flex items-center gap-2 text-base font-semibold text-ink-900">
               <Activity size={18} className="text-[#1d4ed8]" />
               Análise por matéria canônica
             </h3>
@@ -247,7 +247,7 @@ export default function Estatisticas({
         </div>
 
         <div className="grid min-w-0 gap-3 xl:grid-rows-[minmax(26rem,auto)_auto]">
-          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#1d4ed8]/15 sm:min-h-[26rem] sm:p-5">
+          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-ink-800 bg-ink-900 p-4 text-ink-50 shadow-md ring-1 ring-[#1d4ed8]/15 sm:min-h-[26rem] sm:p-5">
             <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-[#1d4ed8]/25 blur-3xl" />
             <div className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full bg-[#1d4ed8]/10 blur-2xl" />
             <div className="relative z-10 flex min-h-0 flex-1 flex-col">
@@ -259,7 +259,7 @@ export default function Estatisticas({
               <h3 className="mb-1.5 shrink-0 text-base font-semibold tracking-tight text-white sm:text-lg">
                 Diagnóstico estratégico
               </h3>
-              <p className="mb-3 shrink-0 text-xs font-medium leading-relaxed text-slate-300 sm:text-sm">
+              <p className="mb-3 shrink-0 text-xs font-medium leading-relaxed text-ink-300 sm:text-sm">
                 {bestDiscipline
                   ? `${bestDiscipline.name} lidera sua dedicação atual.`
                   : 'Assim que você registrar mais estudos, as leituras inteligentes aparecem aqui.'}
@@ -308,7 +308,7 @@ export default function Estatisticas({
 
           <div className="section-card p-4 sm:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">Tópicos mais respondidos</h3>
+              <h3 className="text-base font-semibold text-ink-900">Tópicos mais respondidos</h3>
             </div>
 
             <div className="space-y-3">
@@ -341,10 +341,10 @@ function MetricStripCard({ icon: Icon, title, highlight, footerLabel, footerValu
         <Icon size={15} strokeWidth={2.25} />
       </div>
       <p className="line-clamp-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-400">{title}</p>
-      <p className="mt-0.5 line-clamp-2 text-[0.9rem] font-bold leading-tight tracking-tight text-slate-900 sm:mt-1 sm:text-[0.95rem]">
+      <p className="mt-0.5 line-clamp-2 text-[0.9rem] font-bold leading-tight tracking-tight text-ink-900 sm:mt-1 sm:text-[0.95rem]">
         {highlight}
       </p>
-      <div className="mt-auto rounded-md bg-slate-50 px-1.5 py-1 sm:rounded-lg sm:px-2 sm:py-1.5">
+      <div className="mt-auto rounded-md bg-ink-50 px-1.5 py-1 sm:rounded-lg sm:px-2 sm:py-1.5">
         <p className="line-clamp-1 text-[8px] font-bold uppercase tracking-wider text-gray-400">{footerLabel}</p>
         <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-snug text-gray-700">{footerValue}</p>
       </div>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import {
   History,
   BookOpen,
@@ -106,7 +106,7 @@ export default function Historico({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por matéria, tópico ou observação..."
-            className="w-full rounded-xl border border-transparent bg-slate-50 py-2.5 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition-all hover:border-slate-200 focus:border-emerald-500"
+            className="w-full rounded-xl border border-transparent bg-ink-50 py-2.5 pl-10 pr-3 text-sm font-semibold text-ink-700 outline-none transition-all hover:border-ink-200 focus:border-emerald-500"
           />
         </div>
 
@@ -135,7 +135,7 @@ export default function Historico({
       <div className="section-card flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-4 sm:p-5">
         <div className="mb-3 flex shrink-0 items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-slate-900">Linha do tempo</h3>
+            <h3 className="text-base font-semibold text-ink-900">Linha do tempo</h3>
             <p className="mt-0.5 text-xs font-medium text-gray-500">
               Registros recentes consolidados por matéria.
             </p>

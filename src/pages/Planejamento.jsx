@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   Calendar as CalendarIcon,
   CalendarDays,
@@ -1072,10 +1072,10 @@ function PlanejamentoContent({
                                     <button
                                       key={event.id}
                                       onClick={() => handlePlanAction(event, 'open', onOpenRecommendedDiscipline, onStartRecommendedSession)}
-                                      className="w-full px-2 py-1.5 rounded-lg border border-white/40 text-[10px] font-bold text-slate-900 shadow-sm truncate text-left hover:-translate-y-0.5 transition-transform flex items-center gap-1.5"
+                                      className="w-full px-2 py-1.5 rounded-lg border border-white/40 text-[10px] font-bold text-ink-900 shadow-sm truncate text-left hover:-translate-y-0.5 transition-transform flex items-center gap-1.5"
                                       style={{ backgroundColor: event.cor }}
                                     >
-                                      <div className="w-1.5 h-1.5 rounded-full bg-slate-900/20 shrink-0" />
+                                      <div className="w-1.5 h-1.5 rounded-full bg-ink-900/20 shrink-0" />
                                       <span className="truncate">{event.hora} - {event.titulo}</span>
                                     </button>
                                   ))}
@@ -1132,7 +1132,7 @@ function PlanejamentoContent({
                                   <div className="text-xs font-bold text-gray-800 leading-snug">{event.titulo}</div>
                                   <div className="flex flex-wrap gap-1 mt-2">
                                     <span
-                                      className="text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded border border-white/40 text-slate-900"
+                                      className="text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded border border-white/40 text-ink-900"
                                       style={{ backgroundColor: event.cor }}
                                     >
                                       {event.tipo}
@@ -1164,13 +1164,13 @@ function PlanejamentoContent({
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-56 shrink-0 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="w-8 h-8 rounded-full bg-[#D5F5E3] text-slate-900 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#D5F5E3] text-ink-900 flex items-center justify-center shrink-0">
                       <Check size={16} strokeWidth={3} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">
                         <span>Concluídas</span>
-                        <span className="text-slate-900">{buildKanbanProgress(kanbanTasks)}%</span>
+                        <span className="text-ink-900">{buildKanbanProgress(kanbanTasks)}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                         <div
@@ -1227,7 +1227,7 @@ function PlanejamentoContent({
                               <div className="pl-1.5 pr-14">
                                 <div className="flex flex-wrap gap-1 mb-1">
                                   <span
-                                    className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-px rounded border border-white/40 text-slate-900 shadow-sm"
+                                    className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-px rounded border border-white/40 text-ink-900 shadow-sm"
                                     style={{ backgroundColor: task.cor }}
                                   >
                                     {task.tipo}
@@ -1244,7 +1244,7 @@ function PlanejamentoContent({
                                     }
                                     className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-px transition-colors ${
                                       task.status === 'Concluido'
-                                        ? 'bg-[#D5F5E3] border-[#D5F5E3] text-slate-900'
+                                        ? 'bg-[#D5F5E3] border-[#D5F5E3] text-ink-900'
                                         : 'border-gray-300 text-transparent hover:border-[#D5F5E3]'
                                     }`}
                                   >
@@ -1353,7 +1353,7 @@ function PlanejamentoContent({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-[1.05rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
+                  <h2 className="text-[1.05rem] font-semibold tracking-tight text-ink-900">Ciclo flexível</h2>
                   <span className="text-[0.92rem] font-medium text-gray-500">
                     Ideal para rotina variável, estudo sem dias fixos e prioridade automática das matérias mais importantes.
                   </span>
@@ -1396,7 +1396,7 @@ function PlanejamentoContent({
                   <TagPill label={targetContest?.nome || 'Sem alvo'} color="#1d4ed8" soft />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <h2 className="text-[1.65rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
+                  <h2 className="text-[1.65rem] font-semibold tracking-tight text-ink-900">Ciclo flexível</h2>
                   <span className="text-sm font-medium text-gray-500">Ideal para rotina variável e estudo sem dias fixos.</span>
                 </div>
                 <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -1451,7 +1451,7 @@ function PlanejamentoContent({
               <button
                 type="button"
                 onClick={closeWizard}
-                className="absolute right-4 top-4 rounded-lg p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                className="absolute right-4 top-4 rounded-lg p-1 text-ink-500 transition hover:bg-ink-100 hover:text-ink-800"
                 aria-label="Fechar configuração do planejamento"
               >
                 <X size={22} />
@@ -1544,7 +1544,7 @@ function PlanejamentoContent({
                             }))
                           }
                           className={`rounded-xl border px-4 py-3 text-center text-sm font-semibold transition sm:text-base ${
-                            selected ? 'border-[#1d4ed8] bg-blue-50 text-slate-900' : 'border-gray-200 bg-white text-gray-500'
+                            selected ? 'border-[#1d4ed8] bg-blue-50 text-ink-900' : 'border-gray-200 bg-white text-gray-500'
                           }`}
                         >
                           {discipline.nome}
@@ -1689,7 +1689,7 @@ function PlanejamentoContent({
                   })}
                 </div>
 
-                <div className="mt-5 rounded-2xl bg-blue-50 px-5 py-3 text-right text-lg font-semibold text-slate-900 sm:text-xl">
+                <div className="mt-5 rounded-2xl bg-blue-50 px-5 py-3 text-right text-lg font-semibold text-ink-900 sm:text-xl">
                   Total na Semana: {formatMinutes(totalWizardMinutes)}
                 </div>
 

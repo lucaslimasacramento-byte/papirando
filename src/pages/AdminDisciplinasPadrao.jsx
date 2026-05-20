@@ -142,7 +142,7 @@ export default function AdminDisciplinasPadrao({
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Biblioteca</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Por área</h3>
+              <h3 className="mt-2 text-2xl font-semibold text-ink-900">Por área</h3>
             </div>
             <button
               type="button"
@@ -177,7 +177,7 @@ export default function AdminDisciplinasPadrao({
                           onClick={() => handleEdit(entry)}
                           className="min-w-0 flex-1 text-left"
                         >
-                          <p className="truncate text-sm font-semibold text-slate-900">{entry.nome}</p>
+                          <p className="truncate text-sm font-semibold text-ink-900">{entry.nome}</p>
                           <p className="mt-1 text-xs font-semibold text-gray-500">
                             {entry.aliases?.length || 0} aliases
                           </p>
@@ -214,7 +214,7 @@ export default function AdminDisciplinasPadrao({
           <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-5">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor</p>
-              <h3 className="mt-2 text-3xl font-semibold text-slate-900">
+              <h3 className="mt-2 text-3xl font-semibold text-ink-900">
                 {form.id ? 'Editar disciplina padrão' : 'Nova disciplina padrão'}
               </h3>
             </div>

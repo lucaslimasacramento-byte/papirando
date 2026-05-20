@@ -1709,7 +1709,7 @@ export default function AdminConcursos({
         trailingClassName="xl:max-w-[16rem]"
         trailing={
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Admin ativo</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Admin ativo</p>
             <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
         }
@@ -1756,7 +1756,7 @@ export default function AdminConcursos({
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Biblioteca de concursos</p>
-              <h3 className="mt-1 text-xl font-semibold text-slate-900">Buscar e editar cadastro existente</h3>
+              <h3 className="mt-1 text-xl font-semibold text-ink-900">Buscar e editar cadastro existente</h3>
             </div>
 
             <div className="grid gap-3 md:grid-cols-[minmax(240px,360px)_190px_auto]">
@@ -1822,7 +1822,7 @@ export default function AdminConcursos({
                             onClick={() => handleEditTemplate(template)}
                             className="min-w-0 text-left"
                           >
-                            <p className="truncate text-sm font-bold text-slate-900">{template.nome}</p>
+                            <p className="truncate text-sm font-bold text-ink-900">{template.nome}</p>
                             <p className="mt-1 truncate text-xs font-semibold text-gray-500">{template.concurso}</p>
                           </button>
                           <p className="truncate text-sm font-semibold text-gray-600">{template.cargo || 'Cargo a definir'}</p>
@@ -1854,7 +1854,7 @@ export default function AdminConcursos({
           <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor do concurso</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+              <h3 className="mt-2 text-2xl font-semibold text-ink-900">
                 {form.id ? 'Editando concurso' : 'Novo concurso'}
               </h3>
               <p className="mt-2 text-sm font-semibold text-gray-500">
@@ -1906,7 +1906,7 @@ export default function AdminConcursos({
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-500">Preencher com IA</p>
-                <h4 className="mt-1 text-lg font-semibold text-slate-900">Colar formulário analisado do edital</h4>
+                <h4 className="mt-1 text-lg font-semibold text-ink-900">Colar formulário analisado do edital</h4>
                 <p className="mt-1 text-sm font-semibold text-gray-500">
                   Use o formulário estruturado que veio da análise do edital. A IA organiza os campos, disciplinas e tópicos no rascunho.
                 </p>
@@ -2076,7 +2076,7 @@ export default function AdminConcursos({
                         onClick={() => applyContestFormTemplate({ templates: contestFormOptions }, optionIndex)}
                         className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50"
                       >
-                        <span className="line-clamp-2 text-sm font-bold text-slate-900">
+                        <span className="line-clamp-2 text-sm font-bold text-ink-900">
                           {option.nome || option.cargo || `Opção ${optionIndex + 1}`}
                         </span>
                         <span className="mt-2 block text-xs font-semibold text-gray-500">
@@ -2095,7 +2095,7 @@ export default function AdminConcursos({
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Mídia e arquivos</p>
-                  <h4 className="mt-1 text-base font-semibold text-slate-900">Capa e edital oficial</h4>
+                  <h4 className="mt-1 text-base font-semibold text-ink-900">Capa e edital oficial</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {form.imagem_url && (
@@ -2171,7 +2171,7 @@ export default function AdminConcursos({
               <div className="rounded-[1.5rem] border border-gray-200 bg-white p-4">
                 <div className="mb-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Dados principais</p>
-                  <h4 className="mt-1 text-base font-semibold text-slate-900">Identificação e vitrine</h4>
+                  <h4 className="mt-1 text-base font-semibold text-ink-900">Identificação e vitrine</h4>
                 </div>
 
                 <div className="space-y-4">
@@ -2264,7 +2264,7 @@ export default function AdminConcursos({
                           key={tag}
                           type="button"
                           onClick={() => toggleEtapaTag(tag)}
-                          className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-700"
+                          className="inline-flex items-center gap-2 rounded-full bg-ink-900 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-ink-700"
                           title="Remover etapa"
                         >
                           {tag}
@@ -2278,7 +2278,7 @@ export default function AdminConcursos({
                   <div className="mt-5 rounded-[1.2rem] border border-blue-100 bg-blue-50/60 p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">Itens do TAF</p>
+                        <p className="text-sm font-semibold text-ink-900">Itens do TAF</p>
                         <p className="mt-1 text-xs font-semibold text-gray-500">Adicione as provas físicas que fazem parte do teste.</p>
                       </div>
                       <button type="button" onClick={addTafItem} className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700">
@@ -2355,7 +2355,7 @@ export default function AdminConcursos({
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Conteúdo programático</p>
-                    <h4 className="mt-1 text-lg font-semibold text-slate-900">Disciplinas e tópicos</h4>
+                    <h4 className="mt-1 text-lg font-semibold text-ink-900">Disciplinas e tópicos</h4>
                   </div>
 
                   <button type="button" onClick={addSubject} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
@@ -2372,7 +2372,7 @@ export default function AdminConcursos({
                         return (
                           <>
                       <div className="mb-4 flex items-center justify-between gap-4">
-                        <p className="text-sm font-semibold text-slate-900">Disciplina {index + 1}</p>
+                        <p className="text-sm font-semibold text-ink-900">Disciplina {index + 1}</p>
                         <button type="button" onClick={() => removeSubject(index)} className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500" title="Remover disciplina">
                           <X size={16} />
                         </button>
@@ -2462,7 +2462,7 @@ export default function AdminConcursos({
           <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-6">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Banco de questões</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Cadastrar nova questão</h3>
+              <h3 className="mt-2 text-2xl font-semibold text-ink-900">Cadastrar nova questão</h3>
             </div>
 
             <div className="space-y-4">
@@ -2554,7 +2554,7 @@ export default function AdminConcursos({
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Listagem</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Questões cadastradas</h3>
+                <h3 className="mt-2 text-2xl font-semibold text-ink-900">Questões cadastradas</h3>
               </div>
               <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
                 {visibleQuestions.length} ativas
@@ -2627,9 +2627,9 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
   const isLocal = template?.storage !== 'supabase';
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink-950/55 px-4 py-6 backdrop-blur-sm">
       <div className="w-full max-w-xl overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-2xl">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-6 text-white">
+        <div className="bg-gradient-to-br from-ink-950 via-ink-900 to-blue-950 px-6 py-6 text-white">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/15 text-red-200 ring-1 ring-red-300/30">
               <Trash2 size={22} />
@@ -2637,7 +2637,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
             <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-red-200">Excluir concurso</p>
               <h3 className="mt-2 text-xl font-bold leading-tight">{template?.nome || 'Concurso selecionado'}</h3>
-              <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-ink-300">
                 Esse item sai da biblioteca pública e deixa de aparecer para importação dos alunos.
               </p>
             </div>
@@ -2651,9 +2651,9 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Resumo</p>
-            <div className="mt-2 grid gap-2 text-sm font-semibold text-slate-700 sm:grid-cols-2">
+          <div className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">Resumo</p>
+            <div className="mt-2 grid gap-2 text-sm font-semibold text-ink-700 sm:grid-cols-2">
               <span>Área: {template?.area || 'Geral'}</span>
               <span>Banca: {template?.banca || 'A definir'}</span>
               <span>Disciplinas: {template?.disciplinas?.length || 0}</span>
@@ -2673,7 +2673,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
               type="button"
               onClick={onCancel}
               disabled={isDeleting}
-              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-ink-200 bg-white px-5 text-sm font-bold text-ink-700 transition hover:bg-ink-50 disabled:opacity-60"
             >
               Cancelar
             </button>
@@ -2697,7 +2697,7 @@ function InsightCard({ title, value, text }) {
   return (
     <div className="rounded-[1.6rem] border border-gray-200 bg-white p-5 shadow-sm">
       <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{title}</p>
-      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-3 text-3xl font-semibold text-ink-900">{value}</p>
       <p className="mt-2 text-sm font-semibold text-gray-500">{text}</p>
     </div>
   );

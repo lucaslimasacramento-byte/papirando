@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Check,
   ChevronRight,
@@ -413,11 +413,11 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                           {step.n}
                         </span>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ink-400">
                             <Icon size={13} className="text-blue-300" />
                             {step.title}
                           </div>
-                          <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-300">{step.text}</p>
+                          <p className="mt-1.5 text-xs font-medium leading-relaxed text-ink-300">{step.text}</p>
                         </div>
                       </div>
                     </div>
@@ -430,7 +430,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
           trailing={(
             <div className="flex flex-col gap-4">
               <div className="rounded-2xl border border-white/12 bg-[linear-gradient(165deg,rgba(255,255,255,0.09)_0%,rgba(255,255,255,0.03)_100%)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.25)] backdrop-blur-md">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Seu código</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">Seu código</p>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="flex min-h-[52px] flex-1 items-center justify-center rounded-xl border border-white/15 bg-[#0c1220] px-4 font-mono text-xl font-bold tracking-[0.12em] text-white sm:text-2xl">
                     {resolvedReferralCode}
@@ -450,7 +450,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                   </button>
                 </div>
 
-                <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Link de convite</p>
+                <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-ink-500">Link de convite</p>
                 <label className="mt-2 block">
                   <span className="sr-only">URL de convite</span>
                   <input
@@ -461,9 +461,9 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                   />
                 </label>
 
-                <p className="mt-2 text-[11px] font-medium text-slate-500">
+                <p className="mt-2 text-[11px] font-medium text-ink-500">
                   Quem abrir esse link já entra com seu código. Origem:{' '}
-                  <span className="font-semibold text-slate-400">{inviteOriginLabel}</span>
+                  <span className="font-semibold text-ink-400">{inviteOriginLabel}</span>
                 </p>
 
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -474,7 +474,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                     className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 sm:flex-initial sm:min-w-[140px] ${
                       linkCopied
                         ? 'bg-emerald-500 text-white shadow-lg'
-                        : 'bg-white text-slate-900 hover:bg-slate-100'
+                        : 'bg-white text-ink-900 hover:bg-ink-100'
                     }`}
                   >
                     {linkCopied ? <Check size={18} /> : <Copy size={18} />}
@@ -496,8 +496,8 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 </div>
 
                 {isLoggedIn ? (
-                  <p className="mt-4 border-t border-white/10 pt-4 text-xs font-medium text-slate-400">
-                    Conta: <span className="font-semibold text-slate-200">{displayName}</span>
+                  <p className="mt-4 border-t border-white/10 pt-4 text-xs font-medium text-ink-400">
+                    Conta: <span className="font-semibold text-ink-200">{displayName}</span>
                   </p>
                 ) : null}
               </div>
@@ -530,11 +530,11 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
         {/* Progress + metas + histórico */}
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="flex flex-col gap-6">
-            <div className="rounded-[1.75rem] border border-slate-200/90 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-6">
+            <div className="rounded-[1.75rem] border border-ink-200/90 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Progresso</p>
-                  <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">Progresso</p>
+                  <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">
                     Próximo benefício
                   </h2>
                 </div>
@@ -543,11 +543,11 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 </span>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50/90 to-white p-5">
+              <div className="mt-5 rounded-2xl border border-ink-100 bg-gradient-to-br from-ink-50/90 to-white p-5">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Meta em foco</p>
-                    <p className="mt-1 text-lg font-bold text-slate-900">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">Meta em foco</p>
+                    <p className="mt-1 text-lg font-bold text-ink-900">
                       {nextGoal ? nextGoal.titulo : 'Todas as metas atuais concluídas'}
                     </p>
                   </div>
@@ -557,7 +557,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                     <p className="text-sm font-semibold text-emerald-700">Parabéns pelo programa completo!</p>
                   )}
                 </div>
-                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200/90">
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-ink-200/90">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-sky-500 to-indigo-500 transition-[width] duration-700 ease-out"
                     style={{ width: `${progress}%` }}
@@ -567,8 +567,8 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
 
               <div className="mt-6">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Metas</p>
-                  <span className="text-[10px] font-semibold text-slate-400">Deslize no celular</span>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">Metas</p>
+                  <span className="text-[10px] font-semibold text-ink-400">Deslize no celular</span>
                 </div>
                 <div className="mt-3 flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden">
                   {REFERRAL_GOALS.map((goal) => {
@@ -582,20 +582,20 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                             ? 'border-emerald-200 bg-gradient-to-b from-emerald-50/90 to-white shadow-sm'
                             : isNext
                               ? 'border-indigo-200 bg-gradient-to-b from-indigo-50/90 to-white shadow-md ring-2 ring-indigo-100'
-                              : 'border-slate-200 bg-slate-50/70'
+                              : 'border-ink-200 bg-ink-50/70'
                         }`}
                       >
-                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-500">
                           {goal.alvo} amigo{goal.alvo > 1 ? 's' : ''}
                         </p>
-                        <p className="mt-2 min-h-[2.75rem] text-sm font-bold leading-snug text-slate-900">{goal.titulo}</p>
+                        <p className="mt-2 min-h-[2.75rem] text-sm font-bold leading-snug text-ink-900">{goal.titulo}</p>
                         <span
                           className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
                             active
                               ? 'bg-emerald-100 text-emerald-800'
                               : isNext
                                 ? 'bg-indigo-100 text-indigo-800'
-                                : 'bg-white text-slate-500 ring-1 ring-slate-200'
+                                : 'bg-white text-ink-500 ring-1 ring-ink-200'
                           }`}
                         >
                           {active ? 'Liberado' : isNext ? 'Próxima meta' : 'Bloqueado'}
@@ -608,17 +608,17 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
 
               <div className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/80 to-white p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">Último bônus</p>
-                <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800">
+                <p className="mt-2 text-sm font-semibold leading-relaxed text-ink-800">
                   {latestBonus
                     ? `${latestBonus.reward_title} · ${formatReferralDate(latestBonus.created_at)}`
                     : 'Nenhum bônus ainda — compartilhe o link para começar a contagem.'}
                 </p>
                 {bonusHistory.length > 1 ? (
-                  <ul className="mt-3 max-h-28 space-y-1.5 overflow-y-auto text-xs font-medium text-slate-600">
+                  <ul className="mt-3 max-h-28 space-y-1.5 overflow-y-auto text-xs font-medium text-ink-600">
                     {bonusHistory.slice(1, 8).map((b) => (
                       <li key={b.id} className="flex justify-between gap-2 border-b border-blue-100/60 pb-1.5 last:border-0">
                         <span className="truncate">{b.reward_title}</span>
-                        <span className="shrink-0 tabular-nums text-slate-400">{formatReferralDate(b.created_at)}</span>
+                        <span className="shrink-0 tabular-nums text-ink-400">{formatReferralDate(b.created_at)}</span>
                       </li>
                     ))}
                   </ul>
@@ -627,19 +627,19 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-slate-200/90 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-6">
+          <div className="rounded-[1.75rem] border border-ink-200/90 bg-white/95 p-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Histórico</p>
-                <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">Indicações</h3>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-400">Histórico</p>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-ink-900">Indicações</h3>
               </div>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600">
+              <span className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-600">
                 {history.length} total
               </span>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-ink-400">
                 <Filter size={12} />
                 Filtrar
               </span>
@@ -654,8 +654,8 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                   onClick={() => setHistoryFilter(f.id)}
                   className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
                     historyFilter === f.id
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-ink-900 text-white shadow-sm'
+                      : 'bg-ink-100 text-ink-600 hover:bg-ink-200'
                   }`}
                 >
                   {f.label}
@@ -665,7 +665,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 type="button"
                 onClick={() => loadReferralData({ silent: true })}
                 disabled={reloading || loading}
-                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-100 disabled:opacity-60"
+                className="rounded-full border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-600 transition hover:bg-ink-100 disabled:opacity-60"
               >
                 {reloading ? 'Atualizando...' : 'Atualizar'}
               </button>
@@ -682,18 +682,18 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 Array.from({ length: 5 }).map((_, index) => (
                   <div
                     key={`sk-${index}`}
-                    className="h-[72px] animate-pulse rounded-2xl border border-slate-100 bg-slate-100/80"
+                    className="h-[72px] animate-pulse rounded-2xl border border-ink-100 bg-ink-100/80"
                   />
                 ))
               ) : filteredHistory.length > 0 ? (
                 filteredHistory.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50/80 to-white px-4 py-3.5 transition hover:border-slate-200 hover:shadow-sm"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-gradient-to-b from-ink-50/80 to-white px-4 py-3.5 transition hover:border-ink-200 hover:shadow-sm"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">{invite.name}</p>
-                      <p className="mt-0.5 text-xs font-medium text-slate-500">{invite.date}</p>
+                      <p className="truncate text-sm font-bold text-ink-900">{invite.name}</p>
+                      <p className="mt-0.5 text-xs font-medium text-ink-500">{invite.date}</p>
                     </div>
                     <span
                       className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
@@ -707,25 +707,25 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-                    <Users size={26} className="text-slate-400" />
+                <div className="flex flex-col items-center rounded-2xl border border-dashed border-ink-200 bg-ink-50/80 px-6 py-12 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-ink-100">
+                    <Users size={26} className="text-ink-400" />
                   </div>
-                  <p className="mt-4 max-w-sm text-sm font-bold text-slate-800">
+                  <p className="mt-4 max-w-sm text-sm font-bold text-ink-800">
                     {historyFilter !== 'todos'
                       ? 'Nada neste filtro ainda.'
                       : 'Nenhuma indicação registrada — seu link está pronto no topo da página.'}
                   </p>
-                  <p className="mt-2 max-w-xs text-xs font-medium text-slate-500">
+                  <p className="mt-2 max-w-xs text-xs font-medium text-ink-500">
                     Dica: mande o link direto; amigos não precisam digitar o código à mão.
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/90 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Como confirma?</p>
-              <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800">
+            <div className="mt-5 rounded-2xl border border-ink-100 bg-ink-50/90 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-500">Como confirma?</p>
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-ink-800">
                 A indicação aparece como pendente no cadastro e vira confirmada quando o convidado conclui a vinculação do
                 perfil no Papirando.
               </p>
@@ -754,7 +754,7 @@ function StatCardDark({ label, hint, value, icon: Icon }) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-400">{label}</p>
           <p className="mt-2 tabular-nums text-2xl font-bold tracking-tight text-white">{value}</p>
         </div>
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">

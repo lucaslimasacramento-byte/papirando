@@ -220,7 +220,7 @@ export default function AdminDashboard({
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Painel de ação</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Acessos rápidos do admin</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Acessos rápidos do admin</h3>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -257,7 +257,7 @@ export default function AdminDashboard({
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Adoção e demanda</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Mais importados e áreas fortes</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Mais importados e áreas fortes</h3>
           </div>
 
           <div className="grid gap-6 md:grid-cols-[1fr_0.9fr]">
@@ -266,11 +266,11 @@ export default function AdminDashboard({
                 <div key={contest.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="font-semibold text-slate-900">{contest.nome}</p>
+                      <p className="font-semibold text-ink-900">{contest.nome}</p>
                       <p className="mt-1 text-sm font-semibold text-gray-500">{contest.area || 'Geral'} · {contest.cargo || contest.concurso}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-semibold text-slate-900">{contest.imports}</p>
+                      <p className="text-2xl font-semibold text-ink-900">{contest.imports}</p>
                       <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Importações</p>
                     </div>
                   </div>
@@ -283,8 +283,8 @@ export default function AdminDashboard({
               {areas.map(([area, count]) => (
                 <div key={area} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                   <div className="mb-2 flex items-center justify-between gap-4">
-                    <p className="font-semibold text-slate-900">{area}</p>
-                    <span className="text-lg font-semibold text-slate-900">{count}</span>
+                    <p className="font-semibold text-ink-900">{area}</p>
+                    <span className="text-lg font-semibold text-ink-900">{count}</span>
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-white">
                     <div className="h-full rounded-full bg-blue-600" style={{ width: `${Math.min(100, Math.round((count / Math.max(contestLibrary.length, 1)) * 100))}%` }} />
@@ -301,7 +301,7 @@ export default function AdminDashboard({
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Backlog editorial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Concursos que pedem ação rápida</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Concursos que pedem ação rápida</h3>
           </div>
 
           <div className="space-y-4">
@@ -309,7 +309,7 @@ export default function AdminDashboard({
               <div key={contest.id} className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <p className="font-semibold text-slate-900">{contest.nome}</p>
+                    <p className="font-semibold text-ink-900">{contest.nome}</p>
                     <p className="mt-1 text-sm font-semibold text-gray-500">{contest.area || 'Geral'} · {contest.cargo || contest.concurso}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {contest.pendencias.map((item) => (
@@ -337,7 +337,7 @@ export default function AdminDashboard({
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Resumo executivo</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Produto, receita e aquisição</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Produto, receita e aquisição</h3>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -352,7 +352,7 @@ export default function AdminDashboard({
               <div key={contest.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-slate-900">{contest.nome}</p>
+                    <p className="font-semibold text-ink-900">{contest.nome}</p>
                     <p className="mt-1 text-sm font-semibold text-gray-500">
                       {STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'} · {contest.prova_data || 'Sem data'}
                     </p>
@@ -381,7 +381,7 @@ function ActionCard({ icon: Icon, title, text, actionLabel, onClick }) {
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
         <Icon size={20} />
       </div>
-      <p className="mt-4 text-lg font-semibold text-slate-900">{title}</p>
+      <p className="mt-4 text-lg font-semibold text-ink-900">{title}</p>
       <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{text}</p>
       <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
         {actionLabel}
@@ -400,7 +400,7 @@ function OpsCard({ icon: Icon, label, value }) {
         </div>
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-          <p className="mt-1 text-xl font-semibold text-slate-900">{value}</p>
+          <p className="mt-1 text-xl font-semibold text-ink-900">{value}</p>
         </div>
       </div>
     </div>

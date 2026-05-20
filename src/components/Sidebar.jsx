@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -153,7 +153,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`relative flex h-full min-h-0 min-w-0 w-[min(258px,88vw)] shrink-0 flex-col overflow-hidden rounded-none text-slate-50 antialiased shadow-[8px_0_28px_rgba(2,6,23,0.32)] [color-scheme:dark] lg:w-[var(--sidebar-w)] lg:rounded-none ${
+      className={`relative flex h-full min-h-0 min-w-0 w-[min(258px,88vw)] shrink-0 flex-col overflow-hidden rounded-none text-ink-50 antialiased shadow-[8px_0_28px_rgba(2,6,23,0.32)] [color-scheme:dark] lg:w-[var(--sidebar-w)] lg:rounded-none ${
         isCollapsed ? 'lg:[--sidebar-w:86px]' : 'lg:[--sidebar-w:252px]'
       } ${className}`}
     >
@@ -269,7 +269,7 @@ export default function Sidebar({
             <User size={16} strokeWidth={2} />
           </div>
           {isCollapsed ? null : (
-            <div className="min-w-0 flex-1 text-slate-50">
+            <div className="min-w-0 flex-1 text-ink-50">
               <p className="truncate text-sm font-semibold text-white">
                 {currentUserEmail || 'Conta ativa'}
               </p>

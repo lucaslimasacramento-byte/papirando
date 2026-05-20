@@ -153,7 +153,7 @@ export default function AdminFinance({
         trailingClassName="xl:max-w-[16rem]"
         trailing={
           <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">Operando como</p>
             <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
         }
@@ -162,7 +162,7 @@ export default function AdminFinance({
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Lançamentos</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">{form.id ? 'Editar despesa' : 'Nova despesa'}</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">{form.id ? 'Editar despesa' : 'Nova despesa'}</h3>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -256,14 +256,14 @@ export default function AdminFinance({
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Assinaturas e resultado</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Plano comercial e comportamento mensal</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Plano comercial e comportamento mensal</h3>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
             {planMix.map((item) => (
               <div key={item.plan} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{item.plan}</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">{item.count}</p>
+                <p className="mt-2 text-2xl font-semibold text-ink-900">{item.count}</p>
                 <p className="mt-1 text-sm font-semibold text-gray-500">{item.price > 0 ? `${formatCurrency(item.price)}/mês` : 'Plano sem cobrança'}</p>
               </div>
             ))}
@@ -274,7 +274,7 @@ export default function AdminFinance({
               <div key={item.key} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-slate-900">{item.label}</p>
+                    <p className="font-semibold text-ink-900">{item.label}</p>
                     <p className="mt-1 text-sm font-semibold text-gray-500">
                       Receita {formatCurrency(item.receita)} • Despesas {formatCurrency(item.despesas)}
                     </p>
@@ -294,7 +294,7 @@ export default function AdminFinance({
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Histórico financeiro</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Despesas cadastradas</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-ink-900">Despesas cadastradas</h3>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-600">
@@ -309,7 +309,7 @@ export default function AdminFinance({
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-slate-900">{expense.descricao}</p>
+                    <p className="font-semibold text-ink-900">{expense.descricao}</p>
                     <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${expense.status === 'paga' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
                       {expense.status}
                     </span>

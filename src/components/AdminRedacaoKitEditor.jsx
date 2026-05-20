@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
 /**
@@ -18,7 +18,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
     <div className="space-y-10">
       <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-700">Visão do kit (metadados)</p>
-        <p className="mt-1 text-xs font-medium text-slate-600">
+        <p className="mt-1 text-xs font-medium text-ink-600">
           Esse bloco não aparece mais na aba Dicas do aluno; serve para organizar o material e exportação. Checklist pode virar referência interna ou futura landing.
         </p>
         <label className="mt-4 block">
@@ -121,7 +121,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
       />
 
       <div>
-        <h4 className="text-sm font-bold text-slate-900">Modelos decoráveis</h4>
+        <h4 className="text-sm font-bold text-ink-900">Modelos decoráveis</h4>
         <p className="mt-1 text-xs font-medium text-gray-500">Texto completo do modelo (faixas 4+7+7+4 etc.).</p>
         <div className="mt-4 space-y-4">
           {modelos.map((m, i) => (
@@ -223,7 +223,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 ],
               }))
             }
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800"
+            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2 text-xs font-bold text-ink-800"
           >
             <Plus size={14} />
             Adicionar modelo
@@ -237,7 +237,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
 function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
   return (
     <div>
-      <h4 className="text-sm font-bold text-slate-900">{title}</h4>
+      <h4 className="text-sm font-bold text-ink-900">{title}</h4>
       <p className="mt-1 text-xs font-medium text-gray-500">{hint}</p>
       <div className="mt-4 space-y-4">
         {list.map((bloco, i) => (
@@ -339,7 +339,7 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
               ],
             }))
           }
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800"
+          className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2 text-xs font-bold text-ink-800"
         >
           <Plus size={14} />
           Adicionar grupo em {title}

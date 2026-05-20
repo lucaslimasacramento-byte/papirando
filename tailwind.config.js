@@ -27,16 +27,19 @@ export default {
           900: '#1e3a8a',
         },
         // ink.* warm — escala de "tinta" do brandbook (era Tailwind slate frio).
+        // Inclui 50 e 950 para mapeamento 1:1 com slate-* e gray-* durante o sweep.
         ink: {
-          900: '#14110d',
-          800: '#3a342c',
-          700: '#3a342c',
-          600: '#847b6c',
-          500: '#847b6c',
-          400: '#b6ad9c',
-          300: '#d8d0bf',
-          200: '#ebe6d8',
-          100: '#f3efe5',
+          50:  '#f9f7f0',  // --bg-surface-2
+          100: '#f3efe5',  // --bg-paper
+          200: '#ebe6d8',  // --bg-paper-soft
+          300: '#d8d0bf',  // --ink-5
+          400: '#b6ad9c',  // --ink-4
+          500: '#847b6c',  // --ink-3
+          600: '#847b6c',  // alias --ink-3
+          700: '#3a342c',  // alias --ink-2
+          800: '#3a342c',  // --ink-2
+          900: '#14110d',  // --ink
+          950: '#14110d',  // alias --ink
         },
         // Papéis semânticos novos (use estes preferencialmente em código novo).
         paper: {

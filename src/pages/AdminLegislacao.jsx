@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ExternalLink, Loader2, RefreshCw, Save, Scale, UploadCloud } from 'lucide-react';
 import {
   DEFAULT_SECTION_PAGE_MAP,
@@ -160,15 +160,15 @@ export default function AdminLegislacao({ currentUserId = '' }) {
         <div className="section-card space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Arquivo ativo (slug {OFFICIAL_SLUG})</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Arquivo ativo (slug {OFFICIAL_SLUG})</p>
               {loading ? (
-                <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                <p className="mt-2 flex items-center gap-2 text-sm text-ink-500">
                   <Loader2 size={16} className="animate-spin" /> Carregando…
                 </p>
               ) : (
                 <>
-                  <h2 className="mt-1 text-xl font-semibold text-slate-900">{doc?.title}</h2>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <h2 className="mt-1 text-xl font-semibold text-ink-900">{doc?.title}</h2>
+                  <p className="mt-1 text-sm text-ink-600">
                     {doc?.edition} · {doc?.source} · Atualizado em {doc?.updatedAtLabel}
                   </p>
                   <a
@@ -206,46 +206,46 @@ export default function AdminLegislacao({ currentUserId = '' }) {
         </div>
 
         <div className="section-card space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Metadados do lançamento</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Metadados do lançamento</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block text-xs font-semibold text-slate-600">
+            <label className="block text-xs font-semibold text-ink-600">
               Título
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-600">
+            <label className="block text-xs font-semibold text-ink-600">
               Edição
               <input
                 value={edition}
                 onChange={(e) => setEdition(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-600">
+            <label className="block text-xs font-semibold text-ink-600">
               Fonte
               <input
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-600">
+            <label className="block text-xs font-semibold text-ink-600">
               Rótulo &quot;Atualizado em&quot; (texto livre)
               <input
                 value={updatedLabel}
                 onChange={(e) => setUpdatedLabel(e.target.value)}
                 placeholder="ex: 18/04/2026"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
               />
             </label>
           </div>
 
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <label className="text-xs font-semibold text-slate-600">Mapa de páginas por bloco (JSON)</label>
+              <label className="text-xs font-semibold text-ink-600">Mapa de páginas por bloco (JSON)</label>
               <button type="button" onClick={fillDefaultMap} className="text-xs font-bold text-blue-700 hover:text-blue-800">
                 Preencher padrão Senado 2ed
               </button>
@@ -255,9 +255,9 @@ export default function AdminLegislacao({ currentUserId = '' }) {
               onChange={(e) => setSectionMapJson(e.target.value)}
               rows={14}
               spellCheck={false}
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3 font-mono text-xs leading-relaxed text-slate-800 outline-none focus:border-blue-600"
+              className="mt-2 w-full rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-3 font-mono text-xs leading-relaxed text-ink-800 outline-none focus:border-blue-600"
             />
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-ink-500">
               Chaves = nome do bloco (igual aos chips na tela Legislação). Valores = número da página inicial daquele bloco no PDF.
             </p>
           </div>

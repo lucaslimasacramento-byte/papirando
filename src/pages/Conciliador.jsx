@@ -1107,15 +1107,15 @@ export default function Conciliador({
                 <h3 className="m-0 text-[1.4rem] font-extrabold leading-[1.02] tracking-tight text-white sm:text-[1.72rem]">
                   {selectedBase && selectedTargetOne && !duplicateSelection ? 'Resumo da compatibilidade' : 'Cruze os editais'}
                 </h3>
-                <div className="mt-1 text-[13px] font-medium leading-relaxed text-slate-300/90 sm:text-[14px]">
+                <div className="mt-1 text-[13px] font-medium leading-relaxed text-ink-300/90 sm:text-[14px]">
                   {selectedBase && selectedTargetOne && !duplicateSelection ? (
                     <>
-                      <span className="font-semibold text-slate-300">{String(selectedBase?.nome || '')}</span>
-                      <span className="text-slate-500"> · </span>
+                      <span className="font-semibold text-ink-300">{String(selectedBase?.nome || '')}</span>
+                      <span className="text-ink-500"> · </span>
                       <span className="font-semibold text-indigo-200">{String(selectedTargetOne?.nome || '')}</span>
                       {courseCount === 3 && selectedTargetTwo ? (
                         <>
-                          <span className="text-slate-500"> · </span>
+                          <span className="text-ink-500"> · </span>
                           <span className="font-semibold text-pink-200">{String(selectedTargetTwo?.nome || '')}</span>
                         </>
                       ) : null}
@@ -1164,7 +1164,7 @@ export default function Conciliador({
                       type="button"
                       onClick={() => setActivePanel(item.id)}
                       className={`group relative inline-flex shrink-0 items-center gap-2 pb-1.5 text-[13px] font-semibold transition sm:text-[14px] ${
-                        active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                        active ? 'text-white' : 'text-ink-400 hover:text-ink-200'
                       }`}
                     >
                       <Icon
@@ -1188,7 +1188,7 @@ export default function Conciliador({
                 onClick={() => setActivePanel('parecer')}
                 className={`inline-flex items-center justify-center gap-2 self-start rounded-xl px-3.5 py-2 text-[13px] font-semibold transition sm:self-auto sm:text-[14px] ${
                   activePanel === 'parecer'
-                    ? 'bg-white text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)]'
+                    ? 'bg-white text-ink-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)]'
                     : 'border border-white/14 bg-white/[0.08] text-white hover:border-white/24 hover:bg-white/[0.12]'
                 }`}
               >
@@ -1202,16 +1202,16 @@ export default function Conciliador({
 
       <div className="flex w-full flex-col gap-6">
         <section
-          className="rounded-xl border border-slate-200/90 bg-white px-2 py-2 shadow-sm sm:px-3"
+          className="rounded-xl border border-ink-200/90 bg-white px-2 py-2 shadow-sm sm:px-3"
           aria-label="Editais a comparar — até três na mesma leitura"
         >
           {remoteLoading ? (
             <div className="flex gap-2">
-              <div className="h-9 flex-1 animate-pulse rounded-lg bg-slate-100" />
-              <div className="h-9 flex-1 animate-pulse rounded-lg bg-slate-100" />
+              <div className="h-9 flex-1 animate-pulse rounded-lg bg-ink-100" />
+              <div className="h-9 flex-1 animate-pulse rounded-lg bg-ink-100" />
             </div>
           ) : remoteLoaded && options.length === 0 ? (
-            <p className="py-1 text-center text-xs font-medium text-slate-500">Nenhum concurso no catálogo.</p>
+            <p className="py-1 text-center text-xs font-medium text-ink-500">Nenhum concurso no catálogo.</p>
           ) : (
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-2">
@@ -1226,7 +1226,7 @@ export default function Conciliador({
                     excludeIds={[targetOneId, ...(courseCount === 3 ? [targetTwoId] : [])].filter(Boolean)}
                   />
                   <div className="hidden shrink-0 items-center self-center sm:flex" aria-hidden>
-                    <ArrowRightLeft size={14} className="text-slate-300" />
+                    <ArrowRightLeft size={14} className="text-ink-300" />
                   </div>
                   <SelectStripField
                     micro="Alvo 1"
@@ -1240,7 +1240,7 @@ export default function Conciliador({
                   {courseCount === 3 ? (
                     <>
                       <div className="hidden shrink-0 items-center self-center sm:flex" aria-hidden>
-                        <ArrowRightLeft size={14} className="text-slate-300" />
+                        <ArrowRightLeft size={14} className="text-ink-300" />
                       </div>
                       <SelectStripField
                         micro="Alvo 2"
@@ -1257,7 +1257,7 @@ export default function Conciliador({
                               setCourseCount(2);
                               setTargetTwoId('');
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                            className="flex h-8 w-8 items-center justify-center rounded-md text-ink-400 transition hover:bg-rose-50 hover:text-rose-600"
                             title="Remover 3º edital"
                           >
                             <X size={15} strokeWidth={2.5} />
@@ -1270,7 +1270,7 @@ export default function Conciliador({
                       type="button"
                       disabled={options.length < 3}
                       onClick={() => setCourseCount(3)}
-                      className="inline-flex shrink-0 items-center justify-center gap-1 self-stretch rounded-lg border border-dashed border-slate-300 bg-slate-50/90 px-2.5 py-2 text-[11px] font-semibold text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[5.5rem] sm:flex-col sm:py-2.5"
+                      className="inline-flex shrink-0 items-center justify-center gap-1 self-stretch rounded-lg border border-dashed border-ink-300 bg-ink-50/90 px-2.5 py-2 text-[11px] font-semibold text-ink-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[5.5rem] sm:flex-col sm:py-2.5"
                       title={options.length < 3 ? 'São necessários ao menos três editais no catálogo' : 'Incluir terceiro edital na comparação'}
                     >
                       <Plus size={14} className="shrink-0" />
@@ -1278,7 +1278,7 @@ export default function Conciliador({
                     </button>
                   )}
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-2 sm:justify-start lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-ink-100 pt-2 sm:justify-start lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
                   <StatusBadge
                     tone={options.length === 0 ? 'neutral' : !hasEnoughContests || duplicateSelection ? 'neutral' : 'positive'}
                     text={
@@ -1294,14 +1294,14 @@ export default function Conciliador({
                 </div>
               </div>
               {!duplicateSelection && selectedBase && selectedTargetOne ? (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-100 pt-1.5 text-[11px] leading-tight text-slate-600">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-ink-100 pt-1.5 text-[11px] leading-tight text-ink-600">
                   <StripQuickContestLinks
                     label="Base"
                     contest={selectedBase}
                     onOpenContestDetail={onOpenContestDetail}
                     onSetTargetContest={onSetTargetContest}
                   />
-                  <span className="hidden text-slate-300 sm:inline" aria-hidden>
+                  <span className="hidden text-ink-300 sm:inline" aria-hidden>
                     |
                   </span>
                   <StripQuickContestLinks
@@ -1312,7 +1312,7 @@ export default function Conciliador({
                   />
                   {courseCount === 3 && selectedTargetTwo ? (
                     <>
-                      <span className="hidden text-slate-300 sm:inline" aria-hidden>
+                      <span className="hidden text-ink-300 sm:inline" aria-hidden>
                         |
                       </span>
                       <StripQuickContestLinks
@@ -1335,7 +1335,7 @@ export default function Conciliador({
             {isComparing ? (
               <>
                 {(activePanel === 'visao' || activePanel === 'comparacao') && (
-                  <section className="overflow-hidden rounded-[1.9rem] border border-slate-800/50 bg-[linear-gradient(135deg,#091428_0%,#132b4d_58%,#312e81_100%)] p-6 shadow-[0_30px_80px_-32px_rgba(15,23,42,0.7)] md:p-7 xl:p-8">
+                  <section className="overflow-hidden rounded-[1.9rem] border border-ink-800/50 bg-[linear-gradient(135deg,#091428_0%,#132b4d_58%,#312e81_100%)] p-6 shadow-[0_30px_80px_-32px_rgba(15,23,42,0.7)] md:p-7 xl:p-8">
                     <div className="grid gap-6 xl:grid-cols-[1fr_300px] xl:items-center">
                       <div className="space-y-5">
                         <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-100">
@@ -1351,7 +1351,7 @@ export default function Conciliador({
                                 ? 'Compatibilidade moderada'
                                 : 'Compatibilidade baixa'}
                           </h3>
-                          <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-300 md:text-base">
+                          <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-ink-300 md:text-base">
                             {selectedBase?.nome} x {selectedTargetOne?.nome}
                             {courseCount === 3 && selectedTargetTwo ? ` x ${selectedTargetTwo.nome}` : ''}. A leitura deixa claro o tamanho do reaproveitamento sem virar carnaval visual.
                           </p>
@@ -1457,10 +1457,10 @@ export default function Conciliador({
 
                 {activePanel === 'conteudo' && selectedBase && selectedTargetOne && !duplicateSelection && (
                   <section className="space-y-6">
-                    <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura integral</p>
-                      <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">Conteúdo declarado nos editais</h3>
-                      <p className="mt-2 text-sm font-medium text-slate-500">
+                    <div className="rounded-[1.7rem] border border-ink-200 bg-white p-5 shadow-sm md:p-6">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Leitura integral</p>
+                      <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-ink-950">Conteúdo declarado nos editais</h3>
+                      <p className="mt-2 text-sm font-medium text-ink-500">
                         Etapas, resumo do catálogo e grade com contagem de tópicos — o mesmo bloco disponível antes da análise, aqui integrado ao fluxo após o parecer.
                       </p>
                     </div>
@@ -1575,12 +1575,12 @@ export default function Conciliador({
               </>
             ) : activePanel === 'conteudo' && selectedBase && selectedTargetOne && !duplicateSelection ? (
               <section className="space-y-6">
-                <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura integral</p>
-                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">Conteúdo declarado nos editais</h3>
-                  <p className="mt-2 text-sm font-medium text-slate-500">
+                <div className="rounded-[1.7rem] border border-ink-200 bg-white p-5 shadow-sm md:p-6">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Leitura integral</p>
+                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-ink-950">Conteúdo declarado nos editais</h3>
+                  <p className="mt-2 text-sm font-medium text-ink-500">
                     Compare etapas, resumo do catálogo e grade (disciplinas + tópicos) antes de gerar o parecer. Use{' '}
-                    <span className="font-semibold text-slate-700">Gerar análise</span> no topo para ver estatísticas e veredito.
+                    <span className="font-semibold text-ink-700">Gerar análise</span> no topo para ver estatísticas e veredito.
                   </p>
                 </div>
                 <EditalSideBySide
@@ -1590,14 +1590,14 @@ export default function Conciliador({
                 />
               </section>
             ) : (
-              <section className="rounded-[1.9rem] border border-dashed border-slate-300 bg-white/80 p-8 text-center shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)]">
+              <section className="rounded-[1.9rem] border border-dashed border-ink-300 bg-white/80 p-8 text-center shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)]">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#dbeafe_0%,#eef2ff_100%)] text-blue-700 shadow-sm">
                   <Wand2 size={24} />
                 </div>
-                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">Painel interativo</p>
-                <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Agora a lateral troca o conteúdo de verdade.</h3>
-                <p className="mx-auto mt-3 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
-                  Use <span className="font-semibold text-slate-700">Gerar análise</span> no cabeçalho. Depois, as abas Visão geral, Comparação, Conteúdo, Disciplinas e Parecer mostram o detalhe.
+                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-400">Painel interativo</p>
+                <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-ink-950">Agora a lateral troca o conteúdo de verdade.</h3>
+                <p className="mx-auto mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-500">
+                  Use <span className="font-semibold text-ink-700">Gerar análise</span> no cabeçalho. Depois, as abas Visão geral, Comparação, Conteúdo, Disciplinas e Parecer mostram o detalhe.
                 </p>
               </section>
             )}
@@ -1606,22 +1606,22 @@ export default function Conciliador({
       {comparisonHistory.length > 0 ? (
         <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-900">Histórico de comparações</h3>
-            <span className="text-xs font-medium text-slate-500">{comparisonHistory.length} salvas</span>
+            <h3 className="text-sm font-semibold text-ink-900">Histórico de comparações</h3>
+            <span className="text-xs font-medium text-ink-500">{comparisonHistory.length} salvas</span>
           </div>
           <div className="flex max-h-64 flex-col gap-3 overflow-y-auto pr-1">
             {comparisonHistory.map((entry) => (
               <div
                 key={entry.id}
-                className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 shadow-sm"
+                className="rounded-xl border border-ink-100 bg-ink-50/80 p-4 shadow-sm"
               >
                 <button type="button" onClick={() => handleRestoreHistory(entry)} className="w-full text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{entry.verdictTitle}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">{entry.verdictTitle}</p>
+                  <p className="mt-1 text-sm font-semibold text-ink-900">
                     {entry.baseLabel} × {entry.targetOneLabel}
                     {entry.targetTwoLabel ? ` × ${entry.targetTwoLabel}` : ''}
                   </p>
-                  <p className="mt-2 text-xs font-medium text-slate-500">
+                  <p className="mt-2 text-xs font-medium text-ink-500">
                     {entry.compatibility}% compatível · {formatCompareTimestamp(entry.createdAt)}
                   </p>
                 </button>
@@ -1629,14 +1629,14 @@ export default function Conciliador({
                   <button
                     type="button"
                     onClick={() => handleRestoreHistory(entry)}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-indigo-200"
+                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-700 hover:border-indigo-200"
                   >
                     Restaurar
                   </button>
                   <button
                     type="button"
                     onClick={() => onOpenContestDetail?.(entry.baseContestId)}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-indigo-200"
+                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-700 hover:border-indigo-200"
                   >
                     Ver base
                   </button>
@@ -1650,7 +1650,7 @@ export default function Conciliador({
                   <button
                     type="button"
                     onClick={() => handleDeleteHistory(entry.id)}
-                    className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:border-rose-200 hover:text-rose-600"
+                    className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-500 hover:border-rose-200 hover:text-rose-600"
                   >
                     Excluir
                   </button>
@@ -1687,26 +1687,26 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
 
     return (
       <div className={`flex min-w-0 flex-col overflow-hidden rounded-[1.75rem] border shadow-sm ${border}`}>
-        <div className="border-b border-slate-100 bg-white/90 px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{tone === 'blue' ? 'Edital base' : 'Edital comparado'}</p>
-          <h4 className="mt-1 text-lg font-semibold leading-snug text-slate-900">{contest?.nome || '—'}</h4>
-          <p className="mt-1 text-xs font-semibold text-slate-500">
+        <div className="border-b border-ink-100 bg-white/90 px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">{tone === 'blue' ? 'Edital base' : 'Edital comparado'}</p>
+          <h4 className="mt-1 text-lg font-semibold leading-snug text-ink-900">{contest?.nome || '—'}</h4>
+          <p className="mt-1 text-xs font-semibold text-ink-500">
             {[contest?.banca, contest?.escolaridade].filter(Boolean).join(' · ') || 'Metadados limitados no catálogo'}
           </p>
           {contest?.description ? (
-            <p className="mt-3 line-clamp-4 text-sm font-medium leading-relaxed text-slate-600">{String(contest.description)}</p>
+            <p className="mt-3 line-clamp-4 text-sm font-medium leading-relaxed text-ink-600">{String(contest.description)}</p>
           ) : contest?.content ? (
-            <p className="mt-3 line-clamp-4 text-sm font-medium leading-relaxed text-slate-600">{String(contest.content)}</p>
+            <p className="mt-3 line-clamp-4 text-sm font-medium leading-relaxed text-ink-600">{String(contest.content)}</p>
           ) : null}
         </div>
 
-        <div className="border-b border-slate-100 px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Etapas / exigências</p>
+        <div className="border-b border-ink-100 px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Etapas / exigências</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {stages(contest).map((tag) => (
               <span
                 key={`${contest?.id}-${tag}`}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-600"
+                className="inline-flex rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-ink-600"
               >
                 {formatStageLabel(tag)}
               </span>
@@ -1715,9 +1715,9 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-2 py-3" style={{ maxHeight: 'min(52vh, 28rem)' }}>
-          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Disciplinas e tópicos</p>
+          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Disciplinas e tópicos</p>
           {rows.length === 0 ? (
-            <div className="mx-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <div className="mx-3 rounded-2xl border border-dashed border-ink-200 bg-ink-50 px-4 py-6 text-center text-sm font-semibold text-ink-500">
               Este edital ainda não tem disciplinas estruturadas no catálogo. Abra o detalhe do concurso para importar o programa.
             </div>
           ) : (
@@ -1725,10 +1725,10 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
               {rows.map((row) => (
                 <li
                   key={row.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-ink-100 bg-white px-3 py-2.5 text-sm font-semibold text-ink-800"
                 >
                   <span className="min-w-0 truncate">{row.nome}</span>
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  <span className="shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-ink-500">
                     {row.topicos} tópicos
                   </span>
                 </li>
@@ -1763,25 +1763,25 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
   return (
     <div className={`flex min-h-[40px] min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border ${palette.wrap}`}>
       <div
-        className={`flex w-[50px] shrink-0 flex-col items-center justify-center gap-0.5 border-r border-slate-200/80 px-0.5 py-1 sm:w-[52px] ${palette.bar}`}
+        className={`flex w-[50px] shrink-0 flex-col items-center justify-center gap-0.5 border-r border-ink-200/80 px-0.5 py-1 sm:w-[52px] ${palette.bar}`}
       >
         <Icon size={15} strokeWidth={2.2} className="text-white" />
         <span className="max-w-full truncate px-0.5 text-center text-[7px] font-bold uppercase leading-none tracking-wide text-white/90">
           {micro}
         </span>
       </div>
-      <div className="flex min-w-0 flex-1 items-center bg-slate-50/40">
-        <div className="ml-2 flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white">
+      <div className="flex min-w-0 flex-1 items-center bg-ink-50/40">
+        <div className="ml-2 flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-ink-200 bg-white">
           {selectedImage ? (
             <img src={selectedImage} alt={selectedOption?.contest?.nome || selectedOption?.label || micro} className="h-full w-full object-cover" />
           ) : (
-            <Icon size={16} className="text-slate-300" />
+            <Icon size={16} className="text-ink-300" />
           )}
         </div>
         <select
           value={filtered.some((o) => o.id === value) ? value : ''}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-[40px] w-full min-w-0 cursor-pointer border-0 bg-transparent px-2 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:ring-0 sm:text-[13px]"
+          className="min-h-[40px] w-full min-w-0 cursor-pointer border-0 bg-transparent px-2 py-1.5 text-xs font-semibold text-ink-800 outline-none focus:ring-0 sm:text-[13px]"
         >
           {filtered.length === 0 ? <option value="">—</option> : null}
           {filtered.map((option) => (
@@ -1791,7 +1791,7 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
           ))}
         </select>
       </div>
-      {trailing ? <div className="flex shrink-0 items-center border-l border-slate-200/80 bg-white/80 px-0.5">{trailing}</div> : null}
+      {trailing ? <div className="flex shrink-0 items-center border-l border-ink-200/80 bg-white/80 px-0.5">{trailing}</div> : null}
     </div>
   );
 }
@@ -1800,8 +1800,8 @@ function StripQuickContestLinks({ label, contest, onOpenContestDetail, onSetTarg
   if (!contest) return null;
   return (
     <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-0.5">
-      <span className="shrink-0 font-bold uppercase tracking-wider text-[9px] text-slate-400">{label}</span>
-      <span className="max-w-[11rem] truncate font-semibold text-slate-800 sm:max-w-[14rem]">{contest.nome}</span>
+      <span className="shrink-0 font-bold uppercase tracking-wider text-[9px] text-ink-400">{label}</span>
+      <span className="max-w-[11rem] truncate font-semibold text-ink-800 sm:max-w-[14rem]">{contest.nome}</span>
       <button
         type="button"
         onClick={() => onOpenContestDetail?.(contest.id)}
@@ -1826,7 +1826,7 @@ function InfoCard({ icon: Icon, eyebrow, title, text, tone = 'blue', tall = fals
     indigo: 'border-indigo-100 bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] text-indigo-950',
     amber: 'border-amber-100 bg-[linear-gradient(135deg,#fff7ed_0%,#fffbeb_100%)] text-amber-950',
     gold: 'border-amber-200 bg-[linear-gradient(135deg,#fff8db_0%,#fffdf3_100%)] text-amber-950',
-    slate: 'border-slate-200 bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] text-slate-950',
+    slate: 'border-ink-200 bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] text-ink-950',
   };
 
   return (
@@ -1848,7 +1848,7 @@ function InfoCard({ icon: Icon, eyebrow, title, text, tone = 'blue', tall = fals
 function StatusBadge({ tone = 'neutral', text }) {
   const tones = {
     positive: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    neutral: 'border-slate-200 bg-white text-slate-600',
+    neutral: 'border-ink-200 bg-white text-ink-600',
     alert: 'border-rose-200 bg-rose-50 text-rose-700',
   };
 
@@ -1889,7 +1889,7 @@ function CompatibilityGauge({ value }) {
           </defs>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-300">Compatibilidade</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ink-300">Compatibilidade</p>
           <p className="mt-2 text-5xl font-semibold tracking-[-0.05em] text-white">{value}%</p>
         </div>
       </div>
@@ -1902,9 +1902,9 @@ function CompatibilityGauge({ value }) {
 function DarkMetric({ label, value, helper, compact = false }) {
   return (
     <div className="rounded-[1.35rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">{label}</p>
       <p className={`mt-2 font-semibold tracking-[-0.04em] text-white ${compact ? 'text-xl' : 'text-3xl'}`}>{value}</p>
-      <p className="mt-1 text-xs font-semibold text-slate-400">{helper}</p>
+      <p className="mt-1 text-xs font-semibold text-ink-400">{helper}</p>
     </div>
   );
 }
@@ -1915,19 +1915,19 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
       wrapper: 'border-blue-100',
       header: 'bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] border-blue-100',
       iconBox: 'bg-blue-600 text-white',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
+      title: 'text-ink-950',
+      subtitle: 'text-ink-500',
       dot: 'bg-blue-500',
       bar: 'bg-blue-500',
       badge: 'bg-blue-50 text-blue-700 border-blue-100',
-      itemBorder: 'border-slate-100',
+      itemBorder: 'border-ink-100',
     },
     amber: {
       wrapper: 'border-amber-100',
       header: 'bg-[linear-gradient(135deg,#fff7ed_0%,#fffaf0_100%)] border-amber-100',
       iconBox: 'bg-amber-500 text-white',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
+      title: 'text-ink-950',
+      subtitle: 'text-ink-500',
       dot: 'bg-amber-500',
       bar: 'bg-amber-500',
       badge: 'bg-amber-50 text-amber-700 border-amber-100',
@@ -1937,23 +1937,23 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
       wrapper: 'border-indigo-100',
       header: 'bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] border-indigo-100',
       iconBox: 'bg-indigo-600 text-white',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
+      title: 'text-ink-950',
+      subtitle: 'text-ink-500',
       dot: 'bg-indigo-500',
       bar: 'bg-indigo-500',
       badge: 'bg-indigo-50 text-indigo-700 border-indigo-100',
       itemBorder: 'border-indigo-100',
     },
     slate: {
-      wrapper: 'border-slate-200',
-      header: 'bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] border-slate-200',
-      iconBox: 'bg-slate-200 text-slate-700',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
-      dot: 'bg-slate-400',
-      bar: 'bg-slate-300',
-      badge: 'bg-slate-100 text-slate-700 border-slate-200',
-      itemBorder: 'border-slate-100',
+      wrapper: 'border-ink-200',
+      header: 'bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] border-ink-200',
+      iconBox: 'bg-ink-200 text-ink-700',
+      title: 'text-ink-950',
+      subtitle: 'text-ink-500',
+      dot: 'bg-ink-400',
+      bar: 'bg-ink-300',
+      badge: 'bg-ink-100 text-ink-700 border-ink-200',
+      itemBorder: 'border-ink-100',
     },
   };
 
@@ -1967,7 +1967,7 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
             <Icon size={20} />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Bloco analítico</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Bloco analítico</p>
             <h3 className={`mt-1 text-xl font-semibold tracking-[-0.03em] ${colors.title}`}>{title}</h3>
             <p className={`mt-1 text-sm font-semibold ${colors.subtitle}`}>{subtitle}</p>
           </div>
@@ -1977,7 +1977,7 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
 
       <div className="p-6">
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">
+          <div className="rounded-2xl border border-dashed border-ink-200 bg-ink-50 px-4 py-5 text-sm font-semibold text-ink-500">
             Nada crítico detectado aqui.
           </div>
         ) : (
@@ -1993,7 +1993,7 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${colors.dot}`} />
-                    <span className="text-sm font-bold leading-relaxed text-slate-700">{text}</span>
+                    <span className="text-sm font-bold leading-relaxed text-ink-700">{text}</span>
                   </div>
                   {badge && (
                     <span className={`inline-flex w-fit rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${colors.badge}`}>
@@ -2038,16 +2038,16 @@ function VerdictCard({ verdict }) {
           <span className={`inline-flex rounded-full border px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] ${style.pill}`}>
             Parecer final
           </span>
-          <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">{verdict.title}</h3>
+          <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-ink-950">{verdict.title}</h3>
         </div>
         <span className={`mt-2 hidden h-3 w-16 rounded-full ${style.accent} md:block`} />
       </div>
 
-      <p className="mt-4 text-sm font-medium leading-relaxed text-slate-600">{verdict.text}</p>
+      <p className="mt-4 text-sm font-medium leading-relaxed text-ink-600">{verdict.text}</p>
 
-      <div className="mt-5 rounded-[1.4rem] border border-slate-200 bg-white/90 p-5 shadow-sm">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Recomendação prática</p>
-        <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-700">{verdict.recommendation}</p>
+      <div className="mt-5 rounded-[1.4rem] border border-ink-200 bg-white/90 p-5 shadow-sm">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Recomendação prática</p>
+        <p className="mt-2 text-sm font-semibold leading-relaxed text-ink-700">{verdict.recommendation}</p>
       </div>
     </div>
   );
@@ -2055,13 +2055,13 @@ function VerdictCard({ verdict }) {
 
 function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows }) {
   return (
-    <div className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.16)]">
-      <div className="border-b border-slate-100 px-6 py-5">
+    <div className="overflow-hidden rounded-[1.8rem] border border-ink-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.16)]">
+      <div className="border-b border-ink-100 px-6 py-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura comparativa</p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Tabela executiva</h3>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-400">Leitura comparativa</p>
+            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-ink-950">Tabela executiva</h3>
+            <p className="mt-2 text-sm font-medium text-ink-500">
               Um resumo limpo para confrontar carreira, salário, estrutura e peso do edital sem sair da área.
             </p>
           </div>
@@ -2072,7 +2072,7 @@ function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse">
           <thead>
-            <tr className="bg-slate-50/80">
+            <tr className="bg-ink-50/80">
               <TableHead>Item</TableHead>
               <TableHead>{baseContest?.nome || 'Base'}</TableHead>
               <TableHead>{targetOneContest?.nome || 'Alvo 1'}</TableHead>
@@ -2081,12 +2081,12 @@ function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.label} className="align-top transition-colors hover:bg-slate-50/60">
-                <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-900">{row.label}</td>
-                <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">{formatCompareCell(row.base)}</td>
-                <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">{formatCompareCell(row.targetOne)}</td>
+              <tr key={row.label} className="align-top transition-colors hover:bg-ink-50/60">
+                <td className="border-b border-ink-100 px-5 py-4 text-sm font-semibold text-ink-900">{row.label}</td>
+                <td className="border-b border-ink-100 px-5 py-4 text-sm font-semibold text-ink-600">{formatCompareCell(row.base)}</td>
+                <td className="border-b border-ink-100 px-5 py-4 text-sm font-semibold text-ink-600">{formatCompareCell(row.targetOne)}</td>
                 {targetTwoContest ? (
-                  <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">{formatCompareCell(row.targetTwo)}</td>
+                  <td className="border-b border-ink-100 px-5 py-4 text-sm font-semibold text-ink-600">{formatCompareCell(row.targetTwo)}</td>
                 ) : null}
               </tr>
             ))}
@@ -2099,7 +2099,7 @@ function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows
 
 function TableHead({ children }) {
   return (
-    <th className="border-b border-slate-200 px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+    <th className="border-b border-ink-200 px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400">
       {children}
     </th>
   );

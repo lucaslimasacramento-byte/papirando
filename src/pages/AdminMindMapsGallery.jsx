@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, Loader2, Network, RefreshCw, Save, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
@@ -165,8 +165,8 @@ export default function AdminMindMapsGallery({
 
         <div className="section-card flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Publicar</p>
-            <p className="mt-1 text-sm text-slate-600">Importe o mesmo JSON exportado da biblioteca de mapas.</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Publicar</p>
+            <p className="mt-1 text-sm text-ink-600">Importe o mesmo JSON exportado da biblioteca de mapas.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -191,15 +191,15 @@ export default function AdminMindMapsGallery({
         ) : null}
 
         <div className="section-card space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Itens publicados ({rows.length})</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Itens publicados ({rows.length})</p>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-slate-500">
+            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-ink-500">
               <Loader2 size={18} className="animate-spin text-blue-700" />
               Carregando…
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-8 text-center text-sm font-medium text-slate-500">Nenhum mapa na galeria ainda. Suba um JSON para comecar.</p>
+            <p className="py-8 text-center text-sm font-medium text-ink-500">Nenhum mapa na galeria ainda. Suba um JSON para comecar.</p>
           ) : (
             <ul className="space-y-3">
               {rows.map((row, index) => {
@@ -208,11 +208,11 @@ export default function AdminMindMapsGallery({
                 const graphN = Array.isArray(dados.mindGraph?.nodes) ? dados.mindGraph.nodes.length : 0;
 
                 return (
-                  <li key={row.id} className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                  <li key={row.id} className="rounded-xl border border-ink-200 bg-ink-50/80 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-base font-semibold text-slate-900">{row.titulo}</p>
-                        <p className="mt-1 text-xs font-medium text-slate-500">
+                        <p className="truncate text-base font-semibold text-ink-900">{row.titulo}</p>
+                        <p className="mt-1 text-xs font-medium text-ink-500">
                           Ordem {row.sort_order} · Ramo lista: {nodes} · Grafo: {graphN} nos
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -221,7 +221,7 @@ export default function AdminMindMapsGallery({
                             data-gallery-titulo={row.id}
                             defaultValue={row.titulo}
                             key={`${row.id}-${row.updated_at}`}
-                            className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                            className="min-w-[200px] flex-1 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-ink-800 outline-none focus:border-blue-600"
                             placeholder="Titulo publico"
                           />
                           <button

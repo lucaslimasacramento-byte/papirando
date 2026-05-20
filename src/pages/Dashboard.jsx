@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import {
   ArrowRight,
   BellRing,
@@ -154,7 +154,7 @@ export default function Dashboard({
         icon={Home}
         titleAs="h1"
         badge={
-          <PageHeadPremiumBadge icon={CalendarDays} className="mb-1.5 text-[10px] tracking-[0.15em] text-slate-200/85">
+          <PageHeadPremiumBadge icon={CalendarDays} className="mb-1.5 text-[10px] tracking-[0.15em] text-ink-200/85">
             {timeTone.badge} · {dayContextLabel}
           </PageHeadPremiumBadge>
         }
@@ -199,8 +199,8 @@ export default function Dashboard({
         <div className="section-card">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-slate-400">Rotina do dia</p>
-              <h3 className="mt-1 text-base font-semibold text-slate-900 sm:text-lg">Próximos blocos de estudo</h3>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-ink-400">Rotina do dia</p>
+              <h3 className="mt-1 text-base font-semibold text-ink-900 sm:text-lg">Próximos blocos de estudo</h3>
             </div>
             <button
               type="button"
@@ -262,7 +262,7 @@ export default function Dashboard({
           <div className="section-card soft-accent">
             <div className="flex items-center gap-2">
               <CalendarDays size={15} className="text-blue-700" strokeWidth={2} />
-              <p className="text-2xs font-semibold uppercase tracking-wider text-slate-500">Agenda curta</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-ink-500">Agenda curta</p>
             </div>
 
             <div className="mt-4 grid gap-3">
@@ -287,7 +287,7 @@ export default function Dashboard({
 function Badge({ label, tone = 'primary' }) {
   const classes =
     tone === 'secondary'
-      ? 'border-slate-200 bg-slate-50 text-slate-600'
+      ? 'border-ink-200 bg-ink-50 text-ink-600'
       : 'border-blue-100 bg-blue-50/90 text-blue-800';
 
   return (
@@ -304,13 +304,13 @@ function KpiCard({ label, value, detail, icon: Icon }) {
     <div className="kpi-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-2xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-          <p className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-slate-900 sm:text-2xl">
+          <p className="text-2xs font-semibold uppercase tracking-wider text-ink-400">{label}</p>
+          <p className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-ink-900 sm:text-2xl">
             {value}
           </p>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm">{detail}</p>
+          <p className="mt-1 text-xs text-ink-500 sm:text-sm">{detail}</p>
         </div>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-blue-700 sm:h-9 sm:w-9">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink-100 text-blue-700 sm:h-9 sm:w-9">
           <Icon size={16} strokeWidth={2} />
         </div>
       </div>
@@ -322,17 +322,17 @@ function MiniPanel({ label, icon, title, detail, badge, tone = 'neutral', compac
   const badgeClass =
     tone === 'brand'
       ? 'border border-blue-100 bg-blue-50 text-blue-800'
-      : 'border border-slate-200 bg-slate-50 text-slate-600';
+      : 'border border-ink-200 bg-ink-50 text-ink-600';
 
   return (
     <div className="section-card">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-2xs font-semibold uppercase tracking-wider text-slate-400">{label}</div>
+        <div className="text-2xs font-semibold uppercase tracking-wider text-ink-400">{label}</div>
         {icon}
       </div>
 
       <div className="mt-2.5 flex items-start justify-between gap-3">
-        <p className={`font-semibold leading-snug text-slate-900 ${compact ? 'text-sm' : 'text-sm sm:text-base'}`}>{title}</p>
+        <p className={`font-semibold leading-snug text-ink-900 ${compact ? 'text-sm' : 'text-sm sm:text-base'}`}>{title}</p>
         <span
           className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badgeClass}`}
         >
@@ -340,7 +340,7 @@ function MiniPanel({ label, icon, title, detail, badge, tone = 'neutral', compac
         </span>
       </div>
 
-      <p className={`mt-2 leading-relaxed text-slate-500 ${compact ? 'line-clamp-2 text-xs' : 'text-sm'}`}>{detail}</p>
+      <p className={`mt-2 leading-relaxed text-ink-500 ${compact ? 'line-clamp-2 text-xs' : 'text-sm'}`}>{detail}</p>
     </div>
   );
 }
@@ -349,28 +349,28 @@ function RoutineRow({ item, onStart, index }) {
   const urgencyLabel = item?.priority === 'alta' ? 'ideal agora' : 'pode adiar';
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-slate-200/90 bg-white px-3 py-3 sm:px-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-3 rounded-lg border border-ink-200/90 bg-white px-3 py-3 sm:px-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-semibold text-blue-800 sm:h-9 sm:w-9">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ink-100 text-sm font-semibold text-blue-800 sm:h-9 sm:w-9">
           {index + 1}
         </div>
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium text-slate-900">{item.subtitle}</p>
+            <p className="text-sm font-medium text-ink-900">{item.subtitle}</p>
             <span className="rounded-md border border-blue-100 bg-blue-50/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-800">
               {item.tag}
             </span>
-            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            <span className="rounded-md border border-ink-200 bg-ink-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-500">
               {urgencyLabel}
             </span>
           </div>
-          <p className="mt-0.5 text-sm text-slate-500">{item.detail}</p>
+          <p className="mt-0.5 text-sm text-ink-500">{item.detail}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 md:shrink-0">
-        <div className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm font-medium text-slate-700">
+        <div className="rounded-md border border-ink-200 bg-ink-50 px-2.5 py-1.5 text-sm font-medium text-ink-700">
           {item.duration}
         </div>
         <button type="button" onClick={onStart} className="btn-primary py-2 pl-3 pr-3.5">
@@ -384,13 +384,13 @@ function RoutineRow({ item, onStart, index }) {
 
 function AgendaBlock({ title, items, emptyText }) {
   return (
-    <div className="rounded-lg border border-slate-200/90 bg-slate-50/80 px-3 py-3 sm:px-4">
-      <div className="inline-flex rounded-md border border-slate-200/80 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+    <div className="rounded-lg border border-ink-200/90 bg-ink-50/80 px-3 py-3 sm:px-4">
+      <div className="inline-flex rounded-md border border-ink-200/80 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-500">
         {title}
       </div>
 
       {items.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-400">{emptyText}</p>
+        <p className="mt-3 text-sm text-ink-400">{emptyText}</p>
       ) : (
         <div className="mt-3 space-y-3">
           {items.map((item, index) => {
@@ -411,10 +411,10 @@ function AgendaBlock({ title, items, emptyText }) {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className={`line-clamp-2 text-sm font-medium ${done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                  <p className={`line-clamp-2 text-sm font-medium ${done ? 'text-ink-400 line-through' : 'text-ink-700'}`}>
                     {titleText}
                   </p>
-                  {detailText ? <p className="mt-1 text-xs text-slate-500">{detailText}</p> : null}
+                  {detailText ? <p className="mt-1 text-xs text-ink-500">{detailText}</p> : null}
                 </div>
               </div>
             );
@@ -427,7 +427,7 @@ function AgendaBlock({ title, items, emptyText }) {
 
 function EmptyState({ text, actionLabel = '', onAction = null }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-200/90 bg-slate-50/50 px-4 py-8 text-center text-sm leading-relaxed text-slate-500 sm:px-6 sm:py-10">
+    <div className="rounded-lg border border-dashed border-ink-200/90 bg-ink-50/50 px-4 py-8 text-center text-sm leading-relaxed text-ink-500 sm:px-6 sm:py-10">
       {text}
       {actionLabel && typeof onAction === 'function' ? (
         <div className="mt-4">

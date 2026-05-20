@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Check,
   ChevronLeft,
@@ -67,7 +67,7 @@ const DISCIPLINE_COLORS = [
 ];
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-[#1d4ed8]/15';
+  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-[#1d4ed8] focus:bg-white focus:ring-4 focus:ring-[#1d4ed8]/15';
 }
 
 /** Alinha com Planejamento: alguns bancos usam semana_inicio/horas_meta, outros week_start/meta_horas. */
@@ -343,7 +343,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
 
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
+      <div className="flex h-full items-center justify-center text-ink-400">
         <p className="text-sm">Faça login para ver suas metas.</p>
       </div>
     );
@@ -376,16 +376,16 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#1d4ed8]"
+          className="rounded-xl p-2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-[#1d4ed8]"
           aria-label="Semana anterior"
         >
           <ChevronLeft size={18} />
         </button>
         <div className="text-center min-w-0 px-2">
-          <p className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          <p className="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">
             Janela semanal
           </p>
-          <p className="text-sm font-bold text-slate-900">{formatWeekLabel(monday)}</p>
+          <p className="text-sm font-bold text-ink-900">{formatWeekLabel(monday)}</p>
           {isCurrentWeek && (
             <p className="text-[11px] font-semibold text-[#1d4ed8]">Esta semana</p>
           )}
@@ -394,7 +394,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
           disabled={weekOffset >= 0}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#1d4ed8] disabled:pointer-events-none disabled:opacity-35"
+          className="rounded-xl p-2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-[#1d4ed8] disabled:pointer-events-none disabled:opacity-35"
           aria-label="Próxima semana"
         >
           <ChevronRight size={18} />
@@ -405,19 +405,19 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <TrendingUp size={16} className="text-[#1d4ed8]" />
-            <span className="text-sm font-bold text-slate-700">Total da semana</span>
+            <span className="text-sm font-bold text-ink-700">Total da semana</span>
           </div>
           <div className="text-right">
-            <span className="text-sm font-semibold text-slate-900">
+            <span className="text-sm font-semibold text-ink-900">
               {fmtHours(totalActualMins)}
             </span>
             {totalGoalMins > 0 && (
-              <span className="text-xs text-slate-500 font-semibold"> / {fmtHours(totalGoalMins)}</span>
+              <span className="text-xs text-ink-500 font-semibold"> / {fmtHours(totalGoalMins)}</span>
             )}
           </div>
         </div>
         {totalGoalMins > 0 && (
-          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+          <div className="w-full h-2 rounded-full bg-ink-100 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${totalPct >= 100 ? 'bg-emerald-500' : 'bg-[#1d4ed8]'}`}
               style={{ width: `${totalPct}%` }}
@@ -427,13 +427,13 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
         {totalGoalQuestoes > 0 && (
           <div className="mt-3">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Questões (soma das metas)</span>
-              <span className="text-[11px] font-semibold text-slate-700">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-ink-500">Questões (soma das metas)</span>
+              <span className="text-[11px] font-semibold text-ink-700">
                 {totalActualQuestoes} / {totalGoalQuestoes}
-                <span className="text-slate-400"> ({totalQuestoesPct}%)</span>
+                <span className="text-ink-400"> ({totalQuestoesPct}%)</span>
               </span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${questoesMetaDone ? 'bg-emerald-500' : 'bg-violet-500'}`}
                 style={{ width: `${totalQuestoesPct}%` }}
@@ -457,12 +457,12 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
           </div>
         ) : allDisciplinas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-              <Target size={28} className="text-slate-400" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink-100">
+              <Target size={28} className="text-ink-400" />
             </div>
             <div>
-              <p className="font-bold text-slate-700">Nenhuma meta definida</p>
-              <p className="text-sm text-slate-500 mt-1">Defina metas de horas por disciplina para acompanhar seu progresso semanal.</p>
+              <p className="font-bold text-ink-700">Nenhuma meta definida</p>
+              <p className="text-sm text-ink-500 mt-1">Defina metas de horas por disciplina para acompanhar seu progresso semanal.</p>
             </div>
             <button
               type="button"
@@ -499,11 +499,11 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
                       <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${colorCls}`} />
                       <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-800">{disc}</p>
+                        <p className="truncate text-sm font-bold text-ink-800">{disc}</p>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                           <span className="text-[11px] font-bold text-[#1d4ed8]">{fmtHours(actualMins)} estudados</span>
                           {goalMins > 0 && (
-                            <span className="text-[11px] text-slate-400">/ meta {fmtHours(goalMins)}</span>
+                            <span className="text-[11px] text-ink-400">/ meta {fmtHours(goalMins)}</span>
                           )}
                           {goal && goalQuestoes > 0 && (
                             <span className="text-[11px] font-semibold text-violet-700">
@@ -511,7 +511,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                             </span>
                           )}
                           {!goal && (
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-2 py-0.5">
+                            <span className="text-[10px] font-bold text-ink-500 bg-ink-100 rounded-full px-2 py-0.5">
                               sem meta
                             </span>
                           )}
@@ -523,7 +523,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                       <button
                         type="button"
                         onClick={() => (goal ? openEditGoal(goal) : openAddGoal(disc))}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#1d4ed8]"
+                        className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-[#1d4ed8]"
                         title={goal ? 'Editar meta' : 'Definir meta'}
                       >
                         <Pencil size={13} />
@@ -532,7 +532,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                         <button
                           type="button"
                           onClick={() => handleDeleteGoal(goal)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                          className="rounded-lg p-1.5 text-ink-400 hover:bg-red-50 hover:text-red-500"
                           title="Excluir meta"
                         >
                           <Trash2 size={13} />
@@ -544,10 +544,10 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   {pct !== null && (
                     <div className="mt-2.5">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Horas</span>
-                        <span className={`text-[11px] font-semibold ${done ? 'text-emerald-600' : 'text-slate-700'}`}>{pct}%</span>
+                        <span className="text-[10px] font-bold text-ink-500 uppercase tracking-wide">Horas</span>
+                        <span className={`text-[11px] font-semibold ${done ? 'text-emerald-600' : 'text-ink-700'}`}>{pct}%</span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="w-full h-1.5 rounded-full bg-ink-100 overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-700 ${done ? 'bg-emerald-500' : colorCls}`}
                           style={{ width: `${pct}%` }}
@@ -558,12 +558,12 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   {qPct !== null && (
                     <div className="mt-2">
                       <div className="mb-1 flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Questões</span>
-                        <span className={`text-[11px] font-semibold ${doneQuestoes ? 'text-emerald-600' : 'text-slate-700'}`}>
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-ink-500">Questões</span>
+                        <span className={`text-[11px] font-semibold ${doneQuestoes ? 'text-emerald-600' : 'text-ink-700'}`}>
                           {qPct}%
                         </span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
                         <div
                           className={`h-full rounded-full transition-all duration-700 ${doneQuestoes ? 'bg-emerald-500' : 'bg-violet-500'}`}
                           style={{ width: `${qPct}%` }}
@@ -581,12 +581,12 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
       {/* Edit/Add modal */}
       {editModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">
+          <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl ring-1 ring-ink-200">
+            <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
+              <h3 className="text-base font-bold text-ink-800">
                 {editGoal ? 'Editar meta' : 'Nova meta'}
               </h3>
-              <button onClick={() => setEditModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <button onClick={() => setEditModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100">
                 <X size={16} />
               </button>
             </div>
@@ -598,9 +598,9 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 </div>
               )}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Disciplina *</label>
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Disciplina *</label>
                 {editGoal ? (
-                  <p className="rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
+                  <p className="rounded-xl border-2 border-ink-100 bg-ink-50 px-4 py-3 text-sm font-bold text-ink-700">
                     {editGoal.disciplina}
                   </p>
                 ) : (
@@ -622,7 +622,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 )}
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Meta semanal (horas) *</label>
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">Meta semanal (horas) *</label>
                 <input
                   type="number"
                   min={0.5}
@@ -632,10 +632,10 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   value={editForm.meta_horas}
                   onChange={(e) => setEditForm((f) => ({ ...f, meta_horas: e.target.value }))}
                 />
-                <p className="text-xs text-slate-400">Ex: 2.5 = 2 horas e 30 minutos por semana</p>
+                <p className="text-xs text-ink-400">Ex: 2.5 = 2 horas e 30 minutos por semana</p>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                <label className="text-xs font-bold uppercase tracking-wide text-ink-500">
                   Meta de questões (opcional)
                 </label>
                 <input
@@ -648,7 +648,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   value={editForm.questoes_meta}
                   onChange={(e) => setEditForm((f) => ({ ...f, questoes_meta: e.target.value }))}
                 />
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-ink-400">
                   Em branco:{' '}
                   {Math.max(
                     0,
@@ -660,8 +660,8 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 </p>
               </div>
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setEditModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <div className="flex justify-end gap-2 border-t border-ink-100 px-6 py-4">
+              <button onClick={() => setEditModal(false)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                 Cancelar
               </button>
               <button

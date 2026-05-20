@@ -85,7 +85,7 @@ function getRolePillClass(role) {
   if (normalized === 'Professor') {
     return 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700';
   }
-  return 'border-slate-200 bg-slate-100 text-slate-700';
+  return 'border-ink-200 bg-ink-100 text-ink-700';
 }
 
 const EMPTY_ADMIN_FLOW = {
@@ -918,15 +918,15 @@ export default function Esquadroes({
     return (
       <div className="page-shell">
         <div className="section-card min-h-[280px] flex flex-col items-center justify-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-slate-900">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-ink-900">
             <ShieldCheck size={26} />
           </div>
-          <h3 className="text-2xl font-semibold text-slate-900">Nenhum esquadrão disponível ainda.</h3>
+          <h3 className="text-2xl font-semibold text-ink-900">Nenhum esquadrão disponível ainda.</h3>
           {isElite ? (
             <button
               type="button"
               onClick={() => setShowCreateSquad(true)}
-              className="mt-5 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
+              className="mt-5 rounded-2xl bg-ink-900 px-6 py-4 text-sm font-semibold text-white shadow-md transition hover:bg-ink-950"
             >
               Criar esquadrão
             </button>
@@ -2058,10 +2058,10 @@ export default function Esquadroes({
                   <Users size={20} />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Seus esquadrões</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">Seus esquadrões</p>
                   <p className="text-xl font-semibold leading-none text-white">{accessibleSquads.length}</p>
                 </div>
-                {showSquadSwitcher ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                {showSquadSwitcher ? <ChevronUp size={18} className="text-ink-400" /> : <ChevronDown size={18} className="text-ink-400" />}
               </button>
             </div>
 
@@ -2070,10 +2070,10 @@ export default function Esquadroes({
                   <div
                     ref={squadSwitcherMenuRef}
                     style={squadSwitcherMenuBox}
-                    className="box-border max-h-[min(22rem,70vh)] min-h-[4.5rem] overflow-y-auto rounded-xl border border-slate-200 bg-white py-2 shadow-xl shadow-slate-900/20 ring-1 ring-slate-100"
+                    className="box-border max-h-[min(22rem,70vh)] min-h-[4.5rem] overflow-y-auto rounded-xl border border-ink-200 bg-white py-2 shadow-xl shadow-ink-900/20 ring-1 ring-ink-100"
                   >
-                    <div className="flex items-center justify-between border-b border-slate-100 px-3 pb-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Trocar esquadrão</p>
+                    <div className="flex items-center justify-between border-b border-ink-100 px-3 pb-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Trocar esquadrão</p>
                       <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
                         {accessibleSquads.length} ativos
                       </span>
@@ -2092,14 +2092,14 @@ export default function Esquadroes({
                             className={`flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
                               active
                                 ? 'border-indigo-200 bg-indigo-50 font-semibold text-indigo-900'
-                                : 'border-transparent text-slate-800 hover:bg-slate-50'
+                                : 'border-transparent text-ink-800 hover:bg-ink-50'
                             }`}
                           >
                             <div className="min-w-0">
                               <p className="truncate">{squad.name}</p>
-                              <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-400">{squad.focus}</p>
+                              <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-ink-400">{squad.focus}</p>
                             </div>
-                            <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                            <span className="shrink-0 rounded-md bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold text-ink-600">
                               {squad.members}
                             </span>
                           </button>
@@ -2193,10 +2193,10 @@ export default function Esquadroes({
       ) : null}
 
       {selectedSquad ? (
-        <div className="rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
+        <div className="rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-ink-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
           <div className="mb-1.5 flex flex-col gap-1 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600/90">Área interna</p>
-            <span className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-600 sm:text-right">
+            <span className="truncate text-[10px] font-semibold uppercase tracking-widest text-ink-600 sm:text-right">
               {selectedSquad.name}
             </span>
           </div>
@@ -2208,7 +2208,7 @@ export default function Esquadroes({
               <button
                 type="button"
                 onClick={() => setActiveSection('forum')}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:gap-2 sm:px-3.5 sm:text-sm"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 shadow-sm transition hover:bg-ink-50 sm:gap-2 sm:px-3.5 sm:text-sm"
               >
                 <ArrowLeft size={14} className="shrink-0 sm:size-[15px]" />
                 <span className="whitespace-nowrap">Fórum</span>
@@ -2223,7 +2223,7 @@ export default function Esquadroes({
                   type="button"
                   onClick={() => setActiveSection(item.id)}
                   className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition sm:gap-2 sm:px-3.5 sm:text-sm ${
-                    active ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                    active ? 'bg-ink-900 text-white shadow-sm' : 'bg-ink-100 text-ink-600 hover:bg-ink-200 hover:text-ink-900'
                   }`}
                 >
                   <Icon size={16} className="shrink-0 opacity-90" />
@@ -2241,7 +2241,7 @@ export default function Esquadroes({
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                 <Shield size={28} />
               </div>
-              <h3 className="mt-5 text-2xl font-semibold text-slate-900">Escolha um esquadrão</h3>
+              <h3 className="mt-5 text-2xl font-semibold text-ink-900">Escolha um esquadrão</h3>
               <p className="mt-2 max-w-lg text-sm font-medium leading-relaxed text-gray-500">
                 Selecione um esquadrão para abrir a comunidade privada da turma.
               </p>
@@ -2252,7 +2252,7 @@ export default function Esquadroes({
                 <div className="animate-in fade-in flex flex-col gap-6">
                   <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Dashboard do esquadrão</p>
-                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Visão geral do {selectedSquad.name}</h3>
+                    <h3 className="mt-1 text-2xl font-semibold text-ink-900">Visão geral do {selectedSquad.name}</h3>
                     <p className="mt-2 text-sm font-medium text-gray-600">
                       Painel de apresentação do cursinho com foco em engajamento, operação e próximos passos da turma.
                     </p>
@@ -2265,7 +2265,7 @@ export default function Esquadroes({
                   </section>
                   <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
                     <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <h4 className="text-lg font-semibold text-slate-900">Próximas ações do curso</h4>
+                      <h4 className="text-lg font-semibold text-ink-900">Próximas ações do curso</h4>
                       <ul className="mt-3 space-y-2 text-sm font-medium text-gray-600">
                         <li>- Publicar aviso de rotina da semana no Mural.</li>
                         <li>- Revisar cronograma e confirmar próximos simulados.</li>
@@ -2274,7 +2274,7 @@ export default function Esquadroes({
                       </ul>
                     </div>
                     <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <h4 className="text-lg font-semibold text-slate-900">Acesso da turma</h4>
+                      <h4 className="text-lg font-semibold text-ink-900">Acesso da turma</h4>
                       <div className="mt-3 space-y-3">
                         <SummaryInfo label="Código de entrada" value={selectedSquad.inviteCode || '---'} />
                         <SummaryInfo label="Visibilidade" value={selectedSquad.visibility || 'Privado'} />
@@ -2287,28 +2287,28 @@ export default function Esquadroes({
 
               {activeSection === 'forum' && (
                 <div className="animate-in fade-in space-y-6">
-                  <section className="rounded-[2rem] border border-slate-200 bg-gradient-to-r from-blue-50/90 via-white to-indigo-50/60 p-6 shadow-sm ring-1 ring-slate-100">
+                  <section className="rounded-[2rem] border border-ink-200 bg-gradient-to-r from-blue-50/90 via-white to-indigo-50/60 p-6 shadow-sm ring-1 ring-ink-100">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Fórum interno Papirando</p>
-                        <h3 className="mt-1 text-2xl font-semibold text-slate-900">Discussões exclusivas da turma</h3>
-                        <p className="mt-2 max-w-2xl text-sm font-medium text-slate-600">
+                        <h3 className="mt-1 text-2xl font-semibold text-ink-900">Discussões exclusivas da turma</h3>
+                        <p className="mt-2 max-w-2xl text-sm font-medium text-ink-600">
                           Busca, filtros, ordenação, destaque fixado, compositor e comentários em árvore — o mesmo padrão do fórum geral, isolado ao esquadrão.
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="rounded-2xl border border-white/90 bg-white px-4 py-3 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Tópicos</p>
-                          <p className="text-xl font-semibold text-slate-900">{scopedForumPosts.filter((p) => !p.hidden).length}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Tópicos</p>
+                          <p className="text-xl font-semibold text-ink-900">{scopedForumPosts.filter((p) => !p.hidden).length}</p>
                         </div>
                         <div className="rounded-2xl border border-white/90 bg-white px-4 py-3 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Fixados</p>
-                          <p className="text-xl font-semibold text-slate-900">{scopedForumPosts.filter((p) => p.pinned).length}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Fixados</p>
+                          <p className="text-xl font-semibold text-ink-900">{scopedForumPosts.filter((p) => p.pinned).length}</p>
                         </div>
                         <button
                           type="button"
                           onClick={focusForumComposer}
-                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
+                          className="inline-flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-ink-950"
                         >
                           <Plus size={15} />
                           Novo tópico
@@ -2322,12 +2322,12 @@ export default function Esquadroes({
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Tópico aberto</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Thread completa com comentários</h3>
+                          <h3 className="mt-1 text-xl font-semibold text-ink-900">Thread completa com comentários</h3>
                         </div>
                         <button
                           type="button"
                           onClick={() => setForumFocusedPostId('')}
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+                          className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2 text-xs font-semibold text-ink-700 transition hover:bg-ink-50 sm:text-sm"
                         >
                           <ArrowLeft size={14} />
                           Voltar ao início do fórum
@@ -2345,8 +2345,8 @@ export default function Esquadroes({
                     <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
                     <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Busca e filtros</p>
-                        <h3 className="mt-1 text-xl font-semibold text-slate-900">Encontre qualquer discussão</h3>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Busca e filtros</p>
+                        <h3 className="mt-1 text-xl font-semibold text-ink-900">Encontre qualquer discussão</h3>
                       </div>
                     </div>
 
@@ -2384,7 +2384,7 @@ export default function Esquadroes({
                               }}
                               className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition ${
                                 forumFilter === item.id
-                                  ? 'bg-slate-900 text-white'
+                                  ? 'bg-ink-900 text-white'
                                   : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                               }`}
                             >
@@ -2420,7 +2420,7 @@ export default function Esquadroes({
                             <Bookmark size={12} />
                             Resultado
                           </div>
-                          <p className="text-2xl font-semibold text-slate-900">{filteredForumPosts.length}</p>
+                          <p className="text-2xl font-semibold text-ink-900">{filteredForumPosts.length}</p>
                           <p className="mt-1 text-sm font-medium text-gray-500">tópicos encontrados</p>
                         </div>
                       </div>
@@ -2464,7 +2464,7 @@ export default function Esquadroes({
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-yellow-700">Fixado</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Destaque do professor</h3>
+                          <h3 className="mt-1 text-xl font-semibold text-ink-900">Destaque do professor</h3>
                         </div>
                         <span className="rounded-full bg-yellow-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-yellow-800">
                           Prioridade
@@ -2498,7 +2498,7 @@ export default function Esquadroes({
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                           <Search size={22} />
                         </div>
-                        <h4 className="mt-4 text-xl font-semibold text-slate-900">Nada encontrado</h4>
+                        <h4 className="mt-4 text-xl font-semibold text-ink-900">Nada encontrado</h4>
                         <p className="mt-2 text-sm font-medium text-gray-500">
                           Ajusta a busca ou o filtro. O fórum não sumiu, só ficou mais criterioso.
                         </p>
@@ -2537,12 +2537,12 @@ export default function Esquadroes({
                       <article
                         key={notice.id}
                         className={`overflow-hidden rounded-[2rem] border bg-white shadow-sm transition hover:shadow-md ${
-                          notice.pinned ? 'border-amber-200 ring-1 ring-amber-100' : 'border-slate-200'
+                          notice.pinned ? 'border-amber-200 ring-1 ring-amber-100' : 'border-ink-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-3">
+                        <div className="flex items-center justify-between gap-3 border-b border-ink-100 bg-ink-50/80 px-5 py-3">
                           <div className="flex min-w-0 items-center gap-3">
-                            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-white">
+                            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-ink-200 bg-white">
                               {av ? (
                                 <img src={av} alt="" className="h-full w-full object-cover" />
                               ) : (
@@ -2552,9 +2552,9 @@ export default function Esquadroes({
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-900">{who}</p>
-                              <p className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-                                <Clock3 size={12} className="shrink-0 text-slate-400" />
+                              <p className="truncate text-sm font-semibold text-ink-900">{who}</p>
+                              <p className="flex items-center gap-1.5 text-[11px] font-medium text-ink-500">
+                                <Clock3 size={12} className="shrink-0 text-ink-400" />
                                 {when || '—'}
                               </p>
                             </div>
@@ -2574,8 +2574,8 @@ export default function Esquadroes({
                           <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
                             <Megaphone size={14} /> Aviso à turma
                           </div>
-                          <h4 className="text-lg font-semibold text-slate-900">{notice.title}</h4>
-                          <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">{notice.text}</p>
+                          <h4 className="text-lg font-semibold text-ink-900">{notice.title}</h4>
+                          <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{notice.text}</p>
                           {notice.attachmentName ? (
                             <a
                               href={notice.attachmentUrl || '#'}
@@ -2602,7 +2602,7 @@ export default function Esquadroes({
                 <div className="space-y-4">
                   <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Cronograma interno</p>
-                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Planejamento da turma</h3>
+                    <h3 className="mt-1 text-2xl font-semibold text-ink-900">Planejamento da turma</h3>
                     <p className="mt-2 text-sm font-medium text-gray-600">
                       Aqui o cursinho concentra calendario de atividades, simulados e marcos da turma no proprio esquadrao.
                     </p>
@@ -2610,7 +2610,7 @@ export default function Esquadroes({
                   <div className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-5 shadow-sm ring-1 ring-indigo-100">
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Visão calendário</p>
-                      <span className="text-xs font-semibold text-slate-500">{cronogramaCards.length} evento(s)</span>
+                      <span className="text-xs font-semibold text-ink-500">{cronogramaCards.length} evento(s)</span>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                       {cronogramaCards.slice(0, 6).map((item) => (
@@ -2621,8 +2621,8 @@ export default function Esquadroes({
                           className="rounded-xl border border-indigo-100 bg-white px-3 py-3 text-left transition hover:border-indigo-200 hover:shadow-sm"
                         >
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">{item.label}</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-900">{item.title}</p>
-                          <p className="mt-1 text-xs font-medium text-slate-500">{item.when}</p>
+                          <p className="mt-1 text-sm font-semibold text-ink-900">{item.title}</p>
+                          <p className="mt-1 text-xs font-medium text-ink-500">{item.when}</p>
                         </button>
                       ))}
                     </div>
@@ -2634,28 +2634,28 @@ export default function Esquadroes({
                           key={item.id}
                           type="button"
                           onClick={() => openCronogramaNavItem(item)}
-                          className="rounded-[1.6rem] border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                          className="rounded-[1.6rem] border border-ink-200 bg-white p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md"
                         >
                           <div className="mb-3 flex items-center justify-between gap-2">
                             <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-700">
                               {item.label}
                             </span>
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{item.when}</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-400">{item.when}</span>
                           </div>
-                          <h4 className="text-lg font-semibold text-slate-900">{item.title}</h4>
-                          <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">{item.details}</p>
+                          <h4 className="text-lg font-semibold text-ink-900">{item.title}</h4>
+                          <p className="mt-2 text-sm font-medium leading-relaxed text-ink-600">{item.details}</p>
                           {item.publishedBy ? (
-                            <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
+                            <div className="mt-4 flex items-center gap-2 border-t border-ink-100 pt-3">
                               {item.publishedByAvatar ? (
-                                <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" />
+                                <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-ink-200 object-cover" />
                               ) : (
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-100 text-[10px] font-bold text-ink-600">
                                   {String(item.publishedBy).charAt(0)}
                                 </div>
                               )}
                               <div>
-                                <p className="text-[11px] font-semibold text-slate-700">Publicado por {item.publishedBy}</p>
-                                <p className="text-[10px] font-medium text-slate-400">{item.publishedAtLabel || ''}</p>
+                                <p className="text-[11px] font-semibold text-ink-700">Publicado por {item.publishedBy}</p>
+                                <p className="text-[10px] font-medium text-ink-400">{item.publishedAtLabel || ''}</p>
                               </div>
                               <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
                             </div>
@@ -2694,33 +2694,33 @@ export default function Esquadroes({
                           }
                         }}
                         className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
-                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-200'
+                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-ink-200'
                         }`}
                       >
                         <div className="mb-4 flex items-center justify-between gap-3">
-                          <h4 className="text-lg font-semibold text-slate-900">{activity.title}</h4>
+                          <h4 className="text-lg font-semibold text-ink-900">{activity.title}</h4>
                           <span className="rounded bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
                             {activity.status}
                           </span>
                         </div>
-                        <p className="text-sm font-medium leading-relaxed text-slate-600">{activity.helper}</p>
+                        <p className="text-sm font-medium leading-relaxed text-ink-600">{activity.helper}</p>
                         {activity.dueDate || activity.dueTime ? (
                           <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-indigo-600">
                             Prazo {activity.dueDate || 'a definir'} {activity.dueTime ? `• ${activity.dueTime}` : ''}
                           </p>
                         ) : null}
                         {activity.publishedBy ? (
-                          <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-4">
+                          <div className="mt-4 flex items-center gap-2 border-t border-ink-100 pt-4">
                             {activity.publishedByAvatar ? (
-                              <img src={activity.publishedByAvatar} alt="" className="h-9 w-9 rounded-full border border-slate-200 object-cover" />
+                              <img src={activity.publishedByAvatar} alt="" className="h-9 w-9 rounded-full border border-ink-200 object-cover" />
                             ) : (
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-xs font-bold text-ink-600">
                                 {String(activity.publishedBy).charAt(0)}
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-semibold text-slate-700">Lançado por {activity.publishedBy}</p>
-                              <p className="text-[11px] font-medium text-slate-400">{activity.publishedAtLabel || ''}</p>
+                              <p className="text-xs font-semibold text-ink-700">Lançado por {activity.publishedBy}</p>
+                              <p className="text-[11px] font-medium text-ink-400">{activity.publishedAtLabel || ''}</p>
                             </div>
                             <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
                               {activity.questionPackId ? 'Ir à lista →' : 'Detalhes →'}
@@ -2753,7 +2753,7 @@ export default function Esquadroes({
                 <div className="space-y-4">
                   <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                     <div className="mb-4 flex items-center justify-between gap-3">
-                      <h4 className="text-lg font-semibold text-slate-900">Listas com maior engajamento</h4>
+                      <h4 className="text-lg font-semibold text-ink-900">Listas com maior engajamento</h4>
                       <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
                         {questionPosts.length} posts
                       </span>
@@ -2770,25 +2770,25 @@ export default function Esquadroes({
                               setActiveSection('praticas');
                               setSquadNavTarget({ type: 'questao', id: item.id });
                             }}
-                            className={`rounded-xl border bg-slate-50 p-4 text-left transition hover:border-indigo-200 hover:bg-white hover:shadow-sm ${
-                              hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-100'
+                            className={`rounded-xl border bg-ink-50 p-4 text-left transition hover:border-indigo-200 hover:bg-white hover:shadow-sm ${
+                              hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-ink-100'
                             }`}
                           >
                             <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{item.tag}</p>
-                            <h5 className="mt-1 text-sm font-semibold text-slate-900">{item.title}</h5>
-                            <p className="mt-2 text-xs font-medium text-slate-500">{item.meta}</p>
+                            <h5 className="mt-1 text-sm font-semibold text-ink-900">{item.title}</h5>
+                            <p className="mt-2 text-xs font-medium text-ink-500">{item.meta}</p>
                             {item.publishedBy ? (
-                              <div className="mt-3 flex items-center gap-2 border-t border-slate-200/80 pt-3">
+                              <div className="mt-3 flex items-center gap-2 border-t border-ink-200/80 pt-3">
                                 {item.publishedByAvatar ? (
-                                  <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" />
+                                  <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-ink-200 object-cover" />
                                 ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-slate-600">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-ink-600">
                                     {String(item.publishedBy).charAt(0)}
                                   </div>
                                 )}
                                 <div>
-                                  <p className="text-[11px] font-semibold text-slate-700">Lista de {item.publishedBy}</p>
-                                  <p className="text-[10px] font-medium text-slate-400">
+                                  <p className="text-[11px] font-semibold text-ink-700">Lista de {item.publishedBy}</p>
+                                  <p className="text-[10px] font-medium text-ink-400">
                                     {item.publishedAtLabel || ''}
                                     {item.questionsCount ? ` · ${item.questionsCount} questões` : ''}
                                   </p>
@@ -2812,44 +2812,44 @@ export default function Esquadroes({
                     </div>
                   ) : null}
                   {selectedSimulado ? (
-                    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <section className="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Simulado selecionado</p>
-                          <h4 className="mt-1 text-xl font-semibold text-slate-900">{selectedSimulado.title}</h4>
-                          <p className="mt-2 text-sm font-medium text-slate-600">
+                          <h4 className="mt-1 text-xl font-semibold text-ink-900">{selectedSimulado.title}</h4>
+                          <p className="mt-2 text-sm font-medium text-ink-600">
                             {selectedSimulado.helper || 'Aplicação interna com resultado enviado ao professor responsável.'}
                           </p>
                         </div>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700">
+                        <span className="rounded-full bg-ink-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-700">
                           {simuladoAttempt ? 'Tentativa concluída' : '1 tentativa por aluno'}
                         </span>
                       </div>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Aluno</p>
+                        <div className="rounded-xl border border-ink-200 bg-ink-50 p-4">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Aluno</p>
                           {simuladoAttempt ? (
                             <>
-                              <p className="mt-1 text-lg font-semibold text-slate-900">Nota: {String(simuladoAttempt.score).replace('.', ',')}</p>
-                              <p className="mt-1 text-xs font-medium text-slate-500">Resultado enviado automaticamente para o professor.</p>
+                              <p className="mt-1 text-lg font-semibold text-ink-900">Nota: {String(simuladoAttempt.score).replace('.', ',')}</p>
+                              <p className="mt-1 text-xs font-medium text-ink-500">Resultado enviado automaticamente para o professor.</p>
                             </>
                           ) : (
                             <>
-                              <p className="mt-1 text-sm font-semibold text-slate-700">Você ainda não realizou este simulado.</p>
+                              <p className="mt-1 text-sm font-semibold text-ink-700">Você ainda não realizou este simulado.</p>
                               <button
                                 type="button"
                                 onClick={() => handleStartSimulado(selectedSimulado)}
                                 disabled={!canAttemptSelectedSimulado}
-                                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
+                                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-950 disabled:cursor-not-allowed disabled:opacity-55"
                               >
                                 Iniciar simulado
                               </button>
                             </>
                           )}
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Gabarito · professor</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-700">
+                        <div className="rounded-xl border border-ink-200 bg-ink-50 p-4">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">Gabarito · professor</p>
+                          <p className="mt-1 text-sm font-semibold text-ink-700">
                             {canReviewAsTeacher ? 'Professor pode marcar respostas corretas e comentar questão por questão.' : 'Disponível para professores e coordenação.'}
                           </p>
                           {canReviewAsTeacher ? (
@@ -2858,7 +2858,7 @@ export default function Esquadroes({
                               value={simuladoAttempt?.teacherComment || ''}
                               onChange={(e) => handleTeacherCommentOnAttempt(e.target.value)}
                               placeholder="Comentário pedagógico do professor sobre erros e pontos de atenção..."
-                              className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                              className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                             />
                           ) : null}
                         </div>
@@ -2885,27 +2885,27 @@ export default function Esquadroes({
                           }
                         }}
                         className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
-                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-200'
+                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-ink-200'
                         }`}
                       >
                         <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
                           <Trophy size={14} /> Simulado programado
                         </div>
-                        <h4 className="text-lg font-semibold text-slate-900">{simulado.title}</h4>
+                        <h4 className="text-lg font-semibold text-ink-900">{simulado.title}</h4>
                         <p className="mt-2 text-sm font-semibold text-indigo-600">{simulado.dateLabel || simulado.date}</p>
-                        <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">{simulado.helper}</p>
+                        <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">{simulado.helper}</p>
                         {simulado.publishedBy ? (
-                          <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-4">
+                          <div className="mt-4 flex items-center gap-2 border-t border-ink-100 pt-4">
                             {simulado.publishedByAvatar ? (
-                              <img src={simulado.publishedByAvatar} alt="" className="h-9 w-9 rounded-full border border-slate-200 object-cover" />
+                              <img src={simulado.publishedByAvatar} alt="" className="h-9 w-9 rounded-full border border-ink-200 object-cover" />
                             ) : (
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-100 text-xs font-bold text-ink-600">
                                 {String(simulado.publishedBy).charAt(0)}
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-semibold text-slate-700">Publicado por {simulado.publishedBy}</p>
-                              <p className="text-[11px] font-medium text-slate-400">{simulado.publishedAtLabel || ''}</p>
+                              <p className="text-xs font-semibold text-ink-700">Publicado por {simulado.publishedBy}</p>
+                              <p className="text-[11px] font-medium text-ink-400">{simulado.publishedAtLabel || ''}</p>
                             </div>
                             <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Ficha →</span>
                           </div>
@@ -2936,17 +2936,17 @@ export default function Esquadroes({
                 <div className="space-y-6">
                   <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Governança do esquadrão</p>
-                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Papéis, permissões e convite</h3>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
+                    <h3 className="mt-1 text-2xl font-semibold text-ink-900">Papéis, permissões e convite</h3>
+                    <p className="mt-2 text-sm font-medium text-ink-600">
                       Cada papel tem escopo explícito. O dono controla selos de professor, matérias e moderação; alunos enxergam apenas o que a turma libera.
                     </p>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     {roleHierarchyDetail.map((item) => (
-                      <div key={item.role} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
+                      <div key={item.role} className="rounded-[1.6rem] border border-ink-200 bg-white p-5 shadow-sm">
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">{item.role}</p>
-                        <p className="mt-2 text-sm font-medium text-slate-700">{item.summary}</p>
-                        <ul className="mt-3 space-y-2 text-sm font-medium text-slate-600">
+                        <p className="mt-2 text-sm font-medium text-ink-700">{item.summary}</p>
+                        <ul className="mt-3 space-y-2 text-sm font-medium text-ink-600">
                           {item.can.map((line) => (
                             <li key={line} className="flex gap-2">
                               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
@@ -2961,14 +2961,14 @@ export default function Esquadroes({
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Link de convite (ADM)</p>
-                        <h4 className="mt-1 text-lg font-semibold text-slate-900">Compartilhe com alunos e equipe</h4>
-                        <p className="mt-2 text-sm font-medium text-slate-600">
+                        <h4 className="mt-1 text-lg font-semibold text-ink-900">Compartilhe com alunos e equipe</h4>
+                        <p className="mt-2 text-sm font-medium text-ink-600">
                           Código atual: <span className="font-semibold text-indigo-700">{selectedSquad.inviteCode || '—'}</span>
                         </p>
-                        <p className="mt-1 text-xs font-medium text-slate-500">
+                        <p className="mt-1 text-xs font-medium text-ink-500">
                           Fluxo: o aluno se cadastra na plataforma, entra com este convite e acessa apenas o esquadrão autorizado.
                         </p>
-                        <p className="mt-1 break-all text-xs font-medium text-slate-500">
+                        <p className="mt-1 break-all text-xs font-medium text-ink-500">
                           {typeof window !== 'undefined'
                             ? `${window.location.origin}${window.location.pathname || '/'}?convite=${encodeURIComponent(selectedSquad.inviteCode || '')}`
                             : ''}
@@ -2978,7 +2978,7 @@ export default function Esquadroes({
                         <button
                           type="button"
                           onClick={copySquadInviteLink}
-                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                          className="inline-flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-950"
                         >
                           <Copy size={16} />
                           {inviteCopied ? 'Copiado!' : 'Copiar link'}
@@ -2986,7 +2986,7 @@ export default function Esquadroes({
                         <button
                           type="button"
                           onClick={copySquadInviteLink}
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-ink-50"
                         >
                           <Link2 size={16} />
                           Convite
@@ -2996,19 +2996,19 @@ export default function Esquadroes({
                   </div>
                   <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Estrutura acadêmica</p>
-                    <h4 className="mt-1 text-lg font-semibold text-slate-900">Funções do cursinho e turmas</h4>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
+                    <h4 className="mt-1 text-lg font-semibold text-ink-900">Funções do cursinho e turmas</h4>
+                    <p className="mt-2 text-sm font-medium text-ink-600">
                       O ADM define os papéis oficiais (Diretor, Coordenador, Professor e Aluno) e segmenta conteúdos por turma.
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {['Diretor', 'Coordenador', 'Professor', 'Aluno'].map((role) => (
-                        <span key={role} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                        <span key={role} className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-semibold text-ink-700">
                           {role}
                         </span>
                       ))}
                     </div>
                     <div className="mt-5">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Turmas cadastradas</p>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">Turmas cadastradas</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {(Array.isArray(selectedSquad?.turmas) && selectedSquad.turmas.length ? selectedSquad.turmas : ['Turma única']).map((turma) => (
                           <span key={turma} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
@@ -3022,12 +3022,12 @@ export default function Esquadroes({
                             value={newTurmaName}
                             onChange={(e) => setNewTurmaName(e.target.value)}
                             placeholder="Nova turma (ex.: Turma Noite A)"
-                            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                            className="flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                           />
                           <button
                             type="button"
                             onClick={handleAddTurma}
-                            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-950"
+                            className="rounded-xl bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-950"
                           >
                             Adicionar
                           </button>
@@ -3064,14 +3064,14 @@ export default function Esquadroes({
                       <div className="mb-5 flex items-center justify-between">
                         <div>
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Membros internos</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Pessoas do esquadrão</h3>
+                          <h3 className="mt-1 text-xl font-semibold text-ink-900">Pessoas do esquadrão</h3>
                         </div>
 
                         {canManageSquad ? (
                           <button
                             type="button"
                             onClick={() => openAdminFlow('invite-student', 'membros')}
-                            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                            className="inline-flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-950"
                           >
                             <UserPlus size={14} />
                             Convidar
@@ -3104,7 +3104,7 @@ export default function Esquadroes({
                       <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-5">
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Permissões visuais</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Quem pode fazer o quê</h3>
+                          <h3 className="mt-1 text-xl font-semibold text-ink-900">Quem pode fazer o quê</h3>
                         </div>
 
                         <div className="space-y-3">
@@ -3124,8 +3124,8 @@ export default function Esquadroes({
                 <div className="space-y-4">
                   <div className="rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50/90 via-white to-indigo-50/40 p-6 shadow-sm ring-1 ring-amber-100/80">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-800">Como funciona a pontuação</p>
-                    <h3 className="mt-1 text-xl font-semibold text-slate-900">Regras de XP</h3>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
+                    <h3 className="mt-1 text-xl font-semibold text-ink-900">Regras de XP</h3>
+                    <p className="mt-2 text-sm font-medium text-ink-600">
                       A turma acumula XP por engajamento nas listas internas, simulados e redação. Valores abaixo são exemplos para o cursinho calibrar.
                     </p>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -3138,9 +3138,9 @@ export default function Esquadroes({
                         { label: 'Streak semanal (7 dias)', value: '+120 XP', hint: 'bônus por constância registrada' },
                       ].map((row) => (
                         <div key={row.label} className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">{row.label}</p>
-                          <p className="mt-1 text-lg font-semibold text-slate-900">{row.value}</p>
-                          <p className="mt-1 text-xs font-medium text-slate-500">{row.hint}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">{row.label}</p>
+                          <p className="mt-1 text-lg font-semibold text-ink-900">{row.value}</p>
+                          <p className="mt-1 text-xs font-medium text-ink-500">{row.hint}</p>
                         </div>
                       ))}
                     </div>
@@ -3160,58 +3160,58 @@ export default function Esquadroes({
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
                   <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Dados do esquadrão</p>
-                    <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Configurações gerais</h3>
+                    <h3 className="mt-1 text-2xl font-semibold tracking-tight text-ink-900">Configurações gerais</h3>
                     <div className="mt-5 grid gap-4 md:grid-cols-2">
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label className="text-sm font-semibold text-ink-700">
                         Nome
                         <input
                           value={adminEdit.name}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, name: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                         />
                       </label>
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label className="text-sm font-semibold text-ink-700">
                         Foco
                         <input
                           value={adminEdit.focus}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, focus: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                         />
                       </label>
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label className="text-sm font-semibold text-ink-700">
                         Código de entrada
                         <input
                           value={adminEdit.inviteCode}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, inviteCode: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                         />
                       </label>
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label className="text-sm font-semibold text-ink-700">
                         Visibilidade
                         <select
                           value={adminEdit.visibility}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, visibility: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                         >
                           <option value="Privado">Privado</option>
                           <option value="Público">Público</option>
                         </select>
                       </label>
                     </div>
-                    <label className="mt-4 block text-sm font-semibold text-slate-700">
+                    <label className="mt-4 block text-sm font-semibold text-ink-700">
                       Descrição
                       <textarea
                         rows={3}
                         value={adminEdit.description}
                         onChange={(e) => setAdminEdit((prev) => ({ ...prev, description: e.target.value }))}
-                        className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                        className="mt-1 w-full resize-none rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 outline-none focus:border-indigo-500"
                       />
                     </label>
                     <div className="mt-4 flex justify-end">
                       <button
                         type="button"
                         onClick={handleSaveSquadSettings}
-                        className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                        className="rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-950"
                       >
                         Salvar configurações
                       </button>
@@ -3222,7 +3222,7 @@ export default function Esquadroes({
                     <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Administração do esquadrão</p>
-                        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Controle central do ambiente</h3>
+                        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900">Controle central do ambiente</h3>
                         <p className="mt-1 max-w-2xl text-sm font-medium text-gray-500">
                           Organize pessoas, publique conteúdo e ajuste permissões sem sair do fluxo atual.
                         </p>
@@ -3354,7 +3354,7 @@ export default function Esquadroes({
                           <button
                             type="button"
                             onClick={() => openAdminFlow('permissions', 'admin')}
-                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-950"
                           >
                             Ajustar permissões
                           </button>
@@ -3381,10 +3381,10 @@ export default function Esquadroes({
                       >
                         <div className="space-y-3">
                           {scopedForumPosts.slice(0, 10).map((post) => (
-                            <div key={post.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
+                            <div key={post.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-100 bg-ink-50 px-3 py-3">
                               <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-slate-900">{post.title}</p>
-                                <p className="text-xs font-medium text-slate-500">
+                                <p className="truncate text-sm font-semibold text-ink-900">{post.title}</p>
+                                <p className="text-xs font-medium text-ink-500">
                                   {post.author} • {post.category} {post.hidden ? '• oculto' : ''}
                                 </p>
                               </div>
@@ -3392,7 +3392,7 @@ export default function Esquadroes({
                                 <button
                                   type="button"
                                   onClick={() => handleModerateForumPost(post.id, 'pin')}
-                                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                  className="rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50"
                                 >
                                   {post.pinned ? 'Desfixar' : 'Fixar'}
                                 </button>
@@ -3482,7 +3482,7 @@ function QuickStatCard({ icon, label, value }) {
         {icon}
         {label}
       </div>
-      <p className="text-2xl font-semibold text-slate-900">{value}</p>
+      <p className="text-2xl font-semibold text-ink-900">{value}</p>
     </div>
   );
 }
@@ -3527,7 +3527,7 @@ function ForumPostFeatured({ post }) {
         </span>
       </div>
 
-      <h4 className="text-xl font-semibold text-slate-900">{post.title}</h4>
+      <h4 className="text-xl font-semibold text-ink-900">{post.title}</h4>
       <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
 
       <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-indigo-100 pt-4">
@@ -3556,7 +3556,7 @@ function ForumPostCompact({ post }) {
               {post.subject}
             </span>
           </div>
-          <h5 className="mt-2 truncate text-base font-semibold text-slate-900">{post.title}</h5>
+          <h5 className="mt-2 truncate text-base font-semibold text-ink-900">{post.title}</h5>
           <p className="mt-1 line-clamp-2 text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
           <div className="mt-3 flex items-center gap-4 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
             <span>{post.createdAt}</span>
@@ -3622,7 +3622,7 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
           </span>
         </div>
 
-        <h4 className="mb-2 text-xl font-semibold text-slate-900">{post.title}</h4>
+        <h4 className="mb-2 text-xl font-semibold text-ink-900">{post.title}</h4>
         <p className="text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
       </div>
 
@@ -3684,7 +3684,7 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Comentários</p>
-            <h5 className="mt-1 text-lg font-semibold text-slate-900">{post.comments?.length || 0} respostas principais</h5>
+            <h5 className="mt-1 text-lg font-semibold text-ink-900">{post.comments?.length || 0} respostas principais</h5>
           </div>
 
           <button
@@ -3765,7 +3765,7 @@ function CommentThread({ comment, level = 0 }) {
 function TeacherCard({ teacher }) {
   return (
     <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm transition-all hover:shadow-lg">
-      <div className="relative h-20 bg-gradient-to-r from-slate-100 via-white to-blue-50">
+      <div className="relative h-20 bg-gradient-to-r from-ink-100 via-white to-blue-50">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_34%)]" />
         <div className="absolute -bottom-10 left-6 h-20 w-20 rounded-2xl border-4 border-white bg-white p-1 shadow-md">
           {teacher.avatar ? (
@@ -3781,7 +3781,7 @@ function TeacherCard({ teacher }) {
       <div className="p-6 pt-14">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="break-words text-xl font-semibold leading-tight text-slate-900">{teacher.name}</h3>
+            <h3 className="break-words text-xl font-semibold leading-tight text-ink-900">{teacher.name}</h3>
             <p className="mt-1 break-words text-sm font-medium leading-relaxed text-gray-500">{teacher.subject}</p>
           </div>
           <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-600">
@@ -3790,13 +3790,13 @@ function TeacherCard({ teacher }) {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-100 bg-slate-50 px-4 py-4">
+          <div className="rounded-2xl border border-gray-100 bg-ink-50 px-4 py-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Selo · matéria</p>
-            <p className="mt-2 break-words text-sm font-semibold leading-snug text-slate-700">{teacher.subject}</p>
-            {teacher.bio ? <p className="mt-2 text-xs font-medium leading-relaxed text-slate-600">{teacher.bio}</p> : null}
+            <p className="mt-2 break-words text-sm font-semibold leading-snug text-ink-700">{teacher.subject}</p>
+            {teacher.bio ? <p className="mt-2 text-xs font-medium leading-relaxed text-ink-600">{teacher.bio}</p> : null}
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-slate-50 px-4 py-4">
+          <div className="rounded-2xl border border-gray-100 bg-ink-50 px-4 py-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Ambiente</p>
             <span className="mt-2 inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700">
               Esquadrão Papirando
@@ -3872,7 +3872,7 @@ function RankingRow({ item }) {
 
 function MembersHero({ squad, canManageSquad }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-slate-900 to-indigo-900 p-6 text-white shadow-xl shadow-indigo-900/15">
+    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-ink-900 to-indigo-900 p-6 text-white shadow-xl shadow-indigo-900/15">
       <div className="pointer-events-none absolute -top-10 right-0 h-40 w-40 rounded-full bg-indigo-400/20 blur-3xl" />
       <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
@@ -3921,8 +3921,8 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
           {member.subject ? (
             <p className="mt-0.5 text-[11px] font-semibold text-indigo-600">Matéria: {member.subject}</p>
           ) : null}
-          {member.email ? <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500">{member.email}</p> : null}
-          {member.joinedAt ? <p className="text-[10px] font-medium text-slate-400">Entrou: {member.joinedAt}</p> : null}
+          {member.email ? <p className="mt-0.5 truncate text-[11px] font-medium text-ink-500">{member.email}</p> : null}
+          {member.joinedAt ? <p className="text-[10px] font-medium text-ink-400">Entrou: {member.joinedAt}</p> : null}
           {member.streakDays != null ? (
             <p className="text-[10px] font-semibold text-amber-700">Ofensiva: {member.streakDays} dias</p>
           ) : null}
@@ -3946,7 +3946,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
               <select
                 value={normalizedRole}
                 onChange={(e) => onSetRole?.(member, e.target.value)}
-                className="rounded-xl border border-indigo-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="rounded-xl border border-indigo-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-2 text-xs font-semibold text-ink-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               >
                 {CURSINHO_ROLE_OPTIONS.map((role) => (
                   <option key={role} value={role}>
@@ -4012,7 +4012,7 @@ function AdminPanel({ icon, title, subtitle, children }) {
             {icon}
           </div>
           <div>
-            <h4 className="text-lg font-semibold text-slate-900">{title}</h4>
+            <h4 className="text-lg font-semibold text-ink-900">{title}</h4>
             <p className="mt-1 text-sm font-medium text-gray-500">{subtitle}</p>
           </div>
         </div>
@@ -4082,7 +4082,7 @@ function AdminActionCard({ title, helper, badge, onClick }) {
   return (
     <div className="flex min-h-[236px] flex-col rounded-[1.5rem] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h5 className="pr-2 text-lg font-semibold leading-tight text-slate-900">{title}</h5>
+        <h5 className="pr-2 text-lg font-semibold leading-tight text-ink-900">{title}</h5>
         <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
           {badge}
         </span>
@@ -4091,7 +4091,7 @@ function AdminActionCard({ title, helper, badge, onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="mt-auto inline-flex items-center gap-2 self-start rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+        className="mt-auto inline-flex items-center gap-2 self-start rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-950"
       >
         Abrir fluxo
       </button>
@@ -4114,7 +4114,7 @@ function AdminMetric({ label, value }) {
   return (
     <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-4">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-2 text-2xl font-semibold text-ink-900">{value}</p>
     </div>
   );
 }
@@ -4130,7 +4130,7 @@ function AdminCommandCard({ icon, title, description, actionLabel, onClick }) {
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
         {icon}
       </div>
-      <h4 className="mt-5 text-lg font-semibold leading-tight tracking-tight text-slate-900">{title}</h4>
+      <h4 className="mt-5 text-lg font-semibold leading-tight tracking-tight text-ink-900">{title}</h4>
       <p className="mt-3 text-sm font-medium leading-relaxed text-gray-500">{description}</p>
       <span className="mt-auto inline-flex items-center gap-2 pt-4 text-xs font-semibold uppercase tracking-widest text-indigo-600">
         {actionLabel}
@@ -4145,7 +4145,7 @@ function AdminMetricTone({ label, value, tone = 'blue' }) {
     blue: 'border-indigo-100 bg-indigo-50 text-indigo-700',
     gold: 'border-amber-100 bg-amber-50 text-amber-700',
     emerald: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-    slate: 'border-slate-200 bg-slate-50 text-slate-700',
+    slate: 'border-ink-200 bg-ink-50 text-ink-700',
   };
 
   return (
@@ -4166,7 +4166,7 @@ function AdminDangerZone({ onDelete }) {
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-500">Danger zone</p>
-            <h4 className="mt-1 text-lg font-semibold text-slate-900">Excluir esquadrão</h4>
+            <h4 className="mt-1 text-lg font-semibold text-ink-900">Excluir esquadrão</h4>
             <p className="mt-1 text-sm font-medium text-gray-500">
               Área separada para ação crítica. Nada de misturar isso com o resto e clicar errado num dia torto.
             </p>
@@ -4195,7 +4195,7 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Paginação</p>
-          <h4 className="mt-1 text-lg font-semibold text-slate-900">Página {page} de {totalPages}</h4>
+          <h4 className="mt-1 text-lg font-semibold text-ink-900">Página {page} de {totalPages}</h4>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -4217,7 +4217,7 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
               type="button"
               onClick={() => onPick(item)}
               className={`h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition ${
-                item === page ? 'bg-slate-900 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                item === page ? 'bg-ink-900 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
               {item}
@@ -4259,18 +4259,18 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-md">
-      <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
-        <div className="border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-ink-950/65 px-4 py-6 backdrop-blur-md">
+      <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-ink-200 bg-white shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
+        <div className="border-b border-ink-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">ADM do esquadrão</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{titleMap[flow.type] || 'Fluxo interno'}</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">ADM do esquadrão</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">{titleMap[flow.type] || 'Fluxo interno'}</h3>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50"
+              className="rounded-2xl border border-ink-200 bg-white p-2 text-ink-500 shadow-sm transition hover:bg-ink-50"
             >
               <X size={18} />
             </button>
@@ -4283,7 +4283,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.title}
               onChange={(event) => onChange((prev) => ({ ...prev, title: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               placeholder="Título principal"
             />
           ) : null}
@@ -4292,7 +4292,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
             <select
               value={flow.status}
               onChange={(event) => onChange((prev) => ({ ...prev, status: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             >
               <option>Aberta</option>
               <option>Programada</option>
@@ -4307,13 +4307,13 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="date"
                 value={flow.date}
                 onChange={(event) => onChange((prev) => ({ ...prev, date: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
               <input
                 type="time"
                 value={flow.time}
                 onChange={(event) => onChange((prev) => ({ ...prev, time: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
           ) : null}
@@ -4324,13 +4324,13 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="date"
                 value={flow.dueDate}
                 onChange={(event) => onChange((prev) => ({ ...prev, dueDate: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
               <input
                 type="time"
                 value={flow.dueTime}
                 onChange={(event) => onChange((prev) => ({ ...prev, dueTime: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
           ) : null}
@@ -4340,7 +4340,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.helper}
               onChange={(event) => onChange((prev) => ({ ...prev, helper: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               placeholder="Descrição operacional"
             />
           ) : null}
@@ -4350,18 +4350,18 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               rows="4"
               value={flow.description}
               onChange={(event) => onChange((prev) => ({ ...prev, description: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               placeholder="Escreva o comunicado que será fixado no mural"
             />
           ) : null}
 
           {(isNotice || isActivity || isSimulado) ? (
-            <label className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-600">
+            <label className="rounded-2xl border border-dashed border-ink-300 bg-ink-50 px-4 py-4 text-sm font-bold text-ink-600">
               Anexo opcional
               <input
                 type="file"
                 accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                className="mt-2 block w-full text-xs font-medium text-slate-500"
+                className="mt-2 block w-full text-xs font-medium text-ink-500"
                 onChange={async (event) => {
                   const file = event.target.files?.[0];
                   if (!file) return;
@@ -4386,7 +4386,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.inviteName}
               onChange={(event) => onChange((prev) => ({ ...prev, inviteName: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               placeholder="Nome do aluno convidado"
             />
           ) : null}
@@ -4397,14 +4397,14 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="text"
                 value={flow.teacherName}
                 onChange={(event) => onChange((prev) => ({ ...prev, teacherName: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 placeholder="Nome do professor"
               />
               <input
                 type="text"
                 value={flow.teacherSubject}
                 onChange={(event) => onChange((prev) => ({ ...prev, teacherSubject: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 placeholder="Matéria ou responsabilidade"
               />
             </>
@@ -4415,7 +4415,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               <select
                 value={flow.memberId}
                 onChange={(event) => onChange((prev) => ({ ...prev, memberId: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               >
                 <option value="">Selecionar membro</option>
                 {members.map((member) => (
@@ -4427,7 +4427,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               <select
                 value={flow.permissionScope}
                 onChange={(event) => onChange((prev) => ({ ...prev, permissionScope: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               >
                 {PERMISSION_SCOPE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -4440,7 +4440,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                   type="text"
                   value={flow.teacherSubject}
                   onChange={(event) => onChange((prev) => ({ ...prev, teacherSubject: event.target.value }))}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                   placeholder="Matéria do professor, se for promover"
                 />
               ) : null}
@@ -4448,11 +4448,11 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
           ) : null}
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-5">
+        <div className="flex flex-wrap justify-end gap-3 border-t border-ink-200 bg-ink-50/70 px-6 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600 shadow-sm transition hover:bg-ink-50"
           >
             Cancelar
           </button>
@@ -4471,18 +4471,18 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
 
 function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = [] }) {
   return (
-    <div className="fixed inset-0 z-[240] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-md">
-      <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
-        <div className="border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
+    <div className="fixed inset-0 z-[240] flex items-center justify-center bg-ink-950/65 px-4 py-6 backdrop-blur-md">
+      <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] border border-ink-200 bg-white shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
+        <div className="border-b border-ink-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Professor e cursinho</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Novo esquadrão</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Professor e cursinho</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">Novo esquadrão</h3>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50"
+              className="rounded-2xl border border-ink-200 bg-white p-2 text-ink-500 shadow-sm transition hover:bg-ink-50"
             >
               <X size={18} />
             </button>
@@ -4494,14 +4494,14 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             type="text"
             value={form.name}
             onChange={(event) => onChange((prev) => ({ ...prev, name: event.target.value }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             placeholder="Nome do esquadrão"
           />
 
           <select
             value={form.focus}
             onChange={(event) => onChange((prev) => ({ ...prev, focus: event.target.value }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           >
             <option value="">Selecionar concurso foco</option>
             {focusOptions.map((option) => (
@@ -4514,7 +4514,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           <select
             value={form.visibility}
             onChange={(event) => onChange((prev) => ({ ...prev, visibility: event.target.value }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           >
             <option>Privado</option>
             <option>Por convite</option>
@@ -4525,7 +4525,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             type="text"
             value={form.inviteCode}
             onChange={(event) => onChange((prev) => ({ ...prev, inviteCode: event.target.value.toUpperCase() }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             placeholder="Codigo de entrada do esquadrao"
           />
 
@@ -4533,16 +4533,16 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             rows="4"
             value={form.description}
             onChange={(event) => onChange((prev) => ({ ...prev, description: event.target.value }))}
-            className="md:col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="md:col-span-2 rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-700 outline-none transition placeholder:text-ink-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             placeholder="Descreva a proposta da turma, metodologia, rotina e objetivo do esquadrao"
           />
 
-          <label className="md:col-span-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-600">
+          <label className="md:col-span-2 rounded-2xl border border-dashed border-ink-300 bg-ink-50 px-4 py-4 text-sm font-bold text-ink-600">
             Upload da foto/capa
             <input
               type="file"
               accept="image/*"
-              className="mt-2 block w-full text-xs font-medium text-slate-500"
+              className="mt-2 block w-full text-xs font-medium text-ink-500"
               onChange={async (event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
@@ -4553,11 +4553,11 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           </label>
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-5">
+        <div className="flex flex-wrap justify-end gap-3 border-t border-ink-200 bg-ink-50/70 px-6 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600 shadow-sm transition hover:bg-ink-50"
           >
             Cancelar
           </button>
@@ -4576,18 +4576,18 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
 
 function ConfirmDeleteModal({ squadName, onClose, onConfirm }) {
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-md">
-      <div className="w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-ink-950/65 px-4 py-6 backdrop-blur-md">
+      <div className="w-full max-w-lg rounded-[2rem] border border-ink-200 bg-white p-6 shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-500">Confirmação</p>
-        <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">Excluir esquadrão?</h3>
-        <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">
-          Você está prestes a remover <span className="font-semibold text-slate-800">{squadName}</span>. Essa ação apaga o vínculo da equipe na sua área interna.
+        <h3 className="mt-3 text-2xl font-semibold tracking-tight text-ink-950">Excluir esquadrão?</h3>
+        <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">
+          Você está prestes a remover <span className="font-semibold text-ink-800">{squadName}</span>. Essa ação apaga o vínculo da equipe na sua área interna.
         </p>
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-bold text-ink-600 shadow-sm transition hover:bg-ink-50"
           >
             Cancelar
           </button>

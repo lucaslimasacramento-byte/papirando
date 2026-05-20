@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   BookOpen,
@@ -68,7 +68,7 @@ function ErrBanner({ msg }) {
 function CField({ label, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</label>
+      <label className="text-xs font-bold uppercase tracking-wide text-ink-500">{label}</label>
       {children}
     </div>
   );
@@ -77,22 +77,22 @@ function CField({ label, children }) {
 function CModal({ title, onClose, children, footer }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h3 className="text-base font-bold text-slate-800">{title}</h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-ink-200">
+        <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
+          <h3 className="text-base font-bold text-ink-800">{title}</h3>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-600">
             <X size={16} />
           </button>
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-4">{children}</div>
-        {footer && <div className="border-t border-slate-100 px-6 py-4">{footer}</div>}
+        {footer && <div className="border-t border-ink-100 px-6 py-4">{footer}</div>}
       </div>
     </div>
   );
 }
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
+  return 'w-full rounded-xl border-2 border-ink-200 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Component Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -333,7 +333,7 @@ export default function Flashcards({ currentUserId }) {
   // Ã¢â€â‚¬Ã¢â€â‚¬ Render: no user Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
+      <div className="flex h-full items-center justify-center text-ink-400">
         <p className="text-sm">Faça login para usar os flashcards.</p>
       </div>
     );
@@ -350,8 +350,8 @@ export default function Flashcards({ currentUserId }) {
             <Check size={30} className="text-emerald-600" />
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-slate-800 sm:text-2xl">Sessão concluída!</h2>
-            <p className="mt-1 text-sm text-slate-500">{total} cards revisados</p>
+            <h2 className="text-xl font-semibold text-ink-800 sm:text-2xl">Sessão concluída!</h2>
+            <p className="mt-1 text-sm text-ink-500">{total} cards revisados</p>
           </div>
           <div className="grid w-full max-w-sm grid-cols-4 gap-2.5">
             {[
@@ -366,13 +366,13 @@ export default function Flashcards({ currentUserId }) {
               </div>
             ))}
           </div>
-          <p className="text-sm font-semibold text-slate-600">
+          <p className="text-sm font-semibold text-ink-600">
             Taxa de acerto: <span className="text-emerald-600 font-semibold">{total > 0 ? Math.round((correct / total) * 100) : 0}%</span>
           </p>
           <div className="flex flex-wrap justify-center gap-2.5">
             <button
               onClick={() => { setStudyMode(false); setSessionDone(false); }}
-              className="flex items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:text-sm"
+              className="flex items-center gap-1.5 rounded-xl border-2 border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700 hover:bg-ink-50 sm:text-sm"
             >
               <ArrowLeft size={14} />
               Voltar ao deck
@@ -395,23 +395,23 @@ export default function Flashcards({ currentUserId }) {
     return (
       <div className="flex h-full min-h-0 flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-3.5 py-2.5 sm:px-4">
+        <div className="flex items-center gap-2 border-b border-ink-100 px-3.5 py-2.5 sm:px-4">
           <button
             onClick={() => setStudyMode(false)}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg p-2 text-ink-400 hover:bg-ink-100 hover:text-ink-600"
           >
             <X size={16} />
           </button>
           <div className="flex-1">
-            <p className="text-xs font-semibold text-slate-500">{activeDeck?.title}</p>
-            <p className="text-xs font-semibold text-slate-700 sm:text-sm">
+            <p className="text-xs font-semibold text-ink-500">{activeDeck?.title}</p>
+            <p className="text-xs font-semibold text-ink-700 sm:text-sm">
               {studyIndex + 1} / {studyQueue.length}
             </p>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 bg-slate-100">
+        <div className="h-1.5 bg-ink-100">
           <div
             className="h-full bg-blue-500 transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -423,16 +423,16 @@ export default function Flashcards({ currentUserId }) {
           {/* Flip card */}
           <div
             onClick={() => setFlipped((f) => !f)}
-            className="flex min-h-[170px] w-full max-w-xl cursor-pointer select-none flex-col items-center justify-center gap-3 rounded-2xl border-2 border-slate-200 bg-white p-5 text-center shadow-md ring-1 ring-slate-100 transition-all hover:shadow-lg sm:min-h-[190px] sm:p-6"
+            className="flex min-h-[170px] w-full max-w-xl cursor-pointer select-none flex-col items-center justify-center gap-3 rounded-2xl border-2 border-ink-200 bg-white p-5 text-center shadow-md ring-1 ring-ink-100 transition-all hover:shadow-lg sm:min-h-[190px] sm:p-6"
           >
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <p className="text-xs font-bold uppercase tracking-wider text-ink-400">
               {flipped ? 'Verso' : 'Frente'}
             </p>
-            <p className="text-base font-semibold leading-relaxed text-slate-800 sm:text-lg">
+            <p className="text-base font-semibold leading-relaxed text-ink-800 sm:text-lg">
               {flipped ? currentCard?.back : currentCard?.front}
             </p>
             {!flipped && (
-              <p className="text-xs text-slate-400 mt-2">Clique para revelar</p>
+              <p className="text-xs text-ink-400 mt-2">Clique para revelar</p>
             )}
           </div>
 
@@ -458,7 +458,7 @@ export default function Flashcards({ currentUserId }) {
           ) : (
             <button
               onClick={() => setFlipped(true)}
-              className="rounded-xl bg-slate-800 px-6 py-2.5 text-xs font-semibold text-white hover:bg-slate-700 sm:text-sm"
+              className="rounded-xl bg-ink-800 px-6 py-2.5 text-xs font-semibold text-white hover:bg-ink-700 sm:text-sm"
             >
               Mostrar resposta
             </button>
@@ -477,21 +477,21 @@ export default function Flashcards({ currentUserId }) {
     return (
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center gap-2.5 border-b border-slate-100 px-4 py-3 sm:px-5">
+        <div className="flex items-center gap-2.5 border-b border-ink-100 px-4 py-3 sm:px-5">
           <button
             onClick={() => { setActiveDeck(null); setCards([]); }}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg p-2 text-ink-400 hover:bg-ink-100 hover:text-ink-600"
           >
             <ArrowLeft size={18} />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-500 truncate">{activeDeck.disciplina || 'Flashcards'}</p>
-            <h2 className="truncate text-sm font-semibold text-slate-800 sm:text-base">{activeDeck.title}</h2>
+            <p className="text-xs font-semibold text-ink-500 truncate">{activeDeck.disciplina || 'Flashcards'}</p>
+            <h2 className="truncate text-sm font-semibold text-ink-800 sm:text-base">{activeDeck.title}</h2>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setDeleteConfirm({ type: 'deck', id: activeDeck.id }); }}
-              className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500"
+              className="rounded-lg p-2 text-ink-400 hover:bg-red-50 hover:text-red-500"
             >
               <Trash2 size={16} />
             </button>
@@ -514,18 +514,18 @@ export default function Flashcards({ currentUserId }) {
         </div>
 
         {/* Stats bar */}
-        <div className={`flex flex-wrap items-center gap-2.5 border-b border-slate-100 px-3.5 py-2 sm:px-4 ${color.bg}`}>
+        <div className={`flex flex-wrap items-center gap-2.5 border-b border-ink-100 px-3.5 py-2 sm:px-4 ${color.bg}`}>
           <div className="text-center">
-            <p className="text-base font-semibold text-slate-800">{cards.length}</p>
-            <p className="text-[11px] font-semibold text-slate-500">Total</p>
+            <p className="text-base font-semibold text-ink-800">{cards.length}</p>
+            <p className="text-[11px] font-semibold text-ink-500">Total</p>
           </div>
           <div className="text-center">
-            <p className="text-base font-semibold text-slate-800">{dueCount}</p>
-            <p className="text-[11px] font-semibold text-slate-500">Vence hoje</p>
+            <p className="text-base font-semibold text-ink-800">{dueCount}</p>
+            <p className="text-[11px] font-semibold text-ink-500">Vence hoje</p>
           </div>
           <div className="text-center">
-            <p className="text-base font-semibold text-slate-800">{dueNow}</p>
-            <p className="text-[11px] font-semibold text-slate-500">Para revisar</p>
+            <p className="text-base font-semibold text-ink-800">{dueNow}</p>
+            <p className="text-[11px] font-semibold text-ink-500">Para revisar</p>
           </div>
           <div className="ml-auto">
             <button
@@ -547,10 +547,10 @@ export default function Flashcards({ currentUserId }) {
             </div>
           ) : cards.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-                <Layers3 size={28} className="text-slate-400" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink-100">
+                <Layers3 size={28} className="text-ink-400" />
               </div>
-              <p className="text-sm font-semibold text-slate-500">Nenhum card ainda.</p>
+              <p className="text-sm font-semibold text-ink-500">Nenhum card ainda.</p>
               <button
                 onClick={() => { setFormErr(''); setCardModal(true); }}
                 className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
@@ -564,20 +564,20 @@ export default function Flashcards({ currentUserId }) {
               {cards.map((card) => {
                 const stateLabel = ['Novo', 'Aprendendo', 'Revisão', 'Reaprendendo'][card.state] || 'Novo';
                 const stateColor = [
-                  'bg-slate-100 text-slate-600',
+                  'bg-ink-100 text-ink-600',
                   'bg-amber-100 text-amber-700',
                   'bg-emerald-100 text-emerald-700',
                   'bg-rose-100 text-rose-700',
-                ][card.state] || 'bg-slate-100 text-slate-600';
+                ][card.state] || 'bg-ink-100 text-ink-600';
 
                 return (
                   <div
                     key={card.id}
-                    className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2"
+                    className="flex items-start gap-2.5 rounded-xl border border-ink-200 bg-white px-3 py-2"
                   >
                     <div className="flex-1 min-w-0 space-y-1">
-                      <p className="line-clamp-2 text-[13px] font-semibold text-slate-800">{card.front}</p>
-                      <p className="line-clamp-2 text-xs text-slate-500">{card.back}</p>
+                      <p className="line-clamp-2 text-[13px] font-semibold text-ink-800">{card.front}</p>
+                      <p className="line-clamp-2 text-xs text-ink-500">{card.back}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${stateColor}`}>
@@ -585,7 +585,7 @@ export default function Flashcards({ currentUserId }) {
                       </span>
                       <button
                         onClick={() => setDeleteConfirm({ type: 'card', id: card.id })}
-                        className="rounded p-1 text-slate-300 hover:text-red-400"
+                        className="rounded p-1 text-ink-300 hover:text-red-400"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -604,7 +604,7 @@ export default function Flashcards({ currentUserId }) {
             onClose={() => setCardModal(false)}
             footer={
               <div className="flex justify-end gap-2">
-                <button onClick={() => setCardModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                <button onClick={() => setCardModal(false)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                   Cancelar
                 </button>
                 <button
@@ -647,7 +647,7 @@ export default function Flashcards({ currentUserId }) {
             onClose={() => setDeleteConfirm(null)}
             footer={
               <div className="flex justify-end gap-2">
-                <button onClick={() => setDeleteConfirm(null)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                <button onClick={() => setDeleteConfirm(null)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                   Cancelar
                 </button>
                 <button
@@ -659,7 +659,7 @@ export default function Flashcards({ currentUserId }) {
               </div>
             }
           >
-            <p className="text-sm text-slate-600">Este card será excluído permanentemente. Esta ação não pode ser desfeita.</p>
+            <p className="text-sm text-ink-600">Este card será excluído permanentemente. Esta ação não pode ser desfeita.</p>
           </CModal>
         )}
 
@@ -670,7 +670,7 @@ export default function Flashcards({ currentUserId }) {
             onClose={() => setAiGenModal(false)}
             footer={
               <div className="flex justify-end gap-2">
-                <button onClick={() => setAiGenModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                <button onClick={() => setAiGenModal(false)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                   Cancelar
                 </button>
                 <button
@@ -782,7 +782,7 @@ export default function Flashcards({ currentUserId }) {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5 lg:px-6">
         <ErrBanner msg={aiSuccess} />
         {showInlineDeckForm && (
-          <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="mb-3 rounded-xl border border-ink-200 bg-white p-3 shadow-sm">
             <ErrBanner msg={formErr} />
             <div className="grid gap-2.5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <input
@@ -802,7 +802,7 @@ export default function Flashcards({ currentUserId }) {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowInlineDeckForm(false)}
-                  className="rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                  className="rounded-xl border-2 border-ink-200 px-4 py-3 text-sm font-bold text-ink-600 hover:bg-ink-50"
                 >
                   Cancelar
                 </button>
@@ -824,12 +824,12 @@ export default function Flashcards({ currentUserId }) {
           </div>
         ) : decks.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-14">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100">
-              <Layers3 size={36} className="text-slate-400" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-ink-100">
+              <Layers3 size={36} className="text-ink-400" />
             </div>
             <div className="text-center">
-              <p className="font-bold text-slate-700">Nenhum deck ainda</p>
-              <p className="text-sm text-slate-500 mt-1">Crie seu primeiro deck para começar a estudar com repetição espaçada.</p>
+              <p className="font-bold text-ink-700">Nenhum deck ainda</p>
+              <p className="text-sm text-ink-500 mt-1">Crie seu primeiro deck para começar a estudar com repetição espaçada.</p>
             </div>
             <button
               type="button"
@@ -847,7 +847,7 @@ export default function Flashcards({ currentUserId }) {
               return (
                 <div
                   key={deck.id}
-                  className={`group relative flex cursor-pointer flex-col gap-2 rounded-xl border-2 p-3.5 transition-all hover:shadow-md ring-2 ring-transparent hover:ring-2 ${color.bg} border-slate-200 hover:${color.ring}`}
+                  className={`group relative flex cursor-pointer flex-col gap-2 rounded-xl border-2 p-3.5 transition-all hover:shadow-md ring-2 ring-transparent hover:ring-2 ${color.bg} border-ink-200 hover:${color.ring}`}
                   onClick={() => openDeck(deck)}
                 >
                   <div className="flex items-start justify-between">
@@ -856,27 +856,27 @@ export default function Flashcards({ currentUserId }) {
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'deck', id: deck.id }); }}
-                      className="rounded-lg p-1.5 text-slate-300 opacity-0 group-hover:opacity-100 hover:bg-white hover:text-red-400 transition-all"
+                      className="rounded-lg p-1.5 text-ink-300 opacity-0 group-hover:opacity-100 hover:bg-white hover:text-red-400 transition-all"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
 
                   <div>
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-800">{deck.title}</h3>
+                    <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-ink-800">{deck.title}</h3>
                     {deck.disciplina && (
                       <p className={`text-xs font-bold mt-0.5 ${color.text}`}>{deck.disciplina}</p>
                     )}
                     {deck.description && (
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{deck.description}</p>
+                      <p className="text-xs text-ink-500 mt-1 line-clamp-2">{deck.description}</p>
                     )}
                   </div>
 
                   <div className="mt-auto flex items-center justify-between pt-1">
-                    <span className="text-[11px] font-semibold text-slate-500">
+                    <span className="text-[11px] font-semibold text-ink-500">
                       {deck.total_cards} {deck.total_cards === 1 ? 'card' : 'cards'} · {deck.revisados} revisados
                     </span>
-                    <ChevronRight size={16} className="text-slate-400" />
+                    <ChevronRight size={16} className="text-ink-400" />
                   </div>
                 </div>
               );
@@ -892,7 +892,7 @@ export default function Flashcards({ currentUserId }) {
           onClose={() => setDeleteConfirm(null)}
           footer={
             <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+              <button onClick={() => setDeleteConfirm(null)} className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-bold text-ink-600 hover:bg-ink-50">
                 Cancelar
               </button>
               <button
@@ -904,7 +904,7 @@ export default function Flashcards({ currentUserId }) {
             </div>
           }
         >
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-ink-600">
             O deck e todos os seus cards serão excluídos permanentemente. Esta ação não pode ser desfeita.
           </p>
         </CModal>

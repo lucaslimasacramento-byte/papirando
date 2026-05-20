@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Crown, Sparkles, Circle, FlaskConical } from 'lucide-react';
 
 /**
@@ -12,8 +12,8 @@ const PLAN_CONFIG = {
     icon: Circle,
     iconSize: 12,
     wrapper:
-      'border-slate-200/90 bg-slate-50 text-slate-600 shadow-sm seal-plan-gratuito hover:border-slate-300 hover:bg-slate-100 py-1 pl-2 pr-2.5 gap-1 text-[10px] font-semibold',
-    iconClass: 'text-slate-400',
+      'border-ink-200/90 bg-ink-50 text-ink-600 shadow-sm seal-plan-gratuito hover:border-ink-300 hover:bg-ink-100 py-1 pl-2 pr-2.5 gap-1 text-[10px] font-semibold',
+    iconClass: 'text-ink-400',
   },
   tatico: {
     label: 'Tático',

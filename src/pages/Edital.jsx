@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo, useEffect } from 'react';
 import {
   FileText,
   BookOpen,
@@ -172,7 +172,7 @@ export default function Edital({
               <select
                 value={concursoSelecionadoId}
                 onChange={(e) => setConcursoSelecionadoId(e.target.value)}
-                className="min-w-[220px] cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-2 pl-3 pr-9 text-xs font-semibold text-slate-100 outline-none transition-all hover:border-white/30 hover:bg-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25 sm:min-w-[260px] sm:px-3.5 sm:py-2 sm:text-[13px]"
+                className="min-w-[220px] cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-2 pl-3 pr-9 text-xs font-semibold text-ink-100 outline-none transition-all hover:border-white/30 hover:bg-white/15 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25 sm:min-w-[260px] sm:px-3.5 sm:py-2 sm:text-[13px]"
                 style={{
                   backgroundImage: selectChevronDark,
                   backgroundRepeat: 'no-repeat',
@@ -180,7 +180,7 @@ export default function Edital({
                 }}
               >
                 {concursosDoAluno.map((concurso) => (
-                  <option key={concurso.id} value={concurso.id} className="bg-slate-900 text-white">
+                  <option key={concurso.id} value={concurso.id} className="bg-ink-900 text-white">
                     {concurso.nome}
                   </option>
                 ))}
@@ -218,27 +218,27 @@ export default function Edital({
             />
           </div>
 
-        <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50/90 p-4 sm:p-5">
+        <div className="mt-6 rounded-xl border border-ink-100 bg-ink-50/90 p-4 sm:p-5">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
                   Progresso geral do edital
                 </p>
-                <p className="mt-1 text-sm font-medium text-slate-600">
+                <p className="mt-1 text-sm font-medium text-ink-600">
                   {concTopicosEdital} de {totTopicosEdital} tópicos concluídos ·{' '}
                   {disciplinasConcluidas} disciplinas 100%
                 </p>
               </div>
 
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-semibold leading-none text-slate-900 sm:text-4xl">
+                <span className="text-3xl font-semibold leading-none text-ink-900 sm:text-4xl">
                   {progGeralEdital || 0}
                 </span>
-                <span className="text-lg font-semibold text-slate-900">%</span>
+                <span className="text-lg font-semibold text-ink-900">%</span>
               </div>
             </div>
 
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
+            <div className="h-3 w-full overflow-hidden rounded-full bg-ink-200">
               <div
                 className="h-full rounded-full bg-blue-700 transition-all duration-700"
                 style={{ width: `${Math.min(100, Math.max(0, progGeralEdital || 0))}%` }}
@@ -257,7 +257,7 @@ export default function Edital({
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-800">
                     Leitura com IA
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                  <p className="mt-1 text-sm font-semibold text-ink-900">
                     {aiAnalysis?.concurso || aiAnalysis?.nome || aiAnalysis?.examName || aiAnalysis?.organization || 'Edital analisado'}
                   </p>
                 </div>
@@ -306,9 +306,9 @@ export default function Edital({
                         ? aiAnalysis.contests[0].disciplinas
                         : []
                       ).map((disciplina) => (
-                        <div key={disciplina.nome} className="rounded-xl border border-slate-100 bg-white px-4 py-3">
-                          <p className="text-sm font-semibold text-slate-800">{disciplina.nome}</p>
-                          <p className="mt-1 text-sm font-medium text-slate-500">
+                        <div key={disciplina.nome} className="rounded-xl border border-ink-100 bg-white px-4 py-3">
+                          <p className="text-sm font-semibold text-ink-800">{disciplina.nome}</p>
+                          <p className="mt-1 text-sm font-medium text-ink-500">
                             {Array.isArray(disciplina.topicos) && disciplina.topicos.length > 0
                               ? disciplina.topicos.join(' • ')
                               : 'Sem tópicos detalhados'}
@@ -324,12 +324,12 @@ export default function Edital({
       </div>
 
       <div className="section-card flex min-h-0 flex-col p-0">
-        <div className="flex shrink-0 flex-col gap-4 border-b border-slate-100 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex shrink-0 flex-col gap-4 border-b border-ink-100 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 sm:text-lg">
+            <h3 className="text-base font-semibold text-ink-900 sm:text-lg">
               Disciplinas do edital
             </h3>
-            <p className="mt-1 text-sm font-medium text-slate-500">
+            <p className="mt-1 text-sm font-medium text-ink-500">
               Expanda cada disciplina para visualizar e marcar os tópicos.
             </p>
           </div>
@@ -342,15 +342,15 @@ export default function Edital({
 
         {editalAtivo.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-12 text-center sm:px-8 sm:py-14">
-            <div className="mx-auto flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+            <div className="mx-auto flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-ink-100 text-ink-400">
               <BookOpen size={22} />
             </div>
-            <p className="mt-4 max-w-md text-sm font-semibold leading-relaxed text-slate-500">
+            <p className="mt-4 max-w-md text-sm font-semibold leading-relaxed text-ink-500">
               Nenhuma disciplina encontrada no edital ativo.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-ink-100">
             {editalAtivo.map((disciplina) => {
               const topicos = Array.isArray(disciplina.topicos) ? disciplina.topicos : [];
               const concluidos = topicos.filter((t) => t?.concluido).length;
@@ -366,7 +366,7 @@ export default function Edital({
                       setExpandedEditalSubject(isExpanded ? null : disciplina.id)
                     }
                     className={`cursor-pointer px-5 py-5 sm:px-6 lg:px-8 transition-all duration-300 ${
-                      isExpanded ? 'bg-blue-50/30' : 'hover:bg-slate-50/80'
+                      isExpanded ? 'bg-blue-50/30' : 'hover:bg-ink-50/80'
                     }`}
                   >
                     <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
@@ -380,15 +380,15 @@ export default function Edital({
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="truncate text-base font-semibold text-slate-900 transition-colors group-hover:text-blue-700 sm:text-lg">
+                            <h4 className="truncate text-base font-semibold text-ink-900 transition-colors group-hover:text-blue-700 sm:text-lg">
                               {disciplina.nome}
                             </h4>
-                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+                            <span className="rounded-full bg-ink-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-600">
                               {disciplina.plano || 'Geral'}
                             </span>
                           </div>
 
-                          <p className="mt-2 text-sm font-medium text-slate-500">
+                          <p className="mt-2 text-sm font-medium text-ink-500">
                             {concluidos} de {total} tópicos concluídos
                           </p>
                         </div>
@@ -396,12 +396,12 @@ export default function Edital({
 
                       <div className="flex items-center gap-3 sm:gap-4 xl:min-w-[360px]">
                         <div className="flex-1">
-                          <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                          <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             <span>Progresso</span>
                             <span style={{ color: corDisciplina }}>{progresso}%</span>
                           </div>
 
-                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-100">
                             <div
                               className="h-full rounded-full transition-all duration-500"
                               style={{ width: `${Math.min(100, Math.max(0, progresso || 0))}%`, backgroundColor: corDisciplina }}
@@ -414,7 +414,7 @@ export default function Edital({
                             e.stopPropagation();
                             setEditingDiscipline?.(disciplina);
                           }}
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition-all duration-300 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ink-200 bg-white text-ink-400 transition-all duration-300 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                           title="Editar disciplina"
                         >
                           <Edit3 size={17} />
@@ -424,7 +424,7 @@ export default function Edital({
                           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 ${
                             isExpanded
                               ? 'border-blue-100 bg-blue-50 text-blue-700'
-                              : 'border-slate-200 bg-slate-50 text-slate-400'
+                              : 'border-ink-200 bg-ink-50 text-ink-400'
                           }`}
                         >
                           <ChevronDown
@@ -440,9 +440,9 @@ export default function Edital({
 
                   {isExpanded && (
                     <div className="px-4 sm:px-6 lg:px-8 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50/70">
-                        <div className="flex flex-col gap-3 border-b border-slate-100 bg-white px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-                          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      <div className="overflow-hidden rounded-xl border border-ink-100 bg-ink-50/70">
+                        <div className="flex flex-col gap-3 border-b border-ink-100 bg-white px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
                             <Layers size={14} className="text-blue-700" />
                             Tópicos da disciplina
                           </div>
@@ -452,32 +452,32 @@ export default function Edital({
                               e.stopPropagation();
                               setEditingDiscipline?.(disciplina);
                             }}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 transition-all duration-300 hover:bg-slate-50 hover:shadow-sm"
+                            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-ink-700 transition-all duration-300 hover:bg-ink-50 hover:shadow-sm"
                           >
                             <Edit3 size={14} />
                             Editar disciplina
                           </button>
                         </div>
 
-                        <div className="hidden items-center gap-3 border-b border-slate-100 bg-white/80 px-5 py-3 md:flex">
-                          <div className="flex-1 pl-10 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        <div className="hidden items-center gap-3 border-b border-ink-100 bg-white/80 px-5 py-3 md:flex">
+                          <div className="flex-1 pl-10 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">
                             Tópicos
                           </div>
-                          <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                          <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             Acertos
                           </div>
-                          <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                          <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             Erros
                           </div>
-                          <div className="w-20 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                          <div className="w-20 text-center text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             %
                           </div>
-                          <div className="w-24 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+                          <div className="w-24 text-center text-[10px] font-semibold uppercase tracking-widest text-ink-500">
                             Link
                           </div>
                         </div>
 
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-ink-100">
                           {topicos.map((topico) => {
                             const percentual = Number(topico?.percentual || 0);
 
@@ -495,7 +495,7 @@ export default function Edital({
                                       className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-300 ${
                                         topico?.concluido
                                           ? 'border-emerald-500 bg-emerald-500 text-white'
-                                          : 'border-slate-300 bg-white text-transparent hover:border-emerald-400'
+                                          : 'border-ink-300 bg-white text-transparent hover:border-emerald-400'
                                       }`}
                                     >
                                       <Check size={14} strokeWidth={4} />
@@ -505,15 +505,15 @@ export default function Edital({
                                       <p
                                         className={`text-sm font-semibold leading-relaxed ${
                                           topico?.concluido
-                                            ? 'text-slate-400 line-through'
-                                            : 'text-slate-700'
+                                            ? 'text-ink-400 line-through'
+                                            : 'text-ink-700'
                                         }`}
                                       >
                                         {topico?.nome || 'Tópico sem nome'}
                                       </p>
 
                                       {topico?.data && (
-                                        <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-slate-500">
+                                        <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-ink-500">
                                           <CalendarIcon size={12} />
                                           {topico.data}
                                         </div>
@@ -539,7 +539,7 @@ export default function Edital({
                                             ? 'bg-orange-50 text-orange-700 border border-orange-100'
                                             : percentual > 0
                                             ? 'bg-red-50 text-red-700 border border-red-100'
-                                            : 'border border-slate-200 bg-slate-100 text-slate-500'
+                                            : 'border border-ink-200 bg-ink-100 text-ink-500'
                                         }`}
                                       >
                                         {percentual}%
@@ -549,7 +549,7 @@ export default function Edital({
                                     <div className="w-24 flex justify-center">
                                       <button
                                         onClick={() => setLinkModalOpen?.(true)}
-                                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-300 hover:bg-blue-50 hover:text-blue-700"
+                                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-ink-700 transition-all duration-300 hover:bg-blue-50 hover:text-blue-700"
                                       >
                                         <LinkIcon size={13} />
                                         Adicionar
@@ -583,7 +583,7 @@ function TopStat({ icon: Icon, label, value, accent }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+    <div className="rounded-xl border border-ink-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <div
         className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${
           styles[accent] || styles.blue
@@ -591,10 +591,10 @@ function TopStat({ icon: Icon, label, value, accent }) {
       >
         <Icon size={18} />
       </div>
-      <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-ink-500">
         {label}
       </p>
-      <p className="text-xl font-semibold leading-none text-slate-900">{value}</p>
+      <p className="text-xl font-semibold leading-none text-ink-900">{value}</p>
     </div>
   );
 }
@@ -603,7 +603,7 @@ function AiMiniInfo({ label, value }) {
   return (
     <div className="rounded-xl border border-violet-100 bg-white/90 px-4 py-3">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-700">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-ink-700">{value}</p>
     </div>
   );
 }

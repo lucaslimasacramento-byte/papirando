@@ -299,11 +299,11 @@ export default function ConcursosDisponiveis({
         trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[17rem] lg:self-center"
         trailingClassName="xl:max-w-none xl:flex-none"
         trailing={
-          <div className="flex w-full flex-wrap items-center justify-start gap-2 text-xs font-semibold text-slate-200 sm:w-auto sm:justify-end sm:text-[13px]">
-            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
+          <div className="flex w-full flex-wrap items-center justify-start gap-2 text-xs font-semibold text-ink-200 sm:w-auto sm:justify-end sm:text-[13px]">
+            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-ink-100">
               {totalPublicados} publicados
             </span>
-            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
+            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-ink-100">
               {totalAreas} áreas
             </span>
           </div>
@@ -410,7 +410,7 @@ export default function ConcursosDisponiveis({
                 limiteAtingido ? 'border-amber-200 bg-amber-50' : 'border-blue-100 bg-blue-50/70'
               }`}
             >
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-ink-900">
                 {currentCourseCount} de {currentCourseLimit} cursos ocupados
               </p>
               <p className="mt-1 text-xs font-semibold text-gray-500">
@@ -428,7 +428,7 @@ export default function ConcursosDisponiveis({
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Insights</p>
-              <h3 className="mt-1 text-2xl font-semibold text-slate-900">Onde vale olhar primeiro</h3>
+              <h3 className="mt-1 text-2xl font-semibold text-ink-900">Onde vale olhar primeiro</h3>
             </div>
           </div>
 
@@ -471,7 +471,7 @@ export default function ConcursosDisponiveis({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">
                   Área
                 </p>
-                <h3 className="mt-1 text-2xl font-semibold text-slate-900">{area}</h3>
+                <h3 className="mt-1 text-2xl font-semibold text-ink-900">{area}</h3>
               </div>
               <span className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-500 shadow-sm">
                 {contests.length} concursos
@@ -489,7 +489,7 @@ export default function ConcursosDisponiveis({
                   return (
                     <article
                       key={contest.id}
-                      className="group overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
+                      className="group overflow-hidden rounded-[1.35rem] border border-ink-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
                     >
                       <button
                         type="button"
@@ -497,7 +497,7 @@ export default function ConcursosDisponiveis({
                         className="block w-full text-left"
                       >
                         <div
-                          className="relative flex h-48 items-center justify-center overflow-hidden border-b border-slate-100"
+                          className="relative flex h-48 items-center justify-center overflow-hidden border-b border-ink-100"
                           style={{
                             background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
                           }}
@@ -529,7 +529,7 @@ export default function ConcursosDisponiveis({
                             <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
                           </div>
 
-                          <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-slate-950">
+                          <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-ink-950">
                             {contest.nome}
                           </h4>
                           <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-gray-500">
@@ -540,7 +540,7 @@ export default function ConcursosDisponiveis({
                               {cargos.slice(0, 3).map((cargo) => (
                                 <span
                                   key={cargo.id}
-                                  className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-600"
+                                  className="rounded-full border border-ink-200 bg-ink-50 px-2.5 py-1 text-[10px] font-bold text-ink-600"
                                 >
                                   {cargo.nome}
                                 </span>
@@ -552,7 +552,7 @@ export default function ConcursosDisponiveis({
                               )}
                             </div>
                           )}
-                          <p className="mt-2 truncate text-sm font-bold text-slate-600">
+                          <p className="mt-2 truncate text-sm font-bold text-ink-600">
                             {contest.banca || 'Banca a definir'}
                           </p>
 
@@ -576,7 +576,7 @@ export default function ConcursosDisponiveis({
                           <button
                             type="button"
                             onClick={() => handleOpenContest(contest)}
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-4 text-sm font-bold text-ink-700 transition-colors hover:bg-ink-50"
                           >
                             Ver detalhes
                           </button>
@@ -620,7 +620,7 @@ export default function ConcursosDisponiveis({
                       className="grid gap-4 px-5 py-4 lg:grid-cols-[2.1fr_1fr_1fr_1fr_1fr_1fr_1fr] lg:items-center"
                     >
                       <button type="button" onClick={() => handleOpenContest(contest)} className="text-left">
-                        <p className="text-base font-semibold text-slate-900">{contest.nome}</p>
+                        <p className="text-base font-semibold text-ink-900">{contest.nome}</p>
                         <p className="mt-1 text-sm font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
                       </button>
 
@@ -733,9 +733,9 @@ function InfoPill({ icon: Icon, label }) {
 
 function MetaCounter({ label, value }) {
   return (
-    <div className="rounded-[14px] border border-gray-200 bg-slate-50 px-3 py-2.5">
+    <div className="rounded-[14px] border border-gray-200 bg-ink-50 px-3 py-2.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-1 text-base font-semibold text-slate-900">{value}</p>
+      <p className="mt-1 text-base font-semibold text-ink-900">{value}</p>
     </div>
   );
 }
@@ -748,8 +748,8 @@ function QuickInfo({ label, value, tone = 'blue', wide = false }) {
   };
 
   return (
-    <div className={`min-w-0 rounded-[14px] border border-slate-200 bg-slate-50/80 px-3 py-2 ${wide ? 'col-span-2' : ''}`}>
-      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
+    <div className={`min-w-0 rounded-[14px] border border-ink-200 bg-ink-50/80 px-3 py-2 ${wide ? 'col-span-2' : ''}`}>
+      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400">{label}</p>
       <p className={`mt-1 break-words text-xs font-black leading-snug ${toneClasses[tone] || toneClasses.blue}`}>{value}</p>
     </div>
   );
@@ -774,7 +774,7 @@ function MiniStat({ label, value }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-3 py-2">
       <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gray-400">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-ink-900">{value}</p>
     </div>
   );
 }
@@ -787,7 +787,7 @@ function RecommendationPanel({ title, items = [], emptyText, onOpen, formatDateB
     <section className="surface-card-strong rounded-[24px] p-4">
       {!isHorizontal ? (
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
+          <h3 className="text-xl font-semibold text-ink-900">{title}</h3>
         </div>
       ) : null}
 
@@ -806,7 +806,7 @@ function RecommendationPanel({ title, items = [], emptyText, onOpen, formatDateB
                 isHorizontal ? 'min-h-[120px] p-4' : 'min-h-[120px] p-4'
               }`}
             >
-              <p className="line-clamp-2 text-sm font-semibold text-slate-900">{item.nome}</p>
+              <p className="line-clamp-2 text-sm font-semibold text-ink-900">{item.nome}</p>
               <p className="mt-1 text-xs font-semibold text-gray-500">{item.cargo || item.concurso}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {item.prova_data && <QuickTag tone="blue">{formatDateBR(item.prova_data)}</QuickTag>}
@@ -837,14 +837,14 @@ function ContestPreviewModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/45 p-4">
       <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-gray-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/95 px-6 py-4 backdrop-blur">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
               Detalhes do concurso
             </p>
-            <h3 className="mt-1 text-2xl font-semibold text-slate-900">{contest.nome}</h3>
+            <h3 className="mt-1 text-2xl font-semibold text-ink-900">{contest.nome}</h3>
           </div>
           <button onClick={onClose} className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500">
             <X size={18} />
@@ -952,7 +952,7 @@ function ContestPreviewModal({
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
                     Estrutura base
                   </p>
-                  <h4 className="mt-1 text-lg font-semibold text-slate-900">Disciplinas do concurso</h4>
+                  <h4 className="mt-1 text-lg font-semibold text-ink-900">Disciplinas do concurso</h4>
                 </div>
                 <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500">
                   {contest.disciplinas?.length || 0} disciplinas
@@ -964,7 +964,7 @@ function ContestPreviewModal({
                   <div key={disciplina.nome} className="rounded-[1.1rem] border border-gray-200 bg-gray-50/70 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="font-bold text-slate-900">{disciplina.nome}</p>
+                        <p className="font-bold text-ink-900">{disciplina.nome}</p>
                         <p className="mt-1 text-xs font-semibold text-gray-500">
                           {disciplina.topicos?.length || 0} tópicos mapeados
                         </p>
@@ -1039,7 +1039,7 @@ function DetailBox({ label, value }) {
   return (
     <div className="rounded-[1rem] border border-gray-200 bg-white px-4 py-3">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-2 text-sm font-bold text-slate-900">{value}</p>
+      <p className="mt-2 text-sm font-bold text-ink-900">{value}</p>
     </div>
   );
 }

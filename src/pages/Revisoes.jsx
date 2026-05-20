@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -359,16 +359,16 @@ export default function Revisoes({
                 {primaryReview ? primaryReview.urgencyLabel : 'Sem fila crítica'}
               </span>
 
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+              <span className="text-xs font-bold uppercase tracking-widest text-ink-500">
                 {targetContest?.nome || 'Sem concurso-alvo definido'}
               </span>
             </div>
 
-            <h3 className="text-2xl font-semibold tracking-tight text-slate-900 lg:text-3xl">
+            <h3 className="text-2xl font-semibold tracking-tight text-ink-900 lg:text-3xl">
               {primaryReview?.title || 'Sua fila de revisão está pronta'}
             </h3>
 
-            <p className="mb-4 mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600">
+            <p className="mb-4 mt-2 max-w-2xl text-sm font-medium leading-relaxed text-ink-600">
               {primaryReview
                 ? `${primaryReview.disciplina} | ${primaryReview.reason}`
                 : 'Assim que houver histórico e disciplinas suficientes, a fila inteligente aparece aqui.'}
@@ -409,7 +409,7 @@ export default function Revisoes({
 
                   setRegistroEstudoModalOpen?.(true);
                 }}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:text-sm"
+                className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 py-2 text-xs font-semibold text-ink-700 transition-colors hover:bg-ink-50 sm:text-sm"
               >
                 <Play fill="currentColor" size={16} />
                 Registrar revisão
@@ -469,11 +469,11 @@ export default function Revisoes({
           </div>
 
           {reviewHighlights.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center shadow-sm">
+            <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-6 text-center shadow-sm">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#1d4ed8]">
                 <Sparkles size={22} />
               </div>
-              <h4 className="mt-3 text-lg font-semibold text-slate-900">Nenhuma revisão inteligente por enquanto</h4>
+              <h4 className="mt-3 text-lg font-semibold text-ink-900">Nenhuma revisão inteligente por enquanto</h4>
               <p className="mx-auto mt-2 max-w-2xl text-sm font-medium text-gray-500">
                 Registre mais sessões, questões e flashcards para o app entender melhor o que merece reforço.
               </p>
@@ -488,7 +488,7 @@ export default function Revisoes({
         </div>
 
         <div className="section-card p-4 sm:p-5">
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">
             <BookOpenCheck size={13} className="text-[#185FA5]" />
             Decks em revisão
           </div>
@@ -498,7 +498,7 @@ export default function Revisoes({
               <Loader2 size={24} className="animate-spin text-blue-500" />
             </div>
           ) : flashcardState.deckSummary.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-500">
+            <div className="mt-4 rounded-2xl border border-dashed border-ink-200 bg-ink-50 p-4 text-sm font-semibold text-ink-500">
               Sem decks com revisão vencendo hoje.
             </div>
           ) : (
@@ -523,17 +523,17 @@ export default function Revisoes({
 
 function SummaryPanel({ icon: Icon, label, value, detail, actionLabel, onAction, loading = false }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-ink-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{loading ? '--' : value}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{label}</p>
+          <p className="mt-2 text-3xl font-semibold text-ink-900">{loading ? '--' : value}</p>
         </div>
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#185FA5]">
           <Icon size={18} />
         </div>
       </div>
-      <p className="mt-2 text-sm font-medium leading-snug text-slate-500">{detail}</p>
+      <p className="mt-2 text-sm font-medium leading-snug text-ink-500">{detail}</p>
       <button
         type="button"
         onClick={onAction}
@@ -618,15 +618,15 @@ function DeckRow({ title, subject, dueToday, overdue, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full items-center justify-between rounded-[1.6rem] border border-slate-200 bg-slate-50 px-4 py-4 text-left transition hover:border-blue-200 hover:bg-white"
+      className="flex w-full items-center justify-between rounded-[1.6rem] border border-ink-200 bg-ink-50 px-4 py-4 text-left transition hover:border-blue-200 hover:bg-white"
     >
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
-        <p className="mt-1 text-xs font-semibold text-slate-500">{subject}</p>
+        <p className="truncate text-sm font-semibold text-ink-900">{title}</p>
+        <p className="mt-1 text-xs font-semibold text-ink-500">{subject}</p>
       </div>
       <div className="text-right">
-        <p className="text-sm font-semibold text-slate-900">{dueToday} cards</p>
-        <p className={`text-xs font-bold ${overdue > 0 ? 'text-red-500' : 'text-slate-400'}`}>
+        <p className="text-sm font-semibold text-ink-900">{dueToday} cards</p>
+        <p className={`text-xs font-bold ${overdue > 0 ? 'text-red-500' : 'text-ink-400'}`}>
           {overdue > 0 ? `${overdue} vencido(s)` : 'Em dia'}
         </p>
       </div>
