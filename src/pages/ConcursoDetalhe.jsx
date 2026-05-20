@@ -260,97 +260,49 @@ export default function ConcursoDetalhe({
 
   if (!contest) {
     return (
-      <div className="page-shell min-h-full items-center justify-center text-center">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">Concurso</p>
-        <h2 className="text-3xl font-semibold text-slate-900">Nenhum concurso selecionado</h2>
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#185FA5] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0C447C]"
-        >
-          <ArrowLeft size={16} />
-          Voltar para concursos
+      <div className="pl-paper-bg" style={{ display: 'flex', minHeight: '100%', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, textAlign: 'center', padding: 40 }}>
+        <div className="pl-eyebrow">Concurso</div>
+        <h2 className="pl-display" style={{ fontSize: 30 }}>Nenhum concurso selecionado.</h2>
+        <button type="button" className="pl-btn pl-btn-primary" onClick={onBack}>
+          <ArrowLeft size={13} /> Voltar para concursos
         </button>
       </div>
     );
   }
 
   return (
-    <div className="page-shell">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
-        >
-          <ArrowLeft size={16} />
-          Voltar para concursos
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '28px 28px 56px' }}>
+      {/* Top nav */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <button type="button" className="pl-btn pl-btn-ghost" onClick={onBack}>
+          <ArrowLeft size={13} /> Voltar
         </button>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => onToggleFavorite?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isFavorite
-                ? 'border-rose-200 bg-rose-50 text-rose-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <Heart size={15} className={isFavorite ? 'fill-current' : ''} />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <button type="button" className="pl-btn pl-btn-ghost" style={{ color: isFavorite ? 'var(--pl-danger)' : undefined }} onClick={() => onToggleFavorite?.(contest.id)}>
+            <Heart size={13} style={{ fill: isFavorite ? 'currentColor' : 'none' }} />
             {isFavorite ? 'Favoritado' : 'Favoritar'}
           </button>
-
-          <button
-            type="button"
-            onClick={() => onToggleInterested?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isInterested
-                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <Bookmark size={15} className={isInterested ? 'fill-current' : ''} />
+          <button type="button" className="pl-btn pl-btn-ghost" style={{ color: isInterested ? 'var(--pl-warn)' : undefined }} onClick={() => onToggleInterested?.(contest.id)}>
+            <Bookmark size={13} style={{ fill: isInterested ? 'currentColor' : 'none' }} />
             {isInterested ? 'Quero estudar' : 'Marcar interesse'}
           </button>
-
-          <button
-            type="button"
-            onClick={() => onSetTargetContest?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isTargetContest
-                ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <BadgeCheck size={15} className={isTargetContest ? 'fill-current' : ''} />
+          <button type="button" className="pl-btn pl-btn-ghost" onClick={() => onSetTargetContest?.(contest.id)}>
+            <BadgeCheck size={13} />
             {isTargetContest ? 'Concurso alvo' : 'Definir como alvo'}
           </button>
-
-          <button
-            type="button"
-            onClick={() => onImport?.(contest)}
-            disabled={importingId === contest.id || limiteAtingido}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#185FA5] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0C447C] disabled:opacity-70"
-          >
-            {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Importando...' : 'Adicionar aos meus cursos'}
-            <ArrowRight size={16} />
-          </button>
-
           {contest.edital_url && (
-            <button
-              type="button"
-              onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
-            >
-              Edital
-              <ExternalLink size={15} />
+            <button type="button" className="pl-btn pl-btn-ghost" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}>
+              Edital <ExternalLink size={11} />
             </button>
           )}
+          <button type="button" className="pl-btn pl-btn-primary" onClick={() => onImport?.(contest)} disabled={importingId === contest.id || limiteAtingido} style={{ opacity: (importingId === contest.id || limiteAtingido) ? 0.6 : 1 }}>
+            {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Importando…' : 'Adicionar aos meus cursos'}
+            <ArrowRight size={12} />
+          </button>
         </div>
       </div>
 
-      <section className="section-card overflow-hidden p-0">
+      <section className="pl-card">
         <div className="grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
           <div className="border-b border-gray-100 bg-gray-50 xl:border-b-0 xl:border-r">
             {contest.imagem_url && !imageError ? (
@@ -376,7 +328,7 @@ export default function ConcursoDetalhe({
               <Badge tone="green">{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</Badge>
             </div>
 
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 lg:text-4xl">{contest.nome}</h1>
+            <h1 className="pl-display" style={{ fontSize: 30, marginTop: 12, marginBottom: 0 }}>{contest.nome}</h1>
             <p className="mt-2 text-base font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
             <p className="mt-1 text-sm font-medium text-gray-500">{contest.banca || 'Banca a definir'}</p>
 
@@ -444,7 +396,7 @@ export default function ConcursoDetalhe({
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="section-card p-6">
+        <section className="pl-card">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Estrutura do edital</p>
@@ -506,7 +458,7 @@ export default function ConcursoDetalhe({
           </div>
         </section>
 
-        <section className="section-card p-6">
+        <section className="pl-card">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas e contexto</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900">Leitura rápida</h2>
@@ -632,52 +584,36 @@ export default function ConcursoDetalhe({
   );
 }
 
-function Badge({ children, tone = 'blue' }) {
-  const toneClasses = {
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
-    green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-  };
-
-  return (
-    <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${toneClasses[tone] || toneClasses.blue}`}>
-      {children}
-    </span>
-  );
+function Badge({ children }) {
+  return <span className="pl-tag" style={{ fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{children}</span>;
 }
 
 function StatBox({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
-      <div className="flex items-center gap-2 text-gray-400">
-        <Icon size={14} />
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</p>
+    <div style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-bg-soft)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <Icon size={12} style={{ color: 'var(--pl-ink-3)' }} />
+        <span className="pl-eyebrow" style={{ fontSize: 9 }}>{label}</span>
       </div>
-      <p className="mt-3 text-lg font-semibold text-[#0C447C]">{value}</p>
+      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }
 
 function InfoCard({ label, value }) {
   return (
-    <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-2 text-sm font-bold text-[#0C447C]">{value}</p>
+    <div style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-bg-soft)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }
 
 function StatusPanel({ label, value, tone = 'gray' }) {
-  const toneClasses = {
-    gray: 'border-gray-200 bg-gray-50 text-gray-700',
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
-    green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-    amber: 'border-amber-100 bg-amber-50 text-amber-700',
-  };
-
   return (
-    <div className={`rounded-[1.2rem] border p-4 ${toneClasses[tone] || toneClasses.gray}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">{label}</p>
-      <p className="mt-2 text-sm font-semibold">{value}</p>
+    <div style={{ padding: '12px 14px', borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-bg-soft)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }

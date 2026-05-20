@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import {
-  PieChart,
-  Filter,
-  Clock,
-  Flame,
-  BookOpen,
   Activity,
   ArrowUpRight,
+  BookOpen,
   BrainCircuit,
-  Layers,
   CheckCircle2,
+  Clock,
+  Filter,
+  Flame,
+  Layers,
+  PieChart,
 } from 'lucide-react';
 import {
   buildCanonicalHistory,
@@ -19,12 +19,6 @@ import {
   parseStudyTimeToMinutes,
 } from '../lib/studyAnalytics';
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumBadge,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-} from '../components/PageHeadPremium';
 
 export default function Estatisticas({
   setIsFilterPanelOpen,
@@ -107,133 +101,90 @@ export default function Estatisticas({
   }, [bancoDisciplinas, subjectCatalog]);
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremiumShell className="!block shrink-0">
-        <div className="relative z-10 grid w-full min-w-0 gap-4 lg:grid-cols-[1fr_0.9fr_1fr] lg:items-center">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
-            <PageHeadPremiumIconTile>
-              <PieChart className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-            </PageHeadPremiumIconTile>
-            <div className="min-w-0">
-              <PageHeadPremiumBadge icon={PieChart}>Inteligência analítica</PageHeadPremiumBadge>
-              <h2 className="text-base font-semibold tracking-tight text-white sm:text-lg">Estatísticas profundas</h2>
-              <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-                Consolidadas por matéria canônica.
-              </p>
-            </div>
-          </div>
+    <div className="pl-paper-bg" style={{ flex: 1, overflow: 'auto', padding: '28px 36px 48px' }}>
 
-          <div className="flex min-w-0 justify-center lg:px-2">
-            <div className="w-full max-w-sm">
-              <div className="mb-2 space-y-0.5 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-                <div>Desempenho geral</div>
-                <div className="text-base font-bold tracking-normal text-blue-300 tabular-nums">{percAcertos}%</div>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-blue-500" style={{ width: `${percAcertos}%` }} />
-              </div>
-            </div>
+      {/* ── HERO ── */}
+      <header style={{ display: 'flex', gap: 28, alignItems: 'flex-end' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="pl-eyebrow">
+            Inteligência analítica
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>·</span>
+            Estatísticas
           </div>
-
-          <div className="flex min-w-0 flex-col gap-1.5 lg:items-end lg:text-right">
-            <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:justify-end">
-              <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 sm:py-2 sm:text-[13px]">
-                Matérias padronizadas
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsFilterPanelOpen?.(true)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400/40 sm:w-auto sm:text-[13px]"
-              >
-                <Filter size={14} />
-                Filtros avançados
-              </button>
-            </div>
+          <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 64, color: 'var(--pl-ink)' }}>
+            Seus número<span style={{ color: 'var(--pl-accent)' }}>s.</span>
+          </h1>
+          <p style={{ margin: '14px 0 0', fontSize: 16, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 560, lineHeight: 1.55 }}>
+            Consolidados por matéria canônica — tempo, acurácia e progresso no edital em uma leitura só.
+          </p>
+          <div style={{ marginTop: 22 }}>
+            <button
+              className="pl-btn pl-btn-lg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              onClick={() => setIsFilterPanelOpen?.(true)}
+            >
+              <Filter size={14} /> Filtros avançados
+            </button>
           </div>
         </div>
-      </PageHeadPremiumShell>
 
-      <div
-        className="-mx-1 flex min-w-0 shrink-0 gap-2 overflow-x-auto pb-1 pt-0.5 custom-scrollbar sm:mx-0 sm:grid sm:w-full sm:grid-cols-7 sm:gap-2 sm:overflow-visible sm:pb-0 [&>*]:min-w-0"
-        aria-label="Indicadores principais"
-      >
-        <MetricStripCard
-          icon={Clock}
-          title="Tempo de estudo"
-          highlight={stats.tempoTotal}
-          footerLabel="Média diária"
-          footerValue={stats.mediaDia}
-          accent="blue"
-        />
-        <MetricStripCard
-          icon={Flame}
-          title="Constância"
-          highlight={`${stats.diasEstudados} dias`}
-          footerLabel="Registros"
-          footerValue={`${canonicalHistory.length} sessões`}
-          accent="orange"
-        />
-        <MetricStripCard
-          icon={CheckCircle2}
-          title="Desempenho"
-          highlight={`${percAcertos}%`}
-          footerLabel="Acertos × erros"
-          footerValue={`${stats.acertos} / ${stats.erros}`}
-          accent="emerald"
-        />
-        <MetricStripCard
-          icon={Layers}
-          title="Edital"
-          highlight={`${stats.progressoEdital}%`}
-          footerLabel="Concluídos"
-          footerValue={`${stats.topicosConcluidos} tópicos`}
-          accent="indigo"
-        />
-        <MetricStripCard
-          icon={BrainCircuit}
-          title="Redações"
-          highlight={String(redacaoSummary.corrected || 0)}
-          footerLabel="Média atual"
-          footerValue={
-            redacaoSummary.averageScore
-              ? `${String(redacaoSummary.averageScore).replace('.', ',')} / 10`
-              : 'Sem nota ainda'
-          }
-          accent="blue"
-        />
-        <MetricStripCard
-          icon={CheckCircle2}
-          title="Melhor nota"
-          highlight={redacaoSummary.bestScore ? String(redacaoSummary.bestScore).replace('.', ',') : '0'}
-          footerLabel="Tema mais treinado"
-          footerValue={redacaoSummary.topTheme || 'Ainda não definido'}
-          accent="emerald"
-        />
-        <MetricStripCard
-          icon={BookOpen}
-          title="Rascunhos"
-          highlight={String(redacaoSummary.drafts || 0)}
-          footerLabel="Último tema"
-          footerValue={redacaoSummary.latest?.tema || 'Nenhuma redação ainda'}
-          accent="indigo"
-        />
-      </div>
+        {/* Accuracy aside */}
+        <aside style={{
+          width: 220, flexShrink: 0,
+          background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+          borderRadius: 6, padding: '16px 18px',
+        }}>
+          <div className="pl-eyebrow" style={{ fontSize: 10 }}>Desempenho geral</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, margin: '8px 0 10px' }}>
+            <span className="pl-num" style={{ fontSize: 42, color: 'var(--pl-ink)', lineHeight: 1 }}>
+              {percAcertos}
+            </span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-3)' }}>%</span>
+          </div>
+          <div className="pl-progress accent">
+            <div className="fill" style={{ width: `${percAcertos}%` }} />
+          </div>
+          <p style={{ margin: '8px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+            {stats.acertos} acertos · {stats.erros} erros
+          </p>
+        </aside>
+      </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden xl:grid-cols-[1.25fr_1fr] xl:gap-4">
-        <div className="section-card flex min-h-0 min-w-0 flex-col overflow-hidden p-4 md:p-5">
-          <div className="mb-3 shrink-0">
-            <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
-              <Activity size={18} className="text-[#2563EB]" />
-              Análise por matéria canônica
-            </h3>
-            <p className="mt-0.5 text-[11px] font-semibold text-gray-400">
+      <div className="pl-rule" style={{ margin: '28px 0 22px' }} />
+
+      {/* ── KPI STRIP ── */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 22 }}>
+        <PlKpi label="Tempo total" num={stats.tempoTotal} sub={`~${stats.mediaDia}/dia`} icon={<Clock size={13} style={{ color: 'var(--pl-accent)' }} />} />
+        <PlKpi label="Streak" num={`${stats.streakDias}d`} icon={<Flame size={13} style={{ color: 'var(--pl-warn)' }} />} />
+        <PlKpi label="Dias estudados" num={String(stats.diasEstudados)} />
+        <PlKpi label="Questões" num={String(stats.totalQuestoes)} icon={<CheckCircle2 size={13} style={{ color: 'var(--pl-success)' }} />} />
+        <PlKpi label="Acurácia" num={`${percAcertos}%`} accentColor={percAcertos >= 70 ? 'success' : percAcertos >= 50 ? undefined : 'warn'} />
+        <PlKpi label="Edital" num={`${stats.progressoEdital}%`} sub={`${stats.topicosConcluidos} tópicos`} />
+        <PlKpi label="Redações" num={String(redacaoSummary.corrected || 0)} sub={redacaoSummary.averageScore ? `${String(redacaoSummary.averageScore).replace('.', ',')} / 10` : 'Sem nota'} />
+      </section>
+
+      {/* ── TWO-COLUMN ── */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 18 }}>
+
+        {/* Discipline analysis */}
+        <div className="pl-card" style={{ padding: '20px 22px' }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <Activity size={14} style={{ color: 'var(--pl-accent)' }} />
+              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Análise por matéria canônica</div>
+            </div>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
               Tempo e acurácia consolidados no mesmo nome padrão.
             </p>
           </div>
 
-          <div className="custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {disciplineSummary.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm font-semibold text-gray-400">
+              <div style={{
+                padding: '24px', textAlign: 'center', borderRadius: 6,
+                border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
+                fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-4)',
+              }}>
                 Ainda não há registros suficientes para montar as estatísticas por matéria.
               </div>
             ) : (
@@ -252,153 +203,158 @@ export default function Estatisticas({
           </div>
         </div>
 
-        <div className="grid min-h-0 min-w-0 grid-rows-[minmax(24rem,1fr)_auto] gap-3">
-          <div className="relative flex min-h-[24rem] flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-4 text-slate-50 shadow-md ring-1 ring-[#2563EB]/15 sm:min-h-[26rem] sm:p-5 xl:h-full xl:min-h-0">
-            <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-[#2563EB]/25 blur-3xl" />
-            <div className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full bg-[#2563EB]/10 blur-2xl" />
-            <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-              <div className="mb-2 shrink-0 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-[#2563EB]/35 bg-[#2563EB]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
-                <BrainCircuit size={12} className="shrink-0 text-[#93C5FD]" />
-                <span className="truncate">Leitura da IA</span>
-              </div>
+        {/* Right column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-              <h3 className="mb-1.5 shrink-0 text-base font-semibold tracking-tight text-white sm:text-lg">
-                Diagnóstico estratégico
-              </h3>
-              <p className="mb-3 shrink-0 text-xs font-medium leading-relaxed text-slate-300 sm:text-sm">
-                {bestDiscipline
-                  ? `${bestDiscipline.name} lidera sua dedicação atual.`
-                  : 'Assim que você registrar mais estudos, as leituras inteligentes aparecem aqui.'}
-              </p>
+          {/* IA diagnostic */}
+          <div className="pl-card-ai" style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <span className="pl-tag-ai">
+                <BrainCircuit size={10} /> Bizu IA
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--pl-ink-3)', letterSpacing: '0.04em' }}>
+                diagnóstico estratégico
+              </span>
+            </div>
+            <h3 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)', letterSpacing: '-0.01em' }}>
+              {bestDiscipline
+                ? <><span className="pl-mark-text">{bestDiscipline.name}</span> lidera sua dedicação atual.</>
+                : 'Registre mais estudos para leituras automáticas.'}
+            </h3>
 
-              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5">
-                <div className="space-y-2.5 sm:space-y-3">
-                  <InsightBullet
-                    title="O que está forte"
-                    text={
-                      bestDiscipline
-                        ? `${bestDiscipline.name} acumula ${bestDiscipline.timeLabel} e ${bestDiscipline.accuracy}% de acurácia.`
-                        : 'Sem destaque suficiente por enquanto.'
-                    }
-                  />
-                  <InsightBullet
-                    title="O que pede ataque"
-                    text={
-                      weakestDiscipline
-                        ? `${weakestDiscipline.name} está pedindo reforço, com ${weakestDiscipline.accuracy}% de acurácia.`
-                        : 'Sem gargalo relevante detectado ainda.'
-                    }
-                  />
-                  <InsightBullet
-                    title="Próxima jogada"
-                    text="Use a matéria com menor acurácia como próximo bloco de revisão e mantenha as matérias mais fortes em manutenção."
-                  />
-                </div>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+              <InsightBullet
+                title="O que está forte"
+                text={
+                  bestDiscipline
+                    ? `${bestDiscipline.name} acumula ${bestDiscipline.timeLabel} e ${bestDiscipline.accuracy}% de acurácia.`
+                    : 'Sem destaque suficiente por enquanto.'
+                }
+              />
+              <InsightBullet
+                title="O que pede ataque"
+                text={
+                  weakestDiscipline
+                    ? `${weakestDiscipline.name} está pedindo reforço, com ${weakestDiscipline.accuracy}% de acurácia.`
+                    : 'Sem gargalo relevante detectado ainda.'
+                }
+              />
+              <InsightBullet
+                title="Próxima jogada"
+                text="Use a matéria com menor acurácia como próximo bloco de revisão e mantenha as mais fortes em manutenção."
+              />
+            </div>
 
-              <div className="shrink-0 pt-3">
-                <div className="rounded-xl border border-[#2563EB]/25 bg-[#2563EB]/10 p-2.5 sm:p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-[#93C5FD]/90 sm:text-xs">
-                      Potencial de subida
-                    </span>
-                    <span className="flex items-center gap-1 text-base font-semibold tabular-nums text-[#BFDBFE] sm:text-lg">
-                      +{Math.max(5, 100 - percAcertos)}%
-                      <ArrowUpRight size={16} className="shrink-0 text-[#93C5FD]" strokeWidth={2.25} />
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Potential badge */}
+            <div style={{
+              marginTop: 14, padding: '10px 14px',
+              background: 'var(--pl-accent-soft)', borderRadius: 6,
+              border: '1px solid var(--pl-accent-ring)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <span className="pl-eyebrow" style={{ fontSize: 9.5, color: 'var(--pl-accent)' }}>
+                Potencial de subida
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 18, fontWeight: 700, color: 'var(--pl-accent)', fontFamily: 'var(--pl-serif)', fontStyle: 'italic' }}>
+                +{Math.max(5, 100 - percAcertos)}%
+                <ArrowUpRight size={15} />
+              </span>
             </div>
           </div>
 
-          <div className="section-card p-4 sm:p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">Tópicos mais respondidos</h3>
-            </div>
-
-            <div className="space-y-3">
-              {topicRows.length === 0 ? (
-                <p className="text-sm font-semibold text-gray-400">Sem tópicos suficientes com questões respondidas.</p>
-              ) : (
-                topicRows.map((item) => (
+          {/* Topics */}
+          <div className="pl-card" style={{ padding: '16px 18px' }}>
+            <div className="pl-eyebrow" style={{ fontSize: 10, marginBottom: 12 }}>Tópicos mais respondidos</div>
+            {topicRows.length === 0 ? (
+              <p style={{ fontSize: 12.5, color: 'var(--pl-ink-4)', fontWeight: 500 }}>
+                Sem tópicos com questões respondidas.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {topicRows.map((item) => (
                   <TopicRow key={`${item.disc}-${item.topico}`} item={item} />
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-function MetricStripCard({ icon: Icon, title, highlight, footerLabel, footerValue, accent }) {
-  const accents = {
-    blue: 'bg-[#EFF6FF] text-[#2563EB]',
-    orange: 'bg-orange-50 text-orange-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-  };
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
+function PlKpi({ label, num, sub, icon, accentColor }) {
+  const color =
+    accentColor === 'success' ? 'var(--pl-success)' :
+    accentColor === 'warn' ? 'var(--pl-warn)' :
+    'var(--pl-ink)';
   return (
-    <div className="flex h-full w-full min-h-[6.75rem] min-w-[8.25rem] shrink-0 flex-col rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#2563EB]/20 hover:shadow-md sm:min-h-[6.25rem] sm:min-w-0 sm:p-2.5">
-      <div className={`mb-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md sm:mb-1.5 sm:h-7 sm:w-7 sm:rounded-lg ${accents[accent]}`}>
-        <Icon size={15} strokeWidth={2.25} />
+    <div className="pl-card" style={{ padding: '12px 14px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginTop: 5 }}>
+        <span className="pl-num" style={{ fontSize: 22, color, lineHeight: 1 }}>{num}</span>
+        {icon && <span style={{ marginLeft: 'auto' }}>{icon}</span>}
       </div>
-      <p className="line-clamp-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-400">{title}</p>
-      <p className="mt-0.5 line-clamp-2 text-[0.9rem] font-bold leading-tight tracking-tight text-slate-900 sm:mt-1 sm:text-[0.95rem]">
-        {highlight}
-      </p>
-      <div className="mt-auto rounded-md bg-slate-50 px-1.5 py-1 sm:rounded-lg sm:px-2 sm:py-1.5">
-        <p className="line-clamp-1 text-[8px] font-bold uppercase tracking-wider text-gray-400">{footerLabel}</p>
-        <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-snug text-gray-700">{footerValue}</p>
-      </div>
+      {sub && <p style={{ margin: '3px 0 0', fontSize: 10, color: 'var(--pl-ink-4)', fontWeight: 500 }}>{sub}</p>}
     </div>
   );
 }
 
 function DisciplineRow({ name, timeLabel, accuracy, questions, maxMinutes, minutes }) {
-  const width = Math.max(12, Math.round((minutes / Math.max(maxMinutes, 1)) * 100));
+  const width = Math.max(8, Math.round((minutes / Math.max(maxMinutes, 1)) * 100));
+  const accentColor = accuracy >= 70 ? 'var(--pl-success)' : accuracy >= 50 ? 'var(--pl-accent)' : 'var(--pl-warn)';
 
   return (
-    <div className="rounded-2xl border border-gray-100 p-3.5 transition-all hover:border-[#2563EB]/25 hover:shadow-sm sm:p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{name}</p>
-          <p className="mt-1 text-xs font-semibold text-gray-400">{questions} questões registradas</p>
+    <div style={{
+      padding: '12px 14px', borderRadius: 6,
+      border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {name}
+          </p>
+          <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-4)' }}>
+            {questions} questões
+          </p>
         </div>
-        <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[#2563EB]">{timeLabel}</span>
+        <span className="pl-tag" style={{ flexShrink: 0, background: 'var(--pl-surface)' }}>
+          {timeLabel}
+        </span>
       </div>
-
-      <div className="mt-4">
-        <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-          <span>Tempo relativo</span>
-          <span>{accuracy}% de acurácia</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="pl-progress" style={{ flex: 1 }}>
+          <div style={{ height: '100%', background: accentColor, width: `${width}%`, borderRadius: 2 }} />
         </div>
-        <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
-          <div className="h-full rounded-full bg-gradient-to-r from-[#93C5FD] to-[#2563EB]" style={{ width: `${width}%` }} />
-        </div>
+        <span style={{ fontSize: 11, fontWeight: 700, color: accentColor, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+          {accuracy}%
+        </span>
       </div>
     </div>
   );
 }
 
 function TopicRow({ item }) {
-  const color =
-    item.pct >= 80 ? 'bg-emerald-500' : item.pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
+  const color = item.pct >= 80 ? 'var(--pl-success)' : item.pct >= 60 ? 'var(--pl-warn)' : 'var(--pl-danger)';
 
   return (
-    <div className="rounded-[1.5rem] border border-gray-100 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
-          {item.disc}
+    <div style={{ paddingBottom: 10, borderBottom: '1px solid var(--pl-rule)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+        <span className="pl-tag" style={{ fontSize: 9.5 }}>{item.disc}</span>
+        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--pl-ink-4)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          {item.qTot} questões
         </span>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{item.qTot} questões</span>
       </div>
-      <p className="mt-3 text-sm font-bold text-gray-800">{item.topico}</p>
-      <div className="mt-3 h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${item.pct}%` }} />
+      <p style={{ margin: '0 0 6px', fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink)' }}>
+        {item.topico}
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="pl-progress" style={{ flex: 1 }}>
+          <div style={{ height: '100%', background: color, width: `${item.pct}%`, borderRadius: 2 }} />
+        </div>
+        <span style={{ fontSize: 11, fontWeight: 700, color, flexShrink: 0 }}>{item.pct}%</span>
       </div>
     </div>
   );
@@ -406,9 +362,17 @@ function TopicRow({ item }) {
 
 function InsightBullet({ title, text }) {
   return (
-    <div className="rounded-xl border border-[#2563EB]/20 border-l-[3px] border-l-[#2563EB] bg-[#2563EB]/10 p-3 sm:rounded-2xl sm:p-3.5">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#93C5FD] sm:text-xs">{title}</div>
-      <p className="break-words text-[13px] font-medium leading-snug text-white/90 sm:text-sm sm:leading-relaxed">{text}</p>
+    <div style={{
+      padding: '10px 12px', borderRadius: 6,
+      background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule)',
+      borderLeft: '3px solid var(--pl-accent)',
+    }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9.5, color: 'var(--pl-accent)', marginBottom: 4 }}>
+        {title}
+      </div>
+      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-2)', lineHeight: 1.5 }}>
+        {text}
+      </p>
     </div>
   );
 }

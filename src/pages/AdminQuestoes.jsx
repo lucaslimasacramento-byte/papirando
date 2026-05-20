@@ -369,7 +369,7 @@ export default function AdminQuestoes() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col">
+    <div className="pl-paper-bg" style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', padding: '28px 28px 48px' }}>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
         <div>

@@ -33,7 +33,6 @@ import {
 } from '../lib/redacoesApi';
 import { RedacaoDicasKitPanel } from '../components/RedacaoDicasKitPanel';
 import { REDACAO_THEME_BANK_DEFAULT } from '../data/redacaoThemeBankDefault';
-import PageHeadPremium from '../components/PageHeadPremium';
 import { REDACAO_ESQUELETOS_MILIMETRICOS } from '../data/redacaoEsqueletosMilimetricos';
 import { mergeRedacaoKitBundle } from '../lib/redacaoKitMerge';
 
@@ -678,52 +677,26 @@ export default function Redacoes({
   );
 
   return (
-    <div className="page-shell !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        className="shrink-0 !gap-2 sm:!gap-3 xl:!items-center"
-        icon={FileSignature}
-        titleAs="h1"
-        title="Correção de redações"
-        subtitle="OCR, parecer por banca e histórico."
-        trailingClassName="xl:flex-1 xl:!max-w-none xl:!w-full xl:min-w-0"
-        leadingClassName="xl:!max-w-[min(100%,22rem)] xl:!flex-none"
-        trailing={
-          <div className="flex w-full flex-wrap gap-1 sm:gap-1.5 sm:flex-nowrap sm:justify-end">
-            <HeaderKpiChip
-              icon={BrainCircuit}
-              label="Corrigidas"
-              value={String(summary.corrected)}
-              sub={summary.total ? `${summary.total} no histórico` : '—'}
-              tone="indigo"
-              variant="dark"
-            />
-            <HeaderKpiChip
-              icon={Percent}
-              label="Média"
-              value={summary.avgScore ? String(summary.avgScore).replace('.', ',') : '—'}
-              sub="/10"
-              tone="emerald"
-              variant="dark"
-            />
-            <HeaderKpiChip
-              icon={Trophy}
-              label="Melhor"
-              value={summary.bestScore ? String(summary.bestScore).replace('.', ',') : '—'}
-              sub="/10"
-              tone="amber"
-              variant="dark"
-            />
-            <HeaderKpiChip
-              icon={Library}
-              label="Histórico"
-              value={String(summary.total)}
-              sub={`${summary.drafts} rasc.`}
-              tone="slate"
-              variant="dark"
-            />
-          </div>
-        }
-      />
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      {/* ── Hero ── */}
+      <div style={{ marginBottom: 24 }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Produção textual</p>
+        <h1 className="pl-display" style={{ marginBottom: 12 }}>Correção de redações.</h1>
+        <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 480, marginBottom: 20 }}>OCR, parecer por banca e histórico completo de produções.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, maxWidth: 560 }}>
+          {[
+            { label: 'Corrigidas', value: String(summary.corrected) },
+            { label: 'Média', value: summary.avgScore ? String(summary.avgScore).replace('.', ',') : '—' },
+            { label: 'Melhor nota', value: summary.bestScore ? String(summary.bestScore).replace('.', ',') : '—' },
+            { label: 'Histórico', value: String(summary.total) },
+          ].map((s) => (
+            <div key={s.label} className="pl-card" style={{ padding: '12px 16px' }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{s.label}</p>
+              <p className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -752,7 +725,7 @@ export default function Redacoes({
 
           {redacaoInnerTab === 'correcao' && (
             <>
-              <section className="section-card relative flex flex-col overflow-hidden p-4 md:p-5 animate-in fade-in zoom-in-95 duration-300">
+              <section className="pl-card relative flex flex-col overflow-hidden p-4 md:p-5 animate-in fade-in zoom-in-95 duration-300">
                 <div className="relative z-10 flex flex-col">
                   <div className="border-b border-slate-100 pb-4">
                     <h2 className="text-lg font-semibold tracking-tight text-slate-900 md:text-xl">Nova correção</h2>
@@ -1251,7 +1224,7 @@ export default function Redacoes({
           )}
 
           {redacaoInnerTab === 'dicas' && (
-            <section className="section-card animate-in fade-in zoom-in-95 duration-300 p-5 md:p-7">
+            <section className="pl-card animate-in fade-in zoom-in-95 duration-300 p-5 md:p-7">
               <RedacaoDicasKitPanel bundle={kitBundle} expertTips={expertCatalog} onOpenExpert={setExpertModalTip} />
             </section>
           )}

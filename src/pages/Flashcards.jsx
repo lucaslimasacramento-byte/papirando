@@ -13,7 +13,6 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import PageHeadPremium from '../components/PageHeadPremium';
 import {
   countDueToday,
   formatNextInterval,
@@ -716,51 +715,70 @@ export default function Flashcards({ currentUserId }) {
   }
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col gap-0 overflow-hidden p-0">
-      <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
-        icon={Copy}
-        title="Flashcards"
-        subtitle="Repetição espaçada com FSRS-4.5"
-        leadingExtra={
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-200">
-              {deckStats.totalDecks} decks
-            </span>
-            <span className="rounded-full border border-blue-400/25 bg-blue-500/15 px-2.5 py-1 text-[11px] font-semibold text-blue-100">
-              {deckStats.totalCards} cards
-            </span>
-            <span className="rounded-full border border-emerald-400/25 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-100">
-              {deckStats.totalReviewed} revisados
-            </span>
-          </div>
-        }
-        trailing={
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-violet-400/35 bg-violet-500/20 px-3 py-2 text-xs font-semibold text-violet-100 hover:bg-violet-500/30 sm:text-[13px]"
-            >
-              <Sparkles size={14} />
-              Gerar com IA
-            </button>
-            <button
-              type="button"
-              onClick={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Plus size={14} />
-              Novo deck
-            </button>
-          </div>
-        }
-      />
+    <div className="pl-paper-bg" style={{ flex: 1, overflow: 'auto', padding: '28px 36px 48px', display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5 lg:px-6">
+      {/* ── HERO ── */}
+      <header style={{ display: 'flex', gap: 28, alignItems: 'flex-end', flexShrink: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="pl-eyebrow">
+            Repetição espaçada
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>·</span>
+            Flashcards
+          </div>
+          <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 64, color: 'var(--pl-ink)' }}>
+            Seus deck<span style={{ color: 'var(--pl-accent)' }}>s.</span>
+          </h1>
+          <p style={{ margin: '14px 0 0', fontSize: 16, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 520, lineHeight: 1.55 }}>
+            Algoritmo FSRS-4.5 — cada revisão no momento certo para máxima retenção com mínimo esforço.
+          </p>
+          <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              className="pl-btn pl-btn-ai pl-btn-lg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
+            >
+              <Sparkles size={14} /> Gerar com IA
+            </button>
+            <button
+              type="button"
+              className="pl-btn pl-btn-lg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              onClick={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}
+            >
+              <Plus size={14} /> Novo deck
+            </button>
+          </div>
+        </div>
+
+        {/* KPI aside */}
+        <aside style={{
+          width: 220, flexShrink: 0,
+          background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+          borderRadius: 6, padding: '16px 18px',
+        }}>
+          <div className="pl-eyebrow" style={{ fontSize: 10, marginBottom: 10 }}>Biblioteca</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { label: 'Decks', num: deckStats.totalDecks },
+              { label: 'Cards', num: deckStats.totalCards },
+              { label: 'Revisados', num: deckStats.totalReviewed },
+            ].map(({ label, num }) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}>{label}</span>
+                <span className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{num}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </header>
+
+      <div className="pl-rule" style={{ flexShrink: 0 }} />
+
+      <div style={{ flex: 1, minHeight: 0 }}>
         <ErrBanner msg={aiSuccess} />
         {showInlineDeckForm && (
-          <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="pl-card" style={{ marginBottom: 16, padding: '16px 18px' }}>
             <ErrBanner msg={formErr} />
             <div className="grid gap-2.5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <input
@@ -819,7 +837,7 @@ export default function Flashcards({ currentUserId }) {
             </button>
           </div>
         ) : (
-          <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
             {decks.map((deck) => {
               const color = getColor(deck.color);
               return (

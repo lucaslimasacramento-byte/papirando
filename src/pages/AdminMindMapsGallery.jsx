@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, Loader2, Network, RefreshCw, Save, ShieldCheck, Trash2, UploadCloud } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   deleteMindMapGalleryItem,
   insertMindMapGalleryItem,
@@ -146,29 +145,18 @@ export default function AdminMindMapsGallery({
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto max-w-[900px] space-y-6">
-        <PageHeadPremium
-          icon={Network}
-          titleAs="h1"
-          badge={
-            <PageHeadPremiumBadge icon={ShieldCheck}>
-              Admin · conteúdo global
-            </PageHeadPremiumBadge>
-          }
-          title="Galeria de mapas mentais"
-          subtitle="Publique JSON exportado no app. Os modelos aparecem na faixa “Mapas da equipe” em Mapas mentais; o estudante copia para a biblioteca e edita no estúdio."
-          leadingExtra={
-            <ol className="list-decimal space-y-1.5 pl-4 text-[11px] font-medium leading-relaxed text-slate-400 sm:text-xs">
-              <li>Monte ou escolha um mapa na sua biblioteca (Mapas mentais) e use Exportar JSON.</li>
-              <li>Suba o arquivo aqui com “Subir JSON”. Ajuste título e ordem; exclusão remove da galeria pública.</li>
-              <li>Garanta que a tabela e RLS existem: rode <code className="rounded bg-white/10 px-1 py-0.5 text-[10px] text-slate-200">supabase/mind_map_gallery.sql</code>.</li>
-            </ol>
-          }
-          stats={headStats}
-        />
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* ── Hero ── */}
+        <div style={{ marginBottom: 8 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Admin · conteúdo global</p>
+          <h1 className="pl-display" style={{ marginBottom: 12 }}>Galeria de mapas mentais.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 520, marginBottom: 12 }}>
+            Publique JSON exportado no app. Os modelos aparecem na faixa "Mapas da equipe" em Mapas mentais.
+          </p>
+        </div>
 
-        <div className="section-card flex flex-wrap items-center justify-between gap-3">
+        <div className="pl-card flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Publicar</p>
             <p className="mt-1 text-sm text-slate-600">Importe o mesmo JSON exportado da biblioteca de mapas.</p>
@@ -195,7 +183,7 @@ export default function AdminMindMapsGallery({
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">{error}</div>
         ) : null}
 
-        <div className="section-card space-y-4">
+        <div className="pl-card space-y-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Itens publicados ({rows.length})</p>
 
           {loading ? (

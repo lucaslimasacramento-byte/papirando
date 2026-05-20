@@ -6234,8 +6234,8 @@ export default function App() {
   return (
     <ErrorBoundary>
       <div
-        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
-        style={{ backgroundColor: theme.bg }}
+        className="pl-app pl-theme-light app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans"
+        style={{ backgroundColor: 'var(--pl-bg)' }}
       >
       {chartTooltip && (
         <div

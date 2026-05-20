@@ -271,7 +271,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
 
   return (
     <div className="min-h-full w-full bg-[radial-gradient(ellipse_120%_80%_at_0%_-20%,rgba(59,130,246,0.12),transparent_50%),radial-gradient(ellipse_90%_60%_at_100%_0%,rgba(99,102,241,0.1),transparent_45%),linear-gradient(180deg,#eef2f9_0%,#f4f6fb_45%,#f8fafc_100%)]">
-      <div className="page-shell !max-w-[1180px] gap-6 pb-16 pt-2 sm:pt-3">
+      <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '28px 28px 64px', maxWidth: 1180, margin: '0 auto' }}>
         {/* Hero premium */}
         <section className="page-head page-head-premium-dark relative !flex-col !items-stretch overflow-hidden rounded-[1.75rem] border border-white/10 !px-5 !py-6 sm:!px-7 sm:!py-8">
           <div className="relative z-[1] grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">

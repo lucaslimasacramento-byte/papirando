@@ -14,7 +14,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import PageHeadPremium from '../components/PageHeadPremium';
+
 
 const STATUS_LABELS = {
   confirmado: 'Confirmado',
@@ -293,139 +293,125 @@ export default function ConcursosDisponiveis({
   };
 
   return (
-    <div className="page-shell !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        icon={Compass}
-        titleAs="h1"
-        title="Concursos disponíveis"
-        subtitle="Encontre concursos por área, banca, cargo ou data de prova e importe os mais relevantes para o seu painel."
-        trailing={
-          <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-200 sm:text-[13px]">
-            <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
-              {totalPublicados} publicados
-            </span>
-            <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
-              {totalAreas} áreas
-            </span>
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '28px 28px 56px' }}>
+      {/* Hero */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+        <div>
+          <div className="pl-eyebrow" style={{ marginBottom: 6 }}>Catálogo</div>
+          <h1 className="pl-display" style={{ fontSize: 38, margin: 0 }}>Concursos disponíveis.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-3)', marginTop: 6, maxWidth: 440 }}>
+            Encontre concursos por área, banca, cargo ou data e importe os mais relevantes para o seu painel.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <span className="pl-tag" style={{ height: 28, display: 'inline-flex', alignItems: 'center' }}>{totalPublicados} publicados</span>
+          <span className="pl-tag" style={{ height: 28, display: 'inline-flex', alignItems: 'center' }}>{totalAreas} áreas</span>
+        </div>
+      </div>
+
+      <div className="pl-card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Search + controls row */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-4)', pointerEvents: 'none' }} />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por concurso, banca, cargo ou área…"
+              className="pl-input"
+              style={{ paddingLeft: 30, height: 34, fontSize: 12.5, width: '100%' }}
+            />
           </div>
-        }
-      />
-
-      <section className="section-card rounded-2xl">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="relative max-w-xl flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por concurso, banca, cargo ou área..."
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center rounded-xl border border-gray-200 bg-white p-1">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('vitrine')}
-                  className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'vitrine' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  Vitrine
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('lista')}
-                  className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    viewMode === 'lista' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  Lista
-                </button>
-              </div>
-              <FilterSelect
-                value={sortMode}
-                onChange={setSortMode}
-                options={['relevancia', 'prova', 'salario', 'inscricao', 'nome']}
-                renderLabel={(value) => {
-                  if (value === 'relevancia') return 'Ordenar: relevância';
-                  if (value === 'prova') return 'Ordenar: prova mais próxima';
-                  if (value === 'salario') return 'Ordenar: maior salário';
-                  if (value === 'inscricao') return 'Ordenar: menor inscrição';
-                  return 'Ordenar: nome';
+          {/* View mode toggle */}
+          <div style={{ display: 'flex', border: '1px solid var(--pl-rule-strong)', borderRadius: 6, overflow: 'hidden' }}>
+            {[['vitrine', 'Vitrine'], ['lista', 'Lista']].map(([mode, label]) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                style={{
+                  padding: '0 12px', height: 32, fontSize: 12, fontWeight: 700, border: 0, cursor: 'pointer',
+                  background: viewMode === mode ? 'var(--pl-accent-soft)' : 'transparent',
+                  color: viewMode === mode ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
                 }}
-              />
-              <FilterSelect
-                value={statusFiltro}
-                onChange={setStatusFiltro}
-                options={['Todos', 'confirmado', 'previsto', 'suspeito', 'suspenso', 'encerrado']}
-                renderLabel={(value) => (value === 'Todos' ? 'Todos os status' : STATUS_LABELS[value] || value)}
-              />
-              {(query || statusFiltro !== 'Todos' || (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas'))) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery('');
-                    setStatusFiltro('Todos');
-                    setSortMode('relevancia');
-                    setAreasSelecionadas(['Todas']);
-                  }}
-                  className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
-                >
-                  Limpar filtros
-                </button>
-              )}
-            </div>
+              >{label}</button>
+            ))}
           </div>
+          <FilterSelect
+            value={sortMode}
+            onChange={setSortMode}
+            options={['relevancia', 'prova', 'salario', 'inscricao', 'nome']}
+            renderLabel={(value) => {
+              if (value === 'relevancia') return 'Relevância';
+              if (value === 'prova') return 'Prova mais próxima';
+              if (value === 'salario') return 'Maior salário';
+              if (value === 'inscricao') return 'Menor inscrição';
+              return 'Nome';
+            }}
+          />
+          <FilterSelect
+            value={statusFiltro}
+            onChange={setStatusFiltro}
+            options={['Todos', 'confirmado', 'previsto', 'suspeito', 'suspenso', 'encerrado']}
+            renderLabel={(value) => (value === 'Todos' ? 'Todos os status' : STATUS_LABELS[value] || value)}
+          />
+          {(query || statusFiltro !== 'Todos' || (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas'))) && (
+            <button
+              type="button"
+              className="pl-btn pl-btn-ghost"
+              onClick={() => { setQuery(''); setStatusFiltro('Todos'); setSortMode('relevancia'); setAreasSelecionadas(['Todas']); }}
+            >
+              <X size={11} /> Limpar
+            </button>
+          )}
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-gray-400">
-              <Filter size={14} className="text-gray-400" />
-              Áreas
-            </span>
-            {areaStats.map((item) => (
+        {/* Area filters */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+          <span className="pl-eyebrow" style={{ fontSize: 9.5, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Filter size={10} /> Áreas
+          </span>
+          {areaStats.map((item) => {
+            const isActive = (item.area === 'Todas' && (areasSelecionadas.includes('Todas') || areasSelecionadas.length === 0)) || areasSelecionadas.includes(item.area);
+            return (
               <button
                 key={item.area}
                 type="button"
                 onClick={() => toggleArea(item.area)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
-                  (item.area === 'Todas' && (areasSelecionadas.includes('Todas') || areasSelecionadas.length === 0)) ||
-                  areasSelecionadas.includes(item.area)
-                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-gray-200 bg-gray-50/70 text-gray-600 hover:border-blue-100 hover:bg-white'
-                }`}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  height: 26, padding: '0 10px', borderRadius: 99, border: '1px solid',
+                  fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
+                  borderColor: isActive ? 'var(--pl-accent)' : 'var(--pl-rule-strong)',
+                  background: isActive ? 'var(--pl-accent-soft)' : 'transparent',
+                  color: isActive ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                }}
               >
-                <span>{item.area}</span>
-                <span className="inline-flex min-w-[1.35rem] items-center justify-center rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] leading-none opacity-70">
-                  {item.total}
-                </span>
+                {item.area}
+                <span style={{ fontSize: 10, background: 'rgba(0,0,0,0.08)', borderRadius: 99, padding: '0 4px' }}>{item.total}</span>
               </button>
-            ))}
-          </div>
-
-          {!isAdmin && (
-            <div
-              className={`rounded-2xl border px-4 py-3 ${
-                limiteAtingido ? 'border-amber-200 bg-amber-50' : 'border-blue-100 bg-blue-50/70'
-              }`}
-            >
-              <p className="text-sm font-semibold text-slate-900">
-                {currentCourseCount} de {currentCourseLimit} cursos ocupados
-              </p>
-              <p className="mt-1 text-xs font-semibold text-gray-500">
-                {limiteAtingido
-                  ? 'As importações ficaram bloqueadas até você liberar uma vaga.'
-                  : `Você ainda tem ${remainingCourseSlots} vaga(s) para importar concursos.`}
-              </p>
-            </div>
-          )}
+            );
+          })}
         </div>
-      </section>
+
+        {!isAdmin && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8, border: '1px solid',
+            borderColor: limiteAtingido ? 'var(--pl-warn-soft)' : 'var(--pl-accent-soft)',
+            background: limiteAtingido ? 'var(--pl-warn-soft)' : 'var(--pl-accent-soft)',
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 3 }}>
+              {currentCourseCount} de {currentCourseLimit} cursos ocupados
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>
+              {limiteAtingido ? 'Importações bloqueadas até você liberar uma vaga.' : `Ainda há ${remainingCourseSlots} vaga(s) para importar.`}
+            </div>
+          </div>
+        )}
+      </div>
 
       {recommendationBuckets.length > 0 && (
-        <section className="section-card rounded-2xl">
+        <section className="pl-card">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Insights</p>
@@ -490,7 +476,7 @@ export default function ConcursosDisponiveis({
                   return (
                     <article
                       key={contest.id}
-                      className="surface-card overflow-hidden rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg"
+                      className="pl-card"
                     >
                       <button
                         type="button"
@@ -546,25 +532,18 @@ export default function ConcursosDisponiveis({
 
                       <div className="px-4 pb-4">
                         <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenContest(contest)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600"
-                          >
+                          <button type="button" className="pl-btn pl-btn-ghost" style={{ fontSize: 12 }} onClick={() => handleOpenContest(contest)}>
                             Ver detalhes
                           </button>
                           <button
                             type="button"
+                            className="pl-btn pl-btn-primary"
                             onClick={() => handleImport(contest)}
                             disabled={importingId === contest.id || limiteAtingido}
-                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
+                            style={{ flex: 1, justifyContent: 'center', fontSize: 12, opacity: (importingId === contest.id || limiteAtingido) ? 0.6 : 1 }}
                           >
-                            {limiteAtingido
-                              ? 'Limite atingido'
-                              : importingId === contest.id
-                                ? 'Importando...'
-                                : 'Adicionar aos meus cursos'}
-                            <ArrowRight size={16} />
+                            {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Importando…' : 'Adicionar'}
+                            <ArrowRight size={12} />
                           </button>
                         </div>
                       </div>
@@ -573,7 +552,7 @@ export default function ConcursosDisponiveis({
                 })}
               </div>
             ) : (
-              <div className="surface-card overflow-hidden rounded-[22px]">
+              <div className="pl-card">
                 <div className="hidden grid-cols-[2.1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 lg:grid">
                   <span>Concurso</span>
                   <span>Banca</span>
@@ -605,20 +584,11 @@ export default function ConcursosDisponiveis({
                       <div className="text-sm font-semibold text-blue-700">{formatDateBR(contest.prova_data)}</div>
 
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenContest(contest)}
-                          className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-600"
-                        >
+                        <button type="button" className="pl-btn pl-btn-ghost" style={{ fontSize: 12 }} onClick={() => handleOpenContest(contest)}>
                           Ver detalhes
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleImport(contest)}
-                          disabled={importingId === contest.id || limiteAtingido}
-                          className="rounded-xl bg-[#2563EB] px-3 py-2 text-sm font-bold text-white disabled:opacity-70"
-                        >
-                          {importingId === contest.id ? '...' : 'Adicionar'}
+                        <button type="button" className="pl-btn pl-btn-primary" style={{ fontSize: 12, opacity: (importingId === contest.id || limiteAtingido) ? 0.6 : 1 }} onClick={() => handleImport(contest)} disabled={importingId === contest.id || limiteAtingido}>
+                          {importingId === contest.id ? '…' : 'Adicionar'}
                         </button>
                       </div>
                     </div>
@@ -660,34 +630,30 @@ function FilterSelect({ value, onChange, options, renderLabel }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+      className="pl-input"
+      style={{ height: 34, fontSize: 12, paddingLeft: 10, paddingRight: 24 }}
     >
       {options.map((option) => {
         const optionValue = typeof option === 'string' ? option : option.value;
-        const label =
-          renderLabel?.(optionValue) || (typeof option === 'string' ? option : option.label || option.value);
-
-        return (
-          <option key={optionValue} value={optionValue}>
-            {label}
-          </option>
-        );
+        const label = renderLabel?.(optionValue) || (typeof option === 'string' ? option : option.label || option.value);
+        return <option key={optionValue} value={optionValue}>{label}</option>;
       })}
     </select>
   );
 }
 
 function AreaBadge({ children }) {
-  return (
-    <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-      {children}
-    </span>
-  );
+  return <span className="pl-tag" style={{ fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{children}</span>;
 }
 
 function StatusBadge({ children }) {
   return (
-    <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', height: 20, padding: '0 8px', borderRadius: 99,
+      fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+      background: 'var(--pl-success-soft, #d1fae5)', color: 'var(--pl-success, #059669)',
+      border: '1px solid #a7f3d0',
+    }}>
       {children}
     </span>
   );
@@ -695,42 +661,37 @@ function StatusBadge({ children }) {
 
 function InfoPill({ icon: Icon, label }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600">
-      <Icon size={12} className="text-blue-600" />
-      <span className="truncate">{label}</span>
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      padding: '7px 12px', borderRadius: 8,
+      border: '1px solid var(--pl-rule-strong)',
+      background: 'var(--pl-bg-soft)',
+      fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)',
+    }}>
+      <Icon size={12} style={{ color: 'var(--pl-accent)', flexShrink: 0 }} />
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
     </div>
   );
 }
 
 function MetaCounter({ label, value }) {
   return (
-    <div className="rounded-[14px] border border-gray-200 bg-gray-50 px-3 py-2.5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-1 text-base font-semibold text-slate-900">{value}</p>
+    <div style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-bg-soft)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 4 }}>{label}</div>
+      <div className="pl-num" style={{ fontSize: 16 }}>{value}</div>
     </div>
   );
 }
 
-function QuickTag({ children, tone = 'blue' }) {
-  const toneClasses = {
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
-    amber: 'border-amber-100 bg-amber-50 text-amber-700',
-    rose: 'border-rose-100 bg-rose-50 text-rose-700',
-    green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-  };
-
-  return (
-    <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${toneClasses[tone] || toneClasses.blue}`}>
-      {children}
-    </span>
-  );
+function QuickTag({ children }) {
+  return <span className="pl-tag" style={{ fontSize: 10, letterSpacing: '0.06em' }}>{children}</span>;
 }
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-3 py-2">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gray-400">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    <div style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-surface)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 8.5, marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }
@@ -740,7 +701,7 @@ function RecommendationPanel({ title, items = [], emptyText, onOpen, formatDateB
   const visibleItems = isHorizontal ? items.slice(0, 3) : items;
 
   return (
-    <section className="surface-card-strong rounded-[24px] p-4">
+    <section className="pl-card">
       {!isHorizontal ? (
         <div className="mb-4">
           <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
@@ -793,17 +754,15 @@ function ContestPreviewModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-gray-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/95 px-6 py-4 backdrop-blur">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', padding: 16 }}>
+      <div className="pl-card" style={{ maxHeight: '90vh', width: '100%', maxWidth: 900, overflowY: 'auto', borderRadius: 16, padding: 0 }}>
+        <div style={{ position: 'sticky', top: 0, zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-surface)' }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
-              Detalhes do concurso
-            </p>
-            <h3 className="mt-1 text-2xl font-semibold text-slate-900">{contest.nome}</h3>
+            <div className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 4 }}>Detalhes do concurso</div>
+            <h3 style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: 'var(--pl-ink)', margin: 0, letterSpacing: '-0.04em' }}>{contest.nome}</h3>
           </div>
-          <button onClick={onClose} className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500">
-            <X size={18} />
+          <button type="button" className="pl-btn pl-btn-ghost" style={{ width: 30, height: 30, padding: 0, justifyContent: 'center' }} onClick={onClose}>
+            <X size={14} />
           </button>
         </div>
 
@@ -952,25 +911,23 @@ function ContestPreviewModal({
 
             <div className="mt-6 flex flex-wrap gap-3">
               <button
+                type="button"
+                className="pl-btn pl-btn-primary"
                 onClick={() => onImport(contest)}
                 disabled={importingId === contest.id || limiteAtingido}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:opacity-70"
+                style={{ opacity: (importingId === contest.id || limiteAtingido) ? 0.6 : 1 }}
               >
-                {limiteAtingido
-                  ? 'Limite atingido'
-                  : importingId === contest.id
-                    ? 'Importando...'
-                    : 'Adicionar aos meus cursos'}
-                <ArrowRight size={16} />
+                {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Importando…' : 'Adicionar aos meus cursos'}
+                <ArrowRight size={13} />
               </button>
 
               {contest.edital_url && (
                 <button
+                  type="button"
+                  className="pl-btn pl-btn-ghost"
                   onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
                 >
-                  Edital
-                  <ExternalLink size={15} />
+                  Edital <ExternalLink size={12} />
                 </button>
               )}
             </div>
@@ -983,9 +940,9 @@ function ContestPreviewModal({
 
 function DetailBox({ label, value }) {
   return (
-    <div className="rounded-[1rem] border border-gray-200 bg-white px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-2 text-sm font-bold text-slate-900">{value}</p>
+    <div style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-bg-soft)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   AlertCircle,
   BarChart3,
@@ -482,8 +481,8 @@ export default function EditalQuestao({
   };
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 text-slate-900 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto flex w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
         <HeroSection computed={analytics} selectedCourse={selectedCourse} />
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,260px)_1fr] xl:items-start">
@@ -561,44 +560,32 @@ function SidebarPanel({ computed, currentCourseStats, nextCriticalTopic }) {
 }
 
 function HeroSection({ computed, selectedCourse }) {
-  const editalHeaderStats = useMemo(
-    () => [
-      { key: 'cov', icon: TrendingUp, label: 'Cobertura', value: `${computed.cobertura}%`, accent: 'emerald' },
-      { key: 'med', icon: BarChart3, label: 'Precisão média', value: `${computed.media}%`, accent: 'blue' },
-      {
-        key: 'q',
-        icon: Layers3,
-        label: 'Questões',
-        value: String(computed.totalQuestoes),
-        accent: computed.totalQuestoes === 0 ? 'orange' : 'indigo',
-      },
-      { key: 't', icon: Clock3, label: 'Tempo líquido', value: formatMinutes(computed.totalMinutes), accent: 'violet' },
-    ],
-    [computed.cobertura, computed.media, computed.totalQuestoes, computed.totalMinutes]
-  );
-
   const planHint = selectedCourse?.nome || selectedCourse?.plan || 'Cadastre um curso em Planos';
 
   return (
-    <PageHeadPremium
-      className="!gap-2 !py-3 shrink-0 animate-in fade-in duration-500 sm:!gap-3 sm:!py-3.5"
-      icon={FileSearch}
-      titleAs="h1"
-      badge={
-        <PageHeadPremiumBadge icon={BookOpen}>
-          Análise de edital
-        </PageHeadPremiumBadge>
-      }
-      title="Painel tático do edital: o que cobrar, revisar e atacar primeiro."
-      subtitle="Cada tópico do seu curso é cruzado com histórico de estudo e desempenho em questões — gargalos, revisões e prioridades em um só lugar."
-      leadingExtra={
-        <p className="truncate text-[11px] font-medium text-slate-500 sm:text-xs" title={planHint}>
-          Curso em análise: <span className="font-semibold text-slate-400">{planHint}</span>
-        </p>
-      }
-      stats={editalHeaderStats}
-      statGridClassName="grid shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 xl:min-w-0 xl:max-w-[420px]"
-    />
+    <div style={{ marginBottom: 8 }}>
+      <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Análise de edital</p>
+      <h1 className="pl-display" style={{ marginBottom: 10 }}>Painel tático do edital.</h1>
+      <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 560, marginBottom: 16 }}>
+        Cada tópico cruzado com histórico de estudo e desempenho — gargalos, revisões e prioridades em um só lugar.
+      </p>
+      <p style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>
+        Curso em análise: <span style={{ fontWeight: 600, color: 'var(--pl-ink-2)' }}>{planHint}</span>
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 20 }}>
+        {[
+          { label: 'Cobertura', value: `${computed.cobertura}%` },
+          { label: 'Precisão média', value: `${computed.media}%` },
+          { label: 'Questões', value: String(computed.totalQuestoes) },
+          { label: 'Tempo líquido', value: formatMinutes(computed.totalMinutes) },
+        ].map((s) => (
+          <div key={s.label} className="pl-card" style={{ padding: '12px 16px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{s.label}</p>
+            <p className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

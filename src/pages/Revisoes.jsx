@@ -15,7 +15,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function Revisoes({
   setRegistroEstudoModalOpen,
@@ -289,231 +288,259 @@ export default function Revisoes({
     studyRecommendation,
   ]);
 
+  const totalUrgent = urgentCount + flashcardState.overdue;
+
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremium
-        className="shrink-0"
-        icon={CheckCircle2}
-        badge={
-          <PageHeadPremiumBadge icon={CalendarClock}>
-            Revisão inteligente
-          </PageHeadPremiumBadge>
-        }
-        title="Revisões priorizadas"
-        subtitle="A fila abaixo mistura revisão por disciplina, histórico real e flashcards vencidos no FSRS."
-        statGridClassName="grid shrink-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:max-w-md md:justify-end"
-        stats={[
-          {
-            key: 'urgent',
-            icon: AlertCircle,
-            label: 'Alta prioridade',
-            value: `${urgentCount + flashcardState.overdue} itens`,
-            accent: 'red',
-            valueClassName: 'text-red-200',
-          },
-          {
-            key: 'fila',
-            icon: CheckSquare,
-            label: 'Fila ativa',
-            value: `${reviewHighlights.length} frentes`,
-            accent: 'emerald',
-            valueClassName: 'text-emerald-200',
-          },
-        ]}
-      />
+    <div className="pl-paper-bg" style={{ flex: 1, overflow: 'auto', padding: '28px 36px 48px' }}>
 
-      <div className="soft-accent shrink-0 rounded-2xl p-4 sm:p-5">
-        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <div>
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <span className="flex items-center gap-1.5 rounded-full bg-red-500 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white">
-                <AlertCircle size={12} strokeWidth={3} />
-                {primaryReview ? primaryReview.urgencyLabel : 'Sem fila crítica'}
-              </span>
-
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                {targetContest?.nome || 'Sem concurso-alvo definido'}
-              </span>
-            </div>
-
-            <h3 className="text-2xl font-semibold tracking-tight text-slate-900 lg:text-3xl">
-              {primaryReview?.title || 'Sua fila de revisão está pronta'}
-            </h3>
-
-            <p className="mb-4 mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-600">
-              {primaryReview
-                ? `${primaryReview.disciplina} | ${primaryReview.reason}`
-                : 'Assim que houver histórico e disciplinas suficientes, a fila inteligente aparece aqui.'}
-            </p>
-
-            <div className="flex flex-wrap gap-2.5">
-              {primaryReview && (
-                <button
-                  type="button"
-                  onClick={() => onOpenRecommendedDiscipline?.(primaryReview.disciplina)}
-                  className="flex items-center gap-2 rounded-xl bg-[#185FA5] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0C447C] sm:text-sm"
-                >
-                  <BrainCircuit size={16} />
-                  Abrir disciplina
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (primaryReview) {
-                    if (primaryReview.recommendation) {
-                      onStartRecommendedSession?.(primaryReview.recommendation);
-                      return;
-                    }
-
-                    const fullRecommendation = (studyRecommendation?.cycleCandidates || [])
-                      .concat(studyRecommendation?.queue || [], studyRecommendation?.primary || [])
-                      .find(
-                        (item) => item?.id === primaryReview.disciplinaId || item?.nome === primaryReview.disciplina
-                      );
-
-                    if (fullRecommendation) {
-                      onStartRecommendedSession?.(fullRecommendation);
-                      return;
-                    }
-                  }
-
-                  setRegistroEstudoModalOpen?.(true);
-                }}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:text-sm"
-              >
-                <Play fill="currentColor" size={16} />
-                Registrar revisão
-              </button>
-            </div>
+      {/* ── HERO ── */}
+      <header style={{ display: 'flex', gap: 28, alignItems: 'flex-end' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="pl-eyebrow">
+            Inteligência de revisão
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>·</span>
+            Revisões
           </div>
-
-          <div className="grid gap-4">
-            <SummaryPanel
-              icon={RotateCcw}
-              label="Flashcards para hoje"
-              value={`${flashcardState.dueToday}`}
-              detail={
-                flashcardState.loading
-                  ? 'Carregando fila do FSRS...'
-                  : flashcardState.dueToday > 0
-                    ? `${flashcardState.overdue} vencido(s) além da data ideal`
-                    : 'Nenhum card vencendo hoje'
-              }
-              actionLabel="Abrir flashcards"
-              onAction={() => setActiveTab?.('flashcards')}
-              loading={flashcardState.loading}
-            />
-
-            <SummaryPanel
-              icon={Layers3}
-              label="Frentes por disciplina"
-              value={`${reviewQueue.length}`}
-              detail={
-                reviewQueue.length > 0
-                  ? `${urgentCount} frente(s) com urgência alta no edital`
-                  : 'Sem fila de revisão por disciplina ainda'
-              }
-              actionLabel="Abrir planejamento"
-              onAction={() => setActiveTab?.('planejamento')}
-            />
+          <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 64, color: 'var(--pl-ink)' }}>
+            Revisa o que import<span style={{ color: 'var(--pl-accent)' }}>a.</span>
+          </h1>
+          <p style={{ margin: '14px 0 0', fontSize: 16, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 560, lineHeight: 1.55 }}>
+            {targetContest?.nome
+              ? `Fila inteligente para ${targetContest.nome} — disciplinas, flashcards e histórico real juntos.`
+              : 'Fila inteligente que mistura histórico real, flashcards FSRS e disciplinas do edital.'}
+          </p>
+          <div style={{ marginTop: 22, display: 'flex', gap: 10 }}>
+            {primaryReview && (
+              <button
+                className="pl-btn pl-btn-primary pl-btn-lg"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                onClick={() => onOpenRecommendedDiscipline?.(primaryReview.disciplina)}
+              >
+                <BrainCircuit size={14} /> Abrir disciplina
+              </button>
+            )}
+            <button
+              className="pl-btn pl-btn-lg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+            >
+              Registrar revisão
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 overflow-hidden xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="custom-scrollbar min-h-0 overflow-y-auto pr-1">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
-              <ListOrdered size={18} className="text-blue-600" />
-              Fila de revisão
-            </h3>
+        {/* KPI aside */}
+        <aside style={{
+          width: 220, flexShrink: 0,
+          background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+          borderRadius: 6, padding: '16px 18px',
+        }}>
+          <div className="pl-eyebrow" style={{ fontSize: 10 }}>Fila ativa</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, margin: '8px 0 6px' }}>
+            <span className="pl-num" style={{ fontSize: 42, color: totalUrgent > 0 ? 'var(--pl-danger)' : 'var(--pl-ink)', lineHeight: 1 }}>
+              {totalUrgent}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>urgentes</span>
+          </div>
+          <div className="pl-progress" style={{ marginBottom: 8 }}>
+            <div className="fill" style={{
+              width: `${Math.min(100, reviewHighlights.length * 14)}%`,
+              background: totalUrgent > 0 ? 'var(--pl-danger)' : 'var(--pl-ink)',
+            }} />
+          </div>
+          <p style={{ margin: 0, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+            {reviewHighlights.length} frente(s) · {flashcardState.dueToday} cards hoje
+          </p>
+        </aside>
+      </header>
 
+      <div className="pl-rule" style={{ margin: '28px 0 22px' }} />
+
+      {/* ── KPI STRIP ── */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 22 }}>
+        <PlKpi
+          label="Alta prioridade"
+          num={String(urgentCount)}
+          accentColor={urgentCount > 0 ? 'danger' : undefined}
+          icon={<AlertCircle size={14} style={{ color: urgentCount > 0 ? 'var(--pl-danger)' : 'var(--pl-ink-4)' }} />}
+        />
+        <PlKpi label="Flashcards hoje" num={String(flashcardState.dueToday)} />
+        <PlKpi
+          label="Vencidos (FSRS)"
+          num={String(flashcardState.overdue)}
+          accentColor={flashcardState.overdue > 0 ? 'warn' : undefined}
+        />
+        <PlKpi label="Frentes ativas" num={String(reviewHighlights.length)} />
+      </section>
+
+      {/* ── TWO-COLUMN ── */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 18 }}>
+
+        {/* Review queue */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ListOrdered size={14} style={{ color: 'var(--pl-accent)' }} />
+              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Fila de revisão</div>
+            </div>
             <button
-              type="button"
+              className="pl-btn-link"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               onClick={() => setActiveTab?.('historico')}
-              className="inline-flex items-center gap-2 text-sm font-bold text-[#2563EB] transition-all hover:gap-3"
             >
-              Ver histórico consolidado
-              <ArrowRight size={14} />
+              Ver histórico consolidado <ArrowRight size={12} />
             </button>
           </div>
 
-          {reviewHighlights.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-[#2563EB]">
-                <Sparkles size={22} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {reviewHighlights.length === 0 ? (
+              <div className="pl-card" style={{
+                padding: '40px 24px', textAlign: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+              }}>
+                <Sparkles size={28} style={{ color: 'var(--pl-ink-4)' }} />
+                <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                  Nenhuma revisão pendente. Bom trabalho!
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--pl-ink-4)', fontWeight: 500, maxWidth: 320 }}>
+                  Registre mais sessões e flashcards para o app entender o que merece reforço.
+                </p>
               </div>
-              <h4 className="mt-3 text-lg font-semibold text-slate-900">Nenhuma revisão inteligente por enquanto</h4>
-              <p className="mx-auto mt-2 max-w-2xl text-sm font-medium text-gray-500">
-                Registre mais sessões, questões e flashcards para o app entender melhor o que merece reforço.
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {reviewHighlights.map((item) => (
+            ) : (
+              reviewHighlights.map((item) => (
                 <ReviewCard key={item.id} {...item} />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
 
-        <div className="section-card custom-scrollbar min-h-0 overflow-y-auto p-4 sm:p-5">
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            <BookOpenCheck size={13} className="text-[#185FA5]" />
-            Decks em revisão
+        {/* Right column: summary panels + decks */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* IA insight */}
+          <div className="pl-card-ai">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <span className="pl-tag-ai">
+                <BrainCircuit size={10} /> Bizu IA
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--pl-ink-3)', letterSpacing: '0.04em' }}>
+                revisão sugerida
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink)', lineHeight: 1.5 }}>
+              {primaryReview
+                ? <><span className="pl-mark-text">{primaryReview.disciplina}</span> é a frente mais crítica agora.</>
+                : 'Sem dados suficientes para indicar revisão prioritária.'}
+            </p>
+            {primaryReview && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.5 }}>
+                {primaryReview.reason}
+              </p>
+            )}
           </div>
 
-          {flashcardState.loading ? (
-            <div className="flex min-h-[220px] items-center justify-center">
-              <Loader2 size={24} className="animate-spin text-blue-500" />
+          {/* Flashcards summary */}
+          <div className="pl-card" style={{ padding: '16px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <RotateCcw size={13} style={{ color: 'var(--pl-accent)' }} />
+              <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>Flashcards para hoje</div>
             </div>
-          ) : flashcardState.deckSummary.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-500">
-              Sem decks com revisão vencendo hoje.
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+              <span className="pl-num" style={{ fontSize: 36, color: 'var(--pl-ink)', lineHeight: 1 }}>
+                {flashcardState.loading ? '–' : flashcardState.dueToday}
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>cards</span>
             </div>
-          ) : (
-            <div className="mt-4 space-y-2.5">
-              {flashcardState.deckSummary.map((deck) => (
-                <DeckRow
-                  key={deck.id}
-                  title={deck.title}
-                  subject={deck.disciplina}
-                  dueToday={deck.dueToday}
-                  overdue={deck.overdue}
-                  onOpen={() => setActiveTab?.('flashcards')}
-                />
-              ))}
+            <p style={{ margin: '0 0 12px', fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+              {flashcardState.loading
+                ? 'Carregando fila do FSRS…'
+                : flashcardState.overdue > 0
+                  ? `${flashcardState.overdue} vencido(s) além da data ideal`
+                  : flashcardState.dueToday > 0
+                    ? 'Fila do dia pronta para manter retenção alta'
+                    : 'Nenhum card vencendo hoje'}
+            </p>
+            <button
+              className="pl-btn-link"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              onClick={() => setActiveTab?.('flashcards')}
+            >
+              Abrir flashcards <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Discipline queue summary */}
+          <div className="pl-card" style={{ padding: '16px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Layers3 size={13} style={{ color: 'var(--pl-warn)' }} />
+              <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>Frentes por disciplina</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+              <span className="pl-num" style={{ fontSize: 36, color: 'var(--pl-ink)', lineHeight: 1 }}>
+                {reviewQueue.length}
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>frentes</span>
+            </div>
+            <p style={{ margin: '0 0 12px', fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+              {reviewQueue.length > 0
+                ? `${urgentCount} frente(s) com urgência alta no edital`
+                : 'Sem fila de revisão por disciplina ainda'}
+            </p>
+            <button
+              className="pl-btn-link"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              onClick={() => setActiveTab?.('planejamento')}
+            >
+              Abrir planejamento <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Deck list */}
+          {(flashcardState.deckSummary.length > 0 || flashcardState.loading) && (
+            <div className="pl-card" style={{ padding: '16px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <BookOpenCheck size={13} style={{ color: 'var(--pl-accent)' }} />
+                <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>Decks em revisão</div>
+              </div>
+              {flashcardState.loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
+                  <Loader2 size={20} style={{ color: 'var(--pl-accent)', animation: 'spin 1s linear infinite' }} />
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {flashcardState.deckSummary.map((deck) => (
+                    <DeckRow
+                      key={deck.id}
+                      title={deck.title}
+                      subject={deck.disciplina}
+                      dueToday={deck.dueToday}
+                      overdue={deck.overdue}
+                      onOpen={() => setActiveTab?.('flashcards')}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-function SummaryPanel({ icon: Icon, label, value, detail, actionLabel, onAction, loading = false }) {
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function PlKpi({ label, num, icon, accentColor }) {
+  const color =
+    accentColor === 'danger' ? 'var(--pl-danger)' :
+    accentColor === 'warn' ? 'var(--pl-warn)' :
+    'var(--pl-ink)';
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{loading ? '--' : value}</p>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#185FA5]">
-          <Icon size={18} />
-        </div>
+    <div className="pl-card" style={{ padding: '14px 16px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 10 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 6 }}>
+        <span className="pl-num" style={{ fontSize: 32, color, lineHeight: 1 }}>{num}</span>
+        {icon && <span style={{ marginLeft: 'auto' }}>{icon}</span>}
       </div>
-      <p className="mt-2 text-sm font-medium leading-snug text-slate-500">{detail}</p>
-      <button
-        type="button"
-        onClick={onAction}
-        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#185FA5] transition hover:gap-3"
-      >
-        {actionLabel}
-        <ArrowRight size={14} />
-      </button>
     </div>
   );
 }
@@ -529,57 +556,66 @@ function ReviewCard({
   isUrgent = false,
   actionLabel,
 }) {
+  const accent = isUrgent ? 'var(--pl-danger)' : 'var(--pl-accent)';
+  const accentSoft = isUrgent ? 'var(--pl-danger-soft)' : 'var(--pl-accent-soft)';
+
   return (
-    <div
-      className={`group relative flex flex-col gap-4 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all hover:shadow-md sm:flex-row sm:items-center ${
-        isUrgent ? 'border-red-200 hover:border-red-300' : 'border-gray-100 hover:border-blue-200'
-      }`}
-    >
-      <div className={`absolute bottom-0 left-0 top-0 w-1.5 ${isUrgent ? 'bg-red-500' : 'bg-blue-500'}`} />
+    <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div style={{ display: 'flex' }}>
+        {/* Left accent bar */}
+        <div style={{ width: 3, background: accent, flexShrink: 0 }} />
+        <div style={{ flex: 1, padding: '14px 16px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center',
+                  height: 20, padding: '0 7px', borderRadius: 3,
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  background: accentSoft, color: accent,
+                  border: `1px solid ${accent}30`,
+                }}>
+                  {badgeText}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-4)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  {cycle}
+                </span>
+              </div>
+              <h4 style={{ margin: '0 0 2px', fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink)', lineHeight: 1.3 }}>
+                {title}
+              </h4>
+              <p style={{ margin: '0 0 1px', fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 600 }}>
+                {subject}
+              </p>
+              <p style={{
+                margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.4,
+                overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+              }}>
+                {description}
+              </p>
+            </div>
 
-      <div className="ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-transform group-hover:scale-110">
-        <RotateCcw size={20} />
-      </div>
-
-      <div className="flex-1">
-        <div className="mb-1 flex flex-wrap items-center gap-2">
-          <span
-            className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest ${
-              isUrgent ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'
-            }`}
-          >
-            {badgeText}
-          </span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-            Sessão sugerida: {cycle}
-          </span>
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={onOpen}
+                className="pl-btn pl-btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+              >
+                <CheckSquare size={11} /> Abrir
+              </button>
+              <button
+                type="button"
+                onClick={onRegister}
+                className="pl-btn pl-btn-primary pl-btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+              >
+                <Play size={10} fill="currentColor" /> {actionLabel}
+              </button>
+            </div>
+          </div>
         </div>
-
-        <h4 className="text-base font-semibold tracking-tight text-gray-800">{title}</h4>
-        <p className="text-sm font-medium text-gray-500">{subject}</p>
-        <p className="mt-1.5 text-sm font-medium text-gray-500">{description}</p>
-      </div>
-
-      <div className="mt-2 flex w-full items-center gap-2.5 sm:mt-0 sm:w-auto">
-        <button
-          type="button"
-          onClick={onOpen}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 transition-all hover:border-blue-600 hover:text-blue-600 sm:flex-none sm:text-sm"
-        >
-          <CheckSquare size={16} />
-          Abrir
-        </button>
-
-        <button
-          type="button"
-          onClick={onRegister}
-          className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white transition-all shadow-sm sm:flex-none sm:text-sm ${
-            isUrgent ? 'bg-red-500 hover:bg-red-600' : 'bg-[#2563EB] hover:bg-[#1D4ED8]'
-          }`}
-        >
-          <Play size={16} fill="currentColor" />
-          {actionLabel}
-        </button>
       </div>
     </div>
   );
@@ -590,15 +626,29 @@ function DeckRow({ title, subject, dueToday, overdue, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full items-center justify-between rounded-[1.6rem] border border-slate-200 bg-slate-50 px-4 py-4 text-left transition hover:border-blue-200 hover:bg-white"
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 12px', borderRadius: 5, border: '1px solid var(--pl-rule)',
+        background: 'var(--pl-bg-soft)', cursor: 'pointer', textAlign: 'left',
+        transition: 'background 0.1s, border-color 0.1s',
+        fontFamily: 'var(--pl-sans)',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--pl-surface)'; e.currentTarget.style.borderColor = 'var(--pl-rule-strong)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--pl-bg-soft)'; e.currentTarget.style.borderColor = 'var(--pl-rule)'; }}
     >
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
-        <p className="mt-1 text-xs font-semibold text-slate-500">{subject}</p>
+      <div style={{ minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {title}
+        </p>
+        <p style={{ margin: '1px 0 0', fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
+          {subject}
+        </p>
       </div>
-      <div className="text-right">
-        <p className="text-sm font-semibold text-slate-900">{dueToday} cards</p>
-        <p className={`text-xs font-bold ${overdue > 0 ? 'text-red-500' : 'text-slate-400'}`}>
+      <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)', fontFamily: 'var(--pl-serif)', fontStyle: 'italic' }}>
+          {dueToday} cards
+        </p>
+        <p style={{ margin: '1px 0 0', fontSize: 11, fontWeight: 600, color: overdue > 0 ? 'var(--pl-danger)' : 'var(--pl-ink-4)' }}>
           {overdue > 0 ? `${overdue} vencido(s)` : 'Em dia'}
         </p>
       </div>

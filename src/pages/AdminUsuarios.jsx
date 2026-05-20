@@ -74,7 +74,7 @@ export default function AdminUsuarios({
   };
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-paper-bg" style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24, padding: '28px 28px 48px' }}>
       <section className="rounded-[2.4rem] border border-gray-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>

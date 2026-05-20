@@ -13,13 +13,12 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
 function getMondayOfWeek(date) {
   const d = new Date(date);
-  const day = d.getDay(); // 0=Sun, 1=Mon...
+  const day = d.getDay();
   const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
@@ -34,7 +33,7 @@ function getSundayOfWeek(monday) {
 }
 
 function formatDateISO(date) {
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  return date.toISOString().slice(0, 10);
 }
 
 function formatWeekLabel(monday) {
@@ -45,7 +44,6 @@ function formatWeekLabel(monday) {
 }
 
 function parseTime(tempo) {
-  // "HH:MM:SS" or "H:MM" → minutes
   if (!tempo) return 0;
   const parts = String(tempo).split(':').map(Number);
   if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
@@ -59,15 +57,6 @@ function fmtHours(minutes) {
   if (h === 0) return `${m}min`;
   if (m === 0) return `${h}h`;
   return `${h}h${m.toString().padStart(2, '0')}`;
-}
-
-const DISCIPLINE_COLORS = [
-  'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500',
-  'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-orange-500',
-];
-
-function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-[#2563EB]/15';
 }
 
 /** Alinha com Planejamento: alguns bancos usam semana_inicio/horas_meta, outros week_start/meta_horas. */
@@ -164,20 +153,26 @@ async function upsertWeeklyGoalRow({ userId, weekStartISO, disciplina, metaHoras
   };
 }
 
+// ─── Accent colors for discipline dots ─────────────────────────────────────
+
+const ACCENT_COLORS = [
+  'var(--pl-accent)', '#10b981', '#7c3aed', '#f59e0b',
+  '#ef4444', '#06b6d4', '#6366f1', '#f97316',
+];
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function MetasSemana({ currentUserId, historicoReal }) {
-  const [weekOffset, setWeekOffset] = useState(0); // 0 = current week
-  const [goals, setGoals]           = useState([]); // weekly_goals rows
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [goals, setGoals]           = useState([]);
   const [loading, setLoading]       = useState(true);
 
   const [editModal, setEditModal]   = useState(false);
-  const [editGoal, setEditGoal]     = useState(null); // null = new, or {disciplina, meta_horas}
+  const [editGoal, setEditGoal]     = useState(null);
   const [editForm, setEditForm]     = useState({ disciplina: '', meta_horas: 2, questoes_meta: '' });
   const [saving, setSaving]         = useState(false);
   const [formErr, setFormErr]       = useState('');
 
-  // Compute week dates
   const monday = useMemo(() => {
     const d = getMondayOfWeek(new Date());
     d.setDate(d.getDate() + weekOffset * 7);
@@ -188,7 +183,6 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   const sunday       = getSundayOfWeek(monday);
   const sundayISO    = formatDateISO(sunday);
 
-  // Load goals for this week
   const loadGoals = useCallback(async () => {
     if (!currentUserId) {
       setGoals([]);
@@ -202,13 +196,10 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   }, [currentUserId, weekStartISO]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      loadGoals();
-    }, 0);
+    const timer = window.setTimeout(() => { loadGoals(); }, 0);
     return () => window.clearTimeout(timer);
   }, [loadGoals]);
 
-  // Compute actual studied minutes per discipline for this week from historicoReal
   const actualByDisciplina = useMemo(() => {
     const map = {};
     if (!Array.isArray(historicoReal)) return map;
@@ -223,7 +214,6 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
     return map;
   }, [historicoReal, weekStartISO, sundayISO]);
 
-  /** Questões resolvidas na semana (acertos + erros), por disciplina do histórico. */
   const actualQuestoesByDisciplina = useMemo(() => {
     const map = {};
     if (!Array.isArray(historicoReal)) return map;
@@ -239,33 +229,20 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
     return map;
   }, [historicoReal, weekStartISO, sundayISO]);
 
-  // Disciplines from history that don't have a goal yet (for suggestion)
-  const studiedDisciplinas = useMemo(() => {
-    return Object.keys(actualByDisciplina).sort();
-  }, [actualByDisciplina]);
+  const studiedDisciplinas = useMemo(() => Object.keys(actualByDisciplina).sort(), [actualByDisciplina]);
 
-  // All disciplines that appear in either goals or history
   const allDisciplinas = useMemo(() => {
     const fromGoals = goals.map((g) => g.disciplina);
-    const fromHist  = studiedDisciplinas;
-    return [...new Set([...fromGoals, ...fromHist])].sort();
+    return [...new Set([...fromGoals, ...studiedDisciplinas])].sort();
   }, [goals, studiedDisciplinas]);
 
-  // Summary
   const totalGoalMins = goals.reduce((acc, g) => acc + (g.meta_horas || 0) * 60, 0);
-  const totalActualMins = goals.reduce(
-    (acc, g) => acc + (actualByDisciplina[g.disciplina] || 0),
-    0
-  );
+  const totalActualMins = goals.reduce((acc, g) => acc + (actualByDisciplina[g.disciplina] || 0), 0);
   const totalPct = totalGoalMins > 0 ? Math.min(100, Math.round((totalActualMins / totalGoalMins) * 100)) : 0;
 
   const totalGoalQuestoes = goals.reduce((acc, g) => acc + (g.questoes_meta || 0), 0);
-  const totalActualQuestoes = goals.reduce(
-    (acc, g) => acc + (actualQuestoesByDisciplina[g.disciplina] || 0),
-    0
-  );
-  const totalQuestoesPct =
-    totalGoalQuestoes > 0 ? Math.min(100, Math.round((totalActualQuestoes / totalGoalQuestoes) * 100)) : 0;
+  const totalActualQuestoes = goals.reduce((acc, g) => acc + (actualQuestoesByDisciplina[g.disciplina] || 0), 0);
+  const totalQuestoesPct = totalGoalQuestoes > 0 ? Math.min(100, Math.round((totalActualQuestoes / totalGoalQuestoes) * 100)) : 0;
 
   const isCurrentWeek = weekOffset === 0;
   const hoursMetaDone = totalGoalMins > 0 && totalPct >= 100;
@@ -299,10 +276,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
     let questoesMetaOverride = null;
     if (qRaw !== '') {
       const parsed = parseInt(qRaw, 10);
-      if (!Number.isFinite(parsed) || parsed < 0) {
-        setFormErr('Meta de questões inválida.');
-        return;
-      }
+      if (!Number.isFinite(parsed) || parsed < 0) { setFormErr('Meta de questões inválida.'); return; }
       questoesMetaOverride = parsed;
     }
 
@@ -318,14 +292,8 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
     });
 
     setSaving(false);
-    if (error) {
-      setFormErr(error.message || 'Não foi possível salvar a meta.');
-      return;
-    }
-    if (!data) {
-      setFormErr('Meta salva, mas a lista não atualizou. Recarregue a página.');
-      return;
-    }
+    if (error) { setFormErr(error.message || 'Não foi possível salvar a meta.'); return; }
+    if (!data) { setFormErr('Meta salva, mas a lista não atualizou. Recarregue a página.'); return; }
 
     setGoals((prev) => {
       const disciplina = data.disciplina;
@@ -343,220 +311,217 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
 
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
-        <p className="text-sm">Faça login para ver suas metas.</p>
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}>
+        <p style={{ fontSize: 13 }}>Faça login para ver suas metas.</p>
       </div>
     );
   }
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
-      <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
-        icon={Target}
-        title="Metas semanais"
-        subtitle="Horas por disciplina na semana. Metas do assistente de planejamento aparecem aqui automaticamente."
-        trailing={
-          <button
-            type="button"
-            onClick={() => openAddGoal()}
-            className="btn-primary inline-flex shrink-0 items-center gap-1.5 self-start px-3 py-2 text-xs font-semibold sm:self-center sm:px-3.5 sm:py-2 sm:text-[13px]"
-          >
-            <Plus size={14} />
-            Nova meta
-          </button>
-        }
-      />
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
 
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-2.5 sm:px-5 lg:px-6">
+      {/* Hero */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+        flexWrap: 'wrap', padding: '22px 24px 16px',
+        borderBottom: '1px solid var(--pl-rule)',
+        flexShrink: 0,
+      }}>
+        <div>
+          <div className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 4 }}>Acompanhamento semanal</div>
+          <h1 className="pl-display" style={{ fontSize: 28, margin: 0 }}>Metas da semana.</h1>
+        </div>
+        <button type="button" className="pl-btn pl-btn-primary" onClick={() => openAddGoal()}>
+          <Plus size={13} /> Nova meta
+        </button>
+      </div>
+
+      {/* Week navigator */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 24px', borderBottom: '1px solid var(--pl-rule)',
+        background: 'var(--pl-surface)', flexShrink: 0,
+      }}>
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB]"
-          aria-label="Semana anterior"
+          style={{ width: 30, height: 30, border: '1px solid var(--pl-rule-strong)', borderRadius: 6, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={15} />
         </button>
-        <div className="text-center min-w-0 px-2">
-          <p className="text-sm font-bold text-slate-900">{formatWeekLabel(monday)}</p>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{formatWeekLabel(monday)}</div>
           {isCurrentWeek && (
-            <p className="text-[11px] font-semibold text-[#2563EB]">Esta semana</p>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--pl-accent)', marginTop: 1 }}>Esta semana</div>
           )}
         </div>
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
           disabled={weekOffset >= 0}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB] disabled:pointer-events-none disabled:opacity-35"
-          aria-label="Próxima semana"
+          style={{
+            width: 30, height: 30, border: '1px solid var(--pl-rule-strong)', borderRadius: 6, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)',
+            opacity: weekOffset >= 0 ? 0.35 : 1, pointerEvents: weekOffset >= 0 ? 'none' : undefined,
+          }}
         >
-          <ChevronRight size={18} />
+          <ChevronRight size={15} />
         </button>
       </div>
 
-      <div className="section-card shrink-0 rounded-none border-x-0 border-t-0 px-4 py-3 sm:px-5 sm:py-3.5 lg:px-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={16} className="text-[#2563EB]" />
-            <span className="text-sm font-bold text-slate-700">Total da semana</span>
+      {/* Summary bar */}
+      <div style={{
+        padding: '14px 24px', borderBottom: '1px solid var(--pl-rule)',
+        background: 'var(--pl-bg-soft)', flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <TrendingUp size={13} style={{ color: 'var(--pl-accent)' }} />
+            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Total da semana</span>
           </div>
-          <div className="text-right">
-            <span className="text-sm font-semibold text-slate-900">
-              {fmtHours(totalActualMins)}
-            </span>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>
+            <span className="pl-num">{fmtHours(totalActualMins)}</span>
             {totalGoalMins > 0 && (
-              <span className="text-xs text-slate-500 font-semibold"> / {fmtHours(totalGoalMins)}</span>
+              <span style={{ fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}> / {fmtHours(totalGoalMins)}</span>
             )}
           </div>
         </div>
         {totalGoalMins > 0 && (
-          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${totalPct >= 100 ? 'bg-emerald-500' : 'bg-[#2563EB]'}`}
-              style={{ width: `${totalPct}%` }}
-            />
+          <div className="pl-progress">
+            <div className="pl-progress-bar" style={{
+              width: `${totalPct}%`,
+              background: totalPct >= 100 ? 'var(--pl-success)' : 'var(--pl-accent)',
+            }} />
           </div>
         )}
         {totalGoalQuestoes > 0 && (
-          <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Questões (soma das metas)</span>
-              <span className="text-[11px] font-semibold text-slate-700">
-                {totalActualQuestoes} / {totalGoalQuestoes}
-                <span className="text-slate-400"> ({totalQuestoesPct}%)</span>
+          <div style={{ marginTop: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Questões</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                {totalActualQuestoes} / {totalGoalQuestoes} ({totalQuestoesPct}%)
               </span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${questoesMetaDone ? 'bg-emerald-500' : 'bg-violet-500'}`}
-                style={{ width: `${totalQuestoesPct}%` }}
-              />
+            <div className="pl-progress">
+              <div className="pl-progress-bar" style={{
+                width: `${totalQuestoesPct}%`,
+                background: questoesMetaDone ? 'var(--pl-success)' : '#7c3aed',
+              }} />
             </div>
           </div>
         )}
         {allMetasDone && goals.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-2 text-emerald-600">
-            <Trophy size={14} />
-            <span className="text-xs font-bold">Metas da semana atingidas!</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, color: 'var(--pl-success)' }}>
+            <Trophy size={13} />
+            <span style={{ fontSize: 12, fontWeight: 700 }}>Metas da semana atingidas!</span>
           </div>
         )}
       </div>
 
       {/* Goals list */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6">
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 24px' }}>
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-blue-500" />
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '48px 0' }}>
+            <Loader2 size={22} style={{ color: 'var(--pl-accent)', animation: 'spin 1s linear infinite' }} />
           </div>
         ) : allDisciplinas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-              <Target size={28} className="text-slate-400" />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: 16, textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: 12, background: 'var(--pl-bg-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Target size={24} style={{ color: 'var(--pl-ink-4)' }} />
             </div>
             <div>
-              <p className="font-bold text-slate-700">Nenhuma meta definida</p>
-              <p className="text-sm text-slate-500 mt-1">Defina metas de horas por disciplina para acompanhar seu progresso semanal.</p>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 6 }}>Nenhuma meta definida</div>
+              <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', maxWidth: 320 }}>
+                Defina metas de horas por disciplina para acompanhar seu progresso semanal.
+              </div>
             </div>
-            <button type="button" onClick={() => openAddGoal()} className="btn-primary">
-              <Plus size={16} />
-              Criar primeira meta
+            <button type="button" className="pl-btn pl-btn-primary" onClick={() => openAddGoal()}>
+              <Plus size={13} /> Criar primeira meta
             </button>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
             {allDisciplinas.map((disc, idx) => {
               const goal       = goals.find((g) => g.disciplina === disc);
               const goalMins   = (goal?.meta_horas || 0) * 60;
               const actualMins = actualByDisciplina[disc] || 0;
               const pct        = goalMins > 0 ? Math.min(100, Math.round((actualMins / goalMins) * 100)) : null;
-              const goalQuestoes = goal ? goal.questoes_meta || 0 : 0;
+              const goalQuestoes   = goal ? goal.questoes_meta || 0 : 0;
               const actualQuestoes = actualQuestoesByDisciplina[disc] || 0;
-              const qPct =
-                goal && goalQuestoes > 0
-                  ? Math.min(100, Math.round((actualQuestoes / goalQuestoes) * 100))
-                  : null;
-              const colorCls   = DISCIPLINE_COLORS[idx % DISCIPLINE_COLORS.length];
+              const qPct       = goal && goalQuestoes > 0 ? Math.min(100, Math.round((actualQuestoes / goalQuestoes) * 100)) : null;
+              const color      = ACCENT_COLORS[idx % ACCENT_COLORS.length];
               const done       = pct !== null && pct >= 100;
               const doneQuestoes = qPct !== null && qPct >= 100;
-              const hoursOk = !goal || goalMins <= 0 || done;
-              const questoesOk = !goal || goalQuestoes <= 0 || qPct === null || doneQuestoes;
-              const showCheck = Boolean(goal && hoursOk && questoesOk);
+              const showCheck  = Boolean(goal && (!goalMins || done) && (!goalQuestoes || doneQuestoes));
 
               return (
-                <div key={disc} className="section-card flex flex-col p-3.5 sm:p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${colorCls}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-800">{disc}</p>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-                          <span className="text-[11px] font-bold text-[#2563EB]">{fmtHours(actualMins)} estudados</span>
+                <div key={disc} className="pl-card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {/* Header */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                      <div style={{ width: 9, height: 9, borderRadius: 99, background: color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{disc}</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginTop: 2 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: color }}>{fmtHours(actualMins)} estudados</span>
                           {goalMins > 0 && (
-                            <span className="text-[11px] text-slate-400">/ meta {fmtHours(goalMins)}</span>
+                            <span style={{ fontSize: 11, color: 'var(--pl-ink-4)' }}>/ meta {fmtHours(goalMins)}</span>
                           )}
                           {goal && goalQuestoes > 0 && (
-                            <span className="text-[11px] font-semibold text-violet-700">
-                              · {actualQuestoes}/{goalQuestoes} questões
-                            </span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#7c3aed' }}>{actualQuestoes}/{goalQuestoes} q</span>
                           )}
                           {!goal && (
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-2 py-0.5">
-                              sem meta
-                            </span>
+                            <span className="pl-tag" style={{ fontSize: 9.5 }}>sem meta</span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      {showCheck && <Check size={14} className="text-emerald-500" />}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                      {showCheck && <Check size={13} style={{ color: 'var(--pl-success)' }} />}
                       <button
                         type="button"
+                        className="pl-btn pl-btn-ghost"
+                        style={{ width: 26, height: 26, padding: 0, justifyContent: 'center' }}
                         onClick={() => (goal ? openEditGoal(goal) : openAddGoal(disc))}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#2563EB]"
                         title={goal ? 'Editar meta' : 'Definir meta'}
                       >
-                        <Pencil size={13} />
+                        <Pencil size={11} />
                       </button>
                       {goal && (
                         <button
                           type="button"
+                          className="pl-btn pl-btn-ghost"
+                          style={{ width: 26, height: 26, padding: 0, justifyContent: 'center', color: 'var(--pl-danger)' }}
                           onClick={() => handleDeleteGoal(goal)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
                           title="Excluir meta"
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={11} />
                         </button>
                       )}
                     </div>
                   </div>
 
+                  {/* Hours progress */}
                   {pct !== null && (
-                    <div className="mt-2.5">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Horas</span>
-                        <span className={`text-[11px] font-semibold ${done ? 'text-emerald-600' : 'text-slate-700'}`}>{pct}%</span>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                        <span className="pl-eyebrow" style={{ fontSize: 9 }}>Horas</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: done ? 'var(--pl-success)' : 'var(--pl-ink-2)' }}>{pct}%</span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${done ? 'bg-emerald-500' : colorCls}`}
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="pl-progress">
+                        <div className="pl-progress-bar" style={{ width: `${pct}%`, background: done ? 'var(--pl-success)' : color }} />
                       </div>
                     </div>
                   )}
+
+                  {/* Questões progress */}
                   {qPct !== null && (
-                    <div className="mt-2">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Questões</span>
-                        <span className={`text-[11px] font-semibold ${doneQuestoes ? 'text-emerald-600' : 'text-slate-700'}`}>
-                          {qPct}%
-                        </span>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                        <span className="pl-eyebrow" style={{ fontSize: 9 }}>Questões</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: doneQuestoes ? 'var(--pl-success)' : 'var(--pl-ink-2)' }}>{qPct}%</span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${doneQuestoes ? 'bg-emerald-500' : 'bg-violet-500'}`}
-                          style={{ width: `${qPct}%` }}
-                        />
+                      <div className="pl-progress">
+                        <div className="pl-progress-bar" style={{ width: `${qPct}%`, background: doneQuestoes ? 'var(--pl-success)' : '#7c3aed' }} />
                       </div>
                     </div>
                   )}
@@ -569,34 +534,44 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
 
       {/* Edit/Add modal */}
       {editModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 50,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+          padding: 16,
+        }}>
+          <div className="pl-card" style={{ width: '100%', maxWidth: 380, padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--pl-rule)' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)' }}>
                 {editGoal ? 'Editar meta' : 'Nova meta'}
-              </h3>
-              <button onClick={() => setEditModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-                <X size={16} />
+              </div>
+              <button type="button" className="pl-btn pl-btn-ghost" style={{ width: 28, height: 28, padding: 0, justifyContent: 'center' }} onClick={() => setEditModal(false)}>
+                <X size={14} />
               </button>
             </div>
-            <div className="px-6 py-5 space-y-4">
+
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {formErr && (
-                <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700">
-                  <X size={13} />
-                  {formErr}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
+                  borderRadius: 6, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)',
+                  fontSize: 13, fontWeight: 600, color: 'var(--pl-danger)',
+                }}>
+                  <X size={12} /> {formErr}
                 </div>
               )}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Disciplina *</label>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="pl-eyebrow" style={{ fontSize: 9.5 }}>Disciplina *</label>
                 {editGoal ? (
-                  <p className="rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
+                  <div style={{ padding: '10px 12px', background: 'var(--pl-bg-soft)', borderRadius: 6, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>
                     {editGoal.disciplina}
-                  </p>
+                  </div>
                 ) : (
                   <input
                     type="text"
                     list="disc-suggestions"
-                    className={inputCls()}
+                    className="pl-input"
                     placeholder="Ex: Direito Constitucional"
                     value={editForm.disciplina}
                     onChange={(e) => setEditForm((f) => ({ ...f, disciplina: e.target.value }))}
@@ -604,62 +579,55 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 )}
                 {!editGoal && studiedDisciplinas.length > 0 && (
                   <datalist id="disc-suggestions">
-                    {studiedDisciplinas.map((d) => (
-                      <option key={d} value={d} />
-                    ))}
+                    {studiedDisciplinas.map((d) => <option key={d} value={d} />)}
                   </datalist>
                 )}
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Meta semanal (horas) *</label>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="pl-eyebrow" style={{ fontSize: 9.5 }}>Meta semanal (horas) *</label>
                 <input
                   type="number"
                   min={0.5}
                   max={40}
                   step={0.5}
-                  className={inputCls()}
+                  className="pl-input"
                   value={editForm.meta_horas}
                   onChange={(e) => setEditForm((f) => ({ ...f, meta_horas: e.target.value }))}
                 />
-                <p className="text-xs text-slate-400">Ex: 2.5 = 2 horas e 30 minutos por semana</p>
+                <p style={{ fontSize: 11, color: 'var(--pl-ink-4)' }}>Ex: 2.5 = 2 horas e 30 minutos</p>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Meta de questões (opcional)
-                </label>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="pl-eyebrow" style={{ fontSize: 9.5 }}>Meta de questões (opcional)</label>
                 <input
                   type="number"
                   min={0}
                   max={5000}
                   step={1}
-                  className={inputCls()}
+                  className="pl-input"
                   placeholder="Automático: ~10 questões por hora"
                   value={editForm.questoes_meta}
                   onChange={(e) => setEditForm((f) => ({ ...f, questoes_meta: e.target.value }))}
                 />
-                <p className="text-xs text-slate-400">
-                  Em branco:{' '}
-                  {Math.max(
-                    0,
-                    Math.round(
-                      (Number.isFinite(parseFloat(editForm.meta_horas)) ? parseFloat(editForm.meta_horas) : 0) * 10
-                    )
-                  )}{' '}
-                  questões (10× as horas). O progresso usa acertos + erros do histórico na semana.
+                <p style={{ fontSize: 11, color: 'var(--pl-ink-4)' }}>
+                  Em branco: {Math.max(0, Math.round((Number.isFinite(parseFloat(editForm.meta_horas)) ? parseFloat(editForm.meta_horas) : 0) * 10))} questões (10× as horas).
                 </p>
               </div>
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setEditModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '14px 20px', borderTop: '1px solid var(--pl-rule)' }}>
+              <button type="button" className="pl-btn pl-btn-ghost" onClick={() => setEditModal(false)}>
                 Cancelar
               </button>
               <button
                 type="button"
+                className="pl-btn pl-btn-primary"
                 onClick={handleSaveGoal}
                 disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:opacity-50"
+                style={{ opacity: saving ? 0.6 : 1 }}
               >
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {saving ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
                 Salvar
               </button>
             </div>

@@ -22,7 +22,6 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { analyzeEdital } from '../lib/aiClient';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -336,74 +335,44 @@ export default function Planos({
   };
   const buildCourseMetaChips = (curso) => {
     const chips = [];
-    chips.push({
-      key: 'status',
-      className: 'rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-600',
-      label: formatStatusLabel(curso.status_concurso),
-    });
+    chips.push({ key: 'status', className: 'pl-tag', label: formatStatusLabel(curso.status_concurso) });
     if (curso.prova_data) {
-      chips.push({
-        key: 'prova',
-        className:
-          'rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700',
-        label: `Prova ${formatDateDisplay(curso.prova_data)}`,
-      });
+      chips.push({ key: 'prova', className: 'pl-tag pl-tag-ai', label: `Prova ${formatDateDisplay(curso.prova_data)}` });
     }
     if (curso.salario) {
-      chips.push({
-        key: 'salario',
-        className:
-          'rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700',
-        label: curso.salario,
-      });
+      chips.push({ key: 'salario', className: 'pl-tag', label: curso.salario });
     }
     if (curso.escolaridade) {
-      chips.push({
-        key: 'escolaridade',
-        className:
-          'rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700',
-        label: curso.escolaridade,
-      });
+      chips.push({ key: 'escolaridade', className: 'pl-tag', label: curso.escolaridade });
     }
     if (curso.inscricao_valor) {
-      chips.push({
-        key: 'inscricao',
-        className:
-          'rounded-full border border-amber-100 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-700',
-        label: `Inscrição ${curso.inscricao_valor}`,
-      });
+      chips.push({ key: 'inscricao', className: 'pl-tag pl-tag-warn', label: `Inscrição ${curso.inscricao_valor}` });
     }
     return chips;
   };
 
   return (
-    <div className="page-shell animate-in fade-in duration-500 !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        className="mb-6"
-        icon={Book}
-        title="Meus cursos"
-        subtitle="Os cursos são a origem das disciplinas. Crie um curso personalizado ou escolha um concurso pronto da biblioteca."
-        trailing={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-            <button
-              onClick={() => openMode('manual')}
-              className="btn-primary inline-flex w-full items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold sm:w-auto sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Plus size={14} />
-              Criar curso
-            </button>
-            <button
-              onClick={() => openMode('catalog')}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:w-auto sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <LibraryBig size={14} />
-              Biblioteca de concursos
-            </button>
-          </div>
-        }
-      />
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      {/* ── Hero ── */}
+      <div style={{ marginBottom: 32 }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Cursos</p>
+        <h1 className="pl-display" style={{ marginBottom: 12 }}>Meus cursos.</h1>
+        <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', maxWidth: 520, marginBottom: 20 }}>
+          Os cursos são a origem das disciplinas. Crie um curso personalizado ou escolha um concurso pronto da biblioteca.
+        </p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button onClick={() => openMode('manual')} className="pl-btn pl-btn-primary" style={{ gap: 6 }}>
+            <Plus size={14} />
+            Criar curso
+          </button>
+          <button onClick={() => openMode('catalog')} className="pl-btn pl-btn-ghost" style={{ gap: 6 }}>
+            <LibraryBig size={14} />
+            Biblioteca de concursos
+          </button>
+        </div>
+      </div>
 
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginBottom: 40 }}>
         <CreatePlanCard
           icon={PenTool}
           iconWrap="bg-blue-50 text-[#2563EB]"
@@ -432,8 +401,8 @@ export default function Planos({
 
       {myContests.length > 0 && (
         <div className="mb-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="soft-accent rounded-2xl border border-blue-100 p-6 text-slate-900">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">Concurso alvo</p>
+          <div className="pl-card-ai" style={{ padding: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Concurso alvo</p>
             {targetContest ? (
               <>
                 <h3 className="mt-3 text-2xl font-semibold text-blue-900">{targetContest.nome}</h3>
@@ -466,36 +435,22 @@ export default function Planos({
             )}
           </div>
 
-          <div className="section-card p-6">
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="pl-card" style={{ padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Memória do aluno</p>
-                <h3 className="mt-2 text-xl font-semibold text-slate-900">Concursos acompanhados</h3>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Memória do aluno</p>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)' }}>Concursos acompanhados</h3>
               </div>
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500">
-                {myContests.length} itens
-              </span>
+              <span className="pl-tag">{myContests.length} itens</span>
             </div>
 
             <div className="space-y-3">
               {myContests.slice(0, 4).map((contest) => (
-                <div key={contest.id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div key={contest.id} className="pl-card" style={{ padding: 16 }}>
                   <div className="flex flex-wrap gap-2">
-                    {contest.isTarget && (
-                      <span className="rounded-full border border-yellow-100 bg-yellow-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-yellow-700">
-                        Alvo
-                      </span>
-                    )}
-                    {contest.imported && (
-                      <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-                        Importado
-                      </span>
-                    )}
-                    {contest.favorite && (
-                      <span className="rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-700">
-                        Favorito
-                      </span>
-                    )}
+                    {contest.isTarget && <span className="pl-tag pl-tag-warn">Alvo</span>}
+                    {contest.imported && <span className="pl-tag pl-tag-ai">Importado</span>}
+                    {contest.favorite && <span className="pl-tag" style={{ borderColor: 'var(--pl-rule)', color: 'var(--pl-ink-2)' }}>Favorito</span>}
                   </div>
 
                   <p className="mt-3 text-base font-semibold text-slate-900">{contest.nome}</p>
@@ -504,17 +459,15 @@ export default function Planos({
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => onSetTargetContest?.(contest.id)}
-                      className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-                        contest.isTarget
-                          ? 'border border-yellow-200 bg-yellow-50 text-yellow-700'
-                          : 'border border-slate-200 bg-white text-slate-600'
-                      }`}
+                      className="pl-btn pl-btn-ghost"
+                      style={contest.isTarget ? { background: 'var(--pl-accent-soft)', borderColor: 'var(--pl-accent)', color: 'var(--pl-accent)' } : {}}
                     >
                       {contest.isTarget ? 'Alvo atual' : 'Definir como alvo'}
                     </button>
                     <button
                       onClick={() => onOpenContestDetail?.(contest.id)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-900"
+                      className="pl-btn pl-btn-primary"
+                      style={{ gap: 6 }}
                     >
                       Abrir concurso
                       <ArrowRight size={15} />
@@ -527,11 +480,14 @@ export default function Planos({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
         {cursoStats.map((curso) => (
           <div
             key={curso.id}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+            className="pl-card"
+            style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0, transition: 'transform 0.15s, box-shadow 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
           >
             <div
               className="relative flex h-32 items-start justify-between overflow-hidden p-6"
@@ -567,10 +523,8 @@ export default function Planos({
                 )}
               </div>
 
-              <div className="mb-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  {curso.area || 'Geral'}
-                </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                <span className="pl-tag">{curso.area || 'Geral'}</span>
               </div>
 
               <h3 className="mb-1 text-xl font-extrabold tracking-tight text-gray-800">{curso.nome}</h3>
@@ -587,9 +541,7 @@ export default function Planos({
                     </span>
                   ))}
                 {buildCourseMetaChips(curso).length > 3 ? (
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-                    +{buildCourseMetaChips(curso).length - 3}
-                  </span>
+                  <span className="pl-tag">+{buildCourseMetaChips(curso).length - 3}</span>
                 ) : null}
               </div>
 
@@ -598,13 +550,13 @@ export default function Planos({
                 <MetricMiniCard label="Tópicos" value={String(curso.topicosCount)} />
               </div>
 
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Progresso do edital</span>
-                <span className="text-sm font-semibold text-blue-700">{curso.progresso}%</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span className="pl-eyebrow">Progresso do edital</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)' }}>{curso.progresso}%</span>
               </div>
 
-              <div className="mb-6 h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-blue-700" style={{ width: `${curso.progresso}%` }} />
+              <div className="pl-progress" style={{ marginBottom: 20 }}>
+                <div className="pl-progress-bar" style={{ width: `${curso.progresso}%` }} />
               </div>
 
               <button
@@ -612,7 +564,8 @@ export default function Planos({
                   setSelectedCoursePlan?.(curso.plano || 'Todos');
                   setActiveTab('disciplinas');
                 }}
-                className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 py-3 font-semibold text-white transition-colors hover:bg-blue-900"
+                className="pl-btn pl-btn-primary"
+                style={{ marginTop: 'auto', width: '100%', justifyContent: 'center', gap: 8 }}
               >
                 Abrir disciplinas
                 <ArrowRight size={16} />
@@ -622,28 +575,31 @@ export default function Planos({
         ))}
 
         {isAdmin && (
-          <div className="flex min-h-[360px] flex-col justify-between rounded-2xl border border-rose-200 bg-[linear-gradient(180deg,rgba(244,63,94,0.08),rgba(244,63,94,0.03))] p-8 shadow-sm">
+          <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, padding: 28, background: 'linear-gradient(180deg, rgba(244,63,94,0.06) 0%, rgba(244,63,94,0.02) 100%)', borderColor: 'rgba(244,63,94,0.25)' }}>
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-700 shadow-sm">
-                <LibraryBig size={12} />
-                Painel da biblioteca
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+                <span className="pl-tag pl-tag-warn" style={{ gap: 5 }}>
+                  <LibraryBig size={11} />
+                  Painel da biblioteca
+                </span>
               </div>
-              <h4 className="mb-3 text-xl font-semibold text-rose-900">Gerencie a base de concursos</h4>
-              <p className="max-w-sm text-sm font-medium leading-relaxed text-rose-800/80">
+              <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', marginBottom: 8 }}>Gerencie a base de concursos</h4>
+              <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', lineHeight: 1.6, maxWidth: 320 }}>
                 Esse bloco é administrativo. Use-o para alimentar a biblioteca com concursos-base e deixar a importação dos alunos mais rápida.
               </p>
             </div>
 
-            <div className="mt-8 space-y-4">
-              <div className="rounded-2xl border border-rose-100 bg-white/90 p-4 shadow-sm">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-500">Próximo passo</p>
-                <p className="mt-2 text-sm font-semibold text-rose-800/80">
+            <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="pl-card" style={{ padding: 14 }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 6, color: 'rgba(244,63,94,0.9)' }}>Próximo passo</p>
+                <p style={{ fontSize: 12, color: 'var(--pl-ink-2)' }}>
                   Hoje o catálogo ainda é local. Depois, migramos a gestão para o Supabase com cadastro administrativo dedicado.
                 </p>
               </div>
               <button
                 onClick={() => openMode('catalog')}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-3 font-semibold text-white transition-colors hover:bg-rose-800"
+                className="pl-btn pl-btn-primary"
+                style={{ gap: 6, justifyContent: 'center', background: '#be123c', borderColor: '#be123c' }}
               >
                 Abrir biblioteca
                 <ArrowRight size={16} />
@@ -869,41 +825,42 @@ function CreatePlanCard({ icon: Icon, iconWrap, title, text, decorated = false, 
   return (
     <button
       onClick={onClick}
-      className="group relative flex flex-col items-center overflow-hidden rounded-[2rem] border border-gray-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+      className="pl-card"
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden', padding: 24, textAlign: 'center', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
     >
-      {decorated && <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[100px] bg-indigo-100 opacity-60" />}
-      <div className={`relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition-transform group-hover:scale-110 ${iconWrap}`}>
-        <Icon size={28} />
+      {decorated && <div style={{ position: 'absolute', right: 0, top: 0, width: 96, height: 96, borderBottomLeftRadius: 100, background: 'var(--pl-accent-soft)', opacity: 0.6 }} />}
+      <div className={`${iconWrap}`} style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: 14, marginBottom: 14 }}>
+        <Icon size={26} />
       </div>
-      <h3 className="relative z-10 mb-2 text-lg font-bold text-gray-800">{title}</h3>
-      <p className="relative z-10 text-sm font-medium text-gray-500">{text}</p>
+      <h3 style={{ position: 'relative', zIndex: 1, fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 6 }}>{title}</h3>
+      <p style={{ position: 'relative', zIndex: 1, fontSize: 13, color: 'var(--pl-ink-2)' }}>{text}</p>
     </button>
   );
 }
 
 function MetricMiniCard({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-      <p className="mb-1 text-[10px] font-bold uppercase text-gray-400">{label}</p>
-      <p className="text-lg font-semibold leading-none text-gray-700">{value}</p>
+    <div style={{ borderRadius: 10, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '10px 12px' }}>
+      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
+      <p className="pl-num" style={{ fontSize: 18, color: 'var(--pl-ink)' }}>{value}</p>
     </div>
   );
 }
 
 function ModalShell({ title, subtitle, children, onClose }) {
   return (
-    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl">
-        <div className="mb-0 flex items-start justify-between gap-4 border-b border-gray-100 p-6">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,20,30,0.55)', padding: 16, backdropFilter: 'blur(4px)' }}>
+      <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', maxHeight: '88vh', width: '100%', maxWidth: 800, overflow: 'hidden', padding: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid var(--pl-rule)', padding: 24 }}>
           <div>
-            <h3 className="text-2xl font-semibold text-slate-900">{title}</h3>
-            <p className="mt-2 text-sm font-medium text-gray-500">{subtitle}</p>
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</h3>
+            <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{subtitle}</p>
           </div>
-          <button onClick={onClose} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
-            Fechar
-          </button>
+          <button onClick={onClose} className="pl-btn pl-btn-ghost">Fechar</button>
         </div>
-        <div className="custom-scrollbar overflow-y-auto p-6">{children}</div>
+        <div className="custom-scrollbar" style={{ overflowY: 'auto', padding: 24 }}>{children}</div>
       </div>
     </div>
   );
@@ -912,12 +869,13 @@ function ModalShell({ title, subtitle, children, onClose }) {
 function InputField({ label, value, onChange, placeholder = '' }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</label>
+      <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-gray-200 bg-gray-50/60 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+        className="pl-input"
+        style={{ width: '100%' }}
       />
     </div>
   );
@@ -928,7 +886,8 @@ function PrimaryButton({ children, onClick, disabled = false }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+      className="pl-btn pl-btn-primary"
+      style={{ gap: 6 }}
     >
       {children}
     </button>
@@ -940,7 +899,7 @@ function SecondaryButton({ children, onClick, disabled = false }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+      className="pl-btn pl-btn-ghost"
     >
       {children}
     </button>

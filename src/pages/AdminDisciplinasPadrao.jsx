@@ -108,7 +108,7 @@ export default function AdminDisciplinasPadrao({
   };
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-paper-bg" style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24, padding: '28px 28px 48px' }}>
       {feedback.message ? (
         <div
           role="status"

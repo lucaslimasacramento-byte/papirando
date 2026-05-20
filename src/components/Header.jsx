@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bell, Cpu, LogOut, Menu, ShieldAlert, UserCircle2 } from 'lucide-react';
+import { Bell, Cpu, LogOut, Menu, Search, ShieldAlert, UserCircle2 } from 'lucide-react';
 import { checkAiHealth } from '../lib/aiClient';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
@@ -45,15 +45,12 @@ export default function Header({
 
   useEffect(() => {
     let ignore = false;
-
     const refreshStatus = async () => {
       const status = await checkAiHealth();
       if (!ignore) setAiStatus(status);
     };
-
     refreshStatus();
     const intervalId = window.setInterval(refreshStatus, 60000);
-
     return () => {
       ignore = true;
       window.clearInterval(intervalId);
@@ -61,105 +58,196 @@ export default function Header({
   }, []);
 
   const aiOnline = aiStatus?.provider && aiStatus.provider !== 'offline';
-  const aiTooltip = aiOnline ? 'Serviço de IA disponível' : 'Serviço de IA indisponível';
+
+  const breadcrumb = (() => {
+    const key = String(activeTab || 'home');
+    if (key.startsWith('admin_')) return 'Admin / ' + formatTitle(key);
+    if (key === 'home') return 'Início / Dashboard';
+    if (key === 'questoes') return 'Prática / Questões';
+    return formatTitle(key);
+  })();
 
   return (
-    <header className="relative sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/90 px-3 backdrop-blur-md sm:px-4 md:px-5">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        {typeof onOpenMobileNav === 'function' ? (
-          <button
-            type="button"
-            onClick={onOpenMobileNav}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 lg:hidden"
-            aria-label="Abrir menu"
-          >
-            <Menu size={18} strokeWidth={2} />
-          </button>
-        ) : null}
+    <header style={{
+      height: 52, flex: '0 0 52px',
+      display: 'flex', alignItems: 'center', gap: 14,
+      padding: '0 20px',
+      borderBottom: '1px solid var(--pl-rule-2)',
+      background: 'var(--pl-surface)',
+      position: 'sticky', top: 0, zIndex: 30,
+    }}>
+      {/* Mobile nav toggle */}
+      {typeof onOpenMobileNav === 'function' && (
+        <button
+          type="button"
+          onClick={onOpenMobileNav}
+          style={{
+            width: 32, height: 32, border: '1px solid var(--pl-rule-strong)',
+            borderRadius: 6, background: 'transparent', cursor: 'pointer',
+            alignItems: 'center', justifyContent: 'center',
+            color: 'var(--pl-ink-3)',
+          }}
+          className="inline-flex lg:!hidden"
+          aria-label="Abrir menu"
+        >
+          <Menu size={16} strokeWidth={1.75} />
+        </button>
+      )}
 
-        <div className="min-w-0">
-          <p className="text-2xs font-semibold uppercase tracking-wider text-slate-400">Área logada</p>
-          <h1 className="truncate text-base font-semibold tracking-tight text-slate-900 md:text-[1.05rem]">
-            {formatTitle(activeTab)}
-          </h1>
-        </div>
-
-        {!profileHasValidCpf ? (
+      {/* Breadcrumb */}
+      <div className="pl-eyebrow" style={{ fontSize: 10, minWidth: 0, flex: 1 }}>
+        {breadcrumb}
+        {!profileHasValidCpf && (
           <button
             type="button"
             onClick={onOpenProfile}
-            className="hidden items-center gap-1.5 rounded-lg border border-amber-200/90 bg-amber-50 px-2 py-1.5 text-2xs font-semibold text-amber-900 xl:inline-flex"
+            style={{
+              marginLeft: 12, display: 'inline-flex', alignItems: 'center', gap: 4,
+              border: '1px solid var(--pl-warn-soft)', borderRadius: 4,
+              background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)',
+              padding: '2px 7px', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+            }}
           >
-            <ShieldAlert size={12} strokeWidth={2} />
+            <ShieldAlert size={10} strokeWidth={2} />
             CPF pendente
           </button>
-        ) : null}
+        )}
       </div>
 
-      <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
-        {typeof onOpenAssinatura === 'function' ? (
-          <SubscriptionPlanSeal planId={subscriptionPlan} onClick={onOpenAssinatura} />
-        ) : null}
+      {/* Search */}
+      <div style={{ position: 'relative', width: 240 }} className="hidden md:block">
+        <Search size={13} style={{
+          position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+          color: 'var(--pl-ink-4)', pointerEvents: 'none',
+        }} />
+        <input
+          className="pl-input"
+          placeholder="Buscar…"
+          style={{ width: '100%', paddingLeft: 30, height: 32, fontSize: 12.5 }}
+        />
+      </div>
 
+      {/* Right actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        {typeof onOpenAssinatura === 'function' && (
+          <SubscriptionPlanSeal planId={subscriptionPlan} onClick={onOpenAssinatura} />
+        )}
+
+        {/* AI status pill */}
         <div
-          title={aiTooltip}
-          className="hidden items-center gap-1 rounded-md border border-slate-200/90 bg-slate-50/90 px-2 py-1.5 text-2xs font-medium text-slate-600 md:inline-flex"
+          title={aiOnline ? 'Serviço de IA disponível' : 'Serviço de IA indisponível'}
+          style={{
+            display: 'none',
+            alignItems: 'center', gap: 5,
+            height: 28, padding: '0 10px', borderRadius: 6,
+            border: '1px solid var(--pl-rule-strong)',
+            background: 'var(--pl-surface-2)',
+            fontSize: 11.5, fontWeight: 600, color: 'var(--pl-ink-3)',
+            cursor: 'default',
+          }}
+          className="md:!flex"
         >
-          <Cpu size={13} strokeWidth={2} className="shrink-0 text-slate-400" />
+          <Cpu size={12} strokeWidth={1.75} />
           <span
-            className={`h-1.5 w-1.5 shrink-0 rounded-full ${aiOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}
+            style={{
+              width: 6, height: 6, borderRadius: 999,
+              background: aiOnline ? 'var(--pl-success)' : 'var(--pl-ink-5)',
+            }}
           />
           <span className="hidden lg:inline">{aiOnline ? 'IA ativa' : 'IA off'}</span>
         </div>
 
+        {/* Notifications */}
+        <button
+          type="button"
+          onClick={() => setIsNotificationsOpen((p) => !p)}
+          style={{
+            width: 32, height: 32, border: '1px solid var(--pl-rule-strong)',
+            borderRadius: 6, background: 'var(--pl-surface)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--pl-ink-2)', position: 'relative',
+          }}
+          aria-label="Notificações"
+        >
+          {notifications.length > 0 && (
+            <span style={{
+              position: 'absolute', top: 5, right: 6,
+              width: 6, height: 6, borderRadius: 999, background: 'var(--pl-warn)',
+            }} />
+          )}
+          <Bell size={15} strokeWidth={1.75} />
+        </button>
+
+        {/* Profile */}
         <button
           type="button"
           onClick={onOpenProfile}
-          className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 md:inline-flex"
+          style={{
+            display: 'none',
+            alignItems: 'center', gap: 7,
+            height: 32, padding: '0 10px', borderRadius: 6,
+            border: '1px solid var(--pl-rule-strong)',
+            background: 'var(--pl-surface)', cursor: 'pointer',
+            fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)',
+            maxWidth: 160, overflow: 'hidden',
+          }}
+          className="md:!flex"
         >
-          <UserCircle2 size={16} strokeWidth={2} />
-          <span className="max-w-[120px] truncate lg:max-w-[160px]">{displayName}</span>
+          <UserCircle2 size={14} strokeWidth={1.75} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {displayName}
+          </span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setIsNotificationsOpen((prev) => !prev)}
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800"
-          aria-expanded={isNotificationsOpen}
-          aria-label="Notificações"
-        >
-          {notifications.length > 0 ? (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-blue-700 px-1 text-[9px] font-semibold text-white">
-              {notifications.length}
-            </span>
-          ) : null}
-          <Bell size={17} strokeWidth={2} />
-        </button>
-
+        {/* Logout */}
         <button
           type="button"
           onClick={onLogout}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-800"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            height: 32, padding: '0 10px', borderRadius: 6,
+            border: '1px solid var(--pl-rule-strong)',
+            background: 'var(--pl-surface)', cursor: 'pointer',
+            fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)',
+            transition: 'border-color 0.1s, color 0.1s',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pl-danger)'; e.currentTarget.style.color = 'var(--pl-danger)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--pl-rule-strong)'; e.currentTarget.style.color = 'var(--pl-ink-2)'; }}
         >
-          <LogOut size={15} strokeWidth={2} />
+          <LogOut size={13} strokeWidth={1.75} />
           <span className="hidden sm:inline">Sair</span>
         </button>
       </div>
 
-      {isNotificationsOpen ? (
-        <div className="absolute left-3 right-3 top-full z-40 mt-2 max-h-[min(420px,70vh)] overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-float sm:left-auto sm:right-4 sm:w-full sm:max-w-sm">
-          <div className="border-b border-slate-100 px-4 py-3">
-            <p className="text-2xs font-semibold uppercase tracking-wider text-slate-400">Lembretes</p>
-            <h3 className="mt-0.5 text-sm font-semibold text-slate-900">Próximos alertas</h3>
+      {/* Notifications dropdown */}
+      {isNotificationsOpen && (
+        <div style={{
+          position: 'absolute', right: 16, top: '100%', marginTop: 6,
+          width: 320, maxHeight: 400,
+          background: 'var(--pl-surface)',
+          border: '1px solid var(--pl-rule-2)',
+          borderRadius: 8, boxShadow: 'var(--pl-sh-mid)',
+          zIndex: 40, overflow: 'hidden',
+        }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--pl-rule)' }}>
+            <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>Lembretes</div>
+            <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
+              Próximos alertas
+            </p>
           </div>
-
-          <div className="scrollbar-thin max-h-[min(340px,55vh)] overflow-y-auto p-3">
+          <div style={{ maxHeight: 320, overflowY: 'auto', padding: 10 }}>
             {notifications.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-center text-sm text-slate-500">
+              <div style={{
+                padding: '20px 16px', textAlign: 'center',
+                fontSize: 13, color: 'var(--pl-ink-3)',
+                border: '1px dashed var(--pl-rule-2)', borderRadius: 6,
+                background: 'var(--pl-bg-soft)',
+              }}>
                 Nenhum lembrete no momento.
               </div>
             ) : (
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {notifications.map((item) => (
                   <button
                     key={item.id}
@@ -168,26 +256,29 @@ export default function Header({
                       setIsNotificationsOpen(false);
                       onOpenNotification?.(item.contestId);
                     }}
-                    className="w-full rounded-lg border border-slate-100 bg-white px-3 py-2.5 text-left text-sm transition hover:border-slate-200 hover:bg-slate-50"
+                    className="pl-card"
+                    style={{
+                      width: '100%', padding: '10px 12px', cursor: 'pointer',
+                      textAlign: 'left', display: 'flex', justifyContent: 'space-between',
+                      alignItems: 'flex-start', gap: 10,
+                    }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium text-slate-900">{item.title}</p>
-                        <p className="mt-0.5 text-sm leading-snug text-slate-500">{item.text}</p>
-                      </div>
-                      {item.date ? (
-                        <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-2xs font-medium text-slate-600">
-                          {String(item.date).split('-').reverse().join('/')}
-                        </span>
-                      ) : null}
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{item.title}</p>
+                      <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', margin: '2px 0 0', lineHeight: 1.4 }}>{item.text}</p>
                     </div>
+                    {item.date && (
+                      <span className="pl-tag" style={{ flexShrink: 0 }}>
+                        {String(item.date).split('-').reverse().join('/')}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             )}
           </div>
         </div>
-      ) : null}
+      )}
     </header>
   );
 }

@@ -26,8 +26,6 @@ import {
   DEFAULT_AUDIOBOOK_PLAYBACK_RATE,
   SEEK_INTERVAL_SECONDS,
 } from '../lib/audiobooks';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
-
 function formatClock(seconds) {
   const safeSeconds = Math.max(0, Math.floor(Number(seconds || 0)));
   const hours = Math.floor(safeSeconds / 3600);
@@ -477,7 +475,7 @@ export default function Audiobooks(props) {
   ];
 
   return (
-    <div className="page-shell animate-in fade-in duration-500 gap-6 !pt-4 sm:!pt-5">
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <audio
         ref={audioRef}
         preload="metadata"
@@ -486,36 +484,26 @@ export default function Audiobooks(props) {
         onEnded={handleTrackEnd}
       />
 
-      <PageHeadPremium
-        icon={AudioLines}
-        badge={
-          <PageHeadPremiumBadge icon={Headphones}>
-            Aprendizado passivo
-          </PageHeadPremiumBadge>
-        }
-        title="Audiolivros em Lei Seca"
-        subtitle="Biblioteca, player, favoritos e retomada ligados ao seu perfil e às disciplinas. O catálogo pode ser trocado pelo admin (URLs de áudio reais); até lá, as faixas usam arquivos de demonstração."
-        stats={[
-          { key: 'listened', icon: Waves, label: 'Tempo ouvido', value: formatListeningHours(totalListenedSeconds), accent: 'blue' },
-          {
-            key: 'lib',
-            icon: Library,
-            label: 'Biblioteca',
-            value: String(library.length).padStart(2, '0'),
-            accent: 'indigo',
-            valueClassName: 'text-amber-300',
-          },
-          {
-            key: 'fav',
-            icon: Star,
-            label: 'Favoritos',
-            value: String(favorites.length).padStart(2, '0'),
-            accent: 'emerald',
-            className: 'col-span-2 sm:col-span-1',
-          },
-        ]}
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:min-w-[380px]"
-      />
+      {/* ── Hero ── */}
+      <div>
+        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Aprendizado passivo</p>
+        <h1 className="pl-display" style={{ marginBottom: 12 }}>Audiolivros em Lei Seca.</h1>
+        <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 520, marginBottom: 20 }}>
+          Biblioteca, player, favoritos e retomada ligados ao seu perfil e às disciplinas.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 480 }}>
+          {[
+            { label: 'Tempo ouvido', value: formatListeningHours(totalListenedSeconds) },
+            { label: 'Biblioteca', value: String(library.length).padStart(2, '0') },
+            { label: 'Favoritos', value: String(favorites.length).padStart(2, '0') },
+          ].map((s) => (
+            <div key={s.label} className="pl-card" style={{ padding: '12px 16px' }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{s.label}</p>
+              <p className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
         <div className="flex flex-col gap-6">

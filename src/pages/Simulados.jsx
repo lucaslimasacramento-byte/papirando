@@ -24,7 +24,6 @@ import {
   formatMinutesLabel,
   parseStudyTimeToMinutes,
 } from '../lib/studyAnalytics';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function Simulados({
   openSimuladoReviewModal,
@@ -182,94 +181,50 @@ export default function Simulados({
   const displayBest = realStats.melhorDesempenho > 0 ? realStats.melhorDesempenho : summary.best?.accuracy || 0;
 
   return (
-    <div className="page-shell flex animate-in fade-in duration-500 flex-col gap-4 !pt-4 sm:!pt-5 lg:gap-5">
-      <PageHeadPremium
-        className="shrink-0"
-        icon={ListChecks}
-        leadingClassName="xl:!max-w-[min(100%,26rem)] xl:!flex-none"
-        trailingClassName="xl:!w-full xl:!max-w-none xl:min-w-0 xl:flex-1"
-        title="Simulados"
-        subtitle="Registre resultados de simulados externos, monte provas no caderno e acompanhe evolução com base no seu histórico real."
-        trailing={
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:gap-2.5">
-            <PageHeadPremiumBadge icon={PieChart} className="!mb-0 w-fit shrink-0">
-              Prática em prova
-            </PageHeadPremiumBadge>
-            <div className="scrollbar-thin flex min-w-0 w-full flex-1 items-stretch gap-2 overflow-x-auto pb-0.5 sm:min-w-0 sm:gap-2.5 sm:overflow-visible sm:pb-0">
-              <KpiChip
-                Icon={FileText}
-                iconWrap="bg-blue-50 text-blue-600"
-                label="Realizados"
-                value={String(displayTotal)}
-                suffix="registros"
-                variant="premium"
-              />
-              <KpiChip
-                Icon={BarChart2}
-                iconWrap="bg-emerald-50 text-emerald-600"
-                label="Média geral"
-                value={String(displayAverage)}
-                suffix="%"
-                valueClass="text-emerald-700"
-                variant="premium"
-                premiumValueClass="text-emerald-200"
-              />
-              <KpiChip
-                Icon={Award}
-                iconWrap="bg-amber-50 text-amber-600"
-                label="Melhor nota"
-                value={String(displayBest)}
-                suffix="%"
-                valueClass="text-amber-800"
-                variant="premium"
-                premiumValueClass="text-amber-200"
-              />
-            </div>
-          </div>
-        }
-      />
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '28px 28px 56px' }}>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => openSimuladoReviewModal?.('novo')} className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-sm sm:text-sm">
-          <PlusSquare size={16} strokeWidth={2.2} />
-          Registrar resultado
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsCadernoModalOpen(true)}
-          className="btn-secondary inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm sm:text-sm"
-        >
-          <Settings size={16} strokeWidth={2.2} />
-          Montar no caderno
-        </button>
-        <button
-          type="button"
-          onClick={() => openHistoricoWithFilter?.('simulados')}
-          className="btn-secondary inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm sm:text-sm"
-        >
-          <History size={16} strokeWidth={2.2} />
-          Ver no histórico
-        </button>
-        <button
-          type="button"
-          onClick={() => setRankingOpen(true)}
-          className="group relative inline-flex animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45"
-        >
-          <span className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[11px] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-5 py-2.5 sm:gap-2.5 sm:rounded-[11px] sm:px-6 sm:py-3">
-            <span
-              className="pointer-events-none absolute inset-y-0 left-0 w-[45%] -translate-x-full skew-x-[-16deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-90 animate-rankingCtaShimmer"
-              aria-hidden
-            />
-            <Trophy
-              className="relative z-10 size-4 shrink-0 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:size-[18px]"
-              strokeWidth={2}
-            />
-            <span className="relative z-10 text-sm font-semibold tracking-wide text-white sm:text-[15px]">Ranking</span>
-            <span className="relative z-10 inline-flex rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-100/95 sm:px-2 sm:text-[9px]">
-              Top
-            </span>
-          </span>
-        </button>
+      {/* Hero */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+        <div>
+          <div className="pl-eyebrow" style={{ marginBottom: 6 }}>Prática em prova</div>
+          <h1 className="pl-display" style={{ fontSize: 38, margin: 0 }}>Seus simulados.</h1>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button type="button" className="pl-btn pl-btn-ghost" onClick={() => openHistoricoWithFilter?.('simulados')}>
+            <History size={13} /> Histórico
+          </button>
+          <button type="button" className="pl-btn pl-btn-ghost" onClick={() => setIsCadernoModalOpen(true)}>
+            <Settings size={13} /> Caderno
+          </button>
+          {/* Ranking — keeps special gradient styling */}
+          <button
+            type="button"
+            onClick={() => setRankingOpen(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              height: 34, padding: '0 14px', borderRadius: 8, border: 0, cursor: 'pointer',
+              background: 'linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 100%)',
+              color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
+            }}
+          >
+            <Trophy size={13} style={{ color: '#fbbf24' }} />
+            Ranking
+            <span style={{
+              fontSize: 9, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
+              background: 'rgba(255,255,255,0.15)', borderRadius: 4, padding: '1px 5px',
+            }}>Top</span>
+          </button>
+          <button type="button" className="pl-btn pl-btn-primary" onClick={() => openSimuladoReviewModal?.('novo')}>
+            <PlusSquare size={13} /> Registrar resultado
+          </button>
+        </div>
+      </div>
+
+      {/* KPI strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <PlKpi label="Realizados" value={String(displayTotal)} sub="simulados registrados" icon={FileText} />
+        <PlKpi label="Média geral" value={`${displayAverage}%`} sub="desempenho médio" icon={BarChart2} />
+        <PlKpi label="Melhor nota" value={`${displayBest}%`} sub="máximo registrado" icon={Award} />
       </div>
 
       <SimuladosRankingPanel
@@ -282,13 +237,12 @@ export default function Simulados({
         communityMetrics={communityMetrics}
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,360px)] xl:gap-5">
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 16, alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <PathwayCard
               onAction={() => openSimuladoReviewModal?.('novo')}
               badge="Fluxo rápido"
-              badgeClass="border-blue-200 bg-blue-50 text-blue-700"
               title="Registrar prova externa"
               description="Lançar acertos, erros, brancos, tempo e banca — ideal para simulados de cursinho ou PDF."
               meta={[
@@ -300,7 +254,6 @@ export default function Simulados({
             <PathwayCard
               onAction={() => setIsCadernoModalOpen(true)}
               badge="Personalizado"
-              badgeClass="border-emerald-200 bg-emerald-50 text-emerald-800"
               title="Montar prova no caderno"
               description="Combine questões do banco em uma prova sob medida e registre o desempenho depois."
               meta={[
@@ -312,96 +265,76 @@ export default function Simulados({
             />
           </div>
 
-          <section className="section-card !p-0 overflow-hidden">
-            <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule)', padding: '14px 18px' }}>
               <div>
-                <h3 className="text-sm font-semibold text-slate-900 sm:text-base">Histórico de simulados</h3>
-                <p className="mt-0.5 text-xs font-medium text-slate-500">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Histórico de simulados</div>
+                <div style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', marginTop: 2 }}>
                   {filteredHistory.length} de {groupedSimulados.length} exibidos
-                </p>
+                </div>
               </div>
-              <div className="relative min-w-0 sm:max-w-xs sm:flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <div style={{ position: 'relative', maxWidth: 240 }}>
+                <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-4)', pointerEvents: 'none' }} />
                 <input
                   type="search"
                   value={historyQuery}
                   onChange={(e) => setHistoryQuery(e.target.value)}
-                  placeholder="Buscar por nome, banca ou data..."
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs font-semibold text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white sm:text-sm"
+                  placeholder="Buscar por nome, banca…"
+                  className="pl-input"
+                  style={{ paddingLeft: 30, height: 32, fontSize: 12.5, width: '100%' }}
                 />
               </div>
             </div>
 
             {filteredHistory.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center">
-                <ClipboardList className="text-slate-300" size={36} strokeWidth={1.5} />
-                <p className="text-sm font-semibold text-slate-700">
+              <div style={{ padding: '48px 20px', textAlign: 'center' }}>
+                <ClipboardList size={28} style={{ color: 'var(--pl-ink-4)', margin: '0 auto 10px' }} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)', marginBottom: 6 }}>
                   {groupedSimulados.length === 0 ? 'Nenhum simulado registrado ainda' : 'Nenhum resultado para a busca'}
-                </p>
-                <p className="max-w-sm text-xs font-medium text-slate-500">
+                </div>
+                <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
                   {groupedSimulados.length === 0
-                    ? 'Use “Registrar resultado” para lançar sua primeira prova. Os dados ficam salvos na sua conta.'
-                    : 'Ajuste os termos da busca ou limpe o campo para ver todos os registros.'}
-                </p>
+                    ? 'Use "Registrar resultado" para lançar sua primeira prova.'
+                    : 'Ajuste os termos da busca.'}
+                </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-sm">
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', minWidth: 600, borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/80 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                      <th className="px-4 py-2.5 sm:px-5">Data</th>
-                      <th className="px-4 py-2.5 sm:px-5">Prova</th>
-                      <th className="px-4 py-2.5 sm:px-5">Banca</th>
-                      <th className="px-4 py-2.5 text-center sm:px-5">Desemp.</th>
-                      <th className="px-4 py-2.5 text-center sm:px-5">Questões</th>
-                      <th className="px-4 py-2.5 sm:px-5">Tempo</th>
-                      <th className="px-4 py-2.5 text-right sm:px-5"> </th>
+                    <tr style={{ borderBottom: '1px solid var(--pl-rule)' }}>
+                      {['Data', 'Prova', 'Banca', 'Desemp.', 'Questões', 'Tempo', ''].map((col) => (
+                        <th key={col} className="pl-eyebrow" style={{
+                          fontSize: 9.5, textAlign: 'left', padding: '9px 13px',
+                          background: 'var(--pl-bg-soft)',
+                        }}>{col}</th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody>
                     {filteredHistory.map((row) => (
-                      <tr key={row.id} className="bg-white transition-colors hover:bg-slate-50/80">
-                        <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-600 sm:px-5 sm:text-sm">
+                      <tr key={row.id} style={{ borderBottom: '1px solid var(--pl-rule)' }}>
+                        <td style={{ padding: '11px 13px', whiteSpace: 'nowrap', fontSize: 12, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
                           {formatDate(row.date)}
                         </td>
-                        <td className="max-w-[200px] px-4 py-3 sm:max-w-[240px] sm:px-5">
-                          <p className="truncate font-semibold text-slate-900" title={row.title}>
-                            {row.title}
-                          </p>
-                          {row.comentarios ? (
-                            <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-slate-400">{row.comentarios}</p>
-                          ) : null}
+                        <td style={{ padding: '11px 13px', maxWidth: 200 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={row.title}>{row.title}</div>
+                          {row.comentarios && <div style={{ fontSize: 11, color: 'var(--pl-ink-4)', marginTop: 2 }}>{row.comentarios}</div>}
                         </td>
-                        <td className="px-4 py-3 text-xs font-medium text-slate-600 sm:px-5 sm:text-sm">
-                          {row.banca || '—'}
+                        <td style={{ padding: '11px 13px', fontSize: 12, color: 'var(--pl-ink-2)' }}>{row.banca || '—'}</td>
+                        <td style={{ padding: '11px 13px', textAlign: 'center' }}>
+                          <AccuracyBadge value={row.accuracy} />
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-flex min-w-[2.75rem] justify-center rounded-full border px-2 py-0.5 text-xs font-semibold ${accuracyPillClass(row.accuracy)}`}
-                          >
-                            {row.accuracy}%
+                        <td style={{ padding: '11px 13px', textAlign: 'center' }}>
+                          <span className="pl-num" style={{ fontSize: 14 }} title={row.questions > 0 ? `${row.acertos} acertos · ${row.erros} erros · ${row.brancos} brancos` : undefined}>
+                            {row.questions > 0 ? row.questions : '—'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center text-xs font-semibold tabular-nums text-slate-700 sm:text-sm">
-                          {row.questions > 0 ? (
-                            <span title={`${row.acertos} acertos · ${row.erros} erros · ${row.brancos} brancos`}>
-                              {row.questions}
-                            </span>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-xs font-medium text-slate-600 sm:px-5 sm:text-sm">
-                          {row.tempo || '—'}
-                        </td>
-                        <td className="px-4 py-3 text-right sm:px-5">
-                          <button
-                            type="button"
-                            onClick={() => openSimuladoReviewModal?.(row.id)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50 sm:text-xs"
-                          >
-                            Revisar
-                            <ChevronRight size={14} />
+                        <td style={{ padding: '11px 13px', fontSize: 12, color: 'var(--pl-ink-2)', whiteSpace: 'nowrap' }}>{row.tempo || '—'}</td>
+                        <td style={{ padding: '11px 13px', textAlign: 'right' }}>
+                          <button type="button" className="pl-btn pl-btn-ghost" style={{ height: 28, fontSize: 12, padding: '0 10px' }}
+                            onClick={() => openSimuladoReviewModal?.(row.id)}>
+                            Revisar <ChevronRight size={12} />
                           </button>
                         </td>
                       </tr>
@@ -410,175 +343,147 @@ export default function Simulados({
                 </table>
               </div>
             )}
-          </section>
+          </div>
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-4">
-          <div className="section-card !p-4 sm:!p-5">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              <TrendingUp size={16} className="text-blue-600" />
-              Evolução por matéria
-            </h4>
-            <div className="space-y-4">
-              {disciplineProgress.length === 0 ? (
-                <p className="text-xs font-medium leading-relaxed text-slate-500">
-                  Quando houver simulados com disciplinas no histórico, o desempenho médio aparece aqui.
-                </p>
-              ) : (
-                disciplineProgress.map((item) => (
-                  <ProgressRow
-                    key={item.name}
-                    label={item.name}
-                    value={`${item.accuracy}%`}
-                    width={`${Math.min(100, item.accuracy)}%`}
-                    color={item.accuracy >= 80 ? 'bg-emerald-500' : item.accuracy >= 65 ? 'bg-blue-600' : 'bg-amber-500'}
-                    textColor={item.accuracy >= 80 ? 'text-emerald-600' : item.accuracy >= 65 ? 'text-blue-700' : 'text-amber-700'}
-                  />
-                ))
-              )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Evolução por matéria */}
+          <div className="pl-card" style={{ padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <TrendingUp size={13} style={{ color: 'var(--pl-accent)' }} />
+              <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Evolução por matéria</span>
             </div>
+            {disciplineProgress.length === 0 ? (
+              <p style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', lineHeight: 1.5 }}>
+                Quando houver simulados com disciplinas no histórico, o desempenho médio aparece aqui.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {disciplineProgress.map((item) => {
+                  const barColor = item.accuracy >= 80 ? 'var(--pl-success)' : item.accuracy >= 65 ? 'var(--pl-accent)' : 'var(--pl-warn)';
+                  return (
+                    <div key={item.name}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, gap: 8 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
+                        <span className="pl-num" style={{ fontSize: 13, color: barColor, flexShrink: 0 }}>{item.accuracy}%</span>
+                      </div>
+                      <div className="pl-progress">
+                        <div className="pl-progress-bar" style={{ width: `${Math.min(100, item.accuracy)}%`, background: barColor }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          <div className="section-card !p-4 sm:!p-5">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              <History size={16} className="text-blue-600" />
-              Último simulado
-            </h4>
-
+          {/* Último simulado */}
+          <div className="pl-card" style={{ padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <History size={13} style={{ color: 'var(--pl-accent)' }} />
+              <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Último simulado</span>
+            </div>
             {latestSimulado ? (
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60">
-                <div className="border-b border-slate-100 bg-white px-4 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Realizado em {formatDate(latestSimulado.date)}</p>
-                  <h5 className="mt-1 text-sm font-semibold leading-snug text-slate-900 sm:text-base">{latestSimulado.title}</h5>
-                  {latestSimulado.banca ? (
-                    <p className="mt-1 text-xs font-medium text-slate-500">Banca: {latestSimulado.banca}</p>
-                  ) : null}
+              <div>
+                <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 4 }}>Realizado em {formatDate(latestSimulado.date)}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 4 }}>{latestSimulado.title}</div>
+                {latestSimulado.banca && <div style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginBottom: 12 }}>Banca: {latestSimulado.banca}</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 12 }}>
+                  {[['Acertos', latestSimulado.acertos, 'var(--pl-success)'], ['Erros', latestSimulado.erros, 'var(--pl-danger)'], ['Brancos', latestSimulado.brancos, 'var(--pl-ink-4)']].map(([lbl, val, clr]) => (
+                    <div key={lbl} style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--pl-bg-soft)', borderRadius: 6 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: clr, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{lbl}</div>
+                      <div className="pl-num" style={{ fontSize: 16 }}>{val}</div>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="grid grid-cols-3 gap-2 border-b border-slate-100 p-3">
-                  <MiniMetric label="Acertos" value={String(latestSimulado.acertos)} labelClass="text-emerald-600" />
-                  <MiniMetric label="Erros" value={String(latestSimulado.erros)} labelClass="text-rose-600" />
-                  <MiniMetric label="Brancos" value={String(latestSimulado.brancos)} labelClass="text-slate-400" />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--pl-bg-soft)', borderRadius: 6, marginBottom: 12 }}>
+                  <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Nota líquida</span>
+                  <span className="pl-num" style={{ fontSize: 20, color: 'var(--pl-success)' }}>{latestSimulado.notaLiquida}</span>
                 </div>
-
-                <div className="flex items-center justify-between bg-emerald-50/80 px-4 py-2.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-800">Nota líquida</span>
-                  <span className="text-lg font-semibold tabular-nums text-emerald-700">{latestSimulado.notaLiquida}</span>
-                </div>
-
-                <div className="grid gap-2 p-3 sm:grid-cols-2">
-                  <button type="button" onClick={() => openSimuladoReviewModal?.(latestSimulado.id)} className="btn-primary rounded-lg py-2.5 text-xs font-semibold">
-                    Revisar detalhes
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <button type="button" className="pl-btn pl-btn-primary" style={{ justifyContent: 'center', fontSize: 12 }} onClick={() => openSimuladoReviewModal?.(latestSimulado.id)}>
+                    Revisar
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => openHistoricoWithFilter?.('simulados')}
-                    className="btn-secondary rounded-lg border border-slate-200 py-2.5 text-xs font-semibold text-slate-700"
-                  >
-                    Linha do tempo
+                  <button type="button" className="pl-btn pl-btn-ghost" style={{ justifyContent: 'center', fontSize: 12 }} onClick={() => openHistoricoWithFilter?.('simulados')}>
+                    Histórico
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-xs font-medium text-slate-500">
+              <div style={{ padding: '24px 12px', textAlign: 'center', border: '1px dashed var(--pl-rule-2)', borderRadius: 8, fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
                 Nenhum simulado registrado ainda.
               </div>
             )}
           </div>
 
-          <div className="section-card !p-4 sm:!p-5">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              <PieChart size={16} className="text-blue-600" />
-              Resumo operacional
-            </h4>
-            <div className="space-y-2">
-              <InfoRowLight label="Registros fechados" value={String(displayTotal)} />
-              <InfoRowLight label="Questões contabilizadas" value={String(summary.totalQuestions)} />
-              <InfoRowLight label="Média atual" value={`${displayAverage}%`} />
-              <InfoRowLight label="Melhor desempenho" value={`${displayBest}%`} />
+          {/* Resumo */}
+          <div className="pl-card" style={{ padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <PieChart size={13} style={{ color: 'var(--pl-accent)' }} />
+              <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Resumo operacional</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                ['Registros fechados', String(displayTotal)],
+                ['Questões contabilizadas', String(summary.totalQuestions)],
+                ['Média atual', `${displayAverage}%`],
+                ['Melhor desempenho', `${displayBest}%`],
+              ].map(([label, value]) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--pl-bg-soft)', borderRadius: 6 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{label}</span>
+                  <span className="pl-num" style={{ fontSize: 14 }}>{value}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </aside>
+        </div>
       </div>
     </div>
   );
 }
 
-function accuracyPillClass(accuracy) {
-  if (accuracy >= 80) return 'border-emerald-200 bg-emerald-50 text-emerald-800';
-  if (accuracy >= 65) return 'border-blue-200 bg-blue-50 text-blue-800';
-  if (accuracy <= 0) return 'border-slate-200 bg-slate-50 text-slate-600';
-  return 'border-amber-200 bg-amber-50 text-amber-900';
-}
-
-function kpiIconPremium(iconWrap) {
-  if (iconWrap.includes('blue-50')) return 'bg-blue-500/20 text-blue-300';
-  if (iconWrap.includes('emerald-50')) return 'bg-emerald-500/20 text-emerald-300';
-  if (iconWrap.includes('amber-50')) return 'bg-amber-500/20 text-amber-200';
-  return 'bg-white/15 text-slate-200';
-}
-
-function KpiChip({
-  Icon,
-  iconWrap,
-  label,
-  value,
-  suffix,
-  valueClass = 'text-slate-900',
-  variant = 'light',
-  premiumValueClass,
-}) {
-  if (variant === 'premium') {
-    const vCls = premiumValueClass || 'text-white';
-    return (
-      <div
-        className={`flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-2 backdrop-blur-sm max-sm:min-w-[10.25rem] max-sm:shrink-0 sm:flex-1 sm:basis-0 sm:gap-2.5 sm:px-3 sm:py-2.5`}
-      >
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${kpiIconPremium(iconWrap)}`}>
-          {React.createElement(Icon, { size: 16, strokeWidth: 2.2 })}
-        </div>
-        <div className="min-w-0 flex-1 pr-0.5">
-          <p className="text-[8px] font-semibold uppercase tracking-widest text-slate-500 sm:text-[9px]">{label}</p>
-          <p className={`break-words text-base font-semibold leading-tight sm:text-lg sm:leading-none ${vCls}`}>
-            {value}
-            {suffix ? (
-              <span className="text-[10px] font-semibold text-slate-400 sm:text-xs"> {suffix}</span>
-            ) : null}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+function PlKpi({ label, value, sub, icon: Icon }) {
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm sm:gap-2.5 sm:px-3 sm:py-2.5">
-      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${iconWrap}`}>
-        {React.createElement(Icon, { size: 16, strokeWidth: 2.2 })}
+    <div className="pl-card" style={{ padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+        <Icon size={13} style={{ color: 'var(--pl-ink-3)' }} />
+        <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>
       </div>
-      <div className="min-w-0 pr-1">
-        <p className="text-[8px] font-semibold uppercase tracking-widest text-slate-400 sm:text-[9px]">{label}</p>
-        <p className={`truncate text-base font-semibold leading-none sm:text-lg ${valueClass}`}>
-          {value}
-          <span className="text-[10px] font-semibold text-slate-400 sm:text-xs"> {suffix}</span>
-        </p>
-      </div>
+      <div className="pl-num" style={{ fontSize: 28, lineHeight: 1, display: 'block', marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{sub}</div>
     </div>
   );
 }
 
-function PathwayCard({ onAction, badge, badgeClass, title, description, meta, cta, tone = 'primary' }) {
+function AccuracyBadge({ value }) {
+  const color = value >= 80 ? 'var(--pl-success)' : value >= 65 ? 'var(--pl-accent)' : value <= 0 ? 'var(--pl-ink-4)' : 'var(--pl-warn)';
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest ${badgeClass}`}>{badge}</span>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: 44, height: 22, padding: '0 8px', borderRadius: 99,
+      fontSize: 11, fontWeight: 700,
+      background: color + '18',
+      color,
+      border: `1px solid ${color}40`,
+    }}>
+      {value}%
+    </span>
+  );
+}
+
+function PathwayCard({ onAction, badge, title, description, meta, cta, tone = 'primary' }) {
+  return (
+    <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
+      <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--pl-rule)' }}>
+        <span className="pl-tag">{badge}</span>
       </div>
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <h4 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">{title}</h4>
-        <p className="mt-2 flex-1 text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">{description}</p>
-        <ul className="mt-4 space-y-2">
+      <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 6 }}>{title}</div>
+        <p style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', lineHeight: 1.5, flex: 1, margin: '0 0 14px' }}>{description}</p>
+        <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {meta.map((m) => (
-            <li key={m.text} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-              <m.icon size={14} className="shrink-0 text-blue-600" />
+            <li key={m.text} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+              <m.icon size={13} style={{ color: 'var(--pl-accent)', flexShrink: 0 }} />
               {m.text}
             </li>
           ))}
@@ -586,48 +491,13 @@ function PathwayCard({ onAction, badge, badgeClass, title, description, meta, ct
         <button
           type="button"
           onClick={onAction}
-          className={
-            tone === 'secondary'
-              ? 'btn-secondary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-800'
-              : 'btn-primary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold shadow-sm'
-          }
+          className={tone === 'secondary' ? 'pl-btn pl-btn-ghost' : 'pl-btn pl-btn-primary'}
+          style={{ width: '100%', justifyContent: 'center' }}
         >
           {cta}
-          <ArrowRight size={16} />
+          <ArrowRight size={13} />
         </button>
       </div>
-    </div>
-  );
-}
-
-function ProgressRow({ label, value, width, color, textColor }) {
-  return (
-    <div>
-      <div className="mb-1.5 flex justify-between gap-2 text-xs font-semibold">
-        <span className="min-w-0 truncate text-slate-700">{label}</span>
-        <span className={`shrink-0 tabular-nums ${textColor}`}>{value}</span>
-      </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width }} />
-      </div>
-    </div>
-  );
-}
-
-function MiniMetric({ label, value, labelClass = 'text-slate-400' }) {
-  return (
-    <div className="rounded-lg border border-slate-100 bg-white px-2 py-2 text-center sm:px-3">
-      <p className={`text-[9px] font-semibold uppercase tracking-widest sm:text-[10px] ${labelClass}`}>{label}</p>
-      <p className="mt-1 text-base font-semibold tabular-nums text-slate-900">{value}</p>
-    </div>
-  );
-}
-
-function InfoRowLight({ label, value }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-2.5">
-      <span className="text-xs font-semibold text-slate-600">{label}</span>
-      <span className="text-xs font-semibold tabular-nums text-slate-900">{value}</span>
     </div>
   );
 }

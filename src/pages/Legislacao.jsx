@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   BookMarked,
   DownloadCloud,
@@ -475,38 +474,25 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
   }
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
       {!focusMode && (
-        <PageHeadPremium
-          className="mb-6 shrink-0 animate-in fade-in duration-500"
-          icon={Scale}
-          titleAs="h1"
-          badge={
-            <PageHeadPremiumBadge icon={BookMarked}>
-              Lei seca integrada
-            </PageHeadPremiumBadge>
-          }
-          title="Legislação · Vade Mecum"
-          subtitle="Leitor por bloco, busca no texto do PDF, favoritos, anotações e marcações — sincronizados na sua conta quando você estiver logado."
-          leadingExtra={
-            <div className="max-w-md">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                <span>Revisão por bloco</span>
-                <span className="tabular-nums text-slate-400">
-                  {reviewedCount}/{orderedSections.length} ({reviewProgressPct}%)
-                </span>
-              </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-emerald-400/90 transition-[width] duration-300"
-                  style={{ width: `${reviewProgressPct}%` }}
-                />
-              </div>
-            </div>
-          }
-          stats={legislacaoHeaderStats}
-        />
+        <div style={{ marginBottom: 8 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Lei seca integrada</p>
+          <h1 className="pl-display" style={{ marginBottom: 12 }}>Legislação · Vade Mecum.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 520, marginBottom: 16 }}>
+            Leitor por bloco, busca no texto do PDF, favoritos, anotações e marcações — sincronizados na sua conta.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <span style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>Revisão por bloco</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', fontVariantNumeric: 'tabular-nums' }}>
+              {reviewedCount}/{orderedSections.length} ({reviewProgressPct}%)
+            </span>
+          </div>
+          <div className="pl-progress" style={{ maxWidth: 320 }}>
+            <div className="pl-progress-bar" style={{ width: `${reviewProgressPct}%` }} />
+          </div>
+        </div>
       )}
 
       {!focusMode && (

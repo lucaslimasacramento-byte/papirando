@@ -16,7 +16,6 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import MindMapStudio from '../components/MindMapStudio';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   MIND_MAPS_HISTORY_STORAGE_KEY,
   MIND_MAPS_STORAGE_KEY,
@@ -549,28 +548,21 @@ export default function MapasMentais({
     : null;
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto max-w-[1320px]">
-        <PageHeadPremium
-          className="mb-6 shrink-0 animate-in fade-in duration-500"
-          icon={Network}
-          titleAs="h1"
-          badge={
-            <PageHeadPremiumBadge icon={Sparkles}>
-              Estúdio visual
-            </PageHeadPremiumBadge>
-          }
-          title="Mapas mentais"
-          subtitle="Biblioteca integrada com disciplinas, tópicos e concursos. Abra, filtre, favorite, navegue e reaproveite seus mapas no fluxo do Papirando."
-          leadingExtra={
-            <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
-              {galleryMaps.length > 0
-                ? `${galleryMaps.length} modelo(s) da equipe disponível(is) abaixo — copie para editar na sua biblioteca.`
-                : 'Modelos prontos publicados pela equipe aparecem na área “Mapas da equipe” abaixo quando o admin os cadastra.'}
-            </p>
-          }
-          stats={mapasHeaderStats}
-        />
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto' }}>
+        {/* ── Hero ── */}
+        <div style={{ marginBottom: 28 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Estúdio visual</p>
+          <h1 className="pl-display" style={{ marginBottom: 12 }}>Mapas mentais.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 520, marginBottom: 16 }}>
+            Biblioteca integrada com disciplinas, tópicos e concursos. Abra, filtre, favorite, navegue e reaproveite seus mapas.
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>
+            {galleryMaps.length > 0
+              ? `${galleryMaps.length} modelo(s) da equipe disponível(is) — copie para editar na sua biblioteca.`
+              : 'Modelos prontos publicados pela equipe aparecem na área "Mapas da equipe" abaixo.'}
+          </p>
+        </div>
 
         <section
           className="mb-6 rounded-2xl border border-indigo-200/90 bg-gradient-to-br from-indigo-50 via-white to-violet-50/90 p-4 shadow-[0_12px_36px_rgba(79,70,229,0.08)] md:p-6"

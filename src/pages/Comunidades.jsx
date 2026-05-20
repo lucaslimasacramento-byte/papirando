@@ -921,7 +921,7 @@ export default function Comunidades({
 
   async function handleDeactivateAdminCategory(row) {
     if (!isAdmin || !row?.id) return;
-    if (!window.confirm(`Desativar a sala “${row.name}”? Ela some dos filtros; tópicos antigos permanecem no banco.`)) return;
+    if (!window.confirm(`Desativar a sala "${row.name}"? Ela some dos filtros; tópicos antigos permanecem no banco.`)) return;
     setAdminBusyId(String(row.id));
     setAdminNotice('');
     try {
@@ -996,7 +996,7 @@ export default function Comunidades({
 
   if (communityLoading) {
     return (
-      <div className="page-shell animate-in fade-in slide-in-from-bottom-6 duration-700 flex-row gap-6 p-4 lg:p-6">
+      <div className="pl-paper-bg" style={{ padding: 24, display: 'flex', flexDirection: 'row', gap: 24 }}>
         <div className="w-full rounded-[30px] border border-slate-200 bg-white p-10 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
           <p className="mt-4 text-sm font-semibold text-slate-500">Carregando comunidade...</p>

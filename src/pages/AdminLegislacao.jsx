@@ -156,7 +156,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{okMsg}</div>
         ) : null}
 
-        <div className="section-card space-y-4">
+        <div className="pl-card space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Arquivo ativo (slug {OFFICIAL_SLUG})</p>
@@ -187,16 +187,16 @@ export default function AdminLegislacao({ currentUserId = '' }) {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading || loading}
-                className="btn-primary rounded-xl px-4 py-2.5 disabled:opacity-50"
+                className="pl-btn pl-btn-primary"
               >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
                 Novo PDF
               </button>
-              <button type="button" onClick={handleReset} disabled={uploading || loading} className="btn-secondary rounded-xl px-4 py-2.5">
+              <button type="button" onClick={handleReset} disabled={uploading || loading} className="pl-btn pl-btn-ghost">
                 <RefreshCw size={16} />
                 Base oficial
               </button>
-              <button type="button" onClick={refresh} disabled={loading} className="btn-secondary rounded-xl px-4 py-2.5">
+              <button type="button" onClick={refresh} disabled={loading} className="pl-btn pl-btn-ghost">
                 Recarregar
               </button>
             </div>
@@ -204,7 +204,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
           </div>
         </div>
 
-        <div className="section-card space-y-4">
+        <div className="pl-card space-y-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Metadados do lançamento</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-xs font-semibold text-slate-600">
@@ -265,7 +265,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
             type="button"
             onClick={handleSaveMeta}
             disabled={savingMeta || loading}
-            className="btn-primary rounded-xl px-5 py-3 disabled:opacity-50"
+            className="pl-btn pl-btn-primary"
           >
             {savingMeta ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             Salvar metadados e mapa

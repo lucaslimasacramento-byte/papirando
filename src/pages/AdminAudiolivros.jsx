@@ -29,7 +29,7 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
   }, [audiobookCatalogOverride]);
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1100px] flex-col gap-6 p-6">
+    <div className="pl-paper-bg" style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24, padding: '28px 28px 48px' }}>
       <section className="rounded-[2rem] border border-violet-100 bg-white p-6 shadow-sm">
         <div className="mb-5 flex flex-wrap items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white">

@@ -26,7 +26,6 @@ import {
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
 import { buildDisciplineSummaryFromHistory } from '../lib/studyAnalytics';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 
 const INTERNAL_NAV = [
@@ -1076,56 +1075,30 @@ export default function Conciliador({
   };
 
   return (
-    <div className="page-shell !h-auto min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-gray-200 pb-3 md:flex-row md:items-center">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-            <ArrowRightLeft size={14} strokeWidth={2.5} /> Comparativo
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* ── Hero ── */}
+      <div style={{ marginBottom: 8 }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Comparativo</p>
+        <h1 className="pl-display" style={{ marginBottom: 12 }}>Conciliador.</h1>
+        <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 560, marginBottom: 20 }}>
+          Até três editais na mesma leitura: tabela, conteúdo do programa e parecer para decidir se vale conciliar.
+        </p>
+        {headlineStats && headlineStats.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(headlineStats.length, 4)}, 1fr)`, gap: 12, maxWidth: 560, marginBottom: 16 }}>
+            {headlineStats.slice(0, 4).map((s) => (
+              <div key={s.key || s.label} className="pl-card" style={{ padding: '12px 16px' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{s.label}</p>
+                <p className="pl-num" style={{ fontSize: 18, color: 'var(--pl-ink)' }}>{s.value}</p>
+              </div>
+            ))}
           </div>
-          <h2 className="page-title text-xl sm:text-2xl lg:text-3xl">Conciliador</h2>
-          <p className="max-w-2xl text-base font-medium text-gray-500">
-            Até três editais na mesma leitura: tabela, conteúdo do programa e parecer para decidir se vale conciliar.
-          </p>
-        </div>
+        )}
+        {canCompare && !isComparing && (
+          <button type="button" onClick={handleCompare} className="pl-btn pl-btn-ai" style={{ gap: 6 }}>
+            Gerar análise
+          </button>
+        )}
       </div>
-
-      <PageHeadPremium
-        className="shrink-0"
-        icon={ArrowRightLeft}
-        badge={<PageHeadPremiumBadge icon={Radar}>Resumo</PageHeadPremiumBadge>}
-        title={selectedBase && selectedTargetOne && !duplicateSelection ? 'Indicadores do par' : 'Selecione o par'}
-        titleAs="h3"
-        subtitle={
-          selectedBase && selectedTargetOne && !duplicateSelection ? (
-            <>
-              <span className="font-semibold text-slate-300">{String(selectedBase?.nome || '')}</span>
-              <span className="text-slate-500"> · </span>
-              <span className="font-semibold text-indigo-200">{String(selectedTargetOne?.nome || '')}</span>
-              {courseCount === 3 && selectedTargetTwo ? (
-                <>
-                  <span className="text-slate-500"> · </span>
-                  <span className="font-semibold text-pink-200">{String(selectedTargetTwo?.nome || '')}</span>
-                </>
-              ) : null}
-            </>
-          ) : (
-            heroSubtitle
-          )
-        }
-        leadingExtra={
-          canCompare && !isComparing ? (
-            <button
-              type="button"
-              onClick={handleCompare}
-              className="mt-1 inline-flex rounded-xl border border-white/15 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:border-white/25 hover:bg-white/[0.12]"
-            >
-              Gerar análise
-            </button>
-          ) : null
-        }
-        stats={headlineStats}
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-4 md:gap-3 xl:min-w-[280px]"
-      />
 
       <div className="shrink-0 rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
         <div className="mb-1.5 px-1 sm:px-2">

@@ -16,7 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { analyzeEdital } from '../lib/aiClient';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+
 
 const DISCIPLINE_ACCENT_FALLBACK = '#1d4ed8';
 
@@ -97,130 +97,84 @@ export default function Edital({
   const selectChevronDark = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`;
 
   return (
-    <div className="page-shell !h-auto min-h-0 animate-in fade-in duration-500 !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        icon={FileText}
-        badge={
-          <PageHeadPremiumBadge icon={Sparkles}>
-            Painel estratégico
-          </PageHeadPremiumBadge>
-        }
-        title="Edital verticalizado"
-        subtitle="Acompanhe o progresso tópico por tópico, sem bagunça e sem sumir matéria no meio do caminho."
-        leadingExtra={
-          planosDisponiveis.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Edital</span>
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '28px 28px 56px' }}>
+      {/* Hero */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <div className="pl-eyebrow" style={{ marginBottom: 6 }}>Painel estratégico</div>
+          <h1 className="pl-display" style={{ fontSize: 38, margin: 0 }}>Edital verticalizado.</h1>
+          {planosDisponiveis.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+              <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Edital</span>
               <select
                 value={planoSelecionado}
                 onChange={(e) => setPlanoSelecionado(e.target.value)}
-                className="cursor-pointer appearance-none rounded-lg border border-white/20 bg-white/10 py-1.5 pl-3 pr-9 text-xs font-semibold text-white outline-none transition-all hover:border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25 sm:py-2 sm:text-sm"
-                style={{
-                  backgroundImage: selectChevronDark,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 10px center',
-                }}
+                className="pl-input"
+                style={{ height: 30, fontSize: 12, paddingLeft: 10 }}
               >
                 {planosDisponiveis.map((plano) => (
-                  <option key={plano} value={plano} className="bg-slate-900 text-white">
-                    {plano}
-                  </option>
+                  <option key={plano} value={plano}>{plano}</option>
                 ))}
               </select>
             </div>
-          ) : null
-        }
-        trailing={
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
-            {hasEditalText ? (
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={handleAnalyzeEdital}
-                  disabled={aiLoading}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-violet-400/35 bg-violet-500/20 px-3 py-2 text-xs font-semibold text-violet-100 transition-colors hover:bg-violet-500/30 disabled:opacity-60 sm:text-[13px]"
-                >
-                  {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                  {aiLoading ? 'Analisando...' : 'Analisar com IA'}
-                </button>
-                {aiError ? <p className="text-xs font-semibold text-rose-300">{aiError}</p> : null}
-              </div>
-            ) : null}
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {hasEditalText && (
             <button
               type="button"
-              onClick={() => setRegistroEstudoModalOpen?.(true)}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className="pl-btn pl-btn-ai"
+              onClick={handleAnalyzeEdital}
+              disabled={aiLoading}
+              style={{ opacity: aiLoading ? 0.7 : 1 }}
             >
-              <Plus size={14} strokeWidth={2} />
-              Adicionar estudo
+              {aiLoading ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={12} />}
+              {aiLoading ? 'Analisando…' : 'Analisar com IA'}
             </button>
-            <button
-              type="button"
-              onClick={() => setLinkModalOpen?.(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Calculator size={14} />
-              Gerenciar links
-            </button>
-          </div>
-        }
-      />
+          )}
+          <button type="button" className="pl-btn pl-btn-ghost" onClick={() => setLinkModalOpen?.(true)}>
+            <Calculator size={13} /> Links
+          </button>
+          <button type="button" className="pl-btn pl-btn-primary" onClick={() => setRegistroEstudoModalOpen?.(true)}>
+            <Plus size={13} /> Adicionar estudo
+          </button>
+        </div>
+      </div>
 
-      <div className="section-card">
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <TopStat
-              icon={BookOpen}
-              label="Disciplinas"
-              value={String(editalAtivo.length)}
-              accent="blue"
-            />
-            <TopStat
-              icon={Layers}
-              label="Tópicos"
-              value={String(totTopicosEdital)}
-              accent="indigo"
-            />
-            <TopStat
-              icon={CheckCircle2}
-              label="Concluídos"
-              value={String(concTopicosEdital)}
-              accent="emerald"
-            />
-            <TopStat
-              icon={Target}
-              label="Pendentes"
-              value={String(topicosPendentes)}
-              accent="orange"
-            />
-          </div>
-
-        <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50/90 p-4 sm:p-5">
-            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                  Progresso geral do edital
-                </p>
-                <p className="mt-1 text-sm font-medium text-slate-600">
-                  {concTopicosEdital} de {totTopicosEdital} tópicos concluídos ·{' '}
-                  {disciplinasConcluidas} disciplinas 100%
-                </p>
+      <div className="pl-card" style={{ padding: 20 }}>
+        {/* KPI strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
+          {[
+            [BookOpen, 'Disciplinas', editalAtivo.length],
+            [Layers, 'Tópicos', totTopicosEdital],
+            [CheckCircle2, 'Concluídos', concTopicosEdital],
+            [Target, 'Pendentes', topicosPendentes],
+          ].map(([Icon, label, value]) => (
+            <div key={label} className="pl-card" style={{ padding: '12px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <Icon size={12} style={{ color: 'var(--pl-ink-3)' }} />
+                <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>
               </div>
+              <div className="pl-num" style={{ fontSize: 24 }}>{value}</div>
+            </div>
+          ))}
+        </div>
 
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-semibold leading-none text-slate-900 sm:text-4xl">
-                  {progGeralEdital || 0}
-                </span>
-                <span className="text-lg font-semibold text-slate-900">%</span>
+        {/* Progress bar */}
+        <div style={{ padding: '14px 16px', background: 'var(--pl-bg-soft)', borderRadius: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
+            <div>
+              <div className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 3 }}>Progresso geral do edital</div>
+              <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
+                {concTopicosEdital} de {totTopicosEdital} tópicos · {disciplinasConcluidas} disciplinas 100%
               </div>
             </div>
-
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-blue-700 transition-all duration-700"
-                style={{ width: `${Math.min(100, Math.max(0, progGeralEdital || 0))}%` }}
-              />
-            </div>
+            <span className="pl-num" style={{ fontSize: 28 }}>{progGeralEdital || 0}%</span>
           </div>
+          <div className="pl-progress">
+            <div className="pl-progress-bar" style={{ width: `${Math.min(100, Math.max(0, progGeralEdital || 0))}%` }} />
+          </div>
+        </div>
 
           {(aiPanelOpen || aiAnalysis || aiLoading || aiError) ? (
             <div className="mt-6 rounded-xl border border-violet-200/80 bg-violet-50/70 p-4 sm:p-5">
@@ -299,21 +253,15 @@ export default function Edital({
           ) : null}
       </div>
 
-      <div className="section-card flex min-h-0 flex-col p-0">
-        <div className="flex shrink-0 flex-col gap-4 border-b border-slate-100 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, padding: '14px 20px', borderBottom: '1px solid var(--pl-rule)', flexWrap: 'wrap' }}>
           <div>
-            <h3 className="text-base font-semibold text-slate-900 sm:text-lg">
-              Disciplinas do edital
-            </h3>
-            <p className="mt-1 text-sm font-medium text-slate-500">
-              Expanda cada disciplina para visualizar e marcar os tópicos.
-            </p>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)' }}>Disciplinas do edital</div>
+            <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', marginTop: 3 }}>Expanda para marcar os tópicos.</div>
           </div>
-
-          <div className="premium-badge w-fit gap-2 py-1.5">
-            <Sparkles size={12} className="shrink-0" />
-            Progresso por tópico
-          </div>
+          <span className="pl-tag pl-tag-ai" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <Sparkles size={10} /> Progresso por tópico
+          </span>
         </div>
 
         {editalAtivo.length === 0 ? (
@@ -338,12 +286,11 @@ export default function Edital({
               return (
                 <div key={disciplina.id} className="group">
                   <div
-                    onClick={() =>
-                      setExpandedEditalSubject(isExpanded ? null : disciplina.id)
-                    }
-                    className={`cursor-pointer px-5 py-5 sm:px-6 lg:px-8 transition-all duration-300 ${
-                      isExpanded ? 'bg-blue-50/30' : 'hover:bg-slate-50/80'
-                    }`}
+                    onClick={() => setExpandedEditalSubject(isExpanded ? null : disciplina.id)}
+                    style={{
+                      cursor: 'pointer', padding: '14px 20px', transition: 'background 0.12s',
+                      background: isExpanded ? 'var(--pl-accent-soft)' : 'transparent',
+                    }}
                   >
                     <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
                       <div className="flex items-start gap-4 min-w-0 flex-1">
@@ -386,29 +333,22 @@ export default function Edital({
                         </div>
 
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingDiscipline?.(disciplina);
-                          }}
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition-all duration-300 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={(e) => { e.stopPropagation(); setEditingDiscipline?.(disciplina); }}
+                          className="pl-btn pl-btn-ghost"
+                          style={{ width: 32, height: 32, padding: 0, justifyContent: 'center', flexShrink: 0 }}
                           title="Editar disciplina"
                         >
-                          <Edit3 size={17} />
+                          <Edit3 size={14} />
                         </button>
 
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 ${
-                            isExpanded
-                              ? 'border-blue-100 bg-blue-50 text-blue-700'
-                              : 'border-slate-200 bg-slate-50 text-slate-400'
-                          }`}
-                        >
-                          <ChevronDown
-                            size={18}
-                            className={`transition-transform duration-300 ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          />
+                        <div style={{
+                          width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          borderRadius: 6, border: '1px solid', flexShrink: 0,
+                          borderColor: isExpanded ? 'var(--pl-accent)' : 'var(--pl-rule-strong)',
+                          background: isExpanded ? 'var(--pl-accent-soft)' : 'transparent',
+                          color: isExpanded ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                        }}>
+                          <ChevronDown size={15} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                         </div>
                       </div>
                     </div>
@@ -550,36 +490,11 @@ export default function Edital({
   );
 }
 
-function TopStat({ icon: Icon, label, value, accent }) {
-  const styles = {
-    blue: 'bg-blue-50 text-blue-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-    orange: 'bg-orange-50 text-orange-600',
-  };
-
-  return (
-    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <div
-        className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${
-          styles[accent] || styles.blue
-        }`}
-      >
-        <Icon size={18} />
-      </div>
-      <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-        {label}
-      </p>
-      <p className="text-xl font-semibold leading-none text-slate-900">{value}</p>
-    </div>
-  );
-}
-
 function AiMiniInfo({ label, value }) {
   return (
-    <div className="rounded-xl border border-violet-100 bg-white/90 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-700">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-700">{value}</p>
+    <div style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid var(--pl-rule-strong)', background: 'var(--pl-surface)' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 4, color: 'var(--pl-accent)' }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }

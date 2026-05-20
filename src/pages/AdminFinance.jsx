@@ -135,7 +135,7 @@ export default function AdminFinance({
   };
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-paper-bg" style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24, padding: '28px 28px 48px' }}>
       <section className="overflow-hidden rounded-[2.4rem] border border-gray-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
         <div className="grid gap-0 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="relative overflow-hidden p-8 lg:p-10">

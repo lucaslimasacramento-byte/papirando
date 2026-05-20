@@ -41,7 +41,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { shapeSquadFromCommunityPost, splitSquadForCommunityPostUpdate } from '../lib/squadRemote';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const EMPTY_FORM = {
   name: '',
@@ -524,8 +523,8 @@ export default function Esquadroes({
 
   if (accessibleSquads.length === 0) {
     return (
-      <div className="page-shell">
-        <div className="section-card min-h-[280px] flex flex-col items-center justify-center text-center">
+      <div className="pl-paper-bg" style={{ padding: 24 }}>
+        <div className="pl-card" style={{ minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-slate-900">
             <ShieldCheck size={26} />
           </div>
@@ -1258,14 +1257,13 @@ export default function Esquadroes({
   }
 
   return (
-    <div className="page-shell !h-auto min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-gray-200 pb-3 md:flex-row md:items-center">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-            <Shield size={14} strokeWidth={3} /> Ecossistema Privado
-          </div>
-          <h2 className="page-title text-xl sm:text-2xl lg:text-3xl">Esquadrões</h2>
-          <p className="max-w-2xl text-base font-medium text-gray-500">
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* ── Hero ── */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, paddingBottom: 20, borderBottom: '1px solid var(--pl-rule)' }}>
+        <div>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Ecossistema privado</p>
+          <h1 className="pl-display" style={{ marginBottom: 8 }}>Esquadrões.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', maxWidth: 480 }}>
             Fórum interno, mural, simulados, atividades e gestão privada do cursinho.
           </p>
         </div>
@@ -1350,60 +1348,34 @@ export default function Esquadroes({
       </div>
 
       {selectedSquad ? (
-        <PageHeadPremium
-          className="shrink-0"
-          icon={Users}
-          badge={
-            <PageHeadPremiumBadge icon={ShieldCheck}>Esquadrão privado ativo</PageHeadPremiumBadge>
-          }
-          title={selectedSquad.name}
-          titleAs="h3"
-          subtitle={
-            <>
-              <span className="font-semibold text-slate-300">{selectedSquad.owner}</span>
-              <span className="text-slate-500"> · </span>
-              Foco da turma:{' '}
-              <span className="font-semibold text-indigo-200">{selectedSquad.focus}</span>
-              <span className="text-slate-500"> · </span>
-              Fórum interno, mural, simulados e atividades neste ecossistema privado.
-            </>
-          }
-          leadingExtra={
-            canAccessSettings ? (
-              <button
-                type="button"
-                onClick={() => setActiveSection('configuracoes')}
-                className="mt-1 inline-flex rounded-xl border border-white/15 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:border-white/25 hover:bg-white/[0.12]"
-              >
+        <div className="pl-card-ai" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+            <div>
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Esquadrão privado ativo</p>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 4 }}>{selectedSquad.name}</h3>
+              <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                {selectedSquad.owner} · Foco: {selectedSquad.focus}
+              </p>
+            </div>
+            {canAccessSettings && (
+              <button type="button" onClick={() => setActiveSection('configuracoes')} className="pl-btn pl-btn-ghost">
                 Configurações
               </button>
-            ) : null
-          }
-          stats={[
-            {
-              key: 'liga',
-              icon: Trophy,
-              label: 'Liga',
-              value: selectedSquad.rankingTier || 'Bronze',
-              accent: 'amber',
-            },
-            {
-              key: 'membros',
-              icon: Users,
-              label: 'Membros',
-              value: String(selectedSquad.members || 0),
-              accent: 'indigo',
-            },
-            {
-              key: 'marco',
-              icon: CalendarDays,
-              label: 'Próximo marco',
-              value: selectedSquad.nextEvent || '—',
-              accent: 'violet',
-            },
-          ]}
-          statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:min-w-[380px]"
-        />
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+            {[
+              { label: 'Liga', value: selectedSquad.rankingTier || 'Bronze' },
+              { label: 'Membros', value: String(selectedSquad.members || 0) },
+              { label: 'Próximo marco', value: selectedSquad.nextEvent || '—' },
+            ].map((s) => (
+              <div key={s.label} className="pl-card" style={{ padding: '10px 14px' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{s.label}</p>
+                <p className="pl-num" style={{ fontSize: 18, color: 'var(--pl-ink)' }}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : null}
 
       {selectedSquad ? (

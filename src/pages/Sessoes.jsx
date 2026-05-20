@@ -1,29 +1,19 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   ArrowRight,
   BookOpen,
   CheckCircle2,
   Clock,
-  LayoutGrid,
   Pause,
   Play,
-  ShieldCheck,
   Square,
   Target,
   Timer,
-  Users,
   Wind,
   Zap,
 } from 'lucide-react';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumBadge,
-  PageHeadPremiumStatCompact,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-} from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
 
 export default function Sessoes({
@@ -59,6 +49,7 @@ export default function Sessoes({
   const urgentReviews = Array.isArray(studyRecommendation?.reviewQueue)
     ? studyRecommendation.reviewQueue.filter((item) => item?.urgencyLabel === 'Alta prioridade').length
     : 0;
+
   const activeTimerLabel =
     timerMode === 'cronometro'
       ? formatHHMMSS?.(timerValue || 0)
@@ -72,134 +63,124 @@ export default function Sessoes({
 
   useEffect(() => {
     let ignore = false;
-
-    const loadRecentSessions = async () => {
-      if (!currentUserId) {
-        if (!ignore) setRecentSessions([]);
-        return;
-      }
-
+    const load = async () => {
+      if (!currentUserId) { if (!ignore) setRecentSessions([]); return; }
       const { data, error } = await supabase
         .from('study_sessions')
         .select('disciplina, tipo, tempo, data, desempenho')
         .eq('user_id', currentUserId)
         .order('created_at', { ascending: false })
         .limit(5);
-
-      if (error) {
-        console.warn('[Sessoes] load recent sessions error:', error.message);
-        if (!ignore) setRecentSessions([]);
-        return;
-      }
-
-      if (!ignore) setRecentSessions(Array.isArray(data) ? data : []);
+      if (!ignore) setRecentSessions(!error && Array.isArray(data) ? data : []);
     };
-
-    loadRecentSessions();
-    return () => {
-      ignore = true;
-    };
+    load();
+    return () => { ignore = true; };
   }, [currentUserId]);
 
+  const METHODS = [
+    {
+      key: 'pomodoro',
+      title: 'Pomodoro',
+      time: '25 min',
+      desc: 'Foco / 5 min pausa. Excelente para consistência e início rápido.',
+      onClick: () => startSpecificTimer?.('pomodoro', 25 * 60),
+    },
+    {
+      key: 'flowtime',
+      title: 'Flowtime',
+      time: '50 min',
+      desc: 'Foco / 10 min pausa. Ideal pra entrar em fluxo profundo.',
+      onClick: () => startSpecificTimer?.('pomodoro', 50 * 60),
+    },
+    {
+      key: 'ultradiante',
+      title: 'Ultradiante',
+      time: '90 min',
+      desc: 'Foco / 20 min pausa. Para blocos pesados de teoria.',
+      onClick: () => startSpecificTimer?.('pomodoro', 90 * 60),
+    },
+    {
+      key: 'custom',
+      title: 'Personalizado',
+      time: 'Livre',
+      desc: 'Defina foco e pausa do seu jeito para um bloco sob medida.',
+      onClick: () => startSpecificTimer?.('custom', (customFocusTime || 25) * 60),
+    },
+  ];
+
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremiumShell className="!block shrink-0">
-        <div className="relative z-10 grid w-full min-w-0 gap-4 lg:grid-cols-2 lg:items-center lg:gap-4">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
-            <PageHeadPremiumIconTile>
-              <Timer className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-            </PageHeadPremiumIconTile>
-            <div className="min-w-0 space-y-0">
-              <PageHeadPremiumBadge icon={Zap}>Área de foco</PageHeadPremiumBadge>
-              <h2 className="text-base font-semibold tracking-tight text-white sm:text-lg">Sessões de estudo</h2>
-              <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-                Timer global, progresso do dia e próxima ação — painéis abaixo rolam sem precisar rolar a página inteira.
-              </p>
-            </div>
+    <div className="pl-paper-bg" style={{ flex: 1, overflow: 'auto', padding: '28px 36px 48px' }}>
+
+      {/* ── HERO ── */}
+      <header style={{ display: 'flex', gap: 28, alignItems: 'flex-end' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="pl-eyebrow">
+            Área de foco
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>·</span>
+            Sessões de estudo
           </div>
-
-          <div
-            className="grid min-h-0 w-full shrink-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
-            aria-label="Resumo rápido"
-          >
-            <PageHeadPremiumStatCompact label="Streak" value={`${historyOverview.streakDays} dias`} icon={Zap} accent="orange" />
-            <PageHeadPremiumStatCompact
-              label="Média 7d"
-              value={historyOverview.last7DaysAverageLabel}
-              icon={Clock}
-              accent="blue"
-            />
-            <PageHeadPremiumStatCompact
-              label="Acurácia"
-              value={`${historyOverview.overallAccuracy}%`}
-              icon={Target}
-              accent="emerald"
-            />
-            <PageHeadPremiumStatCompact label="Revisões" value={`${urgentReviews}`} icon={CheckCircle2} accent="indigo" />
-          </div>
-        </div>
-      </PageHeadPremiumShell>
-
-      <div className="grid min-h-0 shrink-0 items-stretch gap-3 xl:grid-cols-[1.2fr_0.8fr] xl:gap-4">
-        <div className="flex h-full min-h-0 flex-col gap-2.5">
-          <div className="section-card h-full p-4 sm:p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
-                <LayoutGrid size={16} className="text-[#2563EB]" />
-                Métodos de estudo
-              </h3>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <MethodPill icon={ShieldCheck} text="Ritmos clássicos" />
-                <MethodPill icon={Users} text="Guiada" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-              <MethodCard
-                icon={Clock}
-                iconWrap="bg-red-100 text-red-600"
-                glow="bg-red-50"
-                title="Pomodoro"
-                description="25 min de foco / 5 min de pausa. Excelente para consistência e início rápido."
-                hoverClass="hover:bg-red-600"
-                onClick={() => startSpecificTimer('pomodoro', 25 * 60)}
-              />
-
-              <MethodCard
-                icon={Wind}
-                iconWrap="bg-purple-100 text-purple-600"
-                glow="bg-purple-50"
-                title="Flowtime"
-                description="50 min de foco / 10 min de pausa. Ideal para entrar em fluxo profundo."
-                hoverClass="hover:bg-purple-600"
-                onClick={() => startSpecificTimer('pomodoro', 50 * 60)}
-              />
-
-              <MethodCard
-                icon={Zap}
-                iconWrap="bg-orange-100 text-orange-600"
-                glow="bg-orange-50"
-                title="Ultradiante"
-                description="90 min de foco / 20 min de pausa. Para blocos pesados de teoria ou simulação."
-                hoverClass="hover:bg-orange-600"
-                onClick={() => startSpecificTimer('pomodoro', 90 * 60)}
-              />
-
-              <MethodCard
-                icon={Activity}
-                iconWrap="bg-emerald-100 text-emerald-600"
-                glow="bg-emerald-50"
-                title="Personalizado"
-                description="Use o foco e pausa definidos por você para montar um bloco sob medida."
-                hoverClass="hover:bg-emerald-600"
-                onClick={() => startSpecificTimer('custom', customFocusTime * 60)}
-              />
-            </div>
+          <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 64, color: 'var(--pl-ink)' }}>
+            Inicia uma sessão<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p style={{ margin: '14px 0 0', fontSize: 16, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 560, lineHeight: 1.55 }}>
+            Escolhe o método, dispara o timer, papira. Cada bloco registrado alimenta
+            seu histórico e refina a recomendação do Bizu.
+          </p>
+          <div style={{ marginTop: 22, display: 'flex', gap: 10 }}>
+            <button
+              className="pl-btn pl-btn-primary pl-btn-lg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              onClick={() => openTimerSetup?.()}
+            >
+              <Play size={13} fill="currentColor" /> Iniciar timer
+            </button>
+            <button
+              className="pl-btn pl-btn-lg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+            >
+              Registrar manual
+            </button>
           </div>
         </div>
 
-        <div className="flex h-full min-h-0 flex-col gap-3">
+        {/* KPI strip (vertical aside) */}
+        <aside style={{
+          width: 260, flexShrink: 0,
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
+        }}>
+          <PlKpiMini label="Streak" num={String(historyOverview.streakDays)} unit="d" />
+          <PlKpiMini label="Média 7d" num={historyOverview.last7DaysAverageLabel || '0h'} />
+          <PlKpiMini label="Acurácia" num={String(historyOverview.overallAccuracy)} unit="%" />
+          <PlKpiMini label="Revisões" num={String(urgentReviews).padStart(2, '0')} accent={urgentReviews > 0} />
+        </aside>
+      </header>
+
+      <div className="pl-rule" style={{ margin: '28px 0 22px' }} />
+
+      {/* ── TWO-COLUMN ── */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 18 }}>
+
+        {/* Methods */}
+        <div className="pl-card" style={{ padding: '20px 22px' }}>
+          <div style={{ marginBottom: 18 }}>
+            <div className="pl-eyebrow">Métodos de estudo</div>
+            <h2 style={{
+              margin: '6px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic',
+              fontWeight: 400, fontSize: 26, letterSpacing: '-0.025em', color: 'var(--pl-ink)',
+            }}>
+              Como você quer papirar hoje?
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {METHODS.map((m) => (
+              <MethodCard key={m.key} {...m} />
+            ))}
+          </div>
+        </div>
+
+        {/* Right column: live + recommended */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <LiveSessionCard
             isTimerRunning={isTimerRunning}
             timerMode={timerMode}
@@ -213,138 +194,233 @@ export default function Sessoes({
             onStop={handleStopTimer}
             onRegister={() => setRegistroEstudoModalOpen?.(true)}
           />
-          <div className="mt-auto">
-            <RecommendedSessionCard
-              recommendation={primaryRecommendation}
-              onStart={() => onStartRecommendedSession?.(primaryRecommendation)}
-              onOpenPlan={() => setActiveTab?.('planejamento')}
-              onOpenRegister={() => setRegistroEstudoModalOpen?.(true)}
-            />
-          </div>
+          <RecommendedSessionCard
+            recommendation={primaryRecommendation}
+            onStart={() => onStartRecommendedSession?.(primaryRecommendation)}
+            onOpenPlan={() => setActiveTab?.('planejamento')}
+            onOpenRegister={() => setRegistroEstudoModalOpen?.(true)}
+          />
         </div>
-      </div>
+      </section>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden">
-        <div className="custom-scrollbar flex min-h-0 min-w-0 flex-col overflow-y-auto pr-0.5">
-          <div className="section-card p-4 sm:p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Clock size={16} className="text-[#2563EB]" />
-              <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Últimas sessões</h3>
-            </div>
+      {/* ── RECENT SESSIONS ── */}
+      <section style={{ marginTop: 26 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 14 }}>
+          <div>
+            <div className="pl-eyebrow">Histórico recente</div>
+            <h2 style={{
+              margin: '6px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic',
+              fontWeight: 400, fontSize: 26, letterSpacing: '-0.025em', color: 'var(--pl-ink)',
+            }}>
+              Últimas sessões
+            </h2>
+          </div>
+          <button
+            className="pl-btn-link"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            onClick={() => setActiveTab?.('historico')}
+          >
+            Ver histórico completo <ArrowRight size={12} />
+          </button>
+        </div>
 
-            {recentSessions.length === 0 ? (
-              <p className="text-sm font-medium text-slate-500">
-                Nenhuma sessão registrada ainda. Inicie seu primeiro timer!
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {recentSessions.map((session, index) => (
-                  <div
-                    key={`${session.disciplina || 'sessao'}-${session.data || index}-${index}`}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  >
-                    <p className="text-sm font-semibold text-slate-800">{session.disciplina || 'Sessão'}</p>
-                    <p className="text-sm font-semibold text-slate-500">
-                      {session.tipo || 'Estudo'} | {session.tempo || '00:00:00'} | {session.data || 'Sem data'}
-                    </p>
-                  </div>
-                ))}
+        <div className="pl-card" style={{ padding: '4px 0' }}>
+          {recentSessions.length === 0 ? (
+            <p style={{ padding: '20px 22px', fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+              Nenhuma sessão registrada ainda. Inicie seu primeiro timer!
+            </p>
+          ) : (
+            recentSessions.map((session, i) => (
+              <div key={`${session.disciplina || 'sess'}-${i}`} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 22px', borderBottom: i < recentSessions.length - 1 ? '1px solid var(--pl-rule)' : 'none',
+                gap: 16,
+              }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink)' }}>
+                    {session.disciplina || 'Sessão'}
+                  </span>
+                  <span style={{ margin: '0 8px', color: 'var(--pl-ink-5)' }}>·</span>
+                  <span style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+                    {session.tipo || 'Estudo'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                  <span className="pl-tag">{session.tempo || '—'}</span>
+                  <span style={{ fontSize: 11.5, color: 'var(--pl-ink-4)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
+                    {session.data || '—'}
+                  </span>
+                </div>
               </div>
-            )}
-          </div>
+            ))
+          )}
         </div>
+      </section>
+    </div>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function PlKpiMini({ label, num, unit, accent }) {
+  return (
+    <div className="pl-card-paper" style={{ padding: '12px 14px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginTop: 4 }}>
+        <span className="pl-num" style={{
+          fontSize: 26, lineHeight: 1,
+          color: accent ? 'var(--pl-warn)' : 'var(--pl-ink)',
+        }}>{num}</span>
+        {unit && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{unit}</span>}
       </div>
     </div>
   );
 }
 
+function MethodCard({ title, time, desc, onClick }) {
+  return (
+    <div
+      className="pl-card"
+      style={{ padding: '14px 16px', cursor: 'pointer', transition: 'background 0.1s' }}
+      onClick={onClick}
+      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--pl-bg-soft)'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'var(--pl-surface)'}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)', letterSpacing: '-0.01em' }}>
+          {title}
+        </span>
+        <span className="pl-tag pl-tag-accent">{time}</span>
+      </div>
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.5 }}>
+        {desc}
+      </p>
+      <button
+        className="pl-btn pl-btn-primary pl-btn-sm"
+        style={{ marginTop: 12, width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        onClick={(e) => { e.stopPropagation(); onClick?.(); }}
+      >
+        <Play size={10} fill="currentColor" /> Iniciar
+      </button>
+    </div>
+  );
+}
+
 function LiveSessionCard({
-  isTimerRunning,
-  timerMode,
-  activeTimerLabel,
-  elapsedLabel,
-  plannedDurationLabel,
-  studySessionDraft,
-  onOpenTimer,
-  onPause,
-  onResume,
-  onStop,
-  onRegister,
+  isTimerRunning, timerMode, activeTimerLabel, elapsedLabel,
+  plannedDurationLabel, studySessionDraft,
+  onOpenTimer, onPause, onResume, onStop, onRegister,
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-5 text-white shadow-md ring-1 ring-[#2563EB]/20 sm:p-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.12),transparent_55%)]" />
-      <div className="relative z-10">
-      <div className="inline-flex items-center gap-2 rounded-full border border-[#2563EB]/35 bg-[#2563EB]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
-        <Activity size={12} className="text-[#93C5FD]" />
-        Sessão ao vivo
+    <div style={{
+      background: 'var(--pl-ink)', borderRadius: 6, padding: '20px 22px',
+      color: 'var(--pl-bg)', position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          height: 22, padding: '0 9px', borderRadius: 4,
+          fontSize: 11, fontWeight: 700, letterSpacing: '0.01em',
+          background: isTimerRunning ? 'rgba(77,124,63,0.30)' : 'rgba(255,255,255,0.12)',
+          color: isTimerRunning ? '#9ecf8e' : 'rgba(243,239,229,0.6)',
+          ...(isTimerRunning && { animation: 'pl-live-pulse 2s ease infinite' }),
+        }}>
+          <Activity size={10} /> {isTimerRunning ? 'Ao vivo' : 'Inativa'}
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(243,239,229,0.45)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          {timerMode === 'cronometro' ? 'Modo livre' : 'Pomodoro'} · {plannedDurationLabel}
+        </span>
       </div>
 
-      <h3 className="mt-4 text-xl font-semibold sm:text-2xl">
+      <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 600, color: 'var(--pl-bg)' }}>
         {isTimerRunning ? 'Timer ativo agora' : 'Nenhuma sessão rodando'}
       </h3>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-slate-300">
-        {studySessionDraft?.material
-          ? `${studySessionDraft.material} | ${studySessionDraft.categoria || 'Estudo'}`
-          : 'Abra um timer, retome do overlay global ou registre a sessão manualmente.'}
-      </p>
+      {studySessionDraft?.material && (
+        <p style={{ margin: '0 0 12px', fontSize: 12.5, color: 'rgba(243,239,229,0.6)', fontWeight: 500 }}>
+          {studySessionDraft.material}
+          {studySessionDraft.categoria && ` · ${studySessionDraft.categoria}`}
+        </p>
+      )}
 
-      <div className="mt-5 rounded-2xl border border-[#2563EB]/20 bg-white/10 p-4 sm:p-5">
-        <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#93C5FD]/90">
-          <span>{timerMode === 'cronometro' ? 'Modo livre' : 'Pomodoro'}</span>
-          <span>{plannedDurationLabel}</span>
+      {/* Big timer */}
+      <div style={{
+        margin: '16px 0',
+        padding: '14px 18px',
+        background: 'rgba(255,255,255,0.07)',
+        borderRadius: 6,
+        border: '1px solid rgba(255,255,255,0.10)',
+      }}>
+        <div style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 48, color: 'var(--pl-bg)', letterSpacing: '-0.04em', lineHeight: 1,
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {activeTimerLabel}
         </div>
-        <div className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{activeTimerLabel}</div>
-        <p className="mt-2 text-sm text-slate-300">Tempo acumulado: {elapsedLabel}</p>
+        <div style={{ marginTop: 6, fontSize: 11.5, color: 'rgba(243,239,229,0.5)', fontWeight: 500 }}>
+          Tempo acumulado: {elapsedLabel}
+        </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {isTimerRunning ? (
           <button
-            type="button"
-            onClick={onPause}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+            type="button" onClick={onPause}
+            style={{
+              height: 38, borderRadius: 6, border: '1px solid rgba(255,255,255,0.20)',
+              background: 'rgba(255,255,255,0.10)', cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              fontSize: 13, fontWeight: 600, color: 'var(--pl-bg)', fontFamily: 'var(--pl-sans)',
+            }}
           >
-            <Pause size={16} />
-            Pausar
+            <Pause size={14} /> Pausar
           </button>
         ) : (
           <button
-            type="button"
-            onClick={onResume}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+            type="button" onClick={onResume}
+            style={{
+              height: 38, borderRadius: 6, border: '1px solid rgba(255,255,255,0.20)',
+              background: 'rgba(255,255,255,0.10)', cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              fontSize: 13, fontWeight: 600, color: 'var(--pl-bg)', fontFamily: 'var(--pl-sans)',
+            }}
           >
-            <Play size={16} fill="currentColor" />
-            Retomar
+            <Play size={14} fill="currentColor" /> Retomar
           </button>
         )}
-
         <button
-          type="button"
-          onClick={onStop}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
+          type="button" onClick={onStop}
+          style={{
+            height: 38, borderRadius: 6, border: '1px solid rgba(185,28,28,0.5)',
+            background: 'rgba(185,28,28,0.20)', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            fontSize: 13, fontWeight: 600, color: '#fca5a5', fontFamily: 'var(--pl-sans)',
+          }}
         >
-          <Square size={16} fill="currentColor" />
-          Encerrar
+          <Square size={13} fill="currentColor" /> Encerrar
         </button>
       </div>
-
-      <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
         <button
-          type="button"
-          onClick={onOpenTimer}
-          className="rounded-xl border border-[#2563EB]/30 bg-[#2563EB]/10 px-3 py-2.5 text-xs font-bold text-[#E0E7FF] transition hover:bg-[#2563EB]/20 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
+          type="button" onClick={onOpenTimer}
+          style={{
+            height: 34, borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)',
+            background: 'transparent', cursor: 'pointer',
+            fontSize: 12.5, fontWeight: 600, color: 'rgba(243,239,229,0.65)', fontFamily: 'var(--pl-sans)',
+          }}
         >
           Abrir overlay
         </button>
         <button
-          type="button"
-          onClick={onRegister}
-          className="rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-bold text-slate-200 transition hover:bg-white/10 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
+          type="button" onClick={onRegister}
+          style={{
+            height: 34, borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)',
+            background: 'transparent', cursor: 'pointer',
+            fontSize: 12.5, fontWeight: 600, color: 'rgba(243,239,229,0.65)', fontFamily: 'var(--pl-sans)',
+          }}
         >
           Registrar manual
         </button>
-      </div>
       </div>
     </div>
   );
@@ -352,43 +428,50 @@ function LiveSessionCard({
 
 function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenRegister }) {
   return (
-    <div className="section-card min-h-0 border-blue-100/50 p-3">
-      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-        <BookOpen size={13} className="text-[#2563EB]" />
-        Próxima sessão sugerida
+    <div className="pl-card-ai" style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <span className="pl-tag-ai">
+          <BookOpen size={10} /> Bizu IA
+        </span>
+        <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--pl-ink-3)', letterSpacing: '0.04em' }}>
+          próxima sessão sugerida
+        </span>
       </div>
-
-      <h3 className="mt-2 text-base font-semibold leading-tight text-slate-900 sm:text-lg">
-        {recommendation?.nome || 'Sem recomendação suficiente ainda'}
+      <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--pl-ink)' }}>
+        {recommendation?.nome || 'Aguardando dados'}
       </h3>
-      <p className="mt-1 text-xs leading-snug text-slate-500">
+      <p style={{ margin: 0, fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.5 }}>
         {recommendation
-          ? `${recommendation.studyModeLabel} | ${recommendation.reason}`
-          : 'Registre mais histórico para o motor inteligente entender o melhor bloco para agora.'}
+          ? `${recommendation.studyModeLabel || 'Teoria'} · ${recommendation.reason || 'Baseado no seu histórico'}`
+          : 'Registre mais sessões para o Bizu personalizar suas recomendações.'}
       </p>
-
-      <div className="mt-2 grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-        <MiniInfo label="Tópico" value={recommendation?.nextTopic?.nome || 'Aguardando dados'} />
-        <MiniInfo label="Duração" value={recommendation?.suggestedDurationLabel || '0h 45m'} />
-        <MiniInfo label="Modo" value={recommendation?.studyModeLabel || 'Teoria'} />
-      </div>
-
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      {recommendation && (
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6,
+          margin: '10px 0', padding: '10px 12px',
+          background: 'var(--pl-bg-soft)', borderRadius: 6,
+          border: '1px solid var(--pl-rule)',
+        }}>
+          <MiniInfo label="Tópico" value={recommendation.nextTopic?.nome || '—'} />
+          <MiniInfo label="Duração" value={recommendation.suggestedDurationLabel || '45min'} />
+          <MiniInfo label="Modo" value={recommendation.studyModeLabel || 'Teoria'} />
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
         <button
-          type="button"
+          className="pl-btn pl-btn-primary pl-btn-sm"
+          style={{ justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
           onClick={recommendation ? onStart : onOpenPlan}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#1D4ED8] sm:text-xs"
         >
-          <Play size={14} fill="currentColor" />
-          {recommendation ? 'Começar sugerida' : 'Abrir plano'}
+          <Play size={10} fill="currentColor" />
+          {recommendation ? 'Começar' : 'Abrir plano'}
         </button>
         <button
-          type="button"
+          className="pl-btn pl-btn-sm"
+          style={{ justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
           onClick={onOpenRegister}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 sm:text-xs"
         >
-          Registrar
-          <ArrowRight size={13} />
+          Registrar <ArrowRight size={11} />
         </button>
       </div>
     </div>
@@ -397,44 +480,11 @@ function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenReg
 
 function MiniInfo({ label, value }) {
   return (
-    <div className="min-w-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-800 sm:text-xs">{value}</p>
-    </div>
-  );
-}
-
-function MethodPill({ icon: Icon, text }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-gray-600 shadow-sm">
-      <Icon size={13} className="text-[#2563EB]" />
-      {text}
-    </div>
-  );
-}
-
-function MethodCard({ icon: Icon, iconWrap, glow, title, description, hoverClass, onClick }) {
-  return (
-    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
-      <div className={`absolute -mr-8 -mt-8 h-20 w-20 rounded-bl-[3rem] transition-transform group-hover:scale-110 ${glow} right-0 top-0`} />
-
-      <div className={`relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-xl sm:mb-5 sm:h-14 sm:w-14 sm:rounded-2xl ${iconWrap}`}>
-        <Icon size={24} />
+    <div style={{ minWidth: 0 }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {value}
       </div>
-
-      <h4 className="compact-title mb-1.5 text-base sm:text-lg">{title}</h4>
-      <p className="mb-5 flex-1 text-xs font-bold leading-relaxed text-gray-400 sm:mb-6 sm:text-sm">{description}</p>
-
-      <button
-        type="button"
-        onClick={onClick}
-        className={`group/button flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white shadow-md transition-all sm:rounded-2xl sm:py-3.5 sm:text-base ${hoverClass}`}
-      >
-        Iniciar
-        <ArrowRight size={18} className="transition-transform group-hover/button:translate-x-2" />
-      </button>
     </div>
   );
 }
-
-

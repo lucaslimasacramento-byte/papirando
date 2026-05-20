@@ -19,15 +19,8 @@ import {
   Crosshair,
   Layers,
 } from 'lucide-react';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumBadge,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-} from '../components/PageHeadPremium';
 
-/** Tom primário alinhado ao design system (`btn-primary` = blue-700). */
-const DISCIPLINE_ACCENT_FALLBACK = '#1d4ed8';
+const DISCIPLINE_ACCENT_FALLBACK = 'var(--pl-accent)';
 
 export default function Disciplinas({
   bancoDisciplinas = [],
@@ -152,24 +145,9 @@ export default function Disciplinas({
   const iaInsights = useMemo(() => {
     if (!bancoDisciplinas || bancoDisciplinas.length === 0) {
       return {
-        tracao: {
-          titulo: 'Sem dados',
-          texto: 'Adicione disciplinas para ver análises.',
-          icon: Flame,
-          color: 'text-gray-400',
-        },
-        alerta: {
-          titulo: 'Sem dados',
-          texto: 'Aguardando informações do edital.',
-          icon: Clock3,
-          color: 'text-gray-400',
-        },
-        dificuldade: {
-          titulo: 'Sem dados',
-          texto: 'Comece a resolver questões nos tópicos.',
-          icon: AlertTriangle,
-          color: 'text-gray-400',
-        },
+        tracao: { titulo: 'Sem dados', texto: 'Adicione disciplinas para ver análises.', icon: Flame },
+        alerta: { titulo: 'Sem dados', texto: 'Aguardando informações do edital.', icon: Clock3 },
+        dificuldade: { titulo: 'Sem dados', texto: 'Comece a resolver questões nos tópicos.', icon: AlertTriangle },
         potencial: '0%',
       };
     }
@@ -179,12 +157,10 @@ export default function Disciplinas({
       const concluidos = topicos.filter((t) => t.concluido).length;
       const total = topicos.length;
       const progresso = total > 0 ? Math.round((concluidos / total) * 100) : 0;
-
       const acertos = topicos.reduce((acc, t) => acc + (Number(t.acertos) || 0), 0);
       const erros = topicos.reduce((acc, t) => acc + (Number(t.erros) || 0), 0);
       const totalQuestoes = acertos + erros;
       const taxaErro = totalQuestoes > 0 ? Math.round((erros / totalQuestoes) * 100) : 0;
-
       return { ...d, progresso, acertos, erros, taxaErro, total, concluidos };
     });
 
@@ -196,37 +172,30 @@ export default function Disciplinas({
     return {
       tracao: {
         titulo: 'Puxando a fila',
-        texto:
-          maisAvancada && maisAvancada.progresso > 0
-            ? `Sua melhor execução está em ${maisAvancada.nome} (${maisAvancada.progresso}% concluído).`
-            : 'Você ainda não iniciou os tópicos do edital.',
+        texto: maisAvancada && maisAvancada.progresso > 0
+          ? `Sua melhor execução está em ${maisAvancada.nome} (${maisAvancada.progresso}% concluído).`
+          : 'Você ainda não iniciou os tópicos do edital.',
         icon: Flame,
-        color: 'text-orange-400',
       },
       alerta: {
         titulo: 'Atenção urgente',
-        texto:
-          maisAtrasada && (maisAvancada?.id !== maisAtrasada?.id || maisAtrasada.progresso === 0)
-            ? `${maisAtrasada.nome} está ficando para trás (${maisAtrasada.progresso}%).`
-            : 'Todas as disciplinas estão caminhando de forma equilibrada.',
+        texto: maisAtrasada && (maisAvancada?.id !== maisAtrasada?.id || maisAtrasada.progresso === 0)
+          ? `${maisAtrasada.nome} está ficando para trás (${maisAtrasada.progresso}%).`
+          : 'Todas as disciplinas estão caminhando de forma equilibrada.',
         icon: Crosshair,
-        color: 'text-emerald-400',
       },
       dificuldade: {
         titulo: 'Ponto de atrito',
-        texto:
-          maisDificil && maisDificil.taxaErro > 20
-            ? `${maisDificil.nome} está exigindo reforço (${maisDificil.taxaErro}% de erro).`
-            : maisDificil
-            ? 'Seu aproveitamento geral está bom. Nenhuma disciplina crítica detectada.'
-            : 'Preencha acertos e erros nos tópicos para mapear suas dificuldades.',
+        texto: maisDificil && maisDificil.taxaErro > 20
+          ? `${maisDificil.nome} está exigindo reforço (${maisDificil.taxaErro}% de erro).`
+          : maisDificil
+          ? 'Seu aproveitamento geral está bom. Nenhuma disciplina crítica detectada.'
+          : 'Preencha acertos e erros nos tópicos para mapear suas dificuldades.',
         icon: AlertTriangle,
-        color: 'text-red-400',
       },
-      potencial:
-        totalTopicos > 0
-          ? `+${Math.min(99, Math.max(10, Math.round((totalPendentes / totalTopicos) * 100)))}%`
-          : '0%',
+      potencial: totalTopicos > 0
+        ? `+${Math.min(99, Math.max(10, Math.round((totalPendentes / totalTopicos) * 100)))}%`
+        : '0%',
     };
   }, [bancoDisciplinas, totalTopicos, totalPendentes]);
 
@@ -239,15 +208,12 @@ export default function Disciplinas({
 
     try {
       const topicIds = (disciplina.topicos || []).map((topico) => topico.id).filter(Boolean);
-
       if (topicIds.length > 0) {
         const { error: topicsError } = await supabase.from('topics').delete().in('id', topicIds);
         if (topicsError) throw topicsError;
       }
-
       const { error: subjectError } = await supabase.from('subjects').delete().eq('id', disciplina.id);
       if (subjectError) throw subjectError;
-
       if (setBancoDisciplinas) {
         setBancoDisciplinas((prev) => prev.filter((d) => d.id !== disciplina.id));
       }
@@ -258,241 +224,218 @@ export default function Disciplinas({
   };
 
   return (
-    <div className="page-shell animate-in fade-in duration-500 pb-16 !pt-4 sm:!pt-5">
-      <PageHeadPremiumShell className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        {/* Esquerda: ícone + texto proporcionais ao bloco da direita */}
-        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5">
-          <PageHeadPremiumIconTile>
-            <Layers className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-          </PageHeadPremiumIconTile>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-base font-semibold tracking-tight text-white sm:text-lg">Disciplinas</h1>
-            <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-              Abra uma disciplina para editar a estrutura, adicionar tópicos e acompanhar a execução do edital por aqui.
-            </p>
-          </div>
-        </div>
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '28px 28px 56px' }}>
 
-        {/* Direita: badge no topo, botões lado a lado abaixo */}
-        <div className="flex w-full shrink-0 flex-col items-stretch justify-center gap-2.5 sm:w-auto sm:items-end sm:gap-3">
-          <PageHeadPremiumBadge icon={BarChart3} className="!mb-0 w-full justify-center sm:w-fit sm:self-end">
-            Gestão do edital
-          </PageHeadPremiumBadge>
-          <div className="flex flex-row flex-wrap items-center justify-center gap-2 sm:justify-end">
-            <button
-              type="button"
-              onClick={() => setRegistroEstudoModalOpen && setRegistroEstudoModalOpen(true)}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Plus size={14} strokeWidth={2} />
-              Registrar estudo
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditingDiscipline && setEditingDiscipline({})}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Edit3 size={14} strokeWidth={2} />
-              Nova disciplina
-            </button>
-          </div>
+      {/* Hero */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+        <div>
+          <div className="pl-eyebrow" style={{ marginBottom: 6 }}>Gestão do edital</div>
+          <h1 className="pl-display" style={{ fontSize: 38, margin: 0 }}>
+            Suas disciplinas.
+          </h1>
         </div>
-      </PageHeadPremiumShell>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Disciplinas" value={totalDisciplinas} sub="Base total organizada" accent="blue" icon={BookOpen} />
-        <KpiCard label="Tópicos concluídos" value={totalConcluidos} sub="Já estudados e marcados" accent="emerald" icon={CheckCircle2} />
-        <KpiCard label="Tópicos pendentes" value={totalPendentes} sub="Ainda sem execução" accent="orange" icon={Clock3} />
-        <KpiCard label="Aproveitamento" value={`${progressoGeral}%`} sub="Cobertura real da base" accent="indigo" icon={TrendingUp} />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="pl-btn pl-btn-ghost"
+            onClick={() => setEditingDiscipline && setEditingDiscipline({})}
+          >
+            <Edit3 size={13} />
+            Nova disciplina
+          </button>
+          <button
+            type="button"
+            className="pl-btn pl-btn-primary"
+            onClick={() => setRegistroEstudoModalOpen && setRegistroEstudoModalOpen(true)}
+          >
+            <Plus size={13} />
+            Registrar estudo
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.75fr)_330px]">
-        <div className="section-card flex flex-col overflow-hidden p-0">
-          <div className="border-b border-slate-200 px-5 py-5 sm:px-6 sm:py-6">
-            <div className="soft-accent rounded-xl p-4">
-              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-2xs font-semibold uppercase tracking-wider text-slate-500">Avanço global</p>
-                </div>
-                <div className="flex items-baseline gap-1 tabular-nums">
-                  <span className="text-2xl font-semibold leading-none text-blue-900">{progressoGeral}</span>
-                  <span className="text-sm font-semibold text-blue-900">%</span>
-                </div>
+      {/* KPI strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        <PlKpi label="Disciplinas" value={totalDisciplinas} sub="base organizada" icon={Layers} />
+        <PlKpi label="Concluídos" value={totalConcluidos} sub="tópicos marcados" icon={CheckCircle2} />
+        <PlKpi label="Pendentes" value={totalPendentes} sub="sem execução" icon={Clock3} />
+        <PlKpi label="Aproveitamento" value={`${progressoGeral}%`} sub="cobertura real" icon={TrendingUp} />
+      </div>
+
+      {/* Main grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
+
+        {/* Discipline table */}
+        <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+          {/* Table header controls */}
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--pl-rule)' }}>
+            {/* Progress bar */}
+            <div style={{
+              background: 'var(--pl-bg-soft)', borderRadius: 8, padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16,
+            }}>
+              <div className="pl-eyebrow" style={{ fontSize: 9.5, flexShrink: 0 }}>Avanço global</div>
+              <div style={{ flex: 1, height: 6, background: 'var(--pl-rule-2)', borderRadius: 99, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', width: `${progressoGeral}%`,
+                  background: 'var(--pl-accent)', borderRadius: 99,
+                  transition: 'width 0.5s ease',
+                }} />
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-blue-100/80">
-                <div className="h-full rounded-full bg-blue-700 transition-all duration-700" style={{ width: `${progressoGeral}%` }} />
-              </div>
+              <span className="pl-num" style={{ fontSize: 18, flexShrink: 0 }}>{progressoGeral}%</span>
             </div>
 
-            <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative max-w-md flex-1">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            {/* Search + filter */}
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+                <Search size={13} style={{
+                  position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+                  color: 'var(--pl-ink-4)', pointerEvents: 'none',
+                }} />
                 <input
+                  className="pl-input"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar disciplina..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition-all duration-300 hover:border-blue-200 focus:border-blue-700 focus:ring-4 focus:ring-blue-50"
+                  placeholder="Buscar disciplina…"
+                  style={{ width: '100%', paddingLeft: 30, height: 32, fontSize: 12.5 }}
                 />
               </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                  <Filter size={12} />
-                  Plano
-                </div>
-                <button
-                  onClick={() => setPlanoFiltro('Todos')}
-                  className={`rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
-                    planoFiltro === 'Todos'
-                      ? 'border border-blue-100 bg-blue-50 text-blue-700'
-                      : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  Todos
-                </button>
-                {planos.map((plano) => (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Plano</span>
+                {['Todos', ...planos].map((p) => (
                   <button
-                    key={plano}
-                    onClick={() => setPlanoFiltro(plano)}
-                    className={`max-w-[240px] truncate rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
-                      planoFiltro === plano
-                        ? 'border border-blue-100 bg-blue-50 text-blue-700'
-                        : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                    }`}
-                    title={plano}
+                    key={p}
+                    type="button"
+                    onClick={() => setPlanoFiltro(p)}
+                    style={{
+                      height: 28, padding: '0 10px', borderRadius: 6, border: '1px solid',
+                      fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
+                      borderColor: planoFiltro === p ? 'var(--pl-accent)' : 'var(--pl-rule-strong)',
+                      background: planoFiltro === p ? 'var(--pl-accent-soft)' : 'transparent',
+                      color: planoFiltro === p ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                      transition: 'all 0.12s',
+                      maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                    title={p}
                   >
-                    {plano}
+                    {p}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="scrollbar-thin overflow-x-auto">
-            <table className="min-w-[1120px] w-full table-fixed">
-              <thead className="bg-slate-50/80">
-                <tr className="border-b border-slate-200 text-left">
-                  <th className="w-[38%] px-8 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Disciplina</th>
-                  <th className="w-[22%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Plano</th>
-                  <th className="w-[8%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Tópicos</th>
-                  <th className="w-[10%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Concluídos</th>
-                  <th className="w-[14%] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Progresso</th>
-                  <th className="w-[210px] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Ações</th>
+          {/* Table */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', minWidth: 680, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--pl-rule)' }}>
+                  {['Disciplina', 'Plano', 'Tópicos', 'Concluídos', 'Progresso', 'Ações'].map((col) => (
+                    <th key={col} className="pl-eyebrow" style={{
+                      fontSize: 9.5, textAlign: 'left', padding: '10px 14px',
+                      background: 'var(--pl-bg-soft)',
+                    }}>
+                      {col}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-
               <tbody>
                 {loadingDisciplinas && (
                   <tr>
-                    <td colSpan={6} className="px-8 py-20 text-center">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-                        <BrainCircuit size={22} />
-                      </div>
-                      <div className="mt-4 text-sm font-semibold text-slate-500">Carregando disciplinas...</div>
+                    <td colSpan={6} style={{ padding: '48px 20px', textAlign: 'center' }}>
+                      <BrainCircuit size={22} style={{ color: 'var(--pl-ink-4)', margin: '0 auto 10px' }} />
+                      <div style={{ fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 600 }}>Carregando disciplinas…</div>
                     </td>
                   </tr>
                 )}
+                {!loadingDisciplinas && disciplinasFiltradas.map((disciplina, idx) => {
+                  const topicos = disciplina.topicos || [];
+                  const concluidos = topicos.filter((t) => t.concluido).length;
+                  const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
+                  const cor = disciplina.cor || 'var(--pl-accent)';
 
-                {!loadingDisciplinas &&
-                  disciplinasFiltradas.map((disciplina, idx) => {
-                    const topicos = disciplina.topicos || [];
-                    const concluidos = topicos.filter((t) => t.concluido).length;
-                    const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
-
-                    return (
-                      <tr key={disciplina.id || idx} className="border-b border-slate-100 transition-all duration-300 hover:bg-blue-50/30">
-                        <td className="px-8 py-4">
-                          <div className="flex items-center gap-4">
-                            <div
-                              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
-                              style={{ backgroundColor: disciplina.cor || DISCIPLINE_ACCENT_FALLBACK }}
-                            >
-                              <BookOpen size={20} />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="truncate text-base font-semibold text-slate-900">{disciplina.nome}</div>
-                            </div>
+                  return (
+                    <tr
+                      key={disciplina.id || idx}
+                      style={{ borderBottom: '1px solid var(--pl-rule)' }}
+                    >
+                      {/* Nome */}
+                      <td style={{ padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                            background: cor, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <BookOpen size={16} style={{ color: '#fff' }} />
                           </div>
-                        </td>
-
-                        <td className="px-4 py-4 align-top">
-                          <span
-                            title={disciplina.plano || 'Geral'}
-                            className="inline-flex max-w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-700"
-                          >
-                            {disciplina.plano || 'Geral'}
+                          <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink)' }}>
+                            {disciplina.nome}
                           </span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="text-sm font-semibold text-slate-800">{topicos.length}</span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="text-sm font-semibold text-emerald-600">{concluidos}</span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                <div
-                                  className="h-full rounded-full transition-all duration-500"
-                                  style={{
-                                    width: `${progresso}%`,
-                                    backgroundColor: disciplina.cor || DISCIPLINE_ACCENT_FALLBACK,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <span
-                              className="w-10 text-right text-sm font-semibold"
-                              style={{ color: disciplina.cor || DISCIPLINE_ACCENT_FALLBACK }}
-                            >
-                              {progresso}%
-                            </span>
+                        </div>
+                      </td>
+                      {/* Plano */}
+                      <td style={{ padding: '12px 14px' }}>
+                        <span className="pl-tag" style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }} title={disciplina.plano || 'Geral'}>
+                          {disciplina.plano || 'Geral'}
+                        </span>
+                      </td>
+                      {/* Tópicos */}
+                      <td style={{ padding: '12px 14px' }}>
+                        <span className="pl-num" style={{ fontSize: 15 }}>{topicos.length}</span>
+                      </td>
+                      {/* Concluídos */}
+                      <td style={{ padding: '12px 14px' }}>
+                        <span className="pl-num" style={{ fontSize: 15, color: 'var(--pl-success)' }}>{concluidos}</span>
+                      </td>
+                      {/* Progresso */}
+                      <td style={{ padding: '12px 14px', minWidth: 120 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ flex: 1, height: 5, background: 'var(--pl-rule-2)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${progresso}%`, background: cor, borderRadius: 99, transition: 'width 0.4s' }} />
                           </div>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setViewingDiscipline && setViewingDiscipline(disciplina)}
-                              className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-semibold text-blue-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100"
-                            >
-                              Abrir
-                              <ArrowUpRight size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingDiscipline && setEditingDiscipline(disciplina)}
-                              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition-all duration-300 hover:border-blue-700 hover:bg-blue-700 hover:text-white"
-                              title="Editar disciplina"
-                            >
-                              <Edit3 size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteDiscipline(disciplina)}
-                              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition-all duration-300 hover:border-red-600 hover:bg-red-600 hover:text-white"
-                              title="Excluir disciplina"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-
+                          <span style={{ fontSize: 12, fontWeight: 700, color: cor, width: 34, textAlign: 'right' }}>{progresso}%</span>
+                        </div>
+                      </td>
+                      {/* Ações */}
+                      <td style={{ padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            type="button"
+                            className="pl-btn pl-btn-ghost"
+                            style={{ height: 28, fontSize: 12, padding: '0 10px' }}
+                            onClick={() => setViewingDiscipline && setViewingDiscipline(disciplina)}
+                          >
+                            Abrir <ArrowUpRight size={11} />
+                          </button>
+                          <button
+                            type="button"
+                            className="pl-btn pl-btn-ghost"
+                            style={{ height: 28, width: 28, padding: 0, justifyContent: 'center' }}
+                            onClick={() => setEditingDiscipline && setEditingDiscipline(disciplina)}
+                            title="Editar"
+                          >
+                            <Edit3 size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className="pl-btn pl-btn-ghost"
+                            style={{ height: 28, width: 28, padding: 0, justifyContent: 'center', color: 'var(--pl-danger)' }}
+                            onClick={() => handleDeleteDiscipline(disciplina)}
+                            title="Excluir"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {!loadingDisciplinas && disciplinasFiltradas.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-8 py-20 text-center">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-                        <BrainCircuit size={22} />
-                      </div>
-                      <div className="mt-4 text-sm font-semibold text-slate-500">Nenhuma disciplina encontrada.</div>
+                    <td colSpan={6} style={{ padding: '48px 20px', textAlign: 'center' }}>
+                      <BrainCircuit size={22} style={{ color: 'var(--pl-ink-4)', margin: '0 auto 10px' }} />
+                      <div style={{ fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 600 }}>Nenhuma disciplina encontrada.</div>
                     </td>
                   </tr>
                 )}
@@ -500,51 +443,59 @@ export default function Disciplinas({
             </table>
           </div>
 
-          <div className="border-t border-slate-100 bg-slate-50/60 px-8 py-4 text-xs font-semibold text-slate-500">
-            Mostrando {disciplinasFiltradas.length} disciplinas.
+          <div style={{
+            padding: '10px 20px', borderTop: '1px solid var(--pl-rule)',
+            fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 600,
+            background: 'var(--pl-bg-soft)',
+          }}>
+            Mostrando {disciplinasFiltradas.length} disciplina{disciplinasFiltradas.length !== 1 ? 's' : ''}.
           </div>
         </div>
 
-        <div className="section-card soft-accent sticky top-6 h-fit p-5">
+        {/* AI Diagnostic panel */}
+        <div className="pl-card-ai" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <BrainCircuit size={14} style={{ color: 'var(--pl-accent)' }} />
+            <span className="pl-tag pl-tag-ai">Raio-X do edital</span>
+          </div>
+          <h3 style={{
+            fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+            fontSize: 20, color: 'var(--pl-ink)', letterSpacing: '-0.04em',
+            lineHeight: 1.1, margin: '0 0 6px',
+          }}>
+            Diagnóstico inteligente.
+          </h3>
+          <p style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', lineHeight: 1.5, margin: '0 0 18px' }}>
+            Análise em tempo real das suas matérias cadastradas.
+          </p>
 
-          <div>
-            <div className="brand-badge gap-2 px-3 py-1.5 font-semibold tracking-[0.18em]">
-              <BrainCircuit size={12} />
-              Raio-X do edital
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[iaInsights.tracao, iaInsights.alerta, iaInsights.dificuldade].map((insight, i) => {
+              const Icon = insight.icon;
+              return (
+                <div key={i} className="pl-card" style={{ padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <Icon size={13} style={{ color: 'var(--pl-accent)', flexShrink: 0 }} />
+                    <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>{insight.titulo}</span>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: 'var(--pl-ink-2)', lineHeight: 1.5, margin: 0 }}>
+                    {insight.texto}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
 
-            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Diagnóstico inteligente</h3>
-            <p className="mt-3 text-sm font-medium leading-relaxed text-white/70">
-              Análise em tempo real do seu desempenho nas matérias cadastradas.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              <InsightCard
-                icon={iaInsights.tracao.icon}
-                iconColor={iaInsights.tracao.color}
-                title={iaInsights.tracao.titulo}
-                text={iaInsights.tracao.texto}
-              />
-              <InsightCard
-                icon={iaInsights.alerta.icon}
-                iconColor={iaInsights.alerta.color}
-                title={iaInsights.alerta.titulo}
-                text={iaInsights.alerta.texto}
-              />
-              <InsightCard
-                icon={iaInsights.dificuldade.icon}
-                iconColor={iaInsights.dificuldade.color}
-                title={iaInsights.dificuldade.titulo}
-                text={iaInsights.dificuldade.texto}
-              />
-            </div>
-
-            <div className="mt-6 flex items-center justify-between rounded-xl border border-blue-100 bg-white/90 px-4 py-4 shadow-sm">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Potencial em aberto</span>
-              <div className="flex items-center gap-2 text-3xl font-semibold text-blue-900">
-                {iaInsights.potencial}
-                <ArrowUpRight size={22} className="text-emerald-500" />
-              </div>
+          <div style={{
+            marginTop: 16, padding: '12px 14px',
+            borderRadius: 8, border: '1px solid var(--pl-rule-strong)',
+            background: 'var(--pl-surface)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>Potencial em aberto</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span className="pl-num" style={{ fontSize: 24, color: 'var(--pl-ink)' }}>{iaInsights.potencial}</span>
+              <ArrowUpRight size={16} style={{ color: 'var(--pl-success)' }} />
             </div>
           </div>
         </div>
@@ -553,36 +504,15 @@ export default function Disciplinas({
   );
 }
 
-function InsightCard({ title, text, icon: Icon, iconColor }) {
+function PlKpi({ label, value, sub, icon: Icon }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/90 p-3.5 shadow-sm transition-all duration-300 hover:bg-white">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 ${iconColor}`}>
-          <Icon size={14} strokeWidth={3} />
-        </div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">{title}</p>
+    <div className="pl-card" style={{ padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+        <Icon size={13} style={{ color: 'var(--pl-ink-3)' }} />
+        <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>
       </div>
-      <p className="mt-3 text-sm font-semibold leading-relaxed text-slate-500">{text}</p>
-    </div>
-  );
-}
-
-function KpiCard({ icon: Icon, label, value, sub, accent }) {
-  const styles = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    orange: 'bg-orange-50 text-orange-600 border-orange-100',
-  };
-
-  return (
-    <div className="kpi-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${styles[accent]}`}>
-        <Icon size={12} />
-        {label}
-      </div>
-      <p className="mt-5 text-3xl font-semibold leading-none text-blue-900 sm:text-4xl">{value}</p>
-      <p className="mt-2 text-sm font-semibold text-slate-500">{sub}</p>
+      <div className="pl-num" style={{ fontSize: 28, lineHeight: 1, display: 'block', marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{sub}</div>
     </div>
   );
 }

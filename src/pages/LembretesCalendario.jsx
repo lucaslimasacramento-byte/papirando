@@ -12,7 +12,6 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import PageHeadPremium from '../components/PageHeadPremium';
 import { buildWeeklyStudyPlan } from '../lib/weeklyPlanner';
 import { supabase } from '../lib/supabase';
 
@@ -361,24 +360,25 @@ export default function LembretesCalendario({
   }
 
   return (
-    <div className="page-shell pb-10 !pt-4 sm:!pt-5">
-      <PageHeadPremium
-        icon={AlarmClock}
-        title="Lembretes e calendário"
-        subtitle="Visualize alertas, organize pendências e acompanhe provas no calendário unificado."
-        trailing={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-slate-400">Alertas ativos</span>
-              <span className="text-sm font-semibold tabular-nums text-white">{notifications.length}</span>
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-slate-400">Provas no radar</span>
-              <span className="text-sm font-semibold tabular-nums text-white">{notificationStats.provas}</span>
-            </span>
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      {/* ── Hero ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Organização</p>
+          <h1 className="pl-display" style={{ marginBottom: 8 }}>Lembretes e calendário.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>Visualize alertas, organize pendências e acompanhe provas no calendário unificado.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="pl-card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <p className="pl-eyebrow">Alertas ativos</p>
+            <span className="pl-num" style={{ fontSize: 18 }}>{notifications.length}</span>
           </div>
-        }
-      />
+          <div className="pl-card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <p className="pl-eyebrow">Provas no radar</p>
+            <span className="pl-num" style={{ fontSize: 18 }}>{notificationStats.provas}</span>
+          </div>
+        </div>
+      </div>
 
       <section className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="soft-accent px-5 py-2.5 sm:px-6 lg:px-8">
@@ -404,7 +404,7 @@ export default function LembretesCalendario({
               </div>
 
               <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                <button type="button" onClick={openNewReminder} className="btn-primary h-9 shrink-0 gap-1.5 px-4 py-1.5">
+                <button type="button" onClick={openNewReminder} className="pl-btn pl-btn-primary" style={{ gap: 6 }}>
                   <Plus size={16} strokeWidth={2} />
                   Novo lembrete
                 </button>
@@ -422,7 +422,7 @@ export default function LembretesCalendario({
       </section>
 
       <div className="grid gap-3 xl:grid-cols-[1.12fr_0.88fr] xl:items-start">
-        <section className="section-card flex flex-col">
+        <section className="pl-card flex flex-col">
           <div className="mb-3 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Radar ativo</p>
@@ -464,7 +464,7 @@ export default function LembretesCalendario({
           )}
         </section>
 
-        <section className="section-card">
+        <section className="pl-card">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-blue-700" />
@@ -507,7 +507,7 @@ export default function LembretesCalendario({
         </section>
       </div>
 
-      <section className="section-card flex flex-col">
+      <section className="pl-card flex flex-col">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={16} className="text-emerald-500" />
@@ -685,7 +685,7 @@ function FullScreenCalendarModal({
               </button>
             </div>
 
-            <button type="button" onClick={onCreateReminder} className="btn-primary gap-2 px-3.5 py-1.5">
+            <button type="button" onClick={onCreateReminder} className="pl-btn pl-btn-primary" style={{ gap: 8 }}>
               <Plus size={16} strokeWidth={2} />
               Novo lembrete
             </button>
@@ -887,7 +887,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
           <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5">
             Cancelar
           </button>
-          <button type="button" onClick={onSave} className="btn-primary px-5 py-2.5">
+          <button type="button" onClick={onSave} className="pl-btn pl-btn-primary">
             Salvar lembrete
           </button>
         </div>

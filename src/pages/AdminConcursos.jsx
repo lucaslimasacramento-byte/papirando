@@ -564,7 +564,7 @@ export default function AdminConcursos({
   };
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-paper-bg" style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24, padding: '28px 28px 48px' }}>
       <div className="flex flex-col gap-5 rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-white p-6 shadow-sm lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">

@@ -295,7 +295,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
   }
 
   return (
-    <div className="page-shell animate-in fade-in slide-in-from-bottom-6 mx-auto flex w-full max-w-[1320px] flex-col gap-8 pb-16 text-gray-800 duration-700">
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 32, padding: '28px 28px 64px', maxWidth: 1320, margin: '0 auto', color: 'var(--pl-ink)' }}>
       <div className="flex flex-col items-center gap-4 mb-4 relative z-10">
         <button
           type="button"
@@ -380,8 +380,8 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
       )}
 
       <div className="text-center space-y-4 max-w-3xl mx-auto mb-4">
-        <h2 className="page-title text-4xl font-semibold tracking-tight text-slate-900">
-          Conheça os outros <span className={theme.ui.accentText}>planos.</span>
+        <h2 className="pl-display" style={{ fontSize: 36, margin: 0 }}>
+          Conheça os outros <span style={{ color: 'var(--pl-accent)' }}>planos.</span>
         </h2>
         <p className="text-gray-500 font-medium text-lg">
           Faça upgrade ou downgrade a qualquer momento. O valor é proporcionalizado automaticamente.

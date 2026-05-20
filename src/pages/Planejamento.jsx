@@ -19,7 +19,6 @@ import { buildWeeklyStudyPlan, WEEKDAY_BLUEPRINT } from '../lib/weeklyPlanner';
 import { mergeDisciplinesByCanonical } from '../lib/studyRecommendation';
 import { supabase } from '../lib/supabase';
 import Ciclos from './Ciclos';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -147,22 +146,22 @@ class PlanningErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="page-shell">
-          <div className="section-card max-w-[980px] border-amber-200/80 bg-amber-50/30 p-8">
-          <div className="neutral-badge border-amber-200 bg-amber-50 text-amber-900">
-            Planejamento em recuperacao
-          </div>
-          <h2 className="compact-title mt-4 text-2xl sm:text-3xl">
-            Essa aba encontrou um dado antigo e foi protegida para não derrubar o site.
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-gray-500">
-            Reabra a configuração do planejamento ou recarregue a página. A tela principal continua preservada e o app não cai mais inteiro.
-          </p>
-          {this.state.errorMessage ? (
-            <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-              Erro identificado: {this.state.errorMessage}
-            </div>
-          ) : null}
+        <div className="pl-paper-bg" style={{ flex: 1, overflow: 'auto', padding: '28px 36px 48px' }}>
+          <div className="pl-card" style={{ maxWidth: 980, padding: '32px', borderColor: 'rgba(180,83,9,0.3)', background: 'rgba(251,234,205,0.3)' }}>
+            <span className="pl-tag pl-tag-warn">Planejamento em recuperação</span>
+            <h2 className="pl-display" style={{ margin: '16px 0 0', fontSize: 32, color: 'var(--pl-ink)' }}>
+              Essa aba encontrou um dado antigo e foi protegida para não derrubar o site.
+            </h2>
+            <p style={{ marginTop: 12, fontSize: 13.5, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)' }}>
+              Reabra a configuração do planejamento ou recarregue a página. A tela principal continua preservada.
+            </p>
+            {this.state.errorMessage ? (
+              <div className="pl-card" style={{ marginTop: 20, padding: '12px 16px', borderColor: 'rgba(180,83,9,0.3)', background: 'var(--pl-warn-soft)' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-warn)' }}>
+                  Erro identificado: {this.state.errorMessage}
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
       );
@@ -764,84 +763,123 @@ function PlanejamentoContent({
 
   return (
     <div
-      className={`page-shell animate-in fade-in duration-500 !pt-4 sm:!pt-5 ${
-        studyMode === 'fixo' ? 'min-h-full pb-20' : 'h-full overflow-hidden pb-4'
-      }`}
+      className="pl-paper-bg"
+      style={{
+        flex: 1,
+        overflow: studyMode === 'fixo' ? 'auto' : 'hidden',
+        padding: '28px 36px 48px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 18,
+      }}
     >
-      <PageHeadPremium
-        className={studyMode === 'fixo' ? 'mb-6' : 'mb-3'}
-        icon={CalendarIcon}
-        title="Planejamento"
-        subtitle={
-          studyMode === 'fixo'
-            ? 'Planeje por ciclo ou agenda fixa, sem duplicar matérias equivalentes entre cursos.'
-            : undefined
-        }
-        trailing={
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="flex items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
+      {/* ── HERO ── */}
+      <header style={{ display: 'flex', gap: 28, alignItems: 'flex-end', flexShrink: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="pl-eyebrow">
+            Área de planejamento
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>·</span>
+            {studyMode === 'ciclo' ? 'Ciclo flexível' : 'Planejamento fixo'}
+          </div>
+          <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 56, color: 'var(--pl-ink)' }}>
+            {studyMode === 'ciclo' ? 'Ciclo de estudos' : 'Planejamento'}<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 520, lineHeight: 1.55 }}>
+            {studyMode === 'fixo'
+              ? 'Planeje por agenda fixa, sem duplicar matérias equivalentes entre cursos.'
+              : 'Estude em ordem rotativa sem depender de dias fixos. Ideal para rotina variável.'}
+          </p>
+        </div>
+
+        {/* Mode + view toggles */}
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+          {/* Mode toggle */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 2,
+            background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
+            borderRadius: 8, padding: 3,
+          }}>
+            <button
+              type="button"
+              onClick={openWizard}
+              style={{
+                height: 30, padding: '0 12px', borderRadius: 6, border: 0, cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, fontFamily: 'var(--pl-sans)',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: studyMode === 'ciclo' ? 'var(--pl-ink)' : 'transparent',
+                color: studyMode === 'ciclo' ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
+              }}
+            >
+              <RotateCcw size={12} /> Ciclo flexível
+            </button>
+            <button
+              type="button"
+              onClick={openWizard}
+              style={{
+                height: 30, padding: '0 12px', borderRadius: 6, border: 0, cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, fontFamily: 'var(--pl-sans)',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: studyMode === 'fixo' ? 'var(--pl-ink)' : 'transparent',
+                color: studyMode === 'fixo' ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
+              }}
+            >
+              <CalendarDays size={12} /> Planejamento fixo
+            </button>
+          </div>
+
+          {/* View toggle (fixo only) */}
+          {studyMode === 'fixo' ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 2,
+              background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
+              borderRadius: 8, padding: 3,
+            }}>
               <button
                 type="button"
-                onClick={openWizard}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:text-[13px] ${
-                  studyMode === 'ciclo' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                }`}
+                onClick={() => setAgendaViewMode('calendario')}
+                style={{
+                  height: 28, padding: '0 10px', borderRadius: 5, border: 0, cursor: 'pointer',
+                  fontSize: 11.5, fontWeight: 600, fontFamily: 'var(--pl-sans)',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: agendaViewMode === 'calendario' ? 'var(--pl-bg-soft)' : 'transparent',
+                  color: agendaViewMode === 'calendario' ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
+                }}
               >
-                <RotateCcw size={14} />
-                Ciclo flexível
+                <CalendarDays size={11} /> Calendário
               </button>
               <button
                 type="button"
-                onClick={openWizard}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:text-[13px] ${
-                  studyMode === 'fixo' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                }`}
+                onClick={() => setAgendaViewMode('kanban')}
+                style={{
+                  height: 28, padding: '0 10px', borderRadius: 5, border: 0, cursor: 'pointer',
+                  fontSize: 11.5, fontWeight: 600, fontFamily: 'var(--pl-sans)',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: agendaViewMode === 'kanban' ? 'var(--pl-bg-soft)' : 'transparent',
+                  color: agendaViewMode === 'kanban' ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
+                }}
               >
-                <CalendarDays size={14} />
-                Planejamento fixo
+                <Columns size={11} /> Kanban
               </button>
             </div>
+          ) : null}
+        </div>
+      </header>
 
-            {studyMode === 'fixo' ? (
-              <div className="flex items-center rounded-xl border border-white/15 bg-white/10 p-0.5 sm:p-1">
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('calendario')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-4 sm:text-[13px] ${
-                    agendaViewMode === 'calendario' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                  }`}
-                >
-                  <CalendarDays size={14} />
-                  Calendário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('kanban')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-4 sm:text-[13px] ${
-                    agendaViewMode === 'kanban' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10'
-                  }`}
-                >
-                  <Columns size={14} />
-                  Kanban
-                </button>
-              </div>
-            ) : null}
-          </div>
-        }
-      />
+      <div className="pl-rule" style={{ flexShrink: 0 }} />
 
       {studyMode === 'fixo' ? (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="flex flex-col gap-5">
+        <div style={{ display: 'grid', gridTemplateColumns: '280px minmax(0,1fr)', gap: 18, flex: 1, minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <button
               onClick={openWizard}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#185FA5] py-3.5 text-base font-semibold text-white transition-colors hover:bg-[#0C447C]"
+              className="pl-btn pl-btn-primary"
+              style={{ width: '100%', justifyContent: 'center', height: 38, display: 'inline-flex', alignItems: 'center', gap: 8 }}
             >
-              <Sparkles size={20} strokeWidth={3} />
+              <Sparkles size={14} />
               Editar planejamento
             </button>
 
-            <div className="section-card rounded-2xl p-5 flex flex-col gap-3">
+            <div className="pl-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
               <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-100 pb-2">
                 Filtros de exibição
               </h4>
@@ -873,85 +911,50 @@ function PlanejamentoContent({
                 summary.weeklyLabel || '0h 00m por semana',
               ]}
             >
-              <div className="flex flex-wrap gap-2">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                 {selectedCourseLabels.length > 0 ? (
                   selectedCourseLabels.map((course) => (
-                    <span
-                      key={course.plano}
-                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-gray-100 bg-blue-50 text-[#2563EB]"
-                    >
-                      {course.nome}
-                    </span>
+                    <span key={course.plano} className="pl-tag pl-tag-accent">{course.nome}</span>
                   ))
                 ) : (
-                  <span className="text-sm font-semibold text-gray-500">Nenhum curso selecionado ainda.</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-3)' }}>Nenhum curso selecionado ainda.</span>
                 )}
               </div>
             </InfoCard>
 
-            <div className="surface-card rounded-[22px] p-5">
-              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">
+            <div className="pl-card" style={{ padding: '16px 18px' }}>
+              <div className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--pl-rule)' }}>
                 Configurações do plano
-              </h4>
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-gray-600">{targetContest?.nome || 'Sem concurso-alvo'}</p>
-                <p className="text-sm font-semibold text-gray-600">
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{targetContest?.nome || 'Sem concurso-alvo'}</p>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
                   Sessões de {formatMinutesShort(safePlanningSessionWindow.minMinutes)} a{' '}
                   {formatMinutesShort(safePlanningSessionWindow.maxMinutes)}
                 </p>
-                <p className="text-sm font-semibold text-gray-600">
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
                   {safePlanningSessionWindow.subjectsPerDay} matéria(s) por dia
                 </p>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={openWizard}
-                  className="inline-flex items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-bold text-[#2563EB] transition hover:border-blue-200 hover:bg-blue-100"
-                >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+                <button type="button" onClick={openWizard} className="pl-btn pl-btn-sm" style={{ justifyContent: 'center' }}>
                   Reabrir ajuste
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentDate(new Date())}
-                  className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 transition hover:border-[#2563EB] hover:text-[#2563EB]"
-                >
+                <button type="button" onClick={() => setCurrentDate(new Date())} className="pl-btn pl-btn-sm" style={{ justifyContent: 'center' }}>
                   Ir para hoje
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('calendario')}
-                  className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
-                    agendaViewMode === 'calendario'
-                      ? 'bg-[#2563EB] text-white shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#2563EB] hover:text-[#2563EB]'
-                  }`}
-                >
-                  Calendário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAgendaViewMode('kanban')}
-                  className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
-                    agendaViewMode === 'kanban'
-                      ? 'bg-[#2563EB] text-white shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-600 hover:border-[#2563EB] hover:text-[#2563EB]'
-                  }`}
-                >
-                  Kanban
-                </button>
               </div>
-              <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${rhythmPercent}%` }} />
+              <div className="pl-progress accent" style={{ marginBottom: 8 }}>
+                <div className="fill" style={{ width: `${rhythmPercent}%` }} />
               </div>
-              <p className="mt-3 text-xs font-semibold leading-5 text-gray-500">
-                A IA do plano consolida matérias iguais entre cursos antes de montar agenda e kanban.
+              <p style={{ margin: 0, fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-4)', lineHeight: 1.5 }}>
+                A IA consolida matérias iguais entre cursos antes de montar a agenda.
               </p>
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-col gap-4">
-            <div className="grid gap-4 md:grid-cols-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minHeight: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, flexShrink: 0 }}>
               <InfoCard
                 title="Carga da semana"
                 items={[
@@ -976,7 +979,7 @@ function PlanejamentoContent({
               />
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-hidden flex min-h-0 flex-1 flex-col">
+            <div className="pl-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             {agendaViewMode === 'calendario' && (
               <div className="flex flex-col h-full animate-in fade-in duration-300">
                 <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-50/50">
@@ -1380,31 +1383,32 @@ function PlanejamentoContent({
           </div>
         </div>
       ) : (
-        <div className="grid min-h-0 flex-1 gap-3 overflow-hidden">
-          <div className="rounded-[1.15rem] border border-gray-100 bg-white px-3.5 py-2.5 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-[1.05rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
-                  <span className="text-[0.92rem] font-medium text-gray-500">
-                    Ideal para rotina variável, estudo sem dias fixos e prioridade automática das matérias mais importantes.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <div className="pl-card" style={{ padding: '14px 18px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+                  <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>Ciclo flexível</h2>
+                  <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
+                    Ideal para rotina variável, estudo sem dias fixos e prioridade automática.
                   </span>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 <button
                   type="button"
                   onClick={safeCycleProps.onRestartCycle}
                   disabled={!Array.isArray(safeCycleProps.activeCycle) || safeCycleProps.activeCycle.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="pl-btn pl-btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
-                  <RotateCcw size={16} />
-                  Recomeçar Ciclo
+                  <RotateCcw size={12} /> Recomeçar
                 </button>
                 <button
                   type="button"
                   onClick={openWizard}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]"
+                  className="pl-btn pl-btn-primary pl-btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
                   Replanejar
                 </button>
@@ -1412,7 +1416,8 @@ function PlanejamentoContent({
                   type="button"
                   onClick={safeCycleProps.onRemoveCycle}
                   disabled={!Array.isArray(safeCycleProps.activeCycle) || safeCycleProps.activeCycle.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-3.5 py-2 text-[0.92rem] font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="pl-btn pl-btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--pl-danger)' }}
                 >
                   Remover
                 </button>
@@ -1420,25 +1425,28 @@ function PlanejamentoContent({
             </div>
           </div>
           {safeCycleProps?.showCycleGuide ? (
-          <div className="rounded-[1.6rem] border border-gray-100 bg-white px-5 py-4 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <TagPill label="Ciclo flexível" color="#2563EB" soft />
-                  <TagPill label={targetContest?.nome || 'Sem alvo'} color="#2563EB" soft />
+          <div className="pl-card" style={{ padding: '18px 20px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                  <span className="pl-tag pl-tag-accent">Ciclo flexível</span>
+                  {targetContest?.nome && <span className="pl-tag">{targetContest.nome}</span>}
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <h2 className="text-[1.65rem] font-semibold tracking-tight text-slate-900">Ciclo flexível</h2>
-                  <span className="text-sm font-medium text-gray-500">Ideal para rotina variável e estudo sem dias fixos.</span>
-                </div>
-                <div className="mt-3 grid gap-2 md:grid-cols-2">
-                  <div className="rounded-[1rem] border border-gray-200 bg-[#F8FAFD] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Melhor para quem</p>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">Tem rotina variável, turnos instáveis ou precisa seguir a fila de matérias sem prender o estudo ao calendário.</p>
+                <h2 style={{ margin: '0 0 8px', fontSize: 22, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
+                  Ciclo flexível
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+                  <div className="pl-card-paper" style={{ padding: '12px 14px' }}>
+                    <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 6 }}>Melhor para quem</div>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)', lineHeight: 1.5 }}>
+                      Tem rotina variável, turnos instáveis ou precisa seguir a fila sem prender ao calendário.
+                    </p>
                   </div>
-                  <div className="rounded-[1rem] border border-gray-200 bg-[#F8FAFD] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Quando usar o fixo</p>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">Quando a semana é previsível e você prefere enxergar matéria por dia no planejamento.</p>
+                  <div className="pl-card-paper" style={{ padding: '12px 14px' }}>
+                    <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 6 }}>Quando usar o fixo</div>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)', lineHeight: 1.5 }}>
+                      Quando a semana é previsível e você prefere enxergar matéria por dia.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1446,10 +1454,10 @@ function PlanejamentoContent({
                 <button
                   type="button"
                   onClick={safeCycleProps.onResetCycle}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:border-[#2563EB] hover:text-[#2563EB]"
+                  className="pl-btn pl-btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
                 >
-                  <RotateCcw size={16} />
-                  Reiniciar ciclo
+                  <RotateCcw size={12} /> Reiniciar ciclo
                 </button>
               ) : null}
             </div>
@@ -1476,19 +1484,28 @@ function PlanejamentoContent({
           />
           <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
           <div
-            className="relative z-10 flex max-h-[86vh] w-full max-w-[880px] flex-col overflow-hidden rounded-[1.5rem] border border-gray-200 bg-white shadow-2xl"
+            className="pl-card"
+            style={{ position: 'relative', zIndex: 10, display: 'flex', maxHeight: '86vh', width: '100%', maxWidth: 880, flexDirection: 'column', overflow: 'hidden' }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+            <div style={{ borderBottom: '1px solid var(--pl-rule)', padding: '18px 24px', flexShrink: 0, position: 'relative' }}>
               <button
                 type="button"
                 onClick={closeWizard}
-                className="absolute right-4 top-4 rounded-lg p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                style={{
+                  position: 'absolute', right: 16, top: 16,
+                  width: 30, height: 30, border: '1px solid var(--pl-rule-strong)',
+                  borderRadius: 6, background: 'var(--pl-surface)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--pl-ink-3)',
+                }}
                 aria-label="Fechar configuração do planejamento"
               >
-                <X size={22} />
+                <X size={16} />
               </button>
-              <h3 className="text-2xl font-extrabold text-gray-700">Editar Planejamento</h3>
+              <h3 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 24, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
+                Editar Planejamento
+              </h3>
               <WizardStepper step={wizardStep} />
             </div>
 
@@ -1786,17 +1803,13 @@ function PlanejamentoContent({
 
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 py-4 sm:px-6">
-              <button type="button" onClick={closeWizard} className="btn-secondary text-sm">
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', padding: '14px 24px', flexShrink: 0 }}>
+              <button type="button" onClick={closeWizard} className="pl-btn pl-btn-sm">
                 {wizardStep === 1 ? 'Agora não' : 'Cancelar'}
               </button>
-              <div className="flex flex-wrap items-center justify-end gap-3">
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                 {wizardStep > 1 ? (
-                  <button
-                    type="button"
-                    onClick={goToPreviousWizardStep}
-                    className="rounded-xl border-2 border-[#2563EB] px-5 py-2.5 text-sm font-semibold text-[#2563EB]"
-                  >
+                  <button type="button" onClick={goToPreviousWizardStep} className="pl-btn pl-btn-sm">
                     Voltar
                   </button>
                 ) : null}
@@ -1809,16 +1822,18 @@ function PlanejamentoContent({
                       (wizardStep === 1 && wizardCoursePlans.length === 0) ||
                       (wizardStep === 2 && selectedWizardSubjects.length === 0)
                     }
-                    className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="pl-btn pl-btn-primary pl-btn-sm"
+                    style={{ opacity: ((wizardStep === 1 && wizardCoursePlans.length === 0) || (wizardStep === 2 && selectedWizardSubjects.length === 0)) ? 0.5 : 1 }}
                   >
-                    Proximo
+                    Próximo
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={saveWizardConfig}
                     disabled={wizardCoursePlans.length === 0}
-                    className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="pl-btn pl-btn-primary pl-btn-sm"
+                    style={{ opacity: wizardCoursePlans.length === 0 ? 0.5 : 1 }}
                   >
                     Concluir
                   </button>
@@ -1835,21 +1850,23 @@ function PlanejamentoContent({
 
 function FilterLine({ checked, onChange, color, label }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer group">
-      <input type="checkbox" checked={checked} onChange={onChange} className="w-4 h-4 rounded border-gray-300 cursor-pointer" />
-      <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: color }} />
-      <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
+    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+      <input type="checkbox" checked={checked} onChange={onChange} style={{ width: 14, height: 14, cursor: 'pointer' }} />
+      <div style={{ width: 10, height: 10, borderRadius: 999, background: color, flexShrink: 0 }} />
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>{label}</span>
     </label>
   );
 }
 
 function InfoCard({ title, items, children }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-[1.5rem] p-6 shadow-sm">
-      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">{title}</h4>
-      <div className="space-y-2">
+    <div className="pl-card" style={{ padding: '14px 16px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--pl-rule)' }}>
+        {title}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {items.map((item) => (
-          <p key={item} className="text-sm font-semibold text-gray-600">{item}</p>
+          <p key={item} style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{item}</p>
         ))}
       </div>
       {children}
@@ -1859,9 +1876,9 @@ function InfoCard({ title, items, children }) {
 
 function CycleInfoCard({ title, text }) {
   return (
-    <div className="rounded-[1.5rem] border border-gray-100 bg-[#F8FAFC] p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{title}</p>
-      <p className="mt-3 text-sm font-semibold leading-6 text-gray-600">{text}</p>
+    <div className="pl-card-paper" style={{ padding: '14px 16px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 9, marginBottom: 8 }}>{title}</div>
+      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>{text}</p>
     </div>
   );
 }

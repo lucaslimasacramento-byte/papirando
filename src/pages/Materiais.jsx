@@ -22,7 +22,6 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from '../lib/supabase';
 import { newCard } from '../lib/fsrs';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -867,23 +866,24 @@ export default function Materiais({ currentUserId }) {
   }
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
-      <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
-        icon={FileText}
-        title="Materiais de estudo"
-        subtitle="PDFs com marcações salvas, highlight, anotações e flashcards via IA"
-        trailing={
-          <button
-            type="button"
-            onClick={() => { setUploadErr(''); setUploadModal(true); }}
-            className="btn-primary inline-flex shrink-0 items-center gap-1.5 self-start px-3 py-2 text-xs font-semibold sm:self-center sm:px-3.5 sm:py-2 sm:text-[13px]"
-          >
-            <Upload size={14} />
-            Enviar PDF
-          </button>
-        }
-      />
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', padding: '28px 28px 48px', minHeight: 0 }}>
+      {/* ── Hero ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
+        <div>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Biblioteca</p>
+          <h1 className="pl-display" style={{ marginBottom: 8 }}>Materiais de estudo.</h1>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>PDFs com marcações salvas, highlight, anotações e flashcards via IA.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => { setUploadErr(''); setUploadModal(true); }}
+          className="pl-btn pl-btn-primary"
+          style={{ gap: 6, alignSelf: 'flex-start' }}
+        >
+          <Upload size={14} />
+          Enviar PDF
+        </button>
+      </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6">
         {loading ? (
@@ -902,7 +902,7 @@ export default function Materiais({ currentUserId }) {
             <button
               type="button"
               onClick={() => { setUploadErr(''); setUploadModal(true); }}
-              className="btn-primary"
+              className="pl-btn pl-btn-primary"
             >
               <Upload size={16} />
               Enviar primeiro PDF
@@ -913,7 +913,7 @@ export default function Materiais({ currentUserId }) {
             {materials.map((m) => (
               <div
                 key={m.id}
-                className="section-card group relative flex cursor-pointer flex-col gap-3 p-5 transition-all hover:border-blue-200 hover:shadow-sm"
+                className="pl-card group relative flex cursor-pointer flex-col gap-3 p-5 transition-all hover:shadow-md"
                 onClick={() => setActiveMaterial(m)}
               >
                 <div className="flex items-start justify-between">
