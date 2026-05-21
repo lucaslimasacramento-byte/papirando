@@ -352,23 +352,27 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   return (
     <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
       <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
+        className="shrink-0 lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Target}
         title="Metas semanais"
         subtitle="Horas por disciplina na semana. Metas do assistente de planejamento aparecem aqui automaticamente."
+        leadingClassName="items-center lg:max-w-[calc(100%-15rem)] xl:max-w-[50rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[14rem] lg:self-center"
         trailing={
-          <button
-            type="button"
-            onClick={() => openAddGoal()}
-            className="btn-primary inline-flex shrink-0 items-center gap-1.5 self-start px-3 py-2 text-xs font-semibold sm:self-center sm:px-3.5 sm:py-2 sm:text-[13px]"
-          >
-            <Plus size={14} />
-            Nova meta
-          </button>
+          <div className="flex w-full min-w-0 flex-col items-start gap-1.5 sm:w-auto sm:items-end">
+            <button
+              type="button"
+              onClick={() => openAddGoal()}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:text-[13px]"
+            >
+              <Plus size={14} />
+              Nova meta
+            </button>
+          </div>
         }
       />
 
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-2.5 sm:px-5 lg:px-6">
+      <div className="section-card mt-3 flex shrink-0 items-center justify-between rounded-2xl px-4 py-3 sm:px-5 lg:px-6">
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
@@ -378,6 +382,9 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
           <ChevronLeft size={18} />
         </button>
         <div className="text-center min-w-0 px-2">
+          <p className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            Janela semanal
+          </p>
           <p className="text-sm font-bold text-slate-900">{formatWeekLabel(monday)}</p>
           {isCurrentWeek && (
             <p className="text-[11px] font-semibold text-[#2563EB]">Esta semana</p>
@@ -457,7 +464,11 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
               <p className="font-bold text-slate-700">Nenhuma meta definida</p>
               <p className="text-sm text-slate-500 mt-1">Defina metas de horas por disciplina para acompanhar seu progresso semanal.</p>
             </div>
-            <button type="button" onClick={() => openAddGoal()} className="btn-primary">
+            <button
+              type="button"
+              onClick={() => openAddGoal()}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
+            >
               <Plus size={16} />
               Criar primeira meta
             </button>

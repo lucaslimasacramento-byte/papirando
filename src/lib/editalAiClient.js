@@ -1,9 +1,11 @@
+import { resolveAiBaseUrl, resolveAiHeaders } from './aiRuntime';
+
 export async function analyzeEditalWithRealAI(editalText) {
-  const response = await fetch('/api/analyze-edital', {
+  const baseUrl = resolveAiBaseUrl();
+
+  const response = await fetch(`${baseUrl}/api/ai/analyze-edital`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: await resolveAiHeaders(),
     body: JSON.stringify({ editalText }),
   });
 
@@ -86,8 +88,9 @@ function normalizeOpenAiAnalysis(payload) {
 function buildSourceLabel(payload) {
   const provider = String(payload?.provider || payload?.source || '').toLowerCase();
 
-  if (provider === 'ollama') return 'IA local';
-  if (provider === 'openai') return 'IA real';
+  if (provider === 'openrouter') return 'OpenRouter';
+  if (provider === 'groq') return 'Groq';
+  if (provider === 'openai') return 'OpenAI';
   if (provider === 'gemini') return 'Gemini';
   return 'IA';
 }

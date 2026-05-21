@@ -8,7 +8,9 @@ import { supabaseAnonKey, supabaseDirectUrl } from './supabase';
  *   birthDate: string,
  *   email: string,
  *   password: string,
+ *   celular?: string,
  *   referralCode?: string,
+ *   betaInviteToken?: string,
  * }} payload
  * @returns {Promise<{ success: boolean, message: string, code?: string, fieldErrors?: Record<string, string> }>}
  */

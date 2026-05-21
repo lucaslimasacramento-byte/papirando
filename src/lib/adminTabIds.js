@@ -10,6 +10,9 @@ export const ADMIN_TAB_IDS = [
   'admin_audiolivros',
   'admin_mapas_mentais',
   'admin_legislacao',
+  'admin_beta_feedback',
+  'admin_beta_convites',
+  'admin_assinaturas',
   'admin_configuracoes',
 ];
 
@@ -29,5 +32,8 @@ export const ADMIN_TAB_TITLES = {
   admin_audiolivros: 'Admin · Audiolivros',
   admin_mapas_mentais: 'Admin · Mapas mentais',
   admin_legislacao: 'Admin · Legislação',
+  admin_beta_feedback: 'Admin · Feedback beta',
+  admin_beta_convites: 'Admin · Convites beta',
+  admin_assinaturas: 'Admin · Assinaturas',
   admin_configuracoes: 'Admin · Configurações',
 };

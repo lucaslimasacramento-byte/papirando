@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRightLeft,
   BookOpen,
@@ -26,7 +26,13 @@ import {
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
 import { buildDisciplineSummaryFromHistory } from '../lib/studyAnalytics';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import {
+  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
+  PageHeadPremiumBadge,
+  PageHeadPremiumIconTile,
+  PageHeadPremiumShell,
+  PageHeadPremiumStatCompact,
+} from '../components/PageHeadPremium';
 
 
 const INTERNAL_NAV = [
@@ -371,13 +377,24 @@ export default function Conciliador({
 
   const catalogSource = useMemo(() => {
     const merged = [];
-    const seen = new Set();
+    const seen = new Map();
     const publicCatalog = remoteContests.length > 0 ? remoteContests : concursoCatalog;
 
     [...(Array.isArray(myContests) ? myContests : []), ...(Array.isArray(publicCatalog) ? publicCatalog : [])].forEach((contest) => {
       const id = String(contest?.id || '').trim();
-      if (!id || seen.has(id)) return;
-      seen.add(id);
+      if (!id) return;
+      const existingIndex = seen.get(id);
+      if (existingIndex !== undefined) {
+        const existing = merged[existingIndex];
+        merged[existingIndex] = {
+          ...contest,
+          ...existing,
+          imagem_url: existing?.imagem_url || contest?.imagem_url || '',
+          edital_url: existing?.edital_url || contest?.edital_url || '',
+        };
+        return;
+      }
+      seen.set(id, merged.length);
       merged.push(contest);
     });
 
@@ -979,7 +996,7 @@ export default function Conciliador({
           },
           {
             label: 'Em comum',
-            value: `${comparison.commonSubjects.length} disc. · ${comparison.commonTopicsCount} tóp.`,
+            value: `${comparison.commonSubjects.length} disc.`,
             helper: 'Núcleo reaproveitável entre base e alvos',
             icon: Sparkles,
             tone: 'gold',
@@ -1016,6 +1033,7 @@ export default function Conciliador({
     label: item.label,
     value: String(item.value),
     accent: item.tone === 'gold' ? 'amber' : item.tone === 'rose' ? 'red' : 'blue',
+    className: 'min-w-[9.5rem]',
   }));
 
   const handleCompare = () => {
@@ -1077,83 +1095,110 @@ export default function Conciliador({
 
   return (
     <div className="page-shell !h-auto min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-gray-200 pb-3 md:flex-row md:items-center">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-            <ArrowRightLeft size={14} strokeWidth={2.5} /> Comparativo
+      <PageHeadPremiumShell className="shrink-0 !px-0 !py-0">
+        <div className="flex flex-col">
+          <div className="flex flex-col gap-4 px-4 py-3.5 sm:px-5 sm:py-4 xl:flex-row xl:items-center xl:justify-between xl:gap-5">
+            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5">
+              <PageHeadPremiumIconTile>
+                <ArrowRightLeft className={`${PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} block shrink-0`} strokeWidth={2} aria-hidden />
+              </PageHeadPremiumIconTile>
+              <div className="min-w-0 flex-1">
+                <PageHeadPremiumBadge icon={Radar}>Conciliador</PageHeadPremiumBadge>
+                <h3 className="m-0 text-[1.4rem] font-extrabold leading-[1.02] tracking-tight text-white sm:text-[1.72rem]">
+                  {selectedBase && selectedTargetOne && !duplicateSelection ? 'Resumo da compatibilidade' : 'Cruze os editais'}
+                </h3>
+                <div className="mt-1 text-[13px] font-medium leading-relaxed text-slate-300/90 sm:text-[14px]">
+                  {selectedBase && selectedTargetOne && !duplicateSelection ? (
+                    <>
+                      <span className="font-semibold text-slate-300">{String(selectedBase?.nome || '')}</span>
+                      <span className="text-slate-500"> · </span>
+                      <span className="font-semibold text-indigo-200">{String(selectedTargetOne?.nome || '')}</span>
+                      {courseCount === 3 && selectedTargetTwo ? (
+                        <>
+                          <span className="text-slate-500"> · </span>
+                          <span className="font-semibold text-pink-200">{String(selectedTargetTwo?.nome || '')}</span>
+                        </>
+                      ) : null}
+                    </>
+                  ) : (
+                    heroSubtitle
+                  )}
+                </div>
+                {canCompare && !isComparing ? (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={handleCompare}
+                      className="inline-flex items-center justify-center rounded-xl border border-white/14 bg-white/[0.08] px-3.5 py-2 text-[12px] font-semibold text-white transition hover:border-white/24 hover:bg-white/[0.12]"
+                    >
+                      Gerar análise
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="w-full xl:max-w-[43rem]">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {headlineStats.map((item, index) => (
+                  <PageHeadPremiumStatCompact
+                    key={item.key ?? index}
+                    {...item}
+                    className="min-h-[6.35rem] justify-center px-2.5 py-2.5"
+                    valueClassName="!truncate !text-[0.98rem] sm:!text-[1.08rem]"
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-          <h2 className="page-title text-xl sm:text-2xl lg:text-3xl">Conciliador</h2>
-          <p className="max-w-2xl text-base font-medium text-gray-500">
-            Até três editais na mesma leitura: tabela, conteúdo do programa e parecer para decidir se vale conciliar.
-          </p>
-        </div>
-      </div>
 
-      <PageHeadPremium
-        className="shrink-0"
-        icon={ArrowRightLeft}
-        badge={<PageHeadPremiumBadge icon={Radar}>Resumo</PageHeadPremiumBadge>}
-        title={selectedBase && selectedTargetOne && !duplicateSelection ? 'Indicadores do par' : 'Selecione o par'}
-        titleAs="h3"
-        subtitle={
-          selectedBase && selectedTargetOne && !duplicateSelection ? (
-            <>
-              <span className="font-semibold text-slate-300">{String(selectedBase?.nome || '')}</span>
-              <span className="text-slate-500"> · </span>
-              <span className="font-semibold text-indigo-200">{String(selectedTargetOne?.nome || '')}</span>
-              {courseCount === 3 && selectedTargetTwo ? (
-                <>
-                  <span className="text-slate-500"> · </span>
-                  <span className="font-semibold text-pink-200">{String(selectedTargetTwo?.nome || '')}</span>
-                </>
-              ) : null}
-            </>
-          ) : (
-            heroSubtitle
-          )
-        }
-        leadingExtra={
-          canCompare && !isComparing ? (
-            <button
-              type="button"
-              onClick={handleCompare}
-              className="mt-1 inline-flex rounded-xl border border-white/15 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:border-white/25 hover:bg-white/[0.12]"
-            >
-              Gerar análise
-            </button>
-          ) : null
-        }
-        stats={headlineStats}
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-4 md:gap-3 xl:min-w-[280px]"
-      />
+          <div className="border-t border-white/10 px-4 py-2.5 sm:px-5">
+            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
+              <nav className="flex min-w-0 flex-wrap items-end gap-x-5 gap-y-2 sm:gap-x-6" aria-label="Seções do conciliador">
+                {INTERNAL_NAV.filter((item) => item.id !== 'parecer').map((item) => {
+                  const Icon = item.icon;
+                  const active = activePanel === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActivePanel(item.id)}
+                      className={`group relative inline-flex shrink-0 items-center gap-2 pb-1.5 text-[13px] font-semibold transition sm:text-[14px] ${
+                        active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Icon
+                        size={16}
+                        className={`shrink-0 transition ${active ? 'opacity-100' : 'opacity-75 group-hover:opacity-100'}`}
+                      />
+                      <span className="whitespace-nowrap">{item.label}</span>
+                      <span
+                        aria-hidden
+                        className={`absolute inset-x-0 bottom-0 h-0.5 rounded-full transition ${
+                          active ? 'bg-blue-400' : 'bg-transparent group-hover:bg-white/20'
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </nav>
 
-      <div className="shrink-0 rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
-        <div className="mb-1.5 px-1 sm:px-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600/90">Navegação</p>
-        </div>
-        <nav
-          className="flex flex-row max-sm:gap-1.5 max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-0.5 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-center sm:gap-2 lg:justify-between"
-          aria-label="Seções do conciliador"
-        >
-          {INTERNAL_NAV.map((item) => {
-            const Icon = item.icon;
-            const active = activePanel === item.id;
-            return (
               <button
-                key={item.id}
                 type="button"
-                onClick={() => setActivePanel(item.id)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition sm:gap-2 sm:px-3.5 sm:text-sm ${
-                  active ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                onClick={() => setActivePanel('parecer')}
+                className={`inline-flex items-center justify-center gap-2 self-start rounded-xl px-3.5 py-2 text-[13px] font-semibold transition sm:self-auto sm:text-[14px] ${
+                  activePanel === 'parecer'
+                    ? 'bg-white text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)]'
+                    : 'border border-white/14 bg-white/[0.08] text-white hover:border-white/24 hover:bg-white/[0.12]'
                 }`}
               >
-                <Icon size={16} className="shrink-0 opacity-90" />
-                <span className="whitespace-nowrap">{item.label}</span>
+                <Trophy size={16} className="shrink-0" />
+                Parecer final
               </button>
-            );
-          })}
-        </nav>
-      </div>
+            </div>
+          </div>
+        </div>
+      </PageHeadPremiumShell>
 
       <div className="flex w-full flex-col gap-6">
         <section
@@ -1712,6 +1757,8 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
   const palette = accents[accent] || accents.blue;
   const skip = new Set((excludeIds || []).map((id) => String(id)));
   const filtered = options.filter((option) => !skip.has(String(option.id)));
+  const selectedOption = filtered.find((option) => option.id === value) || null;
+  const selectedImage = selectedOption?.contest?.imagem_url || '';
 
   return (
     <div className={`flex min-h-[40px] min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border ${palette.wrap}`}>
@@ -1724,6 +1771,13 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
         </span>
       </div>
       <div className="flex min-w-0 flex-1 items-center bg-slate-50/40">
+        <div className="ml-2 flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white">
+          {selectedImage ? (
+            <img src={selectedImage} alt={selectedOption?.contest?.nome || selectedOption?.label || micro} className="h-full w-full object-cover" />
+          ) : (
+            <Icon size={16} className="text-slate-300" />
+          )}
+        </div>
         <select
           value={filtered.some((o) => o.id === value) ? value : ''}
           onChange={(event) => onChange(event.target.value)}
@@ -2059,3 +2113,4 @@ function formatCompareCell(value) {
   }
   return String(value);
 }
+

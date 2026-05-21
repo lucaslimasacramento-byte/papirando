@@ -67,7 +67,7 @@ export function coerceSquadForState(raw) {
     description: String(raw.description || '').trim(),
     inviteCode: String(raw.inviteCode || '').trim(),
     visibility: String(raw.visibility || 'Privado').trim(),
-    members: Math.max(1, Array.isArray(raw.roster) && raw.roster.length ? raw.roster.length : 1),
+    members: Math.max(1, Number(raw.members || 1)),
     rankingTier: String(raw.rankingTier || 'Bronze').trim(),
     nextEvent: String(raw.nextEvent || 'Sem marco definido').trim(),
     coverUrl: String(raw.coverUrl || '').trim(),

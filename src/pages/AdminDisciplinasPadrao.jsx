@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { BookOpen, Database, Pencil, Plus, Save, Tags, Trash2, X } from 'lucide-react';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const EMPTY_FORM = {
   id: null,
@@ -8,7 +9,7 @@ const EMPTY_FORM = {
   aliasesText: '',
 };
 
-const AREA_OPTIONS = ['Basicas', 'Juridicas', 'Policial', 'Tribunais', 'Fiscal', 'Controle', 'Agropecuaria', 'Saude', 'Educacao', 'Geral'];
+const AREA_OPTIONS = ['Básicas', 'Jurídicas', 'Policial', 'Tribunais', 'Fiscal', 'Controle', 'Agropecuária', 'Saúde', 'Educação', 'Geral'];
 
 function buildForm(entry) {
   return {
@@ -94,7 +95,7 @@ export default function AdminDisciplinasPadrao({
   };
 
   const handleDelete = async (entry) => {
-    const shouldDelete = window.confirm(`Excluir a disciplina padrao "${entry.nome}"?`);
+    const shouldDelete = window.confirm(`Excluir a disciplina padrão "${entry.nome}"?`);
     if (!shouldDelete) return;
 
     try {
@@ -122,22 +123,19 @@ export default function AdminDisciplinasPadrao({
         </div>
       ) : null}
 
-      <div className="rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-white p-6 shadow-sm">
-        <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-700">
-          <Database size={13} />
-          Banco padrão de disciplinas
-        </div>
-        <h2 className="page-title mt-4 text-4xl font-semibold tracking-tight text-slate-900">Padronização das disciplinas</h2>
-        <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-          Cadastre o nome canônico e os aliases aceitos para evitar duplicidade como Português x Língua Portuguesa.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard icon={BookOpen} label="Disciplinas padrao" value={stats.total} />
-        <StatCard icon={Tags} label="Aliases cadastrados" value={stats.aliases} />
-        <StatCard icon={Database} label="Areas" value={stats.areas} />
-      </div>
+      <AdminPageHeader
+        icon={Database}
+        badgeIcon={Database}
+        badge="Banco padrão de disciplinas"
+        title="Padronização das disciplinas"
+        subtitle="Cadastre o nome canônico e os aliases aceitos para evitar duplicidade, como Português e Língua Portuguesa."
+        stats={[
+          { key: 'd', label: 'Disciplinas padrão', value: String(stats.total), icon: BookOpen, accent: 'blue' },
+          { key: 'a', label: 'Aliases', value: String(stats.aliases), icon: Tags, accent: 'violet' },
+          { key: 'r', label: 'Áreas', value: String(stats.areas), icon: Database, accent: 'emerald' },
+        ]}
+        statsClassName="sm:grid-cols-3"
+      />
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
         <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm">
@@ -242,7 +240,7 @@ export default function AdminDisciplinasPadrao({
               />
             </Field>
 
-            <Field label="Area">
+            <Field label="Área">
               <select
                 value={form.area}
                 onChange={(event) => setForm((prev) => ({ ...prev, area: event.target.value }))}
@@ -274,12 +272,12 @@ export default function AdminDisciplinasPadrao({
             <div className="mt-3 space-y-2 text-sm font-semibold text-gray-600">
               <p>1. O admin cadastra o nome padrão da disciplina.</p>
               <p>2. Os nomes alternativos entram como aliases.</p>
-              <p>3. Ao salvar um novo concurso, o sistema converte o nome digitado para o padrao cadastrado.</p>
-              <p>4. O comparador passa a tratar disciplinas equivalentes como a mesma materia.</p>
+              <p>3. Ao salvar um novo concurso, o sistema converte o nome digitado para o padrão cadastrado.</p>
+              <p>4. O comparador passa a tratar disciplinas equivalentes como a mesma matéria.</p>
             </div>
           </div>
 
-          <div className="sticky bottom-0 mt-6 border-t border-gray-200 bg-white/95 pt-4 backdrop-blur">
+          <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex flex-wrap justify-end gap-3">
               <button
                 type="button"
@@ -306,18 +304,6 @@ export default function AdminDisciplinasPadrao({
   );
 }
 
-function StatCard({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-[1.8rem] border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
-        <Icon size={12} />
-        {label}
-      </div>
-      <p className="mt-4 text-3xl font-semibold text-slate-900">{value}</p>
-    </div>
-  );
-}
-
 function Field({ label, children }) {
   return (
     <div>
@@ -326,3 +312,5 @@ function Field({ label, children }) {
     </div>
   );
 }
+
+

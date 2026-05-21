@@ -37,6 +37,14 @@ function sanitizeName(raw: string): string {
   return raw.replace(/[\u0000-\u001F\u007F]/g, '').trim();
 }
 
+function sanitizePhone(raw: string): string {
+  const digits = String(raw || '').replace(/\D/g, '').slice(0, 11);
+  if (!digits) return '';
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 function validateBirthDate(iso: string): { ok: true } | { ok: false; code: string; message: string } {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
     return { ok: false, code: 'BIRTH_INVALID', message: 'Data de nascimento inválida.' };
@@ -214,7 +222,13 @@ Deno.serve(async (req) => {
   const email = String(body.email ?? '').trim().toLowerCase();
   const password = String(body.password ?? '');
   const birthDate = String(body.birthDate ?? '').trim();
+  const celular = sanitizePhone(String(body.celular ?? body.phone ?? ''));
   const referralCode = String(body.referralCode ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const betaInviteToken = String(body.betaInviteToken ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-f0-9]/g, '')
+    .slice(0, 64);
   const cpfRaw = String(body.cpf ?? '');
 
   const fieldErrors: Record<string, string> = {};
@@ -320,6 +334,61 @@ Deno.serve(async (req) => {
     );
   }
 
+  let betaInvite: { id: string; email: string; used_at: string | null } | null = null;
+  if (betaInviteToken) {
+    const { data: inviteRow, error: inviteErr } = await admin
+      .from('beta_invites')
+      .select('id, email, used_at')
+      .eq('token', betaInviteToken)
+      .maybeSingle();
+
+    if (inviteErr) {
+      console.error('[register-free] beta invite lookup', inviteErr.message);
+      return jsonResponse(
+        { success: false, message: 'Nao foi possivel validar o convite beta agora.', code: 'BETA_INVITE_ERROR' },
+        500,
+      );
+    }
+
+    if (!inviteRow) {
+      return jsonResponse(
+        {
+          success: false,
+          message: 'Convite beta invalido ou expirado.',
+          code: 'BETA_INVITE_INVALID',
+          fieldErrors: { betaInviteToken: 'Convite beta invalido.' },
+        },
+        400,
+      );
+    }
+
+    if (inviteRow.used_at) {
+      return jsonResponse(
+        {
+          success: false,
+          message: 'Este convite beta ja foi usado.',
+          code: 'BETA_INVITE_USED',
+          fieldErrors: { betaInviteToken: 'Este convite beta ja foi usado.' },
+        },
+        409,
+      );
+    }
+
+    if (String(inviteRow.email || '').trim().toLowerCase() !== email) {
+      return jsonResponse(
+        {
+          success: false,
+          message: 'Este convite beta pertence a outro e-mail. Use o mesmo e-mail que recebeu o convite.',
+          code: 'BETA_INVITE_EMAIL_MISMATCH',
+          fieldErrors: { email: 'Use o mesmo e-mail que recebeu o convite beta.' },
+        },
+        403,
+      );
+    }
+
+    betaInvite = inviteRow;
+  }
+
   const redirectTo =
     Deno.env.get('SIGNUP_EMAIL_REDIRECT_TO') ||
     req.headers.get('origin') ||
@@ -331,6 +400,7 @@ Deno.serve(async (req) => {
     email_confirm: false,
     user_metadata: {
       nome: fullName,
+      celular,
       birth_date: birthDate,
       referred_by_code: referralCode || '',
     },
@@ -370,12 +440,19 @@ Deno.serve(async (req) => {
     .update({
       nome: fullName,
       email,
+      celular,
       cpf: cpfDigits,
       birth_date: birthDate,
       referred_by_code: referralCode || null,
       cpf_validado_algoritmo: true,
       email_verificado: false,
       status_cadastro: 'pendente',
+      ...(betaInvite
+        ? {
+            subscription_plan: 'beta',
+            subscription_status: 'trial',
+          }
+        : {}),
       tentativas_cadastro: 0,
       ultimo_ip_cadastro: ipHash.slice(0, 48),
       updated_at: new Date().toISOString(),
@@ -412,6 +489,21 @@ Deno.serve(async (req) => {
     );
   }
 
+  if (betaInvite?.id) {
+    const { error: inviteUseErr } = await admin
+      .from('beta_invites')
+      .update({
+        used_at: new Date().toISOString(),
+        used_by_user_id: userId,
+      })
+      .eq('id', betaInvite.id)
+      .is('used_at', null);
+
+    if (inviteUseErr) {
+      console.warn('[register-free] beta invite mark used', inviteUseErr.message);
+    }
+  }
+
   const resendRes = await fetch(`${supabaseUrl}/auth/v1/resend`, {
     method: 'POST',
     headers: {
@@ -440,7 +532,9 @@ Deno.serve(async (req) => {
 
   return jsonResponse({
     success: true,
-    message: 'Cadastro realizado, verifique seu e-mail para ativar a conta.',
+    message: betaInvite
+      ? 'Cadastro beta realizado. Verifique seu e-mail para ativar os 3 meses de acesso completo.'
+      : 'Cadastro realizado, verifique seu e-mail para ativar a conta.',
     code: 'SUCCESS_PENDING_EMAIL',
   });
 });

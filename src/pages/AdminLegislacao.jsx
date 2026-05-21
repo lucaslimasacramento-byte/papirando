@@ -7,6 +7,7 @@ import {
   updateVadeMecumReleaseMeta,
   uploadVadeMecumPdf,
 } from '../lib/vadeMecumApi';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const OFFICIAL_SLUG = 'vade-mecum-oficial';
 
@@ -138,16 +139,16 @@ export default function AdminLegislacao({ currentUserId = '' }) {
   return (
     <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
       <div className="app-main-shell mx-auto max-w-[920px] space-y-6">
-        <div className="rounded-xl border border-slate-800/20 bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-6 text-white shadow-md">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-100">
-            <Scale size={12} />
-            Admin
-          </div>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight md:text-3xl">Legislação · lançamentos</h1>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-blue-100/90">
-            Troque o PDF do Vade Mecum, o texto exibido (título, edição, data) e o mapa de páginas por bloco. O conteúdo ativo é o mesmo que todos veem na aba Legislação (lei seca).
-          </p>
-        </div>
+        <PageHeadPremium
+          icon={Scale}
+          badge={
+            <PageHeadPremiumBadge icon={Scale}>Admin</PageHeadPremiumBadge>
+          }
+          title="Legislação · lançamentos"
+          titleAs="h1"
+          subtitle="Troque o PDF do Vade Mecum, o texto exibido (título, edição, data) e o mapa de páginas por bloco. O conteúdo ativo é o mesmo que todos veem na aba Legislação (lei seca)."
+          leadingClassName="min-w-0 flex-1"
+        />
 
         {error ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">{error}</div>

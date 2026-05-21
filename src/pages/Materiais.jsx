@@ -21,10 +21,17 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from '../lib/supabase';
+import { resolveAiHeaders } from '../lib/aiRuntime';
 import { newCard } from '../lib/fsrs';
-import PageHeadPremium from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+const PRIMARY_HEADER_BUTTON_CLASS =
+  'inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]';
 
 const HIGHLIGHT_COLORS = [
   { value: '#FCD34D', label: 'Amarelo', cls: 'bg-yellow-300' },
@@ -353,9 +360,9 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
     setAiErr('');
 
     try {
-      const res = await fetch('/api/generate-flashcards', {
+      const res = await fetch('/api/ai/generate-flashcards', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await resolveAiHeaders(),
         body: JSON.stringify({ text: aiText, maxCards: 5 }),
       });
       const data = await res.json();
@@ -869,15 +876,38 @@ export default function Materiais({ currentUserId }) {
   return (
     <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
       <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
+        className="shrink-0 rounded-none border-x-0 border-t-0 gap-4 lg:!px-6 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={FileText}
+        badge={<PageHeadPremiumBadge icon={BookOpen}>Biblioteca PDF</PageHeadPremiumBadge>}
         title="Materiais de estudo"
-        subtitle="PDFs com marcações salvas, highlight, anotações e flashcards via IA"
+        subtitle="PDFs com marcações, anotações e geração de flashcards para revisar trechos importantes."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statsStackBelowTrailing
+        statsDense
+        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-3 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,38rem)] xl:shrink-0"
+        stats={[
+          { key: 'files', icon: FileText, label: 'Materiais', value: String(materials.length), accent: 'blue' },
+          {
+            key: 'pages',
+            icon: BookOpen,
+            label: 'Páginas',
+            value: String(materials.reduce((acc, item) => acc + Number(item.page_count || 0), 0)),
+            accent: 'indigo',
+          },
+          {
+            key: 'resume',
+            icon: Bookmark,
+            label: 'Retomadas',
+            value: String(materials.filter((item) => Number(item.last_page || 0) > 1).length),
+            accent: 'emerald',
+          },
+        ]}
         trailing={
           <button
             type="button"
             onClick={() => { setUploadErr(''); setUploadModal(true); }}
-            className="btn-primary inline-flex shrink-0 items-center gap-1.5 self-start px-3 py-2 text-xs font-semibold sm:self-center sm:px-3.5 sm:py-2 sm:text-[13px]"
+            className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
           >
             <Upload size={14} />
             Enviar PDF
@@ -902,7 +932,7 @@ export default function Materiais({ currentUserId }) {
             <button
               type="button"
               onClick={() => { setUploadErr(''); setUploadModal(true); }}
-              className="btn-primary"
+              className={PRIMARY_HEADER_BUTTON_CLASS}
             >
               <Upload size={16} />
               Enviar primeiro PDF

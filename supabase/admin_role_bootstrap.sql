@@ -12,4 +12,8 @@
 -- Rebaixar:
 -- update public.profiles set role = 'student' where id = '...';
 
+-- Garante que a coluna existe antes de comentá-la (idempotente).
+alter table public.profiles
+  add column if not exists role text not null default 'student';
+
 comment on column public.profiles.role is 'student | admin — admin libera menu e telas administrativas no app quando sincronizado com o perfil carregado.';

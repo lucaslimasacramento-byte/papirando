@@ -7,7 +7,7 @@
  * Uso (raiz): node scripts/deploy-admin-rls-phase-c.mjs
  * Ou: npm run db:deploy:admin-rls-phase-c
  */
-import { spawnSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,25 +33,18 @@ const FILES = [
 ];
 
 function runFile(sqlPath) {
-  const args = [
-    "--yes",
-    "supabase",
-    "--agent=no",
-    "db",
-    "query",
-    "--linked",
-    "-f",
-    sqlPath,
-  ];
-  // shell: false evita DEP0190 e passa o path do -f sem concatenação insegura
-  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-  const r = spawnSync(npx, args, {
-    cwd: root,
-    stdio: "inherit",
-    shell: false,
-    env: process.env,
-  });
-  return r.status ?? 1;
+  // Usa execSync com shell para garantir resolução correta do npx no Windows.
+  const quoted = sqlPath.includes(" ") ? `"${sqlPath}"` : sqlPath;
+  try {
+    execSync(`npx --yes supabase db query --linked -f ${quoted}`, {
+      cwd: root,
+      stdio: "inherit",
+      env: process.env,
+    });
+    return 0;
+  } catch (e) {
+    return e.status ?? 1;
+  }
 }
 
 let failed = null;

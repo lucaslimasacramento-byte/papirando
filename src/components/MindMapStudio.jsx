@@ -81,10 +81,13 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
   );
 
   useEffect(() => {
-    setSelectedId(null);
-    setEditingId(null);
-    setDragVisual(null);
+    const frame = window.requestAnimationFrame(() => {
+      setSelectedId(null);
+      setEditingId(null);
+      setDragVisual(null);
+    });
     dragRef.current = null;
+    return () => window.cancelAnimationFrame(frame);
   }, [map?.id]);
 
   const displayNodes = useMemo(() => {
@@ -260,7 +263,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
           style={{
             backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
             backgroundSize: '20px 20px',
-            cursor: dragRef.current ? 'grabbing' : isPanning ? 'grabbing' : 'grab',
+            cursor: isPanning ? 'grabbing' : 'grab',
           }}
           onWheel={handleWheel}
           onPointerMove={onCanvasPointerMove}

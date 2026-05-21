@@ -94,6 +94,41 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 
 ## Componentes padrão
 
+### Header premium padrão (replicar em todas as páginas)
+
+- **Componente único:** usar `PageHeadPremium` (`src/components/PageHeadPremium.jsx`) como base oficial de cabeçalho.
+- **Estrutura fixa:** bloco esquerdo com ícone + badge de contexto + título; centro opcional com nota/citação em vidro; bloco direito com ação principal ou grupo de ações.
+- **Container da página:** manter dentro de `.page-shell`; evitar headers paralelos fora desse shell.
+- **Tema do header:** `page-head page-head-premium-dark` (dark premium) com acento azul lateral.
+- **Badge/chips:** usar `PageHeadPremiumBadge`; visual padrão: `border-white/10`, `bg-white/[0.06]`, `backdrop-blur-sm`, tipografia compacta.
+- **Ícone da página:** usar `PageHeadPremiumIconTile`; o símbolo deve ficar sempre centralizado verticalmente no card, sem subir ou descer conforme a quantidade de texto.
+- **Título/subtítulo:** título em branco com maior peso visual; só usar subtítulo quando ele realmente agrega. Se for frase genérica, remover.
+- **Centro opcional:** quando houver frase/citação, usar `centerSlot` com `PageHeadPremiumCenterNote`; a caixa deve ser compacta, elegante, com contraste alto e sem roubar a cena do título.
+- **CTA primário (header):** estilo premium azul (família `blue/indigo`), texto branco e contraste alto; evitar CTA dourado fora de contexto de plano/selo.
+- **CTA secundário:** variante vidro escuro (`bg-white/10`, borda translúcida, texto claro), mantendo hierarquia do primário.
+- **Posicionamento das ações:** o CTA principal deve ficar ancorado à direita do card em desktop; evitar colunas extras e evitar badges como “Planejamento do dia” se não forem essenciais.
+- **Quebra de texto:** frases longas devem quebrar de forma balanceada e nunca vazar do header.
+- **Densidade:** manter header compacto, conteúdo centrado verticalmente e sem aumentar altura do card sem necessidade.
+- **Responsividade:** em mobile empilhar (`flex-col`); em desktop distribuir esquerda/direita com ação ancorada à direita.
+
+#### Nomes oficiais dos padrões
+
+- **Padrão Atlas:** cabeçalho premium com centro narrativo. Usa bloco central de citação/nota em vidro (`centerSlot` + `PageHeadPremiumCenterNote`), ação principal única à direita e composição mais editorial. Referência atual: [Dashboard](../../src/pages/Dashboard.jsx).
+- **Padrão Biblioteca:** cabeçalho premium operacional com foco em ações. Sem bloco central, texto mais direto à esquerda e dois CTAs lado a lado à direita. Referência atual: [Planos](../../src/pages/Planos.jsx), seção `Meus cursos`.
+
+#### Como pedir durante a execução
+
+- “Aplique **Atlas** nesta página” = hero premium com citação/nota central e CTA único.
+- “Aplique **Biblioteca** nesta página” = hero premium sem centro narrativo, com ações operacionais na direita.
+
+#### Checklist de aplicação página por página
+
+- Remover subtítulos genéricos antes de estilizar.
+- Substituir botões inline do header por `PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS` e `PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS`; ações **Gerar com IA** (ou equivalente) usam `PAGE_HEAD_PREMIUM_IA_ACTION_CLASS`.
+- Substituir grupos segmentados por `PAGE_HEAD_PREMIUM_TOGGLE_GROUP_CLASS` e variantes de botão.
+- Garantir que o ícone use sempre `PageHeadPremiumIconTile` sem overrides visuais locais.
+- Se a página precisar de frase central, usar `PageHeadPremiumCenterNote`; caso contrário, deixar o centro vazio.
+
 ### Cartões
 
 - **Padrão:** `.surface-card` ou `.section-card` (borda + sombra leve).
@@ -104,7 +139,8 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 
 - **Primário:** `.btn-primary` — azul sólido (`blue-700` / `--accent`), **texto e ícone brancos**, `rounded-lg`, sombra leve; hover `blue-800`. Único padrão para CTAs principais (ex.: “Registrar estudo”, “+ Novo lembrete”), **incluindo** sobre `.soft-accent` quando quiser o mesmo destaque da captura de referência.
 - **Secundário:** `.btn-secondary` (branco, borda slate).
-- **Estados de foco:** usar `focus-visible` padrão do `index.css` (ring azul suave).
+- **IA (gerar / sugerir com modelo):** exceção à regra “um acento só” — gradiente **fúcsia → violeta → índigo**, texto claro. No **header premium escuro**, usar `PAGE_HEAD_PREMIUM_IA_ACTION_CLASS` (`PageHeadPremium.jsx` + regras em `index.css` em `.page-head-premium-action-ia`). No **canvas claro** (toolbar de deck, cartões, modais), usar a classe **`.btn-ia`** (mesma família cromática, foco com ring fúcsia). Reservar para rotulos do tipo “Gerar com IA”, não para CTAs genéricos.
+- **Estados de foco:** usar `focus-visible` padrão do `index.css` (ring azul suave nos botões comuns; `.btn-ia` usa ring fúcsia).
 
 ### Badges
 
@@ -152,3 +188,42 @@ Evitar empilhar muitos tamanhos diferentes na mesma viewport; máximo **3 nívei
 - `font-black` em títulos longos ou em massa.
 - Gradientes agressivos fora dos selos de plano / hero muito justificado.
 - Larguras máximas diferentes de 1320px sem atualizar as utilities globais em `index.css`.
+
+---
+
+## Conceito funcional das páginas (rascunho validável)
+
+### Esquadrões
+
+- **O que é:** ambiente interno white-label para cursinhos que não possuem software próprio, operando como “campus privado” dentro do Papirando.
+- **Para quem é:** alunos, professores e dono/coordenação do cursinho; cada perfil enxerga ações conforme permissão.
+- **Regra central:** tudo é segmentado por esquadrão (turma/equipe). Conteúdo, mural, atividades, simulados, questões e gestão são visíveis apenas para membros autorizados.
+- **Objetivo de produto:** concentrar a operação pedagógica e comunitária do cursinho em um único espaço privado, sem depender de ferramentas externas desconectadas.
+
+#### Estrutura da página
+
+- **Header da área:** apresenta contexto “Ecossistema privado”, seletor de esquadrão, status de criação e ação de novo esquadrão (quando permitido).
+- **Card de esquadrão ativo:** mostra turma atual, foco, dono, métricas rápidas e atalho de administração para quem gerencia.
+- **Navegação interna por abas:** organiza as frentes operacionais do cursinho dentro do mesmo esquadrão.
+
+#### Conceito de cada aba interna
+
+- **Dashboard:** visão executiva rápida da turma (membros, professores, atividades, simulados, próximos passos e dados de acesso).
+- **Fórum:** discussões privadas da turma, com busca, ordenação, destaque e interação em árvore.
+- **Mural:** canal oficial de comunicados (avisos da coordenação/professores, com possibilidade de fixação e anexos).
+- **Cronograma:** agenda consolidada da turma (atividades + simulados + marcos) para orientação da rotina semanal.
+- **Atividades:** lista de tarefas internas com prazo, status, autoria e abertura para detalhe/execução.
+- **Questões:** banco privado de listas por disciplina/banca/nível para treino exclusivo do esquadrão.
+- **Simulados:** gestão e publicação de simulados internos da turma com metadados, anexos e abertura de ficha.
+- **Hierarquia:** regras de governança (papéis/permissões), fluxo de convite e explicação de acesso do aluno ao esquadrão correto.
+- **Professores:** gestão do corpo docente da turma (responsáveis, matérias e atuação interna).
+- **Membros:** gestão de alunos e equipe (convites, organização de pessoas e permissões visuais).
+- **Ranking:** camada de engajamento/gamificação com regras de XP e classificação interna da turma.
+- **Admin (somente gestão):** configuração estrutural do esquadrão (dados gerais, administração de membros/publicações e ações sensíveis).
+
+#### Regras de experiência (produto)
+
+- **Isolamento entre turmas:** um esquadrão não deve vazar conteúdo/participantes para outro.
+- **Permissão antes de ação:** publicar, fixar, convidar, promover ou editar deve respeitar papel do usuário.
+- **Operação do cursinho no mesmo fluxo:** professor publica onde o aluno consome (sem sair da área privada).
+- **Transparência de governança:** aluno enxerga estrutura e responsáveis; gestão enxerga controles completos.

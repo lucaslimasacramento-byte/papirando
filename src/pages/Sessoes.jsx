@@ -17,21 +17,16 @@ import {
   Zap,
 } from 'lucide-react';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
   PageHeadPremiumBadge,
-  PageHeadPremiumStatCompact,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
 } from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
 
 export default function Sessoes({
   currentUserId = '',
   customFocusTime,
-  setCustomFocusTime,
-  customPauseTime,
-  setCustomPauseTime,
   startSpecificTimer,
   openTimerSetup,
   setRegistroEstudoModalOpen,
@@ -102,47 +97,75 @@ export default function Sessoes({
   }, [currentUserId]);
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremiumShell className="!block shrink-0">
-        <div className="relative z-10 grid w-full min-w-0 gap-4 lg:grid-cols-2 lg:items-center lg:gap-4">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
-            <PageHeadPremiumIconTile>
-              <Timer className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-            </PageHeadPremiumIconTile>
-            <div className="min-w-0 space-y-0">
-              <PageHeadPremiumBadge icon={Zap}>Área de foco</PageHeadPremiumBadge>
-              <h2 className="text-base font-semibold tracking-tight text-white sm:text-lg">Sessões de estudo</h2>
-              <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-                Timer global, progresso do dia e próxima ação — painéis abaixo rolam sem precisar rolar a página inteira.
-              </p>
-            </div>
+    <div className="page-shell !h-auto flex flex-col !gap-3 !pb-8 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
+      <PageHeadPremium
+        className="gap-4"
+        icon={Timer}
+        badge={<PageHeadPremiumBadge icon={Zap}>Área de foco</PageHeadPremiumBadge>}
+        title="Sessões de estudo"
+        subtitle="Métodos de foco, timer global e registro do que você estudou."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-2 gap-2.5 sm:max-w-[38rem] sm:grid-cols-4 sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[7.25rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
+        stats={[
+          {
+            key: 'streak',
+            label: 'Streak',
+            value: `${historyOverview.streakDays} dias`,
+            icon: Zap,
+            accent: 'orange',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
+          },
+          {
+            key: 'avg',
+            label: 'Média 7d',
+            value: historyOverview.last7DaysAverageLabel,
+            icon: Clock,
+            accent: 'blue',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
+          },
+          {
+            key: 'acc',
+            label: 'Acurácia',
+            value: `${historyOverview.overallAccuracy}%`,
+            icon: Target,
+            accent: 'emerald',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
+          },
+          {
+            key: 'rev',
+            label: 'Revisões',
+            value: `${urgentReviews}`,
+            icon: CheckCircle2,
+            accent: 'indigo',
+            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
+          },
+        ]}
+        trailing={(
+          <div className="flex w-full shrink-0 flex-col gap-2 md:flex-row md:items-center md:justify-end md:gap-2 lg:w-auto">
+            <button
+              type="button"
+              onClick={() => openTimerSetup?.()}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full md:w-auto`}
+            >
+              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
+              Abrir timer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full md:w-auto`}
+            >
+              <BookOpen size={14} aria-hidden />
+              Registrar estudo
+            </button>
           </div>
+        )}
+      />
 
-          <div
-            className="grid min-h-0 w-full shrink-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
-            aria-label="Resumo rápido"
-          >
-            <PageHeadPremiumStatCompact label="Streak" value={`${historyOverview.streakDays} dias`} icon={Zap} accent="orange" />
-            <PageHeadPremiumStatCompact
-              label="Média 7d"
-              value={historyOverview.last7DaysAverageLabel}
-              icon={Clock}
-              accent="blue"
-            />
-            <PageHeadPremiumStatCompact
-              label="Acurácia"
-              value={`${historyOverview.overallAccuracy}%`}
-              icon={Target}
-              accent="emerald"
-            />
-            <PageHeadPremiumStatCompact label="Revisões" value={`${urgentReviews}`} icon={CheckCircle2} accent="indigo" />
-          </div>
-        </div>
-      </PageHeadPremiumShell>
-
-      <div className="grid min-h-0 shrink-0 items-stretch gap-3 xl:grid-cols-[1.2fr_0.8fr] xl:gap-4">
-        <div className="flex h-full min-h-0 flex-col gap-2.5">
-          <div className="section-card h-full p-4 sm:p-5">
+      <div className="grid items-start gap-3 xl:grid-cols-[1.2fr_0.8fr] xl:gap-4">
+        <div className="flex flex-col gap-2.5">
+          <div className="section-card p-4 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
                 <LayoutGrid size={16} className="text-[#2563EB]" />
@@ -199,7 +222,7 @@ export default function Sessoes({
           </div>
         </div>
 
-        <div className="flex h-full min-h-0 flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <LiveSessionCard
             isTimerRunning={isTimerRunning}
             timerMode={timerMode}
@@ -213,7 +236,7 @@ export default function Sessoes({
             onStop={handleStopTimer}
             onRegister={() => setRegistroEstudoModalOpen?.(true)}
           />
-          <div className="mt-auto">
+          <div>
             <RecommendedSessionCard
               recommendation={primaryRecommendation}
               onStart={() => onStartRecommendedSession?.(primaryRecommendation)}
@@ -224,8 +247,8 @@ export default function Sessoes({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden">
-        <div className="custom-scrollbar flex min-h-0 min-w-0 flex-col overflow-y-auto pr-0.5">
+      <div className="grid grid-cols-1 gap-4">
+        <div className="custom-scrollbar flex min-w-0 flex-col pr-0.5">
           <div className="section-card p-4 sm:p-5">
             <div className="mb-3 flex items-center gap-2">
               <Clock size={16} className="text-[#2563EB]" />
@@ -436,5 +459,4 @@ function MethodCard({ icon: Icon, iconWrap, glow, title, description, hoverClass
     </div>
   );
 }
-
 

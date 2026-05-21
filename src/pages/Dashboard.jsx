@@ -11,8 +11,12 @@ import {
   Sparkles,
   Target,
 } from 'lucide-react';
+import { getDashboardDailyNote } from '../data/dashboardDailyNotes';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PageHeadPremiumBadge,
+  PageHeadPremiumCenterNote,
+} from '../components/PageHeadPremium';
 
 export default function Dashboard({
   openTimerSetup,
@@ -41,6 +45,13 @@ export default function Dashboard({
   );
   const dayContextLabel = useMemo(
     () => new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
+    []
+  );
+  const heroQuote =
+    'Você nunca sabe que resultados virão da sua ação. Mas se você não fizer nada, não existirão.';
+  const heroAuthor = 'Mahatma Gandhi';
+  const dailyNote = useMemo(
+    () => getDashboardDailyNote() || { quote: heroQuote, author: heroAuthor },
     []
   );
 
@@ -136,43 +147,27 @@ export default function Dashboard({
         };
   const cleanUserName = String(userDisplayName || '').trim();
   const greetingLine = cleanUserName ? `${timeTone.greeting}, ${cleanUserName}` : timeTone.greeting;
-  const heroDescription = primaryRecommendation
-    ? `${studySummaryTitle}. ${studySummaryDetail}`
-    : targetContest?.nome || 'Organize o dia a partir do próximo passo mais importante.';
-
   return (
-    <div className="page-shell animate-in fade-in duration-500 !pt-4 sm:!pt-5">
+    <div className="page-shell w-full min-w-0 max-w-full animate-in fade-in duration-500 !pt-5 sm:!pt-6">
       <PageHeadPremium
+        className="mt-0.5 !gap-4 !py-4 sm:mt-1 sm:!gap-4 sm:!py-5 md:!py-6 lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Home}
         titleAs="h1"
         badge={
-          <PageHeadPremiumBadge icon={CalendarDays}>
+          <PageHeadPremiumBadge icon={CalendarDays} className="mb-1.5 text-[10px] tracking-[0.15em] text-slate-200/85">
             {timeTone.badge} · {dayContextLabel}
           </PageHeadPremiumBadge>
         }
         title={greetingLine}
-        subtitle={heroDescription}
+        leadingClassName="items-center lg:max-w-[calc(100%-24rem)] xl:max-w-[50rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[24rem] lg:self-center xl:max-w-[26rem] xl:flex-none"
         trailing={
-          <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto sm:justify-end sm:gap-2">
-            <button
-              type="button"
-              onClick={quickAction.onClick}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              <Play size={14} fill="currentColor" className="opacity-95" />
-              {quickAction.label}
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                targetContest?.id ? onOpenTargetContest?.(targetContest.id) : setActiveTab('planejamento')
-              }
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
-            >
-              {targetContest?.id ? 'Abrir alvo' : 'Abrir planejamento'}
-              <ArrowRight size={14} strokeWidth={2} />
-            </button>
+          <div className="w-full min-w-0">
+            <PageHeadPremiumCenterNote
+              quote={dailyNote.quote}
+              author={dailyNote.author}
+              className="mx-0 ml-auto max-w-none"
+            />
           </div>
         }
       />
@@ -445,4 +440,3 @@ function EmptyState({ text, actionLabel = '', onAction = null }) {
     </div>
   );
 }
-

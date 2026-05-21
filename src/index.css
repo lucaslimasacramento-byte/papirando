@@ -28,6 +28,15 @@
   --radius-shell: 16px;
   --radius-card: 14px;
   --radius-control: 12px;
+  --page-head-dark: #0c1425;
+  --page-head-dark-soft: #121d33;
+  --page-head-pill: rgba(255, 255, 255, 0.075);
+  --page-head-line: rgba(255, 255, 255, 0.1);
+  --page-head-text: #f8fafc;
+  --page-head-muted: #9faec9;
+  --page-head-accent-start: #65a9ff;
+  --page-head-accent-end: #6474ff;
+  --page-head-accent-shadow: rgba(84, 132, 255, 0.38);
 }
 
 @layer base {
@@ -107,23 +116,205 @@
     @apply rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 transition-all;
   }
 
+  /**
+   * Botão de ação com IA (canvas claro: barras de ferramentas, cartões, modais).
+   * Não usar como CTA principal genérico — só para fluxos “gerar / sugerir com IA”.
+   */
+  .btn-ia {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all sm:text-[13px];
+    border: 1px solid rgba(217, 70, 239, 0.5);
+    color: #faf5ff;
+    background: linear-gradient(
+      90deg,
+      rgba(192, 38, 211, 0.4) 0%,
+      rgba(139, 92, 246, 0.34) 50%,
+      rgba(99, 102, 241, 0.32) 100%
+    );
+    box-shadow:
+      0 10px 24px rgba(168, 85, 247, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  .btn-ia:hover {
+    border-color: rgba(232, 121, 249, 0.6);
+    color: #ffffff;
+    box-shadow:
+      0 12px 28px rgba(168, 85, 247, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  .btn-ia:focus-visible {
+    @apply ring-2 ring-fuchsia-400/50 ring-offset-2 ring-offset-white;
+  }
+
+  .btn-ia:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
   .page-shell {
     @apply mx-auto flex h-full w-full max-w-[1540px] flex-col gap-4 px-2 pb-10 pt-2 lg:px-3;
   }
 
+  /**
+   * Faixa vertical da marca: **camada de `background`**, não `::before` — o gradiente
+   * acompanha o `border-radius` nativamente e evita a faixa/aura “a saltar” para fora do bloco.
+   */
   .page-head {
-    @apply surface-card-strong relative flex flex-col gap-3 rounded-2xl px-5 py-4 sm:flex-row sm:items-end sm:justify-between;
+    @apply surface-card-strong relative flex min-h-[6.25rem] flex-col gap-3 overflow-hidden rounded-[1.35rem] px-5 py-5 sm:min-h-[6.75rem] sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-5;
     background:
-      linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(250,252,255,1) 100%);
+      linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(250, 252, 255, 1) 100%);
+    background-size: 4px 100%, 100% 100%;
+    background-position: 0 0, 0 0;
+    background-repeat: no-repeat, no-repeat;
   }
 
-  .page-head::before {
+  .page-head.page-head-premium-dark {
+    @apply border border-white/[0.06] shadow-[0_18px_38px_rgba(15,23,42,0.22)] sm:items-start;
+    background:
+      linear-gradient(180deg, var(--page-head-accent-start) 0%, var(--page-head-accent-end) 100%),
+      radial-gradient(circle at top right, rgba(111, 147, 255, 0.14) 0%, rgba(111, 147, 255, 0) 32%),
+      linear-gradient(180deg, var(--page-head-dark) 0%, #0c1424 48%, var(--page-head-dark-soft) 100%);
+    background-size: 4px 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+  }
+
+  .page-head.page-head-premium-dark::before {
     content: '';
     position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    border-radius: 16px 0 0 16px;
-    background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%);
+    inset: auto -6% -55% 46%;
+    height: 9.5rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(99, 139, 255, 0.2) 0%, rgba(99, 139, 255, 0) 68%);
+    pointer-events: none;
+    filter: blur(6px);
+  }
+
+  .page-head.page-head-premium-dark::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions,
+  .page-head.page-head-premium-dark .page-head-premium-trailing {
+    color: var(--page-head-text);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action {
+    display: inline-flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: 1rem;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action:hover {
+    transform: translateY(-1px);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action-primary {
+    color: #f8fbff;
+    border: 1px solid rgba(157, 193, 255, 0.4);
+    background: linear-gradient(90deg, var(--page-head-accent-start) 0%, var(--page-head-accent-end) 100%);
+    box-shadow:
+      0 14px 30px var(--page-head-accent-shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action-primary:hover {
+    box-shadow:
+      0 18px 32px rgba(84, 132, 255, 0.44),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action-secondary {
+    color: #dbe6ff;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.09);
+  }
+
+  /** Ações “Gerar com IA” no cabeçalho premium escuro (gradiente fúcsia → violeta → índigo). */
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action-ia {
+    color: #fae8ff;
+    border: 1px solid rgba(232, 121, 249, 0.48);
+    background: linear-gradient(
+      90deg,
+      rgba(192, 38, 211, 0.42) 0%,
+      rgba(139, 92, 246, 0.36) 48%,
+      rgba(99, 102, 241, 0.32) 100%
+    );
+    box-shadow:
+      0 14px 30px rgba(147, 51, 234, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-action-ia:hover {
+    border-color: rgba(244, 114, 182, 0.55);
+    box-shadow:
+      0 18px 36px rgba(168, 85, 247, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-toggle-group {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.055);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-toggle-button {
+    color: #cbd5e1;
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-toggle-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-actions .page-head-premium-toggle-button.is-active {
+    color: #f8fbff;
+    border: 1px solid rgba(157, 193, 255, 0.34);
+    background: linear-gradient(90deg, rgba(101, 169, 255, 0.92) 0%, rgba(100, 116, 255, 0.92) 100%);
+    box-shadow:
+      0 10px 24px rgba(84, 132, 255, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  .page-head.page-head-premium-dark .page-head-premium-badge-soft {
+    border: 1px solid var(--page-head-line);
+    background: var(--page-head-pill);
+    color: #c9d5eb;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+  }
+
+  @media (min-width: 640px) {
+    .page-head.page-head-premium-dark {
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      min-height: 7rem;
+    }
   }
 
   .page-title {

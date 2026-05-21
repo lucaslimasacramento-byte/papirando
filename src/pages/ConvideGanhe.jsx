@@ -17,14 +17,16 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import {
+  buildInviteUrl,
   buildDefaultReferralCode,
   formatReferralDate,
   getReferralGoalSummary,
   normalizeReferralCode,
   REFERRAL_GOALS,
 } from '../lib/referrals';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
-const INVITE_ORIGIN = (import.meta.env.VITE_PUBLIC_APP_ORIGIN || 'https://papirando.app').replace(/\/$/, '');
+const INVITE_ORIGIN = String(import.meta.env.VITE_PUBLIC_APP_ORIGIN || '').trim();
 
 function mapReferralStatus(status) {
   return String(status || '').toLowerCase() === 'confirmed' ? 'Confirmado' : 'Pendente';
@@ -39,6 +41,19 @@ function resolveInviteName(row) {
   }
 
   return 'Novo usuário';
+}
+
+function buildVirtualBonusEvents(confirmedCount) {
+  const safeConfirmed = Math.max(0, Number(confirmedCount || 0));
+  return REFERRAL_GOALS
+    .filter((goal) => safeConfirmed >= goal.alvo)
+    .map((goal) => ({
+      id: `virtual-${goal.alvo}`,
+      milestone: goal.alvo,
+      reward_title: goal.titulo,
+      created_at: null,
+      isVirtual: true,
+    }));
 }
 
 const STEPS = [
@@ -73,6 +88,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
   const [resolvedProfileCode, setResolvedProfileCode] = useState('');
   const [referredCount, setReferredCount] = useState(0);
   const [historyFilter, setHistoryFilter] = useState('todos');
+  const [reloading, setReloading] = useState(false);
 
   const isLoggedIn = Boolean(currentUserId || profile?.id);
 
@@ -94,24 +110,34 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
       userId: profile?.id || currentUserId || '',
     });
   const inviteUrl = useMemo(
-    () => `${INVITE_ORIGIN}/entrar?ref=${encodeURIComponent(resolvedReferralCode)}`,
+    () => buildInviteUrl(resolvedReferralCode, INVITE_ORIGIN),
     [resolvedReferralCode]
   );
+  const inviteOriginLabel = useMemo(() => {
+    try {
+      return new URL(inviteUrl).origin;
+    } catch {
+      return INVITE_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : 'https://papirando.app');
+    }
+  }, [inviteUrl]);
 
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadReferralData() {
-      setLoading(true);
+  const loadReferralData = useCallback(async ({ silent = false } = {}) => {
+      if (silent) {
+        setReloading(true);
+      } else {
+        setLoading(true);
+      }
       setLoadError('');
 
       try {
         const userId = currentUserId || profile?.id || '';
         if (!userId) {
-          if (!ignore) {
-            setHistory([]);
-            setBonusHistory([]);
-            setReferredCount(0);
+          setHistory([]);
+          setBonusHistory([]);
+          setReferredCount(0);
+          if (silent) {
+            setReloading(false);
+          } else {
             setLoading(false);
           }
           return;
@@ -127,7 +153,11 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
 
         const ensuredCode =
           normalizeReferralCode(profileRow?.referral_code || referralCode || profile?.referral_code || '') ||
-          normalizeReferralCode(String(userId).slice(0, 8).toUpperCase());
+          buildDefaultReferralCode({
+            username,
+            email: currentUserEmail || profile?.email || '',
+            userId,
+          });
 
         if (!profileRow?.referral_code && ensuredCode) {
           const { error: updateError } = await supabase
@@ -137,13 +167,12 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
           if (updateError) throw updateError;
         }
 
-        if (!ignore) {
-          setResolvedProfileCode(ensuredCode);
-        }
+        setResolvedProfileCode(ensuredCode);
 
         const [
           { data: referralRows, error: referralError },
           { data: bonusRows, error: bonusError },
+          { data: referredProfilesRows, error: referredProfilesError },
           { count: referredProfilesCount, error: referredCountError },
         ] = await Promise.all([
           supabase
@@ -172,44 +201,117 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
             .order('created_at', { ascending: false }),
           supabase
             .from('profiles')
+            .select('id, nome, email, username, created_at')
+            .eq('referred_by_code', ensuredCode)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('profiles')
             .select('id', { count: 'exact', head: true })
             .eq('referred_by_code', ensuredCode),
         ]);
 
         if (referralError) throw referralError;
         if (bonusError) throw bonusError;
+        if (referredProfilesError) throw referredProfilesError;
         if (referredCountError) throw referredCountError;
 
-        if (!ignore) {
-          setReferredCount(Number(referredProfilesCount || 0));
-          setHistory(
-            (referralRows || []).map((row) => ({
-              id: row.id,
-              name: resolveInviteName(row),
-              status: mapReferralStatus(row.status),
-              date: formatReferralDate(row.confirmed_at || row.created_at),
-            }))
-          );
-          setBonusHistory(Array.isArray(bonusRows) ? bonusRows : []);
+        const mappedHistory = (referralRows || []).map((row) => ({
+            id: `ref-${row.id}`,
+            profileId: row.referred_profile_id || '',
+            name: resolveInviteName(row),
+            status: mapReferralStatus(row.status),
+            date: formatReferralDate(row.confirmed_at || row.created_at),
+            rawDate: row.confirmed_at || row.created_at || null,
+          }));
+
+        const knownProfileIds = new Set(
+          mappedHistory.map((item) => String(item.profileId || '')).filter(Boolean)
+        );
+        const fallbackFromProfiles = (Array.isArray(referredProfilesRows) ? referredProfilesRows : [])
+          .filter((row) => !knownProfileIds.has(String(row.id || '')))
+          .map((row) => ({
+            id: `profile-${row.id}`,
+            profileId: row.id,
+            name: String(row.nome || row.username || row.email || 'Novo usuário').trim(),
+            status: 'Confirmado',
+            date: formatReferralDate(row.created_at),
+            rawDate: row.created_at || null,
+          }));
+
+        const mergedHistory = [...mappedHistory, ...fallbackFromProfiles].sort((a, b) => {
+          const at = a.rawDate ? new Date(a.rawDate).getTime() : 0;
+          const bt = b.rawDate ? new Date(b.rawDate).getTime() : 0;
+          return bt - at;
+        });
+
+        const confirmedMergedCount = mergedHistory.filter((item) => item.status === 'Confirmado').length;
+
+        // Tenta sincronizar os bônus no backend (função SQL com ON CONFLICT).
+        // Se houver bloqueio de permissão, seguimos com fallback visual local.
+        try {
+          await supabase.rpc('award_referral_bonus_events', { target_referrer_id: userId });
+        } catch (rpcError) {
+          console.warn('Não foi possível sincronizar bônus via RPC.', rpcError?.message || rpcError);
         }
+
+        let normalizedBonusRows = Array.isArray(bonusRows) ? bonusRows : [];
+        try {
+          const { data: freshBonusRows, error: freshBonusError } = await supabase
+            .from('referral_bonus_events')
+            .select('id, milestone, reward_title, created_at')
+            .eq('referrer_profile_id', userId)
+            .order('created_at', { ascending: false });
+          if (!freshBonusError && Array.isArray(freshBonusRows)) {
+            normalizedBonusRows = freshBonusRows;
+          }
+        } catch (refreshBonusError) {
+          console.warn('Falha ao recarregar bônus após sync.', refreshBonusError?.message || refreshBonusError);
+        }
+
+        const bonusByMilestone = new Map();
+        normalizedBonusRows.forEach((item) => {
+          const milestone = Number(item?.milestone || 0);
+          if (!milestone || bonusByMilestone.has(milestone)) return;
+          bonusByMilestone.set(milestone, item);
+        });
+        buildVirtualBonusEvents(confirmedMergedCount).forEach((item) => {
+          const milestone = Number(item.milestone || 0);
+          if (!milestone || bonusByMilestone.has(milestone)) return;
+          bonusByMilestone.set(milestone, item);
+        });
+        const mergedBonusHistory = Array.from(bonusByMilestone.values()).sort(
+          (a, b) => Number(b?.milestone || 0) - Number(a?.milestone || 0)
+        );
+
+        setReferredCount(
+          Math.max(Number(referredProfilesCount || 0), mergedHistory.length)
+        );
+        setHistory(
+          mergedHistory.map((row) => ({
+            id: row.id,
+            name: row.name,
+            status: row.status,
+            date: row.date,
+          }))
+        );
+        setBonusHistory(mergedBonusHistory);
       } catch (error) {
         console.warn('Erro ao carregar indicações:', error);
-        if (!ignore) {
-          setHistory([]);
-          setBonusHistory([]);
-          setLoadError('Não foi possível carregar o programa de indicações agora.');
-        }
+        setHistory([]);
+        setBonusHistory([]);
+        setLoadError('Não foi possível carregar o programa de indicações agora.');
       } finally {
-        if (!ignore) setLoading(false);
+        if (silent) {
+          setReloading(false);
+        } else {
+          setLoading(false);
+        }
       }
-    }
+    }, [currentUserId, profile?.id, profile?.referral_code, profile?.email, referralCode, username, currentUserEmail]);
 
+  useEffect(() => {
     loadReferralData();
-
-    return () => {
-      ignore = true;
-    };
-  }, [currentUserId, profile?.id, profile?.referral_code, referralCode]);
+  }, [loadReferralData]);
 
   const confirmedCount = history.filter((item) => item.status === 'Confirmado').length;
   const pendingCount = history.filter((item) => item.status === 'Pendente').length;
@@ -272,36 +374,33 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
   return (
     <div className="min-h-full w-full bg-[radial-gradient(ellipse_120%_80%_at_0%_-20%,rgba(59,130,246,0.12),transparent_50%),radial-gradient(ellipse_90%_60%_at_100%_0%,rgba(99,102,241,0.1),transparent_45%),linear-gradient(180deg,#eef2f9_0%,#f4f6fb_45%,#f8fafc_100%)]">
       <div className="page-shell !max-w-[1180px] gap-6 pb-16 pt-2 sm:pt-3">
-        {/* Hero premium */}
-        <section className="page-head page-head-premium-dark relative !flex-col !items-stretch overflow-hidden rounded-[1.75rem] border border-white/10 !px-5 !py-6 sm:!px-7 sm:!py-8">
-          <div className="relative z-[1] grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-100/95">
-                <Gift size={14} className="text-amber-200" strokeWidth={2.25} />
-                Convide e ganhe
-              </div>
-
-              <h1 className="mt-4 text-2xl font-semibold leading-[1.15] tracking-tight text-white sm:text-[1.85rem] lg:text-[2.1rem]">
-                Cada amigo que entra com seu código{' '}
-                <span className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
-                  destrava benefícios
-                </span>{' '}
-                para vocês dois.
-              </h1>
-
-              <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-slate-300 sm:text-[15px]">
-                Seu código é único, fica salvo no perfil e o progresso das metas atualiza quando a indicação é confirmada.
-              </p>
-
+        <PageHeadPremium
+          icon={Gift}
+          className="!items-stretch overflow-hidden !rounded-[1.75rem] !border !border-white/10 !px-5 !py-6 sm:!px-7 sm:!py-8 lg:!flex-row lg:!items-center lg:!justify-between"
+          badge={
+            <PageHeadPremiumBadge icon={Gift}>Convide e ganhe</PageHeadPremiumBadge>
+          }
+          title={(
+            <span>
+              Cada amigo que entra com seu código{' '}
+              <span className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
+                destrava benefícios
+              </span>{' '}
+              para vocês dois.
+            </span>
+          )}
+          titleAs="h1"
+          subtitle="Seu código é único, fica salvo no perfil e o progresso das metas atualiza quando a indicação é confirmada."
+          leadingClassName="min-w-0 w-full flex-1 items-center lg:max-w-none"
+          leadingExtra={(
+            <>
               {!isLoggedIn ? (
-                <div className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-50">
+                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-50">
                   <HelpCircle size={18} className="shrink-0 text-amber-200" />
                   <span>Entre na sua conta para gerar o código oficial e ver indicações em tempo real.</span>
                 </div>
               ) : null}
-
-              {/* Passos */}
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {STEPS.map((step) => {
                   const Icon = step.icon;
                   return (
@@ -325,10 +424,11 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                   );
                 })}
               </div>
-            </div>
-
-            {/* Painel link + código */}
-            <div className="relative z-[1] flex flex-col gap-4">
+            </>
+          )}
+          trailingClassName="w-full min-w-0 max-w-lg shrink-0 lg:max-w-[min(100%,24rem)] xl:max-w-md"
+          trailing={(
+            <div className="flex flex-col gap-4">
               <div className="rounded-2xl border border-white/12 bg-[linear-gradient(165deg,rgba(255,255,255,0.09)_0%,rgba(255,255,255,0.03)_100%)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.25)] backdrop-blur-md">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Seu código</p>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -363,7 +463,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
 
                 <p className="mt-2 text-[11px] font-medium text-slate-500">
                   Quem abrir esse link já entra com seu código. Origem:{' '}
-                  <span className="font-semibold text-slate-400">{INVITE_ORIGIN}</span>
+                  <span className="font-semibold text-slate-400">{inviteOriginLabel}</span>
                 </p>
 
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -424,8 +524,8 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                 />
               </div>
             </div>
-          </div>
-        </section>
+          )}
+        />
 
         {/* Progress + metas + histórico */}
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -561,6 +661,14 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
                   {f.label}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => loadReferralData({ silent: true })}
+                disabled={reloading || loading}
+                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-100 disabled:opacity-60"
+              >
+                {reloading ? 'Atualizando...' : 'Atualizar'}
+              </button>
             </div>
 
             {loadError ? (

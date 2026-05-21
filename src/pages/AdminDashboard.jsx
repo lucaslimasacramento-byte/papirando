@@ -20,14 +20,10 @@ import {
 import { buildFinanceSnapshot, formatCurrency } from '../lib/adminFinance';
 import { buildCrmSnapshot } from '../lib/adminCrm';
 import { supabase } from '../lib/supabase';
+import AdminPageHeader from '../components/AdminPageHeader';
+import { CONTEST_STATUS_LABELS, normalizeContestStatus } from '../lib/contestGrouping';
 
-const STATUS_LABELS = {
-  confirmado: 'Confirmado',
-  previsto: 'Previsto',
-  suspeito: 'Em análise',
-  suspenso: 'Suspenso',
-  encerrado: 'Encerrado',
-};
+const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
 export default function AdminDashboard({
   contestLibrary = [],
@@ -174,55 +170,51 @@ export default function AdminDashboard({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <section className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-        <div className="grid gap-0 xl:grid-cols-[1.08fr_0.92fr]">
-          <div className="relative overflow-hidden p-8 lg:p-10">
-            <div className="absolute -left-12 top-0 h-56 w-56 rounded-full bg-amber-50 blur-3xl" />
-            <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-blue-50 blur-3xl" />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">
-                <Crown size={13} />
-                Comando do site
-              </div>
-              <h2 className="page-title mt-5 text-4xl font-semibold tracking-tight text-slate-900 lg:text-5xl">Dashboard admin</h2>
-              <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-gray-500">
-                Resumo do produto, da biblioteca, da operação e dos gargalos principais para o lançamento.
-              </p>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-4">
-                <MetricCard icon={Users} label="Usuários" value={realMetrics.totalUsers} loading={metricsLoading} />
-                <MetricCard icon={BookOpen} label="Sessões hoje" value={realMetrics.sessionsToday} loading={metricsLoading} />
-                <MetricCard icon={MessageSquareHeart} label="Redações" value={realMetrics.essaySubmissions} loading={metricsLoading} />
-                <MetricCard icon={Layers3} label="Questões" value={realMetrics.activeQuestions} loading={metricsLoading} />
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-100 bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white xl:border-l xl:border-t-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/90">
-              <Sparkles size={12} />
-              Saúde editorial
-            </div>
-            <div className="mt-5 rounded-[1.8rem] border border-white/10 bg-white/5 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">Score geral</p>
-              <p className="mt-2 text-5xl font-semibold text-white">{metrics.healthScore}%</p>
-              <p className="mt-2 text-sm font-medium text-white/70">
-                Medimos imagem, edital e data da prova para avaliar a maturidade do catálogo.
-              </p>
-              <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-emerald-400" style={{ width: `${metrics.healthScore}%` }} />
-              </div>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <PriorityCard title="Usuários" value={realMetrics.totalUsers} loading={metricsLoading} />
-              <PriorityCard title="Sessões hoje" value={realMetrics.sessionsToday} loading={metricsLoading} />
-              <PriorityCard title="Redações" value={realMetrics.essaySubmissions} loading={metricsLoading} />
-              <PriorityCard title="Questões" value={realMetrics.activeQuestions} loading={metricsLoading} />
-            </div>
-          </div>
-        </div>
-      </section>
+      <AdminPageHeader
+        icon={Crown}
+        badgeIcon={Crown}
+        badge="Comando do site"
+        title="Dashboard admin"
+        subtitle="Resumo do produto, da biblioteca, da operação e dos gargalos principais para o lançamento."
+        statsClassName="xl:grid-cols-5"
+        stats={[
+          {
+            key: 'u',
+            label: 'Usuários',
+            value: metricsLoading ? '—' : String(realMetrics.totalUsers),
+            icon: Users,
+            accent: 'blue',
+          },
+          {
+            key: 's',
+            label: 'Sessões hoje',
+            value: metricsLoading ? '—' : String(realMetrics.sessionsToday),
+            icon: BookOpen,
+            accent: 'indigo',
+          },
+          {
+            key: 'e',
+            label: 'Redações',
+            value: metricsLoading ? '—' : String(realMetrics.essaySubmissions),
+            icon: MessageSquareHeart,
+            accent: 'violet',
+          },
+          {
+            key: 'q',
+            label: 'Questões',
+            value: metricsLoading ? '—' : String(realMetrics.activeQuestions),
+            icon: Layers3,
+            accent: 'emerald',
+          },
+          {
+            key: 'h',
+            label: 'Saúde editorial',
+            value: `${metrics.healthScore}%`,
+            icon: Sparkles,
+            accent: 'emerald',
+          },
+        ]}
+      />
 
       <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
         <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
@@ -362,7 +354,7 @@ export default function AdminDashboard({
                   <div>
                     <p className="font-semibold text-slate-900">{contest.nome}</p>
                     <p className="mt-1 text-sm font-semibold text-gray-500">
-                      {STATUS_LABELS[contest.status_concurso] || 'Confirmado'} · {contest.prova_data || 'Sem data'}
+                      {STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'} · {contest.prova_data || 'Sem data'}
                     </p>
                   </div>
                   <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-gray-500">
@@ -375,39 +367,6 @@ export default function AdminDashboard({
           </div>
         </section>
       </div>
-    </div>
-  );
-}
-
-function MetricCard({ icon: Icon, label, value, loading = false }) {
-  return (
-    <div className="rounded-[1.4rem] border border-gray-200 bg-gray-50/80 p-4">
-      <div className="flex items-center gap-3">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-          <Icon size={18} />
-        </div>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-          {loading ? (
-            <div className="mt-2 h-8 w-20 animate-pulse rounded-xl bg-gray-200" />
-          ) : (
-            <p className="mt-1 text-2xl font-semibold text-slate-900">{value}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PriorityCard({ title, value, loading = false }) {
-  return (
-    <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">{title}</p>
-      {loading ? (
-        <div className="mt-3 h-9 w-20 animate-pulse rounded-xl bg-white/15" />
-      ) : (
-        <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
-      )}
     </div>
   );
 }
@@ -455,3 +414,5 @@ function EmptyState({ text }) {
     </div>
   );
 }
+
+

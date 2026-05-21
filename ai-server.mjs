@@ -40,6 +40,13 @@ const OPENAI_MODEL = env.OPENAI_MODEL || 'gpt-4.1-mini';
 const GOOGLE_API_KEY = env.GOOGLE_API_KEY;
 const GOOGLE_MODEL = env.GOOGLE_MODEL || 'gemini-1.5-pro';
 const AI_FALLBACK_PROVIDER = String(env.AI_FALLBACK_PROVIDER || 'ollama').toLowerCase();
+const AI_SERVER_TOKEN = String(env.AI_SERVER_TOKEN || '').trim();
+const AI_ALLOWED_ORIGINS = String(
+  env.AI_ALLOWED_ORIGINS || 'http://127.0.0.1:5173,http://localhost:5173'
+)
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
 const GEMINI_MODEL_CANDIDATES = [
   GOOGLE_MODEL,
   'gemini-2.0-flash',
@@ -197,6 +204,22 @@ const ESSAY_ANALYSIS_SCHEMA = {
   },
 };
 
+const QUESTION_EXPLANATION_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['isCorrect', 'answer', 'explanation', 'keyConcepts', 'studyTip'],
+  properties: {
+    isCorrect: { type: 'boolean' },
+    answer: { type: 'string' },
+    explanation: { type: 'string' },
+    keyConcepts: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+    studyTip: { type: 'string' },
+  },
+};
+
 const SYSTEM_PROMPT = `You are an expert at reading Brazilian public exam notices ("editais") from PDF files.
 
 The user will provide the edital text extracted from a PDF. Your job is to analyze the document content and extract the main contest information with high precision.
@@ -305,14 +328,45 @@ Regras:
 - Se algo estiver ilegivel, use [ilegivel].
 - Nao invente palavras que nao aparecam na imagem.`;
 
-function jsonResponse(res, statusCode, payload) {
+const QUESTION_EXPLANATION_PROMPT = `Voce e um professor especialista em concursos publicos brasileiros.
+
+Explique uma questao objetiva de forma pedagogica, curta e acionavel.
+
+Regras:
+- Responda em portugues do Brasil.
+- Nao invente lei, artigo, jurisprudencia ou dado que nao esteja no enunciado.
+- Se houver gabarito, diga por que ele e o melhor.
+- Se houver resposta do aluno, compare com o gabarito.
+- Em "keyConcepts", liste de 2 a 5 conceitos para revisar.
+- Em "studyTip", traga uma acao concreta de revisao.
+- Responda apenas com JSON valido no schema solicitado.`;
+
+function resolveCorsOrigin(req) {
+  const origin = String(req.headers.origin || '').trim().replace(/\/+$/, '');
+  if (!origin) return AI_ALLOWED_ORIGINS[0] || 'http://127.0.0.1:5173';
+  return AI_ALLOWED_ORIGINS.includes(origin) ? origin : '';
+}
+
+function jsonResponse(req, res, statusCode, payload) {
+  const corsOrigin = resolveCorsOrigin(req);
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
+    ...(corsOrigin ? { 'Access-Control-Allow-Origin': corsOrigin } : {}),
+    'Vary': 'Origin',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-AI-Server-Token',
   });
   res.end(JSON.stringify(payload));
+}
+
+function isAuthorizedRequest(req) {
+  if (!AI_SERVER_TOKEN) return true;
+  const authHeader = String(req.headers.authorization || '').trim();
+  const bearerToken = authHeader.toLowerCase().startsWith('bearer ')
+    ? authHeader.slice(7).trim()
+    : '';
+  const explicitToken = String(req.headers['x-ai-server-token'] || '').trim();
+  return bearerToken === AI_SERVER_TOKEN || explicitToken === AI_SERVER_TOKEN;
 }
 
 function sanitizeValue(value, fallback = 'Nao encontrado') {
@@ -1383,6 +1437,252 @@ async function transcribeEssayImage(payload) {
   throw new Error(errors.join(' | '));
 }
 
+function normalizeQuestionAlternatives(alternativas = []) {
+  return (Array.isArray(alternativas) ? alternativas : [])
+    .map((item, index) => {
+      if (typeof item === 'string') {
+        return {
+          id: String.fromCharCode(65 + index),
+          label: item.trim(),
+          isCorrect: false,
+        };
+      }
+
+      return {
+        id: String(item?.id || item?.letter || String.fromCharCode(65 + index)).trim(),
+        label: String(item?.label || item?.text || item?.alternativa || '').trim(),
+        isCorrect: Boolean(item?.isCorrect || item?.correta),
+      };
+    })
+    .filter((item) => item.label);
+}
+
+function normalizeQuestionExplanation(raw = {}) {
+  const keyConcepts = Array.isArray(raw?.keyConcepts)
+    ? raw.keyConcepts.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+
+  return {
+    isCorrect: Boolean(raw?.isCorrect),
+    answer: String(raw?.answer || '').trim() || 'Resposta nao informada.',
+    explanation: String(raw?.explanation || '').trim() || 'Nao foi possivel gerar uma explicacao detalhada.',
+    keyConcepts: keyConcepts.slice(0, 5),
+    studyTip: String(raw?.studyTip || '').trim() || 'Revise o topico e refaca questoes semelhantes.',
+  };
+}
+
+function buildQuestionExplanationInput(payload = {}) {
+  const enunciado = String(payload?.enunciado || payload?.statement || '').trim();
+  const alternativas = normalizeQuestionAlternatives(payload?.alternativas || payload?.options || []);
+  const markedCorrect = alternativas.find((item) => item.isCorrect);
+  const gabarito = String(payload?.gabarito || payload?.answer || markedCorrect?.id || '').trim();
+  const respostaUsuario = String(payload?.resposta_usuario || payload?.userAnswer || '').trim();
+
+  return {
+    enunciado,
+    alternativas,
+    gabarito,
+    respostaUsuario,
+  };
+}
+
+function buildQuestionExplanationHeuristic(payload = {}) {
+  const input = buildQuestionExplanationInput(payload);
+  const correctOption =
+    input.alternativas.find((item) => item.id.toLowerCase() === input.gabarito.toLowerCase()) ||
+    input.alternativas.find((item) => item.isCorrect);
+  const userIsCorrect =
+    input.respostaUsuario && input.gabarito
+      ? input.respostaUsuario.toLowerCase() === input.gabarito.toLowerCase()
+      : Boolean(correctOption?.isCorrect);
+
+  const answer = correctOption
+    ? `${correctOption.id}: ${correctOption.label}`
+    : input.gabarito || 'Gabarito nao informado.';
+
+  return {
+    provider: 'heuristic',
+    source: 'heuristic',
+    sourceLabel: 'Analise local',
+    model: 'Heuristica Papirando',
+    ...normalizeQuestionExplanation({
+      isCorrect: userIsCorrect,
+      answer,
+      explanation: correctOption
+        ? `O gabarito indicado e ${answer}. Use o enunciado para identificar a regra cobrada e elimine as alternativas incompativeis com esse nucleo.`
+        : 'Sem gabarito estruturado, revise o enunciado, identifique o comando da questao e compare cada alternativa com a regra cobrada.',
+      keyConcepts: ['Comando da questao', 'Regra central do tema', 'Eliminacao de alternativas'],
+      studyTip: 'Anote o motivo do erro em uma frase e refaca 5 questoes do mesmo topico.',
+    }),
+  };
+}
+
+function buildQuestionExplanationPrompt(payload = {}) {
+  const input = buildQuestionExplanationInput(payload);
+
+  return `${QUESTION_EXPLANATION_PROMPT}
+
+Schema alvo:
+${JSON.stringify(QUESTION_EXPLANATION_SCHEMA)}
+
+Enunciado:
+${input.enunciado}
+
+Alternativas:
+${input.alternativas.map((item) => `${item.id}) ${item.label}`).join('\n') || 'Nao informadas'}
+
+Gabarito: ${input.gabarito || 'Nao informado'}
+Resposta do aluno: ${input.respostaUsuario || 'Nao informada'}`;
+}
+
+async function explainQuestionWithOllama(payload = {}) {
+  const availableModels = await listOllamaModels();
+  const candidates =
+    availableModels.length > 0
+      ? OLLAMA_MODEL_CANDIDATES.filter((candidate) => availableModels.includes(candidate))
+      : OLLAMA_MODEL_CANDIDATES;
+  const prompt = buildQuestionExplanationPrompt(payload);
+  const errors = [];
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetchJson(`${OLLAMA_BASE_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: candidate,
+          prompt,
+          stream: false,
+          format: 'json',
+          options: { temperature: 0.1 },
+        }),
+      });
+
+      return {
+        provider: 'ollama',
+        source: 'ollama',
+        sourceLabel: 'IA local',
+        model: response?.model || candidate,
+        ...normalizeQuestionExplanation(extractJsonFromText(response?.response)),
+      };
+    } catch (error) {
+      errors.push(`${candidate}: ${error.message}`);
+    }
+  }
+
+  throw new Error(`Falha ao explicar questao com Ollama. Tentativas: ${errors.join(' | ')}`);
+}
+
+async function explainQuestionWithOpenAI(payload = {}) {
+  if (!OPENAI_API_KEY) {
+    throw new Error('Defina OPENAI_API_KEY no arquivo .env para usar OpenAI.');
+  }
+
+  const response = await fetchJson('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.1,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'question_explanation',
+          strict: true,
+          schema: QUESTION_EXPLANATION_SCHEMA,
+        },
+      },
+      messages: [
+        { role: 'system', content: QUESTION_EXPLANATION_PROMPT },
+        { role: 'user', content: buildQuestionExplanationPrompt(payload) },
+      ],
+    }),
+  });
+
+  const content = response?.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('A OpenAI nao retornou conteudo para a questao.');
+  }
+
+  return {
+    provider: 'openai',
+    source: 'openai',
+    sourceLabel: 'IA real',
+    model: response?.model || OPENAI_MODEL,
+    ...normalizeQuestionExplanation(JSON.parse(content)),
+  };
+}
+
+async function explainQuestionWithGemini(payload = {}) {
+  if (!GOOGLE_API_KEY) {
+    throw new Error('Defina GOOGLE_API_KEY no .env para usar Gemini.');
+  }
+
+  const resolvedModel = await resolveGeminiModel();
+  const response = await fetchJson(
+    `https://generativelanguage.googleapis.com/v1beta/models/${resolvedModel}:generateContent?key=${GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: buildQuestionExplanationPrompt(payload) }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: 'application/json',
+        },
+      }),
+    }
+  );
+
+  const contentText = (response?.candidates?.[0]?.content?.parts || [])
+    .map((part) => part?.text || '')
+    .join('\n')
+    .trim();
+
+  if (!contentText) {
+    throw new Error('O Gemini nao retornou conteudo para a questao.');
+  }
+
+  return {
+    provider: 'gemini',
+    source: 'gemini',
+    sourceLabel: 'Gemini',
+    model: resolvedModel,
+    ...normalizeQuestionExplanation(extractJsonFromText(contentText)),
+  };
+}
+
+async function explainQuestion(payload = {}) {
+  const providers =
+    AI_PROVIDER === 'gemini'
+      ? ['gemini', 'openai', 'ollama', 'heuristic']
+      : AI_PROVIDER === 'openai'
+        ? ['openai', 'gemini', 'ollama', 'heuristic']
+        : ['ollama', 'openai', 'gemini', 'heuristic'];
+  const errors = [];
+
+  for (const provider of providers) {
+    try {
+      if (provider === 'gemini') return await explainQuestionWithGemini(payload);
+      if (provider === 'openai') return await explainQuestionWithOpenAI(payload);
+      if (provider === 'ollama') return await explainQuestionWithOllama(payload);
+      if (provider === 'heuristic') return buildQuestionExplanationHeuristic(payload);
+    } catch (error) {
+      errors.push(`${provider}: ${error.message}`);
+    }
+  }
+
+  throw new Error(errors.join(' | '));
+}
+
 function readBody(req) {
   return new Promise((resolveBody, rejectBody) => {
     let raw = '';
@@ -1664,13 +1964,246 @@ async function summarizeTopic({ text, topico = '', disciplina = '' }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+function normalizeContestFormTemplate(parsed = {}, provider = 'ai', model = '') {
+  const toList = (items, max = 80) =>
+    (Array.isArray(items) ? items : [])
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .slice(0, max);
+  const isUncertain = (value = '') => /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o localizei|incerto|equivalente/i.test(String(value || ''));
+  const normalizeCargoKey = (value = '') =>
+    String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  const extractMoney = (value = '') => String(value || '').match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g) || [];
+  const pickSalaryForCargo = (salary = '', cargo = '') => {
+    if (isUncertain(salary)) return '';
+    const text = String(salary || '');
+    const values = extractMoney(text);
+    if (values.length <= 1) return values[0] || text.trim();
+
+    const key = normalizeCargoKey(cargo);
+    const lines = text.split(/\r?\n|\*/).map((line) => line.trim()).filter(Boolean);
+    const matchedLine = lines.find((line) => {
+      const normalized = normalizeCargoKey(line);
+      if (!extractMoney(line).length) return false;
+      if (/nivel superior|superior/.test(key) && /nivel superior|superior/.test(normalized)) return true;
+      if (/nivel medio|medio|atendente/.test(key) && /nivel medio|medio|atendente/.test(normalized)) return true;
+      return key.split(/[\s—-]+/).filter((part) => part.length > 4).some((part) => normalized.includes(part));
+    });
+    return extractMoney(matchedLine || '')[0] || values[0] || '';
+  };
+  const normalizeEducationForCargo = (education = '', cargo = '') => {
+    const key = normalizeCargoKey(`${cargo} ${education}`);
+    if (/nivel superior|superior|bacharel|diploma de curso superior/.test(key)) return 'Nível superior';
+    if (/nivel medio|medio|ensino medio|atendente/.test(key)) return 'Nível médio';
+    return isUncertain(education) ? '' : String(education || '').trim();
+  };
+  const normalizeVacancies = (value = '') => {
+    if (isUncertain(value)) return '';
+    const text = String(value || '').trim();
+    const total = text.match(/\b(\d{1,5})\s+vagas?\s+totais?\b/i);
+    if (total) return total[1];
+    const firstNumber = text.match(/\b\d{1,5}\b/);
+    return firstNumber ? firstNumber[0] : text;
+  };
+  const normalizeLocationForCargo = (location = '', cargo = '') => {
+    if (isUncertain(location)) return '';
+    const text = String(location || '').replace(/\s+/g, ' ').trim();
+    const key = normalizeCargoKey(cargo);
+    const normalized = normalizeCargoKey(text);
+    if (/nivel superior|superior/.test(key) && /para nivel superior[^.]*salvador/.test(normalized)) return 'Salvador-BA';
+    if (/salvador/.test(normalized) && /nivel superior|superior/.test(key)) return 'Salvador-BA';
+    const firstSentence = text.split(/\.\s+/)[0]?.trim();
+    return firstSentence || text;
+  };
+  const normalizeSubject = (subject = {}) => {
+    const name = sanitizeValue(subject?.nome || subject?.name, '');
+    const normalizedName = normalizeCargoKey(name);
+    if (/requisitos?|atribuicoes?|atribuições?|funcao|função/.test(normalizedName)) return null;
+    const fallbackName = /nao se aplica|não se aplica/.test(normalizedName) ? 'Avaliação Curricular' : name;
+    return {
+      nome: fallbackName,
+      topicos: toList(subject?.topicos || subject?.topics, 160),
+    };
+  };
+  const rawTemplates = Array.isArray(parsed?.templates)
+    ? parsed.templates
+    : parsed?.template
+      ? [parsed.template]
+      : [parsed || {}];
+  const normalizeTemplate = (template = {}) => ({
+    nome: sanitizeValue(template.nome, ''),
+    plano: sanitizeValue(template.plano, ''),
+    concurso: sanitizeValue(template.concurso, ''),
+    area: sanitizeValue(template.area, 'Geral'),
+    cargo: sanitizeValue(template.cargo, ''),
+    banca: sanitizeValue(template.banca, ''),
+    salario: pickSalaryForCargo(template.salario, template.cargo),
+    inscricao_valor: sanitizeValue(template.inscricao_valor, ''),
+    escolaridade: normalizeEducationForCargo(template.escolaridade, template.cargo),
+    vagas: normalizeVacancies(template.vagas),
+    lotacao: normalizeLocationForCargo(template.lotacao, template.cargo),
+    etapas: sanitizeValue(template.etapas, ''),
+    etapas_tags: toList(template.etapas_tags, 12),
+    taf_itens: toList(template.taf_itens, 20),
+    descricao: sanitizeValue(template.descricao, ''),
+    status_concurso: sanitizeValue(template.status_concurso, 'suspeito'),
+    prova_data: sanitizeValue(template.prova_data, ''),
+    edital_url: sanitizeValue(template.edital_url, ''),
+    disciplinas: (Array.isArray(template.disciplinas) ? template.disciplinas : [])
+      .map((subject) => normalizeSubject(subject))
+      .filter((subject) => subject?.nome),
+  });
+  const templates = rawTemplates
+    .map((template) => normalizeTemplate(template))
+    .filter((template) => template.nome || template.cargo || template.disciplinas.length);
+
+  return {
+    provider,
+    source: provider,
+    model,
+    template: templates[0] || normalizeTemplate({}),
+    templates,
+    uncertainties: toList(parsed?.uncertainties, 40),
+    notes: toList(parsed?.notes, 20),
+  };
+}
+
+function buildContestFormPrompt(text) {
+  return `Transforme este formulario analisado de edital em JSON de templates para cadastro no Papirando.
+Use somente as informacoes enviadas. Nao invente cor, imagem ou URL direta de PDF.
+Se um campo estiver incerto, ausente ou vier como "Nao tenho certeza", deixe vazio quando for campo simples e registre em uncertainties.
+Preserve todas as disciplinas e todos os topicos por disciplina.
+Se houver multiplos cargos, funcoes, areas de atuacao ou blocos "Cargo/curso", crie um template separado para cada cargo/area importavel.
+Copie os dados comuns do edital em todos os templates separados e ajuste nome, plano, cargo, escolaridade, salario, vagas, lotacao, disciplinas e topicos conforme cada cargo/area.
+Se houver um bloco comum como "Todos os cargos", inclua essas disciplinas/topicos em todos os templates especificos.
+
+Regras de preenchimento direto:
+- nome: use "Nome do concurso — area/cargo especifico" quando houver multiplas funcoes. Ex: "DETRAN-BA — Processo Seletivo Simplificado REDA — Edital nº 01/2026 — Administração".
+- plano: use orgao + area/cargo especifico. Ex: "Departamento Estadual de Trânsito da Bahia — DETRAN-BA — Administração".
+- concurso: somente o orgao/concurso comum, sem area/cargo especifico duplicado.
+- cargo: somente o cargo/funcao do template. Ex: "Técnico de Nível Superior — Administração".
+- escolaridade: deve ser apenas "Nível médio" ou "Nível superior"; derive pelo cargo especifico. Nao misture escolaridades de outros cargos.
+- salario: retorne somente o valor do cargo especifico, no formato "R$ 3.810,40". Nao inclua beneficios, bullets, outros cargos ou explicacoes.
+- vagas: retorne somente numero e complemento direto da vaga especifica, sem frase longa. Se o edital so informar total geral, use apenas o numero total, ex: "170".
+- lotacao: retorne somente a lotacao da vaga especifica. Se houver "Para nível superior ... Salvador", use "Salvador-BA" para cargos de nivel superior.
+- etapas: resuma a etapa real em uma frase curta. Ex: "Avaliação curricular, de caráter eliminatório e classificatório."
+- disciplinas: inclua apenas o que a pessoa precisa estudar para aquele cargo/prova. Nao use "Requisitos/Atribuições da função" como disciplina de estudo. Se nao houver prova/conteudo programatico, use uma disciplina "Avaliação Curricular" com criterios avaliados; se houver curso de informatica cobrado, use "Informática" com os temas.
+
+Campos:
+- area: Policial, Agropecuaria, Tribunais, Fiscal, Controle, Legislativo, Administrativa, Educacao, Saude ou Geral. Juridica/Direito = Tribunais.
+- status_concurso: confirmado, previsto, suspeito, suspenso ou encerrado.
+- prova_data: YYYY-MM-DD.
+- etapas_tags: prova_objetiva, prova_discursiva, redacao, taf, avaliacao_psicologica, investigacao_social, exames_medicos, toxicologico, heteroidentificacao, curso_formacao.
+
+Responda SOMENTE com JSON:
+{"templates":[{"nome":"","plano":"","concurso":"","area":"","cargo":"","banca":"","salario":"","inscricao_valor":"","escolaridade":"","vagas":"","lotacao":"","etapas":"","etapas_tags":[],"taf_itens":[],"descricao":"","status_concurso":"","prova_data":"","edital_url":"","disciplinas":[{"nome":"","topicos":[""]}]}],"uncertainties":[""],"notes":[""]}
+
+Formulario:
+${String(text || '').slice(0, 30000)}`;
+}
+
+async function analyzeContestFormWithOpenAI(text) {
+  if (!OPENAI_API_KEY) throw new Error('Defina OPENAI_API_KEY no .env para usar OpenAI.');
+  const payload = await fetchJson('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'user', content: buildContestFormPrompt(text) }],
+    }),
+  });
+
+  const content = payload?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('OpenAI nao retornou conteudo.');
+  return normalizeContestFormTemplate(extractJsonFromText(content), 'openai', payload.model || OPENAI_MODEL);
+}
+
+async function analyzeContestFormWithGemini(text) {
+  if (!GOOGLE_API_KEY) throw new Error('Defina GOOGLE_API_KEY no .env para usar Gemini.');
+  const resolvedModel = await resolveGeminiModel();
+  const payload = await fetchJson(
+    `https://generativelanguage.googleapis.com/v1beta/models/${resolvedModel}:generateContent?key=${GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: buildContestFormPrompt(text) }] }],
+        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
+      }),
+    }
+  );
+
+  const contentText = (payload?.candidates?.[0]?.content?.parts || [])
+    .map((p) => p?.text || '').join('\n').trim();
+  if (!contentText) throw new Error('Gemini nao retornou conteudo.');
+  return normalizeContestFormTemplate(extractJsonFromText(contentText), 'gemini', resolvedModel);
+}
+
+async function analyzeContestFormWithOllama(text) {
+  const availableModels = await listOllamaModels();
+  const candidates = availableModels.length > 0
+    ? OLLAMA_MODEL_CANDIDATES.filter((c) => availableModels.includes(c))
+    : OLLAMA_MODEL_CANDIDATES;
+
+  const errors = [];
+  for (const candidate of candidates) {
+    try {
+      const payload = await fetchJson(`${OLLAMA_BASE_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: candidate, prompt: buildContestFormPrompt(text), stream: false, format: 'json' }),
+      });
+      return normalizeContestFormTemplate(extractJsonFromText(payload?.response), 'ollama', candidate);
+    } catch (e) {
+      errors.push(`${candidate}: ${e.message}`);
+    }
+  }
+  throw new Error(`Falha ao analisar formulario com Ollama. Tentativas: ${errors.join(' | ')}`);
+}
+
+async function analyzeContestForm({ text = '', formText = '' } = {}) {
+  const source = String(text || formText || '').trim();
+  if (!source) throw new Error('Cole o formulario analisado do concurso para preencher o cadastro.');
+
+  const providers = AI_PROVIDER === 'gemini'
+    ? ['gemini', AI_FALLBACK_PROVIDER]
+    : AI_PROVIDER === 'openai'
+      ? ['openai', AI_FALLBACK_PROVIDER]
+      : ['ollama', AI_FALLBACK_PROVIDER];
+
+  const errors = [];
+  for (const provider of [...new Set(providers)]) {
+    try {
+      if (provider === 'gemini') return await analyzeContestFormWithGemini(source);
+      if (provider === 'openai') return await analyzeContestFormWithOpenAI(source);
+      if (provider === 'ollama') return await analyzeContestFormWithOllama(source);
+    } catch (e) {
+      errors.push(`[${provider}] ${e.message}`);
+    }
+  }
+  throw new Error(`Nao foi possivel analisar o formulario do concurso. Erros: ${errors.join(' | ')}`);
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
-    return jsonResponse(res, 204, {});
+    return jsonResponse(req, res, 204, {});
   }
 
-  if (req.method === 'GET' && req.url === '/api/health') {
-    return jsonResponse(res, 200, {
+  if (!resolveCorsOrigin(req)) {
+    return jsonResponse(req, res, 403, { error: 'Origem nao autorizada para o servidor de IA.' });
+  }
+
+  if (!isAuthorizedRequest(req)) {
+    return jsonResponse(req, res, 401, { error: 'Token do servidor de IA ausente ou invalido.' });
+  }
+
+  if (req.method === 'GET' && (req.url === '/api/health' || req.url === '/api/ai/health')) {
+    return jsonResponse(req, res, 200, {
       ok: true,
       service: 'edital-ai',
       provider: AI_PROVIDER,
@@ -1687,27 +2220,45 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  if (req.method === 'POST' && req.url === '/api/analyze-edital') {
+  if (req.method === 'POST' && (req.url === '/api/analyze-edital' || req.url === '/api/ai/analyze-edital')) {
     try {
       const body = await readBody(req);
       const editalText = String(body?.editalText || '').trim();
 
       if (!editalText) {
-        return jsonResponse(res, 400, { error: 'Cole ou envie um edital para analise.' });
+        return jsonResponse(req, res, 400, { error: 'Cole ou envie um edital para analise.' });
       }
 
       const result = await analyzeEdital(editalText);
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, {
+      return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao analisar o edital.',
+      });
+    }
+  }
+
+  if (req.method === 'POST' && (req.url === '/api/contest-form' || req.url === '/api/ai/contest-form')) {
+    try {
+      const body = await readBody(req);
+      const text = String(body?.text || body?.formText || '').trim();
+
+      if (!text) {
+        return jsonResponse(req, res, 400, { error: 'Cole o formulario analisado do concurso.' });
+      }
+
+      const result = await analyzeContestForm({ text });
+      return jsonResponse(req, res, 200, result);
+    } catch (error) {
+      return jsonResponse(req, res, 500, {
+        error: error.message || 'Falha interna ao analisar o formulario do concurso.',
       });
     }
   }
 
   if (
     req.method === 'POST' &&
-    (req.url === '/api/redacoes/analyze' || req.url === '/api/analyze-essay')
+    (req.url === '/api/redacoes/analyze' || req.url === '/api/analyze-essay' || req.url === '/api/ai/analyze-essay')
   ) {
     try {
       const body = await readBody(req);
@@ -1716,26 +2267,29 @@ const server = http.createServer(async (req, res) => {
       const banca = String(body?.banca || '').trim();
 
       if (!text) {
-        return jsonResponse(res, 400, { error: 'Envie o texto da redacao para correcao.' });
+        return jsonResponse(req, res, 400, { error: 'Envie o texto da redacao para correcao.' });
       }
 
       const result = await analyzeEssay({ text, tema, banca });
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, {
+      return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao corrigir a redacao.',
       });
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/redacoes/transcribe') {
+  if (
+    req.method === 'POST' &&
+    (req.url === '/api/redacoes/transcribe' || req.url === '/api/ai/transcribe-essay')
+  ) {
     try {
       const body = await readBody(req);
       const dataUrl = String(body?.dataUrl || '').trim();
       const mimeType = String(body?.mimeType || '').trim();
 
       if (!dataUrl || !mimeType.startsWith('image/')) {
-        return jsonResponse(res, 400, { error: 'Envie uma imagem valida para transcricao.' });
+        return jsonResponse(req, res, 400, { error: 'Envie uma imagem valida para transcricao.' });
       }
 
       const result = await transcribeEssayImage({
@@ -1743,15 +2297,18 @@ const server = http.createServer(async (req, res) => {
         mimeType,
       });
 
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, {
+      return jsonResponse(req, res, 500, {
         error: error.message || 'Falha interna ao transcrever a imagem da redacao.',
       });
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/generate-flashcards') {
+  if (
+    req.method === 'POST' &&
+    (req.url === '/api/generate-flashcards' || req.url === '/api/ai/generate-flashcards')
+  ) {
     try {
       const body = await readBody(req);
       const text = String(body?.text || '').trim();
@@ -1759,17 +2316,17 @@ const server = http.createServer(async (req, res) => {
       const maxCards = Math.min(Math.max(Number(body?.maxCards) || 10, 1), 30);
 
       if (!text) {
-        return jsonResponse(res, 400, { error: 'Envie o texto para gerar flashcards.' });
+        return jsonResponse(req, res, 400, { error: 'Envie o texto para gerar flashcards.' });
       }
 
       const result = await generateFlashcards({ text, disciplina, maxCards });
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, { error: error.message || 'Falha ao gerar flashcards.' });
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao gerar flashcards.' });
     }
   }
 
-  if (req.method === 'POST' && req.url === '/api/summarize-topic') {
+  if (req.method === 'POST' && (req.url === '/api/summarize-topic' || req.url === '/api/ai/summarize-topic')) {
     try {
       const body = await readBody(req);
       const text = String(body?.text || '').trim();
@@ -1777,17 +2334,33 @@ const server = http.createServer(async (req, res) => {
       const disciplina = String(body?.disciplina || '').trim();
 
       if (!text) {
-        return jsonResponse(res, 400, { error: 'Envie o texto para resumir.' });
+        return jsonResponse(req, res, 400, { error: 'Envie o texto para resumir.' });
       }
 
       const result = await summarizeTopic({ text, topico, disciplina });
-      return jsonResponse(res, 200, result);
+      return jsonResponse(req, res, 200, result);
     } catch (error) {
-      return jsonResponse(res, 500, { error: error.message || 'Falha ao resumir o topico.' });
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao resumir o topico.' });
     }
   }
 
-  return jsonResponse(res, 404, { error: 'Rota nao encontrada.' });
+  if (req.method === 'POST' && (req.url === '/api/explain-question' || req.url === '/api/ai/explain-question')) {
+    try {
+      const body = await readBody(req);
+      const enunciado = String(body?.enunciado || body?.statement || '').trim();
+
+      if (!enunciado) {
+        return jsonResponse(req, res, 400, { error: 'Envie o enunciado da questao para explicar.' });
+      }
+
+      const result = await explainQuestion(body);
+      return jsonResponse(req, res, 200, result);
+    } catch (error) {
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao explicar a questao.' });
+    }
+  }
+
+  return jsonResponse(req, res, 404, { error: 'Rota nao encontrada.' });
 });
 
 server.listen(PORT, () => {

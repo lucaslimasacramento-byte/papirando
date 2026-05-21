@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 import {
   BookMarked,
   DownloadCloud,
@@ -479,7 +482,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       <div className="app-main-shell mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1320px] flex-col gap-6">
       {!focusMode && (
         <PageHeadPremium
-          className="mb-6 shrink-0 animate-in fade-in duration-500"
+          className="mb-6 shrink-0 animate-in fade-in duration-500 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
           icon={Scale}
           titleAs="h1"
           badge={
@@ -488,7 +491,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
             </PageHeadPremiumBadge>
           }
           title="Legislação · Vade Mecum"
-          subtitle="Leitor por bloco, busca no texto do PDF, favoritos, anotações e marcações — sincronizados na sua conta quando você estiver logado."
+          leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
           leadingExtra={
             <div className="max-w-md">
               <div className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -505,7 +508,24 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               </div>
             </div>
           }
+          statsStackBelowTrailing
+          statsDense
           stats={legislacaoHeaderStats}
+          statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+          trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,44rem)] xl:shrink-0"
+          trailing={(
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2">
+              <a
+                href={fullReaderUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+              >
+                <DownloadCloud size={14} aria-hidden />
+                Leitor completo
+              </a>
+            </div>
+          )}
         />
       )}
 

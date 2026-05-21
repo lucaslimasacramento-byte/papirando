@@ -12,21 +12,27 @@ import {
   Heart,
   Layers3,
   LibraryBig,
+  Pencil,
   Plus,
   Users,
 } from 'lucide-react';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import {
+  buildContestForRole,
+  CONTEST_STATUS_LABELS,
+  findRelatedContests,
+  getContestRoles,
+  getPrimaryContestRole,
+  normalizeContestStatus,
+} from '../lib/contestGrouping';
+import { getContestAreaTheme } from '../lib/contestAreaTheme';
 
-const STATUS_LABELS = {
-  confirmado: 'Confirmado',
-  previsto: 'Previsto',
-  suspeito: 'Em análise',
-  suspenso: 'Suspenso',
-  encerrado: 'Encerrado',
-};
+const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
   prova_discursiva: 'Prova discursiva',
+  avaliacao_curricular: 'AvaliaÃ§Ã£o curricular',
   redacao: 'Redação',
   taf: 'TAF',
   avaliacao_psicologica: 'Avaliação psicológica',
@@ -38,12 +44,13 @@ const STAGE_LABELS = {
 };
 
 export default function ConcursoDetalhe({
-  contest,
+  contest: rawContest,
   onBack,
   onImport,
   onToggleFavorite,
   onToggleInterested,
   onOpenDisciplinas,
+  onOpenRelatedContest,
   contestTracker = {},
   onToggleContestTask,
   isTargetContest = false,
@@ -51,12 +58,43 @@ export default function ConcursoDetalhe({
   importingId = '',
   limiteAtingido = false,
   cursos = [],
+  concursoCatalog = [],
   bancoDisciplinas = [],
+  isAdmin = false,
   isFavorite = false,
   isInterested = false,
+  onEditContest,
 }) {
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [imageError, setImageError] = useState(false);
+  const roles = useMemo(() => getContestRoles(rawContest || {}), [rawContest]);
+  const [selectedRoleId, setSelectedRoleId] = useState('');
+  const activeRole = useMemo(
+    () => roles.find((role) => role.id === selectedRoleId) || getPrimaryContestRole(rawContest || {}),
+    [roles, selectedRoleId, rawContest]
+  );
+  const contest = useMemo(() => {
+    if (!rawContest) return null;
+    return buildContestForRole(rawContest, activeRole);
+  }, [rawContest, activeRole]);
+  const normalizedStatus = normalizeContestStatus(contest?.status_concurso);
+  const areaTheme = useMemo(() => getContestAreaTheme(contest?.area || 'Geral'), [contest?.area]);
+  const headStyle = useMemo(() => ({
+    '--page-head-accent-start': areaTheme.accentStart,
+    '--page-head-accent-end': areaTheme.accentEnd,
+    '--page-head-accent-shadow': areaTheme.accentShadow,
+    '--page-head-dark': areaTheme.dark,
+    '--page-head-dark-soft': areaTheme.darkSoft,
+  }), [areaTheme]);
+  const relatedContests = useMemo(
+    () => findRelatedContests(concursoCatalog, rawContest || {}),
+    [concursoCatalog, rawContest]
+  );
+
+  useEffect(() => {
+    setSelectedRoleId(getPrimaryContestRole(rawContest || {})?.id || '');
+    setExpandedSubjects({});
+  }, [rawContest?.id]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -99,19 +137,19 @@ export default function ConcursoDetalhe({
   const contestMoment = useMemo(() => {
     if (!contest) return null;
 
-    if (contest.status_concurso === 'suspenso') {
+    if (normalizedStatus === 'homologado') {
       return {
-        title: 'Concurso suspenso',
-        text: 'Esse edital está suspenso no momento. Vale acompanhar atualizações antes de montar um plano pesado.',
-        tone: 'amber',
+        title: 'Concurso homologado',
+        text: 'Esse concurso já teve resultado final homologado e hoje serve mais como referência de estrutura e histórico.',
+        tone: 'gray',
       };
     }
 
-    if (contest.status_concurso === 'encerrado') {
+    if (['inscricoes_abertas', 'prova_marcada', 'em_andamento'].includes(normalizedStatus)) {
       return {
-        title: 'Concurso encerrado',
-        text: 'Esse concurso está encerrado e hoje serve mais como referência de estrutura e histórico.',
-        tone: 'gray',
+        title: 'Concurso ativo',
+        text: 'Esse concurso já exige atenção a prazos, prova e execução do plano de estudos.',
+        tone: 'blue',
       };
     }
 
@@ -134,18 +172,18 @@ export default function ConcursoDetalhe({
       text: 'Esse concurso parece estar em uma fase útil para planejamento, estruturação das disciplinas e montagem do ciclo.',
       tone: 'blue',
     };
-  }, [contest]);
+  }, [contest, normalizedStatus]);
 
   const contestAlerts = useMemo(() => {
     if (!contest) return [];
 
     const alerts = [];
 
-    if (contest.status_concurso === 'suspenso') {
+    if (['previsto', 'autorizado', 'comissao_formada', 'banca_em_definicao', 'banca_definida', 'edital_iminente'].includes(normalizedStatus)) {
       alerts.push({
-        title: 'Edital suspenso',
-        text: 'Acompanhe retificações e novas publicações antes de acelerar o planejamento.',
-        tone: 'amber',
+        title: STATUS_LABELS[normalizedStatus] || 'Fase inicial',
+        text: 'Use essa fase para construir base e acompanhar as próximas publicações do órgão.',
+        tone: 'blue',
       });
     }
 
@@ -178,7 +216,7 @@ export default function ConcursoDetalhe({
     }
 
     return alerts.slice(0, 3);
-  }, [contest]);
+  }, [contest, normalizedStatus]);
 
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
@@ -190,6 +228,7 @@ export default function ConcursoDetalhe({
   const formatCurrencyBR = (value) => {
     const cleaned = String(value || '').trim();
     if (!cleaned) return 'A definir';
+    if (/\s+a\s+R\$/i.test(cleaned)) return cleaned;
 
     const numeric = Number(cleaned.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) return 'A definir';
@@ -203,7 +242,7 @@ export default function ConcursoDetalhe({
   const agendaItems = [
     {
       label: 'Status do concurso',
-      value: STATUS_LABELS[contest?.status_concurso] || 'Em análise',
+      value: STATUS_LABELS[normalizedStatus] || 'Previsto',
     },
     {
       label: 'Data da prova',
@@ -276,79 +315,202 @@ export default function ConcursoDetalhe({
   }
 
   return (
-    <div className="page-shell">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
-        >
-          <ArrowLeft size={16} />
-          Voltar para concursos
-        </button>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => onToggleFavorite?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isFavorite
-                ? 'border-rose-200 bg-rose-50 text-rose-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <Heart size={15} className={isFavorite ? 'fill-current' : ''} />
-            {isFavorite ? 'Favoritado' : 'Favoritar'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onToggleInterested?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isInterested
-                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <Bookmark size={15} className={isInterested ? 'fill-current' : ''} />
-            {isInterested ? 'Quero estudar' : 'Marcar interesse'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSetTargetContest?.(contest.id)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold ${
-              isTargetContest
-                ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
-                : 'border-gray-200 bg-white text-gray-600'
-            }`}
-          >
-            <BadgeCheck size={15} className={isTargetContest ? 'fill-current' : ''} />
-            {isTargetContest ? 'Concurso alvo' : 'Definir como alvo'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onImport?.(contest)}
-            disabled={importingId === contest.id || limiteAtingido}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#185FA5] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0C447C] disabled:opacity-70"
-          >
-            {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Importando...' : 'Adicionar aos meus cursos'}
-            <ArrowRight size={16} />
-          </button>
-
-          {contest.edital_url && (
+    <div className="page-shell flex flex-col gap-6">
+      <PageHeadPremium
+        className="!min-h-[230px] !overflow-visible !pb-14 !pt-8 sm:!min-h-[245px] sm:!pb-16 sm:!pt-9"
+        style={headStyle}
+        icon={LibraryBig}
+        iconTileClassName={contest.imagem_url && !imageError ? '!h-32 !w-32 !rounded-none !border-transparent !bg-transparent !p-0 !shadow-none !ring-0 sm:!h-40 sm:!w-40 lg:!h-44 lg:!w-44' : '!h-16 !w-16 sm:!h-[4.5rem] sm:!w-[4.5rem]'}
+        iconSlot={contest.imagem_url && !imageError ? (
+          <img
+            src={contest.imagem_url}
+            alt=""
+            onError={() => setImageError(true)}
+            className="h-full w-full object-contain drop-shadow-[0_18px_26px_rgba(0,0,0,0.38)]"
+            aria-hidden
+          />
+        ) : null}
+        badge={
+          <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
+        }
+        title={contest.nome}
+        titleAs="h1"
+        subtitle={`${contest.cargo || contest.concurso} · ${contest.banca || 'Banca a definir'}`}
+        leadingClassName="min-w-0 flex-1 xl:flex-[1.2]"
+        leadingExtra={(
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <button
               type="button"
-              onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
+              onClick={onBack}
+              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100"
             >
-              Edital
-              <ExternalLink size={15} />
+              <ArrowLeft size={14} />
+              Voltar para concursos
             </button>
-          )}
-        </div>
-      </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
+                {contest.area || 'Geral'}
+              </span>
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                {STATUS_LABELS[normalizedStatus] || 'Previsto'}
+              </span>
+            </div>
+          </div>
+        )}
+        statGridClassName="hidden"
+        stats={[
+          { key: 'pr', label: 'Prova', value: formatDateBR(contest.prova_data), icon: CalendarDays, accent: 'blue', valueClassName: '!text-sm sm:!text-base' },
+          { key: 'sl', label: 'Salário', value: formatCurrencyBR(contest.salario), icon: DollarSign, accent: 'emerald' },
+          { key: 'di', label: 'Disciplinas', value: String(contest.disciplinas?.length || 0), icon: Layers3, accent: 'indigo' },
+          { key: 'tp', label: 'Tópicos', value: String(topicosCount), icon: BadgeCheck, accent: 'violet' },
+        ]}
+        trailingClassName="max-w-full"
+        trailingWrapClassName="xl:max-w-[42rem]"
+        trailing={(
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
+            <button
+              type="button"
+              onClick={() => onToggleFavorite?.(contest.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
+                isFavorite
+                  ? 'border-rose-300/50 bg-rose-500/20 text-rose-100'
+                  : 'border-white/20 bg-white/5 text-slate-100'
+              }`}
+            >
+              <Heart size={14} className={isFavorite ? 'fill-current' : ''} />
+              {isFavorite ? 'Favoritado' : 'Favoritar'}
+            </button>
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => onEditContest?.(rawContest || contest)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-red-300/60 bg-red-500/18 px-3 py-2 text-xs font-bold text-red-100 shadow-[0_12px_26px_rgba(220,38,38,0.16)] transition-colors hover:bg-red-500/28 sm:text-sm"
+              >
+                <Pencil size={14} />
+                Editar concurso
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => onToggleInterested?.(contest.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
+                isInterested
+                  ? 'border-amber-300/50 bg-amber-500/20 text-amber-100'
+                  : 'border-white/20 bg-white/5 text-slate-100'
+              }`}
+            >
+              <Bookmark size={14} className={isInterested ? 'fill-current' : ''} />
+              {isInterested ? 'Quero estudar' : 'Interesse'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onSetTargetContest?.(contest.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
+                isTargetContest
+                  ? 'border-yellow-300/50 bg-yellow-500/20 text-yellow-100'
+                  : 'border-white/20 bg-white/5 text-slate-100'
+              }`}
+            >
+              <BadgeCheck size={14} className={isTargetContest ? 'fill-current' : ''} />
+              {isTargetContest ? 'Alvo' : 'Como alvo'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onImport?.(contest)}
+              disabled={importingId === contest.id || limiteAtingido}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#185FA5] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0C447C] disabled:opacity-60 sm:px-4 sm:text-sm"
+            >
+              {limiteAtingido ? 'Limite' : importingId === contest.id ? '…' : 'Importar curso'}
+              <ArrowRight size={14} />
+            </button>
+            {contest.edital_url ? (
+              <button
+                type="button"
+                onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100 sm:text-sm"
+              >
+                Edital
+                <ExternalLink size={14} />
+              </button>
+            ) : null}
+          </div>
+        )}
+      />
+
+      {roles.length > 1 && (
+        <section className="relative z-10 overflow-visible rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
+          <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent" />
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cargos do concurso</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Escolha o cargo para ver o edital correto</h2>
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-gray-500">
+                Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
+              </p>
+            </div>
+            <span className="w-fit shrink-0 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
+              {roles.length} cargos cadastrados
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {roles.map((role) => {
+              const selected = activeRole?.id === role.id;
+              return (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => setSelectedRoleId(role.id)}
+                  className={`min-h-[155px] rounded-[1.25rem] border p-4 text-left transition-all ${
+                    selected
+                      ? 'border-blue-300 bg-blue-50 shadow-[0_16px_34px_rgba(37,99,235,0.14)]'
+                      : 'border-slate-200 bg-slate-50/60 hover:border-blue-200 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-base font-bold leading-snug text-slate-950">{role.nome}</p>
+                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-blue-600' : 'bg-slate-300'}`} />
+                  </div>
+                  <div className="mt-4 grid gap-2 text-[11px] font-bold sm:grid-cols-2">
+                    {role.salario && <CargoInfo label="Salário" value={role.salario} tone="green" />}
+                    {role.vagas && <CargoInfo label="Vagas" value={role.vagas} />}
+                    {role.escolaridade && <CargoInfo label="Nível" value={role.escolaridade} tone="blue" />}
+                    {role.lotacao && <CargoInfo label="Lotação" value={role.lotacao} />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {relatedContests.length > 0 && (
+        <section className="relative z-10 rounded-[1.5rem] border border-blue-100 bg-blue-50/50 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Concursos relacionados</p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Outros editais da mesma instituição</h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              Assim Oficial, Praça, PM e Bombeiros ficam vinculados, mas sem virar cargo um do outro.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {relatedContests.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onOpenRelatedContest?.(item)}
+                className="rounded-2xl border border-blue-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+              >
+                <p className="line-clamp-2 text-sm font-bold text-slate-950">{item.nome}</p>
+                <p className="mt-2 text-xs font-semibold text-slate-500">{item.cargo || item.banca || 'Concurso relacionado'}</p>
+                <span className="mt-3 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                  {STATUS_LABELS[normalizeContestStatus(item.status_concurso)] || 'Previsto'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="section-card overflow-hidden p-0">
         <div className="grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
@@ -371,25 +533,9 @@ export default function ConcursoDetalhe({
           </div>
 
           <div className="p-6 lg:p-8">
-            <div className="flex flex-wrap gap-2">
-              <Badge tone="blue">{contest.area || 'Geral'}</Badge>
-              <Badge tone="green">{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</Badge>
-            </div>
-
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 lg:text-4xl">{contest.nome}</h1>
-            <p className="mt-2 text-base font-semibold text-gray-500">{contest.cargo || contest.concurso}</p>
-            <p className="mt-1 text-sm font-medium text-gray-500">{contest.banca || 'Banca a definir'}</p>
-
-            <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <StatBox label="Prova" value={formatDateBR(contest.prova_data)} icon={CalendarDays} />
-              <StatBox label="Salário" value={formatCurrencyBR(contest.salario)} icon={DollarSign} />
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <StatBox label="Inscrição" value={formatCurrencyBR(contest.inscricao_valor)} icon={DollarSign} />
               <StatBox label="Nível" value={contest.escolaridade || 'A definir'} icon={GraduationCap} />
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <StatBox label="Disciplinas" value={String(contest.disciplinas?.length || 0)} icon={Layers3} />
-              <StatBox label="Tópicos" value={String(topicosCount)} icon={BadgeCheck} />
               <StatBox label="Vagas" value={contest.vagas || 'A definir'} icon={Users} />
               <StatBox label="Lotação" value={contest.lotacao || 'A definir'} icon={Compass} />
             </div>
@@ -632,16 +778,18 @@ export default function ConcursoDetalhe({
   );
 }
 
-function Badge({ children, tone = 'blue' }) {
+function CargoInfo({ label, value, tone = 'slate' }) {
   const toneClasses = {
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
-    green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
+    green: 'bg-emerald-50 text-emerald-700',
+    blue: 'bg-blue-50 text-blue-700',
+    slate: 'bg-white text-slate-700',
   };
 
   return (
-    <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${toneClasses[tone] || toneClasses.blue}`}>
-      {children}
-    </span>
+    <div className={`rounded-xl px-3 py-2 ${toneClasses[tone] || toneClasses.slate}`}>
+      <p className="text-[9px] font-black uppercase tracking-[0.16em] opacity-60">{label}</p>
+      <p className="mt-1 break-words text-xs font-black leading-snug">{value}</p>
+    </div>
   );
 }
 

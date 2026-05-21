@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import {
   BadgeCheck,
   MessageCircle,
@@ -10,15 +10,16 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import AdminPageHeader from '../components/AdminPageHeader';
 import { buildCrmSnapshot, CRM_STAGE_OPTIONS, normalizeLead } from '../lib/adminCrm';
 import { formatCurrency } from '../lib/adminFinance';
 
 const CHANNEL_OPTIONS = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'indicacao', label: 'Indicação' },
-  { value: 'trafego_pago', label: 'Tráfego pago' },
-  { value: 'organico', label: 'Orgânico' },
+  { value: 'indicacao', label: 'IndicaÃ§Ã£o' },
+  { value: 'trafego_pago', label: 'TrÃ¡fego pago' },
+  { value: 'organico', label: 'OrgÃ¢nico' },
   { value: 'outro', label: 'Outro' },
 ];
 
@@ -66,7 +67,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
       setForm(EMPTY_LEAD);
       setFeedback({ type: 'success', message: 'Lead salvo com sucesso.' });
     } catch (error) {
-      setFeedback({ type: 'error', message: error.message || 'Não foi possível salvar o lead.' });
+      setFeedback({ type: 'error', message: error.message || 'NÃ£o foi possÃ­vel salvar o lead.' });
     } finally {
       setSaving(false);
     }
@@ -94,7 +95,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
       if (form.id === lead.id) setForm(EMPTY_LEAD);
       setFeedback({ type: 'success', message: 'Lead removido.' });
     } catch (error) {
-      setFeedback({ type: 'error', message: error.message || 'Não foi possível excluir o lead.' });
+      setFeedback({ type: 'error', message: error.message || 'NÃ£o foi possÃ­vel excluir o lead.' });
     }
   };
 
@@ -113,26 +114,23 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         </div>
       ) : null}
 
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
-              <Users size={13} />
-              CRM admin
-            </div>
-            <h2 className="page-title mt-5 text-4xl font-semibold tracking-tight text-slate-900">Leads e oportunidades</h2>
-            <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-gray-500">
-              Registre interessados, acompanhe o funil comercial e enxergue o potencial de receita que ainda não virou assinatura.
-            </p>
+      <AdminPageHeader
+        icon={Users}
+        badgeIcon={Users}
+        badge="CRM admin"
+        title="Leads e oportunidades"
+        subtitle="Registre interessados, acompanhe o funil comercial e enxergue o potencial de receita que ainda não virou assinatura."
+        trailingClassName="xl:max-w-[16rem]"
+        trailing={
+          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
+            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
+        }
+      />
 
-          <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-5 py-4 text-sm shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Operando como</p>
-            <p className="mt-2 font-semibold text-slate-900">{currentUserEmail}</p>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-5">
+      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
+        <div className="grid gap-4 md:grid-cols-5">
           <SummaryCard icon={Users} label="Leads" value={crm.total} />
           <SummaryCard icon={MessageCircle} label="Em contato" value={crm.emContato} />
           <SummaryCard icon={Target} label="Propostas" value={crm.propostas} />
@@ -175,7 +173,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
             <Field label="Valor mensal potencial">
               <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
-            <Field label="Observação">
+            <Field label="ObservaÃ§Ã£o">
               <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
             </Field>
           </div>
@@ -183,7 +181,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
           <div className="mt-6 flex flex-wrap justify-end gap-3">
             {form.id && (
               <button type="button" onClick={() => setForm(EMPTY_LEAD)} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
-                Cancelar edição
+                Cancelar ediÃ§Ã£o
               </button>
             )}
             <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70">
@@ -211,9 +209,9 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
                       </span>
                     </div>
                     <p className="mt-1 text-sm font-semibold text-gray-500">
-                      {lead.contato || 'Sem contato'} • {lead.canal} • {lead.interesse || 'Sem interesse definido'}
+                      {lead.contato || 'Sem contato'} â€¢ {lead.canal} â€¢ {lead.interesse || 'Sem interesse definido'}
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-emerald-700">{formatCurrency(lead.monthly_value || 0)} / mês</p>
+                    <p className="mt-2 text-sm font-semibold text-emerald-700">{formatCurrency(lead.monthly_value || 0)} / mÃªs</p>
                     {lead.observacao && <p className="mt-2 text-sm font-medium text-gray-500">{lead.observacao}</p>}
                   </div>
 
@@ -233,7 +231,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
 
             {sortedLeads.length === 0 && (
               <div className="rounded-[1.5rem] border border-dashed border-gray-200 bg-white px-6 py-10 text-center text-sm font-semibold text-gray-500">
-                Nenhum lead cadastrado ainda. Comece registrando os interessados que chegarem por WhatsApp, Instagram ou indicação.
+                Nenhum lead cadastrado ainda. Comece registrando os interessados que chegarem por WhatsApp, Instagram ou indicaÃ§Ã£o.
               </div>
             )}
           </div>
@@ -263,3 +261,5 @@ function Field({ label, children }) {
     </div>
   );
 }
+
+

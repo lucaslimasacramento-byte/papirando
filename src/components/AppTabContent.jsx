@@ -1,47 +1,52 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Target } from 'lucide-react';
-import Dashboard from '../pages/Dashboard';
-import Estatisticas from '../pages/Estatisticas';
-import Planejamento from '../pages/Planejamento';
-import Assinatura from '../pages/Assinatura';
-import BemEstar from '../pages/BemEstar';
-import Aplicativos from '../pages/Aplicativos';
-import ConvideGanhe from '../pages/ConvideGanhe';
-import Perfil from '../pages/Perfil';
-import Comunidades from '../pages/Comunidades';
-import Esquadroes from '../pages/Esquadroes';
-import Conciliador from '../pages/Conciliador';
-import Redacoes from '../pages/Redacoes';
-import Audiobooks from '../pages/Audiobooks';
-import MapasMentais from '../pages/MapasMentais';
-import Legislacao from '../pages/Legislacao';
-import Flashcards from '../pages/Flashcards';
-import Simulados from '../pages/Simulados';
-import Edital from '../pages/Edital';
-import Disciplinas from '../pages/Disciplinas';
-import DisciplinaDetalhe from '../pages/DisciplinaDetalhe';
-import Questoes from '../pages/Questoes';
-import Planos from '../pages/Planos';
-import ConcursosDisponiveis from '../pages/ConcursosDisponiveis';
-import ConcursoDetalhe from '../pages/ConcursoDetalhe';
-import LembretesCalendario from '../pages/LembretesCalendario';
-import AdminDashboard from '../pages/AdminDashboard';
-import AdminConcursos from '../pages/AdminConcursos';
-import AdminDisciplinasPadrao from '../pages/AdminDisciplinasPadrao';
-import AdminUsuarios from '../pages/AdminUsuarios';
-import AdminFinance from '../pages/AdminFinance';
-import AdminCRM from '../pages/AdminCRM';
-import AdminConfiguracoes from '../pages/AdminConfiguracoes';
-import AdminAudiolivros from '../pages/AdminAudiolivros';
-import AdminMindMapsGallery from '../pages/AdminMindMapsGallery';
-import AdminLegislacao from '../pages/AdminLegislacao';
-import AdminQuestoes from '../pages/AdminQuestoes';
-import Sessoes from '../pages/Sessoes';
-import Revisoes from '../pages/Revisoes';
-import EditalQuestao from '../pages/EditalQuestao';
-import Historico from '../pages/Historico';
-import Materiais from '../pages/Materiais';
-import MetasSemana from '../pages/MetasSemana';
+
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Estatisticas = lazy(() => import('../pages/Estatisticas'));
+const Planejamento = lazy(() => import('../pages/Planejamento'));
+const Assinatura = lazy(() => import('../pages/Assinatura'));
+const BemEstar = lazy(() => import('../pages/BemEstar'));
+const Aplicativos = lazy(() => import('../pages/Aplicativos'));
+const ConvideGanhe = lazy(() => import('../pages/ConvideGanhe'));
+const Perfil = lazy(() => import('../pages/Perfil'));
+const Comunidades = lazy(() => import('../pages/Comunidades'));
+const Esquadroes = lazy(() => import('../pages/Esquadroes'));
+const Conciliador = lazy(() => import('../pages/Conciliador'));
+const Redacoes = lazy(() => import('../pages/Redacoes'));
+const Audiobooks = lazy(() => import('../pages/Audiobooks'));
+const MapasMentais = lazy(() => import('../pages/MapasMentais'));
+const Legislacao = lazy(() => import('../pages/Legislacao'));
+const Flashcards = lazy(() => import('../pages/Flashcards'));
+const Simulados = lazy(() => import('../pages/Simulados'));
+const Edital = lazy(() => import('../pages/Edital'));
+const Disciplinas = lazy(() => import('../pages/Disciplinas'));
+const DisciplinaDetalhe = lazy(() => import('../pages/DisciplinaDetalhe'));
+const Questoes = lazy(() => import('../pages/Questoes'));
+const Planos = lazy(() => import('../pages/Planos'));
+const ConcursosDisponiveis = lazy(() => import('../pages/ConcursosDisponiveis'));
+const ConcursoDetalhe = lazy(() => import('../pages/ConcursoDetalhe'));
+const LembretesCalendario = lazy(() => import('../pages/LembretesCalendario'));
+const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
+const AdminConcursos = lazy(() => import('../pages/AdminConcursos'));
+const AdminDisciplinasPadrao = lazy(() => import('../pages/AdminDisciplinasPadrao'));
+const AdminUsuarios = lazy(() => import('../pages/AdminUsuarios'));
+const AdminFinance = lazy(() => import('../pages/AdminFinance'));
+const AdminCRM = lazy(() => import('../pages/AdminCRM'));
+const AdminConfiguracoes = lazy(() => import('../pages/AdminConfiguracoes'));
+const AdminAudiolivros = lazy(() => import('../pages/AdminAudiolivros'));
+const AdminMindMapsGallery = lazy(() => import('../pages/AdminMindMapsGallery'));
+const AdminLegislacao = lazy(() => import('../pages/AdminLegislacao'));
+const AdminBetaConvites = lazy(() => import('../pages/AdminBetaConvites'));
+const AdminBetaFeedback = lazy(() => import('../pages/AdminBetaFeedback'));
+const AdminAssinaturas = lazy(() => import('../pages/AdminAssinaturas'));
+const AdminQuestoes = lazy(() => import('../pages/AdminQuestoes'));
+const QuestionImportPage = lazy(() => import('../pages/admin/QuestionImportPage'));
+const Sessoes = lazy(() => import('../pages/Sessoes'));
+const Revisoes = lazy(() => import('../pages/Revisoes'));
+const EditalQuestao = lazy(() => import('../pages/EditalQuestao'));
+const Historico = lazy(() => import('../pages/Historico'));
+const Materiais = lazy(() => import('../pages/Materiais'));
+const MetasSemana = lazy(() => import('../pages/MetasSemana'));
 
 const KNOWN_TABS = [
   'home',
@@ -52,6 +57,7 @@ const KNOWN_TABS = [
   'admin_dashboard',
   'admin_concursos',
   'admin_questoes',
+  'admin_questoes_import',
   'admin_disciplinas',
   'admin_usuarios',
   'admin_finance',
@@ -60,6 +66,9 @@ const KNOWN_TABS = [
   'admin_audiolivros',
   'admin_mapas_mentais',
   'admin_legislacao',
+  'admin_beta_convites',
+  'admin_beta_feedback',
+  'admin_assinaturas',
   'planos',
   'disciplinas',
   'assinatura',
@@ -119,10 +128,8 @@ export default function AppTabContent(props) {
     handleSaveProfile,
     handleAvatarChange,
     handleLogout,
-    refreshSessionProfile,
     isAdmin,
     wellnessLibrary,
-    wellnessPageConfig,
     activeWellnessTrackId,
     handleStartWellnessTrack,
     communityState,
@@ -163,7 +170,6 @@ export default function AppTabContent(props) {
     setContestTrackers,
     targetContestId,
     adminProfiles,
-    adminProfilesLoading,
     adminExpenses,
     adminLeads,
     progressConfig,
@@ -186,7 +192,6 @@ export default function AppTabContent(props) {
     saveAdminLead,
     deleteAdminLead,
     handleSaveWellnessLibrary,
-    handleSaveWellnessPageConfig,
     viewingDiscipline,
     setBancoDisciplinas,
     setViewingDiscipline,
@@ -303,9 +308,9 @@ export default function AppTabContent(props) {
     if (!text) return '';
     return text.charAt(0).toUpperCase() + text.slice(1);
   };
-  const fullName = String(effectiveProfile?.full_name || '').trim();
+  const fullName = String(effectiveProfile?.nome || effectiveProfile?.name || effectiveProfile?.full_name || '').trim();
   const firstName = normalizeName(fullName.split(/\s+/).filter(Boolean)[0] || '');
-  const username = normalizeName(String(effectiveProfile?.username || '').trim());
+  const username = String(effectiveProfile?.username || effectiveProfile?.user_name || '').trim();
   const emailPrefix = normalizeName(
     String(currentUserEmail || '').includes('@') ? String(currentUserEmail || '').split('@')[0] : ''
   );
@@ -358,7 +363,6 @@ export default function AppTabContent(props) {
         onSaveProfile={handleSaveProfile}
         onChangeAvatar={handleAvatarChange}
         onLogout={handleLogout}
-        onSessionRefresh={refreshSessionProfile}
       />
     );
   }
@@ -379,7 +383,6 @@ export default function AppTabContent(props) {
     return (
       <BemEstar
         tracks={wellnessLibrary}
-        pageConfig={wellnessPageConfig}
         isAdmin={isAdmin}
         setActiveTab={setActiveTab}
         activeTrackId={activeWellnessTrackId}
@@ -405,6 +408,7 @@ export default function AppTabContent(props) {
         progGeralEdital={progGeralEdital}
         setActiveTab={setActiveTab}
         cursos={cursos}
+        concursoCatalog={contestLibrary}
         bancoDisciplinas={bancoDisciplinas}
         myContests={myContests}
         targetContest={targetContestSummary}
@@ -493,6 +497,7 @@ export default function AppTabContent(props) {
         limiteAtingido={!isAdmin && remainingCourseSlots <= 0}
         cursos={cursos}
         bancoDisciplinas={bancoDisciplinas}
+        isAdmin={isAdmin}
         isFavorite={favoriteContestIds.includes(selectedContestDetail?.id)}
         isInterested={interestedContestIds.includes(selectedContestDetail?.id)}
         onToggleFavorite={(contestId) =>
@@ -509,6 +514,10 @@ export default function AppTabContent(props) {
           setSelectedCoursePlan(contest?.plano || contest?.nome || 'Todos');
           setActiveTab('disciplinas');
         }}
+        onOpenRelatedContest={(contest) => {
+          setSelectedContestDetailId(contest?.id);
+          setActiveTab('concurso_detalhe');
+        }}
         contestTracker={contestTrackers[selectedContestDetail?.id] || {}}
         onToggleContestTask={(contestId, taskKey) =>
           setContestTrackers((prev) => ({
@@ -521,6 +530,10 @@ export default function AppTabContent(props) {
         }
         isTargetContest={selectedContestDetail?.id === targetContestId}
         onSetTargetContest={setTargetContestId}
+        onEditContest={(contest) => {
+          if (contest?.id) localStorage.setItem('papirando_admin_edit_contest_id', contest.id);
+          setActiveTab('admin_concursos');
+        }}
       />
     );
   }
@@ -567,6 +580,10 @@ export default function AppTabContent(props) {
     );
   }
 
+  if (activeTab === 'admin_questoes_import' && isAdmin) {
+    return <QuestionImportPage />;
+  }
+
   if (activeTab === 'admin_disciplinas' && isAdmin) {
     return (
       <AdminDisciplinasPadrao
@@ -581,7 +598,6 @@ export default function AppTabContent(props) {
     return (
       <AdminUsuarios
         profiles={adminProfiles}
-        isLoading={adminProfilesLoading}
         currentUserEmail={currentUserEmail}
         onUpdateProfile={updateAdminProfile}
       />
@@ -635,6 +651,18 @@ export default function AppTabContent(props) {
     return <AdminLegislacao currentUserId={currentUserId} />;
   }
 
+  if (activeTab === 'admin_assinaturas' && isAdmin) {
+    return <AdminAssinaturas />;
+  }
+
+  if (activeTab === 'admin_beta_convites' && isAdmin) {
+    return <AdminBetaConvites />;
+  }
+
+  if (activeTab === 'admin_beta_feedback' && isAdmin) {
+    return <AdminBetaFeedback />;
+  }
+
   if (activeTab === 'admin_configuracoes' && isAdmin) {
     return (
         <AdminConfiguracoes
@@ -645,8 +673,6 @@ export default function AppTabContent(props) {
         onSaveProgressConfig={handleSaveProgressConfig}
         wellnessLibrary={wellnessLibrary}
         onSaveWellnessLibrary={handleSaveWellnessLibrary}
-        wellnessPageConfig={wellnessPageConfig}
-        onSaveWellnessPageConfig={handleSaveWellnessPageConfig}
         redacaoExpertTips={redacaoExpertTips}
         onSaveRedacaoExpertTips={handleSaveRedacaoExpertTips}
         redacaoThemeBankEffective={redacaoThemeBankEffective}
@@ -697,6 +723,8 @@ export default function AppTabContent(props) {
           currentUserId={currentUserId}
           editalText={targetContestSummary?.edital_text || targetContestSummary?.editalText || ''}
           bancoDisciplinas={bancoDisciplinas}
+          cursos={cursos}
+          targetContest={targetContestSummary}
           expandedEditalSubject={expandedEditalSubject}
         setExpandedEditalSubject={setExpandedEditalSubject}
         toggleEditalTopico={toggleEditalTopico}
@@ -823,7 +851,9 @@ export default function AppTabContent(props) {
     );
   }
 
-  if (activeTab === 'flashcards') return <Flashcards currentUserId={currentUserId} />;
+  if (activeTab === 'flashcards') {
+    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} />;
+  }
 
   if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} />;
 
@@ -859,6 +889,7 @@ export default function AppTabContent(props) {
         subjectCatalog={subjectCatalog}
         studyRecommendation={smartStudyPlan}
         onStartRecommendedSession={startRecommendedStudySession}
+        isAdmin={isAdmin}
         setActiveTab={setActiveTab}
       />
     );

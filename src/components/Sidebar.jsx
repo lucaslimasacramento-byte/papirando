@@ -30,6 +30,8 @@ import {
   Crown,
   WalletCards,
   MessageSquareHeart,
+  MessageSquare,
+  Mail,
   AlarmClock,
   Target,
   Network,
@@ -105,21 +107,14 @@ const ADMIN_SECTION = {
     { id: 'admin_audiolivros', icon: Headphones, label: 'Audiolivros', badge: 'Admin' },
     { id: 'admin_mapas_mentais', icon: Network, label: 'Mapas mentais', badge: 'Admin' },
     { id: 'admin_legislacao', icon: BookOpen, label: 'Legislação', badge: 'Admin' },
+    { id: 'admin_beta_convites', icon: Mail, label: 'Convites beta', badge: 'Admin' },
+    { id: 'admin_beta_feedback', icon: MessageSquare, label: 'Feedback beta', badge: 'Admin' },
+    { id: 'admin_assinaturas', icon: WalletCards, label: 'Assinaturas', badge: 'Admin' },
     { id: 'admin_configuracoes', icon: Compass, label: 'Configurações', badge: 'Admin' },
   ],
 };
 
 /** Metadados para o admin editar rótulos (id estável, texto padrão, agrupamento). */
-export function getSidebarNavLabelSchema() {
-  return [...NAV_SECTIONS_BASE, ADMIN_SECTION].flatMap((section) =>
-    section.items.map((item) => ({
-      id: item.id,
-      defaultLabel: item.label,
-      sectionTitle: section.title,
-    }))
-  );
-}
-
 function SidebarBadge({ label, active = false }) {
   return (
     <span

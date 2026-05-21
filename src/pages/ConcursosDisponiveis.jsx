@@ -15,14 +15,11 @@ import {
   X,
 } from 'lucide-react';
 import PageHeadPremium from '../components/PageHeadPremium';
+import { buildContestForRole, CONTEST_STATUS_LABELS, CONTEST_STATUS_OPTIONS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
+import { getContestAreaBackground } from '../lib/contestAreaTheme';
 
-const STATUS_LABELS = {
-  confirmado: 'Confirmado',
-  previsto: 'Previsto',
-  suspeito: 'Em análise',
-  suspenso: 'Suspenso',
-  encerrado: 'Encerrado',
-};
+const STATUS_LABELS = CONTEST_STATUS_LABELS;
+const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
 
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
@@ -59,6 +56,7 @@ export default function ConcursosDisponiveis({
   const [selectedContest, setSelectedContest] = useState(null);
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
+  const groupedCatalog = useMemo(() => groupContestTemplates(concursoCatalog), [concursoCatalog]);
 
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
@@ -70,6 +68,7 @@ export default function ConcursosDisponiveis({
   const formatCurrencyBR = (value) => {
     const cleaned = String(value || '').trim();
     if (!cleaned) return 'A definir';
+    if (/\s+a\s+R\$/i.test(cleaned)) return cleaned;
 
     const numeric = Number(cleaned.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) return 'A definir';
@@ -81,8 +80,8 @@ export default function ConcursosDisponiveis({
   };
 
   const areas = useMemo(
-    () => ['Todas', ...Array.from(new Set(concursoCatalog.map((item) => item.area || 'Geral')))],
-    [concursoCatalog]
+    () => ['Todas', ...Array.from(new Set(groupedCatalog.map((item) => item.area || 'Geral')))],
+    [groupedCatalog]
   );
 
   useEffect(() => {
@@ -100,8 +99,9 @@ export default function ConcursosDisponiveis({
       return Number.isFinite(numeric) ? numeric : 0;
     };
 
-    const filtered = concursoCatalog.filter((contest) => {
-      const haystack = [contest.nome, contest.concurso, contest.cargo, contest.banca, contest.area]
+    const filtered = groupedCatalog.filter((contest) => {
+      const roleText = getContestRoles(contest).map((role) => role.nome || role.cargo).join(' ');
+      const haystack = [contest.nome, contest.concurso, contest.cargo, contest.banca, contest.area, roleText]
         .join(' ')
         .toLowerCase();
 
@@ -110,7 +110,7 @@ export default function ConcursosDisponiveis({
         areasSelecionadas.length === 0 ||
         areasSelecionadas.includes('Todas') ||
         areasSelecionadas.includes(contest.area || 'Geral');
-      const matchStatus = statusFiltro === 'Todos' || (contest.status_concurso || 'suspeito') === statusFiltro;
+      const matchStatus = statusFiltro === 'Todos' || normalizeContestStatus(contest.status_concurso) === statusFiltro;
 
       return matchQuery && matchArea && matchStatus && contest.is_public !== false;
     });
@@ -145,13 +145,13 @@ export default function ConcursosDisponiveis({
         (favoriteContestIds.includes(contest.id) ? 45 : 0) +
         (interestedContestIds.includes(contest.id) ? 30 : 0) +
         (imported ? 25 : 0) +
-        (contest.status_concurso === 'confirmado' ? 15 : 0) +
+        (['inscricoes_abertas', 'prova_marcada', 'edital_publicado'].includes(normalizeContestStatus(contest.status_concurso)) ? 15 : 0) +
         (contest.prova_data ? 10 : 0) +
         (contest.salario ? 5 : 0);
 
       return score(second, secondImported) - score(first, firstImported);
     });
-  }, [areasSelecionadas, concursoCatalog, cursos, favoriteContestIds, interestedContestIds, query, sortMode, statusFiltro]);
+  }, [areasSelecionadas, groupedCatalog, cursos, favoriteContestIds, interestedContestIds, query, sortMode, statusFiltro]);
 
   const smartSections = useMemo(() => {
     const enriched = concursosFiltrados
@@ -211,10 +211,10 @@ export default function ConcursosDisponiveis({
       area,
       total:
         area === 'Todas'
-          ? concursoCatalog.filter((item) => item.is_public !== false).length
-          : concursoCatalog.filter((item) => (item.area || 'Geral') === area && item.is_public !== false).length,
+          ? groupedCatalog.filter((item) => item.is_public !== false).length
+          : groupedCatalog.filter((item) => (item.area || 'Geral') === area && item.is_public !== false).length,
     }));
-  }, [areas, concursoCatalog]);
+  }, [areas, groupedCatalog]);
 
   const displayedGroups = useMemo(() => {
     if (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas')) {
@@ -224,12 +224,12 @@ export default function ConcursosDisponiveis({
     return grouped;
   }, [areasSelecionadas, grouped]);
   const totalPublicados = useMemo(
-    () => concursoCatalog.filter((item) => item.is_public !== false).length,
-    [concursoCatalog]
+    () => groupedCatalog.filter((item) => item.is_public !== false).length,
+    [groupedCatalog]
   );
   const totalAreas = useMemo(
-    () => new Set(concursoCatalog.map((item) => item.area || 'Geral')).size,
-    [concursoCatalog]
+    () => new Set(groupedCatalog.map((item) => item.area || 'Geral')).size,
+    [groupedCatalog]
   );
   const recommendationBuckets = useMemo(() => {
     const buckets = [];
@@ -254,29 +254,24 @@ export default function ConcursosDisponiveis({
 
   const toggleArea = (area) => {
     if (area === 'Todas') {
-      const allAreas = areas.filter((item) => item !== 'Todas');
-      const isAllSelected =
-        areasSelecionadas.includes('Todas') ||
-        (allAreas.length > 0 && allAreas.every((item) => areasSelecionadas.includes(item)));
-
-      setAreasSelecionadas(isAllSelected ? [] : ['Todas']);
+      setAreasSelecionadas(['Todas']);
       return;
     }
 
-    setAreasSelecionadas((prev) => {
-      const withoutTodas = prev.filter((item) => item !== 'Todas');
-      if (withoutTodas.includes(area)) {
-        return withoutTodas.filter((item) => item !== area);
-      }
-
-      return [...withoutTodas, area];
-    });
+    setAreasSelecionadas((prev) => (prev.includes(area) ? ['Todas'] : [area]));
   };
 
   const handleImport = async (contest) => {
-    setImportingId(contest.id);
+    const roles = getContestRoles(contest);
+    if (roles.length > 1) {
+      handleOpenContest(contest);
+      return;
+    }
+
+    const importTemplate = buildContestForRole(contest, roles[0]);
+    setImportingId(importTemplate.id || contest.id);
     try {
-      await onImportCatalogCourse?.(contest);
+      await onImportCatalogCourse?.(importTemplate);
       setActiveTab?.('planos');
     } finally {
       setImportingId('');
@@ -295,23 +290,27 @@ export default function ConcursosDisponiveis({
   return (
     <div className="page-shell !pt-4 sm:!pt-5">
       <PageHeadPremium
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
         icon={Compass}
         titleAs="h1"
         title="Concursos disponíveis"
         subtitle="Encontre concursos por área, banca, cargo ou data de prova e importe os mais relevantes para o seu painel."
+        leadingClassName="lg:max-w-[calc(100%-18rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[17rem] lg:self-center"
+        trailingClassName="xl:max-w-none xl:flex-none"
         trailing={
-          <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-200 sm:text-[13px]">
-            <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
+          <div className="flex w-full flex-wrap items-center justify-start gap-2 text-xs font-semibold text-slate-200 sm:w-auto sm:justify-end sm:text-[13px]">
+            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
               {totalPublicados} publicados
             </span>
-            <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
+            <span className="whitespace-nowrap rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-slate-100">
               {totalAreas} áreas
             </span>
           </div>
         }
       />
 
-      <section className="section-card rounded-2xl">
+      <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="relative max-w-xl flex-1">
@@ -360,7 +359,7 @@ export default function ConcursosDisponiveis({
               <FilterSelect
                 value={statusFiltro}
                 onChange={setStatusFiltro}
-                options={['Todos', 'confirmado', 'previsto', 'suspeito', 'suspenso', 'encerrado']}
+                options={STATUS_FILTER_OPTIONS}
                 renderLabel={(value) => (value === 'Todos' ? 'Todos os status' : STATUS_LABELS[value] || value)}
               />
               {(query || statusFiltro !== 'Todos' || (areasSelecionadas.length > 0 && !areasSelecionadas.includes('Todas'))) && (
@@ -425,7 +424,7 @@ export default function ConcursosDisponiveis({
       </section>
 
       {recommendationBuckets.length > 0 && (
-        <section className="section-card rounded-2xl">
+        <section className="surface-card block w-full min-w-0 self-stretch overflow-visible rounded-2xl p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Insights</p>
@@ -459,7 +458,7 @@ export default function ConcursosDisponiveis({
       )}
 
       <div className="space-y-8">
-        {concursoCatalog.length === 0 ? (
+        {groupedCatalog.length === 0 ? (
           <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
             Nenhum concurso disponível no momento. Aguarde a equipe adicionar novos editais.
           </section>
@@ -482,64 +481,92 @@ export default function ConcursosDisponiveis({
             {viewMode === 'vitrine' ? (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {contests.map((contest) => {
-                  const topicosCount = (contest.disciplinas || []).reduce(
-                    (acc, subject) => acc + (subject.topicos?.length || 0),
-                    0
-                  );
+                  const cargos = getContestRoles(contest);
+                  const hasMultipleRoles = cargos.length > 1;
+                  const allSubjects = cargos.flatMap((cargo) => cargo.disciplinas || []);
+                  const topicosCount = allSubjects.reduce((acc, subject) => acc + (subject.topicos?.length || 0), 0);
 
                   return (
                     <article
                       key={contest.id}
-                      className="surface-card overflow-hidden rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg"
+                      className="group overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_44px_rgba(37,99,235,0.13)]"
                     >
                       <button
                         type="button"
                         onClick={() => handleOpenContest(contest)}
                         className="block w-full text-left"
                       >
-                        <div className="h-24 overflow-hidden border-b border-slate-200 bg-slate-50">
+                        <div
+                          className="relative flex h-48 items-center justify-center overflow-hidden border-b border-slate-100"
+                          style={{
+                            background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
+                          }}
+                        >
+                          <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
+                          <div className="pointer-events-none absolute -right-8 bottom-2 h-24 w-24 rounded-full bg-emerald-300/10" />
+                          <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 rounded-bl-full border-b border-l border-amber-200/30" />
                           {contest.imagem_url ? (
                             <img
                               src={contest.imagem_url}
                               alt={contest.nome}
-                              className="h-full w-full object-contain bg-white p-2"
+                              className="relative z-10 max-h-[74%] max-w-[62%] object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.32)] transition-transform duration-300 group-hover:scale-[1.06]"
                             />
                           ) : (
                             <div
-                              className="flex h-full w-full items-center justify-center text-white"
+                              className="relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-xl backdrop-blur"
                               style={{
-                                background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e40af 100%)`,
+                                color: '#fff',
                               }}
                             >
-                              <LibraryBig size={32} />
+                              <LibraryBig size={56} />
                             </div>
                           )}
                         </div>
 
                         <div className="p-4">
-                          <div className="mb-3 flex flex-wrap gap-2">
+                          <div className="mb-3 flex flex-wrap items-center gap-2">
                             <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-                            <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
+                            <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
                           </div>
 
-                          <h4 className="text-lg font-semibold tracking-tight text-slate-900">{contest.nome}</h4>
+                          <h4 className="line-clamp-2 min-h-[52px] text-lg font-bold leading-snug tracking-tight text-slate-950">
+                            {contest.nome}
+                          </h4>
                           <p className="mt-1 line-clamp-2 min-h-[44px] text-sm font-semibold text-gray-500">
                             {contest.cargo || contest.concurso}
                           </p>
-                          <p className="mt-1 text-sm font-medium text-gray-500">
+                          {hasMultipleRoles && (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {cargos.slice(0, 3).map((cargo) => (
+                                <span
+                                  key={cargo.id}
+                                  className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-600"
+                                >
+                                  {cargo.nome}
+                                </span>
+                              ))}
+                              {cargos.length > 3 && (
+                                <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">
+                                  +{cargos.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <p className="mt-2 truncate text-sm font-bold text-slate-600">
                             {contest.banca || 'Banca a definir'}
                           </p>
 
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <QuickTag tone="blue">{formatDateBR(contest.prova_data)}</QuickTag>
-                            <QuickTag tone="green">{formatCurrencyBR(contest.salario)}</QuickTag>
-                            <QuickTag tone="amber">{formatCurrencyBR(contest.inscricao_valor)}</QuickTag>
-                            <QuickTag tone="blue">{contest.escolaridade || 'Nível a definir'}</QuickTag>
+                          <div className="mt-4 grid grid-cols-2 gap-2">
+                            <QuickInfo label="Prova" value={formatDateBR(contest.prova_data)} />
+                            <QuickInfo label={hasMultipleRoles ? 'Salários' : 'Salário'} value={formatCurrencyBR(contest.salario)} tone="green" wide={hasMultipleRoles} />
+                            <QuickInfo label={hasMultipleRoles ? 'Inscrições' : 'Inscrição'} value={formatCurrencyBR(contest.inscricao_valor)} tone="amber" wide={hasMultipleRoles} />
+                            <QuickInfo label="Nível" value={contest.escolaridade || 'A definir'} />
+                            <QuickInfo label={hasMultipleRoles ? 'Vagas totais' : 'Vagas'} value={contest.vagas || 'A definir'} />
                           </div>
 
-                          <div className="mt-4 grid grid-cols-2 gap-2">
-                            <MetaCounter label="Disciplinas" value={contest.disciplinas?.length || 0} />
-                            <MetaCounter label="Tópicos" value={topicosCount} />
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <MetaCounter label={hasMultipleRoles ? 'Cargos' : 'Disciplinas'} value={hasMultipleRoles ? cargos.length : contest.disciplinas?.length || 0} />
+                            <MetaCounter label={hasMultipleRoles ? 'Tópicos gerais' : 'Tópicos'} value={topicosCount} />
                           </div>
                         </div>
                       </button>
@@ -549,7 +576,7 @@ export default function ConcursosDisponiveis({
                           <button
                             type="button"
                             onClick={() => handleOpenContest(contest)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600"
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
                           >
                             Ver detalhes
                           </button>
@@ -557,13 +584,15 @@ export default function ConcursosDisponiveis({
                             type="button"
                             onClick={() => handleImport(contest)}
                             disabled={importingId === contest.id || limiteAtingido}
-                            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
+                            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-900 disabled:opacity-70"
                           >
                             {limiteAtingido
                               ? 'Limite atingido'
                               : importingId === contest.id
                                 ? 'Importando...'
-                                : 'Adicionar aos meus cursos'}
+                                : hasMultipleRoles
+                                  ? 'Escolher cargo'
+                                  : 'Adicionar aos meus cursos'}
                             <ArrowRight size={16} />
                           </button>
                         </div>
@@ -598,7 +627,7 @@ export default function ConcursosDisponiveis({
                       <div className="text-sm font-semibold text-gray-600">{contest.banca || 'A definir'}</div>
                       <div className="flex flex-wrap gap-2">
                         <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-                        <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
+                        <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
                       </div>
                       <div className="text-sm font-semibold text-emerald-700">{formatCurrencyBR(contest.salario)}</div>
                       <div className="text-sm font-semibold text-amber-700">{formatCurrencyBR(contest.inscricao_valor)}</div>
@@ -629,7 +658,7 @@ export default function ConcursosDisponiveis({
           </section>
         ))}
 
-        {concursoCatalog.length > 0 && displayedGroups.length === 0 && (
+        {groupedCatalog.length > 0 && displayedGroups.length === 0 && (
           <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
             Nenhum concurso encontrado com esses filtros.
           </section>
@@ -704,9 +733,24 @@ function InfoPill({ icon: Icon, label }) {
 
 function MetaCounter({ label, value }) {
   return (
-    <div className="rounded-[14px] border border-gray-200 bg-gray-50 px-3 py-2.5">
+    <div className="rounded-[14px] border border-gray-200 bg-slate-50 px-3 py-2.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
       <p className="mt-1 text-base font-semibold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function QuickInfo({ label, value, tone = 'blue', wide = false }) {
+  const toneClasses = {
+    blue: 'text-blue-700',
+    amber: 'text-amber-700',
+    green: 'text-emerald-700',
+  };
+
+  return (
+    <div className={`min-w-0 rounded-[14px] border border-slate-200 bg-slate-50/80 px-3 py-2 ${wide ? 'col-span-2' : ''}`}>
+      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
+      <p className={`mt-1 break-words text-xs font-black leading-snug ${toneClasses[tone] || toneClasses.blue}`}>{value}</p>
     </div>
   );
 }
@@ -809,13 +853,23 @@ function ContestPreviewModal({
 
         <div className="grid gap-6 p-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-[1.6rem] border border-gray-200 bg-gray-50">
+            <div
+              className="relative flex h-48 items-center justify-center overflow-hidden rounded-[1.6rem] border border-gray-200"
+              style={{
+                background: getContestAreaBackground(contest.area || 'Geral', contest.cor),
+              }}
+            >
+              <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-cyan-400/10" />
+              <div className="pointer-events-none absolute -right-8 bottom-2 h-24 w-24 rounded-full bg-emerald-300/10" />
               {contest.imagem_url ? (
-                <img src={contest.imagem_url} alt={contest.nome} className="h-48 w-full object-contain bg-white p-4" />
+                <img
+                  src={contest.imagem_url}
+                  alt={contest.nome}
+                  className="relative z-10 max-h-[74%] max-w-[62%] object-contain drop-shadow-[0_18px_24px_rgba(0,0,0,0.32)]"
+                />
               ) : (
                 <div
-                  className="flex h-48 w-full items-center justify-center text-white"
-                  style={{ background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e3a8a 100%)` }}
+                  className="relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-xl backdrop-blur"
                 >
                   <LibraryBig size={42} />
                 </div>
@@ -824,7 +878,7 @@ function ContestPreviewModal({
 
             <div className="flex flex-wrap gap-2">
               <AreaBadge>{contest.area || 'Geral'}</AreaBadge>
-              <StatusBadge>{STATUS_LABELS[contest.status_concurso] || 'Em análise'}</StatusBadge>
+              <StatusBadge>{STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'}</StatusBadge>
             </div>
 
             <div className="grid gap-2">
@@ -989,5 +1043,3 @@ function DetailBox({ label, value }) {
     </div>
   );
 }
-
-

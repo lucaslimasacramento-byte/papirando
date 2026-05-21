@@ -1,3 +1,5 @@
+import { normalizeContestStatus } from './contestGrouping';
+
 const DEFAULT_COLORS = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
 
 function parseArrayField(value) {
@@ -76,7 +78,7 @@ export function normalizeContestTemplate(template, index = 0) {
     etapas_tags: parseArrayField(template.etapas_tags),
     taf_itens: parseArrayField(template.taf_itens),
     status: template.status || 'ativo',
-    status_concurso: template.status_concurso || 'em_analise',
+    status_concurso: normalizeContestStatus(template.status_concurso || 'edital_publicado'),
     prova_data: template.prova_data || '',
     edital_url: template.edital_url || '',
     imagem_url: template.imagem_url || '',

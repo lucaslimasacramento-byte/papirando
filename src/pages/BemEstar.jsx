@@ -22,6 +22,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import PageHeadPremium, { PageHeadPremiumBadge } from "../components/PageHeadPremium";
 import { resolveWellnessMediaUrl } from "../lib/wellnessLibrary";
 import { normalizeWellnessPageConfig, wellnessBreathingMapFromList } from "../lib/wellnessPageConfig";
 
@@ -74,6 +75,44 @@ function fatigueStripMeta(score) {
     return { helper: "Moderado — hidrate, respire, reduza estímulo.", tone: "from-amber-400 to-orange-500" };
   }
   return { helper: "Pausa recomendada — recuperar rende mais.", tone: "from-rose-400 to-rose-600" };
+}
+
+function getCalmStatTone(label) {
+  const key = String(label || "").toLowerCase();
+  if (key.includes("clareza")) {
+    return {
+      card: "border-sky-200/80 bg-gradient-to-br from-sky-50/90 via-white to-cyan-50/60",
+      iconWrap: "bg-sky-100 text-sky-700",
+      label: "text-sky-700",
+      value: "text-slate-900",
+      helper: "text-slate-600",
+    };
+  }
+  if (key.includes("press") || key.includes("reserva")) {
+    return {
+      card: "border-indigo-200/80 bg-gradient-to-br from-indigo-50/85 via-white to-violet-50/55",
+      iconWrap: "bg-indigo-100 text-indigo-700",
+      label: "text-indigo-700",
+      value: "text-slate-900",
+      helper: "text-slate-600",
+    };
+  }
+  if (key.includes("foco") || key.includes("mental")) {
+    return {
+      card: "border-teal-200/80 bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/55",
+      iconWrap: "bg-teal-100 text-teal-700",
+      label: "text-teal-700",
+      value: "text-slate-900",
+      helper: "text-slate-600",
+    };
+  }
+  return {
+    card: "border-slate-200 bg-white/90",
+    iconWrap: "bg-slate-100 text-slate-700",
+    label: "text-slate-700",
+    value: "text-slate-900",
+    helper: "text-slate-600",
+  };
 }
 
 export default function SaudeMentalEFoco({
@@ -148,15 +187,18 @@ export default function SaudeMentalEFoco({
   const activeTrack =
     publicAudioTracks.find((item) => item.id === activeTrackId) || publicAudioTracks[0] || null;
   const firstBreath = cfg.breathingTechniques[0];
-  const activeTechniqueData =
-    breathingById[activeTechnique] || firstBreath || {
-      nome: "",
-      uso: "",
-      descricao: "",
-      comoFazer: "",
-      insight: "",
-      fases: [{ nome: "Inspire", segundos: 4 }],
-    };
+  const activeTechniqueData = useMemo(
+    () =>
+      breathingById[activeTechnique] || firstBreath || {
+        nome: "",
+        uso: "",
+        descricao: "",
+        comoFazer: "",
+        insight: "",
+        fases: [{ nome: "Inspire", segundos: 4 }],
+      },
+    [activeTechnique, breathingById, firstBreath]
+  );
   const currentPhase =
     activeTechniqueData.fases[breathingState.phaseIndex] || activeTechniqueData.fases[0];
   const fatigueScore = estimateFatigueScore(publicTracks);
@@ -200,7 +242,11 @@ export default function SaudeMentalEFoco({
   useEffect(() => {
     if (cfg.breathingTechniques.some((t) => t.id === activeTechnique)) return;
     const fallback = cfg.breathingTechniques[0]?.id;
-    if (fallback) setActiveTechnique(fallback);
+    if (!fallback) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      setActiveTechnique(fallback);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [cfg.breathingTechniques, activeTechnique]);
 
   useEffect(() => {
@@ -250,56 +296,51 @@ export default function SaudeMentalEFoco({
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_25%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_18%),linear-gradient(180deg,#f8fbff_0%,#f3f7fc_100%)]">
-      <div className="mx-auto flex w-full max-w-[1540px] flex-col gap-5 px-5 py-5 sm:gap-6 sm:px-6 sm:py-6 lg:px-8">
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_12px_40px_rgba(15,23,42,0.04)] backdrop-blur">
-          <div className="relative p-4 sm:p-5">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.1),transparent_40%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_35%)]" />
-            <div className="relative z-10 flex flex-col gap-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-blue-700 sm:text-[10px]">
-                      <Brain size={11} className="sm:h-3 sm:w-3" />
-                      {cfg.hero.badge}
-                    </span>
-                  </div>
-                  <h1 className="mt-1.5 text-lg font-semibold leading-snug tracking-tight text-slate-900 sm:text-xl lg:text-2xl">
-                    {cfg.hero.title}
-                  </h1>
-                  <p className="mt-1 max-w-3xl text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">
-                    {cfg.hero.subtitle}
-                  </p>
-                </div>
-              </div>
-
-              <p className="flex items-start gap-2 border-l-2 border-blue-200/90 pl-2.5 text-[11px] font-medium italic leading-snug text-slate-600 sm:max-w-4xl sm:pl-3 sm:text-xs sm:not-italic">
-                <Quote size={14} className="mt-0.5 shrink-0 text-blue-400 opacity-80" aria-hidden />
+    <div className="w-full bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_25%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_18%),linear-gradient(180deg,#f8fbff_0%,#f3f7fc_100%)]">
+      <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-4 sm:gap-6 sm:px-5 sm:py-5 lg:px-6 lg:py-6">
+        <PageHeadPremium
+          className="shrink-0 lg:!flex-row lg:!items-center lg:!justify-between"
+          icon={Brain}
+          badge={
+            <PageHeadPremiumBadge icon={Brain} className="!normal-case sm:!text-[9px]">
+              {cfg.hero.badge}
+            </PageHeadPremiumBadge>
+          }
+          title={cfg.hero.title}
+          titleAs="h1"
+          subtitle={cfg.hero.subtitle}
+          leadingClassName="w-full items-center xl:max-w-[min(100%,46rem)]"
+          leadingExtra={(
+            <div className="mt-2 sm:mt-3">
+              <p className="flex items-start gap-2 border-l-2 border-white/20 pl-2.5 text-[11px] font-medium leading-snug text-slate-300 sm:pl-3 sm:text-xs">
+                <Quote size={14} className="mt-0.5 shrink-0 text-slate-400" aria-hidden />
                 <span>
-                  <span className="font-semibold not-italic text-slate-700">{cfg.quote.prefix} </span>
+                  <span className="font-semibold text-slate-200">{cfg.quote.prefix} </span>
                   {cfg.quote.body}
                 </span>
               </p>
-
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6 xl:gap-2">
-                {cfg.statusCards.map(({ label, value, helper, icon }) => {
-                  const Icon = wellnessIconComponent(icon);
-                  return <SurfaceStat key={label} icon={Icon} label={label} value={value} helper={helper} stripEqual />;
-                })}
-                <CvvKpiStripCard cvv={cfg.cvv} />
-                <FatigueKpiStripCard score={fatigueScore} />
-              </div>
             </div>
-          </div>
-        </section>
+          )}
+        />
 
         <div className="flex flex-col gap-4">
+          <section className="rounded-2xl border border-slate-200/90 bg-white p-2.5 shadow-sm sm:p-3">
+            <div className="grid w-full min-w-0 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+              {cfg.statusCards.map(({ label, value, helper, icon }) => {
+                const Icon = wellnessIconComponent(icon);
+                return <SurfaceStat key={label} icon={Icon} label={label} value={value} helper={helper} stripEqual />;
+              })}
+              <CvvKpiStripCard cvv={cfg.cvv} />
+              <FatigueKpiStripCard score={fatigueScore} />
+            </div>
+          </section>
+
           <div className="shrink-0 rounded-2xl border border-cyan-100/90 bg-gradient-to-r from-white via-slate-50/85 to-cyan-50/35 p-2 shadow-sm ring-1 ring-cyan-100/70 sm:p-2.5">
             <div className="mb-1 px-1 sm:px-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-800/85">Navegação</p>
             </div>
             <nav
-              className="flex flex-row max-sm:gap-1.5 max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-0.5 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-center sm:gap-2 lg:justify-between"
+              className="flex flex-row max-sm:gap-1.5 max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-0.5 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-start sm:gap-2"
               aria-label="Áreas de bem-estar"
             >
               {navItems.map(({ id, label, icon: Icon }) => {
@@ -323,13 +364,13 @@ export default function SaudeMentalEFoco({
             </nav>
           </div>
 
-          <div className="rounded-lg border border-slate-200/90 bg-white/95 px-2.5 py-2 shadow-sm sm:px-3">
+          <div className="rounded-xl border border-slate-200/90 bg-white/95 px-2.5 py-2 shadow-sm sm:px-3">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
               <p className="min-w-0 shrink-0 text-[11px] font-medium leading-snug text-slate-600 md:max-w-[13rem] lg:max-w-[15.5rem]">
                 <span className="font-semibold text-slate-800">{cfg.resumo.introLead} </span>
                 {cfg.resumo.intro}
               </p>
-              <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden">
                 {cfg.wellbeingPlan.map(({ title, text, icon }) => {
                   const Icon = wellnessIconComponent(icon);
                   return (
@@ -730,7 +771,7 @@ function AudioLibrarySection({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="max-h-[640px] space-y-4 overflow-y-auto pr-2">
+        <div className="space-y-4 pr-0 lg:pr-1">
           {Object.entries(groupedTracks).map(([category, items]) => (
             <div key={category}>
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -1026,7 +1067,7 @@ function CvvKpiStripCard({ cvv }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex min-h-[158px] flex-col rounded-2xl border border-rose-200/90 bg-gradient-to-br from-rose-50/90 via-white to-amber-50/25 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_12px_28px_rgba(225,29,72,0.07)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 min-w-0"
+      className="group flex min-h-[142px] flex-col rounded-2xl border border-rose-200/90 bg-gradient-to-br from-rose-50/90 via-white to-amber-50/25 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_12px_28px_rgba(225,29,72,0.07)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 min-w-0"
     >
       <div className="flex items-center gap-1.5 text-rose-700">
         <HeartHandshake size={13} className="shrink-0" />
@@ -1047,7 +1088,7 @@ function CvvKpiStripCard({ cvv }) {
 function FatigueKpiStripCard({ score }) {
   const meta = fatigueStripMeta(score);
   return (
-    <div className="flex min-h-[158px] flex-col rounded-2xl border border-slate-200 bg-white/90 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] min-w-0">
+    <div className="flex min-h-[142px] flex-col rounded-2xl border border-slate-200 bg-white/90 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] min-w-0">
       <div className="flex items-center gap-1.5 text-indigo-700">
         <Activity size={13} className="shrink-0" />
         <p className="text-[9px] font-semibold uppercase tracking-[0.12em]">Carga mental</p>
@@ -1068,14 +1109,19 @@ function FatigueKpiStripCard({ score }) {
 
 function SurfaceStat({ icon: Icon, label, value, helper, compact = false, stripEqual = false }) {
   if (stripEqual) {
+    const tone = getCalmStatTone(label);
     return (
-      <div className="group flex min-h-[158px] flex-col rounded-2xl border border-slate-200 bg-white/85 p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.08)] min-w-0">
-        <div className="flex items-center gap-1.5 text-blue-700">
-          <Icon size={13} className="shrink-0" />
-          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-blue-700">{label}</p>
+      <div
+        className={`group flex min-h-[142px] flex-col rounded-2xl border p-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(37,99,235,0.08)] min-w-0 ${tone.card}`}
+      >
+        <div className="flex items-center gap-1.5">
+          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${tone.iconWrap}`}>
+            <Icon size={12} className="shrink-0" />
+          </span>
+          <p className={`text-[9px] font-semibold uppercase tracking-[0.12em] ${tone.label}`}>{label}</p>
         </div>
-        <p className="mt-2 text-lg font-semibold tracking-tight text-slate-900">{value}</p>
-        <p className="mt-0.5 flex-1 text-[10px] font-semibold leading-snug text-slate-500 line-clamp-3">{helper}</p>
+        <p className={`mt-2 text-lg font-semibold tracking-tight ${tone.value}`}>{value}</p>
+        <p className={`mt-0.5 flex-1 text-[10px] font-semibold leading-snug line-clamp-3 ${tone.helper}`}>{helper}</p>
         <div className="mt-auto min-h-[22px] pt-2" aria-hidden />
       </div>
     );

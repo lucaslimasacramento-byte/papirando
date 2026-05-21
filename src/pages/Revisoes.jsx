@@ -15,7 +15,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 export default function Revisoes({
   setRegistroEstudoModalOpen,
@@ -290,9 +294,9 @@ export default function Revisoes({
   ]);
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
+    <div className="page-shell flex flex-col !gap-3 !pb-4 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
       <PageHeadPremium
-        className="shrink-0"
+        className="shrink-0 gap-4"
         icon={CheckCircle2}
         badge={
           <PageHeadPremiumBadge icon={CalendarClock}>
@@ -300,8 +304,10 @@ export default function Revisoes({
           </PageHeadPremiumBadge>
         }
         title="Revisões priorizadas"
-        subtitle="A fila abaixo mistura revisão por disciplina, histórico real e flashcards vencidos no FSRS."
-        statGridClassName="grid shrink-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:max-w-md md:justify-end"
+        subtitle="Fila por disciplina, histórico real e flashcards FSRS vencidos — detalhes na área abaixo."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-2 gap-2 sm:max-w-[24rem] sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[9rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
         stats={[
           {
             key: 'urgent',
@@ -309,7 +315,8 @@ export default function Revisoes({
             label: 'Alta prioridade',
             value: `${urgentCount + flashcardState.overdue} itens`,
             accent: 'red',
-            valueClassName: 'text-red-200',
+            valueClassName: '!text-red-200',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
           },
           {
             key: 'fila',
@@ -317,9 +324,30 @@ export default function Revisoes({
             label: 'Fila ativa',
             value: `${reviewHighlights.length} frentes`,
             accent: 'emerald',
-            valueClassName: 'text-emerald-200',
+            valueClassName: '!text-emerald-200',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
           },
         ]}
+        trailing={(
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setRegistroEstudoModalOpen?.(true)}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
+              Registrar estudo
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab?.('flashcards')}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <Layers3 size={14} aria-hidden />
+              Flashcards
+            </button>
+          </div>
+        )}
       />
 
       <div className="soft-accent shrink-0 rounded-2xl p-4 sm:p-5">
@@ -422,8 +450,8 @@ export default function Revisoes({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 overflow-hidden xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="custom-scrollbar min-h-0 overflow-y-auto pr-1">
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="min-w-0 pr-1">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
               <ListOrdered size={18} className="text-blue-600" />
@@ -459,7 +487,7 @@ export default function Revisoes({
           )}
         </div>
 
-        <div className="section-card custom-scrollbar min-h-0 overflow-y-auto p-4 sm:p-5">
+        <div className="section-card p-4 sm:p-5">
           <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
             <BookOpenCheck size={13} className="text-[#185FA5]" />
             Decks em revisão

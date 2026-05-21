@@ -4,7 +4,6 @@ import {
   BookOpen,
   Check,
   ChevronRight,
-  Copy,
   Layers3,
   Loader2,
   Plus,
@@ -13,7 +12,11 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import PageHeadPremium from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_IA_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 import {
   countDueToday,
   formatNextInterval,
@@ -321,7 +324,7 @@ export default function Flashcards({ currentUserId }) {
       setAiForm({ disciplina: '', topico: '', quantidade: 10 });
     } catch (error) {
       console.warn('[Flashcards] generateFlashcards error:', error?.message || error);
-      setAiErr('IA local não disponível. Verifique se o ai-server está rodando.');
+      setAiErr(error?.message || 'A IA de produção não respondeu agora. Tente novamente em instantes.');
     } finally {
       setAiLoading(false);
     }
@@ -493,10 +496,11 @@ export default function Flashcards({ currentUserId }) {
               <Trash2 size={16} />
             </button>
             <button
+              type="button"
               onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className="hidden items-center gap-1.5 rounded-xl border-2 border-violet-200 bg-violet-50 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 md:inline-flex"
+              className="btn-ia hidden py-1.5 md:inline-flex"
             >
-              <Sparkles size={14} />
+              <Sparkles size={14} aria-hidden />
               Gerar com IA
             </button>
             <button
@@ -670,11 +674,12 @@ export default function Flashcards({ currentUserId }) {
                   Cancelar
                 </button>
                 <button
+                  type="button"
                   onClick={handleAiGenerate}
                   disabled={aiLoading}
-                  className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white hover:bg-violet-700 disabled:opacity-50"
+                  className="btn-ia gap-2 px-5 py-2.5 text-sm font-bold"
                 >
-                  {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  {aiLoading ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Sparkles size={14} aria-hidden />}
                   {aiLoading ? 'Gerando flashcards...' : 'Gerar flashcards'}
                 </button>
               </div>
@@ -718,43 +723,60 @@ export default function Flashcards({ currentUserId }) {
   return (
     <div className="page-shell flex h-full min-h-0 flex-col gap-0 overflow-hidden p-0">
       <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 lg:!px-6"
-        icon={Copy}
+        className="shrink-0 gap-4"
+        icon={Layers3}
+        badge={<PageHeadPremiumBadge icon={Sparkles}>Repetição espaçada · FSRS</PageHeadPremiumBadge>}
         title="Flashcards"
-        subtitle="Repetição espaçada com FSRS-4.5"
-        leadingExtra={
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-200">
-              {deckStats.totalDecks} decks
-            </span>
-            <span className="rounded-full border border-blue-400/25 bg-blue-500/15 px-2.5 py-1 text-[11px] font-semibold text-blue-100">
-              {deckStats.totalCards} cards
-            </span>
-            <span className="rounded-full border border-emerald-400/25 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-100">
-              {deckStats.totalReviewed} revisados
-            </span>
-          </div>
-        }
-        trailing={
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-violet-400/35 bg-violet-500/20 px-3 py-2 text-xs font-semibold text-violet-100 hover:bg-violet-500/30 sm:text-[13px]"
-            >
-              <Sparkles size={14} />
-              Gerar com IA
-            </button>
+        subtitle="Crie decks, estude com FSRS-4.5 e gere cartas com IA quando precisar."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-3 gap-2 sm:max-w-[34rem] sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[7.5rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
+        stats={[
+          {
+            key: 'decks',
+            label: 'Decks',
+            value: String(deckStats.totalDecks),
+            icon: Layers3,
+            accent: 'blue',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
+          },
+          {
+            key: 'cards',
+            label: 'Cards',
+            value: String(deckStats.totalCards),
+            icon: BookOpen,
+            accent: 'emerald',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
+          },
+          {
+            key: 'rev',
+            label: 'Revisados',
+            value: String(deckStats.totalReviewed),
+            icon: Check,
+            accent: 'indigo',
+            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
+          },
+        ]}
+        trailing={(
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
             <button
               type="button"
               onClick={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
             >
-              <Plus size={14} />
+              <Plus size={14} aria-hidden />
               Novo deck
             </button>
+            <button
+              type="button"
+              onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
+              className={`${PAGE_HEAD_PREMIUM_IA_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <Sparkles size={14} aria-hidden />
+              Gerar com IA
+            </button>
           </div>
-        }
+        )}
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5 lg:px-6">
@@ -812,7 +834,7 @@ export default function Flashcards({ currentUserId }) {
             <button
               type="button"
               onClick={() => { setFormErr(''); setShowInlineDeckForm(true); }}
-              className="btn-primary"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
             >
               <Plus size={16} />
               Criar primeiro deck

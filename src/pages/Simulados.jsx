@@ -24,7 +24,11 @@ import {
   formatMinutesLabel,
   parseStudyTimeToMinutes,
 } from '../lib/studyAnalytics';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 export default function Simulados({
   openSimuladoReviewModal,
@@ -181,96 +185,102 @@ export default function Simulados({
   const displayAverage = realStats.mediaDesempenho > 0 ? realStats.mediaDesempenho : summary.averageScore;
   const displayBest = realStats.melhorDesempenho > 0 ? realStats.melhorDesempenho : summary.best?.accuracy || 0;
 
+  const headStatTileClass =
+    '!h-full !min-h-0 !justify-center !gap-1.5 !px-2.5 !py-2.5 sm:!gap-2 sm:!px-3 sm:!py-3 [&>div:first-child]:!mb-0 [&>div:first-child]:h-6 [&>div:first-child]:w-6 [&>p]:!mb-0 sm:[&>div:first-child]:h-7 sm:[&>div:first-child]:w-7';
+
   return (
     <div className="page-shell flex animate-in fade-in duration-500 flex-col gap-4 !pt-4 sm:!pt-5 lg:gap-5">
       <PageHeadPremium
-        className="shrink-0"
+        className="shrink-0 gap-4"
         icon={ListChecks}
-        leadingClassName="xl:!max-w-[min(100%,26rem)] xl:!flex-none"
-        trailingClassName="xl:!w-full xl:!max-w-none xl:min-w-0 xl:flex-1"
-        title="Simulados"
-        subtitle="Registre resultados de simulados externos, monte provas no caderno e acompanhe evolução com base no seu histórico real."
-        trailing={
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:gap-2.5">
-            <PageHeadPremiumBadge icon={PieChart} className="!mb-0 w-fit shrink-0">
-              Prática em prova
-            </PageHeadPremiumBadge>
-            <div className="scrollbar-thin flex min-w-0 w-full flex-1 items-stretch gap-2 overflow-x-auto pb-0.5 sm:min-w-0 sm:gap-2.5 sm:overflow-visible sm:pb-0">
-              <KpiChip
-                Icon={FileText}
-                iconWrap="bg-blue-50 text-blue-600"
-                label="Realizados"
-                value={String(displayTotal)}
-                suffix="registros"
-                variant="premium"
-              />
-              <KpiChip
-                Icon={BarChart2}
-                iconWrap="bg-emerald-50 text-emerald-600"
-                label="Média geral"
-                value={String(displayAverage)}
-                suffix="%"
-                valueClass="text-emerald-700"
-                variant="premium"
-                premiumValueClass="text-emerald-200"
-              />
-              <KpiChip
-                Icon={Award}
-                iconWrap="bg-amber-50 text-amber-600"
-                label="Melhor nota"
-                value={String(displayBest)}
-                suffix="%"
-                valueClass="text-amber-800"
-                variant="premium"
-                premiumValueClass="text-amber-200"
-              />
-            </div>
-          </div>
+        badge={
+          <PageHeadPremiumBadge icon={PieChart}>
+            Prática em prova
+          </PageHeadPremiumBadge>
         }
+        title="Simulados"
+        subtitle="Registre provas externas, use o caderno inteligente e acompanhe média e melhor desempenho."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statGridClassName="mx-auto grid w-fit max-w-full grid-cols-3 items-stretch gap-2 sm:gap-2.5 [&>*]:min-w-0 [&>*]:w-[6.35rem] [&>*]:min-h-[7.1rem] sm:[&>*]:w-[6.85rem] sm:[&>*]:min-h-[7.6rem]"
+        trailingClassName="w-full shrink-0 sm:w-auto"
+        stats={[
+          {
+            key: 'tot',
+            icon: FileText,
+            label: 'Realizados',
+            value: String(displayTotal),
+            accent: 'blue',
+            className: headStatTileClass,
+            valueClassName: '!text-sm !leading-normal sm:!text-base',
+          },
+          {
+            key: 'avg',
+            icon: BarChart2,
+            label: 'Média geral',
+            value: `${displayAverage}%`,
+            accent: 'emerald',
+            valueClassName: '!text-emerald-200 !text-sm !leading-normal sm:!text-base',
+            className: headStatTileClass,
+          },
+          {
+            key: 'best',
+            icon: Award,
+            label: 'Melhor nota',
+            value: `${displayBest}%`,
+            accent: 'amber',
+            valueClassName: '!text-amber-200 !text-sm !leading-normal sm:!text-base',
+            className: headStatTileClass,
+          },
+        ]}
+        trailing={(
+          <div className="grid w-full grid-cols-2 gap-x-2 gap-y-2 sm:w-auto sm:min-w-[17.5rem] sm:max-w-[22rem]">
+            <button
+              type="button"
+              onClick={() => openSimuladoReviewModal?.('novo')}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full min-w-0`}
+            >
+              <PlusSquare size={14} strokeWidth={2.2} aria-hidden />
+              Registrar resultado
+            </button>
+            <button
+              type="button"
+              onClick={() => setRankingOpen(true)}
+              className="group relative inline-flex min-h-[2.75rem] w-full min-w-0 animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45"
+            >
+              <span className="relative flex h-full min-h-[2.65rem] w-full items-center justify-center gap-1.5 overflow-hidden rounded-[11px] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-3 py-2 sm:min-h-[2.9rem] sm:gap-2 sm:rounded-[11px] sm:px-4 sm:py-2.5">
+                <span
+                  className="pointer-events-none absolute inset-y-0 left-0 w-[45%] -translate-x-full skew-x-[-16deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-90 animate-rankingCtaShimmer"
+                  aria-hidden
+                />
+                <Trophy
+                  className="relative z-10 size-4 shrink-0 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:size-[18px]"
+                  strokeWidth={2}
+                />
+                <span className="relative z-10 text-xs font-semibold tracking-wide text-white sm:text-sm sm:text-[15px]">Ranking</span>
+                <span className="relative z-10 inline-flex shrink-0 rounded-md border border-white/20 bg-white/10 px-1 py-0.5 text-[7px] font-bold uppercase tracking-[0.14em] text-amber-100/95 sm:px-1.5 sm:text-[9px]">
+                  Top
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsCadernoModalOpen(true)}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full min-w-0`}
+            >
+              <Settings size={14} strokeWidth={2.2} aria-hidden />
+              Montar no caderno
+            </button>
+            <button
+              type="button"
+              onClick={() => openHistoricoWithFilter?.('simulados')}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full min-w-0`}
+            >
+              <History size={14} strokeWidth={2.2} aria-hidden />
+              Ver no histórico
+            </button>
+          </div>
+        )}
       />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => openSimuladoReviewModal?.('novo')} className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-sm sm:text-sm">
-          <PlusSquare size={16} strokeWidth={2.2} />
-          Registrar resultado
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsCadernoModalOpen(true)}
-          className="btn-secondary inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm sm:text-sm"
-        >
-          <Settings size={16} strokeWidth={2.2} />
-          Montar no caderno
-        </button>
-        <button
-          type="button"
-          onClick={() => openHistoricoWithFilter?.('simulados')}
-          className="btn-secondary inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm sm:text-sm"
-        >
-          <History size={16} strokeWidth={2.2} />
-          Ver no histórico
-        </button>
-        <button
-          type="button"
-          onClick={() => setRankingOpen(true)}
-          className="group relative inline-flex animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45"
-        >
-          <span className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[11px] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-5 py-2.5 sm:gap-2.5 sm:rounded-[11px] sm:px-6 sm:py-3">
-            <span
-              className="pointer-events-none absolute inset-y-0 left-0 w-[45%] -translate-x-full skew-x-[-16deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-90 animate-rankingCtaShimmer"
-              aria-hidden
-            />
-            <Trophy
-              className="relative z-10 size-4 shrink-0 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:size-[18px]"
-              strokeWidth={2}
-            />
-            <span className="relative z-10 text-sm font-semibold tracking-wide text-white sm:text-[15px]">Ranking</span>
-            <span className="relative z-10 inline-flex rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.16em] text-amber-100/95 sm:px-2 sm:text-[9px]">
-              Top
-            </span>
-          </span>
-        </button>
-      </div>
 
       <SimuladosRankingPanel
         open={rankingOpen}
@@ -509,61 +519,6 @@ function accuracyPillClass(accuracy) {
   if (accuracy >= 65) return 'border-blue-200 bg-blue-50 text-blue-800';
   if (accuracy <= 0) return 'border-slate-200 bg-slate-50 text-slate-600';
   return 'border-amber-200 bg-amber-50 text-amber-900';
-}
-
-function kpiIconPremium(iconWrap) {
-  if (iconWrap.includes('blue-50')) return 'bg-blue-500/20 text-blue-300';
-  if (iconWrap.includes('emerald-50')) return 'bg-emerald-500/20 text-emerald-300';
-  if (iconWrap.includes('amber-50')) return 'bg-amber-500/20 text-amber-200';
-  return 'bg-white/15 text-slate-200';
-}
-
-function KpiChip({
-  Icon,
-  iconWrap,
-  label,
-  value,
-  suffix,
-  valueClass = 'text-slate-900',
-  variant = 'light',
-  premiumValueClass,
-}) {
-  if (variant === 'premium') {
-    const vCls = premiumValueClass || 'text-white';
-    return (
-      <div
-        className={`flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-2 backdrop-blur-sm max-sm:min-w-[10.25rem] max-sm:shrink-0 sm:flex-1 sm:basis-0 sm:gap-2.5 sm:px-3 sm:py-2.5`}
-      >
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${kpiIconPremium(iconWrap)}`}>
-          {React.createElement(Icon, { size: 16, strokeWidth: 2.2 })}
-        </div>
-        <div className="min-w-0 flex-1 pr-0.5">
-          <p className="text-[8px] font-semibold uppercase tracking-widest text-slate-500 sm:text-[9px]">{label}</p>
-          <p className={`break-words text-base font-semibold leading-tight sm:text-lg sm:leading-none ${vCls}`}>
-            {value}
-            {suffix ? (
-              <span className="text-[10px] font-semibold text-slate-400 sm:text-xs"> {suffix}</span>
-            ) : null}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm sm:gap-2.5 sm:px-3 sm:py-2.5">
-      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${iconWrap}`}>
-        {React.createElement(Icon, { size: 16, strokeWidth: 2.2 })}
-      </div>
-      <div className="min-w-0 pr-1">
-        <p className="text-[8px] font-semibold uppercase tracking-widest text-slate-400 sm:text-[9px]">{label}</p>
-        <p className={`truncate text-base font-semibold leading-none sm:text-lg ${valueClass}`}>
-          {value}
-          <span className="text-[10px] font-semibold text-slate-400 sm:text-xs"> {suffix}</span>
-        </p>
-      </div>
-    </div>
-  );
 }
 
 function PathwayCard({ onAction, badge, badgeClass, title, description, meta, cta, tone = 'primary' }) {

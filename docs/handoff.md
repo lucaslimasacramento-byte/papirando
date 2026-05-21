@@ -1,29 +1,32 @@
 # Handoff entre conversas
 
+## Rodada atual - finalizacao e deploy
+
+- Criados `docs/mvp-launch-checklist.md` e `docs/vercel-deploy-runbook.md` para guiar MVP, deploy Vercel, Supabase e IA.
+- `ai-server.mjs` passou a expor `POST /api/explain-question`, alinhando o backend ao cliente `src/lib/aiClient.js`.
+- A validacao completa ainda deve ser feita em pasta local fora do OneDrive/Drive, conforme `docs/production-test-handoff.md`.
+- Manual para o usuario: GitHub, Vercel, variaveis de ambiente, Supabase Auth/Redirect URLs, SQL/RLS remoto e hospedagem do `ai-server`.
+
 **Propósito:** memória curta e acionável. Ao **abrir um chat novo**, a IA deve ler este arquivo **depois** de `context.md`. Ao **finalizar uma rodada**, a IA deve **atualizar este arquivo** com o bloco da última rodada e o próximo passo explícito.
 
-*Última atualização: 2026-04-21 — **Deploy SQL**: bundle RLS admin + `registration_antifraud` via `supabase/deploy_registration_and_admin_rls.ps1`. **RLS admin** em [`docs/supabase-admin-rls.md`](supabase-admin-rls.md). Itens anteriores: Esquadrões; **Edital em questão** — `docs/edital-questao-header.md`.*
+*Última atualização: 2026-04-23 — **Hardening pré-produção concluído no código; validação final adiada para máquina local do usuário**. Ler também `docs/production-test-handoff.md`.*
 
-**Pausa (redações):** Editor com **coluna de esqueletos 4+7+7+4** (`redacaoEsqueletosMilimetricos.js`) + faixas separadoras; `REDACAO_KIT_MODELOS` reexporta os mesmos textos; admin JSON continua podendo sobrescrever `kit_json.modelos`.
+**Pausa:** Editor com **coluna de esqueletos 4+7+7+4** (`redacaoEsqueletosMilimetricos.js`) + faixas separadoras; `REDACAO_KIT_MODELOS` reexporta os mesmos textos; admin JSON continua podendo sobrescrever `kit_json.modelos`.
 
 ---
 
 ## Instruções para quem retomar (ler primeiro)
 
-1. **RLS admin (Supabase):** aplicar e validar conforme [`docs/supabase-admin-rls.md`](supabase-admin-rls.md) — `admin_rls_helpers.sql`, `profiles_admin_rls.sql`, depois políticas atualizadas nas tabelas admin.
-2. **Fórum (prioridade imediata):** `src/pages/Comunidades.jsx`, `src/lib/communityApi.js`, `supabase/community.sql`; shell da aba: `App.jsx` (content scroll `comunidades`), `AppTabContent.jsx` (wrapper `flex-1 min-h-0`). **Outros:** `src/lib/vadeMecumApi.js`, `AdminLegislacao.jsx`, `Legislacao.jsx`. Mapas: `mind_map_gallery.sql`, `mindMapGalleryApi`, etc. Redações: `Redacoes.jsx`, `redacaoSiteContentApi`, `AdminConfiguracoes`.
-3. **Ranking:** só dados reais (`question_answers` + `profiles`); sem preenchimento fictício.
-4. **Redações:** `REDACAO_THEME_BANK` na aba **Banco de temas**; **Nova correção** = banca + editor + **?** (guias); **Dicas** = kit fixo + cards do Supabase; histórico lateral com `onDeleteRedacao`.
-5. **Design system:** manter `docs/ui-guidelines.md` — `btn-primary`, tokens slate/blue, evitar faixas escuras no canvas.
-6. **Validação local:** `npx eslint` nos arquivos alterados; `npm run build` se houver mudança estrutural ampla.
+1. **Fórum (prioridade imediata):** `src/pages/Comunidades.jsx`, `src/lib/communityApi.js`, `supabase/community.sql`; shell da aba: `App.jsx` (content scroll `comunidades`), `AppTabContent.jsx` (wrapper `flex-1 min-h-0`). **Outros:** `src/lib/vadeMecumApi.js`, `AdminLegislacao.jsx`, `Legislacao.jsx`. Mapas: `mind_map_gallery.sql`, `mindMapGalleryApi`, etc. Redações: `Redacoes.jsx`, `redacaoSiteContentApi`, `AdminConfiguracoes`.
+2. **Ranking:** só dados reais (`question_answers` + `profiles`); sem preenchimento fictício.
+3. **Redações:** `REDACAO_THEME_BANK` na aba **Banco de temas**; **Nova correção** = banca + editor + **?** (guias); **Dicas** = kit fixo + cards do Supabase; histórico lateral com `onDeleteRedacao`.
+4. **Design system:** manter `docs/ui-guidelines.md` — `btn-primary`, tokens slate/blue, evitar faixas escuras no canvas.
+5. **Validação local:** `npx eslint` nos arquivos alterados; `npm run build` se houver mudança estrutural ampla.
 
 ---
 
 ## Onde estamos agora (snapshot)
 
-- **Vercel:** `npm run vercel:preview` / `npm run vercel:prod`; env `VITE_SUPABASE_*` no dashboard; Auth URLs no Supabase — ver `docs/architecture.md` → *Deploy na Vercel*.
-- **Deploy SQL (repo):** `npm run db:bundle:admin-registration` gera o bundle; com projeto ligado (`npm run supabase:link`), `npm run db:deploy:admin-registration` aplica no remoto via CLI. **`npm run db:deploy:admin-rls-phase-c`** aplica em sequência os SQL da Fase C (lista em `scripts/deploy-admin-rls-phase-c.mjs`). Alternativa: `supabase/deploy_registration_and_admin_rls.ps1` (flag `-Deploy`). Ver `docs/architecture.md` → *CLI e deploy remoto*.
-- **Admin / RLS (repo):** criados `supabase/admin_rls_helpers.sql` (`is_app_admin` / `is_profile_admin`) e `supabase/profiles_admin_rls.sql`; políticas que usavam JWT com e-mail fixo passaram a `public.is_app_admin()` nos SQL listados em [`supabase-admin-rls.md`](supabase-admin-rls.md). **Pendente no host:** correr scripts no Supabase e testar painel admin ponta a ponta.
 - **Ranking (Simulados):** `SimuladosRankingPanel` + `loadOfficialRankingBoard` exibem **somente** perfis reais do Supabase (sem `padRankingWithDemoRows`).
 - **Redações (`redacoes`):** cabeçalho com métricas; **Nova correção** com banca, editor e contador de linhas; **Dicas** com kit (conectivos por função, frases prontas, 5 modelos em `<details>`) e seção **Conteúdo extra** para `redacao_expert_tips`.
 - **Questões (`questoes`):** estado anterior (handoff 2026-04-17) mantido — filtros modal, KPIs, etc.
@@ -45,33 +48,31 @@
 
 ## Última rodada registrada
 
-**Rodada:** Bundle de deploy — RLS admin (`is_app_admin`) + cadastro/antifraude (`registration_antifraud`)
+**Rodada:** Esquadrões — pausa com estado consolidado (UX + correção de rota + doc)
 
 **O que mudou**
 
-- **`supabase/deploy_registration_and_admin_rls.ps1`** — gera `deploy_registration_and_admin_rls.bundle.sql` na ordem: `admin_rls_helpers.sql` → `profiles_admin_rls.sql` → `registration_antifraud.sql`.
-- **`.gitignore`** — ignora `supabase/*.bundle.sql` (artefato local; fonte continua nos três `.sql`).
-- Comentário de referência no topo de **`supabase/registration_antifraud.sql`** apontando para o script.
+- **`src/components/AppTabContent.jsx`** — `Esquadroes` recebe **`currentUserId`** (alinha com `App.jsx`; evita fluxo remoto incompleto pela aba principal).
+- **`src/pages/Esquadroes.jsx`** — hero do esquadrão mais **premium** (gradiente, radial highlight, faixa lateral, badge ouro, título em degradê, foco com sublinhado); barra **Área interna** com fundo em gradiente suave; **`<nav>`** com **`flex-row` explícito**; **`MiniHeroStat`** com sombra/anel.
+- **Percepção do usuário:** print ainda mostrava **sidebar vertical antiga**; no repo atual ela **não existe** — documentado no snapshot: checar pasta, reiniciar `npm run dev`, hard refresh.
+- **`docs/handoff.md`** — este bloco e snapshot atualizados para **retomada** (“continuamos depois”).
 
 **Como validar**
 
-1. Na pasta `supabase/`: `.\deploy_registration_and_admin_rls.ps1`
-2. Abrir o ficheiro gerado `deploy_registration_and_admin_rls.bundle.sql`, copiar tudo, colar no **SQL Editor** do Supabase e executar.
-3. Se o projeto nunca recebeu a Fase C completa: reaplicar os scripts listados em [`supabase-admin-rls.md`](supabase-admin-rls.md) (políticas nas outras tabelas).
+- Na pasta do repo: `npm run dev` → Esquadrões → hero novo + **abas horizontais** sob o card (não coluna à esquerda).
+- `npm run build` (ok na última verificação).
 
 **O que testar**
 
-- Utilizador **admin** (`profiles.role = 'admin'`): `AdminUsuarios` lista e atualiza perfis; operações admin nas áreas já migradas para `is_app_admin()`.
-- **Cadastro:** confirmação de e-mail atualiza `profiles.email_verificado` e `status_cadastro`; CPF inválido rejeitado no servidor; RPCs `registration_email_exists` / `registration_cpf_exists` só com **service_role** (Edge Function), não com anon.
+- Login pela shell normal (via `AppTabContent`): esquadrão remoto e convite seguem comportamento da rodada **squad_payload** (SQL aplicado no Supabase).
 
 **Riscos / não coberto**
 
-- O bundle **não** substitui a reaplicação de todos os `supabase/*.sql` citados em `supabase-admin-rls.md` se o remoto ainda tiver políticas antigas por JWT fixo.
-- Não foi possível executar o SQL no projeto Supabase remoto a partir deste ambiente (credenciais / acesso ao teu painel).
+- Mesmos da rodada anterior: fórum interno majoritariamente local; listagem remota de todos os `Esquadrão`; sem `squad_members` no banco.
 
 **Próximo passo**
 
-- Correr o bundle no Supabase e, se necessário, completar a lista de scripts da Fase C em `supabase-admin-rls.md`; validar fórum e restantes prioridades do handoff.
+- Retomar com o usuário: validar visual na máquina certa; depois opcional **squad_members + RLS**, fórum interno no Supabase, filtro de listagem remota.
 
 ---
 

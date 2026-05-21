@@ -19,11 +19,10 @@ import {
   Crosshair,
   Layers,
 } from 'lucide-react';
-import {
-  PageHeadPremiumShell,
-  PageHeadPremiumIconTile,
+import PageHeadPremium, {
   PageHeadPremiumBadge,
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
 } from '../components/PageHeadPremium';
 
 /** Tom primário alinhado ao design system (`btn-primary` = blue-700). */
@@ -259,30 +258,20 @@ export default function Disciplinas({
 
   return (
     <div className="page-shell animate-in fade-in duration-500 pb-16 !pt-4 sm:!pt-5">
-      <PageHeadPremiumShell className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        {/* Esquerda: ícone + texto proporcionais ao bloco da direita */}
-        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5">
-          <PageHeadPremiumIconTile>
-            <Layers className={PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} strokeWidth={2} aria-hidden />
-          </PageHeadPremiumIconTile>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-base font-semibold tracking-tight text-white sm:text-lg">Disciplinas</h1>
-            <p className="mt-0.5 max-w-xl text-xs font-normal leading-snug text-slate-400 sm:mt-1 sm:max-w-2xl sm:text-[13px] sm:leading-relaxed">
-              Abra uma disciplina para editar a estrutura, adicionar tópicos e acompanhar a execução do edital por aqui.
-            </p>
-          </div>
-        </div>
-
-        {/* Direita: badge no topo, botões lado a lado abaixo */}
-        <div className="flex w-full shrink-0 flex-col items-stretch justify-center gap-2.5 sm:w-auto sm:items-end sm:gap-3">
-          <PageHeadPremiumBadge icon={BarChart3} className="!mb-0 w-full justify-center sm:w-fit sm:self-end">
-            Gestão do edital
-          </PageHeadPremiumBadge>
-          <div className="flex flex-row flex-wrap items-center justify-center gap-2 sm:justify-end">
+      <PageHeadPremium
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
+        icon={Layers}
+        badge={<PageHeadPremiumBadge icon={BarChart3}>Gestão do edital</PageHeadPremiumBadge>}
+        title="Disciplinas"
+        subtitle="Abra uma disciplina para editar a estrutura, adicionar tópicos e acompanhar a execução do edital por aqui."
+        leadingClassName="items-center lg:max-w-[calc(100%-29rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[28rem] lg:self-center"
+        trailing={(
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
             <button
               type="button"
               onClick={() => setRegistroEstudoModalOpen && setRegistroEstudoModalOpen(true)}
-              className="btn-primary inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className={PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS}
             >
               <Plus size={14} strokeWidth={2} />
               Registrar estudo
@@ -290,14 +279,14 @@ export default function Disciplinas({
             <button
               type="button"
               onClick={() => setEditingDiscipline && setEditingDiscipline({})}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/15 sm:px-3.5 sm:py-2 sm:text-[13px]"
+              className={PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS}
             >
               <Edit3 size={14} strokeWidth={2} />
               Nova disciplina
             </button>
           </div>
-        </div>
-      </PageHeadPremiumShell>
+        )}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Disciplinas" value={totalDisciplinas} sub="Base total organizada" accent="blue" icon={BookOpen} />

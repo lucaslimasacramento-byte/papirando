@@ -10,6 +10,7 @@ import {
   PanelLeft,
   Plus,
   Save,
+  Settings,
   Sparkles,
   Trash2,
   Trophy,
@@ -30,9 +31,11 @@ import { REDACAO_BANCA_OPTIONS } from '../data/redacaoBancaGuides';
 import { mergeRedacaoKitBundle, sanitizeRedacaoKitForSave } from '../lib/redacaoKitMerge';
 import { AdminRedacaoKitEditor } from '../components/AdminRedacaoKitEditor';
 import { AdminRedacaoThemeBankEditor } from '../components/AdminRedacaoThemeBankEditor';
-import { AdminAudiobookCatalogEditor, sanitizeAudiobooksForSave } from '../components/AdminAudiobookCatalogEditor';
+import { AdminAudiobookCatalogEditor } from '../components/AdminAudiobookCatalogEditor';
+import { sanitizeAudiobooksForSave } from '../lib/audiobookCatalogAdmin';
 import { AdminSidebarLabelsEditor } from '../components/AdminSidebarLabelsEditor';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
+import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 function normalizeThemeBanca(banca) {
   const b = String(banca || '').trim();
@@ -55,10 +58,10 @@ function sanitizeThemeBankForSave(rows) {
 
 function stripAudiobookForDraft(book) {
   if (!book || typeof book !== 'object') return book;
-  const { linkedDiscipline, linkedTopic, ...rest } = book;
+  const { linkedDiscipline: _linkedDiscipline, linkedTopic: _linkedTopic, ...rest } = book;
   const tracks = (Array.isArray(rest.tracks) ? rest.tracks : []).map((t) => {
     if (!t || typeof t !== 'object') return t;
-    const { disciplineId, ...tr } = t;
+    const { disciplineId: _disciplineId, ...tr } = t;
     return tr;
   });
   return { ...rest, tracks };
@@ -199,28 +202,29 @@ export default function AdminConfiguracoes({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <section className="rounded-[2.2rem] border border-gray-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Admin do produto</p>
-            <h2 className="page-title mt-2 text-4xl font-semibold tracking-tight text-slate-900">Configurações estruturais</h2>
-            <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados.
-            </p>
-          </div>
+      <PageHeadPremium
+        icon={Settings}
+        badge={
+          <PageHeadPremiumBadge icon={LayoutGrid}>Admin do produto</PageHeadPremiumBadge>
+        }
+        title="Configurações estruturais"
+        subtitle="Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados."
+      />
 
-          <button
-            type="button"
-            onClick={() => void saveAll()}
-            disabled={redacaoTipsSaving}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-700 disabled:opacity-60"
-          >
-            <Save size={16} />
-            {redacaoTipsSaving ? 'Salvando…' : 'Salvar tudo'}
-          </button>
-        </div>
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => void saveAll()}
+          disabled={redacaoTipsSaving}
+          className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
+        >
+          <Save size={16} />
+          {redacaoTipsSaving ? 'Salvando…' : 'Salvar tudo'}
+        </button>
+      </div>
 
-        <div className="mt-6 flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
+      <section className="rounded-[2.2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
           <ConfigTab
             active={activeSection === 'conteudo'}
             onClick={() => setActiveSection('conteudo')}
@@ -251,10 +255,10 @@ export default function AdminConfiguracoes({
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Inteligência Artificial</p>
             <h3 className="mt-2 text-2xl font-semibold text-slate-900">Status do motor de IA</h3>
             <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Para usar IA local sem custo: inicie o Ollama e configure AI_PROVIDER=ollama no .env
+              A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
             </p>
             <p className="mt-1 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Para produção: configure GOOGLE_API_KEY ou OPENAI_API_KEY e ajuste AI_PROVIDER.
+              Configure AI_PROVIDER, AI_FALLBACK_PROVIDER e as chaves dos provedores nas variáveis de ambiente da Vercel.
             </p>
           </div>
 
@@ -277,8 +281,8 @@ export default function AdminConfiguracoes({
             dotTone={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'bg-emerald-500' : 'bg-slate-400'}
           />
           <AiStatusCard
-            label="URL do Ollama"
-            value={aiStatus?.provider === 'ollama' ? aiStatus?.ollamaUrl || 'http://127.0.0.1:8787' : 'Não aplicável'}
+            label="Gateway"
+            value="/api/ai"
           />
         </div>
       </section>
@@ -1107,7 +1111,8 @@ function ConfigTab({ active, onClick, label }) {
 
 function formatProviderLabel(provider) {
   const raw = String(provider || '').toLowerCase();
-  if (raw === 'ollama') return 'Ollama';
+  if (raw === 'openrouter') return 'OpenRouter';
+  if (raw === 'groq') return 'Groq';
   if (raw === 'openai') return 'OpenAI';
   if (raw === 'gemini') return 'Gemini';
   if (raw === 'offline') return 'Offline';

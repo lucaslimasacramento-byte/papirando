@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.node_modules_broken_*/
 .pnp
 .pnp.js
 
@@ -61,3 +62,5 @@ supabase/.temp/
 
 # Pastas temporárias de sincronização (ex.: Drive)
 .tmp.driveupload/
+
+.vercel

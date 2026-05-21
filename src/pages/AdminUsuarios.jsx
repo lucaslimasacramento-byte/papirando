@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { BadgeCheck, Crown, Search, ShieldCheck, UserRound, WalletCards } from 'lucide-react';
+﻿import React, { useMemo, useState } from 'react';
+import { BadgeCheck, Crown, Search, ShieldCheck, UserRound, WalletCards, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const PLAN_OPTIONS = [
   { value: 'gratuito', label: 'Gratuito' },
+  { value: 'beta', label: 'Beta 3 meses' },
   { value: 'tatico', label: 'Tático' },
   { value: 'elite', label: 'Elite' },
 ];
@@ -75,27 +77,24 @@ export default function AdminUsuarios({
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-700">
-              <ShieldCheck size={13} />
-              Gestão de contas
-            </div>
-            <h2 className="page-title mt-5 text-4xl font-semibold tracking-tight text-slate-900">Usuários e assinaturas</h2>
-            <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-gray-500">
-              Controle administrativo dos perfis, plano do usuário, papel administrativo e limite de cursos disponíveis.
-            </p>
+      <AdminPageHeader
+        icon={Users}
+        badgeIcon={ShieldCheck}
+        badge="Gestão de contas"
+        title="Usuários e assinaturas"
+        subtitle="Controle administrativo dos perfis, plano do usuário, papel administrativo e limite de cursos disponíveis."
+        trailingClassName="xl:max-w-[16rem]"
+        trailing={
+          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Gerindo como</p>
+            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
           </div>
+        }
+      />
 
-          <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-5 py-4 text-sm shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Gerindo como</p>
-            <p className="mt-2 font-semibold text-slate-900">{currentUserEmail}</p>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-4">
-          <SummaryCard icon={UserRound} label="Usuarios" value={summary.total} />
+      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
+        <div className="grid gap-4 md:grid-cols-4">
+          <SummaryCard icon={UserRound} label="Usuários" value={summary.total} />
           <SummaryCard icon={ShieldCheck} label="Admins" value={summary.admins} />
           <SummaryCard icon={Crown} label="Plano elite" value={summary.elite} />
           <SummaryCard icon={BadgeCheck} label="Assinaturas ativas" value={summary.active} />
@@ -248,3 +247,5 @@ function SelectCell({ value, options, onChange, disabled }) {
     </select>
   );
 }
+
+

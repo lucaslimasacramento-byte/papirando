@@ -33,7 +33,11 @@ import {
 } from '../lib/redacoesApi';
 import { RedacaoDicasKitPanel } from '../components/RedacaoDicasKitPanel';
 import { REDACAO_THEME_BANK_DEFAULT } from '../data/redacaoThemeBankDefault';
-import PageHeadPremium from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 import { REDACAO_ESQUELETOS_MILIMETRICOS } from '../data/redacaoEsqueletosMilimetricos';
 import { mergeRedacaoKitBundle } from '../lib/redacaoKitMerge';
 
@@ -233,61 +237,6 @@ function RedacaoEsqueletoRail({ items, activeId, onSelect, onLivre, disabled }) 
         4+7+7+4 linhas + faixas. Est. 15–20 min.
       </p>
     </aside>
-  );
-}
-
-const HEADER_KPI_TONES = {
-  indigo: 'border-indigo-100 bg-indigo-50/80 text-indigo-800',
-  slate: 'border-slate-200 bg-slate-50 text-slate-800',
-  amber: 'border-amber-100 bg-amber-50/90 text-amber-900',
-  emerald: 'border-emerald-100 bg-emerald-50/90 text-emerald-900',
-};
-
-const HEADER_KPI_TONES_DARK = {
-  indigo: 'border-indigo-400/30 bg-indigo-500/15 text-indigo-100',
-  slate: 'border-white/15 bg-white/10 text-slate-100',
-  amber: 'border-amber-400/30 bg-amber-500/15 text-amber-100',
-  emerald: 'border-emerald-400/30 bg-emerald-500/15 text-emerald-100',
-};
-
-function HeaderKpiChip({ icon: Icon, label, value, sub, tone = 'slate', variant = 'light' }) {
-  const map = variant === 'dark' ? HEADER_KPI_TONES_DARK : HEADER_KPI_TONES;
-  const toneClass = map[tone] || (variant === 'dark' ? HEADER_KPI_TONES_DARK.slate : HEADER_KPI_TONES.slate);
-  const subCls = variant === 'dark' ? 'text-slate-400' : 'opacity-70';
-  const iconCls = variant === 'dark' ? 'text-slate-300' : '';
-
-  if (variant === 'dark') {
-    return (
-      <div
-        className={`flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border px-2.5 py-2.5 sm:gap-3 sm:px-3 sm:py-3 ${toneClass}`}
-      >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 sm:h-10 sm:w-10">
-          <Icon size={15} className={iconCls} strokeWidth={2} aria-hidden />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[8px] font-semibold uppercase tracking-wider opacity-80 sm:text-[9px]">{label}</p>
-          <div className="mt-1 flex flex-wrap items-baseline gap-x-1 gap-y-0">
-            <span className="text-sm font-bold tabular-nums leading-none sm:text-base">{value}</span>
-            {sub ? <span className={`text-[10px] font-semibold leading-none sm:text-[11px] ${subCls}`}>{sub}</span> : null}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`inline-flex min-w-0 max-w-[140px] flex-1 flex-col rounded-lg border px-2.5 py-1.5 sm:max-w-none sm:flex-none sm:px-3 ${toneClass}`}
-    >
-      <div className="flex items-center gap-1.5">
-        <Icon size={13} className={`shrink-0 opacity-80 ${iconCls}`} strokeWidth={2.2} />
-        <span className="truncate text-[9px] font-semibold uppercase tracking-wider opacity-80">{label}</span>
-      </div>
-      <div className="mt-0.5 flex items-baseline gap-1">
-        <span className="truncate text-sm font-bold tabular-nums leading-none">{value}</span>
-        {sub ? <span className={`text-[10px] font-semibold ${subCls}`}>{sub}</span> : null}
-      </div>
-    </div>
   );
 }
 
@@ -680,49 +629,69 @@ export default function Redacoes({
   return (
     <div className="page-shell !pt-4 sm:!pt-5">
       <PageHeadPremium
-        className="shrink-0 !gap-2 sm:!gap-3 xl:!items-center"
+        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={FileSignature}
         titleAs="h1"
+        badge={<PageHeadPremiumBadge icon={Sparkles}>OCR · parecer por banca</PageHeadPremiumBadge>}
         title="Correção de redações"
-        subtitle="OCR, parecer por banca e histórico."
-        trailingClassName="xl:flex-1 xl:!max-w-none xl:!w-full xl:min-w-0"
-        leadingClassName="xl:!max-w-[min(100%,22rem)] xl:!flex-none"
-        trailing={
-          <div className="flex w-full flex-wrap gap-1 sm:gap-1.5 sm:flex-nowrap sm:justify-end">
-            <HeaderKpiChip
-              icon={BrainCircuit}
-              label="Corrigidas"
-              value={String(summary.corrected)}
-              sub={summary.total ? `${summary.total} no histórico` : '—'}
-              tone="indigo"
-              variant="dark"
-            />
-            <HeaderKpiChip
-              icon={Percent}
-              label="Média"
-              value={summary.avgScore ? String(summary.avgScore).replace('.', ',') : '—'}
-              sub="/10"
-              tone="emerald"
-              variant="dark"
-            />
-            <HeaderKpiChip
-              icon={Trophy}
-              label="Melhor"
-              value={summary.bestScore ? String(summary.bestScore).replace('.', ',') : '—'}
-              sub="/10"
-              tone="amber"
-              variant="dark"
-            />
-            <HeaderKpiChip
-              icon={Library}
-              label="Histórico"
-              value={String(summary.total)}
-              sub={`${summary.drafts} rasc.`}
-              tone="slate"
-              variant="dark"
-            />
+        subtitle="Envio por foto ou texto, correção assistida e histórico das suas redações."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statsStackBelowTrailing
+        statsDense
+        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,48rem)] xl:shrink-0"
+        stats={[
+          {
+            key: 'ok',
+            icon: BrainCircuit,
+            label: 'Corrigidas',
+            value: String(summary.corrected),
+            accent: 'indigo',
+          },
+          {
+            key: 'avg',
+            icon: Percent,
+            label: 'Média',
+            value: summary.avgScore ? `${String(summary.avgScore).replace('.', ',')}/10` : '—',
+            accent: 'emerald',
+            valueClassName: '!text-emerald-200',
+          },
+          {
+            key: 'best',
+            icon: Trophy,
+            label: 'Melhor',
+            value: summary.bestScore ? `${String(summary.bestScore).replace('.', ',')}/10` : '—',
+            accent: 'amber',
+            valueClassName: '!text-amber-200',
+          },
+          {
+            key: 'hist',
+            icon: Library,
+            label: 'Histórico',
+            value: `${summary.total} · ${summary.drafts} rasc.`,
+            accent: 'blue',
+          },
+        ]}
+        trailing={(
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setRedacaoInnerTab('correcao')}
+              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <PenTool size={14} aria-hidden />
+              Nova correção
+            </button>
+            <button
+              type="button"
+              onClick={() => setRedacaoInnerTab('temas')}
+              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
+            >
+              <List size={14} aria-hidden />
+              Banco de temas
+            </button>
           </div>
-        }
+        )}
       />
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">

@@ -26,7 +26,11 @@ import {
   DEFAULT_AUDIOBOOK_PLAYBACK_RATE,
   SEEK_INTERVAL_SECONDS,
 } from '../lib/audiobooks';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import PageHeadPremium, {
+  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
+  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
+  PageHeadPremiumBadge,
+} from '../components/PageHeadPremium';
 
 function formatClock(seconds) {
   const safeSeconds = Math.max(0, Math.floor(Number(seconds || 0)));
@@ -97,7 +101,6 @@ function resolveAccentStyles(accent) {
 export default function Audiobooks(props) {
   const {
     profile = {},
-    currentUserId = '',
     bancoDisciplinas = [],
     catalog = [],
     audiobookState = {},
@@ -487,6 +490,7 @@ export default function Audiobooks(props) {
       />
 
       <PageHeadPremium
+        className="gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={AudioLines}
         badge={
           <PageHeadPremiumBadge icon={Headphones}>
@@ -494,7 +498,10 @@ export default function Audiobooks(props) {
           </PageHeadPremiumBadge>
         }
         title="Audiolivros em Lei Seca"
-        subtitle="Biblioteca, player, favoritos e retomada ligados ao seu perfil e às disciplinas. O catálogo pode ser trocado pelo admin (URLs de áudio reais); até lá, as faixas usam arquivos de demonstração."
+        subtitle="Biblioteca, player, favoritos e retomada ligados ao seu perfil e às disciplinas."
+        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
+        statsStackBelowTrailing
+        statsDense
         stats={[
           { key: 'listened', icon: Waves, label: 'Tempo ouvido', value: formatListeningHours(totalListenedSeconds), accent: 'blue' },
           {
@@ -514,7 +521,22 @@ export default function Audiobooks(props) {
             className: 'col-span-2 sm:col-span-1',
           },
         ]}
-        statGridClassName="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:min-w-[380px]"
+        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
+        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,40rem)] xl:shrink-0"
+        trailing={
+          activeBook?.linkedDiscipline ? (
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+              <button
+                type="button"
+                onClick={() => onOpenDiscipline?.(activeBook.linkedDiscipline)}
+                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+              >
+                <BookOpen size={14} aria-hidden />
+                Abrir disciplina
+              </button>
+            </div>
+          ) : null
+        }
       />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">

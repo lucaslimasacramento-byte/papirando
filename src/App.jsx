@@ -1,59 +1,33 @@
-﻿import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { isSupabaseDevProxyEnabled, supabase, supabaseAnonKey, supabaseBaseUrl, supabaseDirectUrl } from './lib/supabase';
+import {
+  clearInvalidSupabaseAuthStorage,
+  isSupabaseDevProxyEnabled,
+  supabase,
+  supabaseAnonKey,
+  supabaseBaseUrl,
+  supabaseDirectUrl,
+} from './lib/supabase';
 import { Target } from 'lucide-react';
-import Dashboard from './pages/Dashboard';
-import Estatisticas from './pages/Estatisticas';
-import Planejamento from './pages/Planejamento';
-import Assinatura from './pages/Assinatura';
-import BemEstar from './pages/BemEstar';
-import Aplicativos from './pages/Aplicativos';
-import ConvideGanhe from './pages/ConvideGanhe';
-import Perfil from './pages/Perfil';
-import Comunidades from './pages/Comunidades';
-import Esquadroes from './pages/Esquadroes';
-import Conciliador from './pages/Conciliador';
-import Redacoes from './pages/Redacoes';
-import Audiobooks from './pages/Audiobooks';
-import MapasMentais from './pages/MapasMentais';
-import Legislacao from './pages/Legislacao';
-import Flashcards from './pages/Flashcards';
-import Simulados from './pages/Simulados';
-import Edital from './pages/Edital';
-import Disciplinas from './pages/Disciplinas';
-import DisciplinaDetalhe from './pages/DisciplinaDetalhe';
-import Questoes from './pages/Questoes';
-import Planos from './pages/Planos';
-import ConcursosDisponiveis from './pages/ConcursosDisponiveis';
-import ConcursoDetalhe from './pages/ConcursoDetalhe';
-import LembretesCalendario from './pages/LembretesCalendario';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminConcursos from './pages/AdminConcursos';
-import AdminDisciplinasPadrao from './pages/AdminDisciplinasPadrao';
-import AdminUsuarios from './pages/AdminUsuarios';
-import AdminFinance from './pages/AdminFinance';
-import AdminCRM from './pages/AdminCRM';
-import AdminConfiguracoes from './pages/AdminConfiguracoes';
-import AdminAudiolivros from './pages/AdminAudiolivros';
-import AdminMindMapsGallery from './pages/AdminMindMapsGallery';
-import Sessoes from './pages/Sessoes';
-import Revisoes from './pages/Revisoes';
-import EditalQuestao from './pages/EditalQuestao';
-import Historico from './pages/Historico';
-import Login from './pages/Login';
 
 import AppOverlays from './components/AppOverlays';
 import AppTabContent from './components/AppTabContent';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import { ToastProvider } from './lib/toast';
+import BetaWelcomeBanner from './components/BetaWelcomeBanner';
+import CheckoutResultBanner from './components/CheckoutResultBanner';
+import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
+import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
+import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
+import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
 import { normalizeLead } from './lib/adminCrm';
-import { ADMIN_TAB_IDS } from './lib/adminTabIds';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from './lib/subjectCatalogUtils';
 import { buildCanonicalHistory, normalizeStudyRecord } from './lib/studyAnalytics';
 import { buildSmartStudyPlan, mergeDisciplinesByCanonical } from './lib/studyRecommendation';
@@ -81,16 +55,13 @@ import {
   resolveWellnessMediaUrl,
 } from './lib/wellnessLibrary';
 import {
-  WELLNESS_PAGE_CONFIG_STORAGE_KEY,
-  normalizeWellnessPageConfig,
-} from './lib/wellnessPageConfig';
-import {
   buildDefaultReferralCode,
-  captureReferralCodeFromWindow,
+  extractReferralCodeFromLocation,
   getStoredReferralCode,
   normalizeReferralCode,
   persistPendingReferralCode,
 } from './lib/referrals';
+import { extractBetaInviteTokenFromLocation, normalizeBetaInviteToken } from './lib/betaInvitesApi';
 import {
   buildCommunityProfileMetrics,
   buildCommunityRankings,
@@ -138,6 +109,46 @@ import { saveStudySession, loadStudySessions, syncLocalToSupabase } from './lib/
 import { loadUserContests, addUserContest, setTargetContest, removeUserContest as _removeUserContest } from './lib/userContestsApi';
 import { loadSimulados, saveSimulado, fetchSimuladoStats } from './lib/simuladosApi';
 import { loadProfile, updateProfile, uploadAvatar, loadAllProfiles } from './lib/profileApi';
+
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Estatisticas = lazy(() => import('./pages/Estatisticas'));
+const Planejamento = lazy(() => import('./pages/Planejamento'));
+const Assinatura = lazy(() => import('./pages/Assinatura'));
+const BemEstar = lazy(() => import('./pages/BemEstar'));
+const Aplicativos = lazy(() => import('./pages/Aplicativos'));
+const ConvideGanhe = lazy(() => import('./pages/ConvideGanhe'));
+const Perfil = lazy(() => import('./pages/Perfil'));
+const Comunidades = lazy(() => import('./pages/Comunidades'));
+const Esquadroes = lazy(() => import('./pages/Esquadroes'));
+const Conciliador = lazy(() => import('./pages/Conciliador'));
+const Redacoes = lazy(() => import('./pages/Redacoes'));
+const Audiobooks = lazy(() => import('./pages/Audiobooks'));
+const MapasMentais = lazy(() => import('./pages/MapasMentais'));
+const Legislacao = lazy(() => import('./pages/Legislacao'));
+const Flashcards = lazy(() => import('./pages/Flashcards'));
+const Simulados = lazy(() => import('./pages/Simulados'));
+const Edital = lazy(() => import('./pages/Edital'));
+const Disciplinas = lazy(() => import('./pages/Disciplinas'));
+const DisciplinaDetalhe = lazy(() => import('./pages/DisciplinaDetalhe'));
+const Questoes = lazy(() => import('./pages/Questoes'));
+const Planos = lazy(() => import('./pages/Planos'));
+const ConcursosDisponiveis = lazy(() => import('./pages/ConcursosDisponiveis'));
+const ConcursoDetalhe = lazy(() => import('./pages/ConcursoDetalhe'));
+const LembretesCalendario = lazy(() => import('./pages/LembretesCalendario'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminConcursos = lazy(() => import('./pages/AdminConcursos'));
+const AdminDisciplinasPadrao = lazy(() => import('./pages/AdminDisciplinasPadrao'));
+const AdminUsuarios = lazy(() => import('./pages/AdminUsuarios'));
+const AdminFinance = lazy(() => import('./pages/AdminFinance'));
+const AdminCRM = lazy(() => import('./pages/AdminCRM'));
+const AdminConfiguracoes = lazy(() => import('./pages/AdminConfiguracoes'));
+const AdminAudiolivros = lazy(() => import('./pages/AdminAudiolivros'));
+const AdminMindMapsGallery = lazy(() => import('./pages/AdminMindMapsGallery'));
+const Sessoes = lazy(() => import('./pages/Sessoes'));
+const Revisoes = lazy(() => import('./pages/Revisoes'));
+const EditalQuestao = lazy(() => import('./pages/EditalQuestao'));
+const Historico = lazy(() => import('./pages/Historico'));
+const Login = lazy(() => import('./pages/Login'));
 
 function buildDistinctPastelCycleColor(index, total = 1) {
   const safeTotal = Math.max(1, Number(total || 1));
@@ -263,6 +274,16 @@ function distributeCycleBlockCounts(weightedDisciplines, totalBlockCount, minimu
   }
 
   return distribution;
+}
+
+const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
+
+function isAdminIdentity(profile, sessionEmail = '') {
+  const role = String(profile?.role || '').trim().toLowerCase();
+  const profileEmail = String(profile?.email || '').trim().toLowerCase();
+  const email = profileEmail || String(sessionEmail || '').trim().toLowerCase();
+
+  return ['admin', 'admin_master', 'master'].includes(role) || email.endsWith('@papirando.com') || ADMIN_EMAILS.includes(email);
 }
 
 function buildCycleSequence(weightedDisciplines) {
@@ -551,6 +572,43 @@ export default function App() {
     }
   };
 
+  const normalizeLegacyCourseText = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const isLegacyDemoCourse = (course = {}) => {
+    const text = normalizeLegacyCourseText([course.id, course.nome, course.plano, course.concurso, course.cargo].join(' '));
+    return (
+      text.includes('curso-pmba-soldado-2026') ||
+      (text.includes('pmba') && text.includes('soldado')) ||
+      (text.includes('policia militar do estado da bahia') && text.includes('soldado')) ||
+      (text.includes('adab 2026') && text.includes('fiscal estadual agropecuario'))
+    );
+  };
+
+  const sanitizeStoredCourses = (courses) => {
+    if (!Array.isArray(courses)) return [];
+
+    const seen = new Set();
+    return courses.filter((course) => {
+      if (!course || isLegacyDemoCourse(course)) return false;
+
+      const key = [course.plano, course.nome, course.concurso]
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+        .join('|');
+
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   const GENERIC_EDITAL_HEADINGS = [
     'CONTEUDO PROGRAMATICO',
     'CONTEÚDO PROGRAMÁTICO',
@@ -580,9 +638,6 @@ export default function App() {
     /QUADRIX/i,
   ];
 
-  /** E-mails com acesso admin se `profiles.role` ainda não for `admin` (bootstrap / contingência). Preferir `role` no banco. */
-  const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
-
   const [loadingSession, setLoadingSession] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentAuthUser, setCurrentAuthUser] = useState(null);
@@ -590,7 +645,10 @@ export default function App() {
   const [currentUserEmail, setCurrentUserEmail] = useState('');
   const [currentUserAccessToken, setCurrentUserAccessToken] = useState('');
   const [pendingReferralCode, setPendingReferralCode] = useState(() =>
-    normalizeReferralCode(captureReferralCodeFromWindow() || getStoredReferralCode())
+    normalizeReferralCode(extractReferralCodeFromLocation() || getStoredReferralCode())
+  );
+  const [pendingBetaInviteToken, setPendingBetaInviteToken] = useState(() =>
+    normalizeBetaInviteToken(extractBetaInviteTokenFromLocation())
   );
   const [activeTab, setActiveTab] = useState('home');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -598,20 +656,16 @@ export default function App() {
   const theme = { primary: '#1d4ed8', sidebarBg: '#ffffff', bg: '#f1f3f6' };
 
   useEffect(() => {
-    const syncReferralFromUrl = () => {
-      const code = normalizeReferralCode(captureReferralCodeFromWindow());
-      if (!code) return;
-      setPendingReferralCode(code);
-      persistPendingReferralCode(code);
-    };
+    const referralFromLocation = normalizeReferralCode(extractReferralCodeFromLocation());
+    if (!referralFromLocation) return;
+    setPendingReferralCode(referralFromLocation);
+    persistPendingReferralCode(referralFromLocation);
+  }, []);
 
-    syncReferralFromUrl();
-    window.addEventListener('popstate', syncReferralFromUrl);
-    window.addEventListener('hashchange', syncReferralFromUrl);
-    return () => {
-      window.removeEventListener('popstate', syncReferralFromUrl);
-      window.removeEventListener('hashchange', syncReferralFromUrl);
-    };
+  useEffect(() => {
+    const betaInviteFromLocation = normalizeBetaInviteToken(extractBetaInviteTokenFromLocation());
+    if (!betaInviteFromLocation) return;
+    setPendingBetaInviteToken(betaInviteFromLocation);
   }, []);
 
   useEffect(() => {
@@ -646,67 +700,6 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  /** Vincula código pendente (link / localStorage) ao perfil após login, se ainda não houver indicador. */
-  useEffect(() => {
-    if (!isAuthenticated || !currentUserId) return undefined;
-
-    let cancelled = false;
-
-    (async () => {
-      const rawPending = normalizeReferralCode(
-        getStoredReferralCode() || captureReferralCodeFromWindow() || pendingReferralCode
-      );
-      if (!rawPending) return;
-
-      const { data: row, error } = await supabase
-        .from('profiles')
-        .select('referral_code, referred_by_code')
-        .eq('id', currentUserId)
-        .maybeSingle();
-
-      if (cancelled || error) return;
-
-      const existingBy = normalizeReferralCode(row?.referred_by_code || '');
-      if (existingBy) {
-        persistPendingReferralCode('');
-        setPendingReferralCode('');
-        return;
-      }
-
-      const ownCode = normalizeReferralCode(row?.referral_code || '');
-      if (ownCode && ownCode === rawPending) {
-        persistPendingReferralCode('');
-        setPendingReferralCode('');
-        return;
-      }
-
-      const { error: upErr } = await supabase
-        .from('profiles')
-        .update({ referred_by_code: rawPending })
-        .eq('id', currentUserId);
-
-      if (cancelled) return;
-
-      if (upErr) {
-        console.warn('Indicação pendente não aplicada ao perfil:', upErr.message || upErr);
-        return;
-      }
-
-      setCurrentProfile((prev) =>
-        prev && String(prev.id) === String(currentUserId)
-          ? { ...prev, referred_by_code: rawPending }
-          : prev
-      );
-
-      persistPendingReferralCode('');
-      setPendingReferralCode('');
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, currentUserId, pendingReferralCode]);
 
   const [temaAtivo, setTemaAtivo] = useState(() => {
     return localStorage.getItem('papirando_tema') || 'policial';
@@ -860,21 +853,10 @@ export default function App() {
   const [cursos, setCursos] = useState(() => {
     const cursosSalvos = readJsonStorage('papirando_cursos', null);
     if (Array.isArray(cursosSalvos)) {
-      return cursosSalvos;
+      return sanitizeStoredCourses(cursosSalvos);
     }
 
-    return [
-      {
-        id: 'curso-pmba-soldado-2026',
-        nome: 'PMBA - Soldado (2026)',
-        plano: 'PMBA - Soldado',
-        concurso: 'Polícia Militar do Estado da Bahia',
-        banca: 'FCC',
-        status: 'ativo',
-        origem: 'manual',
-        cor: '#2563EB',
-      },
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -931,8 +913,8 @@ export default function App() {
   });
   const [adminProfiles, setAdminProfiles] = useState([]);
   const [adminProfilesLoading, setAdminProfilesLoading] = useState(false);
-
   const [currentProfile, setCurrentProfile] = useState(null);
+  const isAdmin = isAdminIdentity(currentProfile, currentUserEmail);
   const [adminLeads, setAdminLeads] = useState([]);
   const [profileOverrides, setProfileOverrides] = useState(() => {
     const saved = readJsonStorage('papirando_profile_overrides', {});
@@ -973,10 +955,6 @@ export default function App() {
   const [wellnessLibrary, setWellnessLibrary] = useState(() => {
     const saved = readJsonStorage(WELLNESS_LIBRARY_STORAGE_KEY, null);
     return normalizeWellnessLibrary(saved);
-  });
-  const [wellnessPageConfig, setWellnessPageConfig] = useState(() => {
-    const saved = readJsonStorage(WELLNESS_PAGE_CONFIG_STORAGE_KEY, null);
-    return normalizeWellnessPageConfig(saved);
   });
   const [activeWellnessTrackId, setActiveWellnessTrackId] = useState(() => {
     const savedPlayer = readJsonStorage(WELLNESS_PLAYER_STORAGE_KEY, null);
@@ -1178,9 +1156,6 @@ export default function App() {
     localStorage.setItem(WELLNESS_LIBRARY_STORAGE_KEY, JSON.stringify(wellnessLibrary));
   }, [wellnessLibrary]);
   useEffect(() => {
-    localStorage.setItem(WELLNESS_PAGE_CONFIG_STORAGE_KEY, JSON.stringify(wellnessPageConfig));
-  }, [wellnessPageConfig]);
-  useEffect(() => {
     try {
       localStorage.setItem('papirando_community_state', JSON.stringify(normalizeCommunityState(communityState)));
     } catch (error) {
@@ -1211,7 +1186,9 @@ export default function App() {
         const url = new URL(window.location.href);
         url.searchParams.delete('convite');
         window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
-      } catch (_) {}
+      } catch {
+        return;
+      }
     };
 
     const handledKey = `papirando_convite_ok_${code}`;
@@ -1220,7 +1197,9 @@ export default function App() {
         stripConviteParam();
         return;
       }
-    } catch (_) {}
+    } catch {
+      stripConviteParam();
+    }
 
     const localSquads = Array.isArray(communityState?.squads) ? communityState.squads : [];
     const localMatch = localSquads.find(
@@ -1242,7 +1221,9 @@ export default function App() {
       setActiveTab('esquadroes');
       try {
         sessionStorage.setItem(handledKey, '1');
-      } catch (_) {}
+      } catch {
+        stripConviteParam();
+      }
       stripConviteParam();
       return;
     }
@@ -1272,7 +1253,9 @@ export default function App() {
       setActiveTab('esquadroes');
       try {
         sessionStorage.setItem(handledKey, '1');
-      } catch (_) {}
+      } catch {
+        stripConviteParam();
+      }
       stripConviteParam();
     })();
 
@@ -1323,20 +1306,6 @@ export default function App() {
     };
   }, [currentProfile, profileOverrides, currentProfileKey, currentUserEmail]);
 
-  /** Admin: prioridade ao role no perfil (Supabase); fallback a e-mails bootstrap (primeiro deploy / contingência). */
-  const isAdmin = useMemo(() => {
-    const role = String(effectiveProfile?.role || '').toLowerCase();
-    if (role === 'admin') return true;
-    return ADMIN_EMAILS.includes(String(currentUserEmail || '').toLowerCase());
-  }, [effectiveProfile?.role, currentUserEmail]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    if (!ADMIN_TAB_IDS.includes(activeTab)) return;
-    if (isAdmin) return;
-    setActiveTab('home');
-  }, [isAuthenticated, isAdmin, activeTab]);
-
   const profileMetrics = useMemo(
     () => buildProfileMetrics(historicoReal, subjectCatalog, progressConfig.xp),
     [historicoReal, subjectCatalog, progressConfig]
@@ -1372,11 +1341,24 @@ export default function App() {
     () => wellnessLibrary.find((item) => item.id === activeWellnessTrackId) || null,
     [wellnessLibrary, activeWellnessTrackId]
   );
-  const isElitePlan = String(effectiveProfile?.subscription_plan || '').toLowerCase() === 'elite';
-  const isPremiumPlan = ['elite', 'tatico'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase()) || isAdmin;
+  // Assinatura via tabela subscriptions (Stripe) — fonte de verdade para premium
+  const {
+    planName: stripePlanName,
+    isPremium: isStripeActive,
+    refresh: refreshSubscription,
+  } = useSubscription(currentUserId);
 
-  const selectedContestDetail =
-    contestLibrary.find((item) => item.id === selectedContestDetailId) || null;
+  // isElitePlan / isPremiumPlan: tabela Stripe tem prioridade; fallback para profile (beta manual)
+  const isElitePlan =
+    (isStripeActive && stripePlanName === 'elite') ||
+    (!isStripeActive && ['elite', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase()));
+
+  const isPremiumPlan =
+    isAdmin ||
+    isStripeActive ||
+    ['elite', 'tatico', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase());
+
+  const selectedContestDetail = findGroupedContestById(contestLibrary, selectedContestDetailId);
   const communityRankings = useMemo(
     () =>
       buildCommunityRankings({
@@ -1412,14 +1394,14 @@ export default function App() {
 
         const reminders = [];
 
-        if (contest.status_concurso === 'suspenso') {
+        if (normalizeContestStatus(contest.status_concurso) === 'homologado') {
           reminders.push({
-            id: `${contest.id}-suspenso`,
+            id: `${contest.id}-homologado`,
             contestId: contest.id,
             contestName: contest.nome,
             type: 'status',
-            title: 'Concurso suspenso',
-            text: `${contest.nome} está suspenso. Vale acompanhar novas publicações antes de avançar.`,
+            title: 'Concurso homologado',
+            text: `${contest.nome} já está homologado e serve como referência histórica.`,
             date: null,
             priority: 100,
           });
@@ -2350,7 +2332,7 @@ export default function App() {
       ...new Set(
         (bancoDisciplinas || [])
           .map((disciplina) => disciplina?.plano)
-          .filter((plano) => plano && plano !== 'Geral')
+          .filter((plano) => plano && plano !== 'Geral' && !isLegacyDemoCourse({ plano }))
       ),
     ];
 
@@ -2398,18 +2380,9 @@ export default function App() {
       });
 
       const cleaned = next.filter((curso) => {
-        if (curso.id !== 'curso-pmba-soldado-2026') return true;
-
-        const hasLinkedDiscipline = bancoDisciplinas.some(
-          (disciplina) => String(disciplina.plano || '').trim() === String(curso.plano || '').trim()
-        );
-
-        if (!hasLinkedDiscipline) {
-          changed = true;
-          return false;
-        }
-
-        return true;
+        if (!isLegacyDemoCourse(curso)) return true;
+        changed = true;
+        return false;
       });
 
       return changed ? cleaned : prev;
@@ -2796,19 +2769,20 @@ export default function App() {
   };
 
   const checkCpfAvailability = async (cpfDigits) => {
-    if (!cpfDigits) return true;
+  if (!cpfDigits) return true;
 
-    try {
-      const { data, error } = await supabase.from('profiles').select('id, cpf').eq('cpf', cpfDigits);
-      if (error) throw error;
-      return !(data || []).some((item) => item.id !== currentProfile?.id);
-    } catch {
-      return !adminProfiles.some(
-        (profile) =>
-          normalizeCpf(profile?.cpf || '') === cpfDigits && String(profile?.id || '') !== String(currentProfile?.id || '')
-      );
-    }
-  };
+  try {
+    // SEC-007: usa RPC que retorna boolean (não expõe cpf/id de terceiros)
+    const { data, error } = await supabase.rpc('cpf_disponivel', { check_cpf: cpfDigits });
+    if (error) throw error;
+    return Boolean(data);
+  } catch {
+    return !adminProfiles.some(
+      (profile) =>
+        normalizeCpf(profile?.cpf || '') === cpfDigits && String(profile?.id || '') !== String(currentProfile?.id || '')
+    );
+  }
+};
 
   const containsBlockedCodenameWord = (value) => {
     const normalized = String(value || '')
@@ -2912,61 +2886,67 @@ export default function App() {
     );
 
     if (!nome) {
-      return { ok: false, message: 'Digite o seu nome completo.' };
+      alert('Digite o seu nome completo.');
+      return { ok: false };
     }
 
     if (!username) {
-      return { ok: false, message: 'Digite um username para a sua conta.' };
+      alert('Digite um username para a sua conta.');
+      return { ok: false };
     }
 
     if (username.length < 3) {
-      return { ok: false, message: 'O username precisa ter pelo menos 3 caracteres.' };
+      alert('O username precisa ter pelo menos 3 caracteres.');
+      return { ok: false };
     }
 
     if (!/^[a-z0-9._]+$/.test(username)) {
-      return {
-        ok: false,
-        message: 'O username pode conter apenas letras minúsculas, números, ponto e underscore.',
-      };
+      alert('O username pode conter apenas letras minusculas, numeros, ponto e underscore.');
+      return { ok: false };
     }
 
     const usernameAvailable = await checkUsernameAvailability(username);
     if (!usernameAvailable) {
-      return { ok: false, message: 'Esse username já está em uso na plataforma. Escolha outro.' };
+      alert('Esse username ja esta em uso na plataforma. Escolha outro.');
+      return { ok: false };
     }
 
     if (!cpfDigits) {
-      return { ok: false, message: 'O CPF é obrigatório para vincular a conta.' };
+      alert('O CPF é obrigatório para vincular a conta.');
+      return { ok: false };
     }
 
     if (!isValidCpf(cpfDigits)) {
-      return { ok: false, message: 'Digite um CPF válido (verifique os dígitos).' };
+      alert('Digite um CPF válido.');
+      return { ok: false };
     }
 
     const cpfAvailable = await checkCpfAvailability(cpfDigits);
     if (!cpfAvailable) {
-      return { ok: false, message: 'Esse CPF já está vinculado a outra conta.' };
+      alert('Esse CPF já está vinculado a outra conta.');
+      return { ok: false };
     }
 
     if (rankingDisplayMode === 'codename') {
       if (!rankingCodename) {
-        return { ok: false, message: 'Digite um codinome para aparecer nos rankings.' };
+        alert('Digite um codinome para aparecer nos rankings.');
+        return { ok: false };
       }
 
       if (rankingCodename.length < 3) {
-        return { ok: false, message: 'O codinome precisa ter pelo menos 3 caracteres.' };
+        alert('O codinome precisa ter pelo menos 3 caracteres.');
+        return { ok: false };
       }
 
       if (containsBlockedCodenameWord(rankingCodename)) {
-        return {
-          ok: false,
-          message: 'Esse codinome não pode ser usado. Escolha um nome sem palavras ofensivas.',
-        };
+        alert('Esse codinome não pode ser usado. Escolha um nome sem palavras ofensivas.');
+        return { ok: false };
       }
 
       const codenameAvailable = await checkRankingCodenameAvailability(rankingCodename);
       if (!codenameAvailable) {
-        return { ok: false, message: 'Esse codinome já está em uso na plataforma. Escolha outro.' };
+        alert('Esse codinome já está em uso na plataforma. Escolha outro.');
+        return { ok: false };
       }
     }
 
@@ -3119,10 +3099,6 @@ export default function App() {
   };
   const handleSaveWellnessLibrary = (nextLibrary) => {
     setWellnessLibrary(normalizeWellnessLibrary(nextLibrary));
-  };
-
-  const handleSaveWellnessPageConfig = (nextConfig) => {
-    setWellnessPageConfig(normalizeWellnessPageConfig(nextConfig));
   };
 
   const handleSaveRedacaoExpertTips = async (nextItems) => {
@@ -3539,18 +3515,6 @@ export default function App() {
       setActiveWellnessTrackId('');
     }
   }, [wellnessLibrary, activeWellnessTrackId]);
-
-  const refreshSessionProfile = useCallback(async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.email) setCurrentUserEmail(session.user.email);
-      if (session?.user) setCurrentAuthUser(session.user);
-    } catch (error) {
-      console.warn('Sessão não atualizada:', error);
-    }
-  }, []);
 
   const handleLogout = async () => {
     try {
@@ -4202,7 +4166,7 @@ export default function App() {
       etapas: courseData.etapas || '',
       etapas_tags: courseData.etapas_tags || [],
       taf_itens: courseData.taf_itens || [],
-      status_concurso: courseData.status_concurso || 'em_analise',
+      status_concurso: normalizeContestStatus(courseData.status_concurso || 'edital_publicado'),
       prova_data: courseData.prova_data || '',
       imagem_url: courseData.imagem_url || '',
       edital_url: courseData.edital_url || '',
@@ -4374,206 +4338,115 @@ export default function App() {
     }
   };
 
+  const syncAuthSessionState = (session = null) => {
+    const user = session?.user || null;
+    setIsAuthenticated(Boolean(session && user));
+    setCurrentAuthUser(user);
+    setCurrentUserId(user?.id || '');
+    setCurrentUserEmail(user?.email || '');
+    setCurrentUserAccessToken(session?.access_token || '');
+  };
+
+  const refreshAuthSessionForAction = async (session = null) => {
+    if (!session?.refresh_token) return null;
+
+    const { data, error } = await supabase.auth.refreshSession(session);
+    if (error || !data?.session?.access_token) return null;
+
+    syncAuthSessionState(data.session);
+    return data.session;
+  };
+
   const ensureAdminSession = async () => {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const sessionEmail = currentAuthUser?.email || currentUserEmail || currentProfile?.email || '';
+    if (!isAdmin && !isAdminIdentity(currentProfile, sessionEmail)) {
+      throw new Error('Apenas administradores podem cadastrar concursos.');
+    }
 
-    if (userError) throw userError;
-    if (!user) throw new Error('Sessao expirada. Faca login novamente.');
-    if (!isAdmin) throw new Error('Apenas administradores podem cadastrar concursos.');
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      // JWT corrompido no storage local → limpa e pede novo login
+      const msg = String(sessionError?.message || '').toLowerCase();
+      if (msg.includes('claim') || msg.includes('jwt') || msg.includes('token') || msg.includes('sub')) {
+        clearInvalidSupabaseAuthStorage();
+        syncAuthSessionState(null);
+        throw new Error('Sua sessao expirou ou ficou corrompida. Saia e entre novamente para continuar.');
+      }
+      throw sessionError;
+    }
 
-    return user;
+    let session = sessionData?.session || null;
+    if (!session?.access_token) {
+      session = await refreshAuthSessionForAction(session);
+    }
+
+    if (session?.access_token) {
+      syncAuthSessionState(session);
+      return session;
+    }
+
+    if (currentUserAccessToken && (currentAuthUser?.id || currentUserId)) {
+      return {
+        access_token: currentUserAccessToken,
+        user: currentAuthUser || { id: currentUserId, email: sessionEmail },
+      };
+    }
+
+    clearInvalidSupabaseAuthStorage();
+    syncAuthSessionState(null);
+    throw new Error('Sessao expirada. Faca login novamente para continuar.');
   };
 
   const uploadContestAsset = async ({ file, bucket, folder, existingUrl = '' }) => {
-    await ensureAdminSession();
+    const adminSession = await ensureAdminSession();
 
     if (!file) throw new Error('Selecione um arquivo antes de enviar.');
 
     const extension = file.name.split('.').pop()?.toLowerCase() || 'bin';
-    const safeBaseName = String(file.name || 'arquivo')
-      .replace(/\.[^/.]+$/, '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 60);
+    const type = String(file.type || '').toLowerCase();
+    const size = Number(file.size || 0);
+    const isImageBucket = bucket === 'contest-images';
+    const allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp'];
 
-    const filePath = `${folder}/${Date.now()}-${safeBaseName || 'arquivo'}.${extension}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file, {
-        upsert: false,
-        contentType: file.type || undefined,
-      });
-
-    if (uploadError) throw uploadError;
-
-    const oldPath = getStoragePathFromUrl(existingUrl, bucket);
-    if (oldPath) {
-      const { error: removeError } = await supabase.storage.from(bucket).remove([oldPath]);
-      if (removeError) {
-        console.warn('Nao foi possivel remover o arquivo antigo do bucket:', removeError);
+    if (isImageBucket) {
+      if (!allowedImageTypes.includes(type) || !['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
+        throw new Error('Envie uma imagem PNG, JPG ou WebP.');
       }
+      if (size > 3 * 1024 * 1024) throw new Error('A imagem deve ter no maximo 3 MB.');
+    } else {
+      if (type !== 'application/pdf' || extension !== 'pdf') {
+        throw new Error('Envie um arquivo PDF valido.');
+      }
+      if (size > 25 * 1024 * 1024) throw new Error('O PDF deve ter no maximo 25 MB.');
     }
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-    return data.publicUrl;
+    return uploadContestAssetAdmin({
+      file,
+      kind: isImageBucket ? 'image' : 'edital',
+      existingUrl,
+      adminEmail: adminSession?.user?.email || currentUserEmail || currentProfile?.email || '',
+    });
   };
 
   const saveContestTemplate = async (templateData, existingTemplate = null) => {
-    await ensureAdminSession();
+    const adminSession = await ensureAdminSession();
 
-    const slug = buildTemplateSlug(templateData.slug || templateData.nome) || `template-${Date.now()}`;
-    const isPublished = Boolean(templateData.is_public);
-    const status = isPublished ? 'ativo' : 'rascunho';
-
-    const basePayload = {
-      slug,
-      nome: templateData.nome,
-      plano: templateData.plano || templateData.nome,
-      concurso: templateData.concurso || templateData.nome,
-      area: templateData.area || 'Geral',
-      cargo: templateData.cargo || '',
-      banca: templateData.banca || 'A definir',
-      salario: templateData.salario || null,
-      inscricao_valor: templateData.inscricao_valor || null,
-      escolaridade: templateData.escolaridade || null,
-      vagas: templateData.vagas || null,
-      lotacao: templateData.lotacao || null,
-      etapas: templateData.etapas || null,
-      etapas_tags: templateData.etapas_tags || [],
-      taf_itens: templateData.taf_itens || [],
-      cor: templateData.cor || '#2563EB',
-      origem: 'catalogo',
-      status,
-      is_public: isPublished,
-      descricao: templateData.descricao || null,
-      imagem_url: templateData.imagem_url || null,
-      edital_url: templateData.edital_url || null,
-      prova_data: templateData.prova_data || null,
-      status_concurso: templateData.status_concurso || 'em_analise',
-      updated_at: new Date().toISOString(),
-    };
-
-    let template = null;
-
-    if (existingTemplate?.id) {
-      const { data, error } = await supabase
-        .from('contest_templates')
-        .update(basePayload)
-        .eq('id', existingTemplate.id)
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      template = data;
-    } else {
-      const { data, error } = await supabase
-        .from('contest_templates')
-        .insert({
-          ...basePayload,
-          slug,
-          created_at: new Date().toISOString(),
-        })
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      template = data;
+    // Caminho preferido: API administrativa com service_role (bypassa RLS).
+    try {
+      const saved = await saveContestTemplateAdmin({
+        templateData,
+        existingId: existingTemplate?.id || null,
+        accessToken: adminSession?.access_token || currentUserAccessToken,
+        adminEmail: adminSession?.user?.email || currentUserEmail || currentProfile?.email || '',
+      });
+      await refreshContestLibrary();
+      return saved;
+    } catch (apiError) {
+      console.error('[contest_templates] API admin falhou:', apiError?.message || apiError);
+      // Propaga o erro real — nao tenta Supabase direto (sempre cai em RLS).
+      throw new Error(apiError?.message || 'Nao foi possivel salvar o concurso pela API administrativa.');
     }
 
-    if (!template?.id) {
-      throw new Error('Nao foi possivel salvar o concurso.');
-    }
-
-    if (existingTemplate?.id) {
-      const { data: existingSubjects, error: existingSubjectsError } = await supabase
-        .from('contest_template_subjects')
-        .select('id')
-        .eq('template_id', existingTemplate.id);
-
-      if (existingSubjectsError) throw existingSubjectsError;
-
-      const existingSubjectIds = (existingSubjects || []).map((item) => item.id);
-
-      if (existingSubjectIds.length > 0) {
-        const { error: topicsDeleteError } = await supabase
-          .from('contest_template_topics')
-          .delete()
-          .in('subject_id', existingSubjectIds);
-
-        if (topicsDeleteError) throw topicsDeleteError;
-      }
-
-      const { error: subjectsDeleteError } = await supabase
-        .from('contest_template_subjects')
-        .delete()
-        .eq('template_id', existingTemplate.id);
-
-      if (subjectsDeleteError) throw subjectsDeleteError;
-    }
-
-    const disciplinasNormalizadas = (templateData.disciplinas || []).map((disciplina, index) => ({
-      nome: canonicalizeSubjectName(
-        typeof disciplina === 'string' ? disciplina : disciplina.nome,
-        subjectCatalog
-      ),
-      subject_catalog_id: resolveSubjectCatalogIdForApp(
-        typeof disciplina === 'string' ? disciplina : disciplina.nome
-      ),
-      cor: typeof disciplina === 'string' ? null : disciplina.cor || null,
-      ordem: Number(typeof disciplina === 'string' ? index : disciplina.ordem ?? index),
-      topicos: typeof disciplina === 'string' ? [] : disciplina.topicos || [],
-    }));
-
-    let insertedSubjects = [];
-
-    if (disciplinasNormalizadas.length > 0) {
-      let subjectInsertPayload = disciplinasNormalizadas.map((disciplina) => ({
-        template_id: template.id,
-        nome: disciplina.nome,
-        subject_catalog_id: disciplina.subject_catalog_id || null,
-        cor: disciplina.cor,
-        ordem: disciplina.ordem,
-      }));
-
-      let { data, error } = await supabase
-        .from('contest_template_subjects')
-        .insert(subjectInsertPayload)
-        .select('*');
-
-      if (error && shouldRetryWithoutSubjectCatalogId(error)) {
-        ({ data, error } = await supabase
-          .from('contest_template_subjects')
-          .insert(stripSubjectCatalogId(subjectInsertPayload))
-          .select('*'));
-      }
-
-      if (error) throw error;
-      insertedSubjects = data || [];
-    }
-
-    const topicPayload = insertedSubjects.flatMap((subject, subjectIndex) => {
-      const disciplina = disciplinasNormalizadas[subjectIndex];
-      return (disciplina?.topicos || []).map((topico, topicIndex) => ({
-        subject_id: subject.id,
-        nome: typeof topico === 'string' ? topico : topico.nome,
-        ordem: Number(typeof topico === 'string' ? topicIndex : topico.ordem ?? topicIndex),
-      }));
-    });
-
-    if (topicPayload.length > 0) {
-      const { error: topicsError } = await supabase.from('contest_template_topics').insert(topicPayload);
-      if (topicsError) throw topicsError;
-    }
-
-    await refreshContestLibrary();
-    return template;
   };
 
   const createContestTemplate = async (templateData) => {
@@ -4603,7 +4476,7 @@ export default function App() {
         imagem_url: templateData.imagem_url || null,
         edital_url: templateData.edital_url || null,
         prova_data: templateData.prova_data || null,
-        status_concurso: templateData.status_concurso || 'em_analise',
+        status_concurso: normalizeContestStatus(templateData.status_concurso || 'edital_publicado'),
         is_public: templateData.is_public,
         disciplinas: templateData.disciplinas || [],
         slug: templateData.slug,
@@ -4622,7 +4495,7 @@ export default function App() {
       nome: `${templateData.nome} (Copia)`,
       plano: `${templateData.plano || templateData.nome} - Copia`,
       is_public: false,
-      status_concurso: templateData.status_concurso || 'em_analise',
+      status_concurso: normalizeContestStatus(templateData.status_concurso || 'edital_publicado'),
       disciplinas: (templateData.disciplinas || []).map((subject) => ({
         nome: subject.nome,
         cor: subject.cor || '',
@@ -4668,7 +4541,7 @@ export default function App() {
         imagem_url: templateData.imagem_url || null,
         edital_url: templateData.edital_url || null,
         prova_data: templateData.prova_data || null,
-        status_concurso: templateData.status_concurso || 'em_analise',
+        status_concurso: normalizeContestStatus(templateData.status_concurso || 'edital_publicado'),
         is_public: templateData.is_public,
         disciplinas: templateData.disciplinas || [],
         slug,
@@ -4823,12 +4696,6 @@ export default function App() {
     await ensureAdminSession();
 
     if (template.storage !== 'supabase') {
-      const shouldPromote = window.confirm(
-        `O concurso "${template.nome}" ainda esta vindo do catalogo local. Deseja primeiro trazer esse item para o Supabase para conseguir gerenciar e excluir por aqui?`
-      );
-
-      if (!shouldPromote) return;
-
       const promoted = await promoteContestTemplate(template);
       if (!promoted?.id) {
         throw new Error('Nao foi possivel migrar esse concurso para o Supabase antes da exclusao.');
@@ -4837,14 +4704,41 @@ export default function App() {
       template = { ...template, ...promoted, storage: 'supabase' };
     }
 
-    const confirmar = window.confirm(
-      `Excluir o concurso "${template.nome}" da biblioteca publica? Os alunos nao poderao mais importar essa estrutura.`
-    );
-
-    if (!confirmar) return;
-
-    const { error } = await supabase.from('contest_templates').delete().eq('id', template.id);
+    const { data: deletedRows, error } = await supabase
+      .from('contest_templates')
+      .delete()
+      .eq('id', template.id)
+      .select('id, slug');
     if (error) throw error;
+
+    let removedRows = Array.isArray(deletedRows) ? deletedRows : [];
+
+    if (removedRows.length === 0) {
+      const rpcPayload = {
+        p_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          String(template.id || '')
+        )
+          ? template.id
+          : null,
+        p_slug: template.slug || null,
+      };
+
+      const { data: rpcRows, error: rpcError } = await supabase.rpc('admin_delete_contest_template', rpcPayload);
+      if (rpcError) throw rpcError;
+      removedRows = Array.isArray(rpcRows) ? rpcRows : [];
+    }
+
+    if (removedRows.length === 0) {
+      throw new Error('O concurso não foi removido. Recarregue a lista e confira se ele ainda existe no Supabase.');
+    }
+
+    setContestLibrary((prev) =>
+      prev.filter(
+        (item) =>
+          String(item.id || '') !== String(template.id || '') &&
+          String(item.slug || '') !== String(template.slug || '')
+      )
+    );
 
     await refreshContestLibrary();
   };
@@ -6003,19 +5897,31 @@ export default function App() {
 
   if (!isAuthenticated) {
     return (
-      <Login
-        setIsAuthenticated={setIsAuthenticated}
-        initialReferralCode={pendingReferralCode}
-        onReferralCodeCaptured={(code) => {
-          const normalizedCode = normalizeReferralCode(code);
-          setPendingReferralCode(normalizedCode);
-          persistPendingReferralCode(normalizedCode);
-        }}
-        onReferralCodeConsumed={() => {
-          setPendingReferralCode('');
-          persistPendingReferralCode('');
-        }}
-      />
+      <Suspense
+        fallback={
+          <div className="flex h-screen items-center justify-center" style={{ backgroundColor: theme.bg }}>
+            <span className="text-sm font-semibold text-slate-400">Carregando login...</span>
+          </div>
+        }
+      >
+        <Login
+          setIsAuthenticated={setIsAuthenticated}
+          initialReferralCode={pendingReferralCode}
+          initialBetaInviteToken={pendingBetaInviteToken}
+          onReferralCodeCaptured={(code) => {
+            const normalizedCode = normalizeReferralCode(code);
+            setPendingReferralCode(normalizedCode);
+            persistPendingReferralCode(normalizedCode);
+          }}
+          onReferralCodeConsumed={() => {
+            setPendingReferralCode('');
+            persistPendingReferralCode('');
+          }}
+          onBetaInviteConsumed={() => {
+            setPendingBetaInviteToken('');
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -6049,10 +5955,8 @@ export default function App() {
     handleSaveProfile,
     handleAvatarChange,
     handleLogout,
-    refreshSessionProfile,
     isAdmin,
     wellnessLibrary,
-    wellnessPageConfig,
     activeWellnessTrackId,
     handleStartWellnessTrack,
     communityState,
@@ -6093,7 +5997,6 @@ export default function App() {
     setContestTrackers,
     targetContestId,
     adminProfiles,
-    adminProfilesLoading,
     adminExpenses,
     adminLeads,
     progressConfig,
@@ -6116,7 +6019,6 @@ export default function App() {
     saveAdminLead,
     deleteAdminLead,
     handleSaveWellnessLibrary,
-    handleSaveWellnessPageConfig,
     viewingDiscipline,
     setBancoDisciplinas,
     setViewingDiscipline,
@@ -6233,6 +6135,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <ToastProvider>
       <div
         className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
         style={{ backgroundColor: theme.bg }}
@@ -6291,21 +6194,36 @@ export default function App() {
           onOpenMobileNav={() => setMobileNavOpen(true)}
           subscriptionPlan={String(effectiveProfile?.subscription_plan || 'gratuito').toLowerCase()}
           onOpenAssinatura={() => setActiveTab('assinatura')}
+          onOpenTimer={() => openTimerSetup?.()}
         />
 
         <div
           ref={contentScrollRef}
           className={`scrollbar-thin relative min-h-0 flex-1 px-3 pt-2 sm:px-4 md:px-5 ${
             activeTab === 'historico' ||
-            activeTab === 'estatisticas' ||
-            activeTab === 'sessoes' ||
             activeTab === 'questoes' ||
             activeTab === 'comunidades'
               ? `flex flex-col overflow-hidden ${activeTab === 'comunidades' ? 'pb-2' : 'pb-6'}`
               : `overflow-y-auto ${activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}
         >
-          <AppTabContent {...tabContentProps} />
+          <CheckoutResultBanner onSuccess={refreshSubscription} />
+          <BetaWelcomeBanner
+            onSendFeedback={() => setActiveTab('perfil')}
+            onStart={() => setActiveTab('home')}
+          />
+
+          <Suspense
+            fallback={
+              <div className="page-shell">
+                <div className="section-card flex min-h-[240px] items-center justify-center text-sm font-semibold text-slate-500">
+                  Carregando área...
+                </div>
+              </div>
+            }
+          >
+            <AppTabContent {...tabContentProps} />
+          </Suspense>
 
           {SHOULD_RENDER_LEGACY_TABS && (
             <>
@@ -6352,7 +6270,6 @@ export default function App() {
               onSaveProfile={handleSaveProfile}
               onChangeAvatar={handleAvatarChange}
               onLogout={handleLogout}
-              onSessionRefresh={refreshSessionProfile}
             />
           )}
 
@@ -6363,7 +6280,6 @@ export default function App() {
           {activeTab === 'bem_estar' && (
             <BemEstar
               tracks={wellnessLibrary}
-              pageConfig={wellnessPageConfig}
               isAdmin={isAdmin}
               setActiveTab={setActiveTab}
               activeTrackId={activeWellnessTrackId}
@@ -6384,6 +6300,7 @@ export default function App() {
               progGeralEdital={progGeralEdital}
               setActiveTab={setActiveTab}
               cursos={cursos}
+              concursoCatalog={contestLibrary}
               bancoDisciplinas={bancoDisciplinas}
               myContests={myContests}
               targetContest={targetContestSummary}
@@ -6481,6 +6398,10 @@ export default function App() {
               onOpenDisciplinas={(contest) => {
                 setSelectedCoursePlan(contest?.plano || contest?.nome || 'Todos');
                 setActiveTab('disciplinas');
+              }}
+              onOpenRelatedContest={(contest) => {
+                setSelectedContestDetailId(contest?.id);
+                setActiveTab('concurso_detalhe');
               }}
               contestTracker={contestTrackers[selectedContestDetail?.id] || {}}
               onToggleContestTask={(contestId, taskKey) =>
@@ -6590,8 +6511,6 @@ export default function App() {
               onSaveProgressConfig={handleSaveProgressConfig}
               wellnessLibrary={wellnessLibrary}
               onSaveWellnessLibrary={handleSaveWellnessLibrary}
-              wellnessPageConfig={wellnessPageConfig}
-              onSaveWellnessPageConfig={handleSaveWellnessPageConfig}
               redacaoExpertTips={redacaoExpertTips}
               onSaveRedacaoExpertTips={handleSaveRedacaoExpertTips}
               redacaoThemeBankEffective={redacaoThemeBankEffective}
@@ -6736,7 +6655,9 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'flashcards' && <Flashcards currentUserId={currentUserId} />}
+          {activeTab === 'flashcards' && (
+            <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} />
+          )}
           {activeTab === 'revisoes' && (
             <Revisoes
               setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
@@ -7009,7 +6930,7 @@ export default function App() {
         setIsFilterPanelOpen={setIsFilterPanelOpen}
       />
     </div>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }
-

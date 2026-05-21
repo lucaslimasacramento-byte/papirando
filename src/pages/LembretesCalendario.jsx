@@ -363,9 +363,12 @@ export default function LembretesCalendario({
   return (
     <div className="page-shell pb-10 !pt-4 sm:!pt-5">
       <PageHeadPremium
+        className="lg:!flex-row lg:!items-center lg:!justify-between"
         icon={AlarmClock}
         title="Lembretes e calendário"
         subtitle="Visualize alertas, organize pendências e acompanhe provas no calendário unificado."
+        leadingClassName="lg:max-w-[calc(100%-21rem)] xl:max-w-[52rem]"
+        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[20rem] lg:self-center"
         trailing={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-100 sm:text-[13px]">
@@ -381,8 +384,8 @@ export default function LembretesCalendario({
       />
 
       <section className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="soft-accent px-5 py-2.5 sm:px-6 lg:px-8">
-            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
+        <div className="soft-accent px-5 py-3 sm:px-6 lg:px-8">
+            <div className="flex min-h-10 flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
               <div className="flex shrink-0 items-center gap-1.5">
                 <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Filtrar
@@ -404,14 +407,18 @@ export default function LembretesCalendario({
               </div>
 
               <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                <button type="button" onClick={openNewReminder} className="btn-primary h-9 shrink-0 gap-1.5 px-4 py-1.5">
+                <button
+                  type="button"
+                  onClick={openNewReminder}
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                >
                   <Plus size={16} strokeWidth={2} />
                   Novo lembrete
                 </button>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen(true)}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                 >
                   <CalendarDays size={14} />
                   Abrir calendário
