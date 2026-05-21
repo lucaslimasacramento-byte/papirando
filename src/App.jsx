@@ -2769,19 +2769,20 @@ export default function App() {
   };
 
   const checkCpfAvailability = async (cpfDigits) => {
-    if (!cpfDigits) return true;
+  if (!cpfDigits) return true;
 
-    try {
-      const { data, error } = await supabase.from('profiles').select('id, cpf').eq('cpf', cpfDigits);
-      if (error) throw error;
-      return !(data || []).some((item) => item.id !== currentProfile?.id);
-    } catch {
-      return !adminProfiles.some(
-        (profile) =>
-          normalizeCpf(profile?.cpf || '') === cpfDigits && String(profile?.id || '') !== String(currentProfile?.id || '')
-      );
-    }
-  };
+  try {
+    // SEC-007: usa RPC que retorna boolean (não expõe cpf/id de terceiros)
+    const { data, error } = await supabase.rpc('cpf_disponivel', { check_cpf: cpfDigits });
+    if (error) throw error;
+    return Boolean(data);
+  } catch {
+    return !adminProfiles.some(
+      (profile) =>
+        normalizeCpf(profile?.cpf || '') === cpfDigits && String(profile?.id || '') !== String(currentProfile?.id || '')
+    );
+  }
+};
 
   const containsBlockedCodenameWord = (value) => {
     const normalized = String(value || '')
