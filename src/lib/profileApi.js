@@ -23,12 +23,30 @@ export async function loadProfile(userId) {
   return data || null;
 }
 
+const PROFILE_ALLOWED_PATCH_KEYS = [
+  'nome',
+  'username',
+  'avatar_url',
+  'ranking_codename',
+  'birth_date',
+  'referral_code',
+  'referred_by_code',
+  'meta_horas_semana',
+  'onboarding_done',
+];
+
 export async function updateProfile(userId, patch = {}) {
   if (!userId) return null;
 
+  // SEC-001 allowlist: cliente nunca envia role/status_cadastro/email_verificado/etc.
+  // O banco também bloqueia (REVOKE/GRANT column-level + trigger), mas filtrar aqui evita 403.
+  const safePatch = Object.fromEntries(
+    Object.entries(patch).filter(([key]) => PROFILE_ALLOWED_PATCH_KEYS.includes(key))
+  );
+
   const payload = {
     id: userId,
-    ...patch,
+    ...safePatch,
   };
 
   const { data, error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' }).select('*').maybeSingle();
