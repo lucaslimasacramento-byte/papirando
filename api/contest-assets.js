@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
-const BUCKETS = {
+// SEC-021: ADMIN_EMAILS removido. Admin agora eh determinado exclusivamente por
+// profiles.role='admin' (verificado via isAdminProfile abaixo).
+const ADMIN_EMAILS = [];const BUCKETS = {
   image: {
     bucket: 'contest-images',
     folder: 'contest-images',
@@ -95,8 +96,8 @@ function isTrustedRequestOrigin(req) {
 function isAdminProfile(profile, user) {
   const role = String(profile?.role || '').trim().toLowerCase();
   const email = String(profile?.email || user?.email || '').trim().toLowerCase();
-  return ['admin', 'admin_master', 'master'].includes(role) || email.endsWith('@papirando.com') || ADMIN_EMAILS.includes(email);
-}
+// SEC-002 + SEC-021: confia apenas em profiles.role. Sem fallback por dominio ou email hardcoded.
+return ['admin', 'admin_master', 'master'].includes(role);}
 
 async function requireAdmin(req, supabaseAdmin, config, body = {}) {
   let user = null;
