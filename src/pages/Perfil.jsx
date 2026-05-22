@@ -23,6 +23,7 @@ import {
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
 import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
+import SecurityMFAPanel from '../components/SecurityMFAPanel';
 
 /** Paleta alinhada ao app (--accent #1d4ed8, superfícies frias). */
 const HERO_BAR =
@@ -1257,6 +1258,8 @@ export default function Perfil(props) {
                   title="Dados sensiveis e acessos"
                   subtitle="Sem botões mortos: tudo abaixo executa alguma ação real ou mostra o estado atual da conta."
                 />
+
+                <SecurityMFAPanel />
 
                 <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
                   <Card className="p-6">

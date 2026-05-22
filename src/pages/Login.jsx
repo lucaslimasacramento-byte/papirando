@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { normalizeBetaInviteToken } from '../lib/betaInvitesApi';
 import { registerFreeAccount } from '../lib/registerApi';
+import MFAChallengePanel from '../components/MFAChallengePanel';
 import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpfAlgorithm';
 import {
   Target,
@@ -85,6 +86,7 @@ export default function Login({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [mfaChallengeRequired, setMfaChallengeRequired] = useState(false);
 
   const activeFeature = LOGIN_FEATURES[loginSlide];
   const ActiveFeatureIcon = activeFeature.icon;
@@ -254,14 +256,25 @@ export default function Login({
     try {
       if (isLoginMode) {
         const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+  email,
+  password,
+});
 
-        if (signInError) throw signInError;
+if (signInError) throw signInError;
 
-        setIsAuthenticated(true);
-        return;
+// SEC-008: se a conta exige aal2 (MFA TOTP), abre challenge antes de liberar acesso
+try {
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel === 'aal1' && aal?.nextLevel === 'aal2') {
+    setMfaChallengeRequired(true);
+    return;
+  }
+} catch (mfaError) {
+  console.warn('[Login] falha ao verificar AAL, prosseguindo:', mfaError);
+}
+
+setIsAuthenticated(true);
+return;
       }
 
       const normalizedReferralCode = normalizeReferralCode(referralCode);
@@ -300,6 +313,21 @@ export default function Login({
       setLoading(false);
     }
   };
+
+if (mfaChallengeRequired) {
+  return (
+    <MFAChallengePanel
+      onSuccess={() => {
+        setMfaChallengeRequired(false);
+        setIsAuthenticated(true);
+      }}
+      onCancel={() => {
+        setMfaChallengeRequired(false);
+      }}
+    />
+  );
+}
+
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] font-sans text-slate-900 animate-in fade-in duration-500 lg:flex">
