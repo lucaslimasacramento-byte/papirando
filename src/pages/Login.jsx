@@ -143,23 +143,65 @@ export default function Login({
   const getReadableError = (error) => {
     const message = error?.message?.toLowerCase?.() || '';
 
-    if (message.includes('email rate limit exceeded')) {
-      return 'Você tentou enviar emails demais em pouco tempo. Aguarde alguns minutos antes de tentar novamente.';
+    // Supabase Auth — login
+    if (message.includes('invalid login credentials') || message.includes('invalid credentials')) {
+      return 'Email ou senha incorretos. Verifique os dados e tente novamente.';
     }
-
-    if (message.includes('invalid login credentials')) {
-      return 'Email ou senha inválidos.';
+    if (message.includes('email not confirmed')) {
+      return 'Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada (e a pasta de spam).';
     }
-
-    if (message.includes('user already registered')) {
-      return 'Este email já está cadastrado. Tente fazer login.';
+    if (message.includes('too many requests') || message.includes('email rate limit exceeded') || message.includes('rate limit')) {
+      return 'Muitas tentativas em pouco tempo. Aguarde alguns minutos antes de tentar novamente.';
     }
-
-    if (message.includes('password should be at least')) {
+    if (message.includes('user already registered') || message.includes('user_already_exists')) {
+      return 'Este e-mail já está cadastrado. Tente fazer login ou recupere sua senha.';
+    }
+    if (message.includes('password should be at least') || message.includes('weak password')) {
       return 'A senha precisa ter pelo menos 6 caracteres.';
     }
+    if (message.includes('network') || message.includes('failed to fetch') || message.includes('load failed')) {
+      return 'Sem conexão com o servidor. Verifique sua internet e tente novamente.';
+    }
+    if (message.includes('unexpected end of json') || message.includes('invalid json')) {
+      return 'Erro de comunicação com o servidor. Tente novamente em instantes.';
+    }
 
-    return error?.message || 'Ocorreu um erro ao autenticar.';
+    return error?.message || 'Ocorreu um erro ao autenticar. Tente novamente.';
+  };
+
+  const getSignupErrorMessage = (result) => {
+    // Mensagens específicas por código retornado pelo edge function register-free
+    const codeMessages = {
+      EMAIL_TAKEN:               'Este e-mail já está cadastrado. Tente fazer login ou recupere sua senha.',
+      CPF_TAKEN:                 'Este CPF já está vinculado a outra conta. Se for seu, entre em contato: suporte@papirando.com',
+      RATE_LIMITED:              'Muitas tentativas de cadastro. Aguarde alguns minutos antes de tentar novamente.',
+      BIRTH_INVALID:             'Data de nascimento inválida. Verifique o formato e tente novamente.',
+      BIRTH_FUTURE:              'A data de nascimento não pode ser no futuro.',
+      BIRTH_AGE:                 'O cadastro é permitido apenas para maiores de 10 anos.',
+      BETA_INVITE_INVALID:       'Convite beta inválido ou expirado. Solicite um novo convite.',
+      BETA_INVITE_USED:          'Este convite já foi utilizado. Solicite um novo convite.',
+      BETA_INVITE_EMAIL_MISMATCH:'Este convite pertence a outro e-mail. Use o mesmo e-mail que recebeu o convite.',
+      BETA_INVITE_ERROR:         'Não foi possível validar o convite. Tente novamente ou entre em contato.',
+      VALIDATION_ERROR:          'Alguns campos estão inválidos. Revise os dados e tente novamente.',
+      SERVER_CONFIG:             'Serviço temporariamente indisponível. Tente novamente em instantes.',
+      SERVER_ERROR:              'Erro interno ao criar a conta. Tente novamente em instantes.',
+      REGISTER_FAILED:           'Não foi possível concluir o cadastro. Tente novamente ou entre em contato: suporte@papirando.com',
+      NETWORK:                   'Sem conexão com o servidor. Verifique sua internet e tente novamente.',
+      BAD_RESPONSE:              'Resposta inesperada do servidor. Tente novamente.',
+      CONFIG:                    'Configuração do servidor incompleta. Tente novamente mais tarde.',
+    };
+
+    if (result?.code && codeMessages[result.code]) {
+      return codeMessages[result.code];
+    }
+
+    // fieldErrors do edge function (ex: CPF inválido, celular inválido)
+    if (result?.fieldErrors) {
+      const first = Object.values(result.fieldErrors).find(Boolean);
+      if (first) return String(first);
+    }
+
+    return result?.message || 'Não foi possível criar a conta. Tente novamente.';
   };
 
   const validateForm = () => {
@@ -277,8 +319,8 @@ export default function Login({
       });
 
       if (!result.success) {
-        const firstFieldError = result.fieldErrors ? Object.values(result.fieldErrors).find(Boolean) : '';
-        throw new Error(firstFieldError || result.message || 'Não foi possível criar a conta.');
+        setError(getSignupErrorMessage(result));
+        return;
       }
 
       setSuccessMsg(result.message || 'Cadastro realizado! Verifique seu email para ativar o acesso.');
