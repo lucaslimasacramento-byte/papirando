@@ -723,7 +723,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const theme = { primary: '#1e3a5f', sidebarBg: '#ffffff', bg: '#f1f3f6' };
+  const theme = { primary: '#1e3a5f', sidebarBg: '#14110d', bg: '#f3efe5' };
 
   useEffect(() => {
     const referralFromLocation = normalizeReferralCode(extractReferralCodeFromLocation());
@@ -6032,8 +6032,8 @@ export default function App() {
 
   if (loadingSession) {
     return (
-      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: theme.bg }}>
-        <span className="text-gray-400 font-bold">Carregando...</span>
+      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: '#f3efe5' }}>
+        <span style={{ fontFamily: 'var(--pl-serif, Fraunces, serif)', fontStyle: 'italic', color: '#847b6c', fontSize: 16 }}>Carregando…</span>
       </div>
     );
   }
@@ -6042,8 +6042,8 @@ export default function App() {
     return (
       <Suspense
         fallback={
-          <div className="flex h-screen items-center justify-center" style={{ backgroundColor: theme.bg }}>
-            <span className="text-sm font-semibold text-slate-400">Carregando login...</span>
+          <div className="flex h-screen items-center justify-center" style={{ backgroundColor: '#f3efe5' }}>
+            <span style={{ fontFamily: 'var(--pl-serif, Fraunces, serif)', fontStyle: 'italic', color: '#847b6c', fontSize: 16 }}>Carregando…</span>
           </div>
         }
       >
