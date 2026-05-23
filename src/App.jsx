@@ -759,13 +759,19 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
       setCurrentAuthUser(session?.user || null);
       setCurrentUserId(session?.user?.id || '');
       setCurrentUserEmail(session?.user?.email || '');
       setCurrentUserAccessToken(session?.access_token || '');
       setLoadingSession(false);
+      // Quando o usuário clica no link "Esqueci a senha" e é redirecionado
+      // de volta ao app, o Supabase dispara PASSWORD_RECOVERY. Roteamos para
+      // a aba Perfil > Segurança para que ele possa definir a nova senha.
+      if (event === 'PASSWORD_RECOVERY') {
+        setActiveTab('perfil');
+      }
     });
 
     return () => subscription.unsubscribe();
