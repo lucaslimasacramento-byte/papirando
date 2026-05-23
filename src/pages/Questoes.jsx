@@ -49,7 +49,10 @@ function normalizeQuestion(row) {
   };
 }
 
-// Keep a small fallback so the bank section doesn't look empty on first load
+// Keep a small fallback so the bank section doesn't look empty on first load.
+// IMPORTANTE: textos com acentuação completa. CSS text-transform: uppercase
+// preserva diacríticos no Plus Jakarta Sans; o rótulo de disciplina aparecia
+// como "MATEMATICA" porque o conteúdo já vinha sem acento da fonte de dados.
 const QUESTION_BANK = [
   {
     id: 'Q15024',
@@ -58,30 +61,30 @@ const QUESTION_BANK = [
     banca: 'CESPE/CEBRASPE',
     ano: '2024',
     statement:
-      'Segundo a Constituicao da Republica Federativa do Brasil de 1988, a criacao de associacoes independe de autorizacao estatal, sendo vedada a interferencia em seu funcionamento.',
+      'Segundo a Constituição da República Federativa do Brasil de 1988, a criação de associações independe de autorização estatal, sendo vedada a interferência em seu funcionamento.',
     options: [
       { id: 'C', label: 'Certo', isCorrect: true },
       { id: 'E', label: 'Errado', isCorrect: false },
     ],
     explanation:
-      'A afirmacao esta correta. O art. 5o, XVIII, protege a criacao de associacoes sem autorizacao previa e veda interferencia estatal no funcionamento.',
+      'A afirmação está correta. O art. 5º, XVIII, protege a criação de associações sem autorização prévia e veda interferência estatal no funcionamento.',
   },
   {
     id: 'Q08392',
-    disciplina: 'Lingua Portuguesa',
-    topico: 'Concordancia Verbal',
+    disciplina: 'Língua Portuguesa',
+    topico: 'Concordância Verbal',
     banca: 'FCC',
     ano: '2023',
-    statement: 'Assinale a alternativa em que ha erro de concordancia verbal, de acordo com a norma-padrao.',
+    statement: 'Assinale a alternativa em que há erro de concordância verbal, de acordo com a norma-padrão.',
     options: [
-      { id: 'A', label: 'Alugam-se apartamentos nesta regiao.', isCorrect: false },
-      { id: 'B', label: 'Faziam dez anos que nao nos viamos.', isCorrect: true },
-      { id: 'C', label: 'Existem boas razoes para revisar o edital.', isCorrect: false },
+      { id: 'A', label: 'Alugam-se apartamentos nesta região.', isCorrect: false },
+      { id: 'B', label: 'Faziam dez anos que não nos víamos.', isCorrect: true },
+      { id: 'C', label: 'Existem boas razões para revisar o edital.', isCorrect: false },
       { id: 'D', label: 'Precisam-se de analistas para o setor.', isCorrect: false },
       { id: 'E', label: 'Havia candidatos suficientes para a segunda fase.', isCorrect: false },
     ],
     explanation:
-      'O erro esta em "Faziam dez anos". O verbo fazer, indicando tempo decorrido, fica no singular: "Fazia dez anos".',
+      'O erro está em "Faziam dez anos". O verbo fazer, indicando tempo decorrido, fica no singular: "Fazia dez anos".',
   },
 ];
 
