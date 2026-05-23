@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+  <title>Papirando · lockup horizontal (dark)</title>
+  <g transform="translate(16, 16)">
+    <g transform="scale(0.88)">
+      <path d="M 3 0 H 72 L 100 28 V 96 Q 100 100 96 100 H 4 Q 0 100 0 96 V 4 Q 0 0 4 0 Z" fill="#f3efe5"/>
+      <path d="M 72 0 L 100 28 H 72 Z" fill="rgba(0,0,0,0.12)"/>
+      <text x="50" y="75" font-family="Fraunces, 'Times New Roman', serif" font-style="italic" font-weight="400" font-size="74" fill="#14110d" text-anchor="middle" letter-spacing="-3">P</text>
+    </g>
+  </g>
+  <text x="124" y="80" font-family="Fraunces, 'Times New Roman', serif" font-style="italic" font-weight="300" font-size="68" fill="#f3efe5" letter-spacing="-3.1">Papirando<tspan fill="#7a9bbf">.</tspan></text>
+</svg>

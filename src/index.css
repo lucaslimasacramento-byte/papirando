@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* Papirando editorial tokens — consumed by pl-* component classes */
 :root, .pl-theme-light {
@@ -14,10 +14,10 @@
   --pl-rule:        rgba(20, 17, 13, 0.10);
   --pl-rule-2:      rgba(20, 17, 13, 0.18);
   --pl-rule-strong: rgba(20, 17, 13, 0.28);
-  --pl-accent:        #1d4ed8;
-  --pl-accent-2:      #1e40af;
-  --pl-accent-soft:   #eaf0fd;
-  --pl-accent-ring:   rgba(29, 78, 216, 0.30);
+  --pl-accent:        #1e3a5f;
+  --pl-accent-2:      #2a4d76;
+  --pl-accent-soft:   rgba(30, 58, 95, 0.08);
+  --pl-accent-ring:   rgba(30, 58, 95, 0.30);
   --pl-highlight:      #f4d04e;
   --pl-highlight-soft: #fdf3ce;
   --pl-highlight-ink:  #8a6d10;
@@ -48,10 +48,10 @@
   --pl-rule:        rgba(236, 228, 210, 0.09);
   --pl-rule-2:      rgba(236, 228, 210, 0.16);
   --pl-rule-strong: rgba(236, 228, 210, 0.28);
-  --pl-accent:        #93b4ff;
-  --pl-accent-2:      #6090f0;
-  --pl-accent-soft:   rgba(147, 180, 255, 0.12);
-  --pl-accent-ring:   rgba(147, 180, 255, 0.30);
+  --pl-accent:        #7a9bbf;
+  --pl-accent-2:      #93b1d1;
+  --pl-accent-soft:   rgba(122, 155, 191, 0.12);
+  --pl-accent-ring:   rgba(122, 155, 191, 0.30);
   --pl-highlight-soft: rgba(244, 208, 78, 0.16);
   --pl-highlight-ink:  #f4d04e;
   --pl-success-soft: rgba(122, 180, 105, 0.16);
@@ -62,6 +62,119 @@
   --pl-sh-high: 0 10px 20px rgba(0,0,0,0.50), 0 24px 48px rgba(0,0,0,0.40);
   --pl-paper-rule: var(--pl-rule);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Aliases de compat — componentes que usam var(--accent/--paper/etc.)
+   apontam para os tokens pl-* canônicos
+   ═══════════════════════════════════════════════════════════ */
+:root, .pl-theme-light {
+  /* Accent / brand */
+  --accent:        #1e3a5f;
+  --accent-hover:  #2a4d76;
+  --accent-active: #162a45;
+  --accent-soft:   rgba(30, 58, 95, 0.08);
+  --accent-tint:   rgba(30, 58, 95, 0.16);
+  --brand:         #1e3a5f;
+
+  /* Paper / ink */
+  --paper:         #f3efe5;
+  --paper-soft:    #ebe6d8;
+  --paper-warm:    #fbfaf6;
+  --ink:           #14110d;
+  --ink-2:         #3a342c;
+  --ink-3:         #847b6c;
+  --ink-4:         #b6ad9c;
+
+  /* Rules */
+  --line:          rgba(20, 17, 13, 0.08);
+  --line-strong:   rgba(20, 17, 13, 0.16);
+  --line-bold:     rgba(20, 17, 13, 0.28);
+
+  /* Text (legado) */
+  --text-main:     #14110d;
+  --text-soft:     #847b6c;
+  --bg-paper:      #f3efe5;
+  --bg-paper-soft: #ebe6d8;
+
+  /* Semantic */
+  --success:       #305e22;
+  --success-soft:  rgba(48, 94, 34, 0.10);
+  --warning:       #a85a0b;
+  --warning-soft:  rgba(168, 90, 11, 0.10);
+  --danger:        #b54128;
+  --danger-soft:   rgba(181, 65, 40, 0.10);
+
+  /* Shadows */
+  --shadow-low:    0 1px 2px rgba(20,17,13,0.04), 0 2px 4px rgba(20,17,13,0.04);
+  --shadow-mid:    0 4px 8px rgba(20,17,13,0.06), 0 12px 24px rgba(20,17,13,0.08);
+  --shadow-high:   0 10px 20px rgba(20,17,13,0.08), 0 24px 48px rgba(20,17,13,0.14);
+
+  /* Radius */
+  --radius-sm: 3px;
+  --radius:    4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+
+  /* Type */
+  --sans:  'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+}
+
+.pl-theme-dark {
+  --accent:        #7a9bbf;
+  --accent-hover:  #93b1d1;
+  --accent-active: #6688af;
+  --accent-soft:   rgba(122, 155, 191, 0.12);
+  --accent-tint:   rgba(122, 155, 191, 0.20);
+  --brand:         #7a9bbf;
+
+  --paper:         #1a1612;
+  --paper-soft:    #1f1a14;
+  --paper-warm:    #1f1a14;
+  --ink:           #f3efe5;
+  --ink-2:         #d8d0bd;
+  --ink-3:         #b6ad9c;
+  --ink-4:         #847b6c;
+
+  --line:          rgba(243, 239, 229, 0.08);
+  --line-strong:   rgba(243, 239, 229, 0.16);
+  --line-bold:     rgba(243, 239, 229, 0.28);
+
+  --text-main:     #f3efe5;
+  --text-soft:     #b6ad9c;
+  --bg-paper:      #1a1612;
+  --bg-paper-soft: #1f1a14;
+
+  --success:       #6fa15f;
+  --warning:       #d4a05a;
+  --danger:        #e07a5f;
+
+  --shadow-low:    0 1px 2px rgba(0,0,0,0.30), 0 2px 4px rgba(0,0,0,0.20);
+  --shadow-mid:    0 4px 8px rgba(0,0,0,0.30), 0 12px 24px rgba(0,0,0,0.40);
+  --shadow-high:   0 10px 20px rgba(0,0,0,0.40), 0 24px 48px rgba(0,0,0,0.50);
+}
+
+/* html/body base */
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Wordmark utility */
+.pl-wordmark {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.pl-wordmark .dot { color: var(--accent); }
 
 /* ── pl-app base ── */
 .pl-app, .pl-app * { box-sizing: border-box; }
@@ -738,12 +851,12 @@
 .pl-card-ai {
   position: relative; background: var(--pl-surface); border-radius: 6px; padding: 16px 18px;
   background-image: linear-gradient(var(--pl-surface), var(--pl-surface)),
-    linear-gradient(135deg, #1d4ed8 0%, #6366f1 50%, #1d4ed8 100%);
+    linear-gradient(135deg, #1e3a5f 0%, #6366f1 50%, #1e3a5f 100%);
   background-origin: border-box; background-clip: padding-box, border-box;
   border: 1px solid transparent; box-shadow: 0 2px 8px rgba(67,56,202,0.10);
 }
 .pl-ai-accent {
-  background: linear-gradient(135deg, #1d4ed8 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #6366f1 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;
 }
 
@@ -1614,10 +1727,10 @@
   --line-strong: rgba(15, 23, 42, 0.1);
   --text-main: #0f172a;
   --text-soft: #64748b;
-  --brand: #185fa5;
-  --brand-deep: #1d4ed8;
-  --brand-navy: #0c447c;
-  --brand-indigo: #1d4ed8;
+  --brand: #1e3a5f;
+  --brand-deep: #1e3a5f;
+  --brand-navy: #162a45;
+  --brand-indigo: #1e3a5f;
   --success: #00c28c;
   --warning: #854f0b;
   --danger: #a32d2d;
@@ -1997,7 +2110,7 @@
   }
 
   .brand-badge {
-    @apply inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#185FA5];
+    @apply inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#1e3a5f];
   }
 
   .app-main-shell {
@@ -2416,7 +2529,7 @@
 
 .flash-chip-warn { background: #fff2d8; color: #9a4f00; }
 .flash-chip-success { background: #e5f4ea; color: #1f6b48; }
-.flash-chip-accent { background: #e8edff; color: #1d4ed8; }
+.flash-chip-accent { background: #e8edff; color: #1e3a5f; }
 
 .flash-ai-card {
   display: flex;
@@ -5278,7 +5391,7 @@ textarea.simulados-register-input {
 .pl-player .play-main {
   width: 52px; height: 52px;
   border-radius: 999px;
-  background: #1d4ed8;
+  background: #1e3a5f;
   border: 0; color: #fff;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(29,78,216,0.40);
@@ -6780,7 +6893,7 @@ textarea.simulados-register-input {
   background: transparent; border: 0; cursor: pointer;
   color: var(--pl-accent); font-weight: 600;
   text-decoration: underline; text-underline-offset: 3px;
-  text-decoration-color: rgba(29,78,216,0.30);
+  text-decoration-color: rgba(30,58,95,0.30);
   font-size: 12.5px;
 }
 .pl-com-breadcrumb button:hover { text-decoration-color: var(--pl-accent); }
@@ -7598,7 +7711,7 @@ textarea.simulados-register-input {
   display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
   font-size: 13px; font-weight: 700; color: var(--pl-accent);
   text-decoration: underline; text-underline-offset: 3px;
-  text-decoration-color: rgba(29,78,216,0.30);
+  text-decoration-color: rgba(30,58,95,0.30);
 }
 .pl-app-pair a:hover { text-decoration-color: var(--pl-accent); }
 .pl-app-pair .qr-box {

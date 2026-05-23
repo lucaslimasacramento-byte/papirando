@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { APLICATIVOS_LINKS } from '../config/aplicativosLinks';
 import {
   Smartphone,
@@ -123,7 +123,7 @@ function PhoneMockup() {
   return (
     <div style={{
       width: 220, height: 440,
-      background: 'linear-gradient(180deg, #1d4ed8 0%, #4338ca 100%)',
+      background: 'linear-gradient(180deg, #1e3a5f 0%, #4338ca 100%)',
       borderRadius: 32,
       border: '4px solid rgba(255,255,255,0.10)',
       boxShadow: '0 24px 60px rgba(29,78,216,0.40), 0 0 0 1px rgba(0,0,0,0.30)',

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 
 export const DEFAULT_VADE_DOCUMENT = {
   id: 'default-vade-mecum',
@@ -90,7 +90,7 @@ function normalizeMarkers(value) {
       section: String(item.section || ''),
       label: String(item.label || '').trim(),
       excerpt: String(item.excerpt || '').trim(),
-      color: String(item.color || '#2563EB'),
+      color: String(item.color || '#1e3a5f'),
       createdAt: item.createdAt || new Date().toISOString(),
     }));
 }

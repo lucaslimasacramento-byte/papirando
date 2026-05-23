@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   CalendarDays,
   ChevronLeft,
@@ -846,14 +846,14 @@ function PlanejamentoContent({
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <WizardModeCard
                     active={wizardModeDraft === 'ciclo'}
-                    icon={<RotateCcw size={62} className="text-[#2563EB]" />}
+                    icon={<RotateCcw size={62} className="text-[#1e3a5f]" />}
                     title="Ciclo de Estudos"
                     text="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina."
                     onClick={() => setWizardModeDraft('ciclo')}
                   />
                   <WizardModeCard
                     active={wizardModeDraft === 'fixo'}
-                    icon={<CalendarDays size={62} className="text-[#2563EB]" />}
+                    icon={<CalendarDays size={62} className="text-[#1e3a5f]" />}
                     title="Planejamento Semanal"
                     text="Defina dias certos para cada frente de estudo e acompanhe tudo em calendário e kanban."
                     onClick={() => setWizardModeDraft('fixo')}
@@ -878,7 +878,7 @@ function PlanejamentoContent({
                         }
                         className={`rounded-xl border px-4 py-3 text-left transition ${
                           wizardCoursePlans.includes(course.plano)
-                            ? 'border-[#2563EB] bg-blue-50'
+                            ? 'border-[#1e3a5f] bg-blue-50'
                             : 'border-gray-200 bg-white hover:border-gray-300'
                         }`}
                       >
@@ -887,7 +887,7 @@ function PlanejamentoContent({
                             <p className="text-base font-bold text-gray-800">{course.nome}</p>
                             <p className="mt-1 text-sm text-gray-500">{course.concurso || course.plano}</p>
                           </div>
-                          {course.isTarget ? <TagPill label="Alvo" color="#2563EB" soft /> : null}
+                          {course.isTarget ? <TagPill label="Alvo" color="#1e3a5f" soft /> : null}
                         </div>
                       </button>
                     ))}
@@ -921,7 +921,7 @@ function PlanejamentoContent({
                             }))
                           }
                           className={`rounded-xl border px-4 py-3 text-center text-sm font-semibold transition sm:text-base ${
-                            selected ? 'border-[#2563EB] bg-blue-50 text-slate-900' : 'border-gray-200 bg-white text-gray-500'
+                            selected ? 'border-[#1e3a5f] bg-blue-50 text-slate-900' : 'border-gray-200 bg-white text-gray-500'
                           }`}
                         >
                           {discipline.nome}
@@ -964,7 +964,7 @@ function PlanejamentoContent({
                                       },
                                     }))
                                   }
-                                  className="w-full accent-[#2563EB]"
+                                  className="w-full accent-[#1e3a5f]"
                                 />
                                 <span className="w-6 text-right font-bold text-gray-700">{config.importance}</span>
                               </div>
@@ -987,7 +987,7 @@ function PlanejamentoContent({
                                       },
                                     }))
                                   }
-                                  className="w-full accent-[#2563EB]"
+                                  className="w-full accent-[#1e3a5f]"
                                 />
                                 <span className="w-6 text-right font-bold text-gray-700">{config.knowledge}</span>
                               </div>
@@ -1081,7 +1081,7 @@ function PlanejamentoContent({
                         type="button"
                         onClick={() => setWizardSubjectsPerDay(count)}
                         className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                          wizardSubjectsPerDay === count ? 'bg-[#2563EB] text-white shadow-sm' : 'text-gray-600 hover:bg-white'
+                          wizardSubjectsPerDay === count ? 'bg-[#1e3a5f] text-white shadow-sm' : 'text-gray-600 hover:bg-white'
                         }`}
                       >
                         {count} matéria{count > 1 ? 's' : ''}
@@ -1101,7 +1101,7 @@ function PlanejamentoContent({
                     <select
                       value={wizardMinDuration}
                       onChange={(event) => setWizardMinDuration(Number(event.target.value))}
-                      className="min-w-[120px] border-b-2 border-[#2563EB] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
+                      className="min-w-[120px] border-b-2 border-[#1e3a5f] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
                     >
                       {DURATION_OPTIONS.map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1113,7 +1113,7 @@ function PlanejamentoContent({
                     <select
                       value={wizardMaxDuration}
                       onChange={(event) => setWizardMaxDuration(Number(event.target.value))}
-                      className="min-w-[120px] border-b-2 border-[#2563EB] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
+                      className="min-w-[120px] border-b-2 border-[#1e3a5f] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
                     >
                       {DURATION_OPTIONS.filter((minutes) => minutes >= wizardMinDuration).map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1140,7 +1140,7 @@ function PlanejamentoContent({
                   <button
                     type="button"
                     onClick={goToPreviousWizardStep}
-                    className="rounded-xl border-2 border-[#2563EB] px-5 py-2.5 text-sm font-semibold text-[#2563EB]"
+                    className="rounded-xl border-2 border-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-[#1e3a5f]"
                   >
                     Voltar
                   </button>
@@ -1154,7 +1154,7 @@ function PlanejamentoContent({
                       (wizardStep === 1 && wizardCoursePlans.length === 0) ||
                       (wizardStep === 2 && selectedWizardSubjects.length === 0)
                     }
-                    className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="rounded-xl bg-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
                   >
                     Proximo
                   </button>
@@ -1163,7 +1163,7 @@ function PlanejamentoContent({
                     type="button"
                     onClick={saveWizardConfig}
                     disabled={wizardCoursePlans.length === 0}
-                    className="rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="rounded-xl bg-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
                   >
                     Concluir
                   </button>
@@ -1638,7 +1638,7 @@ function WizardStepper({ step }) {
             <div className="flex flex-col items-center gap-2">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-lg font-bold ${
-                  active || done ? 'border-[#2563EB] bg-[#2563EB] text-white' : 'border-gray-400 text-gray-400'
+                  active || done ? 'border-[#1e3a5f] bg-[#1e3a5f] text-white' : 'border-gray-400 text-gray-400'
                 }`}
               >
                 {String(number).padStart(2, '0')}
@@ -1659,7 +1659,7 @@ function WizardModeCard({ active, icon, title, text, onClick }) {
       type="button"
       onClick={onClick}
       className={`rounded-[1.2rem] border text-left overflow-hidden transition ${
-        active ? 'border-[#2563EB] shadow-[0_0_0_1px_#2563EB_inset]' : 'border-gray-300'
+        active ? 'border-[#1e3a5f] shadow-[0_0_0_1px_#1e3a5f_inset]' : 'border-gray-300'
       }`}
     >
       <div className="flex h-36 items-center justify-center bg-white">{icon}</div>

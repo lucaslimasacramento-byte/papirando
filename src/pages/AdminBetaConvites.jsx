@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { Check, Clock, Copy, Loader2, Mail, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
@@ -120,7 +120,7 @@ export default function AdminBetaConvites() {
 
         <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="section-card overflow-hidden p-0">
-            <div className="bg-[linear-gradient(135deg,#0f2a4f,#1d4ed8)] px-6 py-6 text-white">
+            <div className="bg-[linear-gradient(135deg,#0f2a4f,#1e3a5f)] px-6 py-6 text-white">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-100">
                 <ShieldCheck size={13} />
                 Experiência do convidado

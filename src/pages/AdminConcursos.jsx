@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   BadgeCheck,
   CalendarDays,
@@ -258,7 +258,7 @@ const EMPTY_FORM = {
   etapas: '',
   etapas_tags: [],
   taf_itens: ['Corrida'],
-  cor: '#2563EB',
+  cor: '#1e3a5f',
   descricao: '',
   is_public: true,
   status_concurso: 'edital_publicado',
@@ -969,7 +969,7 @@ function buildFormFromTemplate(template) {
     etapas: template.etapas || '',
     etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : [],
     taf_itens: Array.isArray(template.taf_itens) && template.taf_itens.length > 0 ? template.taf_itens : ['Corrida'],
-    cor: template.cor || '#2563EB',
+    cor: template.cor || '#1e3a5f',
     descricao: template.descricao || '',
     is_public: template.is_public !== false,
     status_concurso: normalizeImportedStatus(template.status_concurso || 'edital_publicado'),
@@ -1484,7 +1484,7 @@ export default function AdminConcursos({
       etapas: cleanImportedValue(normalized.etapas || form.etapas),
       etapas_tags: Array.isArray(normalized.etapas_tags) && normalized.etapas_tags.length > 0 ? normalized.etapas_tags : form.etapas_tags,
       taf_itens: Array.isArray(normalized.taf_itens) ? normalized.taf_itens : [],
-      cor: form.cor || '#2563EB',
+      cor: form.cor || '#1e3a5f',
       descricao: cleanImportedValue(normalized.descricao || form.descricao),
       is_public: form.is_public,
       status_concurso: statusConcurso,
@@ -1676,7 +1676,7 @@ export default function AdminConcursos({
           etapas: template.etapas || '',
           etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : [],
           taf_itens: Array.isArray(template.taf_itens) ? template.taf_itens : [],
-          cor: template.cor || '#2563EB',
+          cor: template.cor || '#1e3a5f',
           descricao: template.descricao || '',
           is_public: template.is_public !== false,
           status_concurso: template.status_concurso || 'edital_publicado',
@@ -2266,7 +2266,7 @@ export default function AdminConcursos({
                 ) : (
                   <div
                     className="flex h-36 w-full items-center justify-center text-white"
-                    style={{ background: `linear-gradient(135deg, ${form.cor || '#2563EB'} 0%, #1A365D 100%)` }}
+                    style={{ background: `linear-gradient(135deg, ${form.cor || '#1e3a5f'} 0%, #1A365D 100%)` }}
                   >
                     <ImageIcon size={36} />
                   </div>
@@ -2581,7 +2581,7 @@ export default function AdminConcursos({
                               : 'Sem correspondência no banco padrão. Se necessário, cadastre em Admin > Banco de disciplinas.'}
                           </p>
                         </div>
-                        <ColorField compact value={subject.cor || '#2563EB'} onChange={(value) => updateSubjectField(index, 'cor', value)} />
+                        <ColorField compact value={subject.cor || '#1e3a5f'} onChange={(value) => updateSubjectField(index, 'cor', value)} />
                       </div>
 
                       <div className="mt-4">

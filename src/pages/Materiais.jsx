@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Bookmark,
@@ -34,7 +34,7 @@ const HIGHLIGHT_COLORS = [
   { value: '#FCA5A5', label: 'Rosa' },
 ];
 
-const MATERIAL_MARKER_COLORS = ['#1d4ed8', '#f59e0b', '#10b981', '#ec4899'];
+const MATERIAL_MARKER_COLORS = ['#1e3a5f', '#f59e0b', '#10b981', '#ec4899'];
 
 function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;

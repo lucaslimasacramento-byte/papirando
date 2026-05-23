@@ -1,7 +1,7 @@
-export const CONTEST_AREA_THEME = {
+﻿export const CONTEST_AREA_THEME = {
   Policial: {
     accentStart: '#38bdf8',
-    accentEnd: '#1d4ed8',
+    accentEnd: '#1e3a5f',
     accentShadow: 'rgba(56, 189, 248, 0.34)',
     dark: '#071526',
     darkSoft: '#102a56',
@@ -50,7 +50,7 @@ export const CONTEST_AREA_THEME = {
   },
   Administrativa: {
     accentStart: '#94a3b8',
-    accentEnd: '#2563eb',
+    accentEnd: '#1e3a5f',
     accentShadow: 'rgba(148, 163, 184, 0.28)',
     dark: '#101827',
     darkSoft: '#1e293b',

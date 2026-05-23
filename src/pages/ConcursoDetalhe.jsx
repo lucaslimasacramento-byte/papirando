@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -307,7 +307,7 @@ export default function ConcursoDetalhe({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#185FA5] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0C447C]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#162a45]"
         >
           <ArrowLeft size={16} />
           Voltar para concursos
@@ -420,7 +420,7 @@ export default function ConcursoDetalhe({
               type="button"
               onClick={() => setImportConfirmOpen(true)}
               disabled={importingId === contest.id || limiteAtingido}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#185FA5] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-950/20 hover:bg-[#0C447C] disabled:opacity-60 sm:px-4 sm:text-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#1e3a5f] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-950/20 hover:bg-[#162a45] disabled:opacity-60 sm:px-4 sm:text-sm"
             >
               {limiteAtingido ? 'Limite' : importingId === contest.id ? '...' : 'Adicionar aos estudos'}
               <ArrowRight size={14} />
@@ -540,7 +540,7 @@ export default function ConcursoDetalhe({
             ) : (
               <div
                 className="flex min-h-[260px] w-full items-center justify-center text-white"
-                style={{ background: `linear-gradient(135deg, ${contest.cor || '#2563eb'} 0%, #1e3a8a 100%)` }}
+                style={{ background: `linear-gradient(135deg, ${contest.cor || '#1e3a5f'} 0%, #1e3a8a 100%)` }}
               >
                 <LibraryBig size={56} />
               </div>
@@ -865,7 +865,7 @@ function StatBox({ label, value, icon: Icon }) {
         <Icon size={14} />
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</p>
       </div>
-      <p className="mt-3 text-lg font-semibold text-[#0C447C]">{value}</p>
+      <p className="mt-3 text-lg font-semibold text-[#162a45]">{value}</p>
     </div>
   );
 }
@@ -874,7 +874,7 @@ function InfoCard({ label, value }) {
   return (
     <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-2 text-sm font-bold text-[#0C447C]">{value}</p>
+      <p className="mt-2 text-sm font-bold text-[#162a45]">{value}</p>
     </div>
   );
 }

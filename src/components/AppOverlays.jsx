@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Pause, Play, X } from 'lucide-react';
 import RegistroSimuladoModal from './RegistroSimuladoModal';
 import RegistroEstudoModal from './RegistroEstudoModal';
@@ -16,7 +16,7 @@ function WellnessMiniPlayer({ track, isPlaying, onTogglePlay, onClose }) {
       <button
         type="button"
         onClick={onTogglePlay}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#2563EB] text-white"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#1e3a5f] text-white"
       >
         {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
       </button>

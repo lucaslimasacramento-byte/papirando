@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+﻿import React, { useMemo, useRef, useState } from 'react';
 import {
   FileSignature,
   PenTool,
@@ -1004,7 +1004,7 @@ export default function Redacoes({
                     <div style={{
                       marginTop: 20,
                       border: '1px solid transparent', borderRadius: 6,
-                      backgroundImage: 'linear-gradient(var(--pl-surface), var(--pl-surface)), linear-gradient(135deg, #1d4ed8 0%, #6366f1 50%, #1d4ed8 100%)',
+                      backgroundImage: 'linear-gradient(var(--pl-surface), var(--pl-surface)), linear-gradient(135deg, #1e3a5f 0%, #6366f1 50%, #1e3a5f 100%)',
                       backgroundOrigin: 'border-box', backgroundClip: 'padding-box, border-box',
                       overflow: 'hidden',
                     }}>

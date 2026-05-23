@@ -1,4 +1,4 @@
-export const concursoCatalog = [
+﻿export const concursoCatalog = [
   {
     id: 'pmal-oficial-2026',
     slug: 'pmal-oficial-2026',
@@ -23,7 +23,7 @@ export const concursoCatalog = [
     imagem_url: '',
     descricao: 'Concurso da PMAL para ingresso no CFO, com foco em base teórica ampla e disciplinas jurídicas.',
     origem: 'catalogo',
-    cor: '#1D4ED8',
+    cor: '#1e3a5f',
     disciplinas: [
       'Língua Portuguesa',
       'Biologia',

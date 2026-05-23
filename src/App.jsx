@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import {
   clearInvalidSupabaseAuthStorage,
@@ -723,7 +723,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const theme = { primary: '#1d4ed8', sidebarBg: '#ffffff', bg: '#f1f3f6' };
+  const theme = { primary: '#1e3a5f', sidebarBg: '#ffffff', bg: '#f1f3f6' };
 
   useEffect(() => {
     const referralFromLocation = normalizeReferralCode(extractReferralCodeFromLocation());
@@ -1673,7 +1673,7 @@ export default function App() {
       erros: 4,
       percentual: 75,
       topicosTot: 16,
-      cor: '#2563EB',
+      cor: '#1e3a5f',
       topicos: [
         {
           id: 101,
@@ -2420,7 +2420,7 @@ export default function App() {
           banca: 'A definir',
           status: 'ativo',
           origem: 'inferido',
-          cor: '#2563EB',
+          cor: '#1e3a5f',
         }));
 
       return inferidos.length > 0 ? [...prev, ...inferidos] : prev;
@@ -4262,7 +4262,7 @@ export default function App() {
       edital_url: courseData.edital_url || '',
       status: courseData.status || 'ativo',
       origem: courseData.origem || 'manual',
-      cor: courseData.cor || '#2563EB',
+      cor: courseData.cor || '#1e3a5f',
     };
 
     setCursos((prev) => [novoCurso, ...prev]);
@@ -4561,7 +4561,7 @@ export default function App() {
         etapas: templateData.etapas || null,
         etapas_tags: templateData.etapas_tags || [],
         taf_itens: templateData.taf_itens || [],
-        cor: templateData.cor || '#2563EB',
+        cor: templateData.cor || '#1e3a5f',
         descricao: templateData.descricao || null,
         imagem_url: templateData.imagem_url || null,
         edital_url: templateData.edital_url || null,
@@ -4626,7 +4626,7 @@ export default function App() {
         etapas: templateData.etapas || null,
         etapas_tags: templateData.etapas_tags || [],
         taf_itens: templateData.taf_itens || [],
-        cor: templateData.cor || '#2563EB',
+        cor: templateData.cor || '#1e3a5f',
         descricao: templateData.descricao || null,
         imagem_url: templateData.imagem_url || null,
         edital_url: templateData.edital_url || null,
@@ -4856,7 +4856,7 @@ export default function App() {
       edital_url: template.edital_url,
       status: template.status || 'ativo',
       origem: 'catalogo',
-      cor: template.cor || '#2563EB',
+      cor: template.cor || '#1e3a5f',
     });
 
     if (currentUserId) {
@@ -4877,7 +4877,7 @@ export default function App() {
     if (userError) throw userError;
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
-    const palette = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+    const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
     const novasDisciplinas = [];
     let totalTopicosCriados = 0;
 
@@ -5022,7 +5022,7 @@ export default function App() {
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const novasDisciplinas = [];
-    const palette = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+    const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
 
     for (const [index, block] of disciplinasExtraidas.entries()) {
       const subjectNome = normalizeSubjectNameForApp(block.nome);
@@ -5111,7 +5111,7 @@ export default function App() {
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const novasDisciplinas = [];
-    const palette = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+    const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
 
     for (const [index, block] of contestSelecionado.disciplinas.entries()) {
       const subjectNome = normalizeSubjectNameForApp(block.nome);
@@ -5578,7 +5578,7 @@ export default function App() {
       material: studySessionDraft?.material || '',
       plano: studySessionDraft?.plano || selectedCoursePlan || '',
       tipo: timerMode === 'cronometro' ? 'flowtime' : timerMode,
-      cor: '#2563EB',
+      cor: '#1e3a5f',
       tempo: formatHHMMSS(safeElapsedSecs) || '00:00:00',
       acertos: 0,
       erros: 0,
@@ -7023,11 +7023,11 @@ export default function App() {
             'perfil',
           ].includes(activeTab) && (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 p-10">
-              <Target size={40} className="text-[#2563EB] mb-6" />
+              <Target size={40} className="text-[#1e3a5f] mb-6" />
               <h2 className="text-3xl font-black text-gray-800 mb-2">Construção em Progresso!</h2>
               <button
                 onClick={() => setActiveTab('home')}
-                className="bg-[#2563EB] text-white px-6 py-2.5 rounded-xl font-bold"
+                className="bg-[#1e3a5f] text-white px-6 py-2.5 rounded-xl font-bold"
               >
                 Voltar ao Início
               </button>
