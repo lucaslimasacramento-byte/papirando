@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Bookmark, MessageSquareText, RotateCcw, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { registerFreeAccount } from '../lib/registerApi';
@@ -122,14 +122,14 @@ export default function Login({
   const getReadableError = (err) => {
     const msg = err?.message?.toLowerCase?.() || '';
     if (msg.includes('email rate limit exceeded')) return 'Muitas tentativas. Aguarde alguns minutos.';
-    if (msg.includes('invalid login credentials')) return 'Email ou senha invalidos.';
-    if (msg.includes('user already registered')) return 'Este email ja esta cadastrado. Tente fazer login.';
+    if (msg.includes('invalid login credentials')) return 'E-mail ou senha inválidos.';
+    if (msg.includes('user already registered')) return 'Este e-mail já está cadastrado. Tente fazer login.';
     if (msg.includes('password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.';
     return err?.message || 'Ocorreu um erro ao autenticar.';
   };
 
   const validateForm = () => {
-    if (!email.trim()) { setError('Digite o seu email.'); return false; }
+    if (!email.trim()) { setError('Digite o seu e-mail.'); return false; }
     if (!password.trim()) { setError('Digite a sua senha.'); return false; }
     if (!isLoginMode) {
       if (!nome.trim()) { setError('Digite o seu nome completo.'); return false; }
@@ -137,13 +137,13 @@ export default function Login({
       if (cpf.replace(/\D/g, '').length < 11) { setError('Digite o CPF completo (11 dígitos).'); return false; }
       if (!birthDate) { setError('Informe a data de nascimento.'); return false; }
       if (password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return false; }
-      if (password !== confirmPassword) { setError('As senhas nao coincidem.'); return false; }
+      if (password !== confirmPassword) { setError('As senhas não coincidem.'); return false; }
     }
     return true;
   };
 
   const handleForgotPassword = async () => {
-    if (!email.trim()) { setError('Digite o seu email acima para recuperar a senha.'); return; }
+    if (!email.trim()) { setError('Digite o seu e-mail acima para recuperar a senha.'); return; }
     if (loading) return;
     setLoading(true); setError(''); setSuccessMsg('');
     try {
@@ -151,7 +151,7 @@ export default function Login({
         redirectTo: window.location.origin,
       });
       if (resetError) throw resetError;
-      setSuccessMsg('Link de recuperacao enviado! Verifique o seu email.');
+      setSuccessMsg('Link de recuperação enviado. Verifique o seu e-mail.');
     } catch (err) {
       setError(getReadableError(err));
     } finally {
@@ -189,7 +189,7 @@ export default function Login({
         const firstFieldError = result.fieldErrors ? Object.values(result.fieldErrors)[0] : null;
         throw new Error(firstFieldError || result.message || 'Não foi possível criar a conta.');
       }
-      setSuccessMsg(result.message || 'Conta criada! Verifique o seu email para ativar o acesso.');
+      setSuccessMsg(result.message || 'Conta criada. Verifique o seu e-mail para ativar o acesso.');
       if (normalizedReferralCode) onReferralCodeConsumed?.();
       if (initialBetaInviteToken) onBetaInviteConsumed?.();
       setIsLoginMode(true);
@@ -202,17 +202,143 @@ export default function Login({
   };
 
   return (
-    <div style={{
+    <>
+    <style>{`
+      .pl-login-page {
+        background: var(--pl-bg);
+      }
+
+      .pl-login-cover,
+      .pl-login-form-shell {
+        min-width: 0;
+      }
+
+      .pl-login-card {
+        width: min(100%, 560px);
+        min-height: min(800px, calc(100vh - 64px));
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(20, 17, 13, 0.12);
+        border-radius: 22px;
+        box-shadow: 0 26px 70px rgba(20, 17, 13, 0.14), 0 3px 12px rgba(20, 17, 13, 0.08);
+        backdrop-filter: blur(14px);
+      }
+
+      .pl-login-form {
+        width: 100%;
+      }
+
+      .pl-login-form .pl-input {
+        height: 52px !important;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+      }
+
+      .pl-login-form .pl-input:focus {
+        border-color: rgba(29, 78, 216, 0.72);
+      }
+
+      .pl-login-benefits {
+        display: grid;
+        gap: 18px;
+        margin-top: 34px;
+        max-width: 360px;
+      }
+
+      .pl-login-benefit {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+      }
+
+      .pl-login-benefit-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--pl-rule-2);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.48);
+        color: var(--pl-ink);
+      }
+
+      @media (max-width: 980px) {
+        .pl-login-page {
+          grid-template-columns: 1fr !important;
+          min-height: 100svh !important;
+          height: auto !important;
+          overflow: auto !important;
+          background-image: repeating-linear-gradient(0deg, transparent 0 47px, var(--pl-rule) 47px 48px);
+        }
+
+        .pl-login-cover {
+          display: none !important;
+        }
+
+        .pl-login-form-shell {
+          min-height: 100svh;
+          padding: 28px 18px !important;
+          border-left: 0 !important;
+          overflow: visible !important;
+        }
+
+        .pl-login-card {
+          min-height: auto;
+          border-radius: 18px;
+          padding: 28px 22px !important;
+          box-shadow: 0 18px 46px rgba(20, 17, 13, 0.13), 0 2px 10px rgba(20, 17, 13, 0.08);
+        }
+      }
+
+      @media (max-width: 520px) {
+        .pl-login-form-shell {
+          padding: 18px 12px !important;
+        }
+
+        .pl-login-card {
+          width: 100%;
+          border-radius: 16px;
+          padding: 24px 16px !important;
+        }
+
+        .pl-login-card-header {
+          align-items: flex-start !important;
+          gap: 18px;
+          margin-bottom: 34px !important;
+        }
+
+        .pl-login-title {
+          font-size: 38px !important;
+          line-height: 1.02 !important;
+        }
+
+        .pl-login-subtitle {
+          margin-bottom: 26px !important;
+        }
+
+        .pl-login-form {
+          gap: 13px !important;
+        }
+
+        .pl-login-footer {
+          text-align: center;
+        }
+      }
+    `}</style>
+    <div className="pl-login-page" style={{
       width: '100%', height: '100vh',
       display: 'grid',
-      gridTemplateColumns: '1.6fr 1fr',
+      gridTemplateColumns: 'minmax(0, 1.35fr) minmax(460px, 0.95fr)',
       minHeight: 680,
       overflow: 'hidden',
       fontFamily: 'var(--pl-sans)',
     }}>
 
       {/* ── COVER (esquerda) ────────────────────────────────────── */}
-      <div style={{
+      <div className="pl-login-cover" style={{
         position: 'relative',
         background: 'var(--pl-bg)',
         backgroundImage: 'repeating-linear-gradient(0deg, transparent 0 47px, var(--pl-rule) 47px 48px)',
@@ -250,29 +376,29 @@ export default function Login({
             fontSize: 21, lineHeight: 1.45, letterSpacing: '-0.01em',
             color: 'var(--pl-ink-2)', maxWidth: '32ch',
           }}>
-            A plataforma de estudos pra concurso que fala a sua lingua. Marca a pagina,
-            papira a questao, volta de onde parou.
+            A plataforma de estudos para concurso que fala a sua língua. Marque a página,
+            papire a questão e volte de onde parou.
           </p>
+
+          <div className="pl-login-benefits">
+            {[
+              { icon: Bookmark, title: 'Marque', desc: 'Guarde o que importa para revisar depois.' },
+              { icon: MessageSquareText, title: 'Papire', desc: 'Anote dúvidas e insights nas questões.' },
+              { icon: RotateCcw, title: 'Volte de onde parou', desc: 'Continue seus estudos sem perder o ritmo.' },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div className="pl-login-benefit" key={title}>
+                <span className="pl-login-benefit-icon"><Icon size={18} strokeWidth={1.7} /></span>
+                <span>
+                  <strong style={{ display: 'block', fontSize: 14, color: 'var(--pl-ink)', marginBottom: 4 }}>{title}</strong>
+                  <span style={{ display: 'block', fontSize: 12.5, lineHeight: 1.4, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{desc}</span>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Rodape */}
         <div style={{ marginTop: 36, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '8px 14px',
-            background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
-            borderRadius: 999,
-            fontSize: 12.5, color: 'var(--pl-ink-2)', fontWeight: 500,
-          }}>
-            <span style={{
-              width: 7, height: 7, borderRadius: 999,
-              background: 'var(--pl-success)',
-              display: 'inline-block',
-              animation: 'pl-live-pulse 2.2s ease-in-out infinite',
-            }} />
-            <em style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 500, color: 'var(--pl-ink)' }}>1.247</em>
-            {' '}papireiros estudando agora
-          </span>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', letterSpacing: '0.22em', textTransform: 'uppercase' }}>
             v1.0
           </span>
@@ -282,15 +408,20 @@ export default function Login({
       </div>
 
       {/* ── FORMULARIO (direita) ─────────────────────────────────── */}
-      <div style={{
-        background: 'var(--pl-surface)',
+      <div className="pl-login-form-shell" style={{
+        background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.92), var(--pl-bg) 58%)',
         borderLeft: '1px solid var(--pl-rule-2)',
-        padding: '48px 52px',
-        display: 'flex', flexDirection: 'column',
+        padding: '32px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         overflowY: 'auto',
       }}>
+        <div className="pl-login-card" style={{
+          padding: '44px 46px',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
         {/* Cabecalho do formulario */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 52 }}>
+        <div className="pl-login-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 52 }}>
           <span style={{
             fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)',
             letterSpacing: '0.24em', textTransform: 'uppercase',
@@ -324,24 +455,24 @@ export default function Login({
         </div>
 
         {/* Titulo */}
-        <h2 style={{
+        <h2 className="pl-login-title" style={{
           margin: 0,
           fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 52, lineHeight: 0.98, letterSpacing: '-0.04em',
+          fontSize: 48, lineHeight: 0.98, letterSpacing: '-0.04em',
           color: 'var(--pl-ink)',
         }}>
           {isLoginMode
-            ? <>Bem vindo de volta<span style={{ color: 'var(--pl-accent)' }}>.</span></>
-            : <>Bora comecar a papirar<span style={{ color: 'var(--pl-accent)' }}>.</span></>}
+            ? <>Bem-vindo de volta<span style={{ color: 'var(--pl-accent)' }}>.</span></>
+            : <>Bora começar a papirar<span style={{ color: 'var(--pl-accent)' }}>.</span></>}
         </h2>
-        <p style={{
+        <p className="pl-login-subtitle" style={{
           margin: '14px 0 32px',
           fontSize: 15, lineHeight: 1.55, color: 'var(--pl-ink-2)',
           maxWidth: '42ch', fontWeight: 500,
         }}>
           {isLoginMode
-            ? 'Que bom te ver papirando de novo. Sua sequencia ta esperando voce la dentro.'
-            : 'Conta gratis. Plano de estudos personalizado em 2 minutos.'}
+            ? 'Que bom te ver papirando de novo. Sua sequência está esperando por você.'
+            : 'Conta grátis. Plano de estudos personalizado em poucos minutos.'}
         </p>
 
         {/* Alertas */}
@@ -369,7 +500,7 @@ export default function Login({
         )}
 
         {/* Formulario */}
-        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 420 }}>
+        <form className="pl-login-form" onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 460 }}>
 
           {/* Nome (apenas cadastro) */}
           {!isLoginMode && (
@@ -409,7 +540,7 @@ export default function Login({
             </PlField>
           )}
 
-          {/* Email */}
+          {/* E-mail */}
           <PlField label="E-mail">
             <input
               className="pl-input" type="email"
@@ -449,7 +580,7 @@ export default function Login({
             </div>
             {!isLoginMode && (
               <span style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                Minimo 6 caracteres.
+                Mínimo de 6 caracteres.
               </span>
             )}
           </PlField>
@@ -489,9 +620,9 @@ export default function Login({
             </PlField>
           )}
 
-          {/* Codigo de convite (apenas cadastro) */}
+          {/* Código de convite (apenas cadastro) */}
           {!isLoginMode && (
-            <PlField label="Codigo de convite (opcional)">
+            <PlField label="Código de convite (opcional)">
               <input
                 className="pl-input" type="text"
                 placeholder="PAPIREIRO123"
@@ -507,10 +638,10 @@ export default function Login({
           )}
 
           {/* Submit */}
-          <button type="submit" disabled={loading} style={{
-            marginTop: 8, height: 46, padding: '0 22px',
+          <button className="pl-login-submit" type="submit" disabled={loading} style={{
+            marginTop: 8, height: 52, padding: '0 22px',
             background: 'var(--pl-ink)', color: 'var(--pl-bg)',
-            border: 0, borderRadius: 10,
+            border: 0, borderRadius: 12,
             fontFamily: 'var(--pl-sans)', fontSize: 15, fontWeight: 600,
             cursor: loading ? 'not-allowed' : 'pointer',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -520,9 +651,9 @@ export default function Login({
             {loading ? (
               <><Loader2 size={16} className="animate-spin" /> Processando...</>
             ) : isLoginMode ? (
-              <><svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 13, height: 13 }}><path d="M8 5 L19 12 L8 19 Z" /></svg> Papirar</>
+              <><ArrowRight size={17} /> Papirar</>
             ) : (
-              'Criar conta & comecar'
+              'Criar conta e começar'
             )}
           </button>
 
@@ -538,10 +669,10 @@ export default function Login({
           </div>
 
           {/* Google */}
-          <button type="button" style={{
-            height: 44,
+          <button className="pl-login-google" type="button" style={{
+            height: 52,
             background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
-            borderRadius: 10,
+            borderRadius: 12,
             fontFamily: 'var(--pl-sans)', fontSize: 13.5, fontWeight: 600,
             color: 'var(--pl-ink)', cursor: 'pointer',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -558,23 +689,23 @@ export default function Login({
         </form>
 
         {/* Rodape do formulario */}
-        <div style={{
+        <div className="pl-login-footer" style={{
           marginTop: 'auto', paddingTop: 32,
           fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.55,
         }}>
           {isLoginMode ? (
             <>
-              Ainda nao papira aqui?{' '}
+              Ainda não tem conta?{' '}
               <button type="button" onClick={() => handleToggleMode('cadastro')} style={{
                 background: 'transparent', border: 0, padding: 0,
                 fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 600,
                 color: 'var(--pl-accent)', cursor: 'pointer',
                 textDecoration: 'underline', textDecorationColor: 'rgba(29,78,216,0.3)',
-              }}>Cria conta — leva 2 minutos</button>
+              }}>Criar conta</button>
             </>
           ) : (
             <>
-              Ja e papireiro?{' '}
+              Já é papireiro?{' '}
               <button type="button" onClick={() => handleToggleMode('login')} style={{
                 background: 'transparent', border: 0, padding: 0,
                 fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 600,
@@ -582,15 +713,17 @@ export default function Login({
                 textDecoration: 'underline', textDecorationColor: 'rgba(29,78,216,0.3)',
               }}>Entra na sua conta</button>
               <br /><br />
-              Criar conta significa que voce topa nossos{' '}
+              Criar conta significa que você aceita nossos{' '}
               <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>termos</a>
               {' '}e a{' '}
-              <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>politica de privacidade</a>.
+              <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>política de privacidade</a>.
             </>
           )}
         </div>
       </div>
+      </div>
     </div>
+    </>
   );
 }
 
