@@ -312,13 +312,32 @@ export default function AppTabContent(props) {
     if (!text) return '';
     return text.charAt(0).toUpperCase() + text.slice(1);
   };
+  // Pega só a primeira "palavra" do username do email — separa por qualquer
+  // caractere que não seja letra portuguesa (., _, -, +, dígitos, etc.). Isso
+  // evita exibir saudações como "Lucaslimasacramento" quando o email é
+  // lucaslimasacramento@gmail.com — agora cai para "Lucaslimasacramento" mesmo
+  // (já que não há separadores), mas em emails como `lucas.lima@…` ou
+  // `lucas_lima@…` ele extrai só "Lucas".
+  const extractEmailFirstWord = (email = '') => {
+    const localPart = String(email || '').includes('@')
+      ? String(email).split('@')[0]
+      : String(email);
+    const firstWord = localPart
+      .replace(/[^a-záéíóúâêîôûãõàèìòùç]/gi, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)[0] || '';
+    return firstWord;
+  };
   const fullName = String(effectiveProfile?.nome || effectiveProfile?.name || effectiveProfile?.full_name || '').trim();
   const firstName = normalizeName(fullName.split(/\s+/).filter(Boolean)[0] || '');
   const username = String(effectiveProfile?.username || effectiveProfile?.user_name || '').trim();
-  const emailPrefix = normalizeName(
-    String(currentUserEmail || '').includes('@') ? String(currentUserEmail || '').split('@')[0] : ''
-  );
-  const greetingName = username || firstName || emailPrefix;
+  const emailPrefix = normalizeName(extractEmailFirstWord(currentUserEmail));
+  // Ordem de fallback: nome real > username > primeira palavra do email.
+  // (No setup atual, `username` vinha primeiro, mas isso fazia o nome real
+  // do perfil ser ignorado quando o usuário tinha escolhido um username
+  // como "lucasl" — o nome registrado "Lucas Lima" passava despercebido.)
+  const greetingName = firstName || username || emailPrefix;
 
   if (activeTab === 'home') {
     return (
