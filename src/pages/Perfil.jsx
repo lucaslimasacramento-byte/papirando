@@ -409,21 +409,42 @@ export default function Perfil(props) {
       return;
     }
 
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
+    // Try/catch externo evita que uma rejeição inesperada (timeout do fetch,
+    // erro do client antes do response, falha de RLS recursiva) deixe o
+    // componente em estado inconsistente e cause crash ao abrir a aba de
+    // Segurança/Conquistas que dependem de profileData.
+    try {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
 
-    if (error) {
-      if (error.code !== 'PGRST116') {
-        console.warn('Não foi possível carregar o perfil remoto:', error.message);
+      if (error) {
+        if (error.code !== 'PGRST116') {
+          console.warn('Não foi possível carregar o perfil remoto:', error.message);
+        }
+        setRemoteProfile({ email: currentUserEmail || '' });
+        return;
       }
-      setRemoteProfile({ email: currentUserEmail || '' });
-      return;
-    }
 
-    setRemoteProfile(data || { email: currentUserEmail || '' });
+      setRemoteProfile(data || { email: currentUserEmail || '' });
+    } catch (error) {
+      console.warn('Falha inesperada ao carregar perfil remoto:', error);
+      setRemoteProfile({ email: currentUserEmail || '' });
+    }
   }, [currentUserEmail, currentUserId]);
 
   useEffect(() => {
-    loadRemoteProfile();
+    let cancelled = false;
+    (async () => {
+      try {
+        await loadRemoteProfile();
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Erro ignorado ao chamar loadRemoteProfile no efeito:', error);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [loadRemoteProfile]);
 
   const memberships = Array.isArray(squadSummary?.memberships) ? squadSummary.memberships : [];
