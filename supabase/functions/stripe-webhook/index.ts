@@ -20,14 +20,14 @@ const supabaseAdmin = createClient(
 );
 
 /** Mapeia price_id → nome do plano interno */
-function planNameFromPriceId(priceId: string): string {
+function planNameFromPriceId(priceId: string): string | null {
   const priceMap: Record<string, string> = {
     [Deno.env.get('STRIPE_PRICE_TATICO_MONTHLY') ?? '__none1']: 'tatico',
     [Deno.env.get('STRIPE_PRICE_TATICO_ANNUAL') ?? '__none2']: 'tatico',
     [Deno.env.get('STRIPE_PRICE_ELITE_MONTHLY') ?? '__none3']: 'elite',
     [Deno.env.get('STRIPE_PRICE_ELITE_ANNUAL') ?? '__none4']: 'elite',
   };
-  return priceMap[priceId] ?? 'tatico';
+  return priceMap[priceId] ?? null;
 }
 
 function billingCycleFromPriceId(priceId: string): string {
@@ -47,12 +47,18 @@ async function upsertSubscription(subscription: Stripe.Subscription): Promise<vo
 
   const item = subscription.items.data[0];
   const priceId = item?.price?.id ?? '';
+  const planName = planNameFromPriceId(priceId);
+
+  if (!planName) {
+    console.warn('[stripe-webhook] price_id desconhecido:', priceId, subscription.id);
+    return;
+  }
 
   await supabaseAdmin.from('subscriptions').upsert(
     {
       user_id: userId,
       provider: 'stripe',
-      plan_name: planNameFromPriceId(priceId),
+      plan_name: planName,
       billing_cycle: billingCycleFromPriceId(priceId),
       stripe_customer_id: subscription.customer as string,
       stripe_subscription_id: subscription.id,
@@ -67,6 +73,22 @@ async function upsertSubscription(subscription: Stripe.Subscription): Promise<vo
   );
 }
 
+async function registerWebhookEvent(event: Stripe.Event): Promise<'new' | 'duplicate' | 'unavailable'> {
+  const { error } = await supabaseAdmin.from('stripe_webhook_events').insert({
+    id: event.id,
+    type: event.type,
+  });
+
+  if (!error) return 'new';
+  if (error.code === '23505') return 'duplicate';
+  if (error.code === '42P01' || String(error.message || '').toLowerCase().includes('stripe_webhook_events')) {
+    console.warn('[stripe-webhook] tabela de idempotencia ausente');
+    return 'unavailable';
+  }
+
+  throw error;
+}
+
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
   const body = await req.text();
@@ -79,14 +101,19 @@ serve(async (req) => {
       Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '',
     );
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[stripe-webhook] Assinatura invalida:', msg);
-    return new Response(`Webhook Error: ${msg}`, { status: 400 });
+    console.warn('[stripe-webhook] assinatura invalida');
+    return new Response('Webhook invalido', { status: 400 });
   }
 
-  console.log('[stripe-webhook] evento recebido:', event.type);
+  console.log('[stripe-webhook] evento recebido:', event.id, event.type);
 
   try {
+    const eventState = await registerWebhookEvent(event);
+    if (eventState === 'duplicate') {
+      console.log('[stripe-webhook] evento duplicado ignorado:', event.id);
+      return new Response('ok', { status: 200 });
+    }
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -117,9 +144,8 @@ serve(async (req) => {
         console.log('[stripe-webhook] evento ignorado:', event.type);
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[stripe-webhook] erro ao processar:', msg);
-    return new Response(`Erro interno: ${msg}`, { status: 500 });
+    console.error('[stripe-webhook] erro ao processar evento', event.id);
+    return new Response('Erro interno', { status: 500 });
   }
 
   return new Response('ok', { status: 200 });

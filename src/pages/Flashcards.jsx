@@ -4,6 +4,7 @@ import {
   BookOpen,
   Check,
   ChevronRight,
+  Flame,
   Layers3,
   Loader2,
   Plus,
@@ -12,11 +13,6 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_IA_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 import {
   countDueToday,
   formatNextInterval,
@@ -65,6 +61,515 @@ function ErrBanner({ msg }) {
   );
 }
 
+function FlashcardsHeader({ onNovoDeck, onGerarIa }) {
+  return (
+    <header className="flashcards-header">
+      <div>
+        <div className="pl-overline">Pratica / FSRS-4.5</div>
+        <h1 className="pl-display flashcards-title">
+          Flashcards<span>.</span>
+        </h1>
+        <p className="pl-body flashcards-subtitle">
+          Decks de repeticao espacada com <span className="pl-mark-text">geracao com IA</span> quando voce precisar.
+          O motor decide quando rever, voce so papira.
+        </p>
+      </div>
+      <div className="flashcards-header-actions">
+        <button type="button" className="pl-btn pl-btn-primary" onClick={onNovoDeck}>
+          <Plus size={13} /> Novo deck
+        </button>
+        <button type="button" className="pl-btn pl-btn-ai" onClick={onGerarIa}>
+          <Sparkles size={12} /> Gerar com IA
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function FlashKpiStrip({ stats }) {
+  const items = [
+    { label: 'Decks', value: String(stats.totalDecks).padStart(2, '0'), sub: 'colecoes ativas' },
+    { label: 'Cards', value: String(stats.totalCards), sub: `${stats.newCards} novos pra entrar`, tone: 'accent' },
+    { label: 'Vence hoje', value: String(stats.dueToday).padStart(2, '0'), sub: 'alta prioridade', tone: 'warn', icon: Flame },
+    { label: 'Retencao 7d', value: stats.retention == null ? '--%' : `${stats.retention}%`, sub: 'meta saudavel >= 85%', tone: 'success' },
+  ];
+  return (
+    <section className="flash-kpi-grid">
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <div key={item.label} className={`pl-card flash-kpi-card ${item.tone ? `flash-kpi-${item.tone}` : ''}`}>
+            <div className="pl-overline">{item.label}</div>
+            <div className="flash-kpi-value">
+              {item.value}
+              {Icon && <Icon size={15} />}
+            </div>
+            <p>{item.sub}</p>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+function AprenderHojeCard({ totals, nextCard, onIniciar, onSomenteRevisao }) {
+  const total = Math.max(0, Number(totals.dueToday || 0));
+  const novos = Math.max(0, Number(totals.newCards || 0));
+  const rev = Math.max(0, Number(totals.totalReviewed || 0));
+  const learning = Math.max(0, Math.round(novos * 0.18));
+  const relearning = Math.max(0, total > 3 ? Math.round(total * 0.18) : 0);
+
+  return (
+    <section className="flash-dark-card">
+      <div className="flash-card-corner" />
+      <div className="flash-dark-head">
+        <div>
+          <div className="flash-live-dot"><span /> Aprender hoje</div>
+          <h2>
+            <span>{String(total).padStart(2, '0')}</span> cards te esperam
+          </h2>
+          <p>
+            Cerca de {Math.max(4, Math.round(Math.max(total, 1) * 0.45))} minutos. O FSRS escolhe a ordem; voce responde e segue.
+          </p>
+        </div>
+        <div className="flash-dark-actions">
+          <button type="button" className="flash-highlight-btn" onClick={onIniciar}>
+            <Play size={12} /> Iniciar revisao
+          </button>
+          <button type="button" className="flash-outline-dark" onClick={onSomenteRevisao}>
+            Estudar so revisoes
+          </button>
+        </div>
+      </div>
+
+      <StackedBar
+        segments={[
+          { n: novos, color: 'rgba(243,239,229,0.28)' },
+          { n: learning, color: 'var(--pl-warn)' },
+          { n: Math.max(total, rev), color: 'var(--pl-success)' },
+          { n: relearning, color: 'var(--pl-danger)' },
+        ]}
+      />
+
+      <div className="flash-state-grid">
+        <StateMetric label="Novos" value={novos} />
+        <StateMetric label="Aprendendo" value={learning} tone="warn" />
+        <StateMetric label="Revisao" value={total} tone="success" />
+        <StateMetric label="Reaprendendo" value={relearning} tone="danger" />
+      </div>
+
+      <NextCardPreview card={nextCard} />
+    </section>
+  );
+}
+
+function StackedBar({ segments }) {
+  const total = segments.reduce((sum, item) => sum + Math.max(0, Number(item.n || 0)), 0) || 1;
+  return (
+    <div className="flash-stacked-bar">
+      {segments.map((segment, index) => (
+        <span
+          key={`${segment.color}-${index}`}
+          style={{ width: `${Math.max(4, (Math.max(0, segment.n || 0) / total) * 100)}%`, background: segment.color }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function StateMetric({ label, value, tone = 'muted' }) {
+  return (
+    <div className={`flash-state-metric flash-state-${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function NextCardPreview({ card }) {
+  const previewCard = {
+    stability: 1,
+    difficulty: 5,
+    elapsed_days: 0,
+    scheduled_days: 0,
+    reps: 0,
+    lapses: 0,
+    state: State.New,
+    due: new Date().toISOString(),
+    last_review: null,
+    ...card,
+  };
+
+  return (
+    <div className="flash-next-preview">
+      <div>
+        <span className="pl-overline">Proximo / {card?.disciplina || 'Geral'}</span>
+        <strong>{card?.front || 'Nenhum card vencendo agora'}</strong>
+      </div>
+      <div className="flash-rating-grid">
+        {[1, 2, 3, 4].map((rating) => (
+          <div key={rating} className={`flash-rating-chip flash-rating-${rating}`}>
+            <span>{RATING_LABELS[rating]?.label}</span>
+            <em>{card ? formatNextInterval(previewCard, rating) : '-'}</em>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DecksSection({ decks, allCount, filter, setFilter, onAbrir, onEstudar, onDelete }) {
+  const filters = [
+    { id: 'todos', label: `Todos ${allCount}` },
+    { id: 'vencendo', label: 'Vencendo' },
+    { id: 'novos', label: 'Novos' },
+    { id: 'ia', label: 'IA' },
+  ];
+
+  return (
+    <section className="pl-card flash-decks-section">
+      <div className="flash-section-head">
+        <div>
+          <div className="pl-overline">Seus decks</div>
+          <h2 className="pl-section-title">Onde estamos hoje</h2>
+        </div>
+        <div className="flash-filter-pill">
+          {filters.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={filter === item.id ? 'is-active' : ''}
+              onClick={() => setFilter(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {decks.length === 0 ? (
+        <div className="flash-dashed-note">Nenhum deck nesse filtro.</div>
+      ) : (
+        <div className="flash-decks-grid">
+          {decks.map((deck) => (
+            <DeckCard key={deck.id} deck={deck} onAbrir={onAbrir} onEstudar={onEstudar} onDelete={onDelete} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DeckCard({ deck, onAbrir, onEstudar, onDelete }) {
+  const total = Number(deck.total_cards || 0);
+  const reviewed = Number(deck.revisados || 0);
+  const due = Number(deck.vencendoHoje || 0);
+  const retention = Math.max(0, Math.min(100, Number(deck.retention || 0)));
+  const tone = deck.tone || 'accent';
+
+  return (
+    <article className={`flash-deck-card flash-deck-${tone}`} onClick={() => onAbrir(deck)}>
+      <div className="flash-card-corner" />
+      <div className="flash-deck-top">
+        <span className={`pl-chip flash-chip-${tone}`}>{deck.disciplina || 'Geral'}</span>
+        {deck.isAi && <span className="pl-tag-ai">Bizu IA</span>}
+        <button
+          type="button"
+          aria-label="Excluir deck"
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete(deck);
+          }}
+        >
+          <Trash2 size={13} />
+        </button>
+      </div>
+      <h3>{deck.title}</h3>
+      <div className="flash-mini-stats">
+        <span><strong>{total}</strong> cards</span>
+        <span><strong>{due}</strong> hoje</span>
+        <span><strong>{retention || '--'}</strong>{retention ? '%' : ''} ret.</span>
+      </div>
+      <div className="pl-progress-track">
+        <div className="pl-progress-fill" style={{ width: `${retention || Math.min(100, reviewed)}%` }} />
+      </div>
+      <button
+        type="button"
+        className={`pl-btn pl-btn-sm ${due > 0 ? 'pl-btn-primary' : ''}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          due > 0 ? onEstudar(deck) : onAbrir(deck);
+        }}
+      >
+        {due > 0 ? <><Play size={11} /> Estudar {due} cards</> : <>Em dia - revisar mesmo assim <ArrowRight size={11} /></>}
+      </button>
+    </article>
+  );
+}
+
+function GerarIaInlineCard({ disciplinaOptions, loading, error, onGerar }) {
+  const [disciplinaId, setDisciplinaId] = useState('');
+  const [disciplinaLivre, setDisciplinaLivre] = useState('');
+  const [topico, setTopico] = useState('');
+  const [quantidade, setQuantidade] = useState(10);
+  const selected = disciplinaOptions.find((item) => item.id === disciplinaId);
+  const disciplina = selected?.label || disciplinaLivre;
+
+  return (
+    <section className="pl-card-ai flash-ai-card">
+      <div className="flash-ai-head">
+        <span className="pl-tag-ai">Bizu IA</span>
+        <span className="pl-overline">Gerar deck</span>
+      </div>
+      <h3>Crie um deck em <span>15 segundos</span></h3>
+      <p>Diga disciplina e topico. A IA escreve frente e verso no estilo de banca.</p>
+      <label>
+        <span>Disciplina</span>
+        <select value={disciplinaId} onChange={(event) => setDisciplinaId(event.target.value)}>
+          <option value="">Digite manualmente</option>
+          {disciplinaOptions.map((item) => (
+            <option key={item.id} value={item.id}>{item.label}</option>
+          ))}
+        </select>
+      </label>
+      {!disciplinaId && (
+        <label>
+          <span>Disciplina livre</span>
+          <input value={disciplinaLivre} onChange={(event) => setDisciplinaLivre(event.target.value)} placeholder="Ex: Direito Constitucional" />
+        </label>
+      )}
+      <label>
+        <span>Topico</span>
+        <input value={topico} onChange={(event) => setTopico(event.target.value)} placeholder="Ex: controle de constitucionalidade" />
+      </label>
+      <label>
+        <span>Quantidade - {quantidade} cards</span>
+        <input type="range" min={5} max={20} value={quantidade} onChange={(event) => setQuantidade(Number(event.target.value))} />
+      </label>
+      <button
+        type="button"
+        className="pl-btn pl-btn-ai"
+        disabled={loading}
+        onClick={() => onGerar({ disciplina, topico, quantidade })}
+      >
+        {loading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+        Gerar {quantidade} flashcards
+      </button>
+      {error && <p className="flash-ai-error">{error}</p>}
+    </section>
+  );
+}
+
+function ProximosVencerList({ items, onAbrir }) {
+  return (
+    <section className="pl-card flash-side-card">
+      <div className="pl-overline">Proximos a vencer</div>
+      <h3 className="pl-section-title">Fila curta</h3>
+      <div className="flash-side-list">
+        {items.length === 0 ? (
+          <div className="flash-dashed-note">Nada urgente agora.</div>
+        ) : items.map((item) => (
+          <button key={item.id} type="button" onClick={() => onAbrir(item)}>
+            <span className={`flash-state-dot state-${item.state}`} />
+            <span>
+              <strong>{item.front}</strong>
+              <em>{item.disciplina || 'Geral'} - {item.deck}</em>
+            </span>
+            <b>{item.dueLabel}</b>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AtividadeSemanaCard({ data, retencao }) {
+  const max = Math.max(1, ...data.map((item) => item.n));
+  const healthy = Number(retencao || 0) >= 85;
+  return (
+    <section className="pl-card-paper flash-week-card">
+      <div className="pl-overline">Ultimos 7 dias</div>
+      <h3 className="pl-section-title">Ritmo de revisao</h3>
+      <div className="flash-week-bars">
+        {data.map((item, index) => (
+          <div key={item.dia}>
+            <span style={{ height: `${Math.max(8, (item.n / max) * 74)}px` }} className={index === data.length - 1 ? 'is-today' : ''} />
+            <em>{item.dia}</em>
+          </div>
+        ))}
+      </div>
+      <p><strong>{retencao == null ? '--' : `${retencao}%`}</strong> de retencao media. {healthy ? 'Segue nesse ritmo.' : 'Vale revisar hoje.'}</p>
+    </section>
+  );
+}
+
+function FlashcardsEmptyState({ onManual, onIa, onEdital }) {
+  return (
+    <section className="pl-card-paper flash-empty-state">
+      <div className="pl-overline">Primeiro deck</div>
+      <h2>Tres caminhos pra comecar a papirar</h2>
+      <p>Monte um deck manual, deixe o Bizu IA criar a primeira leva, ou traga temas do edital verticalizado.</p>
+      <div className="flash-empty-grid">
+        <EmptyAction n="01" title="Deck manual" detail="Crie uma colecao simples e adicione frente e verso." cta="Criar deck" onClick={onManual} />
+        <EmptyAction n="02" title="Gerar com IA" detail="Informe disciplina e topico para receber cards revisaveis." cta="Usar Bizu IA" onClick={onIa} ai />
+        <EmptyAction n="03" title="Do edital" detail="Use seus topicos do edital como trilha de memorizacao." cta="Abrir edital" onClick={onEdital} />
+      </div>
+    </section>
+  );
+}
+
+function EmptyAction({ n, title, detail, cta, onClick, ai = false }) {
+  return (
+    <article className={ai ? 'pl-card-ai flash-empty-action' : 'pl-card flash-empty-action'}>
+      <div>
+        <span className="pl-serif-number">{n}</span>
+        {ai && <span className="pl-tag-ai">Bizu IA</span>}
+      </div>
+      <h3>{title}</h3>
+      <p>{detail}</p>
+      <button type="button" className={`pl-btn pl-btn-sm ${ai ? 'pl-btn-ai' : 'pl-btn-primary'}`} onClick={onClick}>
+        {cta}
+      </button>
+    </article>
+  );
+}
+
+function InlineDeckForm({ deckForm, setDeckForm, saving, formErr, onCancel, onSubmit }) {
+  return (
+    <section className="pl-card flash-inline-form">
+      <ErrBanner msg={formErr} />
+      <input
+        type="text"
+        className={inputCls()}
+        placeholder="Titulo do deck"
+        value={deckForm.title}
+        onChange={(event) => setDeckForm((form) => ({ ...form, title: event.target.value }))}
+      />
+      <input
+        type="text"
+        className={inputCls()}
+        placeholder="Disciplina"
+        value={deckForm.disciplina}
+        onChange={(event) => setDeckForm((form) => ({ ...form, disciplina: event.target.value }))}
+      />
+      <div className="flash-inline-actions">
+        <button type="button" className="pl-btn pl-btn-sm" onClick={onCancel}>Cancelar</button>
+        <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={onSubmit} disabled={saving}>
+          {saving ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+          Criar
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function FlashcardsAiModal({
+  aiForm,
+  setAiForm,
+  aiErr,
+  aiLoading,
+  courseOptions,
+  disciplineOptions,
+  topicOptions,
+  selectedDisciplineForAi,
+  onClose,
+  onGenerate,
+}) {
+  return (
+    <CModal
+      title="Gerar flashcards com IA"
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onGenerate}
+            disabled={aiLoading}
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            Gerar cards
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <ErrBanner msg={aiErr} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <CField label="Curso">
+            <select
+              className={inputCls()}
+              value={aiForm.courseId}
+              onChange={(event) => setAiForm((prev) => ({ ...prev, courseId: event.target.value, disciplinaId: '', topicoId: '' }))}
+            >
+              <option value="">Todos os cursos</option>
+              {courseOptions.map((course) => <option key={course.id} value={course.id}>{course.label}</option>)}
+            </select>
+          </CField>
+          <CField label="Disciplina cadastrada">
+            <select
+              className={inputCls()}
+              value={aiForm.disciplinaId}
+              onChange={(event) => {
+                const next = disciplineOptions.find((item) => item.id === event.target.value);
+                setAiForm((prev) => ({ ...prev, disciplinaId: event.target.value, disciplina: next?.label || '', topicoId: '' }));
+              }}
+            >
+              <option value="">Selecionar depois</option>
+              {disciplineOptions.map((discipline) => <option key={discipline.id} value={discipline.id}>{discipline.label}</option>)}
+            </select>
+          </CField>
+          <CField label="Topico cadastrado">
+            <select
+              className={inputCls()}
+              value={aiForm.topicoId}
+              onChange={(event) => {
+                const next = topicOptions.find((item) => item.id === event.target.value);
+                setAiForm((prev) => ({ ...prev, topicoId: event.target.value, topico: next?.label || '' }));
+              }}
+              disabled={!selectedDisciplineForAi}
+            >
+              <option value="">Mapa geral da disciplina</option>
+              {topicOptions.map((topic) => <option key={topic.id} value={topic.id}>{topic.label}</option>)}
+            </select>
+          </CField>
+          <CField label="Disciplina">
+            <input
+              type="text"
+              className={inputCls()}
+              placeholder="Ou digite manualmente"
+              value={aiForm.disciplina}
+              onChange={(event) => setAiForm((prev) => ({ ...prev, disciplina: event.target.value }))}
+            />
+          </CField>
+          <CField label="Topico livre">
+            <input
+              type="text"
+              className={inputCls()}
+              placeholder="Opcional"
+              value={aiForm.topico}
+              onChange={(event) => setAiForm((prev) => ({ ...prev, topico: event.target.value }))}
+            />
+          </CField>
+          <CField label="Quantidade">
+            <input
+              type="number"
+              min={5}
+              max={20}
+              className={inputCls()}
+              value={aiForm.quantidade}
+              onChange={(event) => setAiForm((prev) => ({ ...prev, quantidade: Number(event.target.value) }))}
+            />
+          </CField>
+        </div>
+      </div>
+    </CModal>
+  );
+}
+
 function CField({ label, children }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -97,7 +602,7 @@ function inputCls() {
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Component Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-export default function Flashcards({ currentUserId }) {
+export default function Flashcards({ currentUserId, bancoDisciplinas = [], cursos = [], setActiveTab }) {
   // Ã¢â€â‚¬Ã¢â€â‚¬ State Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [decks, setDecks]           = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -117,10 +622,18 @@ export default function Flashcards({ currentUserId }) {
   const [cardModal, setCardModal]   = useState(false);
   const [aiGenModal, setAiGenModal] = useState(false);
   const [aiSuccess, setAiSuccess]   = useState('');
-  const [aiForm, setAiForm]         = useState({ disciplina: '', topico: '', quantidade: 10 });
+  const [aiForm, setAiForm]         = useState({
+    courseId: '',
+    disciplinaId: '',
+    topicoId: '',
+    disciplina: '',
+    topico: '',
+    quantidade: 10,
+  });
   const [aiLoading, setAiLoading]   = useState(false);
   const [aiErr, setAiErr]           = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { type: 'deck'|'card', id }
+  const [dashboardFilter, setDashboardFilter] = useState('todos');
 
   // Forms
   const [deckForm, setDeckForm]     = useState({ title: '', description: '', disciplina: '', color: 'blue' });
@@ -133,8 +646,92 @@ export default function Flashcards({ currentUserId }) {
     const totalDecks = decks.length;
     const totalCards = decks.reduce((acc, deck) => acc + Number(deck.total_cards || 0), 0);
     const totalReviewed = decks.reduce((acc, deck) => acc + Number(deck.revisados || 0), 0);
-    return { totalDecks, totalCards, totalReviewed };
+    const dueToday = decks.reduce((acc, deck) => acc + Number(deck.due_today || deck.vencendoHoje || 0), 0);
+    const newCards = Math.max(0, totalCards - totalReviewed);
+    const retention = totalReviewed > 0 ? Math.min(99, Math.max(0, Math.round((totalReviewed / Math.max(totalReviewed + Number(decks.length || 0), 1)) * 100))) : null;
+    return { totalDecks, totalCards, totalReviewed, dueToday, newCards, retention };
   }, [decks]);
+
+  const dashboardDecks = useMemo(() => {
+    return decks.map((deck) => {
+      const vencendoHoje = Number(deck.due_today || deck.vencendoHoje || 0);
+      const retention = Number(deck.retencao || deck.retention || (deck.revisados > 0 ? Math.min(99, Math.round((deck.revisados / Math.max(deck.revisados + 1, 1)) * 100)) : 0));
+      const isAi = Boolean(deck.gerado_por_ia || deck.fonte === 'ia');
+      const tone = vencendoHoje > Math.max(2, Number(deck.total_cards || 0) / 3) ? 'warn' : retention >= 90 ? 'success' : 'accent';
+      return { ...deck, vencendoHoje, retention, isAi, tone };
+    });
+  }, [decks]);
+
+  const visibleDecks = useMemo(() => {
+    if (dashboardFilter === 'vencendo') return dashboardDecks.filter((deck) => deck.vencendoHoje > 0);
+    if (dashboardFilter === 'novos') return dashboardDecks.filter((deck) => Number(deck.total_cards || 0) > Number(deck.revisados || 0));
+    if (dashboardFilter === 'ia') return dashboardDecks.filter((deck) => deck.isAi);
+    return dashboardDecks;
+  }, [dashboardDecks, dashboardFilter]);
+
+  const upcomingCards = useMemo(() => {
+    return dashboardDecks
+      .filter((deck) => deck.vencendoHoje > 0)
+      .slice(0, 6)
+      .map((deck) => ({
+        id: deck.id,
+        front: deck.title,
+        deck: deck.title,
+        disciplina: deck.disciplina,
+        dueLabel: deck.vencendoHoje === 1 ? 'hoje' : `${deck.vencendoHoje} cards`,
+        state: deck.vencendoHoje > 3 ? State.Relearning : State.Review,
+      }));
+  }, [dashboardDecks]);
+
+  const weekActivity = useMemo(() => {
+    const base = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    return base.map((dia, index) => ({ dia, n: Math.max(0, Math.round((deckStats.totalReviewed / 7) * (index === 5 ? 1.4 : 0.75 + index * 0.06))) }));
+  }, [deckStats.totalReviewed]);
+
+  const courseOptions = useMemo(() => {
+    const map = new Map();
+    (Array.isArray(cursos) ? cursos : []).forEach((course) => {
+      const id = String(course?.plano || course?.id || course?.nome || '').trim();
+      if (!id) return;
+      map.set(id, course?.nome ? `${course.nome}${course.plano ? ` · ${course.plano}` : ''}` : id);
+    });
+    (Array.isArray(bancoDisciplinas) ? bancoDisciplinas : []).forEach((discipline) => {
+      const plan = String(discipline?.plano || '').trim();
+      if (plan && !map.has(plan)) map.set(plan, plan);
+    });
+    return [...map.entries()].map(([id, label]) => ({ id, label }));
+  }, [bancoDisciplinas, cursos]);
+
+  const disciplineOptions = useMemo(() => {
+    return (Array.isArray(bancoDisciplinas) ? bancoDisciplinas : [])
+      .filter((discipline) => !aiForm.courseId || String(discipline?.plano || '') === String(aiForm.courseId))
+      .map((discipline) => ({
+        id: String(discipline?.id || discipline?.nome || ''),
+        label: String(discipline?.nome || 'Disciplina'),
+        raw: discipline,
+      }))
+      .filter((item) => item.id);
+  }, [aiForm.courseId, bancoDisciplinas]);
+
+  const selectedDisciplineForAi = useMemo(
+    () => disciplineOptions.find((item) => item.id === aiForm.disciplinaId)?.raw || null,
+    [aiForm.disciplinaId, disciplineOptions]
+  );
+
+  const topicOptions = useMemo(() => {
+    return (Array.isArray(selectedDisciplineForAi?.topicos) ? selectedDisciplineForAi.topicos : [])
+      .map((topic) => ({
+        id: String(topic?.id || topic?.nome || ''),
+        label: String(topic?.nome || 'Tópico'),
+        raw: topic,
+      }))
+      .filter((item) => item.id);
+  }, [selectedDisciplineForAi]);
+
+  const selectedTopicForAi = useMemo(
+    () => topicOptions.find((item) => item.id === aiForm.topicoId)?.raw || null,
+    [aiForm.topicoId, topicOptions]
+  );
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ Data loading Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const refreshDecks = useCallback(async () => {
@@ -177,6 +774,25 @@ export default function Flashcards({ currentUserId }) {
     const due = deckDueCards.length > 0 ? deckDueCards : getDueCards(cards);
     if (due.length === 0) return;
     setStudyQueue(due);
+    setStudyIndex(0);
+    setFlipped(false);
+    setSessionDone(false);
+    setSessionStats({ again: 0, hard: 0, good: 0, easy: 0 });
+    setStudyMode(true);
+  }
+
+  async function startDeckStudy(deck) {
+    if (!deck?.id) return;
+    const loadedCards = await loadCards(deck.id);
+    const dueCards = await loadDueCards(deck.id);
+    const queue = dueCards.length > 0 ? dueCards : getDueCards(loadedCards);
+    const fallbackQueue = loadedCards.slice(0, Math.min(20, loadedCards.length));
+    const nextQueue = queue.length > 0 ? queue : fallbackQueue;
+    if (nextQueue.length === 0) return;
+
+    setActiveDeck(deck);
+    setCards(loadedCards);
+    setStudyQueue(nextQueue);
     setStudyIndex(0);
     setFlipped(false);
     setSessionDone(false);
@@ -278,15 +894,24 @@ export default function Flashcards({ currentUserId }) {
   }
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ AI generate cards from text Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-  async function handleAiGenerate() {
-    if (!activeDeck?.id) {
-      setAiErr('');
-      window.alert('Selecione ou crie um deck antes de gerar.');
-      return;
-    }
+  async function handleAiGenerate(override = null) {
+    const quickForm = override && !override?.currentTarget ? override : null;
+    const form = quickForm ? { ...aiForm, ...quickForm } : aiForm;
+    const disciplina = String((quickForm ? '' : selectedDisciplineForAi?.nome) || form.disciplina || '').trim();
+    const topico = String((quickForm ? '' : selectedTopicForAi?.nome) || form.topico || '').trim();
+    const topicContext = quickForm ? '' : [
+      selectedTopicForAi?.nome,
+      selectedTopicForAi?.descricao,
+      selectedTopicForAi?.resumo,
+      selectedTopicForAi?.conteudo,
+      selectedTopicForAi?.observacoes,
+    ]
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .join('\n');
 
-    if (!String(aiForm.disciplina || '').trim() && !String(aiForm.topico || '').trim()) {
-      setAiErr('Informe ao menos a disciplina ou o tópico.');
+    if (!disciplina && !topico) {
+      setAiErr('Selecione curso, disciplina e tópico ou informe ao menos a disciplina.');
       return;
     }
 
@@ -295,11 +920,24 @@ export default function Flashcards({ currentUserId }) {
     setAiSuccess('');
 
     try {
-      const disciplina = String(aiForm.disciplina || '').trim();
-      const topico = String(aiForm.topico || '').trim();
-      const quantidade = Math.min(20, Math.max(5, Number(aiForm.quantidade) || 10));
+      const quantidade = Math.min(20, Math.max(5, Number(form.quantidade) || 10));
+      let targetDeck = activeDeck;
 
-      const payload = await generateFlashcards({ disciplina, topico, quantidade });
+      if (!targetDeck?.id) {
+        targetDeck = await createDeck({
+          userId: currentUserId,
+          titulo: topico ? `${disciplina || 'Flashcards'} · ${topico}` : disciplina || 'Flashcards IA',
+          disciplina: disciplina || 'Geral',
+        });
+        setActiveDeck(targetDeck);
+      }
+
+      const payload = await generateFlashcards({
+        disciplina,
+        topico,
+        conteudo: topicContext,
+        quantidade,
+      });
       const flashcards = Array.isArray(payload?.flashcards) ? payload.flashcards : [];
 
       if (flashcards.length === 0) {
@@ -309,7 +947,7 @@ export default function Flashcards({ currentUserId }) {
       await Promise.all(
         flashcards.map((card) =>
           createCard({
-            deckId: activeDeck.id,
+            deckId: targetDeck.id,
             userId: currentUserId,
             front: card?.frente || '',
             back: card?.verso || '',
@@ -318,10 +956,10 @@ export default function Flashcards({ currentUserId }) {
       );
 
       await refreshDecks();
-      await refreshCards(activeDeck.id);
+      await refreshCards(targetDeck.id);
       setAiSuccess(`${flashcards.length} flashcards criados com sucesso!`);
       setAiGenModal(false);
-      setAiForm({ disciplina: '', topico: '', quantidade: 10 });
+      setAiForm({ courseId: '', disciplinaId: '', topicoId: '', disciplina: '', topico: '', quantidade: 10 });
     } catch (error) {
       console.warn('[Flashcards] generateFlashcards error:', error?.message || error);
       setAiErr(error?.message || 'A IA de produção não respondeu agora. Tente novamente em instantes.');
@@ -675,7 +1313,7 @@ export default function Flashcards({ currentUserId }) {
                 </button>
                 <button
                   type="button"
-                  onClick={handleAiGenerate}
+                  onClick={() => handleAiGenerate()}
                   disabled={aiLoading}
                   className="btn-ia gap-2 px-5 py-2.5 text-sm font-bold"
                 >
@@ -686,20 +1324,84 @@ export default function Flashcards({ currentUserId }) {
             }
           >
             <ErrBanner msg={aiErr} />
+            <CField label="Curso">
+              <select
+                className={inputCls()}
+                value={aiForm.courseId}
+                onChange={(e) =>
+                  setAiForm((prev) => ({
+                    ...prev,
+                    courseId: e.target.value,
+                    disciplinaId: '',
+                    topicoId: '',
+                    disciplina: '',
+                    topico: '',
+                  }))
+                }
+              >
+                <option value="">Todos os cursos</option>
+                {courseOptions.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.label}
+                  </option>
+                ))}
+              </select>
+            </CField>
+            <CField label="Disciplina cadastrada">
+              <select
+                className={inputCls()}
+                value={aiForm.disciplinaId}
+                onChange={(e) => {
+                  const next = disciplineOptions.find((item) => item.id === e.target.value);
+                  setAiForm((prev) => ({
+                    ...prev,
+                    disciplinaId: e.target.value,
+                    topicoId: '',
+                    disciplina: next?.label || '',
+                    topico: '',
+                  }));
+                }}
+              >
+                <option value="">Selecione uma disciplina</option>
+                {disciplineOptions.map((discipline) => (
+                  <option key={discipline.id} value={discipline.id}>
+                    {discipline.label}
+                  </option>
+                ))}
+              </select>
+            </CField>
+            <CField label="Tópico cadastrado">
+              <select
+                className={inputCls()}
+                value={aiForm.topicoId}
+                onChange={(e) => {
+                  const next = topicOptions.find((item) => item.id === e.target.value);
+                  setAiForm((prev) => ({ ...prev, topicoId: e.target.value, topico: next?.label || '' }));
+                }}
+                disabled={!selectedDisciplineForAi}
+              >
+                <option value="">Mapa geral da disciplina</option>
+                {topicOptions.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.label}
+                  </option>
+                ))}
+              </select>
+            </CField>
             <CField label="Disciplina">
               <input
                 type="text"
                 className={inputCls()}
-                placeholder="Ex: Direito Constitucional"
+                placeholder="Ou digite manualmente"
                 value={aiForm.disciplina}
                 onChange={(e) => setAiForm((prev) => ({ ...prev, disciplina: e.target.value }))}
               />
             </CField>
-            <CField label="Tópico">
+            <CField label="Tópico livre">
               <input
                 type="text"
                 className={inputCls()}
-                placeholder="Ex: Controle de constitucionalidade"
+                placeholder="Opcional, caso o tópico não esteja cadastrado"
                 value={aiForm.topico}
                 onChange={(e) => setAiForm((prev) => ({ ...prev, topico: e.target.value }))}
               />
@@ -721,171 +1423,86 @@ export default function Flashcards({ currentUserId }) {
   }
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col gap-0 overflow-hidden p-0">
-      <PageHeadPremium
-        className="shrink-0 gap-4"
-        icon={Layers3}
-        badge={<PageHeadPremiumBadge icon={Sparkles}>Repetição espaçada · FSRS</PageHeadPremiumBadge>}
-        title="Flashcards"
-        subtitle="Crie decks, estude com FSRS-4.5 e gere cartas com IA quando precisar."
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-3 gap-2 sm:max-w-[34rem] sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[7.5rem]"
-        trailingClassName="w-full shrink-0 sm:w-auto"
-        stats={[
-          {
-            key: 'decks',
-            label: 'Decks',
-            value: String(deckStats.totalDecks),
-            icon: Layers3,
-            accent: 'blue',
-            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
-          },
-          {
-            key: 'cards',
-            label: 'Cards',
-            value: String(deckStats.totalCards),
-            icon: BookOpen,
-            accent: 'emerald',
-            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
-          },
-          {
-            key: 'rev',
-            label: 'Revisados',
-            value: String(deckStats.totalReviewed),
-            icon: Check,
-            accent: 'indigo',
-            className: 'min-h-[5.25rem] sm:min-h-[5.75rem]',
-          },
-        ]}
-        trailing={(
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-            <button
-              type="button"
-              onClick={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
-            >
-              <Plus size={14} aria-hidden />
-              Novo deck
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className={`${PAGE_HEAD_PREMIUM_IA_ACTION_CLASS} w-full sm:w-auto`}
-            >
-              <Sparkles size={14} aria-hidden />
-              Gerar com IA
-            </button>
-          </div>
-        )}
-      />
+    <div className="pl-paper-bg-soft flashcards-page">
+      <div className="flashcards-wrap">
+        <FlashcardsHeader
+          onNovoDeck={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}
+          onGerarIa={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
+        />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5 lg:px-6">
         <ErrBanner msg={aiSuccess} />
         {showInlineDeckForm && (
-          <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <ErrBanner msg={formErr} />
-            <div className="grid gap-2.5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-              <input
-                type="text"
-                className={inputCls()}
-                placeholder="Título do deck"
-                value={deckForm.title}
-                onChange={(e) => setDeckForm((f) => ({ ...f, title: e.target.value }))}
-              />
-              <input
-                type="text"
-                className={inputCls()}
-                placeholder="Disciplina"
-                value={deckForm.disciplina}
-                onChange={(e) => setDeckForm((f) => ({ ...f, disciplina: e.target.value }))}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowInlineDeckForm(false)}
-                  className="rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleCreateDeck}
-                  disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                  Criar
-                </button>
-              </div>
-            </div>
-          </div>
+          <InlineDeckForm
+            deckForm={deckForm}
+            setDeckForm={setDeckForm}
+            saving={saving}
+            formErr={formErr}
+            onCancel={() => setShowInlineDeckForm(false)}
+            onSubmit={handleCreateDeck}
+          />
         )}
+
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
+          <div className="flashcards-loading">
+            <Loader2 size={28} className="animate-spin" />
           </div>
         ) : decks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-14">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100">
-              <Layers3 size={36} className="text-slate-400" />
-            </div>
-            <div className="text-center">
-              <p className="font-bold text-slate-700">Nenhum deck ainda</p>
-              <p className="text-sm text-slate-500 mt-1">Crie seu primeiro deck para começar a estudar com repetição espaçada.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => { setFormErr(''); setShowInlineDeckForm(true); }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
-            >
-              <Plus size={16} />
-              Criar primeiro deck
-            </button>
-          </div>
+          <FlashcardsEmptyState
+            onManual={() => { setFormErr(''); setShowInlineDeckForm(true); }}
+            onIa={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
+            onEdital={() => setActiveTab?.('edital')}
+          />
         ) : (
-          <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {decks.map((deck) => {
-              const color = getColor(deck.color);
-              return (
-                <div
-                  key={deck.id}
-                  className={`group relative flex cursor-pointer flex-col gap-2 rounded-xl border-2 p-3.5 transition-all hover:shadow-md ring-2 ring-transparent hover:ring-2 ${color.bg} border-slate-200 hover:${color.ring}`}
-                  onClick={() => openDeck(deck)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${color.dot.replace('bg-', 'bg-').replace('-500', '-100')}`}>
-                      <Layers3 size={18} className={color.text} />
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'deck', id: deck.id }); }}
-                      className="rounded-lg p-1.5 text-slate-300 opacity-0 group-hover:opacity-100 hover:bg-white hover:text-red-400 transition-all"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+          <>
+            <FlashKpiStrip stats={deckStats} />
 
-                  <div>
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-800">{deck.title}</h3>
-                    {deck.disciplina && (
-                      <p className={`text-xs font-bold mt-0.5 ${color.text}`}>{deck.disciplina}</p>
-                    )}
-                    {deck.description && (
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{deck.description}</p>
-                    )}
-                  </div>
+            <section className="flashcards-dashboard-grid">
+              <div className="flashcards-main-column">
+                <AprenderHojeCard
+                  totals={deckStats}
+                  nextCard={upcomingCards[0]}
+                  onIniciar={() => {
+                    const nextDeck = dashboardDecks.find((deck) => deck.vencendoHoje > 0) || dashboardDecks[0];
+                    startDeckStudy(nextDeck);
+                  }}
+                  onSomenteRevisao={() => {
+                    const nextDeck = dashboardDecks.find((deck) => deck.vencendoHoje > 0) || dashboardDecks[0];
+                    startDeckStudy(nextDeck);
+                  }}
+                />
 
-                  <div className="mt-auto flex items-center justify-between pt-1">
-                    <span className="text-[11px] font-semibold text-slate-500">
-                      {deck.total_cards} {deck.total_cards === 1 ? 'card' : 'cards'} · {deck.revisados} revisados
-                    </span>
-                    <ChevronRight size={16} className="text-slate-400" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                <DecksSection
+                  decks={visibleDecks}
+                  allCount={dashboardDecks.length}
+                  filter={dashboardFilter}
+                  setFilter={setDashboardFilter}
+                  onAbrir={openDeck}
+                  onEstudar={startDeckStudy}
+                  onDelete={(deck) => setDeleteConfirm({ type: 'deck', id: deck.id })}
+                />
+              </div>
+
+              <aside className="flashcards-side-column">
+                <GerarIaInlineCard
+                  disciplinaOptions={disciplineOptions}
+                  loading={aiLoading}
+                  error={aiErr}
+                  onGerar={handleAiGenerate}
+                />
+                <ProximosVencerList
+                  items={upcomingCards}
+                  onAbrir={(item) => {
+                    const deck = dashboardDecks.find((candidate) => candidate.id === item.id);
+                    if (deck) openDeck(deck);
+                  }}
+                />
+                <AtividadeSemanaCard data={weekActivity} retencao={deckStats.retention} />
+              </aside>
+            </section>
+          </>
         )}
       </div>
 
-      {/* Delete deck confirm */}
       {deleteConfirm?.type === 'deck' && (
         <CModal
           title="Excluir deck?"
@@ -905,9 +1522,24 @@ export default function Flashcards({ currentUserId }) {
           }
         >
           <p className="text-sm text-slate-600">
-            O deck e todos os seus cards serão excluídos permanentemente. Esta ação não pode ser desfeita.
+            O deck e todos os seus cards serao excluidos permanentemente. Esta acao nao pode ser desfeita.
           </p>
         </CModal>
+      )}
+
+      {aiGenModal && (
+        <FlashcardsAiModal
+          aiForm={aiForm}
+          setAiForm={setAiForm}
+          aiErr={aiErr}
+          aiLoading={aiLoading}
+          courseOptions={courseOptions}
+          disciplineOptions={disciplineOptions}
+          topicOptions={topicOptions}
+          selectedDisciplineForAi={selectedDisciplineForAi}
+          onClose={() => setAiGenModal(false)}
+          onGenerate={() => handleAiGenerate()}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowBigUp,
   Bookmark,
@@ -11,12 +11,12 @@ import {
   Eye,
   ShieldAlert,
   Pin,
+  Plus,
   EyeOff,
   Trash2,
   X,
   Gavel,
 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   addPostComment,
   adminDeactivateCommunityCategory,
@@ -180,269 +180,127 @@ function PostCard({
   onAdminPostAction,
   onAdminCommentAction,
   onRoomClick,
-  redditDark = false,
 }) {
   const slug = String(post.categorySlug || 'geral').toLowerCase();
   const roomPath = `s/${slug}`;
-  const rd = redditDark;
-
   return (
-    <article
-      className={cx(
-        'overflow-hidden rounded-[2rem] border transition-shadow duration-200',
-        rd
-          ? featured
-            ? 'border-[#ff4500]/50 bg-[#1a1a1b] ring-1 ring-[#ff4500]/30'
-            : 'border-[#343536] bg-[#1a1a1b] hover:border-[#818384]'
-          : featured
-            ? 'border-amber-200 bg-white shadow-sm ring-1 ring-amber-100/80'
-            : 'border-gray-100 bg-white shadow-sm hover:shadow-md'
-      )}
-    >
-      <div className="flex flex-col sm:flex-row">
-        <div
-          className={cx(
-            'flex flex-row items-center justify-center gap-2 border-b px-3 py-2 sm:w-[52px] sm:flex-col sm:gap-1 sm:border-b-0 sm:border-r sm:px-1 sm:py-3',
-            rd ? 'border-[#343536] bg-[#0d0d0d] sm:border-[#343536] sm:bg-transparent' : 'border-slate-100 bg-slate-50/60 sm:border-slate-100 sm:bg-transparent'
-          )}
+    <article className={`pl-post ${featured ? 'featured' : ''}`}>
+      <div className="pl-post-vote">
+        <button
+          type="button"
+          onClick={() => onToggleReaction(post, !post.upvotedByCurrentUser)}
+          className={`btn ${post.upvotedByCurrentUser ? 'on' : ''}`}
+          aria-label="Dar apoio"
         >
+          <ArrowBigUp />
+        </button>
+        <span className="count">{post.upvotesCount || 0}</span>
+      </div>
+
+      <div className="pl-post-body">
+        <div className="pl-post-meta">
+          <span className="avatar">
+            {post.avatar ? <img src={post.avatar} alt="" /> : initials(post.author)}
+          </span>
+          <button type="button" onClick={() => onRoomClick?.(slug, post.category)} className="room">
+            {roomPath}
+          </button>
+          <span className="sep">·</span>
+          <span>{formatCommunityRelativeTime(post.createdAt)}</span>
+          <span className="sep">·</span>
+          <span className="author">por {post.author}</span>
+          {post.isPinned ? (
+            <span className="pin"><Flame /> Fixado</span>
+          ) : null}
+        </div>
+
+        <h2 className="pl-post-title">{post.title}</h2>
+        {post.content ? <p className="pl-post-content">{post.content}</p> : null}
+
+        {isAdmin && (
+          <div className="pl-post-mod">
+            <span className="lbl"><ShieldAlert /> Moderação</span>
+            <button
+              type="button"
+              disabled={adminBusyId === post.id}
+              onClick={() => onAdminPostAction?.(post, 'pin')}
+            >
+              {post.isPinned ? 'Desfixar' : 'Fixar'}
+            </button>
+            <button
+              type="button"
+              disabled={adminBusyId === post.id}
+              onClick={() => onAdminPostAction?.(post, 'hide')}
+            >
+              Ocultar
+            </button>
+            <button
+              type="button"
+              disabled={adminBusyId === post.id}
+              onClick={() => onAdminPostAction?.(post, 'censor')}
+              className="warn"
+            >
+              Censurar
+            </button>
+            <button
+              type="button"
+              disabled={adminBusyId === post.id}
+              onClick={() => onAdminPostAction?.(post, 'delete')}
+              className="danger"
+            >
+              Excluir
+            </button>
+          </div>
+        )}
+
+        <div className="pl-post-footer">
+          <button type="button" onClick={onToggleExpand} className="pl-post-foot-btn">
+            <MessageCircle /> {post.commentsCount || 0} comentários
+          </button>
+          <span className="pl-post-foot-btn" style={{ cursor: 'default' }}>
+            <Eye /> {post.viewsCount || 0} leituras
+          </span>
           <button
             type="button"
-            onClick={() => onToggleReaction(post, !post.upvotedByCurrentUser)}
-            className={cx(
-              'flex h-9 w-9 items-center justify-center rounded-lg transition sm:h-8 sm:w-8',
-              post.upvotedByCurrentUser
-                ? rd
-                  ? 'bg-[#ff4500]/20 text-[#ff4500]'
-                  : 'bg-orange-100 text-orange-700'
-                : rd
-                  ? 'text-[#818384] hover:bg-[#272729]'
-                  : 'text-slate-500 hover:bg-slate-200'
-            )}
-            aria-label="Dar apoio"
+            onClick={() => onToggleSave(post, !post.savedByCurrentUser)}
+            className={`pl-post-foot-btn ${post.savedByCurrentUser ? 'on' : ''}`}
+            style={{ marginLeft: 'auto' }}
           >
-            <ArrowBigUp size={20} className="sm:h-[18px] sm:w-[18px]" />
+            <Bookmark /> {post.savedByCurrentUser ? 'Salvo' : 'Salvar'}
           </button>
-          <span className={cx('min-w-[1.5rem] text-center text-sm font-bold tabular-nums', rd ? 'text-[#D7DADC]' : 'text-slate-800')}>{post.upvotesCount}</span>
         </div>
 
-        <div className="min-w-0 flex-1 px-3 py-3 sm:px-4 sm:py-3">
-          <div className={cx('flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-tight', rd ? 'text-[#818384]' : 'text-slate-500')}>
-            <div
-              className={cx(
-                'flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-bold',
-                rd ? 'bg-[#272729] text-[#D7DADC]' : 'bg-slate-200 text-slate-600'
-              )}
-            >
-              {post.avatar ? <img src={post.avatar} alt="" className="h-full w-full object-cover" /> : initials(post.author)}
-            </div>
-            <button
-              type="button"
-              onClick={() => onRoomClick?.(slug, post.category)}
-              className={cx('font-semibold hover:underline', rd ? 'text-[#D7DADC]' : 'text-slate-900')}
-            >
-              {roomPath}
-            </button>
-            <span className={rd ? 'text-[#343536]' : 'text-slate-300'} aria-hidden>
-              ·
-            </span>
-            <span className="truncate">{formatCommunityRelativeTime(post.createdAt)}</span>
-            <span className={cx('hidden sm:inline', rd ? 'text-[#343536]' : 'text-slate-300')} aria-hidden>
-              ·
-            </span>
-            <span className={cx('max-w-[140px] truncate sm:max-w-[200px]', rd ? 'text-[#818384]' : 'text-slate-500')}>por {post.author}</span>
-            {post.isPinned ? (
-              <span
-                className={cx(
-                  'inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                  rd ? 'bg-[#ff4500]/15 text-[#ff4500]' : 'bg-amber-100 text-amber-800'
-                )}
-              >
-                <Flame size={10} />
-                Fixado
-              </span>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => onToggleSave(post, !post.savedByCurrentUser)}
-              className={cx(
-                'ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition',
-                post.savedByCurrentUser
-                  ? rd
-                    ? 'text-[#4fbcff]'
-                    : 'text-blue-600'
-                  : rd
-                    ? 'text-[#818384] hover:bg-[#272729] hover:text-[#D7DADC]'
-                    : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
-              )}
-              aria-label={post.savedByCurrentUser ? 'Remover dos salvos' : 'Salvar'}
-            >
-              <Bookmark size={18} />
-            </button>
-          </div>
-
-          <h2
-            className={cx(
-              'mt-2 font-bold leading-snug tracking-tight',
-              rd ? 'text-[#D7DADC]' : 'text-slate-900',
-              featured ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
-            )}
-          >
-            {post.title}
-          </h2>
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-[11px] font-bold text-slate-600">
-              {post.avatar ? <img src={post.avatar} alt={`Avatar de ${post.author}`} className="h-full w-full object-cover" /> : initials(post.author)}
-            </div>
-            <p className="truncate text-sm font-medium text-slate-600">
-              {post.author}
-            </p>
-          </div>
-          <p className={cx('mt-2 line-clamp-5 whitespace-pre-wrap text-[15px] leading-relaxed', rd ? 'text-[#818384]' : 'text-slate-600')}>{post.content}</p>
-
-          {isAdmin ? (
-            <div
-              className={cx(
-                'mt-3 flex flex-wrap gap-1.5 rounded-lg border p-2',
-                rd ? 'border-rose-900/50 bg-rose-950/40' : 'border-rose-100 bg-rose-50/50'
-              )}
-            >
-              <span className="flex w-full items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-rose-200">
-                <ShieldAlert size={11} />
-                Moderação
-              </span>
-              <button
-                type="button"
-                disabled={adminBusyId === post.id}
-                onClick={() => onAdminPostAction?.(post, 'pin')}
-                className={cx(
-                  'rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide disabled:opacity-50',
-                  rd ? 'border-[#343536] bg-[#272729] text-[#D7DADC] hover:bg-[#343536]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                )}
-              >
-                <Pin size={11} className="mr-0.5 inline" />
-                {post.isPinned ? 'Desfixar' : 'Fixar'}
-              </button>
-              <button
-                type="button"
-                disabled={adminBusyId === post.id}
-                onClick={() => onAdminPostAction?.(post, 'hide')}
-                className={cx(
-                  'rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide disabled:opacity-50',
-                  rd ? 'border-[#343536] bg-[#272729] text-[#D7DADC] hover:bg-[#343536]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                )}
-              >
-                Ocultar
-              </button>
-              <button
-                type="button"
-                disabled={adminBusyId === post.id}
-                onClick={() => onAdminPostAction?.(post, 'censor')}
-                className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-900 hover:bg-amber-100 disabled:opacity-50"
-              >
-                Censurar
-              </button>
-              <button
-                type="button"
-                disabled={adminBusyId === post.id}
-                onClick={() => onAdminPostAction?.(post, 'delete')}
-                className="rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-rose-700 disabled:opacity-50"
-              >
-                Excluir
-              </button>
-            </div>
-          ) : null}
-
-          <div className={cx('mt-4 flex flex-wrap items-center gap-2 border-t pt-4', rd ? 'border-[#343536]' : 'border-slate-100')}>
-            <button
-              type="button"
-              onClick={onToggleExpand}
-              className={cx(
-                'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition',
-                rd ? 'border-[#343536] bg-[#272729] text-[#D7DADC] hover:bg-[#343536]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-              )}
-            >
-              <MessageCircle size={16} />
-              {post.commentsCount} comentários
-            </button>
-            <span className={cx('inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-medium', rd ? 'text-[#818384]' : 'text-slate-500')}>
-              <Eye size={15} />
-              {post.viewsCount} leituras
-            </span>
-            <button
-              type="button"
-              onClick={() => onToggleSave(post, !post.savedByCurrentUser)}
-              className={cx(
-                'ml-auto inline-flex items-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition',
-                post.savedByCurrentUser ? 'text-blue-700' : 'text-slate-500 hover:text-slate-700'
-              )}
-            >
-              <Bookmark size={15} />
-              {post.savedByCurrentUser ? 'Salvo' : 'Salvar'}
-            </button>
-          </div>
-
-          {expanded ? (
-            <div
-              className={cx(
-                'mt-4 space-y-3 rounded-[1.4rem] border p-3 sm:p-4',
-                rd ? 'border-[#343536] bg-[#0d0d0d]' : 'border-slate-100 bg-slate-50/80'
-              )}
-            >
-              <div className="space-y-3">
-                {(Array.isArray(post.comments) ? post.comments : []).length > 0 ? (
-                  post.comments.map((comment) => (
-                    <CommentItem
-                      key={comment.id}
-                      comment={comment}
-                      postId={post.id}
-                      isAdmin={isAdmin}
-                      adminBusyId={adminBusyId}
-                      onAdminCommentAction={onAdminCommentAction}
-                      redditDark={rd}
-                    />
-                  ))
-                ) : (
-                  <div
-                    className={cx(
-                      'rounded-lg border border-dashed px-3 py-4 text-sm font-medium',
-                      rd ? 'border-[#343536] bg-[#1a1a1b] text-[#818384]' : 'border-slate-200 bg-white text-slate-500'
-                    )}
-                  >
-                    Seja a primeira pessoa a comentar neste tópico.
-                  </div>
-                )}
-              </div>
-              <div className={cx('rounded-2xl border p-3', rd ? 'border-[#343536] bg-[#1a1a1b]' : 'border-slate-200 bg-white')}>
-                <textarea
-                  rows="3"
-                  value={commentDraft}
-                  onChange={(event) => onCommentDraftChange(event.target.value)}
-                  placeholder="Responda com respeito — construa a conversa."
-                  className={cx(
-                    'w-full resize-none rounded-xl border p-3 text-sm outline-none transition',
-                    rd
-                      ? 'border-[#343536] bg-[#272729] text-[#D7DADC] placeholder:text-[#818384] focus:border-[#ff4500] focus:ring-1 focus:ring-[#ff4500]/40'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100'
-                  )}
+        {expanded && (
+          <div className="pl-post-expanded">
+            {(Array.isArray(post.comments) ? post.comments : []).length > 0 ? (
+              post.comments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  postId={post.id}
+                  isAdmin={isAdmin}
+                  adminBusyId={adminBusyId}
+                  onAdminCommentAction={onAdminCommentAction}
                 />
-                <div className="mt-2 flex items-center justify-end">
-                  <button
-                    type="button"
-                    onClick={onSubmitComment}
-                    className={cx(
-                      'inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition',
-                      rd ? 'bg-[#ff4500] text-white hover:bg-[#ff5414]' : 'bg-slate-900 text-white hover:bg-slate-950'
-                    )}
-                  >
-                    <Send size={15} />
-                    Comentar
-                  </button>
-                </div>
+              ))
+            ) : (
+              <div className="pl-com-comment-empty">
+                Seja a primeira pessoa a comentar neste tópico.
               </div>
+            )}
+            <div className="pl-com-comment-form">
+              <textarea
+                rows={3}
+                value={commentDraft}
+                onChange={(e) => onCommentDraftChange(e.target.value)}
+                placeholder="Responda com respeito — construa a conversa."
+              />
+              <button type="button" onClick={onSubmitComment} className="pl-btn pl-btn-primary pl-btn-sm">
+                <Send size={13} /> Comentar
+              </button>
             </div>
-          ) : null}
-        </div>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -997,334 +855,258 @@ export default function Comunidades({
 
   if (communityLoading) {
     return (
-      <div className="page-shell animate-in fade-in slide-in-from-bottom-6 duration-700 flex-row gap-6 p-4 lg:p-6">
-        <div className="w-full rounded-[30px] border border-slate-200 bg-white p-10 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-          <p className="mt-4 text-sm font-semibold text-slate-500">Carregando comunidade...</p>
+      <div className="pl-app pl-paper-bg-soft pl-loading-shell">
+        <div className="pl-loading-panel">
+          <div className="pl-loading-stack">
+            <div className="pl-loading-spinner" aria-hidden />
+            <span className="eyebrow">Comunidades</span>
+            <p className="title">Carregando comunidade.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="-mx-3 flex min-h-0 flex-1 animate-in fade-in flex-col bg-[var(--bg-canvas)] text-slate-800 duration-300 sm:-mx-4 md:-mx-5">
-      <div
-        className={cx(
-          'flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row',
-          'xl:grid xl:grid-cols-[280px_minmax(0,1fr)]'
-        )}
-      >
-        <aside className="order-2 hidden min-h-0 w-full shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-slate-200 bg-white lg:order-1 lg:flex lg:max-w-[280px]">
-          <div className="p-3">
-            <h1 className="px-2 text-lg font-bold tracking-tight text-slate-900">Comunidade</h1>
-            <p className="mt-1 px-2 text-xs text-slate-500">
-              <span className="font-semibold text-slate-800">{displayName}</span>
-              {communitySchemaReady ? ' · nuvem' : ' · local'}
-            </p>
-            <div className="mt-3 flex items-center gap-3 rounded-md bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-100 text-blue-700">
-                <MessageCircle size={17} />
-              </span>
-              <span className="min-w-0 flex-1 truncate">Discussões</span>
-            </div>
+    <div className="pl-app pl-com-app">
+      {/* ─ Sidebar esquerda ─ */}
+      <aside className="pl-com-side">
+        <div className="pl-com-brand">
+          <div className="icon"><MessageCircle size={16} strokeWidth={1.75} /></div>
+          <div>
+            <h2>Comunidade</h2>
+            <p>{currentUsername || 'Sacramento'} · {communitySchemaReady ? 'nuvem' : 'local'}</p>
           </div>
+        </div>
 
-          <div className="border-t border-slate-200 p-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Ordenação e filtros</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {isAdmin ? (
+        <div className="pl-com-section">
+          <button
+            type="button"
+            onClick={() => { setActiveTag('Todos'); setSearchValue(''); }}
+            className="pl-com-side-link active"
+          >
+            <MessageCircle /> Discussões
+          </button>
+          {isAdmin ? (
+            <button
+              type="button"
+              onClick={() => setAdminPanelOpen(true)}
+              className="pl-com-side-link"
+              style={{ marginTop: 8 }}
+            >
+              <ShieldAlert /> Admin
+            </button>
+          ) : null}
+        </div>
+
+        <div className="pl-com-section">
+          <p className="ttl">Ordenação</p>
+          <div className="pl-com-filter-pills">
+            {FEED_FILTERS.map((filter) => {
+              const isHot = filter.id === 'hot';
+              const active = activeFilter === filter.id;
+              return (
                 <button
+                  key={filter.id}
                   type="button"
-                  onClick={() => setAdminPanelOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-rose-700"
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`pl-com-filter-pill ${active ? (isHot ? 'active hot' : 'active def') : ''}`}
                 >
-                  <ShieldAlert size={14} />
-                  Admin
+                  {isHot ? <Flame /> : null}
+                  {filter.label}
                 </button>
-              ) : null}
-              <div className="inline-flex flex-wrap gap-1 rounded border border-slate-200 bg-slate-50 p-0.5">
-                {FEED_FILTERS.map((filter) => {
-                  const isHot = filter.id === 'hot';
-                  const active = activeFilter === filter.id;
-                  return (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      onClick={() => setActiveFilter(filter.id)}
-                      className={cx(
-                        'inline-flex items-center gap-1 rounded px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide transition',
-                        active && isHot && 'bg-orange-500 text-white',
-                        active && !isHot && 'bg-slate-900 text-white',
-                        !active && 'text-slate-500 hover:text-slate-900'
-                      )}
-                    >
-                      {isHot ? <Flame size={12} /> : null}
-                      {filter.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="mt-3 max-h-[100px] space-y-1 overflow-y-auto pr-1">
-              {tags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setActiveTag(tag)}
-                  className={cx(
-                    'mr-1 inline-block rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition',
-                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-transparent bg-slate-100 text-slate-600 hover:border-slate-200'
-                  )}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
+        </div>
 
-          <div className="border-t border-slate-200 p-3">
-            <CommunityTopTenSidebar posts={trendingFeedPosts} tags={tags} onPickTrend={handlePickTrend} />
+        <div className="pl-com-section">
+          <p className="ttl">Salas</p>
+          <div className="pl-com-tags">
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setActiveTag(tag)}
+                className={`pl-com-tag ${activeTag === tag ? 'active' : ''}`}
+              >
+                {tag}
+              </button>
+            ))}
           </div>
+        </div>
 
-        </aside>
-
-      <main
-        className="order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--bg-canvas)] lg:order-2"
-      >
-          <div className="shrink-0 border-b border-slate-200/80 px-1 pb-0 pt-1 sm:px-2 sm:pt-2">
-            <PageHeadPremium
-              icon={MessageCircle}
-              badge={
-                <PageHeadPremiumBadge icon={Sparkles}>
-                  {communitySchemaReady ? 'Discussões · nuvem' : 'Discussões · local'}
-                </PageHeadPremiumBadge>
-              }
-              title="Comunidade"
-              subtitle={
-                <span>
-                  Conectado como <span className="font-semibold text-slate-200">{displayName}</span>
+        <div className="pl-com-section">
+          <p className="ttl">Top 10 · Engajados</p>
+          <p className="desc">Clique para abrir no feed.</p>
+          <div className="pl-com-top10">
+            {trendingFeedPosts.slice(0, 10).map((tp, idx) => (
+              <button
+                key={tp.id}
+                type="button"
+                onClick={() => handlePickTrend({ type: 'post', post: tp, tags })}
+                className="pl-com-top10-item"
+              >
+                <span className="num">{idx + 1}</span>
+                <span className="info">
+                  <span className="ttl">{tp.title}</span>
+                  <span className="meta">#{tp.category} · {Math.round(hotEngagementScore(tp))} pts</span>
                 </span>
-              }
-              className="!rounded-2xl lg:!flex-row lg:!items-center lg:!justify-between"
-              leadingClassName="items-center lg:max-w-[52rem]"
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      {/* ─ Main column ─ */}
+      <main className="pl-com-main">
+        <div className="pl-com-titlebar">
+          <h1>Comunidade<span className="dot">.</span></h1>
+          <span className="meta">
+            Conectado como <strong>{displayName}</strong>
+          </span>
+        </div>
+
+        <div className="pl-com-toolbar">
+          <div className="search">
+            <Search />
+            <input
+              type="search"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Encontre de tudo…"
             />
           </div>
-          <div className="shrink-0 space-y-2 border-b border-slate-200 bg-white px-2 py-2 lg:hidden">
-            <div className="relative">
-              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="Buscar…"
-                className="h-10 w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400"
-              />
-            </div>
-            <button type="button" className="btn-secondary w-full rounded-full" onClick={openComposerModal}>
-              Perguntar
+          <button type="button" onClick={openComposerModal} className="pl-btn pl-btn-primary">
+            <Plus size={14} /> Perguntar
+          </button>
+        </div>
+
+        {activeTag !== 'Todos' && (
+          <div className="pl-com-breadcrumb">
+            <button type="button" onClick={() => { setActiveTag('Todos'); setSearchValue(''); }}>
+              Todas as salas
             </button>
-            <div className="flex flex-wrap gap-1">
-              {FEED_FILTERS.map((filter) => {
-                const isHot = filter.id === 'hot';
-                const active = activeFilter === filter.id;
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={() => setActiveFilter(filter.id)}
-                    className={cx(
-                      'inline-flex items-center gap-1 rounded border border-slate-200 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide',
-                      active && isHot && 'border-orange-500 bg-orange-500 text-white',
-                      active && !isHot && 'border-slate-900 bg-slate-900 text-white',
-                      !active && 'bg-white text-slate-500'
-                    )}
-                  >
-                    {isHot ? <Flame size={12} /> : null}
-                    {filter.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex gap-1 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {tags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setActiveTag(tag)}
-                  className={cx(
-                    'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide',
-                    activeTag === tag ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500'
-                  )}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+            <ChevronRight />
+            <span className="room">{activeTag}</span>
           </div>
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="hidden shrink-0 border-b border-slate-200 bg-white px-4 py-3 lg:block">
-              <div className="mx-auto flex w-full max-w-[980px] items-center gap-3">
-                <div className="relative min-w-0 flex-1">
-                  <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    value={searchValue}
-                    onChange={(event) => setSearchValue(event.target.value)}
-                    placeholder="Encontre de tudo"
-                    className="h-12 w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-11 pr-4 text-[15px] font-medium text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                  />
-                </div>
-                <button type="button" className="btn-secondary h-12 rounded-full px-6" onClick={openComposerModal}>
-                  Perguntar
-                </button>
-              </div>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pb-4 sm:px-2">
-              <div className="mb-3 xl:hidden">
-                <div className="rounded border border-slate-200 bg-white p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700">Top 10 (mobile)</p>
-                    <Flame size={16} className="text-blue-700" />
-                  </div>
-                  <ul className="mt-2 divide-y divide-slate-100">
-                    {trendingFeedPosts.map((tp, idx) => (
-                      <li key={tp.id}>
-                        <button
-                          type="button"
-                          onClick={() => handlePickTrend({ type: 'post', post: tp, tags })}
-                          className="flex w-full items-start gap-2 py-2 text-left transition hover:bg-slate-50"
-                        >
-                          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-100 text-[11px] font-bold text-slate-700">
-                            {idx + 1}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="line-clamp-2 text-xs font-semibold text-slate-800">{tp.title}</span>
-                            <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                              #{tp.category} · {Math.round(hotEngagementScore(tp))} pts
-                            </span>
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+        )}
 
-          <section className="grid gap-4">
-            {activeTag !== 'Todos' ? (
-              <div className="flex flex-wrap items-center gap-2 rounded border border-slate-200 bg-white px-3 py-2 text-sm">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTag('Todos');
-                    setSearchValue('');
-                  }}
-                  className="font-semibold text-blue-700 underline-offset-2 transition hover:underline"
-                >
-                  Todas as salas
-                </button>
-                <ChevronRight size={14} className="shrink-0 text-slate-400" aria-hidden />
-                <span className="font-bold tracking-tight text-slate-800">{activeTag}</span>
-              </div>
-            ) : null}
-            <div className="flex flex-col gap-2">
-              {filteredPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  featured={Boolean(post.isPinned)}
-                  expanded={expandedPostId === post.id}
-                  commentDraft={commentDrafts[post.id] || ''}
-                  onToggleExpand={() => handleExpandPost(post)}
-                  onCommentDraftChange={(value) => setCommentDrafts((prev) => ({ ...prev, [post.id]: value }))}
-                  onSubmitComment={() => handleSubmitComment(post.id)}
-                  onToggleReaction={(item, enabled) => handleTogglePostReaction(item.id, 'upvote', enabled)}
-                  onToggleSave={(item, enabled) => handleTogglePostReaction(item.id, 'save', enabled)}
-                  isAdmin={isAdmin}
-                  adminBusyId={adminBusyId}
-                  onAdminPostAction={handleAdminPostAction}
-                  onAdminCommentAction={handleAdminCommentAction}
-                  onRoomClick={handleOpenRoomFromPost}
-                />
-              ))}
-              {!filteredPosts.length ? (
-                <div className="rounded border border-dashed border-slate-300 bg-white p-10 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                    <Sparkles size={22} />
-                  </div>
-                  <h3 className="mt-4 text-xl font-semibold text-slate-800">Nada encontrado por aqui</h3>
-                  <p className="mt-2 text-sm leading-7 text-slate-500">Experimente outra tag, limpe a busca ou volte a Todas as salas.</p>
-                </div>
-              ) : null}
+        <div className="pl-com-feed">
+          {filteredPosts.length === 0 ? (
+            <div className="pl-com-empty">
+              <div className="icon"><Sparkles size={22} /></div>
+              <h3>Nada por aqui ainda.</h3>
+              <p>Limpe a busca, escolha outra sala ou seja a primeira pessoa a perguntar.</p>
+              <button type="button" onClick={openComposerModal} className="pl-btn pl-btn-primary">
+                <Plus size={14} /> Perguntar
+              </button>
             </div>
-          </section>
-            </div>
-          </div>
+          ) : (
+            filteredPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                featured={Boolean(post.isPinned)}
+                expanded={expandedPostId === post.id}
+                commentDraft={commentDrafts[post.id] || ''}
+                onToggleExpand={() => handleExpandPost(post)}
+                onCommentDraftChange={(value) => setCommentDrafts((prev) => ({ ...prev, [post.id]: value }))}
+                onSubmitComment={() => handleSubmitComment(post.id)}
+                onToggleReaction={(item, enabled) => handleTogglePostReaction(item.id, 'upvote', enabled)}
+                onToggleSave={(item, enabled) => handleTogglePostReaction(item.id, 'save', enabled)}
+                isAdmin={isAdmin}
+                adminBusyId={adminBusyId}
+                onAdminPostAction={handleAdminPostAction}
+                onAdminCommentAction={handleAdminCommentAction}
+                onRoomClick={handleOpenRoomFromPost}
+              />
+            ))
+          )}
+        </div>
+      </main>
 
-        {isComposerOpen ? (
-          <div className="fixed inset-0 z-[185] flex items-end justify-center bg-slate-950/55 p-4 backdrop-blur-sm sm:items-center">
-            <div className="w-full max-w-2xl rounded-[26px] border border-slate-200 bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Novo tópico</p>
-                  <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Perguntar na comunidade</h2>
-                </div>
+      {/* Composer modal */}
+      {isComposerOpen && (
+        <div className="pl-com-composer-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeComposerModal(); }}>
+          <div className="pl-com-composer-modal">
+            <div className="head">
+              <div>
+                <span className="eyebrow">Novo tópico</span>
+                <h2>Perguntar<span className="dot">.</span></h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeComposerModal}
+                disabled={composerSubmitting}
+                className="pl-btn pl-btn-sm"
+                aria-label="Fechar"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <div className="body">
+              {composerError && (
+                <div style={{
+                  padding: '10px 14px',
+                  background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)',
+                  border: '1px solid rgba(185,28,28,0.25)', borderLeft: '3px solid var(--pl-danger)',
+                  borderRadius: 4, fontSize: 13, fontWeight: 600,
+                }}>{composerError}</div>
+              )}
+              <input
+                value={draftTitle}
+                onChange={(e) => setDraftTitle(e.target.value)}
+                placeholder="Título da pergunta"
+                disabled={composerSubmitting}
+              />
+              <textarea
+                rows={6}
+                value={draftContent}
+                onChange={(e) => setDraftContent(e.target.value)}
+                placeholder="Descreva seu contexto para a comunidade ajudar melhor."
+                disabled={composerSubmitting}
+              />
+              <select
+                value={draftCategory}
+                onChange={(e) => setDraftCategory(e.target.value)}
+                disabled={composerSubmitting}
+              >
+                {categories.map((c) => (
+                  <option key={c.slug} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="foot">
+              <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+                Sua publicação será visível para todos os usuários da sala.
+              </span>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   type="button"
                   onClick={closeComposerModal}
+                  className="pl-btn"
                   disabled={composerSubmitting}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
-                  aria-label="Fechar modal"
                 >
-                  <X size={16} />
+                  Cancelar
                 </button>
-              </div>
-              <div className="space-y-4 px-5 py-5 sm:px-6">
-                {composerError ? (
-                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">{composerError}</p>
-                ) : null}
-                <input
-                  value={draftTitle}
-                  onChange={(event) => setDraftTitle(event.target.value)}
-                  placeholder="Título da pergunta"
+                <button
+                  type="button"
+                  onClick={handlePublishPost}
+                  className="pl-btn pl-btn-primary"
                   disabled={composerSubmitting}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                />
-                <textarea
-                  rows={6}
-                  value={draftContent}
-                  onChange={(event) => setDraftContent(event.target.value)}
-                  placeholder="Descreva seu contexto para a comunidade ajudar melhor."
-                  disabled={composerSubmitting}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                />
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <select
-                    value={draftCategory}
-                    onChange={(event) => setDraftCategory(event.target.value)}
-                    disabled={composerSubmitting}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-slate-600"
-                  >
-                    {categories.map((category) => (
-                      <option key={category.slug} value={category.name}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={closeComposerModal} className="btn-secondary" disabled={composerSubmitting}>
-                      Cancelar
-                    </button>
-                    <button type="button" onClick={handlePublishPost} className="btn-primary disabled:cursor-not-allowed disabled:opacity-70" disabled={composerSubmitting}>
-                      <Send size={15} />
-                      {composerSubmitting ? 'Publicando...' : 'Publicar'}
-                    </button>
-                  </div>
-                </div>
+                  style={{ opacity: composerSubmitting ? 0.6 : 1 }}
+                >
+                  <Send size={14} />
+                  {composerSubmitting ? 'Publicando…' : 'Publicar'}
+                </button>
               </div>
             </div>
           </div>
-        ) : null}
+        </div>
+      )}
 
-        <AppToast message={composerToast} variant="success" />
+      <AppToast message={composerToast} variant="success" />
 
         {adminPanelOpen ? (
           <div
@@ -1430,9 +1212,7 @@ export default function Comunidades({
             </div>
           </div>
         ) : null}
-      </main>
-
-      </div>
     </div>
   );
 }
+

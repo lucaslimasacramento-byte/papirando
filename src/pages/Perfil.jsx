@@ -27,7 +27,7 @@ import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPre
 import { supabase } from '../lib/supabase';
 import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
 
-/** Paleta alinhada ao app (--accent #1d4ed8, superfícies frias). */
+/** Paleta alinhada ao app (--accent #1e3a5f, superfícies frias). */
 const HERO_BAR =
   'bg-gradient-to-br from-slate-900 via-[#0f172a] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
 const ACCENT_BTN = 'bg-blue-700 hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500/40';
@@ -1002,7 +1002,7 @@ export default function Perfil(props) {
                       <div className="p-6">
                         <div className="h-3 overflow-hidden rounded-full bg-slate-100">
                           <div
-                            className="h-full rounded-full bg-[linear-gradient(90deg,#1e3a8a,#2563eb)]"
+                            className="h-full rounded-full bg-[linear-gradient(90deg,#1e3a8a,#1e3a5f)]"
                             style={{ width: `${Math.max(0, Math.min(100, Number(xpSummary.progressPercent || 0)))}%` }}
                           />
                         </div>

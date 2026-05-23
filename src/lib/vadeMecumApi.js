@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 
 export const DEFAULT_VADE_DOCUMENT = {
   id: 'default-vade-mecum',
@@ -90,7 +90,7 @@ function normalizeMarkers(value) {
       section: String(item.section || ''),
       label: String(item.label || '').trim(),
       excerpt: String(item.excerpt || '').trim(),
-      color: String(item.color || '#2563EB'),
+      color: String(item.color || '#1e3a5f'),
       createdAt: item.createdAt || new Date().toISOString(),
     }));
 }
@@ -288,6 +288,13 @@ export async function uploadVadeMecumPdf({ file, currentDocument, currentUserId 
   if (!file) throw new Error('Selecione um arquivo PDF.');
 
   const extension = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+  if (extension !== 'pdf' || String(file.type || '').toLowerCase() !== 'application/pdf') {
+    throw new Error('Envie um PDF valido.');
+  }
+  if (Number(file.size || 0) > 50 * 1024 * 1024) {
+    throw new Error('O PDF deve ter no maximo 50 MB.');
+  }
+
   const safeBaseName = buildSafeFileName(file.name) || 'vade-mecum';
   const filePath = `vade-mecum/${Date.now()}-${safeBaseName}.${extension}`;
 

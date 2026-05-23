@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
   ChevronDown,
@@ -14,12 +14,12 @@ import {
 import { supabase } from '../lib/supabase';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
 
-const COLOR_OPTIONS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
+const COLOR_OPTIONS = ['#1e3a5f', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
 const EMPTY_DISCIPLINE = {
   nome: '',
   plano: 'Geral',
-  cor: '#2563EB',
+  cor: '#1e3a5f',
   topicos: [],
   percentual: 0,
   tempo_total_min: 0,
@@ -448,7 +448,7 @@ export default function EditarDisciplinaModal({
                   Nome
                 </label>
                 <div className="relative">
-                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-blue-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#2563EB] focus-within:ring-4 focus-within:ring-blue-50">
+                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-blue-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#1e3a5f] focus-within:ring-4 focus-within:ring-blue-50">
                     <Search size={16} className="text-blue-500" />
                     <input
                       type="text"
@@ -485,7 +485,7 @@ export default function EditarDisciplinaModal({
                               }}
                               className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
                                 isActive
-                                  ? 'bg-blue-50 text-[#2563EB]'
+                                  ? 'bg-blue-50 text-[#1e3a5f]'
                                   : 'text-gray-700 hover:bg-gray-50'
                               }`}
                             >
@@ -516,7 +516,7 @@ export default function EditarDisciplinaModal({
                 <select
                   value={plano}
                   onChange={(e) => setPlano(e.target.value)}
-                  className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors focus:border-[#2563EB]"
+                  className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors focus:border-[#1e3a5f]"
                 >
                   {courseOptions.map((option) => (
                     <option key={option} value={option}>
@@ -626,7 +626,7 @@ export default function EditarDisciplinaModal({
                     type="checkbox"
                     checked={topicForm.concluido}
                     onChange={(e) => handleTopicFieldChange('concluido', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+                    className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
                   />
                   <span className="text-sm font-semibold text-gray-700">Marcar como concluído</span>
                 </label>
@@ -635,7 +635,7 @@ export default function EditarDisciplinaModal({
                   <button
                     type="button"
                     onClick={handleAddOrUpdateTopic}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#2563EB] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1D4ED8]"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#1e3a5f] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1e3a5f]"
                   >
                     {editingTopicId ? <Edit3 size={15} /> : <Plus size={15} />}
                     {editingTopicId ? 'Atualizar tópico' : 'Adicionar tópico'}
@@ -655,7 +655,7 @@ export default function EditarDisciplinaModal({
             </div>
 
             <div>
-              <div className="mb-4 flex items-end justify-between border-b border-[#2563EB] pb-2">
+              <div className="mb-4 flex items-end justify-between border-b border-[#1e3a5f] pb-2">
                 <div>
                   <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                     Tópicos
@@ -664,7 +664,7 @@ export default function EditarDisciplinaModal({
                     Reordene, edite e remova os tópicos da disciplina.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#2563EB]">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1e3a5f]">
                   <Columns size={12} />
                   Organização manual
                 </div>
@@ -735,7 +735,7 @@ export default function EditarDisciplinaModal({
                           <button
                             type="button"
                             onClick={() => handleEditTopic(topico)}
-                            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-[#2563EB]"
+                            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-[#1e3a5f]"
                             title="Editar tópico"
                           >
                             <Edit3 size={15} />
@@ -785,7 +785,7 @@ export default function EditarDisciplinaModal({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl bg-[#1e3a5f] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? (
               <>

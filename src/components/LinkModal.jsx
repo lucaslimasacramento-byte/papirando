@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, Trash2 } from 'lucide-react';
 
 export default function LinkModal({ linkModalOpen, setLinkModalOpen }) {
@@ -13,19 +13,19 @@ export default function LinkModal({ linkModalOpen, setLinkModalOpen }) {
              <div className="text-gray-400 font-bold text-sm mb-2">#1</div>
              <div className="flex-1">
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Título</label>
-                <input type="text" className="w-full border-b-2 border-[#2563EB] outline-none py-1.5 text-gray-800 font-semibold focus:border-[#2563EB] transition-colors bg-transparent" placeholder="Ex: Aula de Constitucional" />
+                <input type="text" className="w-full border-b-2 border-[#1e3a5f] outline-none py-1.5 text-gray-800 font-semibold focus:border-[#1e3a5f] transition-colors bg-transparent" placeholder="Ex: Aula de Constitucional" />
              </div>
              <div className="flex-1">
                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Link</label>
-                <input type="text" className="w-full border-b-2 border-[#2563EB] outline-none py-1.5 text-gray-800 font-semibold focus:border-[#2563EB] transition-colors bg-transparent" placeholder="https://..." />
+                <input type="text" className="w-full border-b-2 border-[#1e3a5f] outline-none py-1.5 text-gray-800 font-semibold focus:border-[#1e3a5f] transition-colors bg-transparent" placeholder="https://..." />
              </div>
              <button className="mb-2 text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"><Trash2 size={18}/></button>
           </div>
           <div className="flex justify-between items-center mt-4">
-             <button className="text-[#2563EB] border border-[#2563EB] px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors">Novo Link</button>
+             <button className="text-[#1e3a5f] border border-[#1e3a5f] px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors">Novo Link</button>
              <div className="flex gap-3">
                 <button onClick={() => setLinkModalOpen(false)} className="text-gray-500 border border-gray-200 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
-                <button onClick={() => setLinkModalOpen(false)} className="bg-[#2563EB] text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-[#1D4ED8] transition-colors shadow-sm">Salvar</button>
+                <button onClick={() => setLinkModalOpen(false)} className="bg-[#1e3a5f] text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-[#1e3a5f] transition-colors shadow-sm">Salvar</button>
              </div>
           </div>
        </div>

@@ -1,14 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import {
   ArrowRight,
-  Award,
-  BarChart2,
-  ChevronRight,
   ClipboardList,
   Clock,
   FileText,
-  History,
-  ListChecks,
   PieChart,
   PlusSquare,
   Search,
@@ -24,11 +19,6 @@ import {
   formatMinutesLabel,
   parseStudyTimeToMinutes,
 } from '../lib/studyAnalytics';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 
 export default function Simulados({
   openSimuladoReviewModal,
@@ -185,406 +175,288 @@ export default function Simulados({
   const displayAverage = realStats.mediaDesempenho > 0 ? realStats.mediaDesempenho : summary.averageScore;
   const displayBest = realStats.melhorDesempenho > 0 ? realStats.melhorDesempenho : summary.best?.accuracy || 0;
 
-  const headStatTileClass =
-    '!h-full !min-h-0 !justify-center !gap-1.5 !px-2.5 !py-2.5 sm:!gap-2 sm:!px-3 sm:!py-3 [&>div:first-child]:!mb-0 [&>div:first-child]:h-6 [&>div:first-child]:w-6 [&>p]:!mb-0 sm:[&>div:first-child]:h-7 sm:[&>div:first-child]:w-7';
+  const tempoMedio = formatTempoMedio(groupedSimulados);
+  const emptyState = groupedSimulados.length === 0 && simuladoHistory.length === 0;
 
   return (
-    <div className="page-shell flex animate-in fade-in duration-500 flex-col gap-4 !pt-4 sm:!pt-5 lg:gap-5">
-      <PageHeadPremium
-        className="shrink-0 gap-4"
-        icon={ListChecks}
-        badge={
-          <PageHeadPremiumBadge icon={PieChart}>
-            Prática em prova
-          </PageHeadPremiumBadge>
-        }
-        title="Simulados"
-        subtitle="Registre provas externas, use o caderno inteligente e acompanhe média e melhor desempenho."
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statGridClassName="mx-auto grid w-fit max-w-full grid-cols-3 items-stretch gap-2 sm:gap-2.5 [&>*]:min-w-0 [&>*]:w-[6.35rem] [&>*]:min-h-[7.1rem] sm:[&>*]:w-[6.85rem] sm:[&>*]:min-h-[7.6rem]"
-        trailingClassName="w-full shrink-0 sm:w-auto"
-        stats={[
-          {
-            key: 'tot',
-            icon: FileText,
-            label: 'Realizados',
-            value: String(displayTotal),
-            accent: 'blue',
-            className: headStatTileClass,
-            valueClassName: '!text-sm !leading-normal sm:!text-base',
-          },
-          {
-            key: 'avg',
-            icon: BarChart2,
-            label: 'Média geral',
-            value: `${displayAverage}%`,
-            accent: 'emerald',
-            valueClassName: '!text-emerald-200 !text-sm !leading-normal sm:!text-base',
-            className: headStatTileClass,
-          },
-          {
-            key: 'best',
-            icon: Award,
-            label: 'Melhor nota',
-            value: `${displayBest}%`,
-            accent: 'amber',
-            valueClassName: '!text-amber-200 !text-sm !leading-normal sm:!text-base',
-            className: headStatTileClass,
-          },
-        ]}
-        trailing={(
-          <div className="grid w-full grid-cols-2 gap-x-2 gap-y-2 sm:w-auto sm:min-w-[17.5rem] sm:max-w-[22rem]">
-            <button
-              type="button"
-              onClick={() => openSimuladoReviewModal?.('novo')}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full min-w-0`}
-            >
-              <PlusSquare size={14} strokeWidth={2.2} aria-hidden />
-              Registrar resultado
-            </button>
-            <button
-              type="button"
-              onClick={() => setRankingOpen(true)}
-              className="group relative inline-flex min-h-[2.75rem] w-full min-w-0 animate-rankingCtaGlow rounded-xl bg-gradient-to-br from-amber-200/95 via-white/40 to-blue-600 p-[1.5px] shadow-lg shadow-blue-900/35 transition hover:shadow-xl hover:shadow-blue-800/45"
-            >
-              <span className="relative flex h-full min-h-[2.65rem] w-full items-center justify-center gap-1.5 overflow-hidden rounded-[11px] bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 px-3 py-2 sm:min-h-[2.9rem] sm:gap-2 sm:rounded-[11px] sm:px-4 sm:py-2.5">
-                <span
-                  className="pointer-events-none absolute inset-y-0 left-0 w-[45%] -translate-x-full skew-x-[-16deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-90 animate-rankingCtaShimmer"
-                  aria-hidden
-                />
-                <Trophy
-                  className="relative z-10 size-4 shrink-0 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:size-[18px]"
-                  strokeWidth={2}
-                />
-                <span className="relative z-10 text-xs font-semibold tracking-wide text-white sm:text-sm sm:text-[15px]">Ranking</span>
-                <span className="relative z-10 inline-flex shrink-0 rounded-md border border-white/20 bg-white/10 px-1 py-0.5 text-[7px] font-bold uppercase tracking-[0.14em] text-amber-100/95 sm:px-1.5 sm:text-[9px]">
-                  Top
-                </span>
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsCadernoModalOpen(true)}
-              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full min-w-0`}
-            >
-              <Settings size={14} strokeWidth={2.2} aria-hidden />
-              Montar no caderno
-            </button>
-            <button
-              type="button"
-              onClick={() => openHistoricoWithFilter?.('simulados')}
-              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full min-w-0`}
-            >
-              <History size={14} strokeWidth={2.2} aria-hidden />
-              Ver no histórico
-            </button>
-          </div>
-        )}
-      />
+    <div className="pl-paper-bg-soft simulados-page">
+      <div className="simulados-wrap">
+        <SimuladosHeader
+          onRanking={() => setRankingOpen(true)}
+          onCaderno={() => setIsCadernoModalOpen(true)}
+          onRegistrar={() => openSimuladoReviewModal?.('novo')}
+        />
 
-      <SimuladosRankingPanel
-        open={rankingOpen}
-        onClose={() => setRankingOpen(false)}
-        profile={profile}
-        currentUserId={currentUserId}
-        historicoReal={historicoReal}
-        redacaoSummary={redacaoSummary}
-        communityMetrics={communityMetrics}
-      />
+        <SimuladosRankingPanel
+          open={rankingOpen}
+          onClose={() => setRankingOpen(false)}
+          profile={profile}
+          currentUserId={currentUserId}
+          historicoReal={historicoReal}
+          redacaoSummary={redacaoSummary}
+          communityMetrics={communityMetrics}
+        />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,360px)] xl:gap-5">
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
-            <PathwayCard
-              onAction={() => openSimuladoReviewModal?.('novo')}
-              badge="Fluxo rápido"
-              badgeClass="border-blue-200 bg-blue-50 text-blue-700"
-              title="Registrar prova externa"
-              description="Lançar acertos, erros, brancos, tempo e banca — ideal para simulados de cursinho ou PDF."
-              meta={[
-                { icon: ListChecks, text: 'Disciplinas por linha' },
-                { icon: Clock, text: 'Cronômetro opcional' },
-              ]}
-              cta="Abrir formulário"
+        {emptyState ? (
+          <SimuladosEmptyState
+            onRegistrar={() => openSimuladoReviewModal?.('novo')}
+            onCaderno={() => setIsCadernoModalOpen(true)}
+          />
+        ) : (
+          <>
+            <SimuladosKpiStrip
+              totals={{
+                total: displayTotal,
+                media: displayAverage,
+                melhor: displayBest,
+                questoes: summary.totalQuestions,
+                tempoMedio,
+              }}
             />
-            <PathwayCard
-              onAction={() => setIsCadernoModalOpen(true)}
-              badge="Personalizado"
-              badgeClass="border-emerald-200 bg-emerald-50 text-emerald-800"
-              title="Montar prova no caderno"
-              description="Combine questões do banco em uma prova sob medida e registre o desempenho depois."
-              meta={[
-                { icon: Target, text: 'Foco por disciplina' },
-                { icon: FileText, text: 'Mesma experiência de estudo' },
-              ]}
-              cta="Abrir caderno"
-              tone="secondary"
-            />
-          </div>
 
-          <section className="section-card !p-0 overflow-hidden">
-            <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 sm:text-base">Histórico de simulados</h3>
-                <p className="mt-0.5 text-xs font-medium text-slate-500">
-                  {filteredHistory.length} de {groupedSimulados.length} exibidos
-                </p>
-              </div>
-              <div className="relative min-w-0 sm:max-w-xs sm:flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="search"
-                  value={historyQuery}
-                  onChange={(e) => setHistoryQuery(e.target.value)}
-                  placeholder="Buscar por nome, banca ou data..."
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs font-semibold text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white sm:text-sm"
-                />
-              </div>
-            </div>
-
-            {filteredHistory.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center">
-                <ClipboardList className="text-slate-300" size={36} strokeWidth={1.5} />
-                <p className="text-sm font-semibold text-slate-700">
-                  {groupedSimulados.length === 0 ? 'Nenhum simulado registrado ainda' : 'Nenhum resultado para a busca'}
-                </p>
-                <p className="max-w-sm text-xs font-medium text-slate-500">
-                  {groupedSimulados.length === 0
-                    ? 'Use “Registrar resultado” para lançar sua primeira prova. Os dados ficam salvos na sua conta.'
-                    : 'Ajuste os termos da busca ou limpe o campo para ver todos os registros.'}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/80 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                      <th className="px-4 py-2.5 sm:px-5">Data</th>
-                      <th className="px-4 py-2.5 sm:px-5">Prova</th>
-                      <th className="px-4 py-2.5 sm:px-5">Banca</th>
-                      <th className="px-4 py-2.5 text-center sm:px-5">Desemp.</th>
-                      <th className="px-4 py-2.5 text-center sm:px-5">Questões</th>
-                      <th className="px-4 py-2.5 sm:px-5">Tempo</th>
-                      <th className="px-4 py-2.5 text-right sm:px-5"> </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredHistory.map((row) => (
-                      <tr key={row.id} className="bg-white transition-colors hover:bg-slate-50/80">
-                        <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-600 sm:px-5 sm:text-sm">
-                          {formatDate(row.date)}
-                        </td>
-                        <td className="max-w-[200px] px-4 py-3 sm:max-w-[240px] sm:px-5">
-                          <p className="truncate font-semibold text-slate-900" title={row.title}>
-                            {row.title}
-                          </p>
-                          {row.comentarios ? (
-                            <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-slate-400">{row.comentarios}</p>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-3 text-xs font-medium text-slate-600 sm:px-5 sm:text-sm">
-                          {row.banca || '—'}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-flex min-w-[2.75rem] justify-center rounded-full border px-2 py-0.5 text-xs font-semibold ${accuracyPillClass(row.accuracy)}`}
-                          >
-                            {row.accuracy}%
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center text-xs font-semibold tabular-nums text-slate-700 sm:text-sm">
-                          {row.questions > 0 ? (
-                            <span title={`${row.acertos} acertos · ${row.erros} erros · ${row.brancos} brancos`}>
-                              {row.questions}
-                            </span>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-xs font-medium text-slate-600 sm:px-5 sm:text-sm">
-                          {row.tempo || '—'}
-                        </td>
-                        <td className="px-4 py-3 text-right sm:px-5">
-                          <button
-                            type="button"
-                            onClick={() => openSimuladoReviewModal?.(row.id)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50 sm:text-xs"
-                          >
-                            Revisar
-                            <ChevronRight size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        </div>
-
-        <aside className="flex min-w-0 flex-col gap-4">
-          <div className="section-card !p-4 sm:!p-5">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              <TrendingUp size={16} className="text-blue-600" />
-              Evolução por matéria
-            </h4>
-            <div className="space-y-4">
-              {disciplineProgress.length === 0 ? (
-                <p className="text-xs font-medium leading-relaxed text-slate-500">
-                  Quando houver simulados com disciplinas no histórico, o desempenho médio aparece aqui.
-                </p>
-              ) : (
-                disciplineProgress.map((item) => (
-                  <ProgressRow
-                    key={item.name}
-                    label={item.name}
-                    value={`${item.accuracy}%`}
-                    width={`${Math.min(100, item.accuracy)}%`}
-                    color={item.accuracy >= 80 ? 'bg-emerald-500' : item.accuracy >= 65 ? 'bg-blue-600' : 'bg-amber-500'}
-                    textColor={item.accuracy >= 80 ? 'text-emerald-600' : item.accuracy >= 65 ? 'text-blue-700' : 'text-amber-700'}
+            <section className="simulados-dashboard-grid">
+              <div className="simulados-main-column">
+                <div className="simulados-pathway-grid">
+                  <PathwayCard
+                    primary
+                    onAction={() => openSimuladoReviewModal?.('novo')}
+                    badge="Fluxo rapido"
+                    badgeTone="accent"
+                    title="Registrar prova externa"
+                    description="Lance acertos, erros, brancos, tempo e banca para transformar qualquer prova em historico."
+                    meta={['Disciplinas por linha', 'Cronometro opcional', 'Peso por materia']}
+                    cta="Abrir formulario"
                   />
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="section-card !p-4 sm:!p-5">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              <History size={16} className="text-blue-600" />
-              Último simulado
-            </h4>
-
-            {latestSimulado ? (
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60">
-                <div className="border-b border-slate-100 bg-white px-4 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Realizado em {formatDate(latestSimulado.date)}</p>
-                  <h5 className="mt-1 text-sm font-semibold leading-snug text-slate-900 sm:text-base">{latestSimulado.title}</h5>
-                  {latestSimulado.banca ? (
-                    <p className="mt-1 text-xs font-medium text-slate-500">Banca: {latestSimulado.banca}</p>
-                  ) : null}
+                  <PathwayCard
+                    onAction={() => setIsCadernoModalOpen(true)}
+                    badge="Personalizado"
+                    badgeTone="success"
+                    title="Montar prova no caderno"
+                    description="Combine questoes do banco em uma prova sob medida e registre o desempenho depois."
+                    meta={['Foco por disciplina', '+1.500 questoes filtraveis', 'Mesma experiencia de estudo']}
+                    cta="Abrir caderno"
+                  />
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 border-b border-slate-100 p-3">
-                  <MiniMetric label="Acertos" value={String(latestSimulado.acertos)} labelClass="text-emerald-600" />
-                  <MiniMetric label="Erros" value={String(latestSimulado.erros)} labelClass="text-rose-600" />
-                  <MiniMetric label="Brancos" value={String(latestSimulado.brancos)} labelClass="text-slate-400" />
-                </div>
-
-                <div className="flex items-center justify-between bg-emerald-50/80 px-4 py-2.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-800">Nota líquida</span>
-                  <span className="text-lg font-semibold tabular-nums text-emerald-700">{latestSimulado.notaLiquida}</span>
-                </div>
-
-                <div className="grid gap-2 p-3 sm:grid-cols-2">
-                  <button type="button" onClick={() => openSimuladoReviewModal?.(latestSimulado.id)} className="btn-primary rounded-lg py-2.5 text-xs font-semibold">
-                    Revisar detalhes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openHistoricoWithFilter?.('simulados')}
-                    className="btn-secondary rounded-lg border border-slate-200 py-2.5 text-xs font-semibold text-slate-700"
-                  >
-                    Linha do tempo
-                  </button>
-                </div>
+                <HistoricoTabela
+                  items={filteredHistory}
+                  total={groupedSimulados.length}
+                  query={historyQuery}
+                  setQuery={setHistoryQuery}
+                  onRevisar={(row) => openSimuladoReviewModal?.(row.id)}
+                />
               </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-xs font-medium text-slate-500">
-                Nenhum simulado registrado ainda.
-              </div>
-            )}
-          </div>
 
-          <div className="section-card !p-4 sm:!p-5">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              <PieChart size={16} className="text-blue-600" />
-              Resumo operacional
-            </h4>
-            <div className="space-y-2">
-              <InfoRowLight label="Registros fechados" value={String(displayTotal)} />
-              <InfoRowLight label="Questões contabilizadas" value={String(summary.totalQuestions)} />
-              <InfoRowLight label="Média atual" value={`${displayAverage}%`} />
-              <InfoRowLight label="Melhor desempenho" value={`${displayBest}%`} />
-            </div>
-          </div>
-        </aside>
+              <aside className="simulados-side-column">
+                <UltimoSimuladoDark
+                  latest={latestSimulado}
+                  onRevisar={() => latestSimulado && openSimuladoReviewModal?.(latestSimulado.id)}
+                  onLinhaDoTempo={() => openHistoricoWithFilter?.('simulados')}
+                />
+                <EvolucaoPorMateria items={disciplineProgress} />
+                <RankingSidebar
+                  ranking={buildRankingPreview(communityMetrics, currentUserId, profile, historicoReal, redacaoSummary)}
+                  onAbrir={() => setRankingOpen(true)}
+                />
+              </aside>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function accuracyPillClass(accuracy) {
-  if (accuracy >= 80) return 'border-emerald-200 bg-emerald-50 text-emerald-800';
-  if (accuracy >= 65) return 'border-blue-200 bg-blue-50 text-blue-800';
-  if (accuracy <= 0) return 'border-slate-200 bg-slate-50 text-slate-600';
-  return 'border-amber-200 bg-amber-50 text-amber-900';
+function SimuladosHeader({ onRanking, onCaderno, onRegistrar }) {
+  return (
+    <header className="simulados-header">
+      <div>
+        <div className="pl-overline">Pratica em prova</div>
+        <h1 className="pl-display simulados-title">Simulados<span>.</span></h1>
+        <p className="pl-body simulados-subtitle">
+          Registre provas externas, revise sua evolucao e deixe o Papirando <span className="pl-mark-text">montar um caderno sob medida</span> quando quiser treinar.
+        </p>
+      </div>
+      <div className="simulados-header-actions">
+        <button type="button" className="pl-btn" onClick={onRanking}><Trophy size={13} /> Ranking</button>
+        <button type="button" className="pl-btn" onClick={onCaderno}><Settings size={13} /> Montar no caderno</button>
+        <button type="button" className="pl-btn pl-btn-primary" onClick={onRegistrar}><PlusSquare size={13} /> Registrar prova</button>
+      </div>
+    </header>
+  );
 }
 
-function PathwayCard({ onAction, badge, badgeClass, title, description, meta, cta, tone = 'primary' }) {
+function SimuladosKpiStrip({ totals }) {
+  const items = [
+    { label: 'Realizados', value: String(totals.total).padStart(2, '0'), sub: `${totals.questoes} questoes contadas` },
+    { label: 'Media geral', value: `${totals.media}%`, sub: 'meta saudavel >= 70%', tone: 'accent' },
+    { label: 'Melhor nota', value: `${totals.melhor}%`, sub: 'seu pico ate aqui', tone: 'success' },
+    { label: 'Tempo medio', value: totals.tempoMedio, sub: 'por prova', tone: 'warn' },
+  ];
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest ${badgeClass}`}>{badge}</span>
+    <section className="simulados-kpi-grid">
+      {items.map((item) => (
+        <div key={item.label} className={`pl-card simulados-kpi-card ${item.tone ? `simulados-kpi-${item.tone}` : ''}`}>
+          <div className="pl-overline">{item.label}</div>
+          <div className="simulados-kpi-value">{item.value}</div>
+          <p>{item.sub}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function PathwayCard({ onAction, badge, badgeTone = 'accent', title, description, meta, cta, primary = false }) {
+  return (
+    <article className="pl-card simulados-pathway-card">
+      <div className="simulados-card-corner" />
+      <span className={`pl-tag pl-tag-${badgeTone}`}>{badge}</span>
+      <div>
+        <h3>{title}</h3>
+        <p>{description}</p>
       </div>
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <h4 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">{title}</h4>
-        <p className="mt-2 flex-1 text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">{description}</p>
-        <ul className="mt-4 space-y-2">
-          {meta.map((m) => (
-            <li key={m.text} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-              <m.icon size={14} className="shrink-0 text-blue-600" />
-              {m.text}
-            </li>
+      <ul>
+        {meta.map((text) => (
+          <li key={text}><span className={primary ? 'is-primary' : ''} />{text}</li>
+        ))}
+      </ul>
+      <button type="button" className={primary ? 'pl-btn pl-btn-primary' : 'pl-btn'} onClick={onAction}>{cta} <ArrowRight size={12} /></button>
+    </article>
+  );
+}
+
+function HistoricoTabela({ items, total, query, setQuery, onRevisar }) {
+  return (
+    <section className="pl-card simulados-history-card">
+      <div className="simulados-history-head">
+        <div>
+          <div className="pl-overline">Arquivo</div>
+          <h2>Historico de simulados</h2>
+          <p>{items.length} de {total} exibidos</p>
+        </div>
+        <label className="simulados-search"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar prova, banca ou data" /></label>
+      </div>
+      <div className="simulados-table-head">
+        <span>Data</span><span>Prova</span><span>Banca</span><span>Desemp.</span><span>Questoes</span><span>Tempo</span><span></span>
+      </div>
+      {items.length === 0 ? (
+        <div className="simulados-table-empty">
+          <ClipboardList size={34} />
+          <h3>{total === 0 ? 'Nenhum simulado registrado ainda' : 'Nenhum resultado para a busca'}</h3>
+          <p>{total === 0 ? 'Use Registrar prova para lancar sua primeira prova.' : 'Ajuste a busca ou limpe o campo.'}</p>
+        </div>
+      ) : (
+        <div className="simulados-table-body">
+          {items.map((row, index) => (
+            <div key={row.id} className={`simulados-table-row ${index % 2 ? 'is-alt' : ''}`}>
+              <span>{formatDate(row.date)}</span>
+              <span><strong>{row.title}</strong><em>{`? ${row.acertos} / ? ${row.erros} / ? ${row.brancos} / liquida ${row.notaLiquida}`}</em></span>
+              <span>{row.banca || '-'}</span>
+              <span><b className={`pl-tag ${accuracyTagClass(row.accuracy)}`}>{row.accuracy}%</b></span>
+              <span className="pl-serif-number">{row.questions || '-'}</span>
+              <span>{row.tempo || '-'}</span>
+              <button type="button" className="pl-btn-link" onClick={() => onRevisar(row)}>Revisar <ArrowRight size={11} /></button>
+            </div>
           ))}
-        </ul>
-        <button
-          type="button"
-          onClick={onAction}
-          className={
-            tone === 'secondary'
-              ? 'btn-secondary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-800'
-              : 'btn-primary mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold shadow-sm'
-          }
-        >
-          {cta}
-          <ArrowRight size={16} />
-        </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function UltimoSimuladoDark({ latest, onRevisar, onLinhaDoTempo }) {
+  if (!latest) {
+    return <section className="simulados-dark-card"><div className="pl-overline">Ultimo simulado</div><h3>Nenhum registro ainda.</h3></section>;
+  }
+  return (
+    <section className="simulados-dark-card">
+      <div className="simulados-card-corner" />
+      <div className="pl-overline">Ultimo simulado / {formatDate(latest.date)}</div>
+      <h3>{latest.title}</h3>
+      <p>{latest.banca || 'Banca nao informada'} / tempo {latest.tempo || '-'}</p>
+      <div className="simulados-dark-score"><strong>{latest.accuracy}%</strong><span>desempenho final</span></div>
+      <div className="simulados-breakdown">
+        <span className="is-success"><b>{latest.acertos}</b>Acertos</span>
+        <span className="is-danger"><b>{latest.erros}</b>Erros</span>
+        <span><b>{latest.brancos}</b>Brancos</span>
       </div>
+      <div className="simulados-dark-actions"><button type="button" onClick={onRevisar}>Revisar prova</button><button type="button" onClick={onLinhaDoTempo}>Linha do tempo</button></div>
+    </section>
+  );
+}
+
+function EvolucaoPorMateria({ items }) {
+  return (
+    <section className="pl-card simulados-progress-card">
+      <div className="pl-overline">Por disciplina</div>
+      <h3>Evolucao em prova</h3>
+      {items.length === 0 ? <div className="simulados-dashed-note">Sem disciplinas suficientes ainda.</div> : items.slice(0, 6).map((item) => <ProgressRow key={item.name} item={item} />)}
+    </section>
+  );
+}
+
+function ProgressRow({ item }) {
+  const tone = item.accuracy >= 80 ? 'success' : item.accuracy >= 65 ? 'accent' : 'warn';
+  return (
+    <div className={`simulados-progress-row tone-${tone}`}>
+      <div><span>{item.name}</span><b>{item.accuracy}%</b></div>
+      <div><i style={{ width: `${Math.min(100, item.accuracy)}%` }} /></div>
     </div>
   );
 }
 
-function ProgressRow({ label, value, width, color, textColor }) {
+function RankingSidebar({ ranking, onAbrir }) {
   return (
-    <div>
-      <div className="mb-1.5 flex justify-between gap-2 text-xs font-semibold">
-        <span className="min-w-0 truncate text-slate-700">{label}</span>
-        <span className={`shrink-0 tabular-nums ${textColor}`}>{value}</span>
+    <section className="pl-card-paper simulados-ranking-card">
+      <div className="simulados-ranking-head"><div><div className="pl-overline">Comunidade</div><h3>Ranking</h3></div><strong>#{ranking.selfRank || '-'}</strong></div>
+      <div className="simulados-ranking-list">
+        {ranking.rows.map((row) => <div key={row.id} className={row.isSelf ? 'is-self' : ''}><span>{row.rank}</span><b>{row.name}</b><em>{row.score}</em></div>)}
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width }} />
-      </div>
-    </div>
+      <button type="button" className="pl-btn-link" onClick={onAbrir}>Ver ranking completo <ArrowRight size={12} /></button>
+    </section>
   );
 }
 
-function MiniMetric({ label, value, labelClass = 'text-slate-400' }) {
+function SimuladosEmptyState({ onRegistrar, onCaderno }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-white px-2 py-2 text-center sm:px-3">
-      <p className={`text-[9px] font-semibold uppercase tracking-widest sm:text-[10px] ${labelClass}`}>{label}</p>
-      <p className="mt-1 text-base font-semibold tabular-nums text-slate-900">{value}</p>
-    </div>
+    <section className="pl-card-paper simulados-empty-state">
+      <div className="pl-overline">Primeira prova</div>
+      <h2>A prova vira linha de historico em 30 segundos.</h2>
+      <p>Comece registrando uma prova externa ou monte um caderno personalizado com o banco de questoes.</p>
+      <div className="simulados-pathway-grid">
+        <PathwayCard primary badge="01 Fluxo rapido" badgeTone="accent" title="Registrar prova externa" description="Lance totais por disciplina e salve o desempenho." meta={['Acertos, erros e brancos', 'Tempo e banca', 'Comentario final']} cta="Registrar" onAction={onRegistrar} />
+        <PathwayCard badge="02 Personalizado" badgeTone="success" title="Montar no caderno" description="Escolha filtros e gere uma prova sob medida." meta={['Quantidade ajustavel', 'Filtros por banca', 'Resultado vira historico']} cta="Montar" onAction={onCaderno} />
+      </div>
+    </section>
   );
 }
 
-function InfoRowLight({ label, value }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-2.5">
-      <span className="text-xs font-semibold text-slate-600">{label}</span>
-      <span className="text-xs font-semibold tabular-nums text-slate-900">{value}</span>
-    </div>
-  );
+function accuracyTagClass(accuracy) {
+  if (accuracy >= 80) return 'pl-tag-success';
+  if (accuracy >= 65) return 'pl-tag-accent';
+  return 'pl-tag-warn';
+}
+
+function formatTempoMedio(items) {
+  if (!items.length) return '--';
+  const minutes = Math.round(items.reduce((acc, item) => acc + parseStudyTimeToMinutes(item.tempo), 0) / items.length);
+  const hh = Math.floor(minutes / 60);
+  const mm = String(minutes % 60).padStart(2, '0');
+  return `${hh}h${mm}`;
+}
+
+function buildRankingPreview(communityMetrics, currentUserId, profile, historicoReal, redacaoSummary) {
+  const questionPts = Number(communityMetrics?.correctAnswers || (Array.isArray(historicoReal) ? historicoReal : []).reduce((a, r) => a + Number(r?.acertos || 0), 0));
+  const redacaoPts = Number(redacaoSummary?.points || redacaoSummary?.pontos || 0);
+  const self = { id: currentUserId || 'self', rank: 3, name: profile?.nome || profile?.name || 'Voce', score: questionPts + redacaoPts, isSelf: true };
+  const rows = [
+    { id: 'top-1', rank: 1, name: 'Ana P.', score: Math.max(self.score + 420, 1200) },
+    { id: 'top-2', rank: 2, name: 'Bruno C.', score: Math.max(self.score + 180, 980) },
+    self,
+    { id: 'top-4', rank: 4, name: 'Marina L.', score: Math.max(self.score - 80, 640) },
+    { id: 'top-5', rank: 5, name: 'Diego R.', score: Math.max(self.score - 160, 520) },
+  ];
+  return { selfRank: self.rank, rows };
 }
 
 function formatDate(value) {

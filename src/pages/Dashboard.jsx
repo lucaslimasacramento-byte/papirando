@@ -1,22 +1,12 @@
 import React, { useMemo } from 'react';
 import {
   ArrowRight,
-  BellRing,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
+  FileText,
   Flame,
-  Home,
   Play,
   Sparkles,
-  Target,
 } from 'lucide-react';
-import { getDashboardDailyNote } from '../data/dashboardDailyNotes';
-import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import PageHeadPremium, {
-  PageHeadPremiumBadge,
-  PageHeadPremiumCenterNote,
-} from '../components/PageHeadPremium';
+import { buildStudyHistoryOverview, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
 export default function Dashboard({
   openTimerSetup,
@@ -28,53 +18,32 @@ export default function Dashboard({
   targetContest,
   studyRecommendation = null,
   dailyRoutine = [],
+  ultimaAnotacao = null,
+  editalProgresso = null,
   onOpenTargetContest,
   onStartRecommendedSession,
   onStartRoutineItem,
+  onOpenUltimaAnotacao,
 }) {
   const safeHistorico = useMemo(() => (Array.isArray(historicoReal) ? historicoReal : []), [historicoReal]);
   const safeAgendaHoje = useMemo(() => (Array.isArray(agendaHoje) ? agendaHoje : []), [agendaHoje]);
   const safeAgendaAmanha = useMemo(() => (Array.isArray(agendaAmanha) ? agendaAmanha : []), [agendaAmanha]);
-  const safeRoutine = Array.isArray(dailyRoutine) ? dailyRoutine.slice(0, 4) : [];
-  const safeReviewQueue = Array.isArray(studyRecommendation?.reviewQueue)
-    ? studyRecommendation.reviewQueue
-    : [];
+  const safeRoutine = Array.isArray(dailyRoutine) ? dailyRoutine.slice(0, 6) : [];
+  const safeReviewQueue = Array.isArray(studyRecommendation?.reviewQueue) ? studyRecommendation.reviewQueue : [];
+
   const historyOverview = useMemo(
     () => buildStudyHistoryOverview(safeHistorico, { dayGoalMinutes: 180 }),
     [safeHistorico]
   );
+
   const dayContextLabel = useMemo(
     () => new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
     []
   );
-  const heroQuote =
-    'Você nunca sabe que resultados virão da sua ação. Mas se você não fizer nada, não existirão.';
-  const heroAuthor = 'Mahatma Gandhi';
-  const dailyNote = useMemo(
-    () => getDashboardDailyNote() || { quote: heroQuote, author: heroAuthor },
-    []
-  );
 
   const currentHour = new Date().getHours();
-  const timeTone =
-    currentHour < 12
-      ? {
-          badge: 'Manhã',
-          title: 'Seu foco principal precisa aparecer logo na primeira sessão.',
-          greeting: 'Bom dia',
-        }
-      : currentHour < 18
-        ? {
-            badge: 'Tarde',
-            title: 'Bom momento para consolidar com questões e revisões curtas.',
-            greeting: 'Boa tarde',
-          }
-        : {
-            badge: 'Noite',
-            title: 'Feche o dia reforçando constância e organização.',
-            greeting: 'Boa noite',
-          };
-
+  const greeting = currentHour < 12 ? 'Bom dia' : currentHour < 18 ? 'Boa tarde' : 'Boa noite';
+  const cleanUserName = String(userDisplayName || '').trim();
   const primaryRecommendation = studyRecommendation?.primary || null;
   const targetDaysRemaining = Number.isFinite(Number(targetContest?.diasParaProva))
     ? Number(targetContest.diasParaProva)
@@ -89,354 +58,481 @@ export default function Dashboard({
   const reminder = useMemo(() => {
     const hoje = safeAgendaHoje[0] || null;
     const amanha = safeAgendaAmanha[0] || null;
-
     if (hoje) {
       return {
         badge: 'Hoje',
-        title: hoje.titulo || hoje.nome || 'Existe algo importante para hoje',
+        badgeTone: 'warn',
+        title: hoje.titulo || hoje.nome || 'Algo importante hoje',
         detail: hoje.detalhe || hoje.texto || 'Vale olhar a agenda antes de iniciar.',
       };
     }
-
     if (amanha) {
       return {
-        badge: 'Amanhã',
-        title: amanha.titulo || amanha.nome || 'Algo pede atenção amanhã',
-        detail: amanha.detalhe || amanha.texto || 'Antecipe o que já estiver claro.',
+        badge: 'Amanha',
+        badgeTone: '',
+        title: amanha.titulo || amanha.nome || 'Algo pede atencao amanha',
+        detail: amanha.detalhe || amanha.texto || 'Antecipe o que ja estiver claro.',
       };
     }
-
     if (targetDaysRemaining !== null && targetDaysRemaining <= 15) {
       return {
         badge: 'Urgente',
+        badgeTone: 'danger',
         title: 'Prova se aproximando',
         detail: `Faltam ${targetDaysRemaining} dia(s) para o alvo principal.`,
       };
     }
-
     if (urgentReviews > 0) {
       return {
-        badge: 'Revisões',
-        title: `${urgentReviews} revisão(ões) em alta prioridade`,
-        detail: 'Existe espaço claro para reforço hoje.',
+        badge: 'Revisoes',
+        badgeTone: 'warn',
+        title: `${urgentReviews} revisao(oes) em alta prioridade`,
+        detail: 'Existe espaco claro para reforco hoje.',
       };
     }
-
     return {
-      badge: 'Estável',
-      title: 'Sem alerta crítico agora',
-      detail: 'O melhor movimento é seguir a sessão sugerida.',
+      badge: 'Estavel',
+      badgeTone: 'success',
+      title: 'Sem alerta critico agora',
+      detail: 'O melhor movimento e seguir a sessao sugerida.',
     };
   }, [safeAgendaHoje, safeAgendaAmanha, targetDaysRemaining, urgentReviews]);
 
-  const studySummaryTitle =
-    primaryRecommendation?.nome || 'Nenhuma sessão recomendada neste momento';
-  const studySummaryDetail =
-    primaryRecommendation?.nextTopic?.nome ||
-    primaryRecommendation?.reason ||
-    'Registre mais estudos para o app montar a recomendação automaticamente.';
-  const quickAction =
-    primaryRecommendation
-      ? {
-          label: 'Iniciar sessão recomendada',
-          onClick: () => onStartRecommendedSession?.(primaryRecommendation),
-        }
-      : {
-          label: 'Abrir timer',
-          onClick: () => openTimerSetup?.(),
-        };
-  const cleanUserName = String(userDisplayName || '').trim();
-  const greetingLine = cleanUserName ? `${timeTone.greeting}, ${cleanUserName}` : timeTone.greeting;
-  return (
-    <div className="page-shell w-full min-w-0 max-w-full animate-in fade-in duration-500 !pt-5 sm:!pt-6">
-      <PageHeadPremium
-        className="mt-0.5 !gap-4 !py-4 sm:mt-1 sm:!gap-4 sm:!py-5 md:!py-6 lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={Home}
-        titleAs="h1"
-        badge={
-          <PageHeadPremiumBadge icon={CalendarDays} className="mb-1.5 text-[10px] tracking-[0.15em] text-slate-200/85">
-            {timeTone.badge} · {dayContextLabel}
-          </PageHeadPremiumBadge>
-        }
-        title={greetingLine}
-        leadingClassName="items-center lg:max-w-[calc(100%-24rem)] xl:max-w-[50rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[24rem] lg:self-center xl:max-w-[26rem] xl:flex-none"
-        trailing={
-          <div className="w-full min-w-0">
-            <PageHeadPremiumCenterNote
-              quote={dailyNote.quote}
-              author={dailyNote.author}
-              className="mx-0 ml-auto max-w-none"
-            />
-          </div>
-        }
-      />
+  const heroTopic = primaryRecommendation?.nome || targetContest?.nome || null;
+  const heroDetail = primaryRecommendation?.nextTopic?.nome || primaryRecommendation?.reason || null;
+  const quickAction = primaryRecommendation
+    ? { label: 'Papirar agora', onClick: () => onStartRecommendedSession?.(primaryRecommendation) }
+    : { label: 'Papirar agora', onClick: () => openTimerSetup?.() };
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        <KpiCard label="Tempo hoje" value={historyOverview.todayMinutesLabel} detail="Volume efetivo" icon={Clock3} />
-        <KpiCard
-          label="Sequência"
-          value={`${historyOverview.streakDays} dias`}
-          detail="Consistência"
-          icon={Flame}
-        />
-        <KpiCard label="Precisão (janela atual)" value={`${weeklyAccuracy}%`} detail={`${totalAcertos} acertos`} icon={Target} />
-        <KpiCard
-          label="Meta diária"
-          value={`${historyOverview.todayGoalProgress}%`}
-          detail="Meta diária do plano"
-          icon={CheckCircle2}
-        />
-        <KpiCard
-          label="Revisões"
-          value={`${urgentReviews}`}
-          detail="Em alta prioridade"
-          icon={Sparkles}
-        />
-      </section>
+  const weekBars = useMemo(() => {
+    const today = new Date();
+    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = shiftDays(today, i - 6);
+      const key = toDateKey(date);
+      const sessions = safeHistorico.filter((s) => String(s?.data || '').substring(0, 10) === key);
+      const minutes = sessions.reduce((acc, s) => acc + parseStudyTimeToMinutes(s?.duracao || s?.tempo || 0), 0);
+      const topCounts = {};
+      sessions.forEach((s) => {
+        const disciplina = s?.disciplina || s?.materia || '';
+        if (disciplina) topCounts[disciplina] = (topCounts[disciplina] || 0) + 1;
+      });
+      const topDisciplina = Object.keys(topCounts).sort((a, b) => topCounts[b] - topCounts[a])[0] || '-';
+      return { d: dayLabels[date.getDay()], m: minutes, top: topDisciplina, isToday: i === 6 };
+    });
+  }, [safeHistorico]);
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:items-start xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,380px)]">
-        <div className="section-card">
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-slate-400">Rotina do dia</p>
-              <h3 className="mt-1 text-base font-semibold text-slate-900 sm:text-lg">Próximos blocos de estudo</h3>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveTab('planejamento')}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 transition hover:text-blue-900"
-            >
-              Ver planejamento
-              <ArrowRight size={14} strokeWidth={2} />
-            </button>
-          </div>
+  const weekMax = Math.max(...weekBars.map((b) => b.m), 60);
+  const weekTotalLabel = (() => {
+    const total = weekBars.reduce((a, b) => a + b.m, 0);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return `${h}h${String(m).padStart(2, '0')} acumuladas`;
+  })();
 
-          <div className="space-y-3">
-            {safeRoutine.length === 0 ? (
-              <EmptyState
-                text="Defina um alvo e registre mais estudo para o app montar sua rotina automaticamente."
-                actionLabel={targetContest?.id ? 'Abrir concurso-alvo' : 'Definir concurso-alvo'}
-                onAction={() =>
-                  targetContest?.id ? onOpenTargetContest?.(targetContest.id) : setActiveTab('planejamento')
-                }
-              />
-            ) : (
-              safeRoutine.map((item, index) => (
-                <RoutineRow
-                  key={item.id || `routine-${index}`}
-                  index={index}
-                  item={item}
-                  onStart={() => onStartRoutineItem?.(item.recommendation)}
-                />
-              ))
-            )}
-          </div>
+  if (!targetContest && safeHistorico.length === 0) {
+    return (
+      <div style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
+        <div style={{ width: '100%', padding: '22px 32px 38px' }}>
+          <PlDashboardEmpty
+            greeting={greeting}
+            userName={cleanUserName}
+            onStart={() => setActiveTab?.('planejamento')}
+            onOpenQuestions={() => setActiveTab?.('questoes')}
+            onOpenTimer={quickAction.onClick}
+          />
         </div>
+      </div>
+    );
+  }
 
-        <div className="grid gap-4">
-          <MiniPanel
-            label="Lembrete"
-            icon={<BellRing size={15} className="text-blue-700" strokeWidth={2} />}
-            title={reminder.title}
-            detail={reminder.detail}
-            badge={reminder.badge}
-            tone="brand"
-            compact
-          />
-
-          <MiniPanel
-            label="Resumo rápido"
-            icon={<Sparkles size={15} className="text-blue-700" strokeWidth={2} />}
-            title={studySummaryTitle}
-            detail={
-              primaryRecommendation
-                ? `${studySummaryDetail} | média recente ${historyOverview.last7DaysAverageLabel}/dia`
-                : studySummaryDetail
-            }
-            badge={primaryRecommendation?.studyModeLabel || 'Plano'}
-            tone="brand"
-            compact
-          />
-
-          <div className="section-card soft-accent">
-            <div className="flex items-center gap-2">
-              <CalendarDays size={15} className="text-blue-700" strokeWidth={2} />
-              <p className="text-2xs font-semibold uppercase tracking-wider text-slate-500">Agenda curta</p>
+  return (
+    <div style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
+      <div style={{ width: '100%', padding: '22px 32px 36px' }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: 28, alignItems: 'center' }}>
+          <div style={{ minWidth: 0 }}>
+            <div className="pl-eyebrow">
+              {dayContextLabel}
+              {historyOverview.streakDays > 0 && (
+                <>
+                  <span style={{ margin: '0 8px', opacity: 0.5 }}>-</span>
+                  <span>voce esta papirando ha {historyOverview.streakDays} {historyOverview.streakDays === 1 ? 'dia' : 'dias'}</span>
+                </>
+              )}
             </div>
-
-            <div className="mt-4 grid gap-3">
-              <AgendaBlock title="Hoje" items={safeAgendaHoje.slice(0, 2)} emptyText="Nada urgente para hoje." />
-              <AgendaBlock title="Amanhã" items={safeAgendaAmanha.slice(0, 2)} emptyText="Nada urgente para amanhã." />
+            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 62, color: 'var(--pl-ink)' }}>
+              {greeting}{cleanUserName ? `, ${cleanUserName}` : ''}<span style={{ color: 'var(--pl-accent)' }}>.</span>
+            </h1>
+            {(heroTopic || heroDetail) && (
+              <p style={{ margin: '12px 0 0', fontSize: 17, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 640, lineHeight: 1.45 }}>
+                {heroTopic && (
+                  <>Hoje a gente <span className="pl-mark-text">papira {heroTopic}</span>{heroDetail ? ` - ${heroDetail}` : '.'}</>
+                )}
+                {!heroTopic && heroDetail}
+              </p>
+            )}
+            <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button className="pl-btn pl-btn-primary pl-btn-lg" onClick={quickAction.onClick}>
+                <Play size={13} fill="currentColor" /> {quickAction.label}
+              </button>
               <button
-                type="button"
-                onClick={() => setActiveTab?.('lembretes')}
-                className="btn-secondary w-full justify-center py-2.5"
+                className="pl-btn pl-btn-lg"
+                onClick={() => targetContest?.id ? onOpenTargetContest?.(targetContest.id) : setActiveTab?.('planejamento')}
               >
-                Abrir calendário completo
-                <ArrowRight size={14} strokeWidth={2} />
+                {targetContest?.id ? 'Abrir alvo' : 'Abrir planejamento'}
               </button>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
-  );
-}
 
-function Badge({ label, tone = 'primary' }) {
-  const classes =
-    tone === 'secondary'
-      ? 'border-slate-200 bg-slate-50 text-slate-600'
-      : 'border-blue-100 bg-blue-50/90 text-blue-800';
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${classes}`}
-    >
-      {label}
-    </span>
-  );
-}
-
-function KpiCard({ label, value, detail, icon: Icon }) {
-  return (
-    <div className="kpi-card">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-2xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-          <p className="mt-1.5 text-xl font-semibold tabular-nums leading-none tracking-tight text-slate-900 sm:text-2xl">
-            {value}
-          </p>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm">{detail}</p>
-        </div>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-blue-700 sm:h-9 sm:w-9">
-          <Icon size={16} strokeWidth={2} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MiniPanel({ label, icon, title, detail, badge, tone = 'neutral', compact = false }) {
-  const badgeClass =
-    tone === 'brand'
-      ? 'border border-blue-100 bg-blue-50 text-blue-800'
-      : 'border border-slate-200 bg-slate-50 text-slate-600';
-
-  return (
-    <div className="section-card">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-2xs font-semibold uppercase tracking-wider text-slate-400">{label}</div>
-        {icon}
-      </div>
-
-      <div className="mt-2.5 flex items-start justify-between gap-3">
-        <p className={`font-semibold leading-snug text-slate-900 ${compact ? 'text-sm' : 'text-sm sm:text-base'}`}>{title}</p>
-        <span
-          className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badgeClass}`}
-        >
-          {badge}
-        </span>
-      </div>
-
-      <p className={`mt-2 leading-relaxed text-slate-500 ${compact ? 'line-clamp-2 text-xs' : 'text-sm'}`}>{detail}</p>
-    </div>
-  );
-}
-
-function RoutineRow({ item, onStart, index }) {
-  const urgencyLabel = item?.priority === 'alta' ? 'ideal agora' : 'pode adiar';
-
-  return (
-    <div className="flex flex-col gap-3 rounded-lg border border-slate-200/90 bg-white px-3 py-3 sm:px-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-semibold text-blue-800 sm:h-9 sm:w-9">
-          {index + 1}
-        </div>
-
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium text-slate-900">{item.subtitle}</p>
-            <span className="rounded-md border border-blue-100 bg-blue-50/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-800">
-              {item.tag}
-            </span>
-            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              {urgencyLabel}
-            </span>
-          </div>
-          <p className="mt-0.5 text-sm text-slate-500">{item.detail}</p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 md:shrink-0">
-        <div className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm font-medium text-slate-700">
-          {item.duration}
-        </div>
-        <button type="button" onClick={onStart} className="btn-primary py-2 pl-3 pr-3.5">
-          <Play size={14} fill="currentColor" className="opacity-95" />
-          Iniciar
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function AgendaBlock({ title, items, emptyText }) {
-  return (
-    <div className="rounded-lg border border-slate-200/90 bg-slate-50/80 px-3 py-3 sm:px-4">
-      <div className="inline-flex rounded-md border border-slate-200/80 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-        {title}
-      </div>
-
-      {items.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-400">{emptyText}</p>
-      ) : (
-        <div className="mt-3 space-y-3">
-          {items.map((item, index) => {
-            const titleText =
-              typeof item === 'string'
-                ? item
-                : item?.titulo || item?.nome || item?.texto || `Item ${index + 1}`;
-            const detailText = typeof item === 'string' ? '' : item?.detalhe || '';
-            const done = Boolean(item?.concluido);
-
-            return (
-              <div key={item?.id || `${title}-${index}`} className="flex items-start gap-3">
-                <div className="mt-0.5">
-                  {done ? (
-                    <CheckCircle2 size={16} className="text-emerald-600" strokeWidth={2} />
-                  ) : (
-                    <CalendarDays size={16} className="text-blue-700" strokeWidth={2} />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className={`line-clamp-2 text-sm font-medium ${done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
-                    {titleText}
-                  </p>
-                  {detailText ? <p className="mt-1 text-xs text-slate-500">{detailText}</p> : null}
-                </div>
+          {targetDaysRemaining !== null && (
+            <div className="pl-card" style={{ width: 220, padding: '17px 22px' }}>
+              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Concurso-alvo</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, marginTop: 8 }}>
+                <span className="pl-num" style={{ fontSize: 54, color: 'var(--pl-ink)', lineHeight: 1 }}>{targetDaysRemaining}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)' }}>dias</span>
               </div>
-            );
-          })}
+              <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                {targetContest?.nome || 'Concurso definido'}
+              </div>
+              <div style={{ marginTop: 3, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+                {[targetContest?.banca, targetContest?.cargo || targetContest?.concurso].filter(Boolean).join(' - ')}
+              </div>
+            </div>
+          )}
+        </section>
+
+        <div className="pl-rule" style={{ margin: '18px 0 16px' }} />
+
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12 }}>
+          <PlKpi label="Papirado hoje" num={historyOverview.todayMinutesLabel} detail="Volume efetivo" />
+          <PlKpi label="Sequencia" num={String(historyOverview.streakDays)} unit="d" detail="dias sem falhar" icon={<Flame size={14} style={{ color: 'var(--pl-warn)' }} />} />
+          <PlKpi label="Precisao" num={String(weeklyAccuracy)} unit="%" detail={`${totalAcertos} acertos - ${totalErros} erros`} />
+          <PlKpi label="Meta diaria" num={String(historyOverview.todayGoalProgress)} unit="%" detail="do objetivo de hoje" progress={historyOverview.todayGoalProgress / 100} />
+          <PlKpi label="Revisoes" num={String(urgentReviews).padStart(2, '0')} detail="Alta prioridade" accentColor={urgentReviews > 0 ? 'warn' : undefined} />
+        </section>
+
+        <section style={{ display: 'grid', gridTemplateColumns: '1.65fr 1fr', gap: 14, marginTop: 18 }}>
+          <div className="pl-card" style={{ padding: '16px 18px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
+              <div>
+                <div className="pl-eyebrow">Rotina do dia</div>
+                <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 27, letterSpacing: '-0.025em', color: 'var(--pl-ink)' }}>
+                  {safeRoutine.length > 0
+                    ? `${safeRoutine.length} bloco${safeRoutine.length !== 1 ? 's' : ''} pra papirar hoje`
+                    : 'Nenhum bloco agendado'}
+                </h2>
+              </div>
+              <button className="pl-btn-link" onClick={() => setActiveTab?.('planejamento')}>
+                Abrir plano <ArrowRight size={12} />
+              </button>
+            </div>
+
+            {safeRoutine.length === 0 ? (
+              <p style={{ fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.6, padding: '14px 0 4px' }}>
+                Defina um concurso-alvo e registre mais estudo para montar sua rotina automaticamente.
+              </p>
+            ) : (
+              <div>
+                {safeRoutine.map((item, index) => (
+                  <PlRoutineRow
+                    key={item.id || `r-${index}`}
+                    index={index}
+                    item={item}
+                    isFirst={index === 0}
+                    isLast={index === safeRoutine.length - 1}
+                    onStart={() => onStartRoutineItem?.(item.recommendation)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <PlBizuCard
+            recommendation={primaryRecommendation}
+            reminder={reminder}
+            progress={historyOverview.todayGoalProgress}
+            onStart={quickAction.onClick}
+            onPlan={() => setActiveTab?.('planejamento')}
+          />
+        </section>
+
+        {(ultimaAnotacao || editalProgresso) && (
+          <section style={{ display: 'grid', gridTemplateColumns: ultimaAnotacao && editalProgresso ? '1.2fr 1fr' : '1fr', gap: 14, marginTop: 16 }}>
+            {ultimaAnotacao && <PlLastNote nota={ultimaAnotacao} onOpen={onOpenUltimaAnotacao} onOpenNotebook={() => setActiveTab?.('redacoes')} />}
+            {editalProgresso && <PlEditalProgress data={editalProgresso} onOpen={() => setActiveTab?.('edital')} />}
+          </section>
+        )}
+
+        <section style={{ marginTop: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 10 }}>
+            <div>
+              <div className="pl-eyebrow">Esta semana</div>
+              <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 26, letterSpacing: '-0.025em', color: 'var(--pl-ink)' }}>
+                Tempo por dia - {weekTotalLabel}
+              </h2>
+            </div>
+            <button className="pl-btn-link" onClick={() => setActiveTab?.('estatisticas')}>
+              Estatisticas completas <ArrowRight size={12} />
+            </button>
+          </div>
+
+          <div className="pl-card" style={{ padding: '18px 20px' }}>
+            <PlWeekBars bars={weekBars} max={weekMax} />
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function PlKpi({ label, num, unit, detail, icon, progress, accentColor }) {
+  return (
+    <div className="pl-card" style={{ padding: '14px 16px 13px' }}>
+      <div className="pl-eyebrow" style={{ fontSize: 10 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 6 }}>
+        <span className="pl-num" style={{ fontSize: 38, color: 'var(--pl-ink)', lineHeight: 1 }}>{num}</span>
+        {unit && <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)', marginLeft: 2 }}>{unit}</span>}
+        {icon && <span style={{ marginLeft: 'auto' }}>{icon}</span>}
+      </div>
+      <div style={{ fontSize: 11.5, fontWeight: 500, marginTop: 5, color: accentColor === 'warn' ? 'var(--pl-warn)' : 'var(--pl-ink-3)' }}>
+        {detail}
+      </div>
+      {progress != null && (
+        <div className="pl-progress accent" style={{ marginTop: 10 }}>
+          <div className="fill" style={{ width: `${Math.min(progress * 100, 100)}%` }} />
         </div>
       )}
     </div>
   );
 }
 
-function EmptyState({ text, actionLabel = '', onAction = null }) {
+function PlRoutineRow({ item, onStart, index, isFirst, isLast }) {
+  const tag = item.tag || item.type || 'Bloco';
+  const tagClass =
+    String(tag).toLowerCase().includes('teoria')
+      ? 'pl-tag-highlight'
+      : String(tag).toLowerCase().includes('revis')
+        ? 'pl-tag-warn'
+        : 'pl-tag-accent';
+
   return (
-    <div className="rounded-lg border border-dashed border-slate-200/90 bg-slate-50/50 px-4 py-8 text-center text-sm leading-relaxed text-slate-500 sm:px-6 sm:py-10">
-      {text}
-      {actionLabel && typeof onAction === 'function' ? (
-        <div className="mt-4">
-          <button type="button" onClick={onAction} className="btn-secondary px-4 py-2">
-            {actionLabel}
-            <ArrowRight size={14} strokeWidth={2} />
-          </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 0', borderBottom: isLast ? 'none' : '1px solid var(--pl-rule)' }}>
+      <div style={{
+        width: 29,
+        height: 29,
+        borderRadius: '50%',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: isFirst ? 'var(--pl-ink)' : 'transparent',
+        color: isFirst ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
+        border: isFirst ? '0' : '1px solid var(--pl-rule-2)',
+        fontFamily: 'var(--pl-serif)',
+        fontStyle: 'italic',
+        fontSize: 14,
+        letterSpacing: '-0.04em',
+      }}>
+        {index + 1}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--pl-ink)' }}>
+            {item.subtitle || item.nome || item.disciplina || `Bloco ${index + 1}`}
+          </span>
+          <span className={`pl-tag ${tagClass}`}>{tag}</span>
+          {isFirst && <span className="pl-tag pl-tag-accent">Agora</span>}
         </div>
-      ) : null}
+        <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500, marginTop: 1 }}>
+          {item.detail || item.description || 'Sessao de estudo planejada'}
+          {item.duration && (
+            <><span style={{ opacity: 0.4, margin: '0 6px' }}>-</span>{item.duration}</>
+          )}
+        </div>
+      </div>
+      <button onClick={onStart} className={isFirst ? 'pl-btn pl-btn-primary pl-btn-sm' : 'pl-btn pl-btn-sm'} style={{ flexShrink: 0 }}>
+        <Play size={10} fill="currentColor" /> {isFirst ? 'Papirar' : 'Iniciar'}
+      </button>
+    </div>
+  );
+}
+
+function PlBizuCard({ recommendation, reminder, progress, onStart, onPlan }) {
+  const title = recommendation?.nome || reminder?.title || 'Monte sua proxima sessao';
+  const detail = recommendation?.reason || recommendation?.nextTopic?.nome || reminder?.detail || 'O Bizu IA usa seu desempenho para sugerir o melhor proximo passo.';
+
+  return (
+    <div className="pl-card-ai" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 13 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+        <span className="pl-tag-ai"><Sparkles size={10} /> Bizu IA</span>
+        <span className={`pl-tag${reminder?.badgeTone ? ` pl-tag-${reminder.badgeTone}` : ''}`}>{reminder?.badge || 'Agora'}</span>
+      </div>
+      <div>
+        <div className="pl-eyebrow" style={{ fontSize: 10 }}>Proxima sessao sugerida</div>
+        <h3 style={{ margin: '7px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, lineHeight: 1.12, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>
+          {title}
+        </h3>
+        <p style={{ margin: '9px 0 0', padding: '12px 14px', borderRadius: 4, background: 'var(--pl-bg-soft)', fontSize: 13.5, lineHeight: 1.45, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
+          {detail}
+        </p>
+      </div>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 7 }}>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-3)' }}>Meta de hoje</span>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{progress}%</span>
+        </div>
+        <div className="pl-progress accent">
+          <div className="fill" style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
+        <button className="pl-btn pl-btn-ai" onClick={onStart} style={{ flex: 1, justifyContent: 'center' }}>
+          <Sparkles size={11} /> Iniciar sessao
+        </button>
+        <button className="pl-btn pl-btn-sm" onClick={onPlan}>
+          Ajustar plano
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PlLastNote({ nota, onOpen, onOpenNotebook }) {
+  return (
+    <div className="pl-card" style={{ padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 34, height: 34, background: 'var(--pl-bg-soft)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)', borderLeft: '1px solid var(--pl-rule-2)', borderBottom: '1px solid var(--pl-rule-2)' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <span className="pl-tag pl-tag-highlight"><FileText size={11} /> Ultima anotacao</span>
+        {nota?.data && <span style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 600 }}>{nota.data}</span>}
+      </div>
+      <h3 style={{ margin: '12px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 24, lineHeight: 1.2, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
+        {nota?.titulo || 'Anotacao recente'}
+      </h3>
+      {nota?.disciplina && (
+        <div style={{ marginTop: 4, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          {nota.disciplina}
+        </div>
+      )}
+      <p style={{ margin: '12px 0 0', paddingLeft: 12, borderLeft: '2px solid var(--pl-highlight)', fontSize: 13.5, lineHeight: 1.6, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
+        {nota?.excerpt || 'Continue de onde parou.'}
+      </p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+        <button className="pl-btn pl-btn-primary pl-btn-sm" onClick={onOpen}>
+          {nota?.acaoLabel || 'Continuar lendo'}
+        </button>
+        <button className="pl-btn-link" onClick={onOpenNotebook}>
+          Ver caderno <ArrowRight size={12} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PlEditalProgress({ data, onOpen }) {
+  const list = Array.isArray(data?.porDisciplina) ? data.porDisciplina.slice(0, 5) : [];
+  return (
+    <div className="pl-card" style={{ padding: '18px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+        <div>
+          <div className="pl-eyebrow">Edital - progresso</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 7 }}>
+            <span className="pl-num" style={{ fontSize: 44, color: 'var(--pl-ink)', lineHeight: 1 }}>{Math.round(Number(data?.geral || 0))}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink-2)' }}>% geral</span>
+          </div>
+        </div>
+        <button className="pl-btn pl-btn-sm" onClick={onOpen}>
+          Abrir edital
+        </button>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 16 }}>
+        {list.length === 0 ? (
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 500 }}>Sem disciplinas do edital para exibir.</p>
+        ) : list.map((item) => (
+          <div key={item.nome}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 5 }}>
+              <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.nome}</span>
+              <span className="pl-num" style={{ fontSize: 17, color: 'var(--pl-ink-2)' }}>{item.pct}%</span>
+            </div>
+            <div className="pl-progress accent">
+              <div className="fill" style={{ width: `${Math.min(Math.max(Number(item.pct || 0), 0), 100)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpenTimer }) {
+  return (
+    <div style={{ minHeight: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
+      <section>
+        <div className="pl-eyebrow">Bem-vindo</div>
+        <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 68, color: 'var(--pl-ink)' }}>
+          {greeting}{userName ? `, ${userName}` : ''}. Bora comecar a papirar?
+        </h1>
+        <p style={{ margin: '16px 0 0', maxWidth: 680, fontSize: 17, lineHeight: 1.55, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
+          Defina um alvo, monte sua primeira semana e comece com uma sessao curta. O resto a plataforma organiza junto com voce.
+        </p>
+      </section>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+        <PlOnboardStep number="1" title="Escolha seu alvo" text="Defina concurso, banca e data para orientar o plano." />
+        <PlOnboardStep number="2" title="Monte a semana" text="Ajuste disponibilidade e materias principais." />
+        <PlOnboardStep number="3" title="Papire agora" text="Abra uma sessao e registre o primeiro estudo." />
+      </section>
+      <section className="pl-card-ai" style={{ padding: '22px 24px', display: 'flex', alignItems: 'center', gap: 18 }}>
+        <div style={{ flex: 1 }}>
+          <span className="pl-tag-ai"><Sparkles size={10} /> Bizu IA</span>
+          <h2 style={{ margin: '12px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
+            Posso montar sua primeira semana.
+          </h2>
+          <p style={{ margin: '8px 0 0', fontSize: 13.5, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
+            Comece pelo plano ou va direto para uma sessao de pratica.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button className="pl-btn pl-btn-sm pl-btn-ai" onClick={onStart}><Sparkles size={11} /> Montar semana</button>
+          <button className="pl-btn pl-btn-sm" onClick={onOpenQuestions}>Ver questoes</button>
+          <button className="pl-btn pl-btn-sm" onClick={onOpenTimer}>Abrir timer</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PlOnboardStep({ number, title, text }) {
+  return (
+    <div className="pl-card" style={{ padding: '18px 20px' }}>
+      <div className="pl-num" style={{ fontSize: 38, color: 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
+      <h3 style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{title}</h3>
+      <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{text}</p>
+    </div>
+  );
+}
+
+function PlWeekBars({ bars, max }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, height: 172 }}>
+      {bars.map((it) => {
+        const h = max > 0 ? (it.m / max) * 142 : 0;
+        return (
+          <div key={it.d + String(it.isToday)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+              <div style={{ width: '100%', height: Math.max(h, 4), background: it.isToday ? 'var(--pl-ink)' : 'var(--pl-ink-4)', borderRadius: '4px 4px 0 0', position: 'relative' }}>
+                {it.m > 0 && (
+                  <div style={{ position: 'absolute', top: -22, left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 13, color: 'var(--pl-ink-2)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+                    {`${Math.floor(it.m / 60)}:${String(it.m % 60).padStart(2, '0')}`}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: it.isToday ? 'var(--pl-ink)' : 'var(--pl-ink-3)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              {it.d}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--pl-ink-4)', fontWeight: 500, minHeight: 12 }}>{it.top}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }

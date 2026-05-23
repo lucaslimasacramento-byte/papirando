@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import { isValidCpf, normalizeCpf } from '../_shared/cpf.ts';
-import { corsHeaders, jsonResponse, type ApiResponse } from '../_shared/http.ts';
+import { getCorsHeaders, jsonResponse, type ApiResponse } from '../_shared/http.ts';
 
 const WINDOW_MIN = 15;
 const MAX_ATTEMPTS_PER_IP = 10;
@@ -182,18 +182,20 @@ async function enforceRateLimits(
 }
 
 Deno.serve(async (req) => {
+  const respond = (body: ApiResponse, status = 200) => jsonResponse(body, status, req);
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   if (req.method !== 'POST') {
-    return jsonResponse({ success: false, message: 'Método não permitido.', code: 'METHOD' }, 405);
+    return respond({ success: false, message: 'Método não permitido.', code: 'METHOD' }, 405);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   if (!supabaseUrl || !serviceKey) {
-    return jsonResponse(
+    return respond(
       { success: false, message: 'Servidor de cadastro não configurado.', code: 'SERVER_CONFIG' },
       500,
     );
@@ -207,7 +209,7 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
   } catch {
-    return jsonResponse({ success: false, message: 'Dados inválidos.', code: 'BAD_JSON' }, 400);
+    return respond({ success: false, message: 'Dados inválidos.', code: 'BAD_JSON' }, 400);
   }
 
   const ip = getClientIp(req);
@@ -222,7 +224,7 @@ Deno.serve(async (req) => {
       reason_code: blocked.code,
       internal_detail: 'blocked_row',
     });
-    return jsonResponse(blocked, 429);
+    return respond(blocked, 429);
   }
 
   const limited = await enforceRateLimits(admin, ipHash);
@@ -233,7 +235,7 @@ Deno.serve(async (req) => {
       reason_code: limited.code,
       internal_detail: 'window_exceeded',
     });
-    return jsonResponse(limited, 429);
+    return respond(limited, 429);
   }
 
   const fullName = sanitizeName(String(body.fullName ?? ''));
@@ -285,7 +287,7 @@ Deno.serve(async (req) => {
         email_hash: email ? await emailHashFn(email) : null,
       });
     }
-    return jsonResponse(
+    return respond(
       {
         success: false,
         message: 'Dados inválidos.',
@@ -301,7 +303,7 @@ Deno.serve(async (req) => {
   });
   if (emailRpcErr) {
     console.error('[register-free] registration_email_exists', emailRpcErr.message);
-    return jsonResponse(
+    return respond(
       { success: false, message: 'Não foi possível concluir o cadastro agora.', code: 'SERVER_ERROR' },
       500,
     );
@@ -313,7 +315,7 @@ Deno.serve(async (req) => {
       reason_code: 'EMAIL_TAKEN',
       email_hash: await emailHashFn(email),
     });
-    return jsonResponse(
+    return respond(
       {
         success: false,
         message: 'E-mail já cadastrado.',
@@ -329,7 +331,7 @@ Deno.serve(async (req) => {
   });
   if (cpfRpcErr) {
     console.error('[register-free] registration_cpf_exists', cpfRpcErr.message);
-    return jsonResponse(
+    return respond(
       { success: false, message: 'Não foi possível concluir o cadastro agora.', code: 'SERVER_ERROR' },
       500,
     );
@@ -341,7 +343,7 @@ Deno.serve(async (req) => {
       reason_code: 'CPF_TAKEN',
       email_hash: await emailHashFn(email),
     });
-    return jsonResponse(
+    return respond(
       {
         success: false,
         message: 'CPF já cadastrado.',
@@ -362,14 +364,14 @@ Deno.serve(async (req) => {
 
     if (inviteErr) {
       console.error('[register-free] beta invite lookup', inviteErr.message);
-      return jsonResponse(
+      return respond(
         { success: false, message: 'Nao foi possivel validar o convite beta agora.', code: 'BETA_INVITE_ERROR' },
         500,
       );
     }
 
     if (!inviteRow) {
-      return jsonResponse(
+      return respond(
         {
           success: false,
           message: 'Convite beta invalido ou expirado.',
@@ -381,7 +383,7 @@ Deno.serve(async (req) => {
     }
 
     if (inviteRow.used_at) {
-      return jsonResponse(
+      return respond(
         {
           success: false,
           message: 'Este convite beta ja foi usado.',
@@ -393,7 +395,7 @@ Deno.serve(async (req) => {
     }
 
     if (String(inviteRow.email || '').trim().toLowerCase() !== email) {
-      return jsonResponse(
+      return respond(
         {
           success: false,
           message: 'Este convite beta pertence a outro e-mail. Use o mesmo e-mail que recebeu o convite.',
@@ -435,7 +437,7 @@ Deno.serve(async (req) => {
       email_hash: await emailHashFn(email),
     });
     if (msg.includes('already been registered') || msg.includes('already exists')) {
-      return jsonResponse(
+      return respond(
         {
           success: false,
           message: 'E-mail já cadastrado.',
@@ -445,7 +447,7 @@ Deno.serve(async (req) => {
         409,
       );
     }
-    return jsonResponse(
+    return respond(
       { success: false, message: 'Não foi possível criar a conta. Tente novamente.', code: 'REGISTER_FAILED' },
       500,
     );
@@ -491,7 +493,7 @@ Deno.serve(async (req) => {
       profileErr.code === '23505' ||
       profileErr.message?.toLowerCase().includes('profiles_cpf_unique');
     if (isCpfUnique) {
-      return jsonResponse(
+      return respond(
         {
           success: false,
           message: 'CPF já cadastrado.',
@@ -501,7 +503,7 @@ Deno.serve(async (req) => {
         409,
       );
     }
-    return jsonResponse(
+    return respond(
       { success: false, message: 'Não foi possível concluir o cadastro.', code: 'REGISTER_FAILED' },
       500,
     );
@@ -548,7 +550,7 @@ Deno.serve(async (req) => {
     email_hash: await emailHashFn(email),
   });
 
-  return jsonResponse({
+  return respond({
     success: true,
     message: betaInvite
       ? 'Cadastro beta realizado. Verifique seu e-mail para ativar os 3 meses de acesso completo.'

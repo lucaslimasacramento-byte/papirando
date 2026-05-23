@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { Check, Clock, Copy, Loader2, Mail, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
@@ -8,7 +8,7 @@ import {
   loadBetaInvites,
 } from '../lib/betaInvitesApi';
 
-const MAX_SLOTS = 50;
+const DEFAULT_maxSlots = 50;
 
 function formatDate(iso) {
   if (!iso) return '';
@@ -22,6 +22,8 @@ export default function AdminBetaConvites() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [maxSlots, setMaxSlots] = useState(DEFAULT_maxSlots);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -54,7 +56,7 @@ export default function AdminBetaConvites() {
     setFormError('');
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) { setFormError('E-mail obrigatorio.'); return; }
-    if (rows.length >= MAX_SLOTS) { setFormError(`Limite de ${MAX_SLOTS} convites atingido.`); return; }
+    if (rows.length >= maxSlots) { setFormError(`Limite de ${maxSlots} convites atingido.`); return; }
 
     setCreating(true);
     try {
@@ -93,8 +95,8 @@ export default function AdminBetaConvites() {
 
   const usedCount = rows.filter((r) => r.used_at).length;
   const pendingCount = rows.length - usedCount;
-  const slotsLeft = MAX_SLOTS - rows.length;
-  const progressPct = Math.min((rows.length / MAX_SLOTS) * 100, 100);
+  const slotsLeft = maxSlots - rows.length;
+  const progressPct = Math.min((rows.length / maxSlots) * 100, 100);
 
   return (
     <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
@@ -112,13 +114,13 @@ export default function AdminBetaConvites() {
           subtitle={
             loading
               ? 'Carregando...'
-              : `${rows.length}/${MAX_SLOTS} slots · ${usedCount} acessaram · ${pendingCount} pendentes`
+              : `${rows.length}/${maxSlots} slots · ${usedCount} acessaram · ${pendingCount} pendentes`
           }
         />
 
         <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="section-card overflow-hidden p-0">
-            <div className="bg-[linear-gradient(135deg,#0f2a4f,#1d4ed8)] px-6 py-6 text-white">
+            <div className="bg-[linear-gradient(135deg,#0f2a4f,#1e3a5f)] px-6 py-6 text-white">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-100">
                 <ShieldCheck size={13} />
                 Experiência do convidado
@@ -157,9 +159,22 @@ export default function AdminBetaConvites() {
 
         {/* Progress bar */}
         <div className="section-card space-y-2">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-            <span>{rows.length} convidados</span>
-            <span>{slotsLeft} slots restantes</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+            <span>{rows.length} convidados · {slotsLeft} slots restantes</span>
+            <label className="flex items-center gap-2 text-[10px] font-semibold text-slate-400">
+              Limite de slots:
+              <input
+                type="number"
+                min={rows.length}
+                max={9999}
+                value={maxSlots}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!Number.isNaN(v) && v >= 1) setMaxSlots(v);
+                }}
+                className="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm font-bold text-slate-700 focus:border-blue-400 focus:outline-none"
+              />
+            </label>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
             <div
@@ -167,9 +182,6 @@ export default function AdminBetaConvites() {
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <p className="text-[10px] text-slate-400">
-            Limite de {MAX_SLOTS} usuarios para o beta fechado.
-          </p>
         </div>
 
         {/* Add form */}
@@ -191,7 +203,7 @@ export default function AdminBetaConvites() {
                   placeholder="usuario@email.com"
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                   required
-                  disabled={creating || rows.length >= MAX_SLOTS}
+                  disabled={creating || rows.length >= maxSlots}
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -205,13 +217,13 @@ export default function AdminBetaConvites() {
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome do convidado"
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  disabled={creating || rows.length >= MAX_SLOTS}
+                  disabled={creating || rows.length >= maxSlots}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-slate-600" htmlFor="invite-obs">
-                Observacao (opcional)
+                Observação (opcional)
               </label>
               <input
                 id="invite-obs"
@@ -220,7 +232,7 @@ export default function AdminBetaConvites() {
                 onChange={(e) => setObservacao(e.target.value)}
                 placeholder="Ex: amigo, influencer, parceiro..."
                 className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                disabled={creating || rows.length >= MAX_SLOTS}
+                disabled={creating || rows.length >= maxSlots}
               />
             </div>
             {formError ? (
@@ -229,7 +241,7 @@ export default function AdminBetaConvites() {
             <div className="flex items-center gap-3">
               <button
                 type="submit"
-                disabled={creating || rows.length >= MAX_SLOTS}
+                disabled={creating || rows.length >= maxSlots}
                 className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
               >
                 {creating ? (
@@ -237,7 +249,7 @@ export default function AdminBetaConvites() {
                 ) : (
                   <Plus size={15} />
                 )}
-                {rows.length >= MAX_SLOTS ? 'Limite atingido' : 'Convidar'}
+                {rows.length >= maxSlots ? 'Limite atingido' : 'Convidar'}
               </button>
               <button
                 type="button"

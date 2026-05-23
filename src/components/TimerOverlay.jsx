@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Timer, Clock, Play, CheckCircle2, Pause, Square } from 'lucide-react';
 
 export default function TimerOverlay({
@@ -29,31 +29,31 @@ export default function TimerOverlay({
          {showTimerSetup ? (
            <div className="w-full max-w-md rounded-[2rem] border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 sm:p-7 md:p-8">
              <div className="mb-6 text-center">
-               <div className="w-16 h-16 bg-[#2563EB] rounded-2xl flex items-center justify-center mx-auto mb-4 text-white"><Timer size={32}/></div>
+               <div className="w-16 h-16 bg-[#1e3a5f] rounded-2xl flex items-center justify-center mx-auto mb-4 text-white"><Timer size={32}/></div>
                <h2 className="text-2xl font-black text-white mb-2">Configurar Sessão</h2>
                <p className="text-blue-200 text-sm font-medium">Escolha o seu método de estudo e foque no objetivo.</p>
              </div>
              <div className="mb-6 space-y-3">
-               <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(25*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 25*60 ? 'border-[#2563EB] bg-[#2563EB]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
+               <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(25*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 25*60 ? 'border-[#1e3a5f] bg-[#1e3a5f]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
                  <div className="flex items-center gap-3"><Clock size={20}/><span className="font-bold">Pomodoro (25 min)</span></div>
-                 {timerMode === 'pomodoro' && timerMax === 25*60 && <CheckCircle2 size={20} className="text-[#2563EB]"/>}
+                 {timerMode === 'pomodoro' && timerMax === 25*60 && <CheckCircle2 size={20} className="text-[#1e3a5f]"/>}
                </button>
-               <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(50*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 50*60 ? 'border-[#2563EB] bg-[#2563EB]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
+               <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(50*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 50*60 ? 'border-[#1e3a5f] bg-[#1e3a5f]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
                  <div className="flex items-center gap-3"><Clock size={20}/><span className="font-bold">Sessão Longa (50 min)</span></div>
-                 {timerMode === 'pomodoro' && timerMax === 50*60 && <CheckCircle2 size={20} className="text-[#2563EB]"/>}
+                 {timerMode === 'pomodoro' && timerMax === 50*60 && <CheckCircle2 size={20} className="text-[#1e3a5f]"/>}
                </button>
-               <button onClick={() => {setTimerMode('cronometro'); setTimerMax(0);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'cronometro' ? 'border-[#2563EB] bg-[#2563EB]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
+               <button onClick={() => {setTimerMode('cronometro'); setTimerMax(0);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'cronometro' ? 'border-[#1e3a5f] bg-[#1e3a5f]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
                  <div className="flex items-center gap-3"><Play size={20}/><span className="font-bold">Livre (Cronómetro)</span></div>
-                 {timerMode === 'cronometro' && <CheckCircle2 size={20} className="text-[#2563EB]"/>}
+                 {timerMode === 'cronometro' && <CheckCircle2 size={20} className="text-[#1e3a5f]"/>}
                </button>
              </div>
              <div className="mb-6 flex items-center gap-3 px-2">
                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" checked={saveAsFavorite} onChange={() => setSaveAsFavorite(!saveAsFavorite)} className="w-4 h-4 rounded text-[#2563EB] focus:ring-[#2563EB] border-gray-400 cursor-pointer" />
+                  <input type="checkbox" checked={saveAsFavorite} onChange={() => setSaveAsFavorite(!saveAsFavorite)} className="w-4 h-4 rounded text-[#1e3a5f] focus:ring-[#1e3a5f] border-gray-400 cursor-pointer" />
                   <span className="text-sm font-medium text-gray-300">Salvar como meu método padrão</span>
                </label>
              </div>
-             <button onClick={startActualTimer} className="w-full bg-[#2563EB] text-white py-4 rounded-xl font-bold text-lg shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:bg-[#1D4ED8] transition-all flex items-center justify-center gap-2">
+             <button onClick={startActualTimer} className="w-full bg-[#1e3a5f] text-white py-4 rounded-xl font-bold text-lg shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:bg-[#1e3a5f] transition-all flex items-center justify-center gap-2">
                <Play fill="currentColor" size={20}/> Começar a Estudar
              </button>
            </div>

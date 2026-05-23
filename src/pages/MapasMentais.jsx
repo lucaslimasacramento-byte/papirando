@@ -9,6 +9,7 @@ import {
   Heart,
   Network,
   PlusSquare,
+  RefreshCw,
   Search,
   ShieldCheck,
   Sparkles,
@@ -16,11 +17,6 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import MindMapStudio from '../components/MindMapStudio';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_IA_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 import {
   MIND_MAPS_HISTORY_STORAGE_KEY,
   MIND_MAPS_STORAGE_KEY,
@@ -157,6 +153,9 @@ export default function MapasMentais({
     contestId: targetContestId || 'Todos',
   }));
   const [promptMapa, setPromptMapa] = useState('');
+  const [aiMapForm, setAiMapForm] = useState({ courseId: '', disciplinaId: '', topicoId: '' });
+  const [aiMapLoading] = useState(false);
+  const [aiMapError] = useState('');
   const [mapas, setMapas] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(MIND_MAPS_STORAGE_KEY) || '[]');
@@ -551,521 +550,451 @@ export default function MapasMentais({
   const activeDiscipline = mapaAtivo?.disciplinaId
     ? bancoDisciplinas.find((discipline) => String(discipline.id) === String(mapaAtivo.disciplinaId))
     : null;
+  const aiCourseOptions = useMemo(
+    () => [...new Set(bancoDisciplinas.map((discipline) => discipline.plano || 'Geral'))].filter(Boolean),
+    [bancoDisciplinas]
+  );
+  const aiDisciplineOptions = useMemo(
+    () =>
+      bancoDisciplinas.filter((discipline) => {
+        if (!aiMapForm.courseId) return true;
+        return String(discipline.plano || 'Geral') === String(aiMapForm.courseId);
+      }),
+    [aiMapForm.courseId, bancoDisciplinas]
+  );
+  const aiSelectedDiscipline = useMemo(
+    () =>
+      aiDisciplineOptions.find(
+        (discipline) => String(discipline.id || discipline.nome) === String(aiMapForm.disciplinaId)
+      ) || null,
+    [aiDisciplineOptions, aiMapForm.disciplinaId]
+  );
+  const aiTopicOptions = useMemo(
+    () => (Array.isArray(aiSelectedDiscipline?.topicos) ? aiSelectedDiscipline.topicos : []),
+    [aiSelectedDiscipline]
+  );
+  const canGenerateAiMap = Boolean(promptMapa.trim() || aiMapForm.disciplinaId || aiMapForm.courseId);
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
-      <div className="app-main-shell mx-auto max-w-[1320px]">
-        <PageHeadPremium
-          className="mb-6 shrink-0 animate-in fade-in duration-500 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
-          icon={Network}
-          titleAs="h1"
-          badge={
-            <PageHeadPremiumBadge icon={Sparkles}>
-              Estúdio visual
-            </PageHeadPremiumBadge>
-          }
-          title="Mapas mentais"
-          subtitle="Biblioteca integrada com disciplinas, tópicos e concursos. Abra, filtre, favorite, navegue e reaproveite seus mapas no fluxo do Papirando."
-          leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-          leadingExtra={
-            galleryMaps.length > 0 ? (
-              <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
-                {`${galleryMaps.length} modelo(s) da equipe disponível(is) abaixo — copie para editar na sua biblioteca.`}
-              </p>
-            ) : null
-          }
-          statsStackBelowTrailing
-          statsDense
-          stats={mapasHeaderStats}
-          statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
-          trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,44rem)] xl:shrink-0"
-          trailing={(
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-              <button
-                type="button"
-                onClick={handleGerarMapa}
-                disabled={!promptMapa.trim()}
-                className={`${PAGE_HEAD_PREMIUM_IA_ACTION_CLASS} w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60`}
-              >
-                <Sparkles size={14} aria-hidden />
-                Criar mapa
-              </button>
-              <button
-                type="button"
-                onClick={handleImportClick}
-                className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
-              >
-                <UploadCloud size={14} aria-hidden />
-                Importar JSON
-              </button>
+    <div className="pl-app pl-paper-bg-soft pl-mapa-shell">
+      {/* ═══ Hero compacto ═══ */}
+      <header className="pl-hero-compact">
+        <div>
+          <div className="lede-row">
+            <div className="pl-hero-icon">
+              <Network size={18} strokeWidth={1.75} />
             </div>
-          )}
-        />
-
-        <section
-          className="mb-6 rounded-2xl border border-indigo-200/90 bg-gradient-to-br from-indigo-50 via-white to-violet-50/90 p-4 shadow-[0_12px_36px_rgba(79,70,229,0.08)] md:p-6"
-          aria-label="Mapas mentais disponibilizados pela equipe"
-        >
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-700">Mapas da equipe · Papirando</p>
-              <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900 md:text-xl">
-                Prontos para quem não quer montar do zero
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-slate-600">
-                Estes mapas são publicados pelos administradores na galeria global. Abra para ver no estúdio (somente leitura) ou use{' '}
-                <strong className="font-semibold text-slate-800">Copiar para minha biblioteca</strong> para editar, favoritar e vincular ao seu fluxo.
-              </p>
-            </div>
-            {isAdmin && typeof onOpenAdminMindMaps === 'function' ? (
-              <button
-                type="button"
-                onClick={onOpenAdminMindMaps}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-indigo-300 bg-white px-4 py-2.5 text-sm font-semibold text-indigo-900 shadow-sm transition hover:bg-indigo-50"
-              >
-                <ShieldCheck size={18} className="text-indigo-600" />
-                Publicar modelos (admin)
-              </button>
-            ) : null}
+            <span className="pl-eyebrow">Estúdio visual</span>
           </div>
-
-          {galeriaFiltrada.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-indigo-200 bg-white/70 px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-slate-700">
-                {galleryMaps.length === 0
-                  ? 'Nenhum mapa da equipe publicado ainda. Quando o admin subir modelos na galeria, eles aparecem aqui para todos.'
-                  : 'Nenhum modelo da equipe corresponde à busca ou aos filtros da biblioteca. Limpe a busca ou ajuste categoria/plano.'}
-              </p>
+          <h1>Mapas mentais<span className="dot">.</span></h1>
+          <p className="subtitle">
+            Sua mesa de trabalho conectada a disciplinas, tópicos e concursos. Gere com IA, edite à mão, vincule ao seu fluxo.
+          </p>
+        </div>
+        <div className="pl-hero-kpis">
+          {mapasHeaderStats.slice(0, 4).map((stat) => (
+            <div key={stat.key} className={`pl-hero-kpi ${stat.accent === 'emerald' ? 'success' : stat.accent === 'blue' || stat.accent === 'indigo' ? 'accent' : ''}`}>
+              <span className="lab">{stat.label}</span>
+              <span className="val">{stat.value}</span>
             </div>
-          ) : (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {galeriaFiltrada.map((mapa) => {
-                const ativo = mapa.id === mapaAtivo?.id && isGalleryView;
-                return (
-                  <div
-                    key={mapa.id}
-                    className={`flex flex-col rounded-2xl border p-4 transition ${ativo ? 'border-indigo-400 bg-white shadow-md ring-2 ring-indigo-200' : 'border-indigo-100 bg-white/90 hover:border-indigo-200'}`}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-600">Equipe · {mapa.categoria || 'Geral'}</p>
-                      <h3 className="mt-1 line-clamp-2 text-base font-semibold text-slate-900">{mapa.titulo}</h3>
-                    </div>
-                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={() => openGalleryMap(mapa)}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-800 transition hover:bg-slate-100"
-                      >
-                        <Eye size={14} />
-                        Ver no estúdio
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => copyGalleryToMyLibrary(mapa)}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-600 py-2.5 text-xs font-bold text-white transition hover:bg-indigo-700"
-                      >
-                        <Copy size={14} />
-                        Copiar e editar
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+          ))}
+        </div>
+      </header>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="space-y-6">
-            <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Editor</p>
-                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">{mapaAtivo?.titulo || 'Nenhum mapa selecionado'}</h2>
-                  <p className="mt-1 text-sm font-medium text-slate-500">
-                    {mapaAtivo?.categoria || 'Sem categoria'} · {formatMindMapTimestamp(mapaAtivo?.ultimoAcessoEm || mapaAtivo?.atualizadoEm)}
-                  </p>
-                </div>
+      {/* ═══ Mapas da equipe — tira slim ═══ */}
+      <section className="pl-team-strip" aria-label="Mapas mentais disponibilizados pela equipe">
+        <div className="head">
+          <p className="ttl">Mapas da equipe · <em>prontos pra usar</em></p>
+          <p className="desc">
+            Publicados pelos administradores. Veja no estúdio (leitura) ou copie pra editar.
+          </p>
+          {isAdmin && typeof onOpenAdminMindMaps === 'function' ? (
+            <button type="button" onClick={onOpenAdminMindMaps} className="pl-btn pl-btn-sm">
+              <ShieldCheck size={13} /> Publicar modelos
+            </button>
+          ) : null}
+        </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <ActionButton icon={PlusSquare} text="Novo mapa" primary onClick={() => document.getElementById('mapa-prompt-input')?.focus()} />
-                  <ActionButton icon={UploadCloud} text="Importar" onClick={handleImportClick} />
-                  <ActionButton icon={DownloadCloud} text="Exportar" onClick={handleDownloadCurrentMap} disabled={!mapaAtivo} />
-                </div>
-              </div>
-              <input ref={importedInputRef} type="file" accept="application/json" onChange={handleImportFile} className="hidden" />
-            </div>
-
-            <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-6">
-              <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center">
-                <div className="flex-1 rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3">
-                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Gerar novo mapa</label>
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <input
-                      id="mapa-prompt-input"
-                      type="text"
-                      value={promptMapa}
-                      onChange={(event) => setPromptMapa(event.target.value)}
-                      placeholder="Digite um tema ou um resumo curto para criar um mapa conectado ao seu conteudo"
-                      className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none placeholder:text-slate-300"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleGerarMapa}
-                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-blue-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900"
-                    >
-                      Gerar mapa
-                      <ArrowRight size={16} />
+        {galeriaFiltrada.length === 0 ? (
+          <div className="pl-team-empty">
+            {galleryMaps.length === 0
+              ? 'Nenhum mapa da equipe publicado ainda. Quando o admin subir modelos, eles aparecem aqui pra todos.'
+              : 'Nenhum modelo corresponde aos filtros atuais.'}
+          </div>
+        ) : (
+          <div className="pl-team-scroll">
+            {galeriaFiltrada.map((mapa) => {
+              const ativo = mapa.id === mapaAtivo?.id && isGalleryView;
+              return (
+                <div key={mapa.id} className={`pl-team-card ${ativo ? 'active' : ''}`}>
+                  <span className="cat">Equipe · {mapa.categoria || 'Geral'}</span>
+                  <h4>{mapa.titulo}</h4>
+                  <div className="row">
+                    <button type="button" onClick={() => openGalleryMap(mapa)}>
+                      <Eye /> Ver
+                    </button>
+                    <button type="button" className="primary" onClick={() => copyGalleryToMyLibrary(mapa)}>
+                      <Copy /> Copiar
                     </button>
                   </div>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-              {mapaAtivo?.disciplinaId && !isGalleryView ? (
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <MiniToolbarButton
-                    icon={Target}
-                    label="Abrir disciplina"
-                    onClick={() => onOpenDiscipline?.(activeDiscipline || { id: mapaAtivo.disciplinaId }, mapaAtivo.topicoIds?.[0] || '')}
-                  />
-                </div>
-              ) : null}
-
-              {isGalleryView ? (
-                <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-indigo-200 bg-indigo-50/90 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-indigo-950">
-                    Modelo oficial da equipe. Copie para sua biblioteca para editar nos seus mapas.
-                  </p>
+      {/* ═══ Estúdio + Sidebar ═══ */}
+      <div className="pl-mapa-layout">
+        {/* ★ ESTÚDIO ★ */}
+        <section className="pl-studio">
+          <div className="pl-studio-head">
+            <div className="title-col">
+              <span className="eyebrow">Estúdio · editor</span>
+              <h2>{mapaAtivo?.titulo || 'Nenhum mapa selecionado'}</h2>
+              <p className="sub">
+                {mapaAtivo?.categoria || 'Sem categoria'} · {formatMindMapTimestamp(mapaAtivo?.ultimoAcessoEm || mapaAtivo?.atualizadoEm)}
+              </p>
+            </div>
+            <div className="toolbar">
+              <button type="button" onClick={() => document.getElementById('mapa-prompt-input')?.focus()} className="pl-btn pl-btn-sm pl-btn-primary">
+                <PlusSquare size={13} /> Novo mapa
+              </button>
+              <button type="button" onClick={handleImportClick} className="pl-btn pl-btn-sm">
+                <UploadCloud size={13} /> Importar
+              </button>
+              <button type="button" onClick={handleDownloadCurrentMap} disabled={!mapaAtivo} className="pl-btn pl-btn-sm" style={{ opacity: !mapaAtivo ? 0.45 : 1 }}>
+                <DownloadCloud size={13} /> Exportar
+              </button>
+              {mapaAtivo && !isGalleryView ? (
+                <>
+                  <span className="div" />
                   <button
                     type="button"
-                    onClick={() => copyGalleryToMyLibrary(mapaAtivo)}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-blue-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-900"
+                    onClick={() => handleToggleFavorite(mapaAtivo.id)}
+                    className={`fav ${mapaAtivo.favorito ? 'on' : ''}`}
+                    title={mapaAtivo.favorito ? 'Favorito' : 'Favoritar'}
+                    aria-label={mapaAtivo.favorito ? 'Remover dos favoritos' : 'Marcar como favorito'}
                   >
-                    <Copy size={16} />
-                    Copiar para minha biblioteca
+                    <Heart />
                   </button>
-                </div>
+                </>
               ) : null}
+            </div>
+            <input ref={importedInputRef} type="file" accept="application/json" onChange={handleImportFile} className="hidden" style={{ display: 'none' }} />
+          </div>
 
-              <div className="relative rounded-[26px] border border-slate-200 bg-slate-50/80 p-3">
-                {mapaAtivo ? (
-                  <>
-                    {!isGalleryView ? (
-                      <button
-                        type="button"
-                        onClick={() => handleToggleFavorite(mapaAtivo.id)}
-                        className={`absolute right-5 top-5 z-10 inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm transition ${mapaAtivo.favorito ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white text-slate-500'}`}
-                      >
-                        <Heart size={14} className={mapaAtivo.favorito ? 'fill-current' : ''} />
-                        {mapaAtivo.favorito ? 'Favorito' : 'Favoritar'}
-                      </button>
-                    ) : null}
-                    <MindMapStudio
-                      key={mapaAtivo.id}
-                      map={mapaAtivo}
-                      onGraphChange={isGalleryView ? undefined : handleMindGraphChange}
-                      readOnly={isGalleryView}
-                    />
-                  </>
-                ) : (
-                  <div className="flex min-h-[420px] items-center justify-center px-4 py-8">
-                    <EmptyCanvas />
-                  </div>
-                )}
-              </div>
+          {mapaAtivo?.disciplinaId && !isGalleryView ? (
+            <div className="pl-studio-banner">
+              <span>
+                Vinculado à disciplina <strong>{mapaAtivo.disciplinaNome || '—'}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => onOpenDiscipline?.(activeDiscipline || { id: mapaAtivo.disciplinaId }, mapaAtivo.topicoIds?.[0] || '')}
+                className="pl-btn pl-btn-sm"
+              >
+                <Target size={12} /> Abrir disciplina
+              </button>
+            </div>
+          ) : null}
+
+          {isGalleryView ? (
+            <div className="pl-studio-banner warn">
+              <span>Modelo oficial da equipe — somente leitura.</span>
+              <button type="button" onClick={() => copyGalleryToMyLibrary(mapaAtivo)} className="pl-btn pl-btn-sm pl-btn-primary">
+                <Copy size={12} /> Copiar pra minha biblioteca
+              </button>
+            </div>
+          ) : null}
+
+          <div className="pl-studio-canvas">
+            <div className="pl-studio-canvas-inner">
+              {mapaAtivo ? (
+                <MindMapStudio
+                  key={mapaAtivo.id}
+                  map={mapaAtivo}
+                  onGraphChange={isGalleryView ? undefined : handleMindGraphChange}
+                  readOnly={isGalleryView}
+                />
+              ) : (
+                <div className="pl-studio-empty">
+                  <div className="pl-studio-empty-icon"><Network /></div>
+                  <h3>Mesa vazia.</h3>
+                  <p>
+                    Gere um mapa com a barra abaixo ou abra um modelo da equipe / da sua biblioteca pra começar.
+                  </p>
+                  <span className="hint">
+                    <ArrowRight /> Use o campo de prompt no rodapé do estúdio
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-          <aside className="space-y-6">
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Biblioteca</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">Seus mapas</h3>
 
-              <div className="relative mt-4">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
-                <input
-                  type="text"
-                  value={filters.query}
-                  onChange={(event) => setFilters((prev) => ({ ...prev, query: event.target.value }))}
-                  placeholder="Buscar mapas, categorias, topicos ou concursos"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500"
-                />
-              </div>
+          {/* Generation command bar (sempre visível) */}
+          <div className="pl-genbar">
+            <div className="pl-genbar-row">
+              <select
+                value={aiMapForm.courseId}
+                onChange={(event) => setAiMapForm((prev) => ({ ...prev, courseId: event.target.value, disciplinaId: '', topicoId: '' }))}
+                className="pl-input"
+              >
+                <option value="">Curso</option>
+                {aiCourseOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
+              </select>
+              <select
+                value={aiMapForm.disciplinaId}
+                onChange={(event) => setAiMapForm((prev) => ({ ...prev, disciplinaId: event.target.value, topicoId: '' }))}
+                className="pl-input"
+              >
+                <option value="">Disciplina</option>
+                {aiDisciplineOptions.map((d) => <option key={d.id || d.nome} value={d.id || d.nome}>{d.nome}</option>)}
+              </select>
+              <select
+                value={aiMapForm.topicoId}
+                onChange={(event) => setAiMapForm((prev) => ({ ...prev, topicoId: event.target.value }))}
+                disabled={!aiSelectedDiscipline}
+                className="pl-input"
+                style={{ opacity: !aiSelectedDiscipline ? 0.5 : 1 }}
+              >
+                <option value="">Tópico</option>
+                {aiTopicOptions.map((t) => <option key={t.id || t.nome} value={t.id || t.nome}>{t.nome}</option>)}
+              </select>
+            </div>
+            <div className="pl-genbar-prompt">
+              <span className="badge">Prompt</span>
+              <input
+                id="mapa-prompt-input"
+                type="text"
+                value={promptMapa}
+                onChange={(event) => setPromptMapa(event.target.value)}
+                placeholder="Digite um tema ou um resumo curto para criar um mapa conectado…"
+              />
+              <button
+                type="button"
+                onClick={handleGerarMapa}
+                disabled={!canGenerateAiMap || aiMapLoading}
+                className="pl-btn pl-btn-ai btn-gen"
+                style={{ opacity: !canGenerateAiMap || aiMapLoading ? 0.55 : 1 }}
+              >
+                {aiMapLoading ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                {aiMapLoading ? 'Criando…' : 'Gerar mapa'}
+              </button>
+            </div>
+            {aiMapError ? <div className="pl-genbar-error">{aiMapError}</div> : null}
+          </div>
+        </section>
 
-              <div className="mt-4 grid gap-3">
-                <select
-                  value={effectivePlanFilter}
-                  onChange={(event) => {
-                    setPlanFilterDirty(true);
-                    setFilters((prev) => ({ ...prev, plan: event.target.value }));
-                  }}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none"
-                >
-                  <option value="Todos">Todos os planos</option>
-                  {[...new Set(bancoDisciplinas.map((discipline) => discipline.plano || 'Geral'))].map((plan) => (
-                    <option key={plan} value={plan}>
-                      {plan}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={filters.contestId}
-                  onChange={(event) => setFilters((prev) => ({ ...prev, contestId: event.target.value }))}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none"
-                >
-                  <option value="Todos">Todos os concursos</option>
-                  {contestOptions.map((contest) => (
-                    <option key={contest.id} value={contest.id}>
-                      {contest.nome}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  type="button"
-                  onClick={() => setFilters((prev) => ({ ...prev, favoritesOnly: !prev.favoritesOnly }))}
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${filters.favoritesOnly ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
-                >
-                  {filters.favoritesOnly ? 'Mostrando apenas favoritos' : 'Exibir somente favoritos'}
-                </button>
-              </div>
+        {/* ═══ Sidebar ═══ */}
+        <aside className="pl-mapa-sidebar">
+          {/* Biblioteca + filtros */}
+          <div className="card">
+            <span className="eyebrow">Biblioteca</span>
+            <h3>Seus mapas</h3>
+            <div className="search-block">
+              <Search />
+              <input
+                type="search"
+                value={filters.query}
+                onChange={(event) => setFilters((prev) => ({ ...prev, query: event.target.value }))}
+                placeholder="Buscar mapa, categoria, tópico…"
+              />
+            </div>
+            <div className="filter-grid">
+              <select
+                value={effectivePlanFilter}
+                onChange={(event) => { setPlanFilterDirty(true); setFilters((prev) => ({ ...prev, plan: event.target.value })); }}
+              >
+                <option value="Todos">Todos os planos</option>
+                {[...new Set(bancoDisciplinas.map((d) => d.plano || 'Geral'))].map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <select
+                value={filters.contestId}
+                onChange={(event) => setFilters((prev) => ({ ...prev, contestId: event.target.value }))}
+              >
+                <option value="Todos">Todos os concursos</option>
+                {contestOptions.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              </select>
+              <button
+                type="button"
+                onClick={() => setFilters((prev) => ({ ...prev, favoritesOnly: !prev.favoritesOnly }))}
+                className={`fav-toggle ${filters.favoritesOnly ? 'on' : ''}`}
+              >
+                <Heart /> {filters.favoritesOnly ? 'Só favoritos' : 'Exibir só favoritos'}
+              </button>
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <div className="mb-4 flex items-center gap-2">
-                <Folder size={16} className="text-slate-400" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Categorias</p>
+            {/* Categorias inline */}
+            <div className="pl-cat-list">
+              <div
+                onClick={() => setFilters((prev) => ({ ...prev, category: 'Todas' }))}
+                className={`pl-cat-row ${filters.category === 'Todas' ? 'active' : ''}`}
+                role="button"
+                tabIndex={0}
+              >
+                <span>Todas</span>
+                <span className="cnt">{syncedMaps.length}</span>
               </div>
-
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setFilters((prev) => ({ ...prev, category: 'Todas' }))}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === 'Todas' ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100'}`}
+              {categoryCounts.map((c) => (
+                <div
+                  key={c.nome}
+                  onClick={() => setFilters((prev) => ({ ...prev, category: c.nome }))}
+                  className={`pl-cat-row ${filters.category === c.nome ? 'active' : ''}`}
+                  role="button"
+                  tabIndex={0}
                 >
-                  <span className="text-sm font-semibold text-slate-700">Todas</span>
-                  <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-400 shadow-sm">{syncedMaps.length}</span>
-                </button>
-
-                {categoryCounts.map((categoria) => (
-                  <button
-                    key={categoria.nome}
-                    type="button"
-                    onClick={() => setFilters((prev) => ({ ...prev, category: categoria.nome }))}
-                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${filters.category === categoria.nome ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100'}`}
-                  >
-                    <span className="text-sm font-semibold text-slate-700">{categoria.nome}</span>
-                    <span className="rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-400 shadow-sm">{categoria.quantidade}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Armazenados</p>
-                  <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Lista de mapas</h3>
+                  <span>{c.nome}</span>
+                  <span className="cnt">{c.quantidade}</span>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
-                  {galeriaFiltrada.length + mapasFiltrados.length}
-                </span>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              {galeriaFiltrada.length > 0 ? (
-                <div className="mb-6 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">Modelos da equipe (atalho)</p>
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">{galeriaFiltrada.length}</span>
-                  </div>
-                  <p className="text-[11px] font-medium text-slate-500">A lista completa com cards está na faixa roxa acima.</p>
+          {/* Lista de mapas */}
+          <div className="card">
+            <span className="eyebrow">Armazenados</span>
+            <h3>Lista de mapas</h3>
+            <div className="pl-mapa-list">
+              {mapasFiltrados.length === 0 && galeriaFiltrada.length === 0 ? (
+                <div className="pl-mapa-empty">Nenhum mapa encontrado com os filtros atuais.</div>
+              ) : (
+                <>
                   {galeriaFiltrada.map((mapa) => {
                     const ativo = mapa.id === mapaAtivo?.id && isGalleryView;
                     return (
                       <div
                         key={mapa.id}
-                        className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50'}`}
+                        className={`pl-mapa-item gallery ${ativo ? 'active' : ''}`}
+                        onClick={() => openGalleryMap(mapa)}
+                        role="button"
+                        tabIndex={0}
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <button type="button" onClick={() => openGalleryMap(mapa)} className="min-w-0 flex-1 text-left">
-                            <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-indigo-950' : 'text-slate-800'}`}>{mapa.titulo}</h4>
-                            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-indigo-600/90">Oficial · {mapa.categoria}</p>
-                          </button>
+                        <div className="info">
+                          <p className="ttl">{mapa.titulo}</p>
+                          <p className="meta">Equipe · {mapa.categoria}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {mapasFiltrados.map((mapa) => {
+                    const ativo = mapa.id === mapaAtivo?.id && !isGalleryView;
+                    return (
+                      <div
+                        key={mapa.id}
+                        className={`pl-mapa-item ${ativo ? 'active' : ''}`}
+                        onClick={() => openMap(mapa)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <div className="info">
+                          <p className="ttl">{mapa.titulo}</p>
+                          <p className="meta">{mapa.categoria} · {mapa.plano || 'Geral'}</p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => copyGalleryToMyLibrary(mapa)}
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white py-2.5 text-xs font-bold text-indigo-800 transition hover:bg-indigo-50"
+                          className={`heart ${mapa.favorito ? 'on' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(mapa.id); }}
+                          title="Favoritar"
+                          aria-label={mapa.favorito ? 'Remover dos favoritos' : 'Favoritar'}
                         >
-                          <Copy size={14} />
-                          Copiar e editar
+                          <Heart />
                         </button>
                       </div>
                     );
                   })}
-                </div>
-              ) : null}
-
-              <div className="space-y-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Meus mapas</p>
-                {mapasFiltrados.map((mapa) => {
-                  const ativo = mapa.id === mapaAtivo?.id && !isGalleryView;
-
-                  return (
-                    <div key={mapa.id} className={`w-full rounded-[22px] border p-4 text-left transition ${ativo ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <button type="button" onClick={() => openMap(mapa)} className="min-w-0 flex-1 text-left">
-                          <h4 className={`truncate text-sm font-semibold ${ativo ? 'text-blue-950' : 'text-slate-800'}`}>{mapa.titulo}</h4>
-                          <p className={`mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${ativo ? 'text-blue-600/80' : 'text-slate-400'}`}>{mapa.categoria}</p>
-                          <p className="mt-2 text-xs font-semibold text-slate-500">{mapa.plano || 'Geral'} · {Math.max(0, Number(mapa.totalAberturas || 0))} abertura(s)</p>
-                        </button>
-
-                        <button type="button" onClick={() => handleToggleFavorite(mapa.id)} className={`rounded-full p-2 ${mapa.favorito ? 'text-rose-500' : 'text-slate-300'}`} title="Favoritar mapa">
-                          <Heart size={16} className={mapa.favorito ? 'fill-current' : ''} />
-                        </button>
-                      </div>
-
-                      <button type="button" onClick={() => openMap(mapa)} className={`mt-3 flex h-14 w-full items-center justify-center rounded-2xl border ${ativo ? 'border-blue-100 bg-white' : 'border-slate-200 bg-slate-50'}`}>
-                        <Network size={22} className={ativo ? 'text-blue-300' : 'text-slate-300'} />
-                      </button>
-                    </div>
-                  );
-                })}
-
-                {mapasFiltrados.length === 0 && galeriaFiltrada.length === 0 ? (
-                  <div className="rounded-[22px] border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm font-semibold text-slate-400">
-                    Nenhum mapa encontrado com os filtros atuais.
-                  </div>
-                ) : null}
-                {mapasFiltrados.length === 0 && galeriaFiltrada.length > 0 ? (
-                  <p className="text-center text-xs font-medium text-slate-500">Nenhum mapa seu com estes filtros; veja a galeria acima.</p>
-                ) : null}
-              </div>
-            </div>
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Vinculos</p>
-              <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Disciplina, topicos e concursos</h3>
-              {mapaAtivo ? (
-                <div className="mt-4 space-y-4">
-                  <InfoBlock label="Disciplina" value={mapaAtivo.disciplinaNome || 'Nao vinculada'} />
-                  <InfoBlock label="Plano" value={mapaAtivo.plano || 'Geral'} />
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Topicos do mapa</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {mapaAtivo.nodes.map((node) => (
-                        <button
-                          key={node.id}
-                          type="button"
-                          onClick={() => node.topicId && mapaAtivo.disciplinaId && onOpenDiscipline?.(activeDiscipline || { id: mapaAtivo.disciplinaId }, node.topicId)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-bold ${node.topicId ? 'border-blue-100 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}
-                        >
-                          {node.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Concursos relacionados</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {relatedContests.length > 0 ? (
-                        relatedContests.map((contest) => (
-                          <button
-                            key={contest.id}
-                            type="button"
-                            onClick={() => onOpenContest?.(contest.id)}
-                            className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700"
-                          >
-                            {contest.nome}
-                            <ExternalLink size={12} />
-                          </button>
-                        ))
-                      ) : (
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-500">Nenhum concurso vinculado</span>
-                      )}
-                    </div>
-                  </div>
-                  {mapaAtivo.disciplinaId ? (
-                    <button
-                      type="button"
-                      onClick={() => onOpenStudyRegister?.(activeDiscipline || { id: mapaAtivo.disciplinaId })}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-900"
-                    >
-                      Registrar estudo com este mapa
-                      <ArrowRight size={15} />
-                    </button>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm font-semibold text-slate-400">
-                  Selecione um mapa para ver os vinculos.
-                </div>
+                </>
               )}
             </div>
+          </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Historico de uso</p>
-              <h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">Atividades recentes</h3>
-              <div className="mt-4 space-y-3">
-                {recentHistory.length > 0 ? (
-                  recentHistory.map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                      <p className="text-sm font-semibold text-slate-800">{item.titulo}</p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">{translateAction(item.action)} · {formatMindMapTimestamp(item.timestamp)}</p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm font-semibold text-slate-400">
-                    As aberturas, downloads e criacoes de mapas vao aparecer aqui.
+          {/* Vínculos */}
+          <div className="card">
+            <span className="eyebrow">Vínculos</span>
+            <h3>Disciplina, tópicos e concursos</h3>
+            {mapaAtivo ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+                <div className="pl-info-block">
+                  <div className="lab">Disciplina</div>
+                  <div className="val">{mapaAtivo.disciplinaNome || 'Não vinculada'}</div>
+                </div>
+                <div className="pl-info-block">
+                  <div className="lab">Plano</div>
+                  <div className="val">{mapaAtivo.plano || 'Geral'}</div>
+                </div>
+                <div>
+                  <div className="lab" style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-3)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                    Tópicos do mapa
                   </div>
-                )}
+                  <div className="pl-vinc-chips">
+                    {mapaAtivo.nodes.map((node) => (
+                      <button
+                        key={node.id}
+                        type="button"
+                        onClick={() => node.topicId && mapaAtivo.disciplinaId && onOpenDiscipline?.(activeDiscipline || { id: mapaAtivo.disciplinaId }, node.topicId)}
+                        className={`pl-vinc-chip ${node.topicId ? 'linked' : ''}`}
+                      >
+                        {node.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="lab" style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-3)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                    Concursos
+                  </div>
+                  <div className="pl-vinc-chips">
+                    {relatedContests.length > 0 ? relatedContests.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => onOpenContest?.(c.id)}
+                        className="pl-vinc-chip contest"
+                      >
+                        {c.nome} <ExternalLink />
+                      </button>
+                    )) : (
+                      <span className="pl-vinc-chip">Nenhum</span>
+                    )}
+                  </div>
+                </div>
+                {mapaAtivo.disciplinaId ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenStudyRegister?.(activeDiscipline || { id: mapaAtivo.disciplinaId })}
+                    className="pl-btn pl-btn-primary"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                  >
+                    Registrar estudo com este mapa <ArrowRight size={13} />
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              <div className="pl-mapa-empty" style={{ marginTop: 10 }}>
+                Selecione um mapa para ver os vínculos.
+              </div>
+            )}
+          </div>
+
+          {/* Histórico — colapsado, só se tiver itens */}
+          {recentHistory.length > 0 ? (
+            <div className="card">
+              <span className="eyebrow">Histórico de uso</span>
+              <h3>Atividades recentes</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                {recentHistory.map((item) => (
+                  <div key={item.id} className="pl-info-block">
+                    <div className="val" style={{ marginTop: 0 }}>{item.titulo}</div>
+                    <div className="lab" style={{ marginTop: 4 }}>
+                      {translateAction(item.action)} · {formatMindMapTimestamp(item.timestamp)}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </aside>
-        </div>
+          ) : null}
+        </aside>
       </div>
-    </div>
-  );
-}
-
-function ActionButton({ icon, text, primary = false, onClick, disabled = false }) {
-  const IconComponent = icon;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${primary ? 'bg-blue-800 text-white hover:bg-blue-900' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
-    >
-      <IconComponent size={16} />
-      {text}
-    </button>
-  );
-}
-
-function MiniToolbarButton({ icon, label, onClick }) {
-  const IconComponent = icon;
-  return (
-    <button type="button" onClick={onClick} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100">
-      <IconComponent size={14} />
-      {label}
-    </button>
-  );
-}
-
-function InfoBlock({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-800">{value}</p>
-    </div>
-  );
-}
-
-function EmptyCanvas() {
-  return (
-    <div className="rounded-[28px] border border-dashed border-slate-200 bg-white/80 px-8 py-12 text-center shadow-sm">
-      <p className="text-lg font-semibold text-slate-800">Nenhum mapa pronto ainda</p>
-      <p className="mt-2 text-sm font-semibold text-slate-500">Gere um mapa pelo campo acima ou importe um JSON da biblioteca.</p>
     </div>
   );
 }

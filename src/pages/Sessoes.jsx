@@ -1,14 +1,16 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   ArrowRight,
   BookOpen,
   CheckCircle2,
   Clock,
+  Flame,
   LayoutGrid,
   Pause,
   Play,
   ShieldCheck,
+  Sparkles,
   Square,
   Target,
   Timer,
@@ -17,12 +19,14 @@ import {
   Zap,
 } from 'lucide-react';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
+
+const METODOS = [
+  { id: 'pomodoro', nome: 'Pomodoro', eyebrow: 'Foco curto', foco: 25, pausa: 5, tom: 'highlight', desc: 'Excelente pra começar o dia e ganhar consistência sem cansar.' },
+  { id: 'flowtime', nome: 'Flowtime', eyebrow: 'Foco médio', foco: 50, pausa: 10, tom: 'accent', desc: 'Ideal pra entrar em fluxo profundo numa matéria só.' },
+  { id: 'ultradiante', nome: 'Ultradiante', eyebrow: 'Foco longo', foco: 90, pausa: 20, tom: 'warn', desc: 'Bloco pesado de teoria, leitura corrida ou simulação inteira.' },
+  { id: 'personalizado', nome: 'Personalizado', eyebrow: 'Sob medida', foco: null, pausa: null, tom: 'success', desc: 'Você define o foco e a pausa. Bom pra rotinas já mapeadas.' },
+];
 
 export default function Sessoes({
   currentUserId = '',
@@ -44,12 +48,12 @@ export default function Sessoes({
   studySessionDraft = null,
 }) {
   const [recentSessions, setRecentSessions] = useState([]);
+  const [tipo, setTipo] = useState('classicos');
 
   const historyOverview = useMemo(
     () => buildStudyHistoryOverview(historicoReal, { dayGoalMinutes: 180 }),
     [historicoReal]
   );
-
   const primaryRecommendation = studyRecommendation?.primary || null;
   const urgentReviews = Array.isArray(studyRecommendation?.reviewQueue)
     ? studyRecommendation.reviewQueue.filter((item) => item?.urgencyLabel === 'Alta prioridade').length
@@ -62,18 +66,14 @@ export default function Sessoes({
     timerMode === 'cronometro'
       ? formatHHMMSS?.(timerValue || 0)
       : formatHHMMSS?.(Math.max(0, (timerMax || 0) - (timerValue || 0)));
-  const plannedDurationLabel =
-    timerMode === 'cronometro' ? 'Livre' : formatHHMMSS?.(timerMax || 0);
 
   useEffect(() => {
     let ignore = false;
-
     const loadRecentSessions = async () => {
       if (!currentUserId) {
         if (!ignore) setRecentSessions([]);
         return;
       }
-
       const { data, error } = await supabase
         .from('study_sessions')
         .select('disciplina, tipo, tempo, data, desempenho')
@@ -86,377 +86,266 @@ export default function Sessoes({
         if (!ignore) setRecentSessions([]);
         return;
       }
-
       if (!ignore) setRecentSessions(Array.isArray(data) ? data : []);
     };
-
     loadRecentSessions();
     return () => {
       ignore = true;
     };
   }, [currentUserId]);
 
+  const startMetodo = (metodo) => {
+    if (metodo.id === 'personalizado') {
+      if (Number(customFocusTime || 0) > 0) startSpecificTimer?.('custom', Number(customFocusTime) * 60);
+      else openTimerSetup?.();
+      return;
+    }
+    startSpecificTimer?.('pomodoro', Number(metodo.foco || 25) * 60);
+  };
+
   return (
-    <div className="page-shell !h-auto flex flex-col !gap-3 !pb-8 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
-      <PageHeadPremium
-        className="gap-4"
-        icon={Timer}
-        badge={<PageHeadPremiumBadge icon={Zap}>Área de foco</PageHeadPremiumBadge>}
-        title="Sessões de estudo"
-        subtitle="Métodos de foco, timer global e registro do que você estudou."
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statGridClassName="grid min-h-0 w-full max-w-full grid-cols-2 gap-2.5 sm:max-w-[38rem] sm:grid-cols-4 sm:gap-3 sm:justify-items-stretch [&>*]:self-stretch sm:[&>*]:min-w-[7.25rem]"
-        trailingClassName="w-full shrink-0 sm:w-auto"
-        stats={[
-          {
-            key: 'streak',
-            label: 'Streak',
-            value: `${historyOverview.streakDays} dias`,
-            icon: Zap,
-            accent: 'orange',
-            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
-          },
-          {
-            key: 'avg',
-            label: 'Média 7d',
-            value: historyOverview.last7DaysAverageLabel,
-            icon: Clock,
-            accent: 'blue',
-            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
-          },
-          {
-            key: 'acc',
-            label: 'Acurácia',
-            value: `${historyOverview.overallAccuracy}%`,
-            icon: Target,
-            accent: 'emerald',
-            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
-          },
-          {
-            key: 'rev',
-            label: 'Revisões',
-            value: `${urgentReviews}`,
-            icon: CheckCircle2,
-            accent: 'indigo',
-            className: 'min-h-[5.2rem] sm:min-h-[5.5rem]',
-          },
-        ]}
-        trailing={(
-          <div className="flex w-full shrink-0 flex-col gap-2 md:flex-row md:items-center md:justify-end md:gap-2 lg:w-auto">
-            <button
-              type="button"
-              onClick={() => openTimerSetup?.()}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full md:w-auto`}
-            >
-              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
-              Abrir timer
-            </button>
-            <button
-              type="button"
-              onClick={() => setRegistroEstudoModalOpen?.(true)}
-              className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full md:w-auto`}
-            >
-              <BookOpen size={14} aria-hidden />
-              Registrar estudo
-            </button>
-          </div>
-        )}
-      />
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <SessoesHeader
+          onRegistrar={() => setRegistroEstudoModalOpen?.(true)}
+          onAbrirTimer={() => openTimerSetup?.()}
+        />
 
-      <div className="grid items-start gap-3 xl:grid-cols-[1.2fr_0.8fr] xl:gap-4">
-        <div className="flex flex-col gap-2.5">
-          <div className="section-card p-4 sm:p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
-                <LayoutGrid size={16} className="text-[#2563EB]" />
-                Métodos de estudo
-              </h3>
+        <KpiStrip overview={historyOverview} urgentReviews={urgentReviews} />
 
-              <div className="flex flex-wrap items-center gap-2">
-                <MethodPill icon={ShieldCheck} text="Ritmos clássicos" />
-                <MethodPill icon={Users} text="Guiada" />
-              </div>
-            </div>
+        <section className="sessoes-main-grid">
+          <MetodosCard tipo={tipo} setTipo={setTipo} onIniciar={startMetodo} />
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-              <MethodCard
-                icon={Clock}
-                iconWrap="bg-red-100 text-red-600"
-                glow="bg-red-50"
-                title="Pomodoro"
-                description="25 min de foco / 5 min de pausa. Excelente para consistência e início rápido."
-                hoverClass="hover:bg-red-600"
-                onClick={() => startSpecificTimer('pomodoro', 25 * 60)}
-              />
-
-              <MethodCard
-                icon={Wind}
-                iconWrap="bg-purple-100 text-purple-600"
-                glow="bg-purple-50"
-                title="Flowtime"
-                description="50 min de foco / 10 min de pausa. Ideal para entrar em fluxo profundo."
-                hoverClass="hover:bg-purple-600"
-                onClick={() => startSpecificTimer('pomodoro', 50 * 60)}
-              />
-
-              <MethodCard
-                icon={Zap}
-                iconWrap="bg-orange-100 text-orange-600"
-                glow="bg-orange-50"
-                title="Ultradiante"
-                description="90 min de foco / 20 min de pausa. Para blocos pesados de teoria ou simulação."
-                hoverClass="hover:bg-orange-600"
-                onClick={() => startSpecificTimer('pomodoro', 90 * 60)}
-              />
-
-              <MethodCard
-                icon={Activity}
-                iconWrap="bg-emerald-100 text-emerald-600"
-                glow="bg-emerald-50"
-                title="Personalizado"
-                description="Use o foco e pausa definidos por você para montar um bloco sob medida."
-                hoverClass="hover:bg-emerald-600"
-                onClick={() => startSpecificTimer('custom', customFocusTime * 60)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <LiveSessionCard
-            isTimerRunning={isTimerRunning}
-            timerMode={timerMode}
-            activeTimerLabel={activeTimerLabel || '00:00:00'}
-            elapsedLabel={elapsedLabel || '00:00:00'}
-            plannedDurationLabel={plannedDurationLabel || 'Livre'}
-            studySessionDraft={studySessionDraft}
-            onOpenTimer={openTimerSetup}
-            onPause={() => setIsTimerRunning?.(false)}
-            onResume={() => setIsTimerRunning?.(true)}
-            onStop={handleStopTimer}
-            onRegister={() => setRegistroEstudoModalOpen?.(true)}
-          />
-          <div>
-            <RecommendedSessionCard
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <SessaoAoVivoCard
+              isRunning={isTimerRunning}
+              modo={timerMode}
+              tempoStr={activeTimerLabel || '00:00:00'}
+              acumuladoStr={elapsedLabel || '00:00:00'}
+              draft={studySessionDraft}
+              onRetomar={() => setIsTimerRunning?.(true)}
+              onEncerrar={handleStopTimer}
+              onAbrirOverlay={() => openTimerSetup?.()}
+              onRegistrarManual={() => setRegistroEstudoModalOpen?.(true)}
+            />
+            <ProximaSessaoCard
               recommendation={primaryRecommendation}
+              onAbrirPlano={() => setActiveTab?.('planejamento')}
+              onRegistrar={() => setRegistroEstudoModalOpen?.(true)}
               onStart={() => onStartRecommendedSession?.(primaryRecommendation)}
-              onOpenPlan={() => setActiveTab?.('planejamento')}
-              onOpenRegister={() => setRegistroEstudoModalOpen?.(true)}
             />
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="grid grid-cols-1 gap-4">
-        <div className="custom-scrollbar flex min-w-0 flex-col pr-0.5">
-          <div className="section-card p-4 sm:p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Clock size={16} className="text-[#2563EB]" />
-              <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Últimas sessões</h3>
-            </div>
-
-            {recentSessions.length === 0 ? (
-              <p className="text-sm font-medium text-slate-500">
-                Nenhuma sessão registrada ainda. Inicie seu primeiro timer!
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {recentSessions.map((session, index) => (
-                  <div
-                    key={`${session.disciplina || 'sessao'}-${session.data || index}-${index}`}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  >
-                    <p className="text-sm font-semibold text-slate-800">{session.disciplina || 'Sessão'}</p>
-                    <p className="text-sm font-semibold text-slate-500">
-                      {session.tipo || 'Estudo'} | {session.tempo || '00:00:00'} | {session.data || 'Sem data'}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <RecentSessionsCard sessions={recentSessions} />
       </div>
     </div>
   );
 }
 
-function LiveSessionCard({
-  isTimerRunning,
-  timerMode,
-  activeTimerLabel,
-  elapsedLabel,
-  plannedDurationLabel,
-  studySessionDraft,
-  onOpenTimer,
-  onPause,
-  onResume,
-  onStop,
-  onRegister,
-}) {
+function SessoesHeader({ onRegistrar, onAbrirTimer }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-5 text-white shadow-md ring-1 ring-[#2563EB]/20 sm:p-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.12),transparent_55%)]" />
-      <div className="relative z-10">
-      <div className="inline-flex items-center gap-2 rounded-full border border-[#2563EB]/35 bg-[#2563EB]/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#BFDBFE]">
-        <Activity size={12} className="text-[#93C5FD]" />
-        Sessão ao vivo
-      </div>
-
-      <h3 className="mt-4 text-xl font-semibold sm:text-2xl">
-        {isTimerRunning ? 'Timer ativo agora' : 'Nenhuma sessão rodando'}
-      </h3>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-slate-300">
-        {studySessionDraft?.material
-          ? `${studySessionDraft.material} | ${studySessionDraft.categoria || 'Estudo'}`
-          : 'Abra um timer, retome do overlay global ou registre a sessão manualmente.'}
-      </p>
-
-      <div className="mt-5 rounded-2xl border border-[#2563EB]/20 bg-white/10 p-4 sm:p-5">
-        <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#93C5FD]/90">
-          <span>{timerMode === 'cronometro' ? 'Modo livre' : 'Pomodoro'}</span>
-          <span>{plannedDurationLabel}</span>
+    <section className="pl-card-paper" style={{ padding: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
+        <div>
+          <div className="pl-overline">Área de foco</div>
+          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
+            Sessões de estudo.
+          </h1>
+          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+            Escolha um método, acompanhe o timer global e registre o que você estudou sem sair do fluxo.
+          </p>
         </div>
-        <div className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{activeTimerLabel}</div>
-        <p className="mt-2 text-sm text-slate-300">Tempo acumulado: {elapsedLabel}</p>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
-        {isTimerRunning ? (
-          <button
-            type="button"
-            onClick={onPause}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-          >
-            <Pause size={16} />
-            Pausar
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button type="button" className="pl-btn pl-btn-primary" onClick={onAbrirTimer}>
+            <Play size={15} fill="currentColor" />
+            Abrir timer
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onResume}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-          >
-            <Play size={16} fill="currentColor" />
-            Retomar
+          <button type="button" className="pl-btn pl-btn-secondary" onClick={onRegistrar}>
+            <BookOpen size={14} />
+            Registrar estudo
           </button>
-        )}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-        <button
-          type="button"
-          onClick={onStop}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
-        >
-          <Square size={16} fill="currentColor" />
-          Encerrar
-        </button>
-      </div>
+function KpiStrip({ overview, urgentReviews }) {
+  return (
+    <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+      <SessionKpi icon={Flame} label="Streak" value={`${overview.streakDays} dias`} sub="sequência atual" tone="warn" />
+      <SessionKpi icon={Clock} label="Média 7d" value={overview.last7DaysAverageLabel} sub="tempo médio" tone="accent" />
+      <SessionKpi icon={Target} label="Acurácia" value={`${overview.overallAccuracy}%`} sub="questões registradas" tone="success" />
+      <SessionKpi icon={CheckCircle2} label="Revisões" value={urgentReviews} sub="alta prioridade" tone="warn" />
+    </section>
+  );
+}
 
-      <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
-        <button
-          type="button"
-          onClick={onOpenTimer}
-          className="rounded-xl border border-[#2563EB]/30 bg-[#2563EB]/10 px-3 py-2.5 text-xs font-bold text-[#E0E7FF] transition hover:bg-[#2563EB]/20 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
-        >
-          Abrir overlay
-        </button>
-        <button
-          type="button"
-          onClick={onRegister}
-          className="rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-bold text-slate-200 transition hover:bg-white/10 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
-        >
-          Registrar manual
-        </button>
-      </div>
-      </div>
+function SessionKpi({ icon: Icon, label, value, sub, tone }) {
+  const toneClass = tone === 'success' ? 'pl-tag-success' : tone === 'warn' ? 'pl-tag-warn' : 'pl-tag-accent';
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <span className={`pl-tag ${toneClass}`}><Icon size={12} />{label}</span>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 36, lineHeight: 1 }}>{value}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>{sub}</p>
     </div>
   );
 }
 
-function RecommendedSessionCard({ recommendation, onStart, onOpenPlan, onOpenRegister }) {
+function MetodosCard({ tipo, setTipo, onIniciar }) {
   return (
-    <div className="section-card min-h-0 border-blue-100/50 p-3">
-      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-        <BookOpen size={13} className="text-[#2563EB]" />
-        Próxima sessão sugerida
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'end', marginBottom: 16 }}>
+        <div>
+          <div className="pl-overline">Métodos de estudo</div>
+          <h2 className="pl-section-title" style={{ marginTop: 7 }}>Qual ritmo hoje?</h2>
+        </div>
+        <div className="planning-segment">
+          <button type="button" className={tipo === 'classicos' ? 'is-active' : ''} onClick={() => setTipo('classicos')}>
+            <ShieldCheck size={13} />
+            Ritmos clássicos
+          </button>
+          <button type="button" className={tipo === 'guiada' ? 'is-active' : ''} onClick={() => setTipo('guiada')}>
+            <Users size={13} />
+            Guiada
+          </button>
+        </div>
       </div>
-
-      <h3 className="mt-2 text-base font-semibold leading-tight text-slate-900 sm:text-lg">
-        {recommendation?.nome || 'Sem recomendação suficiente ainda'}
-      </h3>
-      <p className="mt-1 text-xs leading-snug text-slate-500">
-        {recommendation
-          ? `${recommendation.studyModeLabel} | ${recommendation.reason}`
-          : 'Registre mais histórico para o motor inteligente entender o melhor bloco para agora.'}
-      </p>
-
-      <div className="mt-2 grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-        <MiniInfo label="Tópico" value={recommendation?.nextTopic?.nome || 'Aguardando dados'} />
-        <MiniInfo label="Duração" value={recommendation?.suggestedDurationLabel || '0h 45m'} />
-        <MiniInfo label="Modo" value={recommendation?.studyModeLabel || 'Teoria'} />
+      <div className="sessoes-method-grid">
+        {METODOS.map((metodo) => (
+          <MetodoCard key={metodo.id} metodo={metodo} onIniciar={() => onIniciar(metodo)} />
+        ))}
       </div>
-
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={recommendation ? onStart : onOpenPlan}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#1D4ED8] sm:text-xs"
-        >
-          <Play size={14} fill="currentColor" />
-          {recommendation ? 'Começar sugerida' : 'Abrir plano'}
-        </button>
-        <button
-          type="button"
-          onClick={onOpenRegister}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 sm:text-xs"
-        >
-          Registrar
-          <ArrowRight size={13} />
-        </button>
-      </div>
-    </div>
+    </section>
   );
 }
 
-function MiniInfo({ label, value }) {
+function MetodoCard({ metodo, onIniciar }) {
+  const tagClass = metodo.tom === 'success' ? 'pl-tag-success' : metodo.tom === 'warn' ? 'pl-tag-warn' : metodo.tom === 'highlight' ? 'pl-tag-highlight' : 'pl-tag-accent';
   return (
-    <div className="min-w-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-800 sm:text-xs">{value}</p>
-    </div>
-  );
-}
-
-function MethodPill({ icon: Icon, text }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-gray-600 shadow-sm">
-      <Icon size={13} className="text-[#2563EB]" />
-      {text}
-    </div>
-  );
-}
-
-function MethodCard({ icon: Icon, iconWrap, glow, title, description, hoverClass, onClick }) {
-  return (
-    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6">
-      <div className={`absolute -mr-8 -mt-8 h-20 w-20 rounded-bl-[3rem] transition-transform group-hover:scale-110 ${glow} right-0 top-0`} />
-
-      <div className={`relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-xl sm:mb-5 sm:h-14 sm:w-14 sm:rounded-2xl ${iconWrap}`}>
-        <Icon size={24} />
+    <article className="pl-card sessoes-method-card">
+      <div className="sessoes-dog-ear" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <span className={`pl-tag ${tagClass}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>{metodo.eyebrow}</span>
+        <span className="pl-serif-number" style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
+          {metodo.foco ? `${metodo.foco}/${metodo.pausa}min` : 'sob medida'}
+        </span>
       </div>
-
-      <h4 className="compact-title mb-1.5 text-base sm:text-lg">{title}</h4>
-      <p className="mb-5 flex-1 text-xs font-bold leading-relaxed text-gray-400 sm:mb-6 sm:text-sm">{description}</p>
-
-      <button
-        type="button"
-        onClick={onClick}
-        className={`group/button flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white shadow-md transition-all sm:rounded-2xl sm:py-3.5 sm:text-base ${hoverClass}`}
-      >
+      <div>
+        <h3 className="pl-section-title" style={{ fontSize: 26 }}>{metodo.nome}</h3>
+        <p className="pl-muted" style={{ margin: '8px 0 0', fontSize: 12.5, lineHeight: 1.45 }}>{metodo.desc}</p>
+      </div>
+      <button type="button" className="pl-btn pl-btn-primary" onClick={onIniciar} style={{ marginTop: 'auto', justifyContent: 'center' }}>
+        <Play size={13} fill="currentColor" />
         Iniciar
-        <ArrowRight size={18} className="transition-transform group-hover/button:translate-x-2" />
       </button>
+    </article>
+  );
+}
+
+function SessaoAoVivoCard({ isRunning, modo, tempoStr, acumuladoStr, draft, onRetomar, onEncerrar, onAbrirOverlay, onRegistrarManual }) {
+  return (
+    <section className="pl-card sessoes-live-card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--pl-success)' }} />
+          <span className="pl-eyebrow" style={{ color: 'rgba(243,239,229,0.7)' }}>Sessão ao vivo</span>
+        </span>
+        <span className="pl-eyebrow" style={{ color: 'rgba(243,239,229,0.5)' }}>{modo}</span>
+      </div>
+
+      <div>
+        <h3 className="pl-display" style={{ fontSize: 30, color: 'var(--pl-bg)' }}>
+          {isRunning ? 'Sessão em andamento' : 'Nenhuma sessão rodando'}
+        </h3>
+        <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'rgba(243,239,229,0.62)', lineHeight: 1.5 }}>
+          {draft?.material ? `${draft.material} · ${draft.categoria || 'Estudo'}` : 'Abra um timer, retome o overlay global ou registre uma sessão manual.'}
+        </p>
+      </div>
+
+      <div className="sessoes-timer-box">
+        <div className="pl-serif-number" style={{ fontSize: 48, lineHeight: 1, color: 'var(--pl-bg)' }}>{tempoStr}</div>
+        <div className="pl-eyebrow" style={{ marginTop: 8, color: 'rgba(243,239,229,0.55)' }}>Tempo acumulado: {acumuladoStr}</div>
+      </div>
+
+      <div className="sessoes-dark-actions">
+        <DarkBtn variant="light" onClick={onRetomar}><Play size={14} fill="currentColor" /> Retomar</DarkBtn>
+        <DarkBtn variant="danger" onClick={onEncerrar}><Square size={13} fill="currentColor" /> Encerrar</DarkBtn>
+        <DarkBtn variant="outline" onClick={onAbrirOverlay}><Timer size={13} /> Abrir overlay</DarkBtn>
+        <DarkBtn variant="outline" onClick={onRegistrarManual}><BookOpen size={13} /> Registrar manual</DarkBtn>
+      </div>
+    </section>
+  );
+}
+
+function DarkBtn({ variant, onClick, children }) {
+  return (
+    <button type="button" className={`sessoes-dark-btn ${variant}`} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function ProximaSessaoCard({ recommendation, onAbrirPlano, onRegistrar, onStart }) {
+  const hasData = Boolean(recommendation);
+  return (
+    <section className="pl-card-paper" style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Sparkles size={13} />
+        <span className="pl-overline">Próxima sessão sugerida</span>
+      </div>
+      <h3 className="pl-section-title" style={{ fontSize: 24, marginTop: 12 }}>
+        {recommendation?.nome || 'Aguardando dados'}
+      </h3>
+      <p className="pl-muted" style={{ margin: '8px 0 0', fontSize: 13, lineHeight: 1.45 }}>
+        {recommendation ? recommendation.reason : 'Registre mais histórico para o motor inteligente sugerir o melhor bloco.'}
+      </p>
+      <div className="sessoes-next-grid">
+        <NextStat label="Tópico" value={recommendation?.nextTopic?.nome || 'Aguardando dados'} muted={!hasData} />
+        <NextStat label="Duração" value={recommendation?.suggestedDurationLabel || '0h45m'} />
+        <NextStat label="Modo" value={recommendation?.studyModeLabel || 'Teoria'} />
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <button type="button" className="pl-btn pl-btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={onAbrirPlano}>Abrir plano</button>
+        <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={hasData ? onStart : onRegistrar}>
+          Registrar <ArrowRight size={13} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function NextStat({ label, value, muted }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      <div className="pl-overline" style={{ fontSize: 9 }}>{label}</div>
+      <strong style={{ display: 'block', marginTop: 4, fontSize: 12, color: muted ? 'var(--pl-ink-4)' : 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {value}
+      </strong>
     </div>
   );
 }
 
+function RecentSessionsCard({ sessions }) {
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <Clock size={16} />
+        <div className="pl-overline">Últimas sessões</div>
+      </div>
+      {sessions.length === 0 ? (
+        <p className="pl-muted" style={{ margin: 0 }}>Nenhuma sessão registrada ainda. Inicie seu primeiro timer.</p>
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {sessions.map((session, index) => (
+            <div key={`${session.disciplina || 'sessao'}-${session.data || index}-${index}`} className="sessoes-recent-row">
+              <strong>{session.disciplina || 'Sessão'}</strong>
+              <span>{session.tipo || 'Estudo'} · {session.tempo || '00:00:00'} · {session.data || 'Sem data'}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}

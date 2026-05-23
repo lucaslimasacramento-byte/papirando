@@ -26,13 +26,7 @@ import {
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
 import { buildDisciplineSummaryFromHistory } from '../lib/studyAnalytics';
 import { supabase } from '../lib/supabase';
-import {
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-  PageHeadPremiumBadge,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumShell,
-  PageHeadPremiumStatCompact,
-} from '../components/PageHeadPremium';
+import { analyzeContestCompatibility } from '../lib/aiClient';
 
 
 const INTERNAL_NAV = [
@@ -428,6 +422,8 @@ export default function Conciliador({
   const [targetTwoId, setTargetTwoId] = useState(persistedState.targetTwoId);
   const [activePanel, setActivePanel] = useState(persistedState.activePanel);
   const [comparisonHistory, setComparisonHistory] = useState(persistedState.history);
+  const [aiCompatibility, setAiCompatibility] = useState(null);
+  const [aiCompatibilityLoading, setAiCompatibilityLoading] = useState(false);
 
   const preferredContestIds = useMemo(() => {
     const ids = [];
@@ -785,6 +781,22 @@ export default function Conciliador({
     };
   }, [comparison, courseCount, selectedTargetOneSnapshot, selectedTargetTwo, selectedTargetTwoSnapshot]);
 
+  const displayedVerdict = useMemo(() => {
+    if (!aiCompatibility) return finalVerdict;
+    const planText = Array.isArray(aiCompatibility.plan) && aiCompatibility.plan.length > 0
+      ? aiCompatibility.plan.join(' ')
+      : finalVerdict.recommendation;
+    return {
+      ...finalVerdict,
+      title: aiCompatibility.headline || finalVerdict.title,
+      text: aiCompatibility.summary || finalVerdict.text,
+      recommendation: planText,
+      aiAdvantages: aiCompatibility.advantages || [],
+      aiRisks: aiCompatibility.risks || [],
+      sourceLabel: 'Parecer da IA',
+    };
+  }, [aiCompatibility, finalVerdict]);
+
   const comparisonRows = useMemo(() => {
     const buildStageCount = (contest) => (Array.isArray(contest?.etapas_tags) ? contest.etapas_tags.length : 0);
     const buildSubjectCount = (contest) => (Array.isArray(contest?.disciplinas) ? contest.disciplinas.length : 0);
@@ -1070,6 +1082,22 @@ export default function Conciliador({
 
     setIsComparing(true);
     setActivePanel('visao');
+    setAiCompatibility(null);
+    setAiCompatibilityLoading(true);
+
+    analyzeContestCompatibility({
+      baseContest: selectedBase,
+      targetContests: [selectedTargetOne, ...(courseCount === 3 && selectedTargetTwo ? [selectedTargetTwo] : [])],
+      comparison,
+      userReadiness: {
+        base: selectedBaseSnapshot,
+        targetOne: selectedTargetOneSnapshot,
+        targetTwo: courseCount === 3 ? selectedTargetTwoSnapshot : null,
+      },
+    })
+      .then((result) => setAiCompatibility(result))
+      .catch(() => setAiCompatibility(null))
+      .finally(() => setAiCompatibilityLoading(false));
   };
 
   const handleRestoreHistory = (entry) => {
@@ -1094,287 +1122,185 @@ export default function Conciliador({
   };
 
   return (
-    <div className="page-shell !h-auto min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <PageHeadPremiumShell className="shrink-0 !px-0 !py-0">
-        <div className="flex flex-col">
-          <div className="flex flex-col gap-4 px-4 py-3.5 sm:px-5 sm:py-4 xl:flex-row xl:items-center xl:justify-between xl:gap-5">
-            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5">
-              <PageHeadPremiumIconTile>
-                <ArrowRightLeft className={`${PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} block shrink-0`} strokeWidth={2} aria-hidden />
-              </PageHeadPremiumIconTile>
-              <div className="min-w-0 flex-1">
-                <PageHeadPremiumBadge icon={Radar}>Conciliador</PageHeadPremiumBadge>
-                <h3 className="m-0 text-[1.4rem] font-extrabold leading-[1.02] tracking-tight text-white sm:text-[1.72rem]">
-                  {selectedBase && selectedTargetOne && !duplicateSelection ? 'Resumo da compatibilidade' : 'Cruze os editais'}
-                </h3>
-                <div className="mt-1 text-[13px] font-medium leading-relaxed text-slate-300/90 sm:text-[14px]">
-                  {selectedBase && selectedTargetOne && !duplicateSelection ? (
-                    <>
-                      <span className="font-semibold text-slate-300">{String(selectedBase?.nome || '')}</span>
-                      <span className="text-slate-500"> · </span>
-                      <span className="font-semibold text-indigo-200">{String(selectedTargetOne?.nome || '')}</span>
-                      {courseCount === 3 && selectedTargetTwo ? (
-                        <>
-                          <span className="text-slate-500"> · </span>
-                          <span className="font-semibold text-pink-200">{String(selectedTargetTwo?.nome || '')}</span>
-                        </>
-                      ) : null}
-                    </>
-                  ) : (
-                    heroSubtitle
-                  )}
-                </div>
-                {canCompare && !isComparing ? (
-                  <div className="mt-3">
-                    <button
-                      type="button"
-                      onClick={handleCompare}
-                      className="inline-flex items-center justify-center rounded-xl border border-white/14 bg-white/[0.08] px-3.5 py-2 text-[12px] font-semibold text-white transition hover:border-white/24 hover:bg-white/[0.12]"
-                    >
-                      Gerar análise
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="w-full xl:max-w-[43rem]">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {headlineStats.map((item, index) => (
-                  <PageHeadPremiumStatCompact
-                    key={item.key ?? index}
-                    {...item}
-                    className="min-h-[6.35rem] justify-center px-2.5 py-2.5"
-                    valueClassName="!truncate !text-[0.98rem] sm:!text-[1.08rem]"
-                  />
-                ))}
-              </div>
-            </div>
+    <div className="pl-app pl-paper-bg-soft pl-conc-shell">
+      {/* Hero compacto */}
+      <header className="pl-conc-hero">
+        <div>
+          <div className="lede-row">
+            <span className="pl-eyebrow">Conciliador</span>
           </div>
-
-          <div className="border-t border-white/10 px-4 py-2.5 sm:px-5">
-            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
-              <nav className="flex min-w-0 flex-wrap items-end gap-x-5 gap-y-2 sm:gap-x-6" aria-label="Seções do conciliador">
-                {INTERNAL_NAV.filter((item) => item.id !== 'parecer').map((item) => {
-                  const Icon = item.icon;
-                  const active = activePanel === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setActivePanel(item.id)}
-                      className={`group relative inline-flex shrink-0 items-center gap-2 pb-1.5 text-[13px] font-semibold transition sm:text-[14px] ${
-                        active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Icon
-                        size={16}
-                        className={`shrink-0 transition ${active ? 'opacity-100' : 'opacity-75 group-hover:opacity-100'}`}
-                      />
-                      <span className="whitespace-nowrap">{item.label}</span>
-                      <span
-                        aria-hidden
-                        className={`absolute inset-x-0 bottom-0 h-0.5 rounded-full transition ${
-                          active ? 'bg-blue-400' : 'bg-transparent group-hover:bg-white/20'
-                        }`}
-                      />
-                    </button>
-                  );
-                })}
-              </nav>
-
-              <button
-                type="button"
-                onClick={() => setActivePanel('parecer')}
-                className={`inline-flex items-center justify-center gap-2 self-start rounded-xl px-3.5 py-2 text-[13px] font-semibold transition sm:self-auto sm:text-[14px] ${
-                  activePanel === 'parecer'
-                    ? 'bg-white text-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)]'
-                    : 'border border-white/14 bg-white/[0.08] text-white hover:border-white/24 hover:bg-white/[0.12]'
-                }`}
-              >
-                <Trophy size={16} className="shrink-0" />
-                Parecer final
-              </button>
-            </div>
-          </div>
-        </div>
-      </PageHeadPremiumShell>
-
-      <div className="flex w-full flex-col gap-6">
-        <section
-          className="rounded-xl border border-slate-200/90 bg-white px-2 py-2 shadow-sm sm:px-3"
-          aria-label="Editais a comparar — até três na mesma leitura"
-        >
-          {remoteLoading ? (
-            <div className="flex gap-2">
-              <div className="h-9 flex-1 animate-pulse rounded-lg bg-slate-100" />
-              <div className="h-9 flex-1 animate-pulse rounded-lg bg-slate-100" />
-            </div>
-          ) : remoteLoaded && options.length === 0 ? (
-            <p className="py-1 text-center text-xs font-medium text-slate-500">Nenhum concurso no catálogo.</p>
+          <h1>
+            {selectedBase && selectedTargetOne && !duplicateSelection
+              ? <>Vale a pena conciliar<span className="dot">?</span></>
+              : <>Cruze os editais<span className="dot">.</span></>}
+          </h1>
+          {selectedBase && selectedTargetOne && !duplicateSelection ? (
+            <p className="versus">
+              <strong>{selectedBase?.nome}</strong>
+              <span className="arrow">×</span>
+              <strong>{selectedTargetOne?.nome}</strong>
+              {courseCount === 3 && selectedTargetTwo ? (
+                <><span className="arrow">×</span><strong>{selectedTargetTwo?.nome}</strong></>
+              ) : null}
+            </p>
           ) : (
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-2">
-                <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-1.5">
+            <p className="versus" style={{ color: 'var(--pl-ink-3)' }}>{heroSubtitle}</p>
+          )}
+        </div>
+        <div className="pl-conc-hero-kpis">
+          {headlineStats.slice(0, 4).map((s, idx) => (
+            <div key={s.key || idx} className="pl-conc-hero-kpi">
+              <span className="lab">{s.label}</span>
+              <span className="val">{s.value}</span>
+            </div>
+          ))}
+        </div>
+      </header>
+
+      {/* Tabs editorial */}
+      <nav style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--pl-rule-2)', paddingBottom: 0 }} aria-label="Secoes do conciliador">
+        {INTERNAL_NAV.map((item) => {
+          const Icon = item.icon;
+          const active = activePanel === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActivePanel(item.id)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px',
+                background: 'none', border: 'none',
+                borderBottom: active ? '2px solid var(--pl-accent)' : '2px solid transparent',
+                marginBottom: -1,
+                fontSize: 13, fontWeight: active ? 700 : 500,
+                color: active ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                cursor: 'pointer', transition: 'color .15s',
+                fontFamily: 'var(--pl-sans)',
+              }}
+            >
+              <Icon size={14} /> {item.label}
+            </button>
+          );
+        })}
+        {canCompare && !isComparing ? (
+          <button
+            type="button"
+            onClick={handleCompare}
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            style={{ marginLeft: 'auto', alignSelf: 'center' }}
+          >
+            <Sparkles size={13} /> Gerar analise
+          </button>
+        ) : null}
+      </nav>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <section className="pl-conc-strip" aria-label="Editais a comparar">
+          {remoteLoading ? (
+            <span style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>Carregando editais…</span>
+          ) : remoteLoaded && options.length === 0 ? (
+            <span style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>Nenhum concurso no catálogo.</span>
+          ) : (
+            <>
+              <SelectStripField
+                micro="Base"
+                icon={BookOpen}
+                accent="blue"
+                value={baseContestId}
+                onChange={setBaseContestId}
+                options={options}
+                excludeIds={[targetOneId, ...(courseCount === 3 ? [targetTwoId] : [])].filter(Boolean)}
+              />
+              <ArrowRightLeft size={14} className="arrow-mid" />
+              <SelectStripField
+                micro="Alvo 1"
+                icon={Target}
+                accent="indigo"
+                value={targetOneId}
+                onChange={setTargetOneId}
+                options={options}
+                excludeIds={[baseContestId, ...(courseCount === 3 ? [targetTwoId] : [])].filter(Boolean)}
+              />
+              {courseCount === 3 ? (
+                <>
+                  <ArrowRightLeft size={14} className="arrow-mid" />
                   <SelectStripField
-                    micro="Base"
-                    icon={BookOpen}
-                    accent="blue"
-                    value={baseContestId}
-                    onChange={setBaseContestId}
+                    micro="Alvo 2"
+                    icon={Layers3}
+                    accent="pink"
+                    value={targetTwoId}
+                    onChange={setTargetTwoId}
                     options={options}
-                    excludeIds={[targetOneId, ...(courseCount === 3 ? [targetTwoId] : [])].filter(Boolean)}
-                  />
-                  <div className="hidden shrink-0 items-center self-center sm:flex" aria-hidden>
-                    <ArrowRightLeft size={14} className="text-slate-300" />
-                  </div>
-                  <SelectStripField
-                    micro="Alvo 1"
-                    icon={Target}
-                    accent="indigo"
-                    value={targetOneId}
-                    onChange={setTargetOneId}
-                    options={options}
-                    excludeIds={[baseContestId, ...(courseCount === 3 ? [targetTwoId] : [])].filter(Boolean)}
-                  />
-                  {courseCount === 3 ? (
-                    <>
-                      <div className="hidden shrink-0 items-center self-center sm:flex" aria-hidden>
-                        <ArrowRightLeft size={14} className="text-slate-300" />
-                      </div>
-                      <SelectStripField
-                        micro="Alvo 2"
-                        icon={Layers3}
-                        accent="pink"
-                        value={targetTwoId}
-                        onChange={setTargetTwoId}
-                        options={options}
-                        excludeIds={[baseContestId, targetOneId].filter(Boolean)}
-                        trailing={
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCourseCount(2);
-                              setTargetTwoId('');
-                            }}
-                            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
-                            title="Remover 3º edital"
-                          >
-                            <X size={15} strokeWidth={2.5} />
-                          </button>
-                        }
-                      />
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={options.length < 3}
-                      onClick={() => setCourseCount(3)}
-                      className="inline-flex shrink-0 items-center justify-center gap-1 self-stretch rounded-lg border border-dashed border-slate-300 bg-slate-50/90 px-2.5 py-2 text-[11px] font-semibold text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-40 sm:max-w-[5.5rem] sm:flex-col sm:py-2.5"
-                      title={options.length < 3 ? 'São necessários ao menos três editais no catálogo' : 'Incluir terceiro edital na comparação'}
-                    >
-                      <Plus size={14} className="shrink-0" />
-                      <span className="leading-tight">3º edital</span>
-                    </button>
-                  )}
-                </div>
-                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-2 sm:justify-start lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
-                  <StatusBadge
-                    tone={options.length === 0 ? 'neutral' : !hasEnoughContests || duplicateSelection ? 'neutral' : 'positive'}
-                    text={
-                      options.length === 0
-                        ? 'Sem dados'
-                        : !hasEnoughContests
-                          ? 'Poucos editais'
-                          : duplicateSelection
-                            ? 'Inválido'
-                            : 'Pronto'
+                    excludeIds={[baseContestId, targetOneId].filter(Boolean)}
+                    trailing={
+                      <button type="button" onClick={() => { setCourseCount(2); setTargetTwoId(''); }} className="pl-btn pl-btn-sm" title="Remover 3 edital">
+                        <X size={13} />
+                      </button>
                     }
                   />
-                </div>
-              </div>
-              {!duplicateSelection && selectedBase && selectedTargetOne ? (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-100 pt-1.5 text-[11px] leading-tight text-slate-600">
-                  <StripQuickContestLinks
-                    label="Base"
-                    contest={selectedBase}
-                    onOpenContestDetail={onOpenContestDetail}
-                    onSetTargetContest={onSetTargetContest}
-                  />
-                  <span className="hidden text-slate-300 sm:inline" aria-hidden>
-                    |
-                  </span>
-                  <StripQuickContestLinks
-                    label="Alvo 1"
-                    contest={selectedTargetOne}
-                    onOpenContestDetail={onOpenContestDetail}
-                    onSetTargetContest={onSetTargetContest}
-                  />
-                  {courseCount === 3 && selectedTargetTwo ? (
-                    <>
-                      <span className="hidden text-slate-300 sm:inline" aria-hidden>
-                        |
-                      </span>
-                      <StripQuickContestLinks
-                        label="Alvo 2"
-                        contest={selectedTargetTwo}
-                        onOpenContestDetail={onOpenContestDetail}
-                        onSetTargetContest={onSetTargetContest}
-                      />
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
-              {duplicateSelection ? (
-                <p className="text-[11px] font-medium text-rose-600">Use editais distintos em cada posição.</p>
-              ) : null}
-            </div>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  disabled={options.length < 3}
+                  onClick={() => setCourseCount(3)}
+                  className="pl-btn pl-btn-sm"
+                  title={options.length < 3 ? 'Sao necessarios ao menos tres editais' : 'Incluir terceiro edital'}
+                >
+                  <Plus size={12} /> 3 edital
+                </button>
+              )}
+              <span className={`status-pill${(!hasEnoughContests || duplicateSelection) ? ' muted' : ''}`}>
+                {options.length === 0 ? 'Sem dados' : !hasEnoughContests ? 'Poucos editais' : duplicateSelection ? 'Invalido' : 'Pronto'}
+              </span>
+            </>
           )}
         </section>
 
             {isComparing ? (
               <>
                 {(activePanel === 'visao' || activePanel === 'comparacao') && (
-                  <section className="overflow-hidden rounded-[1.9rem] border border-slate-800/50 bg-[linear-gradient(135deg,#091428_0%,#132b4d_58%,#312e81_100%)] p-6 shadow-[0_30px_80px_-32px_rgba(15,23,42,0.7)] md:p-7 xl:p-8">
-                    <div className="grid gap-6 xl:grid-cols-[1fr_300px] xl:items-center">
-                      <div className="space-y-5">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-100">
-                          <Sparkles size={13} />
-                          Resultado executivo
+                  <section className={`pl-conc-verdict${
+                    comparison.compatibility < 32 ? ' danger' : comparison.compatibility < 58 ? ' warn' : ' success'
+                  }`}>
+                    <div className="info">
+                      <span className="eyebrow">Resultado executivo</span>
+                      <h2 className={comparison.compatibility < 32 ? 'danger' : comparison.compatibility < 58 ? 'warn' : 'success'}>
+                        {finalVerdict.title}
+                      </h2>
+                      <p className="desc">{finalVerdict.text}</p>
+                      <div className="quick-stats">
+                        <div className="quick-stat">
+                          <span className="lab">Disciplinas em comum</span>
+                          <span className="val">{comparison.commonSubjects.length}</span>
                         </div>
-
-                        <div>
-                          <h3 className="text-3xl font-semibold tracking-[-0.04em] text-white md:text-[2.3rem]">
-                            {comparison.compatibility >= 65
-                              ? 'Alta compatibilidade estratégica'
-                              : comparison.compatibility >= 40
-                                ? 'Compatibilidade moderada'
-                                : 'Compatibilidade baixa'}
-                          </h3>
-                          <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-300 md:text-base">
-                            {selectedBase?.nome} x {selectedTargetOne?.nome}
-                            {courseCount === 3 && selectedTargetTwo ? ` x ${selectedTargetTwo.nome}` : ''}. A leitura deixa claro o tamanho do reaproveitamento sem virar carnaval visual.
-                          </p>
+                        <div className="quick-stat">
+                          <span className="lab">Materias ineditas</span>
+                          <span className="val">{comparison.targetOnlySubjects.length}</span>
                         </div>
-
-                        <div
-                          className={`grid gap-3 ${courseCount === 3 && selectedTargetTwo ? 'grid-cols-2 sm:grid-cols-2' : 'sm:grid-cols-3'}`}
-                        >
-                          <DarkMetric label="Disciplinas em comum" value={String(comparison.commonSubjects.length)} helper="núcleo aproveitável" />
-                          <DarkMetric label="Novidades alvo 1" value={String(comparison.targetOnlySubjects.length)} helper="matérias inéditas" />
-                          <DarkMetric label="Δ salário alvo 1" value={comparison.salaryDeltaTargetOne} helper="vs edital base" compact />
-                          {courseCount === 3 && selectedTargetTwo ? (
-                            <DarkMetric
-                              label="Δ salário alvo 2"
-                              value={comparison.salaryDeltaTargetTwo}
-                              helper="vs edital base"
-                              compact
-                            />
-                          ) : null}
+                        <div className="quick-stat">
+                          <span className="lab">Salario alvo 1</span>
+                          <span className="val" style={{ fontSize: 16 }}>{comparison.salaryDeltaTargetOne}</span>
                         </div>
                       </div>
-
-                      <CompatibilityGauge value={comparison.compatibility} />
+                      {finalVerdict.recommendation ? (
+                        <div className="pl-conc-reco">
+                          <span className="lab">Recomendacao pratica</span>
+                          <p>{finalVerdict.recommendation}</p>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="gauge">
+                      <svg viewBox="0 0 180 180">
+                        <circle cx="90" cy="90" r="78" className="bg" />
+                        <circle
+                          cx="90" cy="90" r="78"
+                          className="fg"
+                          strokeDasharray={`${(Math.max(0, Math.min(100, comparison.compatibility)) / 100) * (2 * Math.PI * 78)} ${2 * Math.PI * 78}`}
+                        />
+                      </svg>
+                      <span className="pct">{comparison.compatibility}<sup>%</sup></span>
                     </div>
                   </section>
                 )}
@@ -1392,21 +1318,34 @@ export default function Conciliador({
                       <VerdictCard verdict={finalVerdict} />
                     </section>
 
-                    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                      <InfoCard
-                        icon={CheckCircle2}
-                        eyebrow="Aproveitamento"
-                        title={`${comparison.commonSubjects.length} disciplinas`}
-                        text="Esse é o núcleo que você reaproveita sem pedir arrego ao cronograma."
-                        tone="blue"
-                      />
-                      <InfoCard
-                        icon={Layers3}
-                        eyebrow="Cobertura"
-                        title={`${comparison.commonTopicsCount} tópicos em comum`}
-                        text="Aqui mora o ganho de velocidade: revisão com efeito em mais de uma prova."
-                        tone="indigo"
-                      />
+                    <section className="pl-conc-quad">
+                      <div className="pl-conc-quad-card">
+                        <div className="icon"><CheckCircle2 size={16} /></div>
+                        <span className="lab">Aproveitamento</span>
+                        <p className="val">{comparison.commonSubjects.length} disc.</p>
+                        <p className="desc">Nucleo que voce reaproveita sem pedir arrego ao cronograma.</p>
+                      </div>
+                      <div className="pl-conc-quad-card">
+                        <div className="icon"><Layers3 size={16} /></div>
+                        <span className="lab">Cobertura</span>
+                        <p className="val">{comparison.commonTopicsCount} topicos</p>
+                        <p className="desc">Ganho de velocidade: revisao com efeito em mais de uma prova.</p>
+                      </div>
+                      <div className={`pl-conc-quad-card${comparison.targetOnlySubjects.length > 5 ? ' warn' : ''}`}>
+                        <div className="icon"><CircleAlert size={16} /></div>
+                        <span className="lab">Carga nova</span>
+                        <p className="val">{comparison.targetOnlySubjects.length + (courseCount === 3 ? comparison.targetTwoOnlySubjects.length : 0)} disc.</p>
+                        <p className="desc">Toda novidade cobra pedagio. Nao deixe estourar a rota principal.</p>
+                      </div>
+                      <div className="pl-conc-quad-card">
+                        <div className="icon"><Zap size={16} /></div>
+                        <span className="lab">Complexidade</span>
+                        <p className="val">{comparison.extraStagesTargetOne.length + (courseCount === 3 ? comparison.extraStagesTargetTwo.length : 0)} etapas</p>
+                        <p className="desc">Etapas paralelas aumentam o peso operacional da conciliacao.</p>
+                      </div>
+                    </section>
+                    {/* compat preservada para panel comparacao */}
+                    <div style={{ display: 'none' }}>
                       <InfoCard
                         icon={CircleAlert}
                         eyebrow="Carga nova"
@@ -1418,10 +1357,10 @@ export default function Conciliador({
                         icon={Zap}
                         eyebrow="Complexidade"
                         title={`${comparison.extraStagesTargetOne.length + (courseCount === 3 ? comparison.extraStagesTargetTwo.length : 0)} etapas extras`}
-                        text="Etapas paralelas aumentam o peso operacional da conciliação."
+                        text="Etapas paralelas aumentam o peso operacional da conciliacao."
                         tone="slate"
                       />
-                    </section>
+                    </div>{/* end hidden */}
                   </>
                 )}
 
@@ -1550,14 +1489,14 @@ export default function Conciliador({
 
                 {activePanel === 'parecer' && (
                   <section className="grid gap-6 2xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-                    <VerdictCard verdict={finalVerdict} />
+                    <VerdictCard verdict={displayedVerdict} loading={aiCompatibilityLoading} />
 
                     <div className="grid gap-6">
                       <InfoCard
                         icon={Trophy}
                         eyebrow="Decisão estratégica"
-                        title={finalVerdict.title}
-                        text={finalVerdict.recommendation}
+                        title={displayedVerdict.title}
+                        text={displayedVerdict.recommendation}
                         tone="gold"
                         tall
                       />
@@ -1604,56 +1543,27 @@ export default function Conciliador({
       </div>
 
       {comparisonHistory.length > 0 ? (
-        <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-900">Histórico de comparações</h3>
-            <span className="text-xs font-medium text-slate-500">{comparisonHistory.length} salvas</span>
+        <section className="pl-conc-history">
+          <div className="head">
+            <h4>Historico de comparacoes</h4>
+            <span className="cnt">{comparisonHistory.length} salvas</span>
           </div>
-          <div className="flex max-h-64 flex-col gap-3 overflow-y-auto pr-1">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto' }}>
             {comparisonHistory.map((entry) => (
-              <div
-                key={entry.id}
-                className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 shadow-sm"
-              >
-                <button type="button" onClick={() => handleRestoreHistory(entry)} className="w-full text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{entry.verdictTitle}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    {entry.baseLabel} × {entry.targetOneLabel}
-                    {entry.targetTwoLabel ? ` × ${entry.targetTwoLabel}` : ''}
+              <div key={entry.id} className="pl-conc-history-item">
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <span className="badge">{entry.verdictTitle || 'Analise salva'}</span>
+                  <p className="ttl" style={{ margin: '4px 0 0' }}>
+                    {entry.baseLabel} <span style={{ color: 'var(--pl-ink-4)' }}>x</span> {entry.targetOneLabel}
+                    {entry.targetTwoLabel ? <> <span style={{ color: 'var(--pl-ink-4)' }}>x</span> {entry.targetTwoLabel}</> : null}
                   </p>
-                  <p className="mt-2 text-xs font-medium text-slate-500">
-                    {entry.compatibility}% compatível · {formatCompareTimestamp(entry.createdAt)}
-                  </p>
-                </button>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleRestoreHistory(entry)}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-indigo-200"
-                  >
-                    Restaurar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onOpenContestDetail?.(entry.baseContestId)}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-indigo-200"
-                  >
-                    Ver base
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onSetTargetContest?.(entry.anchorContestId || entry.targetOneId)}
-                    className="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700"
-                  >
-                    Foco
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteHistory(entry.id)}
-                    className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:border-rose-200 hover:text-rose-600"
-                  >
-                    Excluir
-                  </button>
+                  <p className="meta">{entry.compatibility}% compativel · {formatCompareTimestamp(entry.createdAt)}</p>
+                </div>
+                <div className="actions">
+                  <button type="button" onClick={() => handleRestoreHistory(entry)}>Restaurar</button>
+                  <button type="button" onClick={() => onOpenContestDetail?.(entry.baseContestId)}>Ver base</button>
+                  <button type="button" className="active" onClick={() => onSetTargetContest?.(entry.anchorContestId || entry.targetOneId)}>Foco</button>
+                  <button type="button" onClick={() => handleDeleteHistory(entry.id)}>Excluir</button>
                 </div>
               </div>
             ))}
@@ -2010,7 +1920,7 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
   );
 }
 
-function VerdictCard({ verdict }) {
+function VerdictCard({ verdict, loading = false }) {
   const toneClasses = {
     emerald: {
       wrap: 'border-emerald-100 bg-[linear-gradient(180deg,#ecfdf5_0%,#ffffff_100%)]',
@@ -2036,7 +1946,7 @@ function VerdictCard({ verdict }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <span className={`inline-flex rounded-full border px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] ${style.pill}`}>
-            Parecer final
+            {loading ? 'IA analisando' : verdict.sourceLabel || 'Parecer final'}
           </span>
           <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">{verdict.title}</h3>
         </div>
@@ -2049,6 +1959,28 @@ function VerdictCard({ verdict }) {
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Recomendação prática</p>
         <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-700">{verdict.recommendation}</p>
       </div>
+
+      {(verdict.aiAdvantages?.length || verdict.aiRisks?.length) ? (
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <MiniVerdictList title="Aproveitar" items={verdict.aiAdvantages} />
+          <MiniVerdictList title="Cuidar" items={verdict.aiRisks} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function MiniVerdictList({ title, items = [] }) {
+  const list = Array.isArray(items) ? items.slice(0, 4) : [];
+  if (list.length === 0) return null;
+  return (
+    <div className="rounded-[1.2rem] border border-slate-200 bg-white/80 p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      <ul className="mt-2 space-y-1.5 text-sm font-medium leading-relaxed text-slate-700">
+        {list.map((item) => (
+          <li key={item}>• {item}</li>
+        ))}
+      </ul>
     </div>
   );
 }

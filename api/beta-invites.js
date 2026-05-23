@@ -28,7 +28,9 @@ async function readJsonBody(req) {
     req.on('data', (chunk) => {
       raw += chunk;
       if (raw.length > 1024 * 1024) {
-        reject(new Error('Payload muito grande.'));
+        const error = new Error('Payload muito grande.');
+        error.status = 413;
+        reject(error);
         req.destroy();
       }
     });
@@ -41,7 +43,9 @@ async function readJsonBody(req) {
       try {
         resolve(JSON.parse(raw));
       } catch {
-        reject(new Error('JSON invalido.'));
+        const error = new Error('JSON invalido.');
+        error.status = 400;
+        reject(error);
       }
     });
     req.on('error', reject);
@@ -136,11 +140,16 @@ export default async function handler(req, res) {
       }
 
       const body = await readJsonBody(req);
+      const email = String(body?.email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        sendJson(res, 400, { message: 'E-mail invalido.' });
+        return;
+      }
       const data = await supabaseRest('rpc/admin_insert_beta_invite', {
         method: 'POST',
         authorization,
         body: {
-          p_email: String(body?.email || '').trim().toLowerCase(),
+          p_email: email,
           p_nome: String(body?.nome || '').trim(),
           p_observacao: String(body?.observacao || '').trim(),
         },
@@ -173,12 +182,16 @@ export default async function handler(req, res) {
 
     sendJson(res, 405, { message: 'Metodo nao permitido.' });
   } catch (error) {
+    console.error('[api/beta-invites]', {
+      status: error.status || 500,
+      code: error.payload?.code || '',
+    });
     sendJson(res, error.status || 500, {
-      message: error.payload?.message || error.message || 'Erro ao acessar beta_invites.',
-      details: error.payload?.details,
-      hint: error.payload?.hint,
+      message:
+        Number(error.status || 500) >= 500
+          ? 'Nao foi possivel acessar os convites beta.'
+          : error.payload?.message || error.message || 'Requisicao invalida.',
       code: error.payload?.code,
-      snippet: error.payload?.snippet,
     });
   }
 }

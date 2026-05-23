@@ -28,7 +28,8 @@ BEGIN
     SELECT bi.id, bi.email, bi.token, bi.nome, bi.observacao,
            bi.invited_at, bi.used_at, bi.used_by_user_id
     FROM public.beta_invites bi
-    ORDER BY bi.invited_at DESC;
+    ORDER BY bi.invited_at DESC
+    LIMIT 300;
 END;
 $$;
 
@@ -52,13 +53,24 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_email text := lower(trim(coalesce(p_email, '')));
 BEGIN
   IF NOT is_app_admin() THEN
     RAISE EXCEPTION 'Acesso negado';
   END IF;
+
+  IF v_email !~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' THEN
+    RAISE EXCEPTION 'E-mail invalido';
+  END IF;
+
   RETURN QUERY
     INSERT INTO public.beta_invites (email, nome, observacao)
-    VALUES (lower(trim(p_email)), p_nome, p_observacao)
+    VALUES (
+      v_email,
+      left(trim(coalesce(p_nome, '')), 120),
+      left(trim(coalesce(p_observacao, '')), 1000)
+    )
     RETURNING
       beta_invites.id, beta_invites.email, beta_invites.token,
       beta_invites.nome, beta_invites.observacao,

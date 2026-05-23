@@ -67,6 +67,12 @@ function normalizeGrammarFeedback(items) {
     .filter((item) => item.excerpt || item.replacement || item.reason);
 }
 
+function normalizeShortList(items, max = 6) {
+  return Array.isArray(items)
+    ? items.map((item) => String(item || '').trim()).filter(Boolean).slice(0, max)
+    : [];
+}
+
 export function normalizeRedacaoCorrection(value = {}) {
   const payload = value && typeof value === 'object' ? value : {};
   const criteria = {
@@ -82,12 +88,12 @@ export function normalizeRedacaoCorrection(value = {}) {
     overallScore: Number(Math.max(0, Math.min(10, Number(payload.overallScore ?? totalScore))).toFixed(1)),
     criteria,
     summary: String(payload.summary || '').trim(),
-    strengths: Array.isArray(payload.strengths)
-      ? payload.strengths.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 4)
-      : [],
-    improvements: Array.isArray(payload.improvements)
-      ? payload.improvements.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 4)
-      : [],
+    strengths: normalizeShortList(payload.strengths, 5),
+    improvements: normalizeShortList(payload.improvements, 6),
+    priorityFixes: normalizeShortList(payload.priorityFixes || payload.priority_fixes, 6),
+    actionPlan: normalizeShortList(payload.actionPlan || payload.action_plan, 6),
+    bancaFit: String(payload.bancaFit || payload.banca_fit || '').trim(),
+    lineDiagnosis: String(payload.lineDiagnosis || payload.line_diagnosis || '').trim(),
     grammarFeedback: normalizeGrammarFeedback(payload.grammarFeedback),
     source: String(payload.source || '').trim(),
     sourceLabel: String(payload.sourceLabel || '').trim(),

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+﻿import React, { Suspense, lazy } from 'react';
 import { Target } from 'lucide-react';
 
 const Dashboard = lazy(() => import('../pages/Dashboard'));
@@ -114,6 +114,9 @@ export default function AppTabContent(props) {
     targetContestDisciplines,
     smartStudyPlan,
     dailyRoutine,
+    ultimaAnotacao,
+    editalProgresso,
+    onOpenUltimaAnotacao,
     setSelectedContestDetailId,
     handleDisciplineClick,
     startRecommendedStudySession,
@@ -353,6 +356,8 @@ export default function AppTabContent(props) {
         targetDisciplines={targetContestDisciplines}
         studyRecommendation={smartStudyPlan}
         dailyRoutine={dailyRoutine}
+        ultimaAnotacao={ultimaAnotacao}
+        editalProgresso={editalProgresso}
         onOpenTargetContest={(contestId) => {
           setSelectedContestDetailId(contestId);
           setActiveTab('concurso_detalhe');
@@ -360,6 +365,7 @@ export default function AppTabContent(props) {
         onOpenRecommendedDiscipline={handleDisciplineClick}
         onStartRecommendedSession={startRecommendedStudySession}
         onStartRoutineItem={startRecommendedStudySession}
+        onOpenUltimaAnotacao={onOpenUltimaAnotacao}
       />
     );
   }
@@ -724,7 +730,10 @@ export default function AppTabContent(props) {
         setViewingDiscipline={setViewingDiscipline}
         setEditingDiscipline={setEditingDiscipline}
         setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
+        setActiveTab={setActiveTab}
         subjectCatalog={subjectCatalog}
+        historicoReal={historicoReal}
+        studyRecommendation={smartStudyPlan}
         forcedPlanoFiltro={
           selectedCoursePlan === 'Todos' && targetContestSummary?.plano
             ? targetContestSummary.plano
@@ -883,7 +892,7 @@ export default function AppTabContent(props) {
   }
 
   if (activeTab === 'flashcards') {
-    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} />;
+    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} setActiveTab={setActiveTab} />;
   }
 
   if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} />;
@@ -1105,11 +1114,11 @@ export default function AppTabContent(props) {
   if (!KNOWN_TABS.includes(activeTab)) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-gray-400 p-10">
-        <Target size={40} className="text-[#2563EB] mb-6" />
+        <Target size={40} className="text-[#1e3a5f] mb-6" />
         <h2 className="text-3xl font-black text-gray-800 mb-2">Construção em Progresso!</h2>
         <button
           onClick={() => setActiveTab('home')}
-          className="bg-[#2563EB] text-white px-6 py-2.5 rounded-xl font-bold"
+          className="bg-[#1e3a5f] text-white px-6 py-2.5 rounded-xl font-bold"
         >
           Voltar ao Inicio
         </button>

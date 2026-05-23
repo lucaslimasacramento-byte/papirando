@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Check,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Pencil,
+  Play,
   Plus,
+  Sparkles,
   Target,
   Trash2,
   TrendingUp,
@@ -13,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import PageHeadPremium from '../components/PageHeadPremium';
+import { getSubjectColor } from '../lib/subjectPalette';
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
@@ -61,13 +63,8 @@ function fmtHours(minutes) {
   return `${h}h${m.toString().padStart(2, '0')}`;
 }
 
-const DISCIPLINE_COLORS = [
-  'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500',
-  'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-orange-500',
-];
-
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-[#2563EB]/15';
+  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#1e3a5f] focus:bg-white focus:ring-4 focus:ring-[#1e3a5f]/15';
 }
 
 /** Alinha com Planejamento: alguns bancos usam semana_inicio/horas_meta, outros week_start/meta_horas. */
@@ -272,6 +269,35 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   const questoesMetaDone = totalGoalQuestoes > 0 && totalQuestoesPct >= 100;
   const allMetasDone = hoursMetaDone && (totalGoalQuestoes === 0 || questoesMetaDone);
 
+  const metaItems = useMemo(() => {
+    return allDisciplinas.map((disciplina) => {
+      const goal = goals.find((g) => g.disciplina === disciplina);
+      const alvoMin = (goal?.meta_horas || 0) * 60;
+      const feitoMin = actualByDisciplina[disciplina] || 0;
+      const pct = alvoMin > 0 ? Math.min(100, Math.round((feitoMin / alvoMin) * 100)) : 0;
+      const questoesAlvo = goal?.questoes_meta || 0;
+      const questoesFeitas = actualQuestoesByDisciplina[disciplina] || 0;
+      const questoesPct = questoesAlvo > 0 ? Math.min(100, Math.round((questoesFeitas / questoesAlvo) * 100)) : 0;
+      const horasOk = !goal || alvoMin <= 0 || pct >= 100;
+      const questoesOk = !goal || questoesAlvo <= 0 || questoesPct >= 100;
+      return {
+        id: goal?.id || disciplina,
+        goal,
+        disciplina,
+        alvoMin,
+        feitoMin,
+        pct,
+        questoesAlvo,
+        questoesFeitas,
+        questoesPct,
+        cumprida: Boolean(goal && horasOk && questoesOk),
+        naoIniciou: Boolean(goal && feitoMin === 0 && questoesFeitas === 0),
+      };
+    });
+  }, [actualByDisciplina, actualQuestoesByDisciplina, allDisciplinas, goals]);
+
+  const metasCumpridas = metaItems.filter((meta) => meta.cumprida).length;
+
   async function openAddGoal(prefillDisciplina = '') {
     setEditGoal(null);
     setEditForm({ disciplina: prefillDisciplina || '', meta_horas: 2, questoes_meta: '' });
@@ -350,232 +376,58 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   }
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
-      <PageHeadPremium
-        className="shrink-0 lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={Target}
-        title="Metas semanais"
-        subtitle="Horas por disciplina na semana. Metas do assistente de planejamento aparecem aqui automaticamente."
-        leadingClassName="items-center lg:max-w-[calc(100%-15rem)] xl:max-w-[50rem]"
-        trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[14rem] lg:self-center"
-        trailing={
-          <div className="flex w-full min-w-0 flex-col items-start gap-1.5 sm:w-auto sm:items-end">
-            <button
-              type="button"
-              onClick={() => openAddGoal()}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:text-[13px]"
-            >
-              <Plus size={14} />
-              Nova meta
-            </button>
-          </div>
-        }
-      />
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <MetasHeader onNovaMeta={() => openAddGoal()} />
 
-      <div className="section-card mt-3 flex shrink-0 items-center justify-between rounded-2xl px-4 py-3 sm:px-5 lg:px-6">
-        <button
-          type="button"
-          onClick={() => setWeekOffset((o) => o - 1)}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB]"
-          aria-label="Semana anterior"
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <div className="text-center min-w-0 px-2">
-          <p className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-            Janela semanal
-          </p>
-          <p className="text-sm font-bold text-slate-900">{formatWeekLabel(monday)}</p>
-          {isCurrentWeek && (
-            <p className="text-[11px] font-semibold text-[#2563EB]">Esta semana</p>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => setWeekOffset((o) => o + 1)}
-          disabled={weekOffset >= 0}
-          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB] disabled:pointer-events-none disabled:opacity-35"
-          aria-label="Próxima semana"
-        >
-          <ChevronRight size={18} />
-        </button>
-      </div>
+        <section className="metas-top-grid">
+          <WeekPicker
+            monday={monday}
+            isCurrentWeek={isCurrentWeek}
+            onPrev={() => setWeekOffset((offset) => offset - 1)}
+            onNext={() => setWeekOffset((offset) => offset + 1)}
+            disableNext={weekOffset >= 0}
+          />
+          <TotalCumpridoKpi feito={totalActualMins} alvo={totalGoalMins} pct={totalPct} />
+          <MetasCumpridasKpi cumpridas={metasCumpridas} total={metaItems.length} />
+        </section>
 
-      <div className="section-card shrink-0 rounded-none border-x-0 border-t-0 px-4 py-3 sm:px-5 sm:py-3.5 lg:px-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={16} className="text-[#2563EB]" />
-            <span className="text-sm font-bold text-slate-700">Total da semana</span>
-          </div>
-          <div className="text-right">
-            <span className="text-sm font-semibold text-slate-900">
-              {fmtHours(totalActualMins)}
-            </span>
-            {totalGoalMins > 0 && (
-              <span className="text-xs text-slate-500 font-semibold"> / {fmtHours(totalGoalMins)}</span>
-            )}
-          </div>
-        </div>
-        {totalGoalMins > 0 && (
-          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${totalPct >= 100 ? 'bg-emerald-500' : 'bg-[#2563EB]'}`}
-              style={{ width: `${totalPct}%` }}
-            />
-          </div>
-        )}
-        {totalGoalQuestoes > 0 && (
-          <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Questões (soma das metas)</span>
-              <span className="text-[11px] font-semibold text-slate-700">
-                {totalActualQuestoes} / {totalGoalQuestoes}
-                <span className="text-slate-400"> ({totalQuestoesPct}%)</span>
-              </span>
-            </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${questoesMetaDone ? 'bg-emerald-500' : 'bg-violet-500'}`}
-                style={{ width: `${totalQuestoesPct}%` }}
-              />
-            </div>
-          </div>
-        )}
-        {allMetasDone && goals.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-2 text-emerald-600">
-            <Trophy size={14} />
-            <span className="text-xs font-bold">Metas da semana atingidas!</span>
-          </div>
-        )}
-      </div>
-
-      {/* Goals list */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-blue-500" />
+          <div className="pl-card" style={{ padding: 48, display: 'grid', placeItems: 'center' }}>
+            <Loader2 size={24} className="animate-spin" color="var(--pl-ink-3)" />
           </div>
-        ) : allDisciplinas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-              <Target size={28} className="text-slate-400" />
-            </div>
-            <div>
-              <p className="font-bold text-slate-700">Nenhuma meta definida</p>
-              <p className="text-sm text-slate-500 mt-1">Defina metas de horas por disciplina para acompanhar seu progresso semanal.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => openAddGoal()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)]"
-            >
-              <Plus size={16} />
-              Criar primeira meta
-            </button>
-          </div>
+        ) : metaItems.length === 0 ? (
+          <MetasEmptyState onBizu={() => openAddGoal()} onManual={() => openAddGoal()} />
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {allDisciplinas.map((disc, idx) => {
-              const goal       = goals.find((g) => g.disciplina === disc);
-              const goalMins   = (goal?.meta_horas || 0) * 60;
-              const actualMins = actualByDisciplina[disc] || 0;
-              const pct        = goalMins > 0 ? Math.min(100, Math.round((actualMins / goalMins) * 100)) : null;
-              const goalQuestoes = goal ? goal.questoes_meta || 0 : 0;
-              const actualQuestoes = actualQuestoesByDisciplina[disc] || 0;
-              const qPct =
-                goal && goalQuestoes > 0
-                  ? Math.min(100, Math.round((actualQuestoes / goalQuestoes) * 100))
-                  : null;
-              const colorCls   = DISCIPLINE_COLORS[idx % DISCIPLINE_COLORS.length];
-              const done       = pct !== null && pct >= 100;
-              const doneQuestoes = qPct !== null && qPct >= 100;
-              const hoursOk = !goal || goalMins <= 0 || done;
-              const questoesOk = !goal || goalQuestoes <= 0 || qPct === null || doneQuestoes;
-              const showCheck = Boolean(goal && hoursOk && questoesOk);
-
-              return (
-                <div key={disc} className="section-card flex flex-col p-3.5 sm:p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${colorCls}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-800">{disc}</p>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-                          <span className="text-[11px] font-bold text-[#2563EB]">{fmtHours(actualMins)} estudados</span>
-                          {goalMins > 0 && (
-                            <span className="text-[11px] text-slate-400">/ meta {fmtHours(goalMins)}</span>
-                          )}
-                          {goal && goalQuestoes > 0 && (
-                            <span className="text-[11px] font-semibold text-violet-700">
-                              · {actualQuestoes}/{goalQuestoes} questões
-                            </span>
-                          )}
-                          {!goal && (
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full px-2 py-0.5">
-                              sem meta
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      {showCheck && <Check size={14} className="text-emerald-500" />}
-                      <button
-                        type="button"
-                        onClick={() => (goal ? openEditGoal(goal) : openAddGoal(disc))}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#2563EB]"
-                        title={goal ? 'Editar meta' : 'Definir meta'}
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      {goal && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteGoal(goal)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
-                          title="Excluir meta"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {pct !== null && (
-                    <div className="mt-2.5">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Horas</span>
-                        <span className={`text-[11px] font-semibold ${done ? 'text-emerald-600' : 'text-slate-700'}`}>{pct}%</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${done ? 'bg-emerald-500' : colorCls}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {qPct !== null && (
-                    <div className="mt-2">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Questões</span>
-                        <span className={`text-[11px] font-semibold ${doneQuestoes ? 'text-emerald-600' : 'text-slate-700'}`}>
-                          {qPct}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${doneQuestoes ? 'bg-emerald-500' : 'bg-violet-500'}`}
-                          style={{ width: `${qPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <>
+            <MetasList
+              metas={metaItems}
+              onEditar={(meta) => (meta.goal ? openEditGoal(meta.goal) : openAddGoal(meta.disciplina))}
+              onExcluir={(meta) => meta.goal && handleDeleteGoal(meta.goal)}
+              onPapirar={(meta) => openAddGoal(meta.disciplina)}
+              onReplanejar={() => openAddGoal()}
+            />
+            <MetaBizuSuggestion metas={metaItems} onReplanejar={() => openAddGoal()} />
+          </>
         )}
+
+        {totalGoalQuestoes > 0 ? (
+          <section className="pl-card" style={{ padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+              <span className="pl-tag pl-tag-accent">Quest?es da semana</span>
+              <strong style={{ color: 'var(--pl-ink)' }}>{totalActualQuestoes} / {totalGoalQuestoes} ({totalQuestoesPct}%)</strong>
+            </div>
+            <div className="pl-progress-track" style={{ marginTop: 12 }}>
+              <div className="pl-progress-fill" style={{ width: `${totalQuestoesPct}%`, background: questoesMetaDone ? 'var(--pl-success)' : '#4338ca' }} />
+            </div>
+            {allMetasDone && goals.length > 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 12, color: 'var(--pl-success)', fontWeight: 800 }}>
+                <Trophy size={15} />
+                Metas da semana atingidas!
+              </div>
+            ) : null}
+          </section>
+        ) : null}
       </div>
 
       {/* Edit/Add modal */}
@@ -668,7 +520,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 type="button"
                 onClick={handleSaveGoal}
                 disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-[#2563EB] px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f] disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 Salvar
@@ -678,5 +530,214 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
         </div>
       )}
     </div>
+  );
+}
+
+function MetasHeader({ onNovaMeta }) {
+  return (
+    <section className="pl-card-paper" style={{ padding: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
+        <div>
+          <div className="pl-overline">Metas semanais</div>
+          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
+            Metas da semana<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+            Defina o alvo por disciplina, acompanhe o que já foi feito e ajuste a semana antes que ela escape.
+          </p>
+        </div>
+        <button type="button" className="pl-btn pl-btn-primary" onClick={onNovaMeta}>
+          <Plus size={15} />
+          Nova meta
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function WeekPicker({ monday, isCurrentWeek, onPrev, onNext, disableNext }) {
+  return (
+    <div className="pl-card metas-week-card">
+      <button type="button" className="pl-icon-button" onClick={onPrev} aria-label="Semana anterior">
+        <ChevronLeft size={17} />
+      </button>
+      <div style={{ textAlign: 'center', minWidth: 0 }}>
+        <div className="pl-overline">Janela semanal</div>
+        <div className="pl-serif-number" style={{ marginTop: 6, fontSize: 24, lineHeight: 1 }}>
+          {formatWeekLabel(monday)}
+        </div>
+        {isCurrentWeek ? <div className="pl-small-label" style={{ justifyContent: 'center', marginTop: 8, color: 'var(--pl-accent)' }}>Esta semana</div> : null}
+      </div>
+      <button type="button" className="pl-icon-button" onClick={onNext} disabled={disableNext} aria-label="Próxima semana">
+        <ChevronRight size={17} />
+      </button>
+    </div>
+  );
+}
+
+function TotalCumpridoKpi({ feito, alvo, pct }) {
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <span className="pl-tag pl-tag-accent">
+        <TrendingUp size={12} />
+        Total cumprido
+      </span>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 36, lineHeight: 1 }}>{fmtHours(feito)}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>
+        {alvo > 0 ? `${pct}% das ${fmtHours(alvo)} alvo` : 'sem alvo definido'}
+      </p>
+      {alvo > 0 ? (
+        <div className="pl-progress-track" style={{ marginTop: 12 }}>
+          <div className="pl-progress-fill" style={{ width: `${pct}%`, background: pct >= 100 ? 'var(--pl-success)' : 'var(--pl-ink)' }} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function MetasCumpridasKpi({ cumpridas, total }) {
+  const allDone = total > 0 && cumpridas === total;
+  const tone = total === 0 ? 'pl-tag-accent' : allDone ? 'pl-tag-success' : 'pl-tag-warn';
+
+  return (
+    <div className="pl-card" style={{ padding: 18 }}>
+      <span className={`pl-tag ${tone}`}>
+        <Trophy size={12} />
+        Metas cumpridas
+      </span>
+      <div className="pl-serif-number" style={{ marginTop: 12, fontSize: 36, lineHeight: 1 }}>{cumpridas}/{total}</div>
+      <p className="pl-muted" style={{ margin: '6px 0 0', fontSize: 13 }}>
+        {total === 0 ? 'nenhuma meta ainda' : allDone ? 'sem pendências' : `${total - cumpridas} pendente(s)`}
+      </p>
+    </div>
+  );
+}
+
+function MetasList({ metas, onEditar, onExcluir, onPapirar, onReplanejar }) {
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'end', marginBottom: 16 }}>
+        <div>
+          <div className="pl-overline">Por disciplina</div>
+          <h2 className="pl-section-title" style={{ marginTop: 7 }}>{metas.length} metas pra papirar</h2>
+        </div>
+        <button type="button" className="pl-btn-link" onClick={onReplanejar}>Replanejar com IA →</button>
+      </div>
+      <div style={{ display: 'grid', gap: 10 }}>
+        {metas.map((meta) => (
+          <MetaRow
+            key={meta.id}
+            meta={meta}
+            onEditar={() => onEditar(meta)}
+            onExcluir={() => onExcluir(meta)}
+            onPapirar={() => onPapirar(meta)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MetaRow({ meta, onEditar, onExcluir, onPapirar }) {
+  const color = getSubjectColor(meta.disciplina);
+  const showQuestions = meta.questoesAlvo > 0;
+
+  return (
+    <div className={meta.cumprida ? 'metas-row is-done' : 'metas-row'}>
+      <span className="metas-subject-bar" style={{ background: color }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          <strong style={{ color: 'var(--pl-ink)', fontSize: 14 }}>{meta.disciplina}</strong>
+          {meta.cumprida ? <span className="pl-tag pl-tag-success">Cumprida</span> : null}
+          {meta.naoIniciou ? <span className="pl-tag pl-tag-warn">Não iniciada</span> : null}
+          {!meta.goal ? <span className="pl-tag">Sem meta</span> : null}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="pl-progress-track" style={{ flex: 1 }}>
+            <div className="pl-progress-fill" style={{ width: `${meta.pct}%`, background: meta.cumprida ? 'var(--pl-success)' : color }} />
+          </div>
+          <span className="planning-time-label">{fmtHours(meta.feitoMin)} / {meta.alvoMin > 0 ? fmtHours(meta.alvoMin) : 'sem alvo'}</span>
+        </div>
+        {showQuestions ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+            <div className="pl-progress-track" style={{ flex: 1, height: 3 }}>
+              <div className="pl-progress-fill" style={{ width: `${meta.questoesPct}%`, background: '#4338ca' }} />
+            </div>
+            <span className="planning-time-label">{meta.questoesFeitas} / {meta.questoesAlvo} questões</span>
+          </div>
+        ) : null}
+      </div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <button type="button" className="pl-btn pl-btn-sm" onClick={onEditar}>
+          <Pencil size={13} />
+          Editar
+        </button>
+        {meta.goal ? (
+          <button type="button" className="pl-icon-button" onClick={onExcluir} title="Excluir meta">
+            <Trash2 size={13} />
+          </button>
+        ) : null}
+        {!meta.cumprida ? (
+          <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={onPapirar}>
+            <Play size={13} fill="currentColor" />
+            Papirar
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function MetaBizuSuggestion({ metas, onReplanejar }) {
+  const total = metas.filter((meta) => meta.goal).length;
+  const done = metas.filter((meta) => meta.cumprida).length;
+  const notStarted = metas.find((meta) => meta.goal && meta.naoIniciou);
+  const lagging = [...metas].filter((meta) => meta.goal && !meta.cumprida).sort((a, b) => a.pct - b.pct)[0];
+  const subject = notStarted?.disciplina || lagging?.disciplina || '';
+  const message =
+    total > 0 && done === total
+      ? 'Semana fechada antes da hora — quer subir as metas pra próxima ou descansar?'
+      : notStarted
+      ? `Falta uma frente que ainda nem começou: ${subject}. 30min hoje resolve o pior.`
+      : lagging
+      ? `O ponto mais atrasado da semana é ${subject} — vale ir lá agora enquanto o resto está em dia.`
+      : 'Defina uma meta para o Bizu calibrar sua semana.';
+
+  return (
+    <section className="pl-card-ai metas-bizu">
+      <div>
+        <span className="pl-tag-ai"><Sparkles size={13} /> Bizu IA</span>
+        <p className="pl-section-title" style={{ marginTop: 10, fontSize: 24 }}>
+          {subject ? message.replace(subject, '') : message}
+          {subject ? <span className="pl-mark-text">{subject}</span> : null}
+        </p>
+      </div>
+      <button type="button" className="pl-btn-ai pl-btn" onClick={onReplanejar}>
+        <Sparkles size={14} />
+        Replanejar semana
+      </button>
+    </section>
+  );
+}
+
+function MetasEmptyState({ onBizu, onManual }) {
+  return (
+    <section className="pl-card-paper" style={{ padding: 32 }}>
+      <div className="pl-overline">Sem metas ainda</div>
+      <h2 className="pl-section-title" style={{ marginTop: 10 }}>Qual o ritmo da sua semana?</h2>
+      <p className="pl-body" style={{ maxWidth: 680, marginTop: 8 }}>
+        Crie metas por disciplina para enxergar o avanço semanal e deixar o Bizu apontar o próximo melhor movimento.
+      </p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 22 }}>
+        <button type="button" className="pl-btn-ai pl-btn" onClick={onBizu}>
+          <Sparkles size={14} />
+          Deixar o Bizu definir
+        </button>
+        <button type="button" className="pl-btn pl-btn-secondary" onClick={onManual}>
+          <Plus size={14} />
+          Criar meta manual
+        </button>
+      </div>
+    </section>
   );
 }

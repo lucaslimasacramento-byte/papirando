@@ -1,0 +1,17 @@
+{
+  "name": "Papirando",
+  "short_name": "Papirando",
+  "description": "Estude para concursos públicos com ferramenta séria.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/branding/papirando-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#14110d",
+  "background_color": "#f3efe5"
+}

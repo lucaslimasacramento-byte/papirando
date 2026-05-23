@@ -2,8 +2,6 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
-  const inviteColumns = 'id, email, token, nome, observacao, invited_at, used_at, used_by_user_id'
-
   function sendJson(res, status, payload) {
     res.statusCode = status
     res.setHeader('content-type', 'application/json; charset=utf-8')
@@ -16,7 +14,9 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
       req.on('data', (chunk) => {
         raw += chunk
         if (raw.length > 1024 * 1024) {
-          reject(new Error('Payload muito grande.'))
+          const error = new Error('Payload muito grande.')
+          error.status = 413
+          reject(error)
           req.destroy()
         }
       })
@@ -29,7 +29,9 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
         try {
           resolve(JSON.parse(raw))
         } catch {
-          reject(new Error('JSON invalido.'))
+          const error = new Error('JSON invalido.')
+          error.status = 400
+          reject(error)
         }
       })
       req.on('error', reject)
@@ -79,6 +81,19 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
     return `Bearer ${token}`
   }
 
+  function normalizeInviteRow(row) {
+    return {
+      id: row?.id || '',
+      email: row?.email || '',
+      token: row?.token || '',
+      nome: row?.nome || '',
+      observacao: row?.observacao || '',
+      invited_at: row?.invited_at || '',
+      used_at: row?.used_at || null,
+      used_by_user_id: row?.used_by_user_id || null,
+    }
+  }
+
   return {
     name: 'papirando-dev-beta-invites-api',
     configureServer(server) {
@@ -93,11 +108,17 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
           const authorization = normalizeBearerAuthorization(req.headers.authorization)
 
           if (req.method === 'GET') {
-            const data = await supabaseRest(
-              `beta_invites?select=${encodeURIComponent(inviteColumns)}&order=invited_at.desc&limit=300`,
-              {}
-            )
-            sendJson(res, 200, data || [])
+            if (!authorization) {
+              sendJson(res, 401, { message: 'Sessao admin invalida. Faca login novamente e tente de novo.' })
+              return
+            }
+
+            const data = await supabaseRest('rpc/admin_get_beta_invites', {
+              method: 'POST',
+              authorization,
+              body: {},
+            })
+            sendJson(res, 200, (Array.isArray(data) ? data : []).map(normalizeInviteRow))
             return
           }
 
@@ -108,12 +129,23 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
             }
 
             const body = await readJsonBody(req)
-            const data = await supabaseRest(`beta_invites?select=${encodeURIComponent(inviteColumns)}`, {
+            const email = String(body?.email || '').trim().toLowerCase()
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              sendJson(res, 400, { message: 'E-mail invalido.' })
+              return
+            }
+
+            const data = await supabaseRest('rpc/admin_insert_beta_invite', {
               method: 'POST',
               authorization,
-              body,
+              body: {
+                p_email: email,
+                p_nome: String(body?.nome || '').trim(),
+                p_observacao: String(body?.observacao || '').trim(),
+              },
             })
-            sendJson(res, 200, data)
+            const row = Array.isArray(data) ? data[0] : data
+            sendJson(res, 200, normalizeInviteRow(row))
             return
           }
 
@@ -129,9 +161,10 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
               return
             }
 
-            await supabaseRest(`beta_invites?id=eq.${encodeURIComponent(id)}`, {
-              method: 'DELETE',
+            await supabaseRest('rpc/admin_delete_beta_invite', {
+              method: 'POST',
               authorization,
+              body: { p_id: id },
             })
             sendJson(res, 200, { ok: true })
             return
@@ -139,12 +172,16 @@ function createDevBetaInvitesApi({ supabaseTarget, supabaseAnonKey }) {
 
           sendJson(res, 405, { message: 'Metodo nao permitido.' })
         } catch (error) {
+          console.error('[dev-api/beta-invites]', {
+            status: error.status || 500,
+            code: error.payload?.code || '',
+          })
           sendJson(res, error.status || 500, {
-            message: error.payload?.message || error.message || 'Erro ao acessar beta_invites.',
-            details: error.payload?.details,
-            hint: error.payload?.hint,
+            message:
+              Number(error.status || 500) >= 500
+                ? 'Nao foi possivel acessar os convites beta.'
+                : error.payload?.message || error.message || 'Requisicao invalida.',
             code: error.payload?.code,
-            snippet: error.payload?.snippet,
           })
         }
       })

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { X, CalendarDays, BookOpen, Clock3, CheckCircle2 } from 'lucide-react';
 
 export default function RegistroEstudoModal({
@@ -91,7 +91,7 @@ export default function RegistroEstudoModal({
         erros: Number(erros),
         desempenho,
         tipo: categoria.toUpperCase(),
-        cor: disciplinaSelecionada.cor || '#2563EB',
+        cor: disciplinaSelecionada.cor || '#1e3a5f',
         data: new Date().toISOString().split('T')[0],
         plano: disciplinaSelecionada.plano || 'Geral',
       };
@@ -126,7 +126,7 @@ export default function RegistroEstudoModal({
         <div className="custom-scrollbar flex-1 overflow-y-auto p-8">
           <div className="mb-8 flex items-center gap-4">
             <CalendarDays size={20} className="text-gray-800" />
-            <button className="rounded-full bg-[#2563EB] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+            <button className="rounded-full bg-[#1e3a5f] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
               Hoje
             </button>
           </div>
@@ -136,7 +136,7 @@ export default function RegistroEstudoModal({
               <select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
               >
                 <option value="Teoria">Teoria</option>
                 <option value="Questões">Questões</option>
@@ -148,7 +148,7 @@ export default function RegistroEstudoModal({
               <select
                 value={disciplinaId}
                 onChange={(e) => setDisciplinaId(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
               >
                 <option value="">Selecione...</option>
                 {bancoDisciplinas.map((disciplina) => (
@@ -165,7 +165,7 @@ export default function RegistroEstudoModal({
                 placeholder={formatTimeStr ? formatTimeStr(timerValue || 0) : '00:00'}
                 value={tempoManual}
                 onChange={(e) => setTempoManual(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
               />
             </Field>
           </div>
@@ -177,7 +177,7 @@ export default function RegistroEstudoModal({
                   value={topicoId}
                   onChange={(e) => setTopicoId(e.target.value)}
                   disabled={!disciplinaSelecionada || topicosDisponiveis.length === 0}
-                  className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB] disabled:cursor-not-allowed disabled:text-gray-400"
+                  className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f] disabled:cursor-not-allowed disabled:text-gray-400"
                 >
                   <option value="">
                     {!disciplinaSelecionada
@@ -201,7 +201,7 @@ export default function RegistroEstudoModal({
                 placeholder="Ex.: Aula 01"
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#2563EB] focus:border-[#2563EB]"
+                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
               />
             </Field>
           </div>
@@ -242,7 +242,7 @@ export default function RegistroEstudoModal({
                     min="0"
                     value={acertos}
                     onChange={(e) => setAcertos(e.target.value)}
-                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#2563EB]"
+                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#1e3a5f]"
                   />
                 </Field>
 
@@ -252,7 +252,7 @@ export default function RegistroEstudoModal({
                     min="0"
                     value={erros}
                     onChange={(e) => setErros(e.target.value)}
-                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#2563EB]"
+                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#1e3a5f]"
                   />
                 </Field>
               </div>
@@ -280,7 +280,7 @@ export default function RegistroEstudoModal({
           <button
             onClick={handleSalvar}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <CheckCircle2 size={16} />
             {isSaving ? 'Salvando...' : 'Salvar estudo'}

@@ -1,7 +1,7 @@
 -- Critério único de administrador para políticas RLS (alinhado ao app + questions.sql).
 -- Aplicar antes de qualquer script que use public.is_app_admin() ou public.is_profile_admin().
 --
--- Inclui: profiles.role = 'admin', e-mail institucional @papirando.com, e-mails de contingência
+-- Inclui: profiles.role = 'admin'/'admin_master'/'master', e-mail institucional @papirando.com, e-mails de contingência
 -- (espelho mínimo de ADMIN_EMAILS no cliente), e o mesmo critério via claim de e-mail no JWT
 -- quando o perfil ainda não refletiu o papel.
 
@@ -18,7 +18,7 @@ as $$
       coalesce(
         (
           select
-            lower(coalesce(p.role::text, '')) = 'admin'
+            lower(coalesce(p.role::text, '')) in ('admin', 'admin_master', 'master')
             or lower(coalesce(p.email, '')) like '%@papirando.com'
             or lower(trim(coalesce(p.email, ''))) in (
               'lucaslimasacramento@gmail.com'

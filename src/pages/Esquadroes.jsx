@@ -42,10 +42,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { shapeSquadFromCommunityPost, splitSquadForCommunityPostUpdate } from '../lib/squadRemote';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 
 const EMPTY_FORM = {
   name: '',
@@ -2040,187 +2036,142 @@ export default function Esquadroes({
   }
 
   return (
-    <div className="page-shell animate-in fade-in slide-in-from-bottom-6 duration-700 gap-6">
-      <PageHeadPremium
-        className="!overflow-visible shrink-0 gap-4 lg:!flex-row lg:!items-center lg:!justify-between"
-        icon={ShieldCheck}
-        titleAs="h2"
-        badge={
-          <PageHeadPremiumBadge icon={Shield}>
-            Ecossistema privado
-          </PageHeadPremiumBadge>
-        }
-        title="Esquadrões"
-        subtitle="Fórum interno, mural, simulados, atividades e gestão privada do cursinho."
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[min(100%,28rem)] xl:max-w-[32rem]"
-        trailingWrapClassName="!overflow-visible"
-        trailingClassName="!overflow-visible w-full shrink-0 lg:w-auto lg:max-w-none lg:justify-end"
-        trailing={(
-          <div className="flex w-full flex-row flex-wrap items-center justify-end gap-2 overflow-visible sm:gap-3 lg:flex-nowrap">
-            <div className="relative z-[120] min-w-0 shrink-0 overflow-visible" ref={squadSwitcherWrapRef}>
-              <button
-                type="button"
-                onClick={() => setShowSquadSwitcher((prev) => !prev)}
-                className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3 py-2.5 shadow-sm ring-1 ring-white/10 backdrop-blur-sm transition hover:border-white/25 hover:bg-white/[0.12]"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/90 to-indigo-600/90 text-white shadow-md shadow-blue-900/30">
-                  <Users size={20} />
-                </div>
-                <div className="text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Seus esquadrões</p>
-                  <p className="text-xl font-semibold leading-none text-white">{accessibleSquads.length}</p>
-                </div>
-                {showSquadSwitcher ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
-              </button>
+    <div className="pl-app pl-paper-bg-soft pl-esq-shell">
+      {/* ═══ Hero compacto ═══ */}
+      <header className="pl-esq-hero">
+        <div>
+          <div className="lede-row">
+            <div className="pl-hero-icon">
+              <ShieldCheck size={18} strokeWidth={1.75} />
             </div>
+            <span className="pl-eyebrow">Ecossistema privado</span>
+          </div>
+          <h1>Esquadrões<span className="dot">.</span></h1>
+          <p className="subtitle">
+            Fórum interno, mural, simulados, atividades e gestão privada do cursinho. Cada esquadrão é um campus white-label da turma.
+          </p>
+        </div>
+        <div className="pl-esq-hero-actions">
+          <div style={{ position: 'relative' }} ref={squadSwitcherWrapRef}>
+            <button
+              type="button"
+              onClick={() => setShowSquadSwitcher((prev) => !prev)}
+              className="pl-esq-switcher"
+            >
+              <div className="icon"><Users size={16} /></div>
+              <div className="label">
+                <div className="lab">Seus esquadrões</div>
+                <div className="val">{accessibleSquads.length}</div>
+              </div>
+              {showSquadSwitcher ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
 
             {showSquadSwitcher && squadSwitcherMenuBox && typeof document !== 'undefined'
               ? createPortal(
-                  <div
-                    ref={squadSwitcherMenuRef}
-                    style={squadSwitcherMenuBox}
-                    className="box-border max-h-[min(22rem,70vh)] min-h-[4.5rem] overflow-y-auto rounded-xl border border-slate-200 bg-white py-2 shadow-xl shadow-slate-900/20 ring-1 ring-slate-100"
-                  >
-                    <div className="flex items-center justify-between border-b border-slate-100 px-3 pb-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Trocar esquadrão</p>
-                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
-                        {accessibleSquads.length} ativos
-                      </span>
+                  <div ref={squadSwitcherMenuRef} style={squadSwitcherMenuBox} className="pl-esq-switcher-menu">
+                    <div className="head">
+                      <span>Trocar esquadrão</span>
+                      <span className="cnt">{accessibleSquads.length} ativos</span>
                     </div>
-                    <div className="space-y-0.5 px-2 pt-1">
-                      {accessibleSquads.map((squad) => {
-                        const active = selectedSquad?.id === squad.id;
-                        return (
-                          <button
-                            key={squad.id}
-                            type="button"
-                            onClick={() => {
-                              handleSelectSquad(squad.id);
-                              setShowSquadSwitcher(false);
-                            }}
-                            className={`flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition ${
-                              active
-                                ? 'border-indigo-200 bg-indigo-50 font-semibold text-indigo-900'
-                                : 'border-transparent text-slate-800 hover:bg-slate-50'
-                            }`}
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate">{squad.name}</p>
-                              <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-400">{squad.focus}</p>
-                            </div>
-                            <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
-                              {squad.members}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {accessibleSquads.map((squad) => {
+                      const active = selectedSquad?.id === squad.id;
+                      return (
+                        <button
+                          key={squad.id}
+                          type="button"
+                          onClick={() => { handleSelectSquad(squad.id); setShowSquadSwitcher(false); }}
+                          className={`pl-esq-switcher-item ${active ? 'active' : ''}`}
+                        >
+                          <div className="info">
+                            <p className="nm">{squad.name}</p>
+                            <p className="focus">{squad.focus}</p>
+                          </div>
+                          <span className="cnt">{squad.members}</span>
+                        </button>
+                      );
+                    })}
                   </div>,
                   document.body
                 )
               : null}
+          </div>
 
-            <div className="flex shrink-0 items-center gap-3 rounded-xl border border-amber-400/35 bg-amber-500/10 px-3 py-2.5 text-amber-50 shadow-sm ring-1 ring-amber-400/20 backdrop-blur-sm">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400/20">
-                <Star size={18} fill="currentColor" className="text-amber-200" />
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-200/90">Criação</p>
-                <p className="text-xl font-semibold leading-none text-white">{isElite ? 'Liberada' : 'Fechada'}</p>
-              </div>
+          <div className="pl-esq-elite-tag">
+            <div className="icon"><Star size={14} /></div>
+            <div className="label">
+              <div className="lab">Criação</div>
+              <div className="val">{isElite ? 'Liberada' : 'Fechada'}</div>
             </div>
+          </div>
 
-            {isElite ? (
-              <button
-                type="button"
-                onClick={() => setShowCreateSquad(true)}
-                className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} shrink-0`}
-              >
-                <Plus size={14} strokeWidth={2.5} aria-hidden />
-                Novo esquadrão
+          {isElite ? (
+            <button type="button" onClick={() => setShowCreateSquad(true)} className="pl-btn pl-btn-primary">
+              <Plus size={14} /> Novo esquadrão
+            </button>
+          ) : null}
+        </div>
+      </header>
+
+      {/* ═══ Squad ativo (slim dark) ═══ */}
+      {selectedSquad ? (
+        <section className="pl-esq-squad">
+          <div className="info">
+            {selectedSquad.coverUrl ? (
+              <img
+                src={selectedSquad.coverUrl}
+                alt={selectedSquad.name}
+                className="avatar"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="avatar"><Users size={22} /></div>
+            )}
+            <div style={{ minWidth: 0 }}>
+              <span className="pill">
+                <ShieldCheck /> Esquadrão privado ativo
+              </span>
+              <h2>{selectedSquad.name}</h2>
+              <p className="meta">
+                <strong>{selectedSquad.owner}</strong>
+                {' · '}Foco: <strong>{selectedSquad.focus}</strong>
+              </p>
+            </div>
+          </div>
+          <div className="pl-esq-squad-stats">
+            <div className="pl-esq-squad-stat">
+              <span className="lab">Liga</span>
+              <span className="val">{selectedSquad.rankingTier || 'Bronze'}</span>
+            </div>
+            <div className="pl-esq-squad-stat">
+              <span className="lab">Membros</span>
+              <span className="val">{selectedSquad.members || 0}</span>
+            </div>
+            <div className="pl-esq-squad-stat">
+              <span className="lab">Próximo marco</span>
+              <span className="val" style={{ fontSize: 14, fontFamily: 'var(--pl-sans)', fontStyle: 'normal', fontWeight: 600 }}>
+                {selectedSquad.nextEvent || '—'}
+              </span>
+            </div>
+            {canManageSquad ? (
+              <button type="button" onClick={() => setActiveSection('admin')} className="adm-btn">
+                ADM do esquadrão
               </button>
             ) : null}
           </div>
-        )}
-      />
-
-      {selectedSquad ? (
-        <div className="relative shrink-0 rounded-2xl border border-[rgba(218,195,140,0.14)] border-t-white/[0.12] bg-[linear-gradient(158deg,#05080f_0%,#080d18_32%,#0b1426_58%,#0f1a2e_100%)] p-5 shadow-[0_24px_56px_-16px_rgba(2,4,12,0.72),0_0_0_1px_rgba(255,255,255,0.03)_inset] ring-1 ring-black/40 md:p-6">
-          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_78%_52%_at_94%_-8%,rgba(115,108,255,0.11),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_48%_36%_at_6%_102%,rgba(196,163,90,0.055),transparent_54%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,transparent_22%,transparent_78%,rgba(0,0,0,0.18)_100%)]" />
-            <div className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-[linear-gradient(180deg,#8b8cfb_0%,#6d28d9_42%,#a16207_100%)] opacity-[0.92] shadow-[0_0_20px_rgba(109,40,217,0.22)]" />
-          </div>
-          <div className="relative flex flex-col gap-5 pl-4 md:flex-row md:items-start md:justify-between">
-            <div className="flex items-start gap-4">
-              {selectedSquad.coverUrl ? (
-                <img
-                  src={selectedSquad.coverUrl}
-                  alt={selectedSquad.name}
-                  className="h-14 w-14 shrink-0 rounded-2xl border border-[rgba(218,195,140,0.22)] object-cover shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.08]"
-                />
-              ) : (
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/[0.12] bg-[linear-gradient(145deg,#1a2f52_0%,#0c1424_55%,#0a1628_100%)] text-[#c9d4e8] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(0,0,0,0.4)] ring-1 ring-[rgba(218,195,140,0.15)]">
-                  <Users size={22} className="text-[#b8c9e8]" />
-                </div>
-              )}
-              <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(212,175,55,0.28)] bg-[linear-gradient(135deg,rgba(255,251,235,0.09),rgba(180,150,90,0.05))] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#ede4d4] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-[rgba(212,175,55,0.12)] backdrop-blur-sm">
-                  <ShieldCheck size={12} strokeWidth={2.5} className="text-[#d4af37]" /> Esquadrão privado ativo
-                </span>
-                <h3 className="mt-2 bg-gradient-to-br from-white via-[#eef2f8] to-[#9fb0c9] bg-clip-text text-xl font-semibold tracking-tight text-transparent md:text-2xl">
-                  {selectedSquad.name}
-                </h3>
-                <p className="mt-1 text-sm font-medium text-[#8b9ab5]">
-                  <span className="font-semibold text-[#d1dae9]">{selectedSquad.owner}</span>
-                  <span className="text-[#5c6b82]"> · </span>
-                  Foco:{' '}
-                  <span className="font-semibold text-[#b4c5eb] underline decoration-[rgba(139,92,246,0.35)] decoration-2 underline-offset-2">
-                    {selectedSquad.focus}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <MiniHeroStat label="Liga" value={selectedSquad.rankingTier || 'Bronze'} accent="amber" />
-              <MiniHeroStat label="Membros" value={String(selectedSquad.members || 0)} accent="indigo" />
-              <MiniHeroStat label="Próximo marco" value={selectedSquad.nextEvent || '---'} accent="slate" />
-              {canManageSquad ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveSection('admin')}
-                  className="rounded-xl border border-[rgba(218,195,140,0.22)] bg-[linear-gradient(180deg,rgba(255,255,255,0.09)_0%,rgba(255,255,255,0.03)_100%)] px-4 py-3 text-sm font-semibold text-[#f4f2eb] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/[0.05] backdrop-blur-sm transition hover:border-[rgba(212,175,55,0.38)] hover:bg-[linear-gradient(180deg,rgba(212,175,55,0.12)_0%,rgba(255,255,255,0.05)_100%)]"
-                >
-                  ADM do esquadrão
-                </button>
-              ) : null}
-            </div>
-          </div>
-        </div>
+        </section>
       ) : null}
 
+      {/* ═══ Tabs ═══ */}
       {selectedSquad ? (
-        <div className="rounded-2xl border border-indigo-100/90 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/40 p-2 shadow-sm ring-1 ring-indigo-100 sm:p-2.5">
-          <div className="mb-1.5 flex flex-col gap-1 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600/90">Área interna</p>
-            <span className="truncate text-[10px] font-semibold uppercase tracking-widest text-slate-600 sm:text-right">
-              {selectedSquad.name}
-            </span>
+        <div className="pl-esq-tabs-wrap">
+          <div className="pl-esq-tabs-head">
+            <span className="left">Área interna</span>
+            <span className="right">{selectedSquad.name}</span>
           </div>
-          <nav
-            className="flex flex-row max-sm:gap-1.5 max-sm:overflow-x-auto max-sm:flex-nowrap max-sm:pb-0.5 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-center sm:gap-2 lg:justify-between"
-            aria-label="Navegação do esquadrão"
-          >
+          <nav className="pl-esq-tabs" aria-label="Navegação do esquadrão">
             {activeSection === 'admin' ? (
-              <button
-                type="button"
-                onClick={() => setActiveSection('forum')}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:gap-2 sm:px-3.5 sm:text-sm"
-              >
-                <ArrowLeft size={14} className="shrink-0 sm:size-[15px]" />
-                <span className="whitespace-nowrap">Fórum</span>
+              <button type="button" onClick={() => setActiveSection('forum')} className="pl-esq-tab">
+                <ArrowLeft /> Fórum
               </button>
             ) : null}
             {internalSections.map((item) => {
@@ -2231,12 +2182,10 @@ export default function Esquadroes({
                   key={item.id}
                   type="button"
                   onClick={() => setActiveSection(item.id)}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition sm:gap-2 sm:px-3.5 sm:text-sm ${
-                    active ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                  }`}
+                  className={`pl-esq-tab ${active ? 'active' : ''}`}
                 >
-                  <Icon size={16} className="shrink-0 opacity-90" />
-                  <span className="whitespace-nowrap">{item.label}</span>
+                  <Icon />
+                  {item.label}
                 </button>
               );
             })}
@@ -2246,48 +2195,67 @@ export default function Esquadroes({
 
       <div className="flex w-full flex-col gap-6">
           {!selectedSquad ? (
-            <div className="flex min-h-[520px] flex-col items-center justify-center rounded-[2rem] border border-gray-100 bg-white px-6 text-center shadow-sm">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                <Shield size={28} />
-              </div>
-              <h3 className="mt-5 text-2xl font-semibold text-slate-900">Escolha um esquadrão</h3>
-              <p className="mt-2 max-w-lg text-sm font-medium leading-relaxed text-gray-500">
-                Selecione um esquadrão para abrir a comunidade privada da turma.
-              </p>
+            <div className="pl-esq-empty">
+              <div className="icon"><Shield size={26} /></div>
+              <h3>Escolha um esquadrão.</h3>
+              <p>Selecione um esquadrão no seletor acima para abrir a comunidade privada da turma.</p>
             </div>
           ) : (
             <>
               {activeSection === 'dashboard' && (
-                <div className="animate-in fade-in flex flex-col gap-6">
-                  <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Dashboard do esquadrão</p>
-                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Visão geral do {selectedSquad.name}</h3>
-                    <p className="mt-2 text-sm font-medium text-gray-600">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <section className="pl-esq-section-card">
+                    <span className="eyebrow">Dashboard do esquadrão</span>
+                    <h3>Visão geral do {selectedSquad.name}</h3>
+                    <p className="desc">
                       Painel de apresentação do cursinho com foco em engajamento, operação e próximos passos da turma.
                     </p>
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      <QuickStatCard icon={<Users size={16} />} label="Membros ativos" value={String(selectedSquad.members || 0)} />
-                      <QuickStatCard icon={<BookOpen size={16} />} label="Professores" value={String(selectedSquad.teachers?.length || 0)} />
-                      <QuickStatCard icon={<ClipboardList size={16} />} label="Atividades" value={String(displayActivities.length)} />
-                      <QuickStatCard icon={<Trophy size={16} />} label="Simulados" value={String(displaySimulados.length)} />
+                    <div className="pl-esq-kpi-grid">
+                      <div className="pl-esq-kpi">
+                        <span className="lab"><Users size={12} /> Membros ativos</span>
+                        <span className="val">{selectedSquad.members || 0}</span>
+                      </div>
+                      <div className="pl-esq-kpi">
+                        <span className="lab"><BookOpen size={12} /> Professores</span>
+                        <span className="val">{selectedSquad.teachers?.length || 0}</span>
+                      </div>
+                      <div className="pl-esq-kpi">
+                        <span className="lab"><ClipboardList size={12} /> Atividades</span>
+                        <span className="val">{displayActivities.length}</span>
+                      </div>
+                      <div className="pl-esq-kpi">
+                        <span className="lab"><Trophy size={12} /> Simulados</span>
+                        <span className="val">{displaySimulados.length}</span>
+                      </div>
                     </div>
                   </section>
-                  <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <h4 className="text-lg font-semibold text-slate-900">Próximas ações do curso</h4>
-                      <ul className="mt-3 space-y-2 text-sm font-medium text-gray-600">
-                        <li>- Publicar aviso de rotina da semana no Mural.</li>
-                        <li>- Revisar cronograma e confirmar próximos simulados.</li>
-                        <li>- Atualizar banco de Questões da turma.</li>
-                        <li>- Monitorar dúvidas mais frequentes no Fórum.</li>
+                  <section className="pl-esq-twin">
+                    <div className="pl-esq-section-card">
+                      <span className="eyebrow">Próximas ações</span>
+                      <h3>Operação da semana</h3>
+                      <ul className="pl-esq-list">
+                        <li>Publicar aviso de rotina da semana no Mural.</li>
+                        <li>Revisar cronograma e confirmar próximos simulados.</li>
+                        <li>Atualizar banco de Questões da turma.</li>
+                        <li>Monitorar dúvidas mais frequentes no Fórum.</li>
                       </ul>
                     </div>
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <h4 className="text-lg font-semibold text-slate-900">Acesso da turma</h4>
-                      <div className="mt-3 space-y-3">
-                        <SummaryInfo label="Código de entrada" value={selectedSquad.inviteCode || '---'} />
-                        <SummaryInfo label="Visibilidade" value={selectedSquad.visibility || 'Privado'} />
-                        <SummaryInfo label="Líder" value={selectedSquad.owner || '---'} />
+                    <div className="pl-esq-section-card">
+                      <span className="eyebrow">Acesso da turma</span>
+                      <h3>Convite e governança</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+                        <div className="pl-esq-summary-row">
+                          <span className="lab">Código de entrada</span>
+                          <span className="val">{selectedSquad.inviteCode || '—'}</span>
+                        </div>
+                        <div className="pl-esq-summary-row">
+                          <span className="lab">Visibilidade</span>
+                          <span className="val">{selectedSquad.visibility || 'Privado'}</span>
+                        </div>
+                        <div className="pl-esq-summary-row">
+                          <span className="lab">Líder</span>
+                          <span className="val">{selectedSquad.owner || '—'}</span>
+                        </div>
                       </div>
                     </div>
                   </section>
@@ -4468,7 +4436,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
+            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#1e3a5f)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
           >
             Salvar fluxo
           </button>
@@ -4573,7 +4541,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
+            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#1e3a5f)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
           >
             Criar esquadrão
           </button>

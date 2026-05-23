@@ -1,5 +1,5 @@
 -- Papirando: papel administrativo no perfil (fonte de verdade para o app após login).
--- O cliente considera admin quem tem profiles.role = 'admin' OU está em ADMIN_EMAILS no App.jsx.
+-- O cliente considera admin quem tem profiles.role = 'admin'/'admin_master' OU está em ADMIN_EMAILS no App.jsx.
 --
 -- RLS: aplicar antes admin_rls_helpers.sql (função is_app_admin) e profiles_admin_rls.sql
 -- (políticas de SELECT/UPDATE em profiles para admins), depois os scripts das tabelas admin.
@@ -16,4 +16,4 @@
 alter table public.profiles
   add column if not exists role text not null default 'student';
 
-comment on column public.profiles.role is 'student | admin — admin libera menu e telas administrativas no app quando sincronizado com o perfil carregado.';
+comment on column public.profiles.role is 'student | admin | admin_master — admin_master é o superadmin operacional do app.';

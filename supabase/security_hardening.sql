@@ -98,3 +98,40 @@ begin
       using (public.is_app_admin());
   end if;
 end $$;
+
+-- Defesa em profundidade: usuarios comuns nao podem promover a propria conta
+-- alterando role/plano/status por chamadas diretas ao PostgREST. Admin e service_role
+-- continuam autorizados para painel administrativo, webhooks e edge functions.
+do $$
+begin
+  if to_regclass('public.profiles') is not null then
+    create or replace function public.protect_profile_privileged_fields()
+    returns trigger
+    language plpgsql
+    security definer
+    set search_path = public
+    as $fn$
+    begin
+      if auth.role() = 'service_role' or public.is_app_admin() then
+        return new;
+      end if;
+
+      if to_jsonb(new)->'role' is distinct from to_jsonb(old)->'role'
+        or to_jsonb(new)->'subscription_plan' is distinct from to_jsonb(old)->'subscription_plan'
+        or to_jsonb(new)->'subscription_status' is distinct from to_jsonb(old)->'subscription_status'
+        or to_jsonb(new)->'max_courses' is distinct from to_jsonb(old)->'max_courses'
+      then
+        raise exception 'profile privileged fields are read-only';
+      end if;
+
+      return new;
+    end;
+    $fn$;
+
+    drop trigger if exists trg_protect_profile_privileged_fields on public.profiles;
+    create trigger trg_protect_profile_privileged_fields
+      before update on public.profiles
+      for each row
+      execute function public.protect_profile_privileged_fields();
+  end if;
+end $$;

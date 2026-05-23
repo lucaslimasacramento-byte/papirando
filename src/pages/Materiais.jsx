@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Bookmark,
@@ -11,6 +11,7 @@ import {
   Minus,
   NotebookPen,
   Plus,
+  Search,
   Sparkles,
   Trash2,
   Upload,
@@ -23,31 +24,17 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from '../lib/supabase';
 import { resolveAiHeaders } from '../lib/aiRuntime';
 import { newCard } from '../lib/fsrs';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-const PRIMARY_HEADER_BUTTON_CLASS =
-  'inline-flex items-center gap-1.5 rounded-lg border border-blue-300/55 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/25 transition hover:from-blue-300 hover:via-blue-400 hover:to-indigo-400 hover:shadow-[0_12px_28px_rgba(37,99,235,0.45)] sm:px-3.5 sm:py-2 sm:text-[13px]';
-
 const HIGHLIGHT_COLORS = [
-  { value: '#FCD34D', label: 'Amarelo', cls: 'bg-yellow-300' },
-  { value: '#6EE7B7', label: 'Verde',   cls: 'bg-emerald-300' },
-  { value: '#93C5FD', label: 'Azul',    cls: 'bg-blue-300'    },
-  { value: '#FCA5A5', label: 'Rosa',    cls: 'bg-red-300'     },
+  { value: '#FCD34D', label: 'Amarelo' },
+  { value: '#6EE7B7', label: 'Verde' },
+  { value: '#93C5FD', label: 'Azul' },
+  { value: '#FCA5A5', label: 'Rosa' },
 ];
 
-/** Mesma paleta da aba Legislação — uma linha por marcação no Supabase (`material_markers`). */
-const MATERIAL_MARKER_COLORS = ['#2563EB', '#F59E0B', '#10B981', '#EC4899'];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
-}
+const MATERIAL_MARKER_COLORS = ['#1e3a5f', '#f59e0b', '#10b981', '#ec4899'];
 
 function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -58,136 +45,131 @@ function formatFileSize(bytes) {
 function ErrBanner({ msg }) {
   if (!msg) return null;
   return (
-    <div className="mb-3 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700">
-      <X size={13} className="shrink-0" />
-      {msg}
+    <div
+      role="alert"
+      style={{
+        padding: '10px 14px',
+        background: 'var(--pl-danger-soft)',
+        color: 'var(--pl-danger)',
+        border: '1px solid rgba(185,28,28,0.25)',
+        borderLeft: '3px solid var(--pl-danger)',
+        borderRadius: 4,
+        fontSize: 13, fontWeight: 600,
+        display: 'flex', alignItems: 'center', gap: 8,
+      }}
+    >
+      <X size={13} /> {msg}
     </div>
   );
 }
 
-// ─── PDF Viewer ───────────────────────────────────────────────────────────────
+function SheetMark({ pdf = true }) {
+  return (
+    <div className={`pl-sheet-mark ${pdf ? 'pdf' : ''}`} aria-hidden>
+      <div className="back" />
+      <div className="front" />
+      <div className="fold" />
+    </div>
+  );
+}
 
+/* ════════════════════════════════════════════════
+   PDF Viewer
+   ════════════════════════════════════════════════ */
 function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
-  const canvasRef        = useRef(null);
-  const pdfDocRef        = useRef(null);
-  const renderTaskRef    = useRef(null);
+  const canvasRef = useRef(null);
+  const pdfDocRef = useRef(null);
+  const renderTaskRef = useRef(null);
 
-  const [page, setPage]          = useState(material.last_page || 1);
+  const [page, setPage] = useState(material.last_page || 1);
   const [totalPages, setTotalPages] = useState(0);
-  const [scale, setScale]        = useState(1.4);
-  const [loading, setLoading]    = useState(true);
-  const [pdfErr, setPdfErr]      = useState('');
+  const [scale, setScale] = useState(1.4);
+  const [loading, setLoading] = useState(true);
+  const [pdfErr, setPdfErr] = useState('');
 
   const [highlights, setHighlights] = useState([]);
-  const [notes, setNotes]        = useState([]);
+  const [notes, setNotes] = useState([]);
   const [markers, setMarkers] = useState([]);
   const [markerDraft, setMarkerDraft] = useState({
-    label: '',
-    excerpt: '',
-    color: MATERIAL_MARKER_COLORS[0],
+    label: '', excerpt: '', color: MATERIAL_MARKER_COLORS[0],
   });
 
-  // Selection / highlight state
-  const [selectedText, setSelectedText]   = useState('');
-  const [hlColor, setHlColor]             = useState(HIGHLIGHT_COLORS[0].value);
+  const [selectedText, setSelectedText] = useState('');
+  const [hlColor, setHlColor] = useState(HIGHLIGHT_COLORS[0].value);
   const [showHlToolbar, setShowHlToolbar] = useState(false);
-  const [toolbarPos, setToolbarPos]       = useState({ x: 0, y: 0 });
+  const [toolbarPos, setToolbarPos] = useState({ x: 0, y: 0 });
 
-  // Note state
-  const [noteModal, setNoteModal]       = useState(false);
-  const [noteContent, setNoteContent]   = useState('');
+  const [noteModal, setNoteModal] = useState(false);
+  const [noteContent, setNoteContent] = useState('');
   const [notePageTarget, setNotePageTarget] = useState(1);
-  const [noteSaving, setNoteSaving]     = useState(false);
+  const [noteSaving, setNoteSaving] = useState(false);
 
-  // AI generate flashcard from selection
-  const [aiModal, setAiModal]   = useState(false);
-  const [aiText, setAiText]     = useState('');
+  const [aiModal, setAiModal] = useState(false);
+  const [aiText, setAiText] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiErr, setAiErr]       = useState('');
+  const [aiErr, setAiErr] = useState('');
   const [aiDeckId, setAiDeckId] = useState('');
-  const [decks, setDecks]       = useState([]);
+  const [decks, setDecks] = useState([]);
 
-  // Load PDF URL from Supabase Storage
   const [pdfUrl, setPdfUrl] = useState(null);
 
+  /* ─ load url ─ */
   useEffect(() => {
     async function getUrl() {
       const { data } = await supabase.storage
         .from('study-materials')
-        .createSignedUrl(material.storage_path, 60 * 60); // 1h
+        .createSignedUrl(material.storage_path, 60 * 60);
       if (data?.signedUrl) setPdfUrl(data.signedUrl);
       else setPdfErr('Não foi possível carregar o PDF. Verifique o Storage.');
     }
     getUrl();
   }, [material.storage_path]);
 
-  // Load highlights, notes e marcações (tabela opcional até rodar `supabase/material_markers.sql`)
+  /* ─ load annotations ─ */
   useEffect(() => {
     async function loadAnnotations() {
       const [{ data: hls }, { data: nts }, markersRes] = await Promise.all([
         supabase.from('material_highlights').select('*').eq('material_id', material.id).order('created_at'),
         supabase.from('material_notes').select('*').eq('material_id', material.id).order('page_num'),
-        supabase
-          .from('material_markers')
-          .select('*')
-          .eq('material_id', material.id)
-          .order('page_num', { ascending: true })
-          .order('created_at', { ascending: true }),
+        supabase.from('material_markers').select('*').eq('material_id', material.id)
+          .order('page_num', { ascending: true }).order('created_at', { ascending: true }),
       ]);
       setHighlights(hls || []);
       setNotes(nts || []);
-      if (!markersRes.error) {
-        setMarkers(markersRes.data || []);
-      } else {
-        setMarkers([]);
-      }
+      setMarkers(markersRes.error ? [] : (markersRes.data || []));
     }
     loadAnnotations();
   }, [material.id]);
 
   useEffect(() => {
-    setMarkerDraft({
-      label: material.title || '',
-      excerpt: '',
-      color: MATERIAL_MARKER_COLORS[0],
-    });
+    setMarkerDraft({ label: material.title || '', excerpt: '', color: MATERIAL_MARKER_COLORS[0] });
   }, [material.id, material.title]);
 
-  // Load decks for AI modal
+  /* ─ load decks ─ */
   useEffect(() => {
     async function loadDecks() {
       const { data } = await supabase
-        .from('flashcard_decks')
-        .select('id, title')
-        .eq('user_id', currentUserId)
-        .order('updated_at', { ascending: false });
+        .from('flashcard_decks').select('id, title')
+        .eq('user_id', currentUserId).order('updated_at', { ascending: false });
       setDecks(data || []);
       if (data && data.length > 0) setAiDeckId(data[0].id);
     }
     loadDecks();
   }, [currentUserId]);
 
-  // Load PDF document
+  /* ─ load document ─ */
   useEffect(() => {
     if (!pdfUrl) return;
     let cancelled = false;
-
     async function loadPdf() {
-      setLoading(true);
-      setPdfErr('');
+      setLoading(true); setPdfErr('');
       try {
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const doc = await loadingTask.promise;
+        const doc = await pdfjsLib.getDocument(pdfUrl).promise;
         if (cancelled) return;
         pdfDocRef.current = doc;
         setTotalPages(doc.numPages);
-
-        // Update page count in DB
         if (material.page_count !== doc.numPages) {
-          await supabase
-            .from('study_materials')
-            .update({ page_count: doc.numPages })
-            .eq('id', material.id);
+          await supabase.from('study_materials').update({ page_count: doc.numPages }).eq('id', material.id);
         }
       } catch (e) {
         if (!cancelled) setPdfErr(`Erro ao abrir o PDF: ${e.message}`);
@@ -199,33 +181,23 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
     return () => { cancelled = true; };
   }, [pdfUrl, material.id, material.page_count]);
 
-  // Render page
+  /* ─ render page ─ */
   useEffect(() => {
     if (!pdfDocRef.current || !canvasRef.current || loading) return;
     let cancelled = false;
-
     async function renderPage() {
-      if (renderTaskRef.current) {
-        renderTaskRef.current.cancel();
-        renderTaskRef.current = null;
-      }
+      if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
       try {
         const pdfPage = await pdfDocRef.current.getPage(page);
         if (cancelled) return;
-
         const viewport = pdfPage.getViewport({ scale });
-        const canvas   = canvasRef.current;
-        const ctx      = canvas.getContext('2d');
-        canvas.width   = viewport.width;
-        canvas.height  = viewport.height;
-
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        canvas.width = viewport.width; canvas.height = viewport.height;
         const task = pdfPage.render({ canvasContext: ctx, viewport });
         renderTaskRef.current = task;
         await task.promise;
-
-        // Save last page
-        await supabase
-          .from('study_materials')
+        await supabase.from('study_materials')
           .update({ last_page: page, updated_at: new Date().toISOString() })
           .eq('id', material.id);
       } catch (e) {
@@ -238,40 +210,24 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
     return () => { cancelled = true; };
   }, [page, scale, loading, material.id]);
 
-  // Text selection → show toolbar
   function handleMouseUp(e) {
     const selection = window.getSelection();
     const text = selection?.toString().trim();
     if (!text || text.length < 3) {
-      setShowHlToolbar(false);
-      setSelectedText('');
-      return;
+      setShowHlToolbar(false); setSelectedText(''); return;
     }
-    setSelectedText(text);
-    setShowHlToolbar(true);
+    setSelectedText(text); setShowHlToolbar(true);
     setToolbarPos({ x: e.clientX, y: e.clientY - 50 });
   }
 
   async function saveHighlight() {
     if (!selectedText) return;
-    const { data, error } = await supabase
-      .from('material_highlights')
-      .insert({
-        material_id: material.id,
-        user_id:     currentUserId,
-        page_num:    page,
-        text:        selectedText,
-        color:       hlColor,
-      })
-      .select()
-      .single();
-
-    if (!error && data) {
-      setHighlights((prev) => [...prev, data]);
-    }
+    const { data, error } = await supabase.from('material_highlights')
+      .insert({ material_id: material.id, user_id: currentUserId, page_num: page, text: selectedText, color: hlColor })
+      .select().single();
+    if (!error && data) setHighlights((prev) => [...prev, data]);
     window.getSelection()?.removeAllRanges();
-    setShowHlToolbar(false);
-    setSelectedText('');
+    setShowHlToolbar(false); setSelectedText('');
   }
 
   async function deleteHighlight(id) {
@@ -282,22 +238,13 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   async function saveNote() {
     if (!noteContent.trim()) return;
     setNoteSaving(true);
-    const { data, error } = await supabase
-      .from('material_notes')
-      .insert({
-        material_id: material.id,
-        user_id:     currentUserId,
-        page_num:    notePageTarget,
-        content:     noteContent.trim(),
-      })
-      .select()
-      .single();
+    const { data, error } = await supabase.from('material_notes')
+      .insert({ material_id: material.id, user_id: currentUserId, page_num: notePageTarget, content: noteContent.trim() })
+      .select().single();
     setNoteSaving(false);
-
     if (!error && data) {
       setNotes((prev) => [...prev, data].sort((a, b) => a.page_num - b.page_num));
-      setNoteModal(false);
-      setNoteContent('');
+      setNoteModal(false); setNoteContent('');
     }
   }
 
@@ -309,33 +256,20 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   async function saveMaterialMarker() {
     const label = markerDraft.label.trim() || material.title || `Página ${page}`;
     const excerpt = markerDraft.excerpt.trim();
-    const { data, error } = await supabase
-      .from('material_markers')
+    const { data, error } = await supabase.from('material_markers')
       .insert({
-        material_id: material.id,
-        user_id: currentUserId,
-        page_num: page,
-        label,
-        excerpt,
-        color: markerDraft.color,
+        material_id: material.id, user_id: currentUserId, page_num: page,
+        label, excerpt, color: markerDraft.color,
       })
-      .select()
-      .single();
-
+      .select().single();
     if (error) {
-      window.alert(
-        error.message ||
-          'Não foi possível salvar a marcação. No Supabase, execute o script supabase/material_markers.sql e tente de novo.'
-      );
+      window.alert(error.message || 'Não foi possível salvar a marcação. No Supabase, execute o script supabase/material_markers.sql e tente de novo.');
       return;
     }
-
-    setMarkers((prev) =>
-      [...prev, data].sort((a, b) => {
-        if (a.page_num !== b.page_num) return a.page_num - b.page_num;
-        return String(a.created_at || '').localeCompare(String(b.created_at || ''));
-      })
-    );
+    setMarkers((prev) => [...prev, data].sort((a, b) => {
+      if (a.page_num !== b.page_num) return a.page_num - b.page_num;
+      return String(a.created_at || '').localeCompare(String(b.created_at || ''));
+    }));
     setMarkerDraft((prev) => ({ ...prev, excerpt: '' }));
   }
 
@@ -344,21 +278,16 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
     setMarkers((prev) => prev.filter((m) => m.id !== id));
   }
 
-  // AI: grifar → flashcard
   function openAiModal() {
-    setAiText(selectedText || '');
-    setAiErr('');
-    setShowHlToolbar(false);
-    window.getSelection()?.removeAllRanges();
+    setAiText(selectedText || ''); setAiErr('');
+    setShowHlToolbar(false); window.getSelection()?.removeAllRanges();
     setAiModal(true);
   }
 
   async function handleAiFlashcard() {
     if (!aiText.trim()) { setAiErr('Nenhum texto selecionado.'); return; }
     if (!aiDeckId) { setAiErr('Selecione um deck de destino.'); return; }
-    setAiLoading(true);
-    setAiErr('');
-
+    setAiLoading(true); setAiErr('');
     try {
       const res = await fetch('/api/ai/generate-flashcards', {
         method: 'POST',
@@ -367,34 +296,20 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Erro ao gerar card.');
-      if (!Array.isArray(data?.cards) || data.cards.length === 0)
-        throw new Error('A IA não gerou cards para este trecho.');
-
+      if (!Array.isArray(data?.cards) || data.cards.length === 0) throw new Error('A IA não gerou cards para este trecho.');
       const base = newCard();
       const rows = data.cards.map((c) => ({
-        deck_id:        aiDeckId,
-        user_id:        currentUserId,
-        front:          String(c.front || '').trim(),
-        back:           String(c.back || '').trim(),
-        stability:      base.stability,
-        difficulty:     base.difficulty,
-        elapsed_days:   base.elapsed_days,
-        scheduled_days: base.scheduled_days,
-        reps:           base.reps,
-        lapses:         base.lapses,
-        state:          base.state,
-        due:            base.due,
-        last_review:    base.last_review,
+        deck_id: aiDeckId, user_id: currentUserId,
+        front: String(c.front || '').trim(), back: String(c.back || '').trim(),
+        stability: base.stability, difficulty: base.difficulty,
+        elapsed_days: base.elapsed_days, scheduled_days: base.scheduled_days,
+        reps: base.reps, lapses: base.lapses, state: base.state,
+        due: base.due, last_review: base.last_review,
       })).filter((r) => r.front && r.back);
-
       const { error } = await supabase.from('flashcard_cards').insert(rows);
       if (error) throw new Error(error.message);
-
-      // Also save as highlight
       if (selectedText && selectedText === aiText) await saveHighlight();
-
-      setAiModal(false);
-      setAiText('');
+      setAiModal(false); setAiText('');
       if (onCreateFlashcard) onCreateFlashcard(rows.length);
     } catch (e) {
       setAiErr(e.message);
@@ -404,130 +319,111 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   }
 
   const pageHighlights = highlights.filter((h) => h.page_num === page);
-  const pageNotes      = notes.filter((n) => n.page_num === page);
+  const pageNotes = notes.filter((n) => n.page_num === page);
   const markersSorted = [...markers].sort((a, b) => {
     if (a.page_num !== b.page_num) return a.page_num - b.page_num;
     return String(a.created_at || '').localeCompare(String(b.created_at || ''));
   });
 
   return (
-    <div className="flex h-full flex-col bg-slate-100">
+    <div className="pl-app pl-mat-viewer-shell">
       {/* Top bar */}
-      <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <button
-          onClick={onBack}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-        >
-          <ArrowLeft size={18} />
+      <div className="pl-mat-topbar">
+        <button onClick={onBack} className="pl-btn pl-btn-sm" aria-label="Voltar">
+          <ArrowLeft size={14} /> Biblioteca
         </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-slate-800 truncate">{material.title}</p>
-          {material.disciplina && (
-            <p className="text-xs text-slate-500">{material.disciplina}</p>
-          )}
+        <div className="title-block">
+          <h2>{material.title}</h2>
+          {material.disciplina ? <p>{material.disciplina}</p> : null}
         </div>
-
-        {/* Zoom controls */}
-        <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-1">
-          <button onClick={() => setScale((s) => Math.max(0.5, s - 0.2))} className="rounded-lg p-1.5 text-slate-600 hover:bg-white">
-            <ZoomOut size={15} />
+        <div className="pl-zoom">
+          <button className="pl-zoom-btn" onClick={() => setScale((s) => Math.max(0.5, s - 0.2))} title="Diminuir">
+            <ZoomOut />
           </button>
-          <span className="text-xs font-bold text-slate-700 w-12 text-center">{Math.round(scale * 100)}%</span>
-          <button onClick={() => setScale((s) => Math.min(3, s + 0.2))} className="rounded-lg p-1.5 text-slate-600 hover:bg-white">
-            <ZoomIn size={15} />
+          <span className="pl-zoom-val">{Math.round(scale * 100)}%</span>
+          <button className="pl-zoom-btn" onClick={() => setScale((s) => Math.min(3, s + 0.2))} title="Aumentar">
+            <ZoomIn />
           </button>
         </div>
-
-        {/* Note button */}
         <button
           onClick={() => { setNotePageTarget(page); setNoteContent(''); setNoteModal(true); }}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+          className="pl-btn pl-btn-sm"
         >
-          <NotebookPen size={14} />
-          Anotar
+          <NotebookPen size={14} /> Anotar
         </button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* PDF canvas area */}
-        <div
-          className="flex-1 overflow-auto flex flex-col items-center py-6 px-4 relative"
-          onMouseUp={handleMouseUp}
-        >
+      <div className="pl-mat-canvas-stage">
+        {/* Canvas area */}
+        <div className="pl-mat-canvas-area" onMouseUp={handleMouseUp}>
           {pdfErr && (
-            <div className="mt-8 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-sm font-semibold text-red-700">
-              {pdfErr}
-            </div>
+            <div style={{
+              marginTop: 40, padding: '14px 20px',
+              background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)',
+              border: '1px solid rgba(185,28,28,0.25)', borderRadius: 6,
+              fontSize: 13.5, fontWeight: 600,
+            }}>{pdfErr}</div>
           )}
-
           {loading && !pdfErr && (
-            <div className="flex items-center gap-3 mt-16">
-              <Loader2 size={22} className="animate-spin text-blue-500" />
-              <span className="text-sm font-semibold text-slate-600">Carregando PDF...</span>
+            <div style={{ marginTop: 60, display: 'flex', gap: 10, alignItems: 'center', color: 'var(--pl-ink-3)' }}>
+              <Loader2 size={20} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
+              <span style={{ fontSize: 13.5, fontWeight: 600 }}>Carregando PDF…</span>
             </div>
           )}
-
           {!pdfErr && (
-            <div className="rounded-lg shadow-xl overflow-hidden ring-1 ring-slate-300">
+            <div className="pl-mat-canvas-frame">
               <canvas ref={canvasRef} />
             </div>
           )}
-
-          {/* Page navigation */}
           {totalPages > 0 && (
-            <div className="flex items-center gap-3 mt-5">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-              >
-                <ChevronLeft size={18} />
+            <div className="pl-mat-pagenav">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                <ChevronLeft size={16} />
               </button>
-              <span className="text-sm font-bold text-slate-700">
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-                className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-              >
-                <ChevronRight size={18} />
+              <span className="count">{page} / {totalPages}</span>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <ChevronRight size={16} />
               </button>
             </div>
           )}
         </div>
 
-        {/* Sidebar — marcações (DB), grifos e anotações por página */}
-        <div className="flex w-[min(100vw-2rem,22rem)] shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white sm:min-w-[280px]">
-          <div className="shrink-0 space-y-3 border-b border-slate-100 px-4 py-4">
-            <div className="flex items-center gap-2">
-              <Bookmark size={15} className="text-blue-600" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Marcações</p>
+        {/* Sidebar — marcações */}
+        <aside className="pl-mat-sidebar">
+          <div className="head">
+            <div className="title-row">
+              <Bookmark />
+              <span className="pl-eyebrow">Marcações</span>
             </div>
-            <p className="text-[11px] font-medium leading-snug text-slate-500">
-              Salvas na sua conta (uma por linha no banco), como na Legislação — título, trecho e cor por página.
+            <p style={{ margin: 0, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.5 }}>
+              Salvas na sua conta (uma por linha no banco). Título, trecho e cor por página.
             </p>
             <input
               value={markerDraft.label}
               onChange={(e) => setMarkerDraft((prev) => ({ ...prev, label: e.target.value }))}
               placeholder="Título da marcação"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-blue-500"
+              className="pl-input"
+              style={{ height: 34, fontSize: 12.5, fontWeight: 600 }}
             />
             <textarea
               rows={2}
               value={markerDraft.excerpt}
               onChange={(e) => setMarkerDraft((prev) => ({ ...prev, excerpt: e.target.value }))}
               placeholder="Trecho, lembrete ou fundamento"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-blue-500"
+              className="pl-input"
+              style={{
+                height: 'auto', padding: '8px 12px', resize: 'none',
+                fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 500,
+              }}
             />
-            <div className="flex flex-wrap gap-2">
+            <div className="pl-color-dots">
               {MATERIAL_MARKER_COLORS.map((color) => (
                 <button
                   key={color}
                   type="button"
                   onClick={() => setMarkerDraft((prev) => ({ ...prev, color }))}
-                  className={`h-7 w-7 rounded-full border-2 ${markerDraft.color === color ? 'border-slate-800' : 'border-transparent opacity-80'}`}
-                  style={{ backgroundColor: color }}
+                  className={`pl-color-dot ${markerDraft.color === color ? 'active' : ''}`}
+                  style={{ background: color }}
                   aria-label={`Cor ${color}`}
                 />
               ))}
@@ -535,42 +431,44 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
             <button
               type="button"
               onClick={saveMaterialMarker}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-xs font-bold text-white hover:bg-blue-700"
+              className="pl-btn pl-btn-primary pl-btn-sm"
+              style={{ justifyContent: 'center', width: '100%' }}
             >
-              <Bookmark size={14} />
-              Salvar marcação — p. {page}
+              <Bookmark size={13} /> Salvar marcação — p. {page}
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+          <div className="body">
             {markersSorted.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Todas ({markersSorted.length})</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 0 }}>Todas ({markersSorted.length})</p>
                 {markersSorted.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`group flex items-start gap-2 rounded-xl border p-2.5 ${
-                      m.page_num === page ? 'border-blue-200 bg-blue-50/80' : 'border-slate-100 bg-slate-50/60'
-                    }`}
-                  >
+                  <div key={m.id} className={`pl-marker-card ${m.page_num === page ? 'current' : ''}`}>
                     <button
                       type="button"
                       onClick={() => setPage(m.page_num)}
-                      className="min-w-0 flex-1 text-left"
+                      style={{
+                        background: 'transparent', border: 0, padding: 0,
+                        flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer',
+                      }}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: m.color }} />
-                        <span className="truncate text-xs font-bold text-slate-800">{m.label || `Página ${m.page_num}`}</span>
-                      </div>
-                      {m.excerpt ? (
-                        <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-relaxed text-slate-600">{m.excerpt}</p>
-                      ) : null}
-                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Página {m.page_num}</p>
+                      <p className="lbl">
+                        <span className="swatch" style={{ background: m.color }} />
+                        <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {m.label || `Página ${m.page_num}`}
+                        </span>
+                      </p>
+                      {m.excerpt ? <p className="excerpt">{m.excerpt}</p> : null}
+                      <p className="pg">Página {m.page_num}</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteMaterialMarker(m.id)}
-                      className="shrink-0 rounded p-1 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                      style={{
+                        flexShrink: 0,
+                        background: 'transparent', border: 0, color: 'var(--pl-ink-4)',
+                        padding: 4, cursor: 'pointer', borderRadius: 4,
+                      }}
                       aria-label="Excluir marcação"
                     >
                       <Trash2 size={13} />
@@ -579,89 +477,107 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-[11px] font-medium text-slate-400">Nenhuma marcação neste PDF ainda.</p>
+              <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--pl-ink-4)', fontWeight: 500 }}>
+                Nenhuma marcação neste PDF ainda.
+              </p>
             )}
           </div>
 
-          <div className="shrink-0 border-t border-slate-100 px-4 py-3">
-          {pageHighlights.length > 0 && (
-            <div className="pt-1">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">Grifos — p. {page}</p>
-              <div className="space-y-2">
-                {pageHighlights.map((h) => (
-                  <div key={h.id} className="group flex items-start gap-2 rounded-xl p-2.5" style={{ backgroundColor: h.color + '44' }}>
-                    <p className="flex-1 text-xs font-semibold text-slate-700 leading-relaxed line-clamp-3">{h.text}</p>
-                    <button onClick={() => deleteHighlight(h.id)} className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 text-slate-400 hover:text-red-400">
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
+          <div className="foot">
+            {pageHighlights.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Grifos — p. {page}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {pageHighlights.map((h) => (
+                    <div
+                      key={h.id}
+                      style={{
+                        padding: '8px 10px', borderRadius: 5,
+                        background: h.color + '44',
+                        display: 'flex', alignItems: 'flex-start', gap: 8,
+                      }}
+                    >
+                      <p style={{
+                        flex: 1, margin: 0,
+                        fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)',
+                        lineHeight: 1.5,
+                        display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }}>{h.text}</p>
+                      <button
+                        onClick={() => deleteHighlight(h.id)}
+                        style={{
+                          flexShrink: 0,
+                          background: 'transparent', border: 0, color: 'var(--pl-ink-4)',
+                          padding: 2, cursor: 'pointer',
+                        }}
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {pageNotes.length > 0 && (
-            <div className="pt-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">Anotações — p. {page}</p>
-              <div className="space-y-2">
-                {pageNotes.map((n) => (
-                  <div key={n.id} className="group flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-2.5">
-                    <p className="flex-1 text-xs text-slate-700 leading-relaxed">{n.content}</p>
-                    <button onClick={() => deleteNote(n.id)} className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 text-slate-400 hover:text-red-400">
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
+            )}
+            {pageNotes.length > 0 && (
+              <div>
+                <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Anotações — p. {page}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {pageNotes.map((n) => (
+                    <div key={n.id} style={{
+                      padding: '8px 10px', borderRadius: 5,
+                      background: 'var(--pl-highlight-soft)',
+                      border: '1px solid rgba(244,208,78,0.55)',
+                      display: 'flex', alignItems: 'flex-start', gap: 8,
+                    }}>
+                      <p style={{ flex: 1, margin: 0, fontSize: 12, color: 'var(--pl-ink-2)', lineHeight: 1.5, fontWeight: 500 }}>
+                        {n.content}
+                      </p>
+                      <button
+                        onClick={() => deleteNote(n.id)}
+                        style={{ background: 'transparent', border: 0, color: 'var(--pl-ink-4)', padding: 2, cursor: 'pointer' }}
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {pageHighlights.length === 0 && pageNotes.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
-              <Highlighter size={22} className="text-slate-300" />
-              <p className="px-2 text-[11px] font-semibold leading-snug text-slate-400">
-                Nesta página: selecione texto para grifar ou use flashcards com IA. Use marcações acima para lembretes por página.
-              </p>
-            </div>
-          )}
+            )}
+            {pageHighlights.length === 0 && pageNotes.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '12px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <Highlighter size={20} style={{ color: 'var(--pl-ink-4)' }} />
+                <p style={{ margin: 0, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.5, maxWidth: 240 }}>
+                  Selecione texto para grifar ou pedir um flashcard à IA.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        </aside>
       </div>
 
       {/* Floating selection toolbar */}
       {showHlToolbar && (
-        <div
-          className="fixed z-50 flex items-center gap-1.5 rounded-2xl bg-slate-800 px-3 py-2 shadow-2xl"
-          style={{ left: toolbarPos.x - 100, top: toolbarPos.y }}
-        >
-          {/* Color dots */}
+        <div className="pl-float-toolbar" style={{ left: toolbarPos.x - 100, top: toolbarPos.y }}>
           {HIGHLIGHT_COLORS.map((c) => (
             <button
               key={c.value}
               onClick={() => setHlColor(c.value)}
-              className={`h-5 w-5 rounded-full border-2 transition-all ${hlColor === c.value ? 'border-white scale-125' : 'border-transparent opacity-70'}`}
-              style={{ backgroundColor: c.value }}
+              className={`dot ${hlColor === c.value ? 'active' : ''}`}
+              style={{ background: c.value }}
               title={c.label}
             />
           ))}
-          <div className="w-px h-5 bg-slate-600 mx-1" />
-          <button
-            onClick={saveHighlight}
-            className="flex items-center gap-1 rounded-lg bg-yellow-400 px-2.5 py-1 text-xs font-bold text-slate-900 hover:bg-yellow-300"
-          >
-            <Highlighter size={12} />
-            Grifar
+          <div className="div" />
+          <button onClick={saveHighlight} className="act">
+            <Highlighter /> Grifar
           </button>
-          <button
-            onClick={openAiModal}
-            className="flex items-center gap-1 rounded-lg bg-violet-500 px-2.5 py-1 text-xs font-bold text-white hover:bg-violet-400"
-          >
-            <Sparkles size={12} />
-            Flashcard
+          <button onClick={openAiModal} className="act ai">
+            <Sparkles /> Flashcard
           </button>
           <button
             onClick={() => { setShowHlToolbar(false); window.getSelection()?.removeAllRanges(); }}
-            className="rounded-lg p-1 text-slate-400 hover:text-white"
+            className="x"
+            aria-label="Fechar"
           >
             <X size={13} />
           </button>
@@ -670,104 +586,88 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 
       {/* Note modal */}
       {noteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">Anotação — Página {notePageTarget}</h3>
-              <button onClick={() => setNoteModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="px-6 py-5">
-              <textarea
-                rows={4}
-                autoFocus
-                className={inputCls()}
-                placeholder="Escreva sua anotação..."
-                value={noteContent}
-                onChange={(e) => setNoteContent(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setNoteModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
-                Cancelar
-              </button>
-              <button
-                onClick={saveNote}
-                disabled={noteSaving || !noteContent.trim()}
-                className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-sm font-bold text-white hover:bg-amber-600 disabled:opacity-50"
-              >
-                {noteSaving ? <Loader2 size={14} className="animate-spin" /> : <NotebookPen size={14} />}
-                Salvar
-              </button>
-            </div>
+        <Modal title={`Anotação · página ${notePageTarget}`} onClose={() => setNoteModal(false)}>
+          <textarea
+            rows={4} autoFocus
+            className="pl-input"
+            style={{ height: 'auto', padding: 12, resize: 'vertical', fontFamily: 'var(--pl-sans)', fontSize: 14, fontWeight: 500 }}
+            placeholder="Escreva sua anotação…"
+            value={noteContent}
+            onChange={(e) => setNoteContent(e.target.value)}
+          />
+          <div className="pl-modal-foot" style={{ margin: '18px -24px -22px' }}>
+            <button onClick={() => setNoteModal(false)} className="pl-btn">Cancelar</button>
+            <button
+              onClick={saveNote}
+              disabled={noteSaving || !noteContent.trim()}
+              className="pl-btn pl-btn-primary"
+              style={{ opacity: noteSaving || !noteContent.trim() ? 0.5 : 1 }}
+            >
+              {noteSaving ? <Loader2 size={14} className="animate-spin" /> : <NotebookPen size={14} />}
+              Salvar
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* AI Flashcard modal */}
+      {/* AI flashcard modal */}
       {aiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">Grifar e criar Flashcard com IA</h3>
-              <button onClick={() => setAiModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              <ErrBanner msg={aiErr} />
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Trecho selecionado</label>
-                <div className="mt-1.5 rounded-xl border-2 border-slate-200 bg-yellow-50 px-4 py-3 text-sm text-slate-700 leading-relaxed max-h-32 overflow-y-auto">
-                  {aiText || <span className="text-slate-400 italic">Nenhum texto selecionado</span>}
-                </div>
-              </div>
-              {decks.length > 0 && (
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Deck de destino</label>
-                  <select
-                    className={`${inputCls()} mt-1.5`}
-                    value={aiDeckId}
-                    onChange={(e) => setAiDeckId(e.target.value)}
-                  >
-                    {decks.map((d) => (
-                      <option key={d.id} value={d.id}>{d.title}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {decks.length === 0 && (
-                <p className="text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-3 border border-amber-200 font-semibold">
-                  Crie um deck de flashcards primeiro para salvar os cards gerados.
-                </p>
-              )}
-            </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setAiModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
-                Cancelar
-              </button>
-              <button
-                onClick={handleAiFlashcard}
-                disabled={aiLoading || !aiText || !aiDeckId}
-                className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2 text-sm font-bold text-white hover:bg-violet-700 disabled:opacity-50"
-              >
-                {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                {aiLoading ? 'Gerando...' : 'Criar flashcards'}
-              </button>
+        <Modal title="Grifar e gerar flashcards" subtitle="A IA monta de 1 a 5 cards a partir do trecho selecionado." onClose={() => setAiModal(false)} wide>
+          <ErrBanner msg={aiErr} />
+          <div className="field-group" style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: aiErr ? 12 : 0 }}>
+            <span className="pl-eyebrow">Trecho selecionado</span>
+            <div style={{
+              padding: '12px 14px',
+              background: 'var(--pl-highlight-soft)',
+              border: '1px solid rgba(244,208,78,0.55)',
+              borderRadius: 6,
+              fontSize: 13.5, fontFamily: 'var(--pl-serif)', fontStyle: 'italic',
+              color: 'var(--pl-ink-2)', lineHeight: 1.55, maxHeight: 128, overflowY: 'auto',
+            }}>
+              {aiText || <span style={{ color: 'var(--pl-ink-4)' }}>Nenhum texto selecionado</span>}
             </div>
           </div>
-        </div>
+          {decks.length > 0 ? (
+            <div className="field-group" style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
+              <span className="pl-eyebrow">Deck de destino</span>
+              <select className="pl-input" value={aiDeckId} onChange={(e) => setAiDeckId(e.target.value)} style={{ fontWeight: 600 }}>
+                {decks.map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div style={{
+              marginTop: 14, padding: '10px 14px',
+              background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)',
+              border: '1px solid rgba(180,83,9,0.25)', borderLeft: '3px solid var(--pl-warn)',
+              borderRadius: 4, fontSize: 13, fontWeight: 600,
+            }}>
+              Crie um deck de flashcards primeiro para salvar os cards gerados.
+            </div>
+          )}
+          <div className="pl-modal-foot" style={{ margin: '18px -24px -22px' }}>
+            <button onClick={() => setAiModal(false)} className="pl-btn">Cancelar</button>
+            <button
+              onClick={handleAiFlashcard}
+              disabled={aiLoading || !aiText || !aiDeckId}
+              className="pl-btn pl-btn-ai"
+              style={{ opacity: aiLoading || !aiText || !aiDeckId ? 0.5 : 1 }}
+            >
+              {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {aiLoading ? 'Gerando…' : 'Criar flashcards'}
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );
 }
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
-
+/* ════════════════════════════════════════════════
+   Página principal — listagem
+   ════════════════════════════════════════════════ */
 export default function Materiais({ currentUserId }) {
   const [materials, setMaterials] = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [loading, setLoading] = useState(true);
   const [activeMaterial, setActiveMaterial] = useState(null);
 
   const [uploading, setUploading] = useState(false);
@@ -776,6 +676,7 @@ export default function Materiais({ currentUserId }) {
   const [uploadForm, setUploadForm] = useState({ title: '', disciplina: '' });
   const [uploadFile, setUploadFile] = useState(null);
 
+  const [filterQuery, setFilterQuery] = useState('');
   const [flashcardToast, setFlashcardToast] = useState('');
   const fileInputRef = useRef(null);
 
@@ -783,10 +684,8 @@ export default function Materiais({ currentUserId }) {
     if (!currentUserId) return;
     setLoading(true);
     const { data } = await supabase
-      .from('study_materials')
-      .select('*')
-      .eq('user_id', currentUserId)
-      .order('updated_at', { ascending: false });
+      .from('study_materials').select('*')
+      .eq('user_id', currentUserId).order('updated_at', { ascending: false });
     setMaterials(data || []);
     setLoading(false);
   }, [currentUserId]);
@@ -796,34 +695,28 @@ export default function Materiais({ currentUserId }) {
   async function handleUpload() {
     if (!uploadFile) { setUploadErr('Selecione um arquivo PDF.'); return; }
     if (!uploadForm.title.trim()) { setUploadErr('Informe um título.'); return; }
-    if (uploadFile.type !== 'application/pdf') { setUploadErr('Apenas arquivos PDF são aceitos.'); return; }
-
-    setUploading(true);
-    setUploadErr('');
-
+    if (uploadFile.type !== 'application/pdf' || !String(uploadFile.name || '').toLowerCase().endsWith('.pdf')) {
+      setUploadErr('Apenas arquivos PDF válidos são aceitos.'); return;
+    }
+    if (Number(uploadFile.size || 0) > 25 * 1024 * 1024) {
+      setUploadErr('O PDF deve ter no máximo 25 MB.'); return;
+    }
+    setUploading(true); setUploadErr('');
     try {
-      const ext       = 'pdf';
-      const fileName  = `${currentUserId}/${Date.now()}.${ext}`;
+      const fileName = `${currentUserId}/${Date.now()}.pdf`;
       const { error: storageErr } = await supabase.storage
         .from('study-materials')
         .upload(fileName, uploadFile, { contentType: 'application/pdf', upsert: false });
-
       if (storageErr) throw new Error(storageErr.message);
-
-      const { data, error: dbErr } = await supabase
-        .from('study_materials')
+      const { data, error: dbErr } = await supabase.from('study_materials')
         .insert({
-          user_id:      currentUserId,
-          title:        uploadForm.title.trim(),
-          disciplina:   uploadForm.disciplina.trim(),
+          user_id: currentUserId,
+          title: uploadForm.title.trim(),
+          disciplina: uploadForm.disciplina.trim(),
           storage_path: fileName,
-          file_size:    uploadFile.size,
-        })
-        .select()
-        .single();
-
+          file_size: uploadFile.size,
+        }).select().single();
       if (dbErr) throw new Error(dbErr.message);
-
       setMaterials((prev) => [data, ...prev]);
       setUploadModal(false);
       setUploadForm({ title: '', disciplina: '' });
@@ -836,6 +729,7 @@ export default function Materiais({ currentUserId }) {
   }
 
   async function handleDelete(material) {
+    if (typeof window !== 'undefined' && !window.confirm(`Remover "${material.title}" da sua biblioteca?`)) return;
     await supabase.storage.from('study-materials').remove([material.storage_path]);
     await supabase.from('study_materials').delete().eq('id', material.id);
     setMaterials((prev) => prev.filter((m) => m.id !== material.id));
@@ -848,8 +742,8 @@ export default function Materiais({ currentUserId }) {
 
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
-        <p className="text-sm">Faça login para acessar seus materiais.</p>
+      <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}>
+        <p style={{ fontSize: 14, fontWeight: 500 }}>Faça login para acessar seus materiais.</p>
       </div>
     );
   }
@@ -864,8 +758,15 @@ export default function Materiais({ currentUserId }) {
           onCreateFlashcard={showFlashcardToast}
         />
         {flashcardToast && (
-          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 text-sm font-bold text-white shadow-xl">
-            <Sparkles size={16} />
+          <div style={{
+            position: 'fixed', bottom: 24, right: 24, zIndex: 100,
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '12px 18px',
+            background: 'var(--pl-ink)', color: 'var(--pl-bg)',
+            borderRadius: 8, boxShadow: 'var(--pl-sh-high)',
+            fontSize: 13.5, fontWeight: 600,
+          }}>
+            <Sparkles size={15} />
             {flashcardToast}
           </div>
         )}
@@ -873,183 +774,258 @@ export default function Materiais({ currentUserId }) {
     );
   }
 
+  const totalPaginas = materials.reduce((acc, item) => acc + Number(item.page_count || 0), 0);
+  const retomadas = materials.filter((item) => Number(item.last_page || 0) > 1).length;
+
+  const filtered = filterQuery.trim()
+    ? materials.filter((m) => {
+        const q = filterQuery.toLowerCase();
+        return (m.title || '').toLowerCase().includes(q) || (m.disciplina || '').toLowerCase().includes(q);
+      })
+    : materials;
+
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col gap-0 p-0">
-      <PageHeadPremium
-        className="shrink-0 rounded-none border-x-0 border-t-0 gap-4 lg:!px-6 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
-        icon={FileText}
-        badge={<PageHeadPremiumBadge icon={BookOpen}>Biblioteca PDF</PageHeadPremiumBadge>}
-        title="Materiais de estudo"
-        subtitle="PDFs com marcações, anotações e geração de flashcards para revisar trechos importantes."
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        statsStackBelowTrailing
-        statsDense
-        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-3 gap-1.5 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
-        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,38rem)] xl:shrink-0"
-        stats={[
-          { key: 'files', icon: FileText, label: 'Materiais', value: String(materials.length), accent: 'blue' },
-          {
-            key: 'pages',
-            icon: BookOpen,
-            label: 'Páginas',
-            value: String(materials.reduce((acc, item) => acc + Number(item.page_count || 0), 0)),
-            accent: 'indigo',
-          },
-          {
-            key: 'resume',
-            icon: Bookmark,
-            label: 'Retomadas',
-            value: String(materials.filter((item) => Number(item.last_page || 0) > 1).length),
-            accent: 'emerald',
-          },
-        ]}
-        trailing={
+    <div className="pl-app pl-paper-bg-soft pl-mat-shell">
+      {/* Hero editorial */}
+      <header className="pl-hero-editorial">
+        <div>
+          <div className="lede-row">
+            <div className="pl-hero-icon">
+              <FileText size={18} strokeWidth={1.75} />
+            </div>
+            <span className="pl-eyebrow">Biblioteca PDF</span>
+          </div>
+          <h1>Materiais de estudo<span className="dot">.</span></h1>
+          <p className="subtitle">
+            Envie suas apostilas e leis. Grife trechos, escreva margens e gere flashcards com IA — sua biblioteca pessoal de estudo, no mesmo papel.
+          </p>
+        </div>
+        <div className="meta">
+          <span>PDF · marcações · flashcards<br />até 25 MB por arquivo</span>
           <button
             type="button"
             onClick={() => { setUploadErr(''); setUploadModal(true); }}
-            className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
+            className="pl-btn pl-btn-primary"
           >
-            <Upload size={14} />
-            Enviar PDF
+            <Upload size={14} /> Enviar PDF
           </button>
-        }
-      />
+        </div>
+      </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5 lg:px-6">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
+      {/* KPI strip */}
+      <div className="pl-kpi-strip-3">
+        <div className="pl-kpi-bar">
+          <div className="left">
+            <span className="lab"><FileText size={12} /> Materiais</span>
+            <span className="sub">na biblioteca</span>
           </div>
-        ) : materials.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100">
-              <FileText size={36} className="text-slate-400" />
-            </div>
-            <div className="text-center">
-              <p className="font-bold text-slate-700">Nenhum material ainda</p>
-              <p className="text-sm text-slate-500 mt-1">Envie PDFs de apostilas, leis ou resumos para estudar com IA.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => { setUploadErr(''); setUploadModal(true); }}
-              className={PRIMARY_HEADER_BUTTON_CLASS}
-            >
-              <Upload size={16} />
-              Enviar primeiro PDF
-            </button>
+          <span className="val">{materials.length}</span>
+        </div>
+        <div className="pl-kpi-bar accent">
+          <div className="left">
+            <span className="lab"><BookOpen size={12} /> Páginas</span>
+            <span className="sub">total nos PDFs</span>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {materials.map((m) => (
-              <div
-                key={m.id}
-                className="section-card group relative flex cursor-pointer flex-col gap-3 p-5 transition-all hover:border-blue-200 hover:shadow-sm"
-                onClick={() => setActiveMaterial(m)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
-                    <FileText size={20} className="text-red-500" />
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(m); }}
-                    className="opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold leading-tight text-slate-900">{m.title}</h3>
-                  {m.disciplina && (
-                    <p className="text-xs font-bold text-blue-600 mt-0.5">{m.disciplina}</p>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3 mt-auto pt-1 text-xs text-slate-500 font-semibold">
-                  {m.page_count > 0 && <span>{m.page_count} páginas</span>}
-                  {m.file_size > 0 && <span>{formatFileSize(m.file_size)}</span>}
-                  {m.last_page > 1 && (
-                    <span className="ml-auto text-blue-600">p. {m.last_page}</span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <span className="val">{totalPaginas}</span>
+        </div>
+        <div className="pl-kpi-bar success">
+          <div className="left">
+            <span className="lab"><Bookmark size={12} /> Retomadas</span>
+            <span className="sub">em leitura</span>
           </div>
-        )}
+          <span className="val">{retomadas}</span>
+        </div>
       </div>
+
+      {/* Loading / empty / grid */}
+      {loading ? (
+        <div style={{ padding: '80px 0', display: 'flex', justifyContent: 'center' }}>
+          <Loader2 size={26} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
+        </div>
+      ) : materials.length === 0 ? (
+        <div className="pl-empty-state">
+          <div className="pl-empty-stack" aria-hidden>
+            <div className="sheet s1" />
+            <div className="sheet s2" />
+            <div className="sheet s3" />
+          </div>
+          <h3>Sua biblioteca está vazia.</h3>
+          <p>Envie PDFs de apostilas, leis ou resumos. Você poderá grifar trechos, anotar margens e pedir flashcards à IA sem sair da página.</p>
+          <button
+            type="button"
+            onClick={() => { setUploadErr(''); setUploadModal(true); }}
+            className="pl-btn pl-btn-primary pl-btn-lg"
+          >
+            <Upload size={16} /> Enviar primeiro PDF
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="pl-lib-head">
+            <h2>Sua biblioteca</h2>
+            <div className="pl-filter-search">
+              <Search />
+              <input
+                type="search"
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
+                placeholder="Filtrar por título ou disciplina…"
+              />
+            </div>
+          </div>
+          {filtered.length === 0 ? (
+            <div style={{
+              padding: '40px 24px', textAlign: 'center',
+              background: 'var(--pl-bg-soft)', border: '1px dashed var(--pl-rule-strong)', borderRadius: 6,
+            }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>Nada encontrado</p>
+              <p style={{ margin: '6px auto 0', maxWidth: 360, fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+                Nenhum material com esse filtro. Tente outro termo.
+              </p>
+            </div>
+          ) : (
+            <div className="pl-mat-grid">
+              {filtered.map((m) => {
+                const progress = m.page_count > 0 && m.last_page > 0
+                  ? Math.min(100, Math.round((m.last_page / m.page_count) * 100))
+                  : 0;
+                return (
+                  <article
+                    key={m.id}
+                    className="pl-mat-card"
+                    onClick={() => setActiveMaterial(m)}
+                  >
+                    <div className="topline">
+                      <SheetMark />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleDelete(m); }}
+                        className="delete-btn"
+                        title="Excluir"
+                        aria-label="Excluir material"
+                      >
+                        <Trash2 />
+                      </button>
+                    </div>
+                    <div>
+                      <h4>{m.title}</h4>
+                      {m.disciplina && <p className="disciplina">{m.disciplina}</p>}
+                    </div>
+                    {progress > 0 && (
+                      <div className="progress"><div className="fill" style={{ width: `${progress}%` }} /></div>
+                    )}
+                    <div className="meta-row">
+                      {m.page_count > 0 && <span>{m.page_count} páginas</span>}
+                      {m.page_count > 0 && m.file_size > 0 && <span className="sep">·</span>}
+                      {m.file_size > 0 && <span>{formatFileSize(m.file_size)}</span>}
+                      {m.last_page > 1 && (
+                        <span className="resume">
+                          <Bookmark /> p. {m.last_page}
+                        </span>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Upload modal */}
       {uploadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">Enviar PDF</h3>
-              <button onClick={() => setUploadModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              <ErrBanner msg={uploadErr} />
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Título *</label>
-                <input
-                  type="text"
-                  className={inputCls()}
-                  placeholder="Ex: Apostila Direito Administrativo 2025"
-                  value={uploadForm.title}
-                  onChange={(e) => setUploadForm((f) => ({ ...f, title: e.target.value }))}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Disciplina</label>
-                <input
-                  type="text"
-                  className={inputCls()}
-                  placeholder="Ex: Direito Administrativo"
-                  value={uploadForm.disciplina}
-                  onChange={(e) => setUploadForm((f) => ({ ...f, disciplina: e.target.value }))}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Arquivo PDF *</label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:border-blue-400 transition-all"
-                >
-                  <Upload size={18} className="text-slate-400" />
-                  {uploadFile ? uploadFile.name : 'Clique para selecionar o PDF'}
-                </button>
-                {uploadFile && (
-                  <p className="text-xs text-slate-500 font-semibold">{formatFileSize(uploadFile.size)}</p>
-                )}
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setUploadModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
-                Cancelar
-              </button>
-              <button
-                onClick={handleUpload}
-                disabled={uploading}
-                className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                {uploading ? 'Enviando...' : 'Enviar'}
-              </button>
-            </div>
+        <Modal title="Enviar PDF" onClose={() => setUploadModal(false)}>
+          <ErrBanner msg={uploadErr} />
+          <div className="field-group" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span className="pl-eyebrow">Título <span style={{ color: 'var(--pl-danger)' }}>*</span></span>
+            <input
+              type="text"
+              className="pl-input"
+              placeholder="Ex: Apostila Direito Administrativo 2025"
+              value={uploadForm.title}
+              onChange={(e) => setUploadForm((f) => ({ ...f, title: e.target.value }))}
+            />
           </div>
-        </div>
+          <div className="field-group" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span className="pl-eyebrow">Disciplina</span>
+            <input
+              type="text"
+              className="pl-input"
+              placeholder="Ex: Direito Administrativo"
+              value={uploadForm.disciplina}
+              onChange={(e) => setUploadForm((f) => ({ ...f, disciplina: e.target.value }))}
+            />
+          </div>
+          <div className="field-group" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span className="pl-eyebrow">Arquivo PDF <span style={{ color: 'var(--pl-danger)' }}>*</span></span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              style={{ display: 'none' }}
+              onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={`pl-upload-zone ${uploadFile ? 'filled' : ''}`}
+            >
+              <Upload />
+              <span style={{ fontWeight: uploadFile ? 700 : 600 }}>
+                {uploadFile ? uploadFile.name : 'Clique para selecionar o PDF'}
+              </span>
+              {uploadFile && <span className="file-size">{formatFileSize(uploadFile.size)}</span>}
+            </button>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+              Apenas PDF, até 25 MB.
+            </p>
+          </div>
+          <div className="pl-modal-foot" style={{ margin: '8px -24px -24px' }}>
+            <button
+              type="button"
+              onClick={() => setUploadModal(false)}
+              className="pl-btn"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleUpload}
+              disabled={uploading}
+              className="pl-btn pl-btn-primary"
+              style={{ opacity: uploading ? 0.6 : 1 }}
+            >
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              {uploading ? 'Enviando…' : 'Enviar'}
+            </button>
+          </div>
+        </Modal>
       )}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   Modal genérico editorial
+   ════════════════════════════════════════════════ */
+function Modal({ title, subtitle, onClose, wide, children }) {
+  return (
+    <div className="pl-modal-overlay" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
+      <div className={`pl-modal ${wide ? 'wide' : ''}`}>
+        <div className="fold-corner" />
+        <div className="pl-modal-head">
+          <div>
+            <h3>{title}<span className="dot">.</span></h3>
+            {subtitle ? (
+              <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{subtitle}</p>
+            ) : null}
+          </div>
+          <button onClick={onClose} className="pl-modal-close" aria-label="Fechar">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="pl-modal-body">{children}</div>
+      </div>
     </div>
   );
 }
