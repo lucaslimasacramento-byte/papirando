@@ -352,7 +352,7 @@ export default function AdminDashboard({
             <OpsCard icon={BookOpen} label="Cursos por IA" value={metrics.importadosIA} />
             <OpsCard icon={FolderKanban} label="Cursos de catálogo" value={metrics.importadosCatalogo} />
             <OpsCard icon={WalletCards} label="Receita recorrente" value={formatCurrency(finance.receitaRecorrente)} />
-            <OpsCard icon={Users} label="Leads abertos" value={crm.emAndamento} />
+            <OpsCard icon={Users} label="Leads abertos" value={crm.emContato} />
           </div>
 
           <div className="mt-6 space-y-3">
