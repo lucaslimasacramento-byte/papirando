@@ -21,17 +21,18 @@ export function normalizeLead(lead = {}) {
 }
 
 export function buildCrmSnapshot(leads = []) {
-  const total = leads.length;
-  const emContato = leads.filter((lead) => lead.stage === 'contato').length;
-  const propostas = leads.filter((lead) => lead.stage === 'proposta').length;
-  const fechados = leads.filter((lead) => lead.stage === 'fechado').length;
-  const perdidos = leads.filter((lead) => lead.stage === 'perdido').length;
-  const pipelineMensal = leads
-    .filter((lead) => ['proposta', 'fechado'].includes(lead.stage))
-    .reduce((acc, lead) => acc + Number(lead.monthly_value || 0), 0);
-  const receitaFechada = leads
-    .filter((lead) => lead.stage === 'fechado')
-    .reduce((acc, lead) => acc + Number(lead.monthly_value || 0), 0);
+  const safeLeads = Array.isArray(leads) ? leads : [];
+  const total = safeLeads.length;
+  const emContato = safeLeads.filter((lead) => lead?.stage === 'contato').length;
+  const propostas = safeLeads.filter((lead) => lead?.stage === 'proposta').length;
+  const fechados = safeLeads.filter((lead) => lead?.stage === 'fechado').length;
+  const perdidos = safeLeads.filter((lead) => lead?.stage === 'perdido').length;
+  const pipelineMensal = safeLeads
+    .filter((lead) => ['proposta', 'fechado'].includes(lead?.stage))
+    .reduce((acc, lead) => acc + Number(lead?.monthly_value || 0), 0);
+  const receitaFechada = safeLeads
+    .filter((lead) => lead?.stage === 'fechado')
+    .reduce((acc, lead) => acc + Number(lead?.monthly_value || 0), 0);
 
   return {
     total,

@@ -34,25 +34,27 @@ export function normalizeExpense(expense = {}) {
 }
 
 export function buildFinanceSnapshot(profiles = [], expenses = [], referenceDate = new Date()) {
+  const safeProfiles = Array.isArray(profiles) ? profiles : [];
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
   const currentMonth = getCurrentFinanceMonth(referenceDate);
-  const paidProfiles = profiles.filter((profile) => (profile.subscription_status || 'trial') === 'active');
-  const trialProfiles = profiles.filter((profile) => (profile.subscription_status || 'trial') === 'trial');
-  const riskProfiles = profiles.filter((profile) => ['paused', 'cancelled'].includes(profile.subscription_status || ''));
+  const paidProfiles = safeProfiles.filter((profile) => (profile?.subscription_status || 'trial') === 'active');
+  const trialProfiles = safeProfiles.filter((profile) => (profile?.subscription_status || 'trial') === 'trial');
+  const riskProfiles = safeProfiles.filter((profile) => ['paused', 'cancelled'].includes(profile?.subscription_status || ''));
 
   const receitaRecorrente = paidProfiles.reduce(
-    (acc, profile) => acc + getMonthlyPrice(profile.subscription_plan || 'gratuito'),
+    (acc, profile) => acc + getMonthlyPrice(profile?.subscription_plan || 'gratuito'),
     0
   );
   const receitaPotencial = [...paidProfiles, ...trialProfiles].reduce(
-    (acc, profile) => acc + getMonthlyPrice(profile.subscription_plan || 'gratuito'),
+    (acc, profile) => acc + getMonthlyPrice(profile?.subscription_plan || 'gratuito'),
     0
   );
 
-  const expensesThisMonth = expenses.filter((expense) => expense.competencia === currentMonth);
+  const expensesThisMonth = safeExpenses.filter((expense) => expense?.competencia === currentMonth);
   const despesasPagasMes = expensesThisMonth
-    .filter((expense) => expense.status === 'paga')
-    .reduce((acc, expense) => acc + Number(expense.valor || 0), 0);
-  const despesasPrevistasMes = expensesThisMonth.reduce((acc, expense) => acc + Number(expense.valor || 0), 0);
+    .filter((expense) => expense?.status === 'paga')
+    .reduce((acc, expense) => acc + Number(expense?.valor || 0), 0);
+  const despesasPrevistasMes = expensesThisMonth.reduce((acc, expense) => acc + Number(expense?.valor || 0), 0);
   const saldoEstimado = receitaRecorrente - despesasPagasMes;
 
   return {

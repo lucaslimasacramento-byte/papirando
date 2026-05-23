@@ -26,14 +26,22 @@ import { CONTEST_STATUS_LABELS, normalizeContestStatus } from '../lib/contestGro
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
 export default function AdminDashboard({
-  contestLibrary = [],
-  cursos = [],
-  historicoReal = [],
-  profiles = [],
-  expenses = [],
-  leads = [],
+  contestLibrary: contestLibraryProp = [],
+  cursos: cursosProp = [],
+  historicoReal: historicoRealProp = [],
+  profiles: profilesProp = [],
+  expenses: expensesProp = [],
+  leads: leadsProp = [],
   setActiveTab,
 }) {
+  // Defensive: coerce every collection to an array even if parent passes null/undefined/non-array.
+  const contestLibrary = Array.isArray(contestLibraryProp) ? contestLibraryProp : [];
+  const cursos = Array.isArray(cursosProp) ? cursosProp : [];
+  const historicoReal = Array.isArray(historicoRealProp) ? historicoRealProp : [];
+  const profiles = Array.isArray(profilesProp) ? profilesProp : [];
+  const expenses = Array.isArray(expensesProp) ? expensesProp : [];
+  const leads = Array.isArray(leadsProp) ? leadsProp : [];
+
   const [realMetrics, setRealMetrics] = useState({
     totalUsers: 0,
     sessionsToday: 0,
