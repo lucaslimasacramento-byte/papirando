@@ -43,6 +43,8 @@ const AdminQuestoes = lazy(() => import('../pages/AdminQuestoes'));
 const QuestionImportPage = lazy(() => import('../pages/admin/QuestionImportPage'));
 const Sessoes = lazy(() => import('../pages/Sessoes'));
 const Revisoes = lazy(() => import('../pages/Revisoes'));
+const Privacidade = lazy(() => import('../pages/Privacidade'));
+const Termos = lazy(() => import('../pages/Termos'));
 const EditalQuestao = lazy(() => import('../pages/EditalQuestao'));
 const Historico = lazy(() => import('../pages/Historico'));
 const Materiais = lazy(() => import('../pages/Materiais'));
@@ -95,6 +97,8 @@ const KNOWN_TABS = [
   'bem_estar',
   'convide_ganhe',
   'perfil',
+  'privacidade',
+  'termos',
 ];
 
 export default function AppTabContent(props) {
@@ -365,6 +369,14 @@ export default function AppTabContent(props) {
         onLogout={handleLogout}
       />
     );
+  }
+
+  if (activeTab === 'privacidade') {
+    return <Privacidade />;
+  }
+
+  if (activeTab === 'termos') {
+    return <Termos />;
   }
 
   if (activeTab === 'assinatura') {
