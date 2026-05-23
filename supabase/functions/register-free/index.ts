@@ -9,10 +9,15 @@ const MAX_INVALID_CPF_PER_WINDOW = 20;
 const BLOCK_MINUTES = 30;
 
 function getClientIp(req: Request): string {
-  const xf = req.headers.get('x-forwarded-for') || '';
-  const first = xf.split(',')[0]?.trim();
-  if (first) return first;
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || '0.0.0.0';
+  // SEC-009: cf-connecting-ip vem do edge da Cloudflare/Vercel e nao pode ser spoofed.
+  // x-real-ip vem do proxy confiavel. x-forwarded-for eh controlavel pelo cliente
+  // (pode ser falsificado), portanto so eh usado como ultimo recurso.
+  return (
+    req.headers.get('cf-connecting-ip') ||
+    req.headers.get('x-real-ip') ||
+    (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim() ||
+    '0.0.0.0'
+  );
 }
 
 async function sha256Hex(input: string): Promise<string> {
@@ -23,14 +28,27 @@ async function sha256Hex(input: string): Promise<string> {
     .join('');
 }
 
+// SEC-010: peppers sao obrigatorios. Se nao estiverem configurados via
+// `supabase secrets set SIGNUP_IP_PEPPER=...` / `SIGNUP_EMAIL_LOG_PEPPER=...`,
+// a edge function falha imediatamente em vez de cair num fallback hardcoded
+// (que seria publico e tornaria os hashes reversiveis).
+function requirePepper(envKey: string): string {
+  const pepper = Deno.env.get(envKey);
+  if (!pepper || pepper.length < 16) {
+    throw new Error(
+      `[register-free] ${envKey} nao configurado ou muito curto. ` +
+        `Defina via: supabase secrets set ${envKey}=<segredo de pelo menos 16 chars>`,
+    );
+  }
+  return pepper;
+}
+
 async function hashIp(ip: string): Promise<string> {
-  const pepper = Deno.env.get('SIGNUP_IP_PEPPER') || 'papirando_signup_pepper';
-  return sha256Hex(`${ip}:${pepper}`);
+  return sha256Hex(`${ip}:${requirePepper('SIGNUP_IP_PEPPER')}`);
 }
 
 async function hashEmail(email: string): Promise<string> {
-  const pepper = Deno.env.get('SIGNUP_EMAIL_LOG_PEPPER') || 'papirando_email_log_pepper';
-  return sha256Hex(`${email.toLowerCase().trim()}:${pepper}`);
+  return sha256Hex(`${email.toLowerCase().trim()}:${requirePepper('SIGNUP_EMAIL_LOG_PEPPER')}`);
 }
 
 function sanitizeName(raw: string): string {

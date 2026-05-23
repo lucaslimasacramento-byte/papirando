@@ -8,6 +8,8 @@ import {
   ChevronRight,
   Circle,
   Crown,
+  Download,
+  FileText,
   KeyRound,
   LogOut,
   Mail,
@@ -16,6 +18,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Trash2,
   Trophy,
   User2,
   Users,
@@ -284,6 +287,30 @@ function SecurityRow({ icon, label, value, helper }) {
   );
 }
 
+function LgpdButton({ icon, label, description, tone = 'slate', onClick }) {
+  const IconComponent = icon;
+  const toneClasses = {
+    blue: 'border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700',
+    slate: 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700',
+    red: 'border-red-200 bg-red-50 hover:bg-red-100 text-red-700',
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition ${toneClasses[tone] || toneClasses.slate}`}
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200">
+        {IconComponent && <IconComponent className="h-4 w-4" />}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold">{label}</p>
+        <p className="mt-0.5 text-xs opacity-70">{description}</p>
+      </div>
+    </button>
+  );
+}
+
 function ActionTile({ icon, title, desc, actionLabel, onClick, disabled = false }) {
   const IconComponent = icon;
   return (
@@ -382,21 +409,42 @@ export default function Perfil(props) {
       return;
     }
 
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
+    // Try/catch externo evita que uma rejeição inesperada (timeout do fetch,
+    // erro do client antes do response, falha de RLS recursiva) deixe o
+    // componente em estado inconsistente e cause crash ao abrir a aba de
+    // Segurança/Conquistas que dependem de profileData.
+    try {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
 
-    if (error) {
-      if (error.code !== 'PGRST116') {
-        console.warn('Não foi possível carregar o perfil remoto:', error.message);
+      if (error) {
+        if (error.code !== 'PGRST116') {
+          console.warn('Não foi possível carregar o perfil remoto:', error.message);
+        }
+        setRemoteProfile({ email: currentUserEmail || '' });
+        return;
       }
-      setRemoteProfile({ email: currentUserEmail || '' });
-      return;
-    }
 
-    setRemoteProfile(data || { email: currentUserEmail || '' });
+      setRemoteProfile(data || { email: currentUserEmail || '' });
+    } catch (error) {
+      console.warn('Falha inesperada ao carregar perfil remoto:', error);
+      setRemoteProfile({ email: currentUserEmail || '' });
+    }
   }, [currentUserEmail, currentUserId]);
 
   useEffect(() => {
-    loadRemoteProfile();
+    let cancelled = false;
+    (async () => {
+      try {
+        await loadRemoteProfile();
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Erro ignorado ao chamar loadRemoteProfile no efeito:', error);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [loadRemoteProfile]);
 
   const memberships = Array.isArray(squadSummary?.memberships) ? squadSummary.memberships : [];
@@ -1391,6 +1439,83 @@ export default function Perfil(props) {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </Card>
+                </div>
+
+                {/* LGPD — Seus dados */}
+                <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
+                  <Card className="p-6">
+                    <SectionHeader
+                      eyebrow="LGPD"
+                      title="Seus dados"
+                      subtitle="Exporte uma cópia completa dos seus dados ou leia nossa política de privacidade."
+                    />
+                    <div className="mt-5 space-y-3">
+                      <LgpdButton
+                        icon={Download}
+                        label="Exportar meus dados"
+                        description="Baixa um JSON com todo o seu histórico"
+                        tone="blue"
+                        onClick={async () => {
+                          try {
+                            const { data, error } = await supabase.rpc('export_my_data');
+                            if (error) throw error;
+                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `papirando-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          } catch {
+                            alert('Erro ao exportar dados. Tente novamente.');
+                          }
+                        }}
+                      />
+                      <LgpdButton
+                        icon={FileText}
+                        label="Política de Privacidade"
+                        description="Veja como tratamos seus dados"
+                        tone="slate"
+                        onClick={() => setActiveTab('privacidade')}
+                      />
+                      <LgpdButton
+                        icon={FileText}
+                        label="Termos de Uso"
+                        description="Regras e condições da plataforma"
+                        tone="slate"
+                        onClick={() => setActiveTab('termos')}
+                      />
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 border border-red-100">
+                    <SectionHeader
+                      eyebrow="Zona de perigo"
+                      title="Excluir conta"
+                      subtitle="A exclusão é irreversível. Seus dados serão removidos em até 30 dias."
+                    />
+                    <div className="mt-5">
+                      <LgpdButton
+                        icon={Trash2}
+                        label="Solicitar exclusão de conta"
+                        description="Inicia o processo de remoção permanente"
+                        tone="red"
+                        onClick={async () => {
+                          const confirmed = window.confirm(
+                            'Tem certeza? Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.'
+                          );
+                          if (!confirmed) return;
+                          try {
+                            const { data, error } = await supabase.rpc('request_account_deletion');
+                            if (error) throw error;
+                            alert(data?.message || 'Solicitação registrada. Entraremos em contato.');
+                          } catch {
+                            alert('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com');
+                          }
+                        }}
+                      />
                     </div>
                   </Card>
                 </div>

@@ -200,7 +200,20 @@ export default function Sidebar({
         </button>
       </div>
 
-      <nav className={`scrollbar-thin relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden py-3.5 ${isCollapsed ? 'px-1.5' : 'px-2.5'}`}>
+      <nav
+        // Performance: isola a região do scroll do resto da árvore. Sem isso, cada
+        // tick de rolagem repinta os gradients radiais/lineares e os 4 nós com
+        // backdrop-blur do <aside> pai, causando jank que percebíamos como freeze.
+        // `contain: paint layout` confina invalidações; `will-change: scroll-position`
+        // promove a camada para o compositor (GPU). `overscrollBehavior: contain`
+        // evita que wheel events vazem para o body durante chain scrolling.
+        style={{
+          contain: 'paint layout',
+          willChange: 'scroll-position',
+          overscrollBehavior: 'contain',
+        }}
+        className={`scrollbar-thin relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden py-3.5 ${isCollapsed ? 'px-1.5' : 'px-2.5'}`}
+      >
         {navSections.map((section) => (
           <section key={section.title} className="mb-5 last:mb-0">
             {isCollapsed ? null : (

@@ -66,6 +66,15 @@ const DEFAULT_SQUAD_PERMISSIONS = {
 
 const CURSINHO_ROLE_OPTIONS = ['Diretor', 'Coordenador', 'Professor', 'Aluno'];
 
+/** Gera código de convite criptograficamente seguro: ESQ-XXXXXXXX (12 chars) */
+function generateInviteCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const random = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map(b => chars[b % chars.length])
+    .join('');
+  return `ESQ-${random}`;
+}
+
 function normalizeRoleLabel(role) {
   const value = String(role || '').trim().toLowerCase();
   if (value.includes('diretor') || value.includes('dono')) return 'Diretor';
@@ -1321,7 +1330,7 @@ export default function Esquadroes({
 
     if (usingRemoteSquads) {
       const inviteCode =
-        String(createForm.inviteCode || '').trim() || `ESQ${String(Date.now()).slice(-6)}`;
+        String(createForm.inviteCode || '').trim() || generateInviteCode();
       const draft = normalizeSquad({
         id: 'pending-local',
         name: String(createForm.name || '').trim(),
@@ -1440,7 +1449,7 @@ export default function Esquadroes({
       roleLabel: 'Professor',
       focus: String(createForm.focus || '').trim() || 'Turma personalizada',
       description: String(createForm.description || '').trim() || 'Ambiente privado para acompanhamento da equipe.',
-      inviteCode: String(createForm.inviteCode || '').trim() || `ESQ${String(Date.now()).slice(-4)}`,
+      inviteCode: String(createForm.inviteCode || '').trim() || generateInviteCode(),
       visibility: createForm.visibility || 'Privado',
       members: 1,
       rankingTier: 'Bronze',

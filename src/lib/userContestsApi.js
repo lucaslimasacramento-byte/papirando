@@ -14,11 +14,13 @@ function normalizeUserContest(row = {}) {
 export async function loadUserContests(userId) {
   if (!userId) return [];
 
+  // NOTE: tabela `user_contests` em produção não possui coluna `created_at`.
+  // Ordenação removida para evitar `column does not exist`. Se a coluna for
+  // adicionada no futuro, voltar com .order('created_at', { ascending: false }).
   const { data, error } = await supabase
     .from('user_contests')
     .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .eq('user_id', userId);
 
   if (error) throw error;
   return (Array.isArray(data) ? data : []).map(normalizeUserContest);
