@@ -2634,19 +2634,39 @@ export default function App() {
         setRedacoesPersistence((prev) => ({ ...prev, loading: true }));
       }
 
-      const result = await loadRedacoesFromSupabase({
-        userId: currentUserId,
-        fallbackRecords: loadLocalRedacoes(),
-      });
-
-      if (!ignore) {
-        setRedacoes(result.records);
-        setRedacoesPersistence({
-          mode: result.mode,
-          schemaReady: result.schemaReady,
-          loading: false,
-          error: result.error || null,
+      // Bail-out + finally garantido: mesmo que loadRedacoesFromSupabase
+      // estoure (apesar do try/catch interno), setLoading(false) é executado
+      // para não travar a UI da página Redações em "carregando" infinito.
+      try {
+        const result = await loadRedacoesFromSupabase({
+          userId: currentUserId,
+          fallbackRecords: loadLocalRedacoes(),
         });
+
+        if (!ignore) {
+          setRedacoes(result.records);
+          setRedacoesPersistence({
+            mode: result.mode,
+            schemaReady: result.schemaReady,
+            loading: false,
+            error: result.error || null,
+          });
+        }
+      } catch (error) {
+        if (!ignore) {
+          console.error('Falha inesperada ao carregar redações:', error);
+          setRedacoes(loadLocalRedacoes());
+          setRedacoesPersistence({
+            mode: 'local',
+            schemaReady: false,
+            loading: false,
+            error,
+          });
+        }
+      } finally {
+        if (!ignore) {
+          setRedacoesPersistence((prev) => ({ ...prev, loading: false }));
+        }
       }
     };
 
