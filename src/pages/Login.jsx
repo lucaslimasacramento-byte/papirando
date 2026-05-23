@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
+import { registerFreeAccount } from '../lib/registerApi';
 
 // ── Logo mark ──────────────────────────────────────────────────────────────
 function PlMark({ size = 36 }) {
@@ -73,6 +74,8 @@ export default function Login({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [nome, setNome] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -98,6 +101,8 @@ export default function Login({
 
   const resetForm = () => {
     setNome('');
+    setCpf('');
+    setBirthDate('');
     setEmail('');
     setPassword('');
     setConfirmPassword('');
@@ -127,7 +132,10 @@ export default function Login({
     if (!email.trim()) { setError('Digite o seu email.'); return false; }
     if (!password.trim()) { setError('Digite a sua senha.'); return false; }
     if (!isLoginMode) {
-      if (!nome.trim()) { setError('Digite o seu nome.'); return false; }
+      if (!nome.trim()) { setError('Digite o seu nome completo.'); return false; }
+      if (nome.trim().split(/\s+/).filter(Boolean).length < 2) { setError('Digite nome e sobrenome.'); return false; }
+      if (cpf.replace(/\D/g, '').length < 11) { setError('Digite o CPF completo (11 dígitos).'); return false; }
+      if (!birthDate) { setError('Informe a data de nascimento.'); return false; }
       if (password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return false; }
       if (password !== confirmPassword) { setError('As senhas nao coincidem.'); return false; }
     }
@@ -165,30 +173,27 @@ export default function Login({
         return;
       }
       const normalizedReferralCode = normalizeReferralCode(referralCode);
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email, password,
-        options: {
-          data: {
-            nome: nome || '',
-            referred_by_code: normalizedReferralCode || '',
-            target_contest: concurso || '',
-          },
-        },
+      // Passa pelo Edge Function register-free que valida CPF, aplica rate-limit,
+      // antifraude e faz rollback server-side se o perfil falhar (B-004 / B-003).
+      const result = await registerFreeAccount({
+        fullName: nome.trim(),
+        cpf: cpf.replace(/\D/g, ''),
+        birthDate,
+        email,
+        password,
+        celular: '',
+        referralCode: normalizedReferralCode || undefined,
+        betaInviteToken: initialBetaInviteToken || undefined,
       });
-      if (signUpError) throw signUpError;
-      if (data?.user?.id) {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          nome: nome || '',
-          email: data.user.email,
-          referred_by_code: normalizedReferralCode || null,
-        });
+      if (!result.success) {
+        const firstFieldError = result.fieldErrors ? Object.values(result.fieldErrors)[0] : null;
+        throw new Error(firstFieldError || result.message || 'Não foi possível criar a conta.');
       }
-      setSuccessMsg('Conta criada! Verifique o seu email para ativar o acesso.');
+      setSuccessMsg(result.message || 'Conta criada! Verifique o seu email para ativar o acesso.');
       if (normalizedReferralCode) onReferralCodeConsumed?.();
       if (initialBetaInviteToken) onBetaInviteConsumed?.();
       setIsLoginMode(true);
-      setPassword(''); setConfirmPassword('');
+      setPassword(''); setConfirmPassword(''); setCpf(''); setBirthDate('');
     } catch (err) {
       setError(getReadableError(err));
     } finally {
@@ -368,11 +373,37 @@ export default function Login({
 
           {/* Nome (apenas cadastro) */}
           {!isLoginMode && (
-            <PlField label="Como a gente te chama?">
+            <PlField label="Nome completo">
               <input
                 className="pl-input" type="text"
-                placeholder="Lucas" autoComplete="given-name"
+                placeholder="Lucas Souza" autoComplete="name"
                 value={nome} onChange={(e) => setNome(e.target.value)}
+                style={{ width: '100%', height: 44 }}
+              />
+            </PlField>
+          )}
+
+          {/* CPF (apenas cadastro) */}
+          {!isLoginMode && (
+            <PlField label="CPF">
+              <input
+                className="pl-input" type="text"
+                placeholder="000.000.000-00" autoComplete="off"
+                value={cpf}
+                onChange={(e) => setCpf(formatCpfInput(e.target.value))}
+                style={{ width: '100%', height: 44 }}
+                inputMode="numeric"
+              />
+            </PlField>
+          )}
+
+          {/* Data de nascimento (apenas cadastro) */}
+          {!isLoginMode && (
+            <PlField label="Data de nascimento">
+              <input
+                className="pl-input" type="date"
+                autoComplete="bday"
+                value={birthDate} onChange={(e) => setBirthDate(e.target.value)}
                 style={{ width: '100%', height: 44 }}
               />
             </PlField>
@@ -561,6 +592,15 @@ export default function Login({
       </div>
     </div>
   );
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function formatCpfInput(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 }
 
 // ── Field wrapper ─────────────────────────────────────────────────────────

@@ -92,8 +92,15 @@ export async function uploadAvatar(userId, file) {
   throw lastError || new Error('Nao foi possivel enviar o avatar.');
 }
 
+// B-045: limite conservador de 1 000 registros para evitar estouro de memória/timeout
+// em produção. Quando a base crescer acima desse valor, implementar paginação com cursor.
+const LOAD_ALL_PROFILES_LIMIT = 999;
+
 export async function loadAllProfiles() {
-  const { data, error } = await supabase.from('profiles').select('*');
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .range(0, LOAD_ALL_PROFILES_LIMIT);
   if (error) throw error;
 
   return [...(data || [])].sort((first, second) =>

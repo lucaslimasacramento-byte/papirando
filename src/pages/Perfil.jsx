@@ -365,6 +365,7 @@ export default function Perfil(props) {
   const [passwordChangeBusy, setPasswordChangeBusy] = useState(false);
   const [emailBusy, setEmailBusy] = useState(false);
   const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [remoteProfile, setRemoteProfile] = useState(null);
@@ -685,6 +686,10 @@ export default function Perfil(props) {
   };
 
   const handlePasswordChangeDirect = async () => {
+    if (!currentPassword) {
+      setSaveState({ type: 'error', message: 'Digite a senha atual para confirmar a alteração.' });
+      return;
+    }
     if (newPassword.length < 6) {
       setSaveState({ type: 'error', message: 'A nova senha precisa ter pelo menos 6 caracteres.' });
       return;
@@ -697,8 +702,20 @@ export default function Perfil(props) {
     setPasswordChangeBusy(true);
     setSaveState({ type: '', message: '' });
     try {
+      // B-016: Verifica senha atual antes de permitir a troca, evitando que
+      // qualquer pessoa com a sessão aberta altere a senha sem saber a atual.
+      const { error: reAuthError } = await supabase.auth.signInWithPassword({
+        email: currentUserEmail,
+        password: currentPassword,
+      });
+      if (reAuthError) {
+        setSaveState({ type: 'error', message: 'Senha atual incorreta. Verifique e tente novamente.' });
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setSaveState({
@@ -1371,6 +1388,14 @@ export default function Perfil(props) {
                       subtitle="Atualização imediata enquanto a sessão está ativa. Mínimo de 6 caracteres."
                     />
                     <div className="mt-5 grid gap-4">
+                      <Field
+                        label="Senha atual"
+                        type="password"
+                        value={currentPassword}
+                        onChange={setCurrentPassword}
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                      />
                       <Field
                         label="Nova senha"
                         type="password"

@@ -759,13 +759,19 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
       setCurrentAuthUser(session?.user || null);
       setCurrentUserId(session?.user?.id || '');
       setCurrentUserEmail(session?.user?.email || '');
       setCurrentUserAccessToken(session?.access_token || '');
       setLoadingSession(false);
+      // Quando o usuário clica no link "Esqueci a senha" e é redirecionado
+      // de volta ao app, o Supabase dispara PASSWORD_RECOVERY. Roteamos para
+      // a aba Perfil > Segurança para que ele possa definir a nova senha.
+      if (event === 'PASSWORD_RECOVERY') {
+        setActiveTab('perfil');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -3609,9 +3615,9 @@ export default function App() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Erro ao sair da conta:', error);
-    } finally {
+      // Só limpa o estado local após confirmação de signOut bem-sucedido.
+      // Se falhar (erro de rede), mantém a sessão ativa no cliente — o token
+      // ainda é válido no servidor e não deve ficar "solto" sem sessão local.
       setCurrentProfile(null);
       setIsAuthenticated(false);
       setCurrentAuthUser(null);
@@ -3621,6 +3627,8 @@ export default function App() {
       setViewingDiscipline(null);
       setSelectedContestDetailId(null);
       setActiveTab('home');
+    } catch (error) {
+      console.error('Erro ao sair da conta:', error);
     }
   };
 
