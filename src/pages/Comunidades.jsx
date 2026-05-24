@@ -855,7 +855,7 @@ export default function Comunidades({
 
   if (communityLoading) {
     return (
-      <div className="pl-app pl-paper-bg-soft pl-loading-shell">
+      <div className="pl-page">
         <div className="pl-loading-panel">
           <div className="pl-loading-stack">
             <div className="pl-loading-spinner" aria-hidden />
@@ -868,7 +868,7 @@ export default function Comunidades({
   }
 
   return (
-    <div className="pl-app pl-com-app">
+    <div className="pl-page">
       {/* ─ Sidebar esquerda ─ */}
       <aside className="pl-com-side">
         <div className="pl-com-brand">

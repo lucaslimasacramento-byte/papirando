@@ -736,7 +736,7 @@ export default function Perfil(props) {
     saveState.type === 'success' ? 'green' : saveState.type === 'error' ? 'red' : saveState.type === 'warning' ? 'gold' : 'blue';
 
   return (
-    <div className={cn('min-h-screen text-slate-900', PAGE_BG)}>
+    <div className="pl-page">
       <div className="mx-auto max-w-[1540px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
         <div className="grid gap-6 xl:grid-cols-[285px_minmax(0,1fr)]">
           <aside className="space-y-5">

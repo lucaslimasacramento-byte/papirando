@@ -490,7 +490,7 @@ export default function EditalQuestao({
   };
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-edital-shell">
+    <div className="pl-page">
       {/* ═══ Hero compacto ═══ */}
       <header className="pl-edital-hero">
         <div>

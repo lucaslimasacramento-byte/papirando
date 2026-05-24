@@ -1122,7 +1122,7 @@ export default function Conciliador({
   };
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-conc-shell">
+    <div className="pl-page">
       {/* Hero compacto */}
       <header className="pl-conc-hero">
         <div>

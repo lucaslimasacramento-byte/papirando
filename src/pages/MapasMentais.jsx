@@ -576,7 +576,7 @@ export default function MapasMentais({
   const canGenerateAiMap = Boolean(promptMapa.trim() || aiMapForm.disciplinaId || aiMapForm.courseId);
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-mapa-shell">
+    <div className="pl-page">
       {/* ═══ Hero compacto ═══ */}
       <header className="pl-hero-compact">
         <div>

@@ -368,7 +368,7 @@ export default function Ciclos({
   }
 
   return (
-    <div className={`${embedded ? 'flex min-h-0 flex-col gap-3 overflow-hidden lg:h-full' : 'mx-auto flex max-w-[1400px] min-h-0 flex-col gap-3 overflow-hidden lg:h-[calc(100vh-13rem)]'} animate-in fade-in duration-500`}>
+    <div className="pl-page">
       <PageHeadPremium
         icon={ListOrdered}
         badge={<PageHeadPremiumBadge icon={ListOrdered}>Estudo cíclico</PageHeadPremiumBadge>}

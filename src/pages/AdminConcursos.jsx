@@ -1814,7 +1814,7 @@ export default function AdminConcursos({
   };
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-page">
       <AdminPageHeader
         icon={LibraryBig}
         badgeIcon={ShieldCheck}

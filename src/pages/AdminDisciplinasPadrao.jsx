@@ -109,7 +109,7 @@ export default function AdminDisciplinasPadrao({
   };
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-page">
       {feedback.message ? (
         <div
           role="status"

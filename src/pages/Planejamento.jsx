@@ -142,7 +142,7 @@ class PlanningErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="page-shell">
+        <div className="pl-page">
           <div className="section-card max-w-[980px] border-amber-200/80 bg-amber-50/30 p-8">
           <div className="neutral-badge border-amber-200 bg-amber-50 text-amber-900">
             Planejamento em recuperacao
@@ -776,7 +776,7 @@ function PlanejamentoContent({
   }
 
   return (
-    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+    <div className="pl-page">
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
         <PlanejamentoHeader
           mode={planejamentoMode}

@@ -295,7 +295,7 @@ export default function SaudeMentalEFoco({
   ];
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-be-shell">
+    <div className="pl-page">
       {/* Hero */}
       <header className="pl-be-hero">
         <div>

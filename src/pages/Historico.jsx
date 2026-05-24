@@ -66,7 +66,7 @@ export default function Historico({
   const totalSessions = timeline.length;
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5">
+    <div className="pl-page">
 
       {/* ── Cabeçalho padrão da plataforma (variante C · com stat) ── */}
       <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>

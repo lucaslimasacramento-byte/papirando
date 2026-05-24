@@ -296,7 +296,7 @@ export default function Audiobooks(props) {
   const trackIndex = activeTrack ? (activeBook?.tracks.findIndex((t) => t.id === activeTrack.id) + 1) : null;
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-audio-shell">
+    <div className="pl-page">
       <audio
         ref={audioRef}
         preload="metadata"

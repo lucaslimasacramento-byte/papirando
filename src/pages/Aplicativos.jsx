@@ -15,7 +15,7 @@ import {
 
 export default function Aplicativos() {
   return (
-    <div className="pl-app pl-paper-bg-soft pl-app-shell">
+    <div className="pl-page">
       {/* Hero compacto */}
       <header className="pl-app-hero">
         <div className="lede">

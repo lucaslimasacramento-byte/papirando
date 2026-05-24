@@ -2232,6 +2232,20 @@ html, body {
     @apply mx-auto flex h-full w-full max-w-[1540px] flex-col gap-4 px-2 pb-10 pt-2 lg:px-3;
   }
 
+  /* ── Wrapper canônico de página ─────────────────────────── */
+  .pl-page {
+    width: 100%;
+    max-width: 1680px;
+    margin: 0 auto;
+    padding: 22px 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  @media (max-width: 720px) {
+    .pl-page { padding: 16px 18px 32px; }
+  }
+
   /**
    * Faixa vertical da marca: **camada de `background`**, não `::before` — o gradiente
    * acompanha o `border-radius` nativamente e evita a faixa/aura “a saltar” para fora do bloco.

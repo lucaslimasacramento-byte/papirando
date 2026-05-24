@@ -302,7 +302,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
   }
 
   return (
-    <div className="page-shell animate-in fade-in slide-in-from-bottom-6 mx-auto flex w-full max-w-[1320px] flex-col gap-8 pb-16 text-gray-800 duration-700">
+    <div className="pl-page">
       <PageHeadPremium
         icon={ThemeIcon}
         badge={

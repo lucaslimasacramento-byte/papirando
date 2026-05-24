@@ -319,7 +319,7 @@ export default function Revisoes({
   };
 
   return (
-    <div className="pl-paper-bg-soft revisoes-page">
+    <div className="pl-page">
       <div className="revisoes-wrap">
         <RevisoesHeader
           onRegistrar={() => setRegistroEstudoModalOpen?.(true)}

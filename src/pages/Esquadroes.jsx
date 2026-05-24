@@ -921,7 +921,7 @@ export default function Esquadroes({
 
   if (accessibleSquads.length === 0) {
     return (
-      <div className="page-shell">
+      <div className="pl-page">
         <div className="section-card min-h-[280px] flex flex-col items-center justify-center text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-slate-900">
             <ShieldCheck size={26} />
@@ -2036,7 +2036,7 @@ export default function Esquadroes({
   }
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-esq-shell">
+    <div className="pl-page">
       {/* ═══ Hero compacto ═══ */}
       <header className="pl-esq-hero">
         <div>

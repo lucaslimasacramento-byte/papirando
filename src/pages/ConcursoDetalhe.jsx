@@ -32,7 +32,7 @@ const STATUS_LABELS = CONTEST_STATUS_LABELS;
 const STAGE_LABELS = {
   prova_objetiva: 'Prova objetiva',
   prova_discursiva: 'Prova discursiva',
-  avaliacao_curricular: 'AvaliaÃ§Ã£o curricular',
+  avaliacao_curricular: 'Avaliação curricular',
   redacao: 'Redação',
   taf: 'TAF',
   avaliacao_psicologica: 'Avaliação psicológica',
@@ -301,7 +301,7 @@ export default function ConcursoDetalhe({
 
   if (!contest) {
     return (
-      <div className="page-shell min-h-full items-center justify-center text-center">
+      <div className="pl-page" style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '100%' }}>
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">Concurso</p>
         <h2 className="text-3xl font-semibold text-slate-900">Nenhum concurso selecionado</h2>
         <button
@@ -317,7 +317,7 @@ export default function ConcursoDetalhe({
   }
 
   return (
-    <div className="page-shell flex flex-col gap-6">
+    <div className="pl-page">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"

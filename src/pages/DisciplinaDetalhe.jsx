@@ -62,7 +62,7 @@ export default function DisciplinaDetalhe({
     : 'Hora de transformar essa base em consistência com revisão e treino direcionado.';
 
   return (
-    <div className="mx-auto flex min-h-full max-w-[1400px] flex-col gap-6 p-6 pb-24 animate-in slide-in-from-right-8 duration-500 lg:p-8">
+    <div className="pl-page">
       <PageHeadPremium
         icon={BookOpen}
         badge={

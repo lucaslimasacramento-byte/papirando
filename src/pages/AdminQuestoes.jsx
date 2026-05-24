@@ -474,7 +474,7 @@ export default function AdminQuestoes() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col">
+    <div className="pl-page">
       <PageHeadPremium
         icon={BookOpen}
         badge={

@@ -370,7 +370,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
   }
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-cg-shell">
+    <div className="pl-page">
       {/* Hero unificado */}
       <header className="pl-cg-hero">
         <div>

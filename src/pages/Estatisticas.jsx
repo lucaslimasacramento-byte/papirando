@@ -83,7 +83,7 @@ export default function Estatisticas({
   const updatedAt = canonicalHistory.length > 0 ? 'há poucos instantes' : 'sem registros';
 
   return (
-    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
+    <div className="pl-page">
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
         <EstatisticasHeader onFiltros={() => setIsFilterPanelOpen?.(true)} />
 

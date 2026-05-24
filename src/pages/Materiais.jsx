@@ -785,7 +785,7 @@ export default function Materiais({ currentUserId }) {
     : materials;
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-mat-shell">
+    <div className="pl-page">
       {/* Hero editorial */}
       <header className="pl-hero-editorial">
         <div>

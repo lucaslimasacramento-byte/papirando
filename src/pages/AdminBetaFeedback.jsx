@@ -59,7 +59,7 @@ export default function AdminBetaFeedback() {
   }, {});
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1320px] flex-col gap-6">
+    <div className="pl-page">
       <div className="flex flex-col gap-6">
         <PageHeadPremium
           icon={MessageSquare}

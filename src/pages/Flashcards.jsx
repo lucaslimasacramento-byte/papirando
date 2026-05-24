@@ -1423,7 +1423,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
   }
 
   return (
-    <div className="pl-paper-bg-soft flashcards-page">
+    <div className="pl-page">
       <div className="flashcards-wrap">
         <FlashcardsHeader
           onNovoDeck={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}

@@ -56,7 +56,7 @@ export default function QuestionImportPage() {
   }
 
   return (
-    <div className="page-shell mx-auto flex h-full w-full max-w-[1180px] flex-col gap-5 overflow-y-auto">
+    <div className="pl-page">
       <PageHeadPremium
         icon={Database}
         badge={<PageHeadPremiumBadge icon={Sparkles}>Admin · importação</PageHeadPremiumBadge>}

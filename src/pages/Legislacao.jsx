@@ -463,7 +463,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
   if (isBootstrapping) {
     return (
-      <div className="pl-app pl-paper-bg-soft pl-loading-shell">
+      <div className="pl-page">
         <div className="pl-loading-panel">
           <div className="pl-loading-stack">
             <div className="pl-loading-spinner" aria-hidden />
@@ -476,7 +476,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
   }
 
   return (
-    <div className="pl-app pl-paper-bg-soft pl-leg-shell">
+    <div className="pl-page">
       {focusMode ? (
         <section className="pl-leg-focus">
           <div className="head">

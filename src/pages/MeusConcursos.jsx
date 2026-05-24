@@ -11,7 +11,7 @@ export default function MeusConcursos({
   const targetContest = contests.find((item) => item.id === targetContestId) || null;
 
   return (
-    <div className="pl-app pl-mc-shell">
+    <div className="pl-page">
 
       {/* ── Cabeçalho editorial ── */}
       <header className="pl-mc-head">

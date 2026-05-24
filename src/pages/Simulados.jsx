@@ -179,7 +179,7 @@ export default function Simulados({
   const emptyState = groupedSimulados.length === 0 && simuladoHistory.length === 0;
 
   return (
-    <div className="pl-paper-bg-soft simulados-page">
+    <div className="pl-page">
       <div className="simulados-wrap">
         <SimuladosHeader
           onRanking={() => setRankingOpen(true)}

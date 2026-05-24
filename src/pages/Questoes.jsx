@@ -132,7 +132,7 @@ export default function Questoes({
       if (error) throw error;
       setDbQuestions((data || []).map(normalizeQuestion));
     } catch (error) {
-      console.warn('Falha ao carregar questoes com is_active. Tentando fallback legado.', error);
+      console.warn('Falha ao carregar questões com is_active. Tentando fallback legado.', error);
       let fallbackQuery = supabase.from('questions').select('*').eq('is_public', true);
       if (filterDisc) fallbackQuery = fallbackQuery.eq('disciplina', filterDisc);
       if (filterBanca) fallbackQuery = fallbackQuery.eq('banca', filterBanca);
@@ -186,7 +186,7 @@ export default function Questoes({
       .gte('answered_at', startOfToday.toISOString());
 
     if (error) {
-      console.error('Erro ao carregar stats de questoes:', error);
+      console.error('Erro ao carregar stats de questões:', error);
       return;
     }
 
@@ -250,7 +250,7 @@ export default function Questoes({
   }, [filteredQuestions.length, currentQuestionIndex]);
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-1 flex-col gap-2 overflow-hidden !pb-2 !pt-3 animate-in fade-in duration-500 lg:gap-2.5 sm:!pt-4">
+    <div className="pl-page" style={{ overflow: 'hidden' }}>
       <PageHeadPremium
         className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
         icon={ListChecks}
@@ -460,8 +460,8 @@ export default function Questoes({
           <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Filtro de questoes</p>
-                <h3 className="text-lg font-semibold text-slate-900">Refinar banco de questoes</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Filtro de questões</p>
+                <h3 className="text-lg font-semibold text-slate-900">Refinar banco de questões</h3>
               </div>
               <button
                 type="button"
@@ -529,7 +529,7 @@ export default function Questoes({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-nivel">
-                  Nivel
+                  Nível
                 </label>
                 <select
                   id="questoes-filter-nivel"
@@ -537,10 +537,10 @@ export default function Questoes({
                   value={filterDif}
                   onChange={(e) => setFilterDif(e.target.value)}
                 >
-                  <option value="">Todos os niveis</option>
-                  <option value="Facil">Facil</option>
-                  <option value="Media">Media</option>
-                  <option value="Dificil">Dificil</option>
+                  <option value="">Todos os níveis</option>
+                  <option value="Facil">Fácil</option>
+                  <option value="Media">Média</option>
+                  <option value="Dificil">Difícil</option>
                 </select>
               </div>
             </div>

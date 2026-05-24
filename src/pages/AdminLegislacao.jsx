@@ -137,7 +137,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-app)] p-4 md:p-6 xl:p-8">
+    <div className="pl-page">
       <div className="app-main-shell mx-auto max-w-[920px] space-y-6">
         <PageHeadPremium
           icon={Scale}
