@@ -69,7 +69,7 @@ export function PageHeadPremiumShell({ children, className = '', style = undefin
 export function PageHeadPremiumIconTile({ children, className = '' }) {
   return (
     <div
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-gradient-to-br from-[#4f8df7] via-[#547eff] to-[#5d63f4] text-white shadow-[0_12px_30px_rgba(85,122,255,0.34)] ring-1 ring-white/10 sm:h-12 sm:w-12 ${className}`}
+      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/[0.14] bg-[#14110d] text-white shadow-[0_4px_18px_rgba(20,17,13,0.45)] ring-1 ring-white/[0.07] sm:h-12 sm:w-12 ${className}`}
     >
       {children}
     </div>
