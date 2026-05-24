@@ -936,7 +936,7 @@ function PlanejamentoContent({
             {wizardStep === 3 ? (
               <div>
                 <p className="text-center text-base leading-7 text-gray-600 sm:text-lg">
-                  Para cada disciplina, selecione a <strong>importancia</strong> para a prova e o seu <strong>grau de conhecimento</strong>.
+                  Para cada disciplina, selecione a <strong>importância</strong> para a prova e o seu <strong>grau de conhecimento</strong>.
                 </p>
                 <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
                   <div className="max-h-[300px] overflow-y-auto custom-scrollbar rounded-[1.25rem] border border-gray-200 bg-gray-50 p-4">
@@ -947,7 +947,7 @@ function PlanejamentoContent({
                           <div key={discipline.nome} className="rounded-2xl bg-white p-4 shadow-sm">
                             <p className="text-base font-semibold text-gray-700 text-center">{discipline.nome}</p>
                             <div className="mt-4">
-                              <label className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gray-400">Importancia</label>
+                              <label className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gray-400">Importância</label>
                               <div className="mt-2 flex items-center gap-3">
                                 <input
                                   type="range"
@@ -1060,7 +1060,7 @@ function PlanejamentoContent({
                             </option>
                           ))}
                         </select>
-                        <span className="text-sm text-gray-600">horas diarias</span>
+                        <span className="text-sm text-gray-600">horas diárias</span>
                       </div>
                     );
                   })}
@@ -1089,13 +1089,13 @@ function PlanejamentoContent({
                     ))}
                   </div>
                   <p className="mt-3 text-sm font-medium leading-6 text-gray-500">
-                    O app usa esse numero para distribuir blocos de teoria e aproveitar o tempo que sobrar com revisao ou questoes.
+                    O app usa esse número para distribuir blocos de teoria e aproveitar o tempo que sobrar com revisão ou questões.
                   </p>
                 </div>
 
                 <div className="mt-6">
                   <p className="text-base text-gray-600 sm:text-lg">
-                    Qual minimo e maximo de tempo que deseja estudar uma mesma disciplina?
+                    Qual mínimo e máximo de tempo você deseja estudar uma mesma disciplina?
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-4">
                     <select
@@ -1156,7 +1156,7 @@ function PlanejamentoContent({
                     }
                     className="rounded-xl bg-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
                   >
-                    Proximo
+                    Próximo
                   </button>
                 ) : (
                   <button
@@ -1181,19 +1181,17 @@ function PlanejamentoContent({
 
 function PlanejamentoHeader({ mode, setMode, onConfigurar }) {
   return (
-    <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
-        <div>
-          <div className="pl-overline">Planejamento</div>
-          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
-            Plano de estudos.
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+            Plano de estudos<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
             Escolha entre uma rotação flexível para rotina variável ou uma agenda fixa para semanas previsíveis.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div className="pl-card planning-mode-toggle">
             <button type="button" className={mode === 'flexivel' ? 'is-active' : ''} onClick={() => setMode('flexivel')}>
               <RefreshCw size={15} />
@@ -1209,8 +1207,7 @@ function PlanejamentoHeader({ mode, setMode, onConfigurar }) {
             Configurar
           </button>
         </div>
-      </div>
-    </section>
+    </header>
   );
 }
 
@@ -2093,7 +2090,7 @@ function distributeMinutesAcrossSlots(totalMinutes, sessionOptions = {}) {
   for (let index = 0; index < theoryTarget && remaining >= minMinutes; index += 1) {
     sessions.push({
       modeHint: 'teoria',
-      label: `Materia ${index + 1}`,
+      label: `Matéria ${index + 1}`,
       minutes: minMinutes,
     });
     remaining -= minMinutes;
@@ -2102,7 +2099,7 @@ function distributeMinutesAcrossSlots(totalMinutes, sessionOptions = {}) {
   if (sessions.length === 0) {
     sessions.push({
       modeHint: total >= 45 ? 'questoes' : 'revisao',
-      label: total >= 45 ? 'Questoes' : 'Revisao',
+      label: total >= 45 ? 'Questões' : 'Revisão',
       minutes: total,
     });
     remaining = 0;
@@ -2123,7 +2120,7 @@ function distributeMinutesAcrossSlots(totalMinutes, sessionOptions = {}) {
       const supportMode = remaining >= 45 ? 'questoes' : 'revisao';
       sessions.push({
         modeHint: supportMode,
-        label: supportMode === 'questoes' ? 'Questoes' : 'Revisao',
+        label: supportMode === 'questoes' ? 'Questões' : 'Revisão',
         minutes: remaining,
       });
       remaining = 0;

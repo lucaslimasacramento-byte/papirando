@@ -229,14 +229,12 @@ function EditalHeader({
   const area = getAreaToken(concurso?.area || inferAreaFromText(concurso?.nome || concurso?.plano || ''));
 
   return (
-    <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 24, alignItems: 'end' }}>
-        <div>
-          <div className="pl-overline">Painel estratégico</div>
-          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
-            Edital verticalizado.
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+            Edital verticalizado<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
             Acompanhe o progresso tópico por tópico, sem bagunça e sem sumir matéria no meio do caminho.
           </p>
 
@@ -251,7 +249,7 @@ function EditalHeader({
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifySelf: 'end', width: '100%', position: 'relative' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
           <div className="pl-small-label">Edital ativo</div>
           <button
             type="button"
@@ -288,8 +286,7 @@ function EditalHeader({
             Adicionar estudo
           </button>
         </div>
-      </div>
-    </section>
+    </header>
   );
 }
 

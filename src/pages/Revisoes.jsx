@@ -124,8 +124,8 @@ export default function Revisoes({
               duracaoSugerida,
               ultimaSessao: formatRelativeDays(daysWithoutStudy),
               title: lowPerformance ? `Retomar ${item.disciplina}` : `Revisar ${item.disciplina}`,
-              urgencyLabel: lowPerformance ? 'Alta prioridade' : 'Revisao pendente',
-              actionLabel: 'Iniciar revisao',
+              urgencyLabel: lowPerformance ? 'Alta prioridade' : 'Revisão pendente',
+              actionLabel: 'Iniciar revisão',
               reason: reasonParts.join(' | '),
               suggestedDurationLabel: `${duracaoSugerida} min`,
               score: lowPerformance ? 100 - averagePerformance + daysWithoutStudy : Math.max(daysWithoutStudy, 1),
@@ -256,11 +256,11 @@ export default function Revisoes({
       tipo: 'flashcard',
       urgencia: flashcardState.overdue > 0 ? 'alta' : 'media',
       disciplina: deck.title || 'Flashcards',
-      plano: 'FSRS + repeticao espacada',
+      plano: 'FSRS + repetição espaçada',
       razao: `${deck.dueToday} flashcards FSRS vencem no deck ${deck.title || 'principal'}`,
       detalhe: flashcardState.overdue > 0
-        ? `${flashcardState.overdue} ja passaram do horario ideal.`
-        : 'Fila do dia pronta para manter retencao alta.',
+        ? `${flashcardState.overdue} já passaram do horário ideal.`
+        : 'Fila do dia pronta para manter retenção alta.',
       duracaoSugerida: Math.max(10, Math.min(45, Math.round(deck.dueToday * 1.5))),
       ultimaSessao: 'fila FSRS',
       recommendation: null,
@@ -385,18 +385,20 @@ export default function Revisoes({
 
 function RevisoesHeader({ onRegistrar, onIniciarProxima }) {
   return (
-    <header className="revisoes-header">
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
-        <div className="pl-overline">Revisao inteligente / FSRS + historico</div>
-        <h1 className="pl-display revisoes-title">Revisoes<span>.</span></h1>
-        <p className="pl-body revisoes-subtitle">
-          O motor cruza desempenho, dias sem retomar e flashcards FSRS vencidos pra mostrar <span className="pl-mark-text">o que merece reforco hoje</span>.
-          Voce so escolhe por onde comecar.
+        <span className="pl-eyebrow">Revisão inteligente / FSRS + histórico</span>
+        <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+          Revisões<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h1>
+        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
+          O motor cruza desempenho, dias sem retomar e flashcards FSRS vencidos para mostrar <span className="pl-mark-text">o que merece reforço hoje</span>.
+          Você só escolhe por onde começar.
         </p>
       </div>
-      <div className="revisoes-header-actions">
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button type="button" className="pl-btn" onClick={onRegistrar}>Registrar estudo</button>
-        <button type="button" className="pl-btn pl-btn-primary" onClick={onIniciarProxima}><Play size={12} /> Iniciar proxima</button>
+        <button type="button" className="pl-btn pl-btn-primary" onClick={onIniciarProxima}><Play size={12} /> Iniciar próxima</button>
       </div>
     </header>
   );
@@ -405,9 +407,9 @@ function RevisoesHeader({ onRegistrar, onIniciarProxima }) {
 function RevisoesKpiStrip({ totals }) {
   const items = [
     { label: 'Pra revisar', value: String(totals.fila).padStart(2, '0'), sub: `${totals.disciplinas} disciplinas priorizadas`, tone: 'accent' },
-    { label: 'Alta prioridade', value: String(totals.alta).padStart(2, '0'), sub: 'motor recomenda comecar por aqui', tone: 'danger', icon: AlertCircle },
+    { label: 'Alta prioridade', value: String(totals.alta).padStart(2, '0'), sub: 'motor recomenda começar por aqui', tone: 'danger', icon: AlertCircle },
     { label: 'Flashcards hoje', value: String(totals.fcHoje).padStart(2, '0'), sub: `${totals.fcVencidos} vencidos do FSRS`, tone: 'warn' },
-    { label: 'Cobertura alvo', value: totals.cobertura == null ? '--%' : `${totals.cobertura}%`, sub: totals.diasRestantes == null ? 'sem alvo definido' : `${totals.diasRestantes} dias ate a prova`, tone: 'success' },
+    { label: 'Cobertura alvo', value: totals.cobertura == null ? '--%' : `${totals.cobertura}%`, sub: totals.diasRestantes == null ? 'sem alvo definido' : `${totals.diasRestantes} dias até a prova`, tone: 'success' },
   ];
   return (
     <section className="revisoes-kpi-grid">
@@ -434,7 +436,7 @@ function HeroRevisao({ item, onIniciar, onAbrir, onAdiar }) {
       <div className="revisoes-hero-top">
         <div className="revisoes-hero-rank">01</div>
         <div>
-          <div className="revisoes-live-dot"><span /> Proxima revisao / {tipoLabel(item.tipo)}</div>
+          <div className="revisoes-live-dot"><span /> Próxima revisão / {tipoLabel(item.tipo)}</div>
           <h2>{item.disciplina}</h2>
           <p>{item.plano || 'Plano ativo'} / estudada {item.ultimaSessao || 'recentemente'}</p>
         </div>
@@ -444,9 +446,9 @@ function HeroRevisao({ item, onIniciar, onAbrir, onAdiar }) {
         <footer>{item.detalhe}</footer>
       </blockquote>
       <div className="revisoes-hero-actions">
-        <button type="button" className="revisoes-highlight-btn" onClick={onIniciar}><Play size={12} /> Iniciar revisao / {item.duracaoSugerida || 30}min</button>
+        <button type="button" className="revisoes-highlight-btn" onClick={onIniciar}><Play size={12} /> Iniciar revisão / {item.duracaoSugerida || 30}min</button>
         <button type="button" className="revisoes-outline-dark" onClick={onAbrir}>{abrirLabel} <ArrowRight size={12} /></button>
-        <button type="button" className="revisoes-snooze-btn" title="Adiar pra amanha" onClick={onAdiar}><Clock size={14} /></button>
+        <button type="button" className="revisoes-snooze-btn" title="Adiar para amanhã" onClick={onAdiar}><Clock size={14} /></button>
       </div>
     </section>
   );
@@ -501,7 +503,7 @@ function ConcursoAlvoCard({ target, onDefinir, onAbrirEdital }) {
       <section className="pl-card-paper revisoes-target-empty">
         <div className="pl-overline">Concurso-alvo</div>
         <h3>Sem alvo definido.</h3>
-        <p>As prioridades ficam genericas enquanto voce nao escolhe uma prova.</p>
+        <p>As prioridades ficam genéricas enquanto você não escolhe uma prova.</p>
         <button type="button" className="pl-btn pl-btn-sm" onClick={onDefinir}>Definir alvo <ArrowRight size={11} /></button>
       </section>
     );
@@ -537,7 +539,7 @@ function DecksEmRevisao({ loading, decks, totalHoje, onAbrir }) {
       {loading ? (
         <div className="revisoes-loading"><Loader2 size={22} className="animate-spin" /></div>
       ) : decks.length === 0 ? (
-        <div className="revisoes-dashed-note">Sem decks com revisao vencendo hoje.</div>
+        <div className="revisoes-dashed-note">Sem decks com revisão vencendo hoje.</div>
       ) : (
         <div className="revisoes-deck-list">
           {decks.map((deck) => <DeckRow key={deck.id} {...deck} onOpen={onAbrir} />)}
@@ -551,15 +553,15 @@ function DecksEmRevisao({ loading, decks, totalHoje, onAbrir }) {
 function HistoricoRevisoesCard({ onAbrir }) {
   return (
     <section className="pl-card-paper revisoes-history-card">
-      <div className="pl-overline">Historico</div>
-      <h3>Ultima semana</h3>
+      <div className="pl-overline">Histórico</div>
+      <h3>Última semana</h3>
       <div className="revisoes-history-grid">
         <span><strong>--</strong> fechadas</span>
-        <span><strong>--</strong> min media</span>
-        <span><strong>--%</strong> pos-revisao</span>
+        <span><strong>--</strong> min média</span>
+        <span><strong>--%</strong> pós-revisão</span>
       </div>
-      <p>Aguardando historico suficiente para consolidar a leitura.</p>
-      <button type="button" className="pl-btn-link" onClick={onAbrir}>Ver historico consolidado <ArrowRight size={12} /></button>
+      <p>Aguardando histórico suficiente para consolidar a leitura.</p>
+      <button type="button" className="pl-btn-link" onClick={onAbrir}>Ver histórico consolidado <ArrowRight size={12} /></button>
     </section>
   );
 }
@@ -567,12 +569,12 @@ function HistoricoRevisoesCard({ onAbrir }) {
 function RevisoesEmptyState({ onRegistrar, onFlashcards, onDefinirAlvo }) {
   return (
     <section className="pl-card-paper revisoes-empty-state">
-      <div className="revisoes-empty-live"><span /> Sua fila esta pronta</div>
-      <h2>Sem historico suficiente ainda.</h2>
-      <p>Registre estudo, rode flashcards e defina um concurso-alvo para o motor entender o que merece reforco.</p>
+      <div className="revisoes-empty-live"><span /> Sua fila está pronta</div>
+      <h2>Sem histórico suficiente ainda.</h2>
+      <p>Registre estudo, rode flashcards e defina um concurso-alvo para o motor entender o que merece reforço.</p>
       <div className="revisoes-empty-grid">
-        <EmptyAction n="01" title="Registrar uma sessao" detail="Alimente o historico real para calibrar a fila." cta="Registrar estudo" onClick={onRegistrar} />
-        <EmptyAction n="02" title="Estudar flashcards" detail="Use FSRS para criar revisoes automaticas." cta="Abrir flashcards" onClick={onFlashcards} />
+        <EmptyAction n="01" title="Registrar uma sessão" detail="Alimente o histórico real para calibrar a fila." cta="Registrar estudo" onClick={onRegistrar} />
+        <EmptyAction n="02" title="Estudar flashcards" detail="Use FSRS para criar revisões automáticas." cta="Abrir flashcards" onClick={onFlashcards} />
         <EmptyAction n="03" title="Definir concurso-alvo" detail="Priorize o edital que realmente importa agora." cta="Escolher alvo" onClick={onDefinirAlvo} />
       </div>
     </section>
@@ -606,12 +608,12 @@ function normalizeReviewItem(item, index, targetContest) {
     id: item?.id || `review-${index}`,
     rank: Number(item?.rank || index + 1),
     disciplinaId: item?.disciplinaId || item?.id || item?.disciplina || item?.nome,
-    disciplina: item?.disciplina || item?.subject || item?.nome || item?.title || 'Revisao',
+    disciplina: item?.disciplina || item?.subject || item?.nome || item?.title || 'Revisão',
     plano: item?.plano || targetContest?.nome || 'Plano ativo',
     tipo: item?.tipo || (isHigh ? 'desempenho' : 'defasado'),
     urgencia: item?.urgencia || (isHigh ? 'alta' : 'media'),
-    razao: item?.razao || item?.reason || item?.description || 'Revisao recomendada pelo historico recente.',
-    detalhe: item?.detalhe || item?.reason || 'A fila inteligente encontrou uma oportunidade de reforco.',
+    razao: item?.razao || item?.reason || item?.description || 'Revisão recomendada pelo histórico recente.',
+    detalhe: item?.detalhe || item?.reason || 'A fila inteligente encontrou uma oportunidade de reforço.',
     duracaoSugerida: duration,
     ultimaSessao: item?.ultimaSessao || 'recentemente',
     recommendation: item?.recommendation || item,

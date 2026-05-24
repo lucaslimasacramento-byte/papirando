@@ -115,26 +115,23 @@ export default function Estatisticas({
 
 function EstatisticasHeader({ onFiltros }) {
   return (
-    <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
-        <div>
-          <div className="pl-overline">Inteligência analítica</div>
-          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
-            Estatísticas profundas.
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+            Estatísticas profundas<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
             Tempo, acurácia e distribuição por matéria para enxergar onde seu estudo está rendendo.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button type="button" className="pl-btn pl-btn-ghost">Matérias padronizadas</button>
           <button type="button" className="pl-btn pl-btn-secondary" onClick={onFiltros}>
             <Filter size={14} />
             Filtros avançados
           </button>
         </div>
-      </div>
-    </section>
+    </header>
   );
 }
 

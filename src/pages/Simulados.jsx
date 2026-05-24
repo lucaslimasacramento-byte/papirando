@@ -220,20 +220,20 @@ export default function Simulados({
                   <PathwayCard
                     primary
                     onAction={() => openSimuladoReviewModal?.('novo')}
-                    badge="Fluxo rapido"
+                    badge="Fluxo rápido"
                     badgeTone="accent"
                     title="Registrar prova externa"
-                    description="Lance acertos, erros, brancos, tempo e banca para transformar qualquer prova em historico."
-                    meta={['Disciplinas por linha', 'Cronometro opcional', 'Peso por materia']}
-                    cta="Abrir formulario"
+                    description="Lance acertos, erros, brancos, tempo e banca para transformar qualquer prova em histórico."
+                    meta={['Disciplinas por linha', 'Cronômetro opcional', 'Peso por matéria']}
+                    cta="Abrir formulário"
                   />
                   <PathwayCard
                     onAction={() => setIsCadernoModalOpen(true)}
                     badge="Personalizado"
                     badgeTone="success"
                     title="Montar prova no caderno"
-                    description="Combine questoes do banco em uma prova sob medida e registre o desempenho depois."
-                    meta={['Foco por disciplina', '+1.500 questoes filtraveis', 'Mesma experiencia de estudo']}
+                    description="Combine questões do banco em uma prova sob medida e registre o desempenho depois."
+                    meta={['Foco por disciplina', '+1.500 questões filtráveis', 'Mesma experiência de estudo']}
                     cta="Abrir caderno"
                   />
                 </div>
@@ -269,15 +269,17 @@ export default function Simulados({
 
 function SimuladosHeader({ onRanking, onCaderno, onRegistrar }) {
   return (
-    <header className="simulados-header">
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
-        <div className="pl-overline">Pratica em prova</div>
-        <h1 className="pl-display simulados-title">Simulados<span>.</span></h1>
-        <p className="pl-body simulados-subtitle">
-          Registre provas externas, revise sua evolucao e deixe o Papirando <span className="pl-mark-text">montar um caderno sob medida</span> quando quiser treinar.
+        <span className="pl-eyebrow">Prática em prova</span>
+        <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+          Simulados<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h1>
+        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
+          Registre provas externas, revise sua evolução e deixe o Papirando <span className="pl-mark-text">montar um caderno sob medida</span> quando quiser treinar.
         </p>
       </div>
-      <div className="simulados-header-actions">
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button type="button" className="pl-btn" onClick={onRanking}><Trophy size={13} /> Ranking</button>
         <button type="button" className="pl-btn" onClick={onCaderno}><Settings size={13} /> Montar no caderno</button>
         <button type="button" className="pl-btn pl-btn-primary" onClick={onRegistrar}><PlusSquare size={13} /> Registrar prova</button>
@@ -288,10 +290,10 @@ function SimuladosHeader({ onRanking, onCaderno, onRegistrar }) {
 
 function SimuladosKpiStrip({ totals }) {
   const items = [
-    { label: 'Realizados', value: String(totals.total).padStart(2, '0'), sub: `${totals.questoes} questoes contadas` },
-    { label: 'Media geral', value: `${totals.media}%`, sub: 'meta saudavel >= 70%', tone: 'accent' },
-    { label: 'Melhor nota', value: `${totals.melhor}%`, sub: 'seu pico ate aqui', tone: 'success' },
-    { label: 'Tempo medio', value: totals.tempoMedio, sub: 'por prova', tone: 'warn' },
+    { label: 'Realizados', value: String(totals.total).padStart(2, '0'), sub: `${totals.questoes} questões contadas` },
+    { label: 'Média geral', value: `${totals.media}%`, sub: 'meta saudável >= 70%', tone: 'accent' },
+    { label: 'Melhor nota', value: `${totals.melhor}%`, sub: 'seu pico até aqui', tone: 'success' },
+    { label: 'Tempo médio', value: totals.tempoMedio, sub: 'por prova', tone: 'warn' },
   ];
   return (
     <section className="simulados-kpi-grid">
@@ -331,19 +333,19 @@ function HistoricoTabela({ items, total, query, setQuery, onRevisar }) {
       <div className="simulados-history-head">
         <div>
           <div className="pl-overline">Arquivo</div>
-          <h2>Historico de simulados</h2>
+          <h2>Histórico de simulados</h2>
           <p>{items.length} de {total} exibidos</p>
         </div>
         <label className="simulados-search"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar prova, banca ou data" /></label>
       </div>
       <div className="simulados-table-head">
-        <span>Data</span><span>Prova</span><span>Banca</span><span>Desemp.</span><span>Questoes</span><span>Tempo</span><span></span>
+        <span>Data</span><span>Prova</span><span>Banca</span><span>Desemp.</span><span>Questões</span><span>Tempo</span><span></span>
       </div>
       {items.length === 0 ? (
         <div className="simulados-table-empty">
           <ClipboardList size={34} />
           <h3>{total === 0 ? 'Nenhum simulado registrado ainda' : 'Nenhum resultado para a busca'}</h3>
-          <p>{total === 0 ? 'Use Registrar prova para lancar sua primeira prova.' : 'Ajuste a busca ou limpe o campo.'}</p>
+          <p>{total === 0 ? 'Use Registrar prova para lançar sua primeira prova.' : 'Ajuste a busca ou limpe o campo.'}</p>
         </div>
       ) : (
         <div className="simulados-table-body">
@@ -366,14 +368,14 @@ function HistoricoTabela({ items, total, query, setQuery, onRevisar }) {
 
 function UltimoSimuladoDark({ latest, onRevisar, onLinhaDoTempo }) {
   if (!latest) {
-    return <section className="simulados-dark-card"><div className="pl-overline">Ultimo simulado</div><h3>Nenhum registro ainda.</h3></section>;
+    return <section className="simulados-dark-card"><div className="pl-overline">Último simulado</div><h3>Nenhum registro ainda.</h3></section>;
   }
   return (
     <section className="simulados-dark-card">
       <div className="simulados-card-corner" />
-      <div className="pl-overline">Ultimo simulado / {formatDate(latest.date)}</div>
+      <div className="pl-overline">Último simulado / {formatDate(latest.date)}</div>
       <h3>{latest.title}</h3>
-      <p>{latest.banca || 'Banca nao informada'} / tempo {latest.tempo || '-'}</p>
+      <p>{latest.banca || 'Banca não informada'} / tempo {latest.tempo || '-'}</p>
       <div className="simulados-dark-score"><strong>{latest.accuracy}%</strong><span>desempenho final</span></div>
       <div className="simulados-breakdown">
         <span className="is-success"><b>{latest.acertos}</b>Acertos</span>
@@ -389,7 +391,7 @@ function EvolucaoPorMateria({ items }) {
   return (
     <section className="pl-card simulados-progress-card">
       <div className="pl-overline">Por disciplina</div>
-      <h3>Evolucao em prova</h3>
+      <h3>Evolução em prova</h3>
       {items.length === 0 ? <div className="simulados-dashed-note">Sem disciplinas suficientes ainda.</div> : items.slice(0, 6).map((item) => <ProgressRow key={item.name} item={item} />)}
     </section>
   );
@@ -421,11 +423,11 @@ function SimuladosEmptyState({ onRegistrar, onCaderno }) {
   return (
     <section className="pl-card-paper simulados-empty-state">
       <div className="pl-overline">Primeira prova</div>
-      <h2>A prova vira linha de historico em 30 segundos.</h2>
-      <p>Comece registrando uma prova externa ou monte um caderno personalizado com o banco de questoes.</p>
+      <h2>A prova vira linha de histórico em 30 segundos.</h2>
+      <p>Comece registrando uma prova externa ou monte um caderno personalizado com o banco de questões.</p>
       <div className="simulados-pathway-grid">
-        <PathwayCard primary badge="01 Fluxo rapido" badgeTone="accent" title="Registrar prova externa" description="Lance totais por disciplina e salve o desempenho." meta={['Acertos, erros e brancos', 'Tempo e banca', 'Comentario final']} cta="Registrar" onAction={onRegistrar} />
-        <PathwayCard badge="02 Personalizado" badgeTone="success" title="Montar no caderno" description="Escolha filtros e gere uma prova sob medida." meta={['Quantidade ajustavel', 'Filtros por banca', 'Resultado vira historico']} cta="Montar" onAction={onCaderno} />
+        <PathwayCard primary badge="01 Fluxo rápido" badgeTone="accent" title="Registrar prova externa" description="Lance totais por disciplina e salve o desempenho." meta={['Acertos, erros e brancos', 'Tempo e banca', 'Comentário final']} cta="Registrar" onAction={onRegistrar} />
+        <PathwayCard badge="02 Personalizado" badgeTone="success" title="Montar no caderno" description="Escolha filtros e gere uma prova sob medida." meta={['Quantidade ajustável', 'Filtros por banca', 'Resultado vira histórico']} cta="Montar" onAction={onCaderno} />
       </div>
     </section>
   );
@@ -448,7 +450,7 @@ function formatTempoMedio(items) {
 function buildRankingPreview(communityMetrics, currentUserId, profile, historicoReal, redacaoSummary) {
   const questionPts = Number(communityMetrics?.correctAnswers || (Array.isArray(historicoReal) ? historicoReal : []).reduce((a, r) => a + Number(r?.acertos || 0), 0));
   const redacaoPts = Number(redacaoSummary?.points || redacaoSummary?.pontos || 0);
-  const self = { id: currentUserId || 'self', rank: 3, name: profile?.nome || profile?.name || 'Voce', score: questionPts + redacaoPts, isSelf: true };
+  const self = { id: currentUserId || 'self', rank: 3, name: profile?.nome || profile?.name || 'Você', score: questionPts + redacaoPts, isSelf: true };
   const rows = [
     { id: 'top-1', rank: 1, name: 'Ana P.', score: Math.max(self.score + 420, 1200) },
     { id: 'top-2', rank: 2, name: 'Bruno C.', score: Math.max(self.score + 180, 980) },

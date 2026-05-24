@@ -145,18 +145,17 @@ export default function Sessoes({
 
 function SessoesHeader({ onRegistrar, onAbrirTimer }) {
   return (
-    <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
-        <div>
-          <div className="pl-overline">Área de foco</div>
-          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
-            Sessões de estudo.
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+          <span className="pl-eyebrow">Área de foco</span>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+            Sessões de estudo<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
             Escolha um método, acompanhe o timer global e registre o que você estudou sem sair do fluxo.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button type="button" className="pl-btn pl-btn-primary" onClick={onAbrirTimer}>
             <Play size={15} fill="currentColor" />
             Abrir timer
@@ -166,8 +165,7 @@ function SessoesHeader({ onRegistrar, onAbrirTimer }) {
             Registrar estudo
           </button>
         </div>
-      </div>
-    </section>
+    </header>
   );
 }
 

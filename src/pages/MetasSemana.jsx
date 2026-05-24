@@ -535,23 +535,22 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
 
 function MetasHeader({ onNovaMeta }) {
   return (
-    <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'end' }}>
-        <div>
-          <div className="pl-overline">Metas semanais</div>
-          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
             Metas da semana<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
             Defina o alvo por disciplina, acompanhe o que já foi feito e ajuste a semana antes que ela escape.
           </p>
         </div>
-        <button type="button" className="pl-btn pl-btn-primary" onClick={onNovaMeta}>
-          <Plus size={15} />
-          Nova meta
-        </button>
-      </div>
-    </section>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button type="button" className="pl-btn pl-btn-primary" onClick={onNovaMeta}>
+            <Plus size={15} />
+            Nova meta
+          </button>
+        </div>
+    </header>
   );
 }
 

@@ -63,18 +63,18 @@ function ErrBanner({ msg }) {
 
 function FlashcardsHeader({ onNovoDeck, onGerarIa }) {
   return (
-    <header className="flashcards-header">
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
-        <div className="pl-overline">Pratica / FSRS-4.5</div>
-        <h1 className="pl-display flashcards-title">
-          Flashcards<span>.</span>
+        <span className="pl-eyebrow">Prática / FSRS-4.5</span>
+        <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+          Flashcards<span style={{ color: 'var(--pl-accent)' }}>.</span>
         </h1>
-        <p className="pl-body flashcards-subtitle">
-          Decks de repeticao espacada com <span className="pl-mark-text">geracao com IA</span> quando voce precisar.
-          O motor decide quando rever, voce so papira.
+        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
+          Decks de repetição espaçada com <span className="pl-mark-text">geração com IA</span> quando você precisar.
+          O motor decide quando rever, você só papira.
         </p>
       </div>
-      <div className="flashcards-header-actions">
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button type="button" className="pl-btn pl-btn-primary" onClick={onNovoDeck}>
           <Plus size={13} /> Novo deck
         </button>
@@ -88,10 +88,10 @@ function FlashcardsHeader({ onNovoDeck, onGerarIa }) {
 
 function FlashKpiStrip({ stats }) {
   const items = [
-    { label: 'Decks', value: String(stats.totalDecks).padStart(2, '0'), sub: 'colecoes ativas' },
+    { label: 'Decks', value: String(stats.totalDecks).padStart(2, '0'), sub: 'coleções ativas' },
     { label: 'Cards', value: String(stats.totalCards), sub: `${stats.newCards} novos pra entrar`, tone: 'accent' },
     { label: 'Vence hoje', value: String(stats.dueToday).padStart(2, '0'), sub: 'alta prioridade', tone: 'warn', icon: Flame },
-    { label: 'Retencao 7d', value: stats.retention == null ? '--%' : `${stats.retention}%`, sub: 'meta saudavel >= 85%', tone: 'success' },
+    { label: 'Retenção 7d', value: stats.retention == null ? '--%' : `${stats.retention}%`, sub: 'meta saudável >= 85%', tone: 'success' },
   ];
   return (
     <section className="flash-kpi-grid">
@@ -129,15 +129,15 @@ function AprenderHojeCard({ totals, nextCard, onIniciar, onSomenteRevisao }) {
             <span>{String(total).padStart(2, '0')}</span> cards te esperam
           </h2>
           <p>
-            Cerca de {Math.max(4, Math.round(Math.max(total, 1) * 0.45))} minutos. O FSRS escolhe a ordem; voce responde e segue.
+            Cerca de {Math.max(4, Math.round(Math.max(total, 1) * 0.45))} minutos. O FSRS escolhe a ordem; você responde e segue.
           </p>
         </div>
         <div className="flash-dark-actions">
           <button type="button" className="flash-highlight-btn" onClick={onIniciar}>
-            <Play size={12} /> Iniciar revisao
+            <Play size={12} /> Iniciar revisão
           </button>
           <button type="button" className="flash-outline-dark" onClick={onSomenteRevisao}>
-            Estudar so revisoes
+            Estudar só revisões
           </button>
         </div>
       </div>
@@ -154,7 +154,7 @@ function AprenderHojeCard({ totals, nextCard, onIniciar, onSomenteRevisao }) {
       <div className="flash-state-grid">
         <StateMetric label="Novos" value={novos} />
         <StateMetric label="Aprendendo" value={learning} tone="warn" />
-        <StateMetric label="Revisao" value={total} tone="success" />
+        <StateMetric label="Revisão" value={total} tone="success" />
         <StateMetric label="Reaprendendo" value={relearning} tone="danger" />
       </div>
 
@@ -203,7 +203,7 @@ function NextCardPreview({ card }) {
   return (
     <div className="flash-next-preview">
       <div>
-        <span className="pl-overline">Proximo / {card?.disciplina || 'Geral'}</span>
+        <span className="pl-overline">Próximo / {card?.disciplina || 'Geral'}</span>
         <strong>{card?.front || 'Nenhum card vencendo agora'}</strong>
       </div>
       <div className="flash-rating-grid">
@@ -322,7 +322,7 @@ function GerarIaInlineCard({ disciplinaOptions, loading, error, onGerar }) {
         <span className="pl-overline">Gerar deck</span>
       </div>
       <h3>Crie um deck em <span>15 segundos</span></h3>
-      <p>Diga disciplina e topico. A IA escreve frente e verso no estilo de banca.</p>
+      <p>Diga disciplina e tópico. A IA escreve frente e verso no estilo de banca.</p>
       <label>
         <span>Disciplina</span>
         <select value={disciplinaId} onChange={(event) => setDisciplinaId(event.target.value)}>
@@ -339,7 +339,7 @@ function GerarIaInlineCard({ disciplinaOptions, loading, error, onGerar }) {
         </label>
       )}
       <label>
-        <span>Topico</span>
+        <span>Tópico</span>
         <input value={topico} onChange={(event) => setTopico(event.target.value)} placeholder="Ex: controle de constitucionalidade" />
       </label>
       <label>
@@ -363,7 +363,7 @@ function GerarIaInlineCard({ disciplinaOptions, loading, error, onGerar }) {
 function ProximosVencerList({ items, onAbrir }) {
   return (
     <section className="pl-card flash-side-card">
-      <div className="pl-overline">Proximos a vencer</div>
+      <div className="pl-overline">Próximos a vencer</div>
       <h3 className="pl-section-title">Fila curta</h3>
       <div className="flash-side-list">
         {items.length === 0 ? (
@@ -388,8 +388,8 @@ function AtividadeSemanaCard({ data, retencao }) {
   const healthy = Number(retencao || 0) >= 85;
   return (
     <section className="pl-card-paper flash-week-card">
-      <div className="pl-overline">Ultimos 7 dias</div>
-      <h3 className="pl-section-title">Ritmo de revisao</h3>
+      <div className="pl-overline">Últimos 7 dias</div>
+      <h3 className="pl-section-title">Ritmo de revisão</h3>
       <div className="flash-week-bars">
         {data.map((item, index) => (
           <div key={item.dia}>
@@ -398,7 +398,7 @@ function AtividadeSemanaCard({ data, retencao }) {
           </div>
         ))}
       </div>
-      <p><strong>{retencao == null ? '--' : `${retencao}%`}</strong> de retencao media. {healthy ? 'Segue nesse ritmo.' : 'Vale revisar hoje.'}</p>
+      <p><strong>{retencao == null ? '--' : `${retencao}%`}</strong> de retenção média. {healthy ? 'Segue nesse ritmo.' : 'Vale revisar hoje.'}</p>
     </section>
   );
 }
@@ -407,12 +407,12 @@ function FlashcardsEmptyState({ onManual, onIa, onEdital }) {
   return (
     <section className="pl-card-paper flash-empty-state">
       <div className="pl-overline">Primeiro deck</div>
-      <h2>Tres caminhos pra comecar a papirar</h2>
+      <h2>Três caminhos para começar a papirar</h2>
       <p>Monte um deck manual, deixe o Bizu IA criar a primeira leva, ou traga temas do edital verticalizado.</p>
       <div className="flash-empty-grid">
-        <EmptyAction n="01" title="Deck manual" detail="Crie uma colecao simples e adicione frente e verso." cta="Criar deck" onClick={onManual} />
-        <EmptyAction n="02" title="Gerar com IA" detail="Informe disciplina e topico para receber cards revisaveis." cta="Usar Bizu IA" onClick={onIa} ai />
-        <EmptyAction n="03" title="Do edital" detail="Use seus topicos do edital como trilha de memorizacao." cta="Abrir edital" onClick={onEdital} />
+        <EmptyAction n="01" title="Deck manual" detail="Crie uma coleção simples e adicione frente e verso." cta="Criar deck" onClick={onManual} />
+        <EmptyAction n="02" title="Gerar com IA" detail="Informe disciplina e tópico para receber cards revisáveis." cta="Usar Bizu IA" onClick={onIa} ai />
+        <EmptyAction n="03" title="Do edital" detail="Use seus tópicos do edital como trilha de memorização." cta="Abrir edital" onClick={onEdital} />
       </div>
     </section>
   );
@@ -522,7 +522,7 @@ function FlashcardsAiModal({
               {disciplineOptions.map((discipline) => <option key={discipline.id} value={discipline.id}>{discipline.label}</option>)}
             </select>
           </CField>
-          <CField label="Topico cadastrado">
+          <CField label="Tópico cadastrado">
             <select
               className={inputCls()}
               value={aiForm.topicoId}
@@ -545,7 +545,7 @@ function FlashcardsAiModal({
               onChange={(event) => setAiForm((prev) => ({ ...prev, disciplina: event.target.value }))}
             />
           </CField>
-          <CField label="Topico livre">
+          <CField label="Tópico livre">
             <input
               type="text"
               className={inputCls()}
@@ -1522,7 +1522,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
           }
         >
           <p className="text-sm text-slate-600">
-            O deck e todos os seus cards serao excluidos permanentemente. Esta acao nao pode ser desfeita.
+            O deck e todos os seus cards serão excluídos permanentemente. Esta ação não pode ser desfeita.
           </p>
         </CModal>
       )}

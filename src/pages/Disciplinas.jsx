@@ -159,7 +159,7 @@ export default function Disciplinas({
   const handleDeleteDiscipline = async (disciplina) => {
     const totalTopicosDisciplina = disciplina.topicos?.length || 0;
     const confirmar = window.confirm(
-      `Excluir a disciplina "${disciplina.nome}"? Voce perdera ${totalTopicosDisciplina} topicos e o progresso associado a ela.`
+      `Excluir a disciplina "${disciplina.nome}"? Você perderá ${totalTopicosDisciplina} tópicos e o progresso associado a ela.`
     );
     if (!confirmar) return;
 
@@ -179,7 +179,7 @@ export default function Disciplinas({
       }
     } catch (error) {
       console.error('Erro ao excluir disciplina:', error);
-      alert('Nao foi possivel excluir a disciplina.');
+      alert('Não foi possível excluir a disciplina.');
     }
   };
 
@@ -236,14 +236,12 @@ export default function Disciplinas({
 
 function DisciplinasHeader({ avancoGlobal, onRegistrarEstudo, onNovaDisciplina }) {
   return (
-    <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 24, alignItems: 'end' }}>
-        <div>
-          <div className="pl-overline">Estudos / Disciplinas</div>
-          <h1 className="pl-display" style={{ margin: '14px 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}>
-            Matérias no ponto.
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+      <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+            Matérias no ponto<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p className="pl-body" style={{ maxWidth: 760, fontSize: 18 }}>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
             Organize o edital por disciplina, avance por tópicos e deixe a rotina puxar o que precisa de revisão.
           </p>
           <div style={{ marginTop: 18, maxWidth: 620 }}>
@@ -257,7 +255,7 @@ function DisciplinasHeader({ avancoGlobal, onRegistrarEstudo, onNovaDisciplina }
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifySelf: 'end', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
           <button type="button" className="pl-btn pl-btn-primary" onClick={onRegistrarEstudo}>
             <Play size={15} fill="currentColor" />
             Registrar estudo
@@ -267,8 +265,7 @@ function DisciplinasHeader({ avancoGlobal, onRegistrarEstudo, onNovaDisciplina }
             Nova disciplina
           </button>
         </div>
-      </div>
-    </section>
+    </header>
   );
 }
 

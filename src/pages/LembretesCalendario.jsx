@@ -253,7 +253,7 @@ export default function LembretesCalendario({
           hora: 'Feriado nacional',
           tipo: 'Feriado',
           cor: STUDY_EVENT_COLORS.Feriado,
-          detail: 'BrasilAPI Â· feriado nacional',
+          detail: 'BrasilAPI - feriado nacional',
         }))
     );
   }, [calendarViewMode, currentMonthDates, currentWeek, holidaysByYear, visibleYears]);
@@ -522,17 +522,16 @@ export default function LembretesCalendario({
 
 function LembretesHeader({ alertasAtivos, provasNoRadar }) {
   return (
-    <header className="pl-lembretes-hero">
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
-        <div className="pl-eyebrow">Lembretes</div>
-        <h1 className="pl-display pl-lembretes-title">
-          Lembretes & calendário<span style={{ color: 'var(--pl-ink)' }}>.</span>
+        <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+          Lembretes &amp; calendário<span style={{ color: 'var(--pl-accent)' }}>.</span>
         </h1>
-        <p className="pl-lembretes-subtitle">
+        <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
           Visualize alertas, organize pendências e acompanhe provas no calendário unificado.
         </p>
       </div>
-      <div className="pl-lembretes-stats">
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <ReminderStatTile label="Alertas ativos" value={alertasAtivos} color={alertasAtivos > 0 ? 'var(--pl-highlight-ink)' : 'var(--pl-ink)'} />
         <ReminderStatTile label="Provas no radar" value={provasNoRadar} color="var(--pl-ink)" />
       </div>
