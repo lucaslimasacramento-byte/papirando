@@ -2,7 +2,6 @@
 import {
   Loader2,
   AlertTriangle,
-  ArrowRight,
   BarChart2,
   Bookmark,
   Check,
@@ -10,23 +9,13 @@ import {
   ChevronRight,
   Edit3,
   Flag,
-  Folder,
-  ListChecks,
   MessageSquare,
   Play,
   Search,
-  Settings,
   SlidersHorizontal,
-  Target,
-  Trophy,
   X,
 } from 'lucide-react';
 import { buildCanonicalHistory, buildStudyHistoryOverview } from '../lib/studyAnalytics';
-import PageHeadPremium, {
-  PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS,
-  PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS,
-  PageHeadPremiumBadge,
-} from '../components/PageHeadPremium';
 import { loadExamBoardsFromSupabase } from '../lib/examBoardsApi';
 import { supabase } from '../lib/supabase';
 import { submitAnswer } from '../lib/questoesApi';
@@ -250,23 +239,23 @@ export default function Questoes({
   }, [filteredQuestions.length, currentQuestionIndex]);
 
   return (
-    <div className="pl-page" style={{ overflow: 'hidden' }}>
-      <PageHeadPremium
-        className="shrink-0 gap-4 lg:!flex-row lg:!items-stretch lg:!justify-between xl:!items-center"
-        icon={ListChecks}
-        badge={<PageHeadPremiumBadge icon={Target}>Banco inteligente</PageHeadPremiumBadge>}
-        title="Banco de questões"
-        subtitle="Catálogo da plataforma, filtros e métricas do seu histórico — meta do dia ajustável abaixo."
-        leadingClassName="min-w-0 shrink-0 lg:max-w-[26rem] xl:max-w-[28rem]"
-        leadingExtra={(
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Meta do dia</span>
+    <div className="pl-page" style={{ height: '100%', overflow: 'hidden' }}>
+      <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end', flexShrink: 0 }}>
+        <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 44, color: 'var(--pl-ink)' }}>
+            Banco de questões<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 580, lineHeight: 1.5 }}>
+            Filtre por disciplina, banca ou nível. Meta do dia ajustável ao lado.
+          </p>
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>Meta do dia</span>
             {isEditingMeta ? (
               <input
                 type="number"
                 min={1}
                 autoFocus
-                className="w-16 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-sm font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40"
+                style={{ width: 64, borderRadius: 6, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', padding: '3px 8px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)' }}
                 value={metaDiariaQuestoes}
                 onChange={(e) => setMetaDiariaQuestoes(Number(e.target.value))}
                 onBlur={() => setIsEditingMeta(false)}
@@ -276,110 +265,60 @@ export default function Questoes({
               <button
                 type="button"
                 onClick={() => setIsEditingMeta(true)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold text-slate-100 transition hover:bg-white/15"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', padding: '3px 10px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
               >
-                <span className="tabular-nums">{questionsToday}</span>
-                <span className="text-slate-500">/</span>
-                <span className="tabular-nums">{metaDiariaQuestoes}</span>
-                <Edit3 size={12} className="text-slate-400" aria-hidden />
+                <span>{questionsToday}</span>
+                <span style={{ color: 'var(--pl-ink-3)' }}>/</span>
+                <span>{metaDiariaQuestoes}</span>
+                <Edit3 size={12} style={{ color: 'var(--pl-ink-3)' }} />
               </button>
             )}
-            <span className="text-[10px] text-slate-500">resolvidas · clique para editar a meta</span>
+            <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>resolvidas · clique para editar</span>
           </div>
-        )}
-        statsStackBelowTrailing
-        statsDense
-        statGridClassName="grid min-h-0 w-full min-w-0 shrink-0 grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0 [&>*]:self-stretch"
-        trailingWrapClassName="lg:ml-auto lg:w-full lg:max-w-none xl:w-auto xl:max-w-[min(100%,48rem)] xl:shrink-0"
-        stats={[
-          {
-            key: 'taxa',
-            icon: BarChart2,
-            label: 'Taxa hoje',
-            value: `${questionAccuracy}%`,
-            accent: 'emerald',
-            valueClassName: '!text-emerald-200',
-          },
-          {
-            key: 'hist',
-            icon: Target,
-            label: 'No histórico',
-            value: String(historyOverview.totalQuestions),
-            accent: 'indigo',
-          },
-          {
-            key: 'acc',
-            icon: CheckCircle2,
-            label: 'Acurácia',
-            value: `${historyOverview.overallAccuracy}%`,
-            accent: 'blue',
-            valueClassName: '!text-blue-200',
-          },
-          {
-            key: 'time',
-            icon: BarChart2,
-            label: 'Tempo estudo',
-            value: historyOverview.totalMinutesLabel,
-            accent: 'orange',
-          },
-        ]}
-        trailing={(
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-            <button
-              type="button"
-              onClick={() => setRegistroEstudoModalOpen?.(true)}
-              className={`${PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS} w-full sm:w-auto`}
-            >
-              <Play size={14} fill="currentColor" className="opacity-95" aria-hidden />
-              Registrar estudo
-            </button>
-            {questionsRecommendation ? (
-              <button
-                type="button"
-                onClick={() => onStartRecommendedSession?.(questionsRecommendation)}
-                className={`${PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS} w-full sm:w-auto`}
-              >
-                <Target size={14} aria-hidden />
-                Bloco sugerido
-              </button>
-            ) : null}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <QStatTile label="Taxa hoje" value={`${questionAccuracy}%`} />
+            <QStatTile label="No histórico" value={String(historyOverview.totalQuestions)} />
+            <QStatTile label="Acurácia" value={`${historyOverview.overallAccuracy}%`} />
+            <QStatTile label="Tempo" value={historyOverview.totalMinutesLabel} />
           </div>
-        )}
-      />
+          <button
+            type="button"
+            onClick={() => setRegistroEstudoModalOpen?.(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: 'none', background: 'var(--pl-accent)', color: 'white', padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+          >
+            <Play size={13} fill="currentColor" />
+            Registrar estudo
+          </button>
+        </div>
+      </header>
 
-      <div className="section-card relative z-10 shrink-0 !p-2.5 sm:!p-3 flex flex-col gap-2">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="relative min-w-0 flex-1">
-            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center sm:left-4">
-              <Search className="text-gray-400" size={16} />
-            </div>
-
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 12, padding: '10px 12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+            <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-3)', pointerEvents: 'none' }} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Palavras-chave, lei, artigo, código..."
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-24 text-xs font-semibold text-slate-700 outline-none transition-all placeholder:font-medium placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-700 focus:bg-white sm:pl-11 sm:text-sm"
+              style={{ width: '100%', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg)', padding: '7px 12px 7px 36px', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', boxSizing: 'border-box' }}
             />
-
-            <button type="button" className={buttonClass('primary', 'absolute inset-y-1 right-1 px-3 py-1 text-[10px] sm:text-xs')}>
-              Buscar
-            </button>
           </div>
-
-          <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <button
               type="button"
               onClick={() => setFiltersOpen(true)}
-              className={buttonClass('secondary', 'px-3 py-2 text-[11px] sm:text-xs')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
             >
               <SlidersHorizontal size={14} />
               Filtros
-              {activeFiltersCount > 0 ? (
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+              {activeFiltersCount > 0 && (
+                <span style={{ borderRadius: 99, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg)', padding: '1px 6px', fontSize: 10, fontWeight: 700, color: 'var(--pl-accent)' }}>
                   {activeFiltersCount}
                 </span>
-              ) : null}
+              )}
             </button>
             <button
               type="button"
@@ -390,24 +329,21 @@ export default function Questoes({
                 }
                 setRegistroEstudoModalOpen?.(true);
               }}
-              className={buttonClass('primary', 'px-3 py-2 text-[11px] sm:px-4 sm:text-xs')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: 'none', background: 'var(--pl-accent)', color: 'white', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
             >
               Iniciar modo livre
-              <Play size={14} />
+              <Play size={13} />
             </button>
-            {activeFiltersCount > 0 ? (
+            {activeFiltersCount > 0 && (
               <button
                 type="button"
-                onClick={() => {
-                  setFilterDisc('');
-                  setFilterBanca('');
-                  setFilterDif('');
-                }}
-                className={buttonClass('secondary', 'px-3 py-2 text-[11px] sm:text-xs')}
+                onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterDif(''); }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
               >
-                Limpar filtros
+                <X size={13} />
+                Limpar
               </button>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
@@ -457,35 +393,35 @@ export default function Questoes({
 
       {filtersOpen ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:p-5">
+          <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 16, padding: '20px 24px', width: '100%', maxWidth: 680 }}>
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Filtro de questões</p>
-                <h3 className="text-lg font-semibold text-slate-900">Refinar banco de questões</h3>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)', margin: 0 }}>Filtro de questões</p>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '4px 0 0', fontFamily: 'var(--pl-sans)' }}>Refinar banco de questões</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-3)', cursor: 'pointer' }}
                 aria-label="Fechar filtros"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <p className="mb-3 text-xs font-medium text-slate-500">
+            <p style={{ marginBottom: 12, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
               Disciplina e banca são escolhas do cadastro da plataforma (catálogo padrão de disciplinas e catálogo de
               bancas). Listas vazias somem após o administrador incluir registros.
             </p>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-disciplina">
+                <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-disciplina">
                   Disciplina
                 </label>
                 <select
                   id="questoes-filter-disciplina"
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white"
+                  style={{ borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg)', padding: '8px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', width: '100%' }}
                   value={filterDisc}
                   onChange={(e) => setFilterDisc(e.target.value)}
                 >
@@ -504,12 +440,12 @@ export default function Questoes({
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-banca">
+                <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-banca">
                   Banca
                 </label>
                 <select
                   id="questoes-filter-banca"
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white"
+                  style={{ borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg)', padding: '8px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', width: '100%' }}
                   value={filterBanca}
                   onChange={(e) => setFilterBanca(e.target.value)}
                 >
@@ -528,12 +464,12 @@ export default function Questoes({
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500" htmlFor="questoes-filter-nivel">
+                <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-nivel">
                   Nível
                 </label>
                 <select
                   id="questoes-filter-nivel"
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white"
+                  style={{ borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg)', padding: '8px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', width: '100%' }}
                   value={filterDif}
                   onChange={(e) => setFilterDif(e.target.value)}
                 >
@@ -718,9 +654,9 @@ function FilterField({ label, options }) {
 }
 
 function AnswerOption({ label, text, selected = false, submitted = false, isCorrect = false, isWrongSelection = false, onClick }) {
-  let tone = 'border-gray-100 hover:border-blue-400 hover:bg-blue-50';
-  let markerTone = 'border-gray-300 text-gray-400 group-hover/option:border-blue-500 group-hover/option:text-blue-600';
-  let textTone = 'text-gray-600 group-hover/option:text-blue-900';
+  let tone = 'border-[rgba(20,17,13,0.10)] hover:border-[rgba(20,17,13,0.20)] hover:bg-[#ece8dd]';
+  let markerTone = 'border-[rgba(20,17,13,0.20)] text-[#8a8178]';
+  let textTone = 'text-[#3a3530]';
 
   if (submitted && isCorrect) {
     tone = 'border-emerald-500 bg-emerald-50';
@@ -731,9 +667,9 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
     markerTone = 'border-rose-500 bg-rose-500 text-white';
     textTone = 'text-rose-900';
   } else if (selected) {
-    tone = 'border-blue-500 bg-blue-50';
-    markerTone = 'border-blue-500 bg-blue-500 text-white';
-    textTone = 'text-blue-900';
+    tone = 'border-[#1e3a5f] bg-[rgba(30,58,95,0.05)]';
+    markerTone = 'border-[#1e3a5f] bg-[#1e3a5f] text-white';
+    textTone = 'text-[#14110d]';
   }
 
   return (
@@ -793,16 +729,23 @@ function InsightCard({ title, text }) {
   );
 }
 
-function buttonClass(tone = 'primary', extra = '') {
-  const base =
-    'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm';
-  const tones = {
-    primary:
-      'border border-blue-700 bg-blue-700 text-white hover:border-blue-800 hover:bg-blue-800 hover:shadow-md',
-    secondary:
-      'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
-  };
+function QStatTile({ label, value }) {
+  return (
+    <div style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)', borderRadius: 8, padding: '10px 14px', minWidth: 78 }}>
+      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', lineHeight: 1, fontFamily: 'var(--pl-sans)' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 26, letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--pl-ink)', marginTop: 4 }}>
+        {value}<span style={{ color: 'var(--pl-accent)' }}>.</span>
+      </div>
+    </div>
+  );
+}
 
+function buttonClass(tone = 'primary', extra = '') {
+  const base = 'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all duration-200';
+  const tones = {
+    primary: 'border border-[#1e3a5f] bg-[#1e3a5f] text-white hover:opacity-90',
+    secondary: 'border border-[rgba(20,17,13,0.16)] bg-[#ece8dd] text-[#14110d] hover:bg-[#f3efe5]',
+  };
   return `${base} ${tones[tone] || tones.primary} ${extra}`.trim();
 }
 
