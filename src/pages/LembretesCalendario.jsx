@@ -437,7 +437,7 @@ export default function LembretesCalendario({
   }
 
   return (
-    <div className="pl-paper-bg-soft pl-lembretes-page">
+    <div className="pl-page">
       <LembretesHeader alertasAtivos={notifications.length} provasNoRadar={notificationStats.provas} />
 
       <LembretesFilters

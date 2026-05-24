@@ -242,13 +242,13 @@ export default function ConcursosDisponiveis({
     {
       id: 'recomendado',
       title: 'Recomendado',
-      emptyText: 'Marque concursos como favoritos ou interessados para receber recomendacoes aqui.',
+      emptyText: 'Marque concursos como favoritos ou interessados para receber recomendações aqui.',
       items: smartSections.recomendados.length > 0 ? smartSections.recomendados : smartSections.proximosDaProva,
     },
     {
       id: 'andamento',
-      title: 'Ja em andamento',
-      emptyText: 'Quando voce importar concursos, eles passam a aparecer aqui.',
+      title: 'Já em andamento',
+      emptyText: 'Quando você importar concursos, eles passam a aparecer aqui.',
       items: smartSections.jaEmAndamento,
     },
   ], [smartSections]);
@@ -289,8 +289,7 @@ export default function ConcursosDisponiveis({
   };
 
   return (
-    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px' }}>
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="pl-page">
         <ConcursosHeader publicados={totalPublicados} areas={totalAreas} />
 
         <ConcursosFilters
@@ -322,12 +321,12 @@ export default function ConcursosDisponiveis({
               </div>
               <div style={{ marginTop: 2, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
                 {limiteAtingido
-                  ? 'Importacoes bloqueadas ate voce liberar uma vaga.'
-                  : `Voce ainda tem ${remainingCourseSlots} vaga(s) para importar concursos.`}
+                  ? 'Importações bloqueadas até você liberar uma vaga.'
+                  : `Você ainda tem ${remainingCourseSlots} vaga(s) para importar concursos.`}
               </div>
             </div>
             <span className={`pl-tag ${limiteAtingido ? 'pl-tag-warn' : 'pl-tag-success'}`}>
-              {limiteAtingido ? 'Limite atingido' : 'Disponivel'}
+              {limiteAtingido ? 'Limite atingido' : 'Disponível'}
             </span>
           </div>
         )}
@@ -426,7 +425,6 @@ export default function ConcursosDisponiveis({
           onImport={handleImport}
         />
       )}
-      </div>
     </div>
   );
 }
@@ -435,18 +433,17 @@ function ConcursosHeader({ publicados, areas }) {
   return (
     <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
-        <div className="pl-eyebrow">Biblioteca</div>
-        <h1 className="pl-display" style={{ margin: '10px 0 0', fontSize: 56, color: 'var(--pl-ink)' }}>
-          Concursos disponiveis<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+          Biblioteca<span style={{ color: 'var(--pl-accent)' }}>.</span>
         </h1>
         <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 720, lineHeight: 1.5 }}>
-          Procure por area, banca, cargo ou data de prova. Importe os que valem a pena pro seu painel;
+          Procure por área, banca, cargo ou data de prova. Importe os que valem a pena para o seu painel;
           o resto a gente <span className="pl-mark-text">papira</span> depois.
         </p>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <StatTile label="Publicados" value={publicados} />
-        <StatTile label="Areas" value={areas} />
+        <StatTile label="Áreas" value={areas} />
       </div>
     </header>
   );
@@ -488,7 +485,7 @@ function ConcursosFilters({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por concurso, banca, cargo ou area..."
+            placeholder="Buscar por concurso, banca, cargo ou área..."
             style={{ width: '100%', border: 0, outline: 0, background: 'transparent', fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink)' }}
           />
         </div>
@@ -499,10 +496,10 @@ function ConcursosFilters({
           onChange={setSortMode}
           options={['relevancia', 'prova', 'salario', 'inscricao', 'nome']}
           renderLabel={(value) => {
-            if (value === 'relevancia') return 'Ordenar: relevancia';
+            if (value === 'relevancia') return 'Ordenar: relevância';
             if (value === 'prova') return 'Ordenar: prova';
-            if (value === 'salario') return 'Ordenar: salario';
-            if (value === 'inscricao') return 'Ordenar: inscricao';
+            if (value === 'salario') return 'Ordenar: salário';
+            if (value === 'inscricao') return 'Ordenar: inscrição';
             return 'Ordenar: nome';
           }}
         />
@@ -521,7 +518,7 @@ function ConcursosFilters({
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
         <span className="pl-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginRight: 2 }}>
-          <Filter size={13} /> Areas
+          <Filter size={13} /> Áreas
         </span>
         {areaStats.map((item) => {
           const token = item.area === 'Todas' ? null : getAreaToken(item.area);
@@ -606,7 +603,7 @@ function AreaSectionHeader({ area, count }) {
       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
         <span style={{ width: 10, height: 10, borderRadius: 2, background: area.cover, flexShrink: 0 }} />
         <div>
-          <div className="pl-eyebrow">Area</div>
+          <div className="pl-eyebrow">Área</div>
           <h2 style={{ margin: '4px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 29, color: 'var(--pl-ink)' }}>
             {area.label}
           </h2>
@@ -620,18 +617,15 @@ function AreaSectionHeader({ area, count }) {
 function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, formatDateBR, formatCurrencyBR, onOpen, onImport }) {
   const cargos = getContestRoles(concurso);
   const hasMultipleRoles = cargos.length > 1;
-  const allSubjects = cargos.flatMap((cargo) => cargo.disciplinas || []);
-  const topicosCount = allSubjects.reduce((acc, subject) => acc + (subject.topicos?.length || 0), 0);
   const statusKey = normalizeContestStatus(concurso.status_concurso);
   const statusTone = STATUS_TONE_MAP[statusKey] || 'accent';
   const stats = [
     { label: 'Prova', value: formatDateBR(concurso.prova_data) },
-    { label: hasMultipleRoles ? 'Salarios' : 'Salario', value: formatCurrencyBR(concurso.salario), tone: 'success' },
-    { label: hasMultipleRoles ? 'Inscricoes' : 'Inscricao', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
-    { label: 'Nivel', value: concurso.escolaridade || 'A definir', tone: 'accent' },
+    { label: hasMultipleRoles ? 'Salários' : 'Salário', value: formatCurrencyBR(concurso.salario), tone: 'success' },
+    { label: hasMultipleRoles ? 'Inscrições' : 'Inscrição', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
+    { label: 'Nível', value: concurso.escolaridade || 'A definir', tone: 'accent' },
     { label: hasMultipleRoles ? 'Vagas totais' : 'Vagas', value: concurso.vagas || 'A definir' },
     { label: hasMultipleRoles ? 'Cargos' : 'Disciplinas', value: hasMultipleRoles ? cargos.length : concurso.disciplinas?.length || 0 },
-    { label: hasMultipleRoles ? 'Topicos gerais' : 'Topicos', value: topicosCount },
   ].filter((item) => item.value !== '' && item.value != null);
 
   return (
@@ -708,7 +702,7 @@ function ListaConcursos({ contests, area, cursos, limiteAtingido, importingId, f
   return (
     <div className="pl-card" style={{ overflow: 'hidden', marginTop: 14 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1.2fr', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-surface-2)' }}>
-        {['Concurso', 'Banca', 'Area', 'Salario', 'Prova', 'Acoes'].map((label) => <span key={label} className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>)}
+        {['Concurso', 'Banca', 'Área', 'Salário', 'Prova', 'Ações'].map((label) => <span key={label} className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>)}
       </div>
       {contests.map((contest) => {
         const imported = cursos.some((curso) => curso.plano === contest.plano || curso.nome === contest.nome || curso.concurso === contest.concurso);
