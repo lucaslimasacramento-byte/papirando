@@ -213,7 +213,7 @@ export default function Login({
 
       .pl-login-card {
         width: min(100%, 560px);
-        min-height: min(740px, calc(100vh - 48px));
+        height: min(760px, calc(100vh - 48px));
         background: rgba(255, 255, 255, 0.86);
         border: 1px solid rgba(20, 17, 13, 0.12);
         border-radius: 22px;
@@ -239,7 +239,7 @@ export default function Login({
       }
 
       .pl-login-card.is-register {
-        min-height: min(760px, calc(100vh - 32px));
+        height: min(760px, calc(100vh - 48px));
       }
 
       .pl-login-card.is-register .pl-login-card-header {
@@ -279,6 +279,11 @@ export default function Login({
       .pl-login-card.is-register .pl-login-divider {
         grid-column: 1 / -1;
         margin: 2px 0;
+      }
+
+      .pl-login-card.is-register .pl-register-wide {
+        grid-column: 1 / -1;
+        max-width: none;
       }
 
       .pl-login-card.is-register .pl-login-footer {
@@ -335,7 +340,7 @@ export default function Login({
 
         .pl-login-card {
           max-height: calc(100svh - 56px);
-          min-height: auto;
+          height: auto;
           border-radius: 18px;
           padding: 28px 22px !important;
           box-shadow: 0 18px 46px rgba(20, 17, 13, 0.13), 0 2px 10px rgba(20, 17, 13, 0.08);
@@ -355,6 +360,7 @@ export default function Login({
         .pl-login-card {
           width: 100%;
           max-height: calc(100svh - 36px);
+          height: auto;
           border-radius: 16px;
           padding: 24px 16px !important;
         }
@@ -484,7 +490,7 @@ export default function Login({
           <span style={{
             fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)',
             letterSpacing: '0.24em', textTransform: 'uppercase',
-          }}>Acesso</span>
+          }}>{isLoginMode ? 'Acesso' : 'Registro'}</span>
 
           {/* Toggle pill */}
           <div style={{
@@ -667,7 +673,7 @@ export default function Login({
 
           {/* Código de convite (apenas cadastro) */}
           {!isLoginMode && (
-            <PlField label="Código de convite (opcional)">
+            <PlField label="Código de convite (opcional)" className="pl-register-wide">
               <input
                 className="pl-input" type="text"
                 placeholder="PAPIREIRO123"
@@ -781,9 +787,9 @@ function formatCpfInput(value) {
 }
 
 // ── Field wrapper ─────────────────────────────────────────────────────────
-function PlField({ label, aside, children }) {
+function PlField({ label, aside, children, className = '' }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{label}</label>
         {aside}
