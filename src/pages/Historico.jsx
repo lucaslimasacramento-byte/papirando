@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, Search, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, History, Search, SlidersHorizontal } from 'lucide-react';
 import {
   buildCanonicalHistory,
   buildHistoryTimelineItem,
   formatMinutesLabel,
 } from '../lib/studyAnalytics';
+import PageHeadPremium from '../components/PageHeadPremium';
 
 /* ── Paleta por tipo de registro ────────────────────────────────── */
 const TYPE_PALETTE = {
@@ -68,8 +69,12 @@ export default function Historico({
   return (
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5">
 
-      {/* ── Cabeçalho editorial ink ── */}
-      <PageHeader totalSessions={totalSessions} />
+      {/* ── Cabeçalho padrão da plataforma ── */}
+      <PageHeadPremium
+        icon={History}
+        title="Histórico"
+        subtitle="Linha do tempo dos seus registros. A análise fica na aba Estatísticas."
+      />
 
       {/* ── Busca ── */}
       <div
@@ -190,101 +195,6 @@ export default function Historico({
             ? <EmptyState hasRecords={totalSessions > 0} />
             : filtered.map((item) => <HistoryCard key={item.id} item={item} />)
           }
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Cabeçalho editorial da página (substitui PageHeadPremium) ── */
-function PageHeader({ totalSessions }) {
-  return (
-    <div style={{
-      flexShrink: 0,
-      background: 'var(--pl-ink)',
-      borderRadius: 8,
-      padding: '28px 30px 24px',
-      display: 'grid',
-      gridTemplateColumns: 'auto 1fr auto',
-      alignItems: 'center',
-      gap: 22,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Dog-ear canto superior direito */}
-      <div style={{
-        position: 'absolute', top: 0, right: 0,
-        width: 72, height: 72,
-        background: 'linear-gradient(225deg, rgba(243,239,229,0.07) 0%, rgba(243,239,229,0) 55%)',
-        clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Mark — quadrado paper com ícone ink */}
-      <div style={{
-        width: 58, height: 58,
-        background: 'var(--pl-bg)',
-        borderRadius: 4,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--pl-ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M12 7v5l4 2"/>
-        </svg>
-      </div>
-
-      {/* Bloco de texto */}
-      <div style={{ minWidth: 0 }}>
-        <div style={{
-          fontFamily: 'var(--pl-sans)',
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.32em',
-          textTransform: 'uppercase', color: '#93b4ff',
-          marginBottom: 8,
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-        }}>
-          <span style={{ display: 'inline-block', width: 16, height: 1, background: '#93b4ff', flexShrink: 0 }} />
-          Estudos · trilha do tempo
-        </div>
-        <h2 style={{
-          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 42, letterSpacing: '-0.04em',
-          color: 'var(--pl-bg)', lineHeight: 1,
-          margin: '0 0 9px',
-        }}>
-          Histórico<span style={{ color: '#93b4ff' }}>.</span>
-        </h2>
-        <p style={{
-          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 15.5, lineHeight: 1.45,
-          color: 'rgba(243,239,229,0.70)',
-          margin: 0, maxWidth: '60ch',
-          letterSpacing: '-0.005em',
-        }}>
-          Toda sessão registrada, em ordem cronológica. A{' '}
-          <em style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--pl-bg)' }}>análise</em>
-          {' '}e gráficos ficam na aba Estatísticas.
-        </p>
-      </div>
-
-      {/* Stat direita */}
-      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{
-          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 44, letterSpacing: '-0.04em', lineHeight: 1,
-          color: 'var(--pl-bg)',
-        }}>
-          {totalSessions}<span style={{ color: '#93b4ff' }}>.</span>
-        </div>
-        <div style={{
-          fontFamily: 'var(--pl-sans)',
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.24em',
-          textTransform: 'uppercase',
-          color: 'rgba(243,239,229,0.50)',
-          marginTop: 5,
-        }}>
-          Registros
         </div>
       </div>
     </div>
