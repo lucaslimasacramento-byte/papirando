@@ -1,5 +1,6 @@
-﻿import React from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Home,
@@ -168,6 +169,10 @@ function NavBadge({ label }) {
   );
 }
 
+function getSectionTitleForTab(sections, tabId) {
+  return sections.find((section) => section.items.some((item) => item.id === tabId))?.title || sections[0]?.title || '';
+}
+
 export default function Sidebar({
   activeTab,
   setActiveTab,
@@ -180,11 +185,22 @@ export default function Sidebar({
   className = '',
   labelOverrides = null,
 }) {
-  const navSections = isAdmin ? [...NAV_SECTIONS_BASE, ADMIN_SECTION] : NAV_SECTIONS_BASE;
+  const navSections = useMemo(
+    () => (isAdmin ? [...NAV_SECTIONS_BASE, ADMIN_SECTION] : NAV_SECTIONS_BASE),
+    [isAdmin]
+  );
   const overrides =
     labelOverrides && typeof labelOverrides === 'object' && !Array.isArray(labelOverrides) ? labelOverrides : {};
 
-  const handleItemClick = (itemId) => {
+  const [openSectionTitle, setOpenSectionTitle] = useState(() => getSectionTitleForTab(navSections, activeTab));
+
+  useEffect(() => {
+    const activeSection = getSectionTitleForTab(navSections, activeTab);
+    if (activeSection) setOpenSectionTitle(activeSection);
+  }, [activeTab, navSections]);
+
+  const handleItemClick = (itemId, sectionTitle = '') => {
+    if (sectionTitle) setOpenSectionTitle(sectionTitle);
     setActiveTab(itemId);
     setViewingDiscipline(null);
     onNavigate?.();
@@ -282,13 +298,41 @@ export default function Sidebar({
         willChange: 'scroll-position',
         overscrollBehavior: 'contain',
       }}>
-        {navSections.map((section) => (
-          <div key={section.title} style={{ marginBottom: 12 }}>
+        {navSections.map((section) => {
+          const isSectionOpen = openSectionTitle === section.title;
+          const shouldShowItems = isCollapsed || isSectionOpen;
+
+          return (
+          <div key={section.title} style={{ marginBottom: isCollapsed ? 8 : 10 }}>
             {!isCollapsed && (
-              <div className="pl-eyebrow" style={{ fontSize: 9.5, padding: '4px 8px 6px' }}>
-                {section.title}
-              </div>
+              <button
+                type="button"
+                onClick={() => setOpenSectionTitle((current) => (current === section.title ? '' : section.title))}
+                aria-expanded={isSectionOpen}
+                style={{
+                  width: '100%',
+                  height: 30,
+                  border: 0,
+                  borderRadius: 6,
+                  background: isSectionOpen ? 'var(--pl-bg-soft)' : 'transparent',
+                  color: isSectionOpen ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  cursor: 'pointer',
+                  padding: '0 8px',
+                  marginBottom: shouldShowItems ? 4 : 0,
+                  fontFamily: 'var(--pl-sans)',
+                }}
+              >
+                <span className="pl-eyebrow" style={{ fontSize: 9.5, padding: 0 }}>
+                  {section.title}
+                </span>
+                {isSectionOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+              </button>
             )}
+            {shouldShowItems && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -302,7 +346,7 @@ export default function Sidebar({
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => handleItemClick(item.id)}
+                    onClick={() => handleItemClick(item.id, section.title)}
                     title={isCollapsed ? displayLabel : undefined}
                     style={{
                       display: 'flex', alignItems: 'center',
@@ -342,8 +386,10 @@ export default function Sidebar({
                 );
               })}
             </div>
+            )}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* User profile */}

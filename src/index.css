@@ -267,6 +267,21 @@ html, body {
 .pl-btn-primary:hover { background: var(--pl-ink-2); border: 0; }
 .pl-btn-ghost { background: transparent; color: var(--pl-ink); border: 0; }
 .pl-btn-ghost:hover { background: var(--pl-bg-soft); border: 0; }
+/* Superfície IA Bizu — canvas claro (edital, planos, etc.) */
+.pl-btn-ai {
+  color: #ffffff;
+  border: 1px solid rgba(30, 58, 95, 0.45);
+  background: linear-gradient(135deg, #1e3a5f 0%, #255ea0 55%, #1e4d8c 100%);
+  box-shadow:
+    0 4px 14px rgba(30, 58, 95, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.pl-btn-ai:hover {
+  background: linear-gradient(135deg, #22437a 0%, #2d6bb8 55%, #2358a0 100%);
+  box-shadow:
+    0 6px 18px rgba(30, 58, 95, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
 .pl-btn-link {
   display: inline-flex; align-items: center; gap: 6px;
   background: transparent; color: var(--pl-accent); border: 0;
@@ -1847,34 +1862,41 @@ html, body {
   }
 
   /**
-   * Botão de ação com IA (canvas claro: barras de ferramentas, cartões, modais).
-   * Não usar como CTA principal genérico — só para fluxos “gerar / sugerir com IA”.
+   * Botão de ação com IA — superfície Bizu (canvas claro: toolbars, cards, modais).
+   * Gradiente azul-marinho → azul médio (brandbook: “AI = blue→indigo, shimmer, escasso”).
+   * Não usar como CTA primário genérico — exclusivo para fluxos “gerar / sugerir com IA”.
    */
   .btn-ia {
     @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all sm:text-[13px];
-    border: 1px solid rgba(217, 70, 239, 0.5);
-    color: #faf5ff;
+    color: #ffffff;
+    border: 1px solid rgba(30, 58, 95, 0.45);
     background: linear-gradient(
-      90deg,
-      rgba(192, 38, 211, 0.4) 0%,
-      rgba(139, 92, 246, 0.34) 50%,
-      rgba(99, 102, 241, 0.32) 100%
+      135deg,
+      #1e3a5f 0%,
+      #255ea0 55%,
+      #1e4d8c 100%
     );
     box-shadow:
-      0 10px 24px rgba(168, 85, 247, 0.24),
-      inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  }
-
-  .btn-ia:hover {
-    border-color: rgba(232, 121, 249, 0.6);
-    color: #ffffff;
-    box-shadow:
-      0 12px 28px rgba(168, 85, 247, 0.32),
+      0 4px 14px rgba(30, 58, 95, 0.26),
       inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
 
+  .btn-ia:hover {
+    border-color: rgba(37, 94, 160, 0.65);
+    background: linear-gradient(
+      135deg,
+      #22437a 0%,
+      #2d6bb8 55%,
+      #2358a0 100%
+    );
+    box-shadow:
+      0 6px 18px rgba(30, 58, 95, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
   .btn-ia:focus-visible {
-    @apply ring-2 ring-fuchsia-400/50 ring-offset-2 ring-offset-white;
+    @apply ring-2 ring-offset-2 ring-offset-white;
+    --tw-ring-color: rgba(122, 155, 191, 0.65);
   }
 
   .btn-ia:disabled {

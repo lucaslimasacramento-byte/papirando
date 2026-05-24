@@ -469,30 +469,113 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpen
       <section>
         <div className="pl-eyebrow">Bem-vindo</div>
         <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 68, color: 'var(--pl-ink)' }}>
-          {greeting}{userName ? `, ${userName}` : ''}. Bora comecar a papirar?
+          {greeting}{userName ? `, ${userName}` : ''}. Bora começar a papirar?
         </h1>
         <p style={{ margin: '16px 0 0', maxWidth: 680, fontSize: 17, lineHeight: 1.55, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
-          Defina um alvo, monte sua primeira semana e comece com uma sessao curta. O resto a plataforma organiza junto com voce.
+          Defina um alvo, monte sua primeira semana e comece com uma sessão curta. O resto a plataforma organiza junto com você.
         </p>
       </section>
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
         <PlOnboardStep number="1" title="Escolha seu alvo" text="Defina concurso, banca e data para orientar o plano." />
-        <PlOnboardStep number="2" title="Monte a semana" text="Ajuste disponibilidade e materias principais." />
-        <PlOnboardStep number="3" title="Papire agora" text="Abra uma sessao e registre o primeiro estudo." />
+        <PlOnboardStep number="2" title="Monte a semana" text="Ajuste disponibilidade e matérias principais." />
+        <PlOnboardStep number="3" title="Papire agora" text="Abra uma sessão e registre o primeiro estudo." />
       </section>
-      <section className="pl-card-ai" style={{ padding: '22px 24px', display: 'flex', alignItems: 'center', gap: 18 }}>
-        <div style={{ flex: 1 }}>
-          <span className="pl-tag-ai"><Sparkles size={10} /> Bizu IA</span>
-          <h2 style={{ margin: '12px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
-            Posso montar sua primeira semana.
-          </h2>
-          <p style={{ margin: '8px 0 0', fontSize: 13.5, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
-            Comece pelo plano ou va direto para uma sessao de pratica.
-          </p>
+      <section
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          padding: '24px 26px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 20,
+          borderRadius: 12,
+          border: '1px solid rgba(20,17,13,0.16)',
+          background: 'linear-gradient(135deg, #fbfaf6 0%, #f4ead2 68%, #ede8dc 100%)',
+          boxShadow: '0 18px 40px rgba(20,17,13,0.08)',
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 'auto 22px 18px auto',
+            width: 76,
+            height: 76,
+            borderRadius: 999,
+            background: 'radial-gradient(circle, rgba(200,160,50,0.28) 0%, rgba(200,160,50,0) 65%)',
+          }}
+        />
+        <div
+          style={{
+            flex: '0 0 auto',
+            width: 48,
+            height: 48,
+            borderRadius: 14,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#14110d',
+            color: '#f4d04e',
+            fontFamily: 'var(--pl-serif)',
+            fontStyle: 'italic',
+            fontSize: 27,
+            lineHeight: 1,
+            boxShadow: '0 12px 26px rgba(20,17,13,0.18)',
+          }}
+        >
+          P<span style={{ color: '#7a9bbf' }}>.</span>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <button className="pl-btn pl-btn-sm pl-btn-ai" onClick={onStart}><Sparkles size={11} /> Montar semana</button>
-          <button className="pl-btn pl-btn-sm" onClick={onOpenQuestions}>Ver questoes</button>
+        <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              height: 22,
+              padding: '0 9px',
+              borderRadius: 999,
+              border: '1px solid rgba(30,58,95,0.22)',
+              background: 'rgba(255,255,255,0.65)',
+              color: '#1e3a5f',
+              fontSize: 11,
+              fontWeight: 800,
+            }}
+          >
+            <Sparkles size={11} /> Guia inicial
+          </span>
+          <h2 style={{ margin: '13px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 31, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
+            Vamos configurar seu Papirando em 3 passos.
+          </h2>
+          <p style={{ margin: '8px 0 0', maxWidth: 680, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
+            Eu te guio por alvo, disponibilidade e primeira sessão. Siga o roteiro agora ou comece praticando e ajuste depois.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+            {['1. Concurso-alvo', '2. Semana de estudo', '3. Primeira sessão'].map((step) => (
+              <span
+                key={step}
+                style={{
+                  border: '1px solid rgba(20,17,13,0.13)',
+                  background: 'rgba(251,250,246,0.7)',
+                  borderRadius: 999,
+                  padding: '6px 10px',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: 'var(--pl-ink-2)',
+                }}
+              >
+                {step}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end', position: 'relative' }}>
+          <button
+            className="pl-btn pl-btn-sm pl-btn-ai"
+            onClick={onStart}
+          >
+            <Sparkles size={11} /> Começar tutorial
+          </button>
+          <button className="pl-btn pl-btn-sm" onClick={onOpenQuestions}>Ver questões</button>
           <button className="pl-btn pl-btn-sm" onClick={onOpenTimer}>Abrir timer</button>
         </div>
       </section>

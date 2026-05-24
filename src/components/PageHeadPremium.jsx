@@ -13,7 +13,7 @@ export const PAGE_HEAD_PREMIUM_PRIMARY_ACTION_CLASS =
 export const PAGE_HEAD_PREMIUM_SECONDARY_ACTION_CLASS =
   'page-head-premium-action page-head-premium-action-secondary';
 
-/** CTA “Gerar / IA” no header premium escuro — gradiente fúcsia–violeta (ver `index.css`). */
+/** CTA “Gerar / IA” no header premium — superfície Bizu azul→índigo (ver `index.css`). */
 export const PAGE_HEAD_PREMIUM_IA_ACTION_CLASS =
   'page-head-premium-action page-head-premium-action-ia';
 
