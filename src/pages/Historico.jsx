@@ -68,8 +68,25 @@ export default function Historico({
   return (
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5">
 
-      {/* ── Cabeçalho editorial light ── */}
-      <PageHeader totalSessions={totalSessions} />
+      {/* ── Cabeçalho padrão da plataforma (variante C · com stat) ── */}
+      <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+        <div>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+            Histórico<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
+            Toda sessão registrada, em ordem cronológica. A análise fica na aba Estatísticas.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)', borderRadius: 8, padding: '10px 16px', minWidth: 92 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', lineHeight: 1, fontFamily: 'var(--pl-sans)' }}>Registros</div>
+            <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 34, letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--pl-ink)', marginTop: 6 }}>
+              {totalSessions}<span style={{ color: 'var(--pl-accent)' }}>.</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* ── Busca ── */}
       <div style={{
@@ -190,113 +207,6 @@ export default function Historico({
             ? <EmptyState hasRecords={totalSessions > 0} />
             : filtered.map((item) => <HistoryCard key={item.id} item={item} />)
           }
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Cabeçalho editorial light (paper-warm + ink mark) ── */
-function PageHeader({ totalSessions }) {
-  return (
-    <div style={{
-      flexShrink: 0,
-      background: 'var(--pl-surface)',
-      border: '1px solid var(--pl-rule-strong)',
-      borderRadius: 8,
-      padding: '28px 32px 26px',
-      display: 'grid',
-      gridTemplateColumns: 'auto 1fr auto',
-      alignItems: 'center',
-      gap: 24,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Textura de papel pautado (linhas horizontais sutis) */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: 'repeating-linear-gradient(0deg, transparent 0px 35px, rgba(20,17,13,0.035) 35px 36px)',
-        zIndex: 0,
-      }} />
-
-      {/* Dog-ear canto superior direito */}
-      <div style={{
-        position: 'absolute', top: 0, right: 0,
-        width: 72, height: 72,
-        background: 'var(--pl-bg-soft)',
-        clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
-        borderLeft: '1px solid var(--pl-rule-strong)',
-        borderBottom: '1px solid var(--pl-rule-strong)',
-        pointerEvents: 'none', zIndex: 0,
-      }} />
-
-      {/* Mark — quadrado ink com ícone paper */}
-      <div style={{
-        position: 'relative', zIndex: 1,
-        width: 62, height: 62,
-        background: 'var(--pl-ink)',
-        borderRadius: 4,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-        boxShadow: '0 2px 8px rgba(20,17,13,0.12)',
-      }}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--pl-bg)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M12 7v5l4 2"/>
-        </svg>
-      </div>
-
-      {/* Bloco de texto */}
-      <div style={{ minWidth: 0, position: 'relative', zIndex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--pl-sans)',
-          fontSize: 10.5, fontWeight: 700, letterSpacing: '0.32em',
-          textTransform: 'uppercase', color: 'var(--pl-accent)',
-          marginBottom: 8,
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-        }}>
-          <span style={{ display: 'inline-block', width: 16, height: 1, background: 'var(--pl-accent)', flexShrink: 0 }} />
-          Estudos · trilha do tempo
-        </div>
-        <h2 style={{
-          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 44, letterSpacing: '-0.04em',
-          color: 'var(--pl-ink)', lineHeight: 1,
-          margin: '0 0 9px',
-        }}>
-          Histórico<span style={{ color: 'var(--pl-accent)' }}>.</span>
-        </h2>
-        <p style={{
-          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 16, lineHeight: 1.45,
-          color: 'var(--pl-ink-2, #3a342c)',
-          margin: 0, maxWidth: '60ch',
-          letterSpacing: '-0.005em',
-        }}>
-          Toda sessão registrada, em ordem cronológica. A{' '}
-          <em style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--pl-ink)' }}>análise</em>
-          {' '}e gráficos comparativos ficam na aba Estatísticas.
-        </p>
-      </div>
-
-      {/* Stat direita */}
-      <div style={{ textAlign: 'right', flexShrink: 0, position: 'relative', zIndex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
-          fontSize: 44, letterSpacing: '-0.04em', lineHeight: 1,
-          color: 'var(--pl-ink)',
-        }}>
-          {totalSessions}<span style={{ color: 'var(--pl-accent)' }}>.</span>
-        </div>
-        <div style={{
-          fontFamily: 'var(--pl-sans)',
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.24em',
-          textTransform: 'uppercase',
-          color: 'var(--pl-ink-3)',
-          marginTop: 5,
-        }}>
-          Registros
         </div>
       </div>
     </div>
