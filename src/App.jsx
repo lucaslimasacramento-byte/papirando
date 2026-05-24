@@ -16,7 +16,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import { ToastProvider } from './lib/toast';
-import BetaWelcomeBanner from './components/BetaWelcomeBanner';
 import CheckoutResultBanner from './components/CheckoutResultBanner';
 import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
@@ -61,7 +60,6 @@ import {
   normalizeReferralCode,
   persistPendingReferralCode,
 } from './lib/referrals';
-import { extractBetaInviteTokenFromLocation, normalizeBetaInviteToken } from './lib/betaInvitesApi';
 import {
   buildCommunityProfileMetrics,
   buildCommunityRankings,
@@ -717,9 +715,6 @@ export default function App() {
   const [pendingReferralCode, setPendingReferralCode] = useState(() =>
     normalizeReferralCode(extractReferralCodeFromLocation() || getStoredReferralCode())
   );
-  const [pendingBetaInviteToken, setPendingBetaInviteToken] = useState(() =>
-    normalizeBetaInviteToken(extractBetaInviteTokenFromLocation())
-  );
   const [activeTab, setActiveTab] = useState('home');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -730,12 +725,6 @@ export default function App() {
     if (!referralFromLocation) return;
     setPendingReferralCode(referralFromLocation);
     persistPendingReferralCode(referralFromLocation);
-  }, []);
-
-  useEffect(() => {
-    const betaInviteFromLocation = normalizeBetaInviteToken(extractBetaInviteTokenFromLocation());
-    if (!betaInviteFromLocation) return;
-    setPendingBetaInviteToken(betaInviteFromLocation);
   }, []);
 
   useEffect(() => {
@@ -6058,7 +6047,6 @@ export default function App() {
         <Login
           setIsAuthenticated={setIsAuthenticated}
           initialReferralCode={pendingReferralCode}
-          initialBetaInviteToken={pendingBetaInviteToken}
           onReferralCodeCaptured={(code) => {
             const normalizedCode = normalizeReferralCode(code);
             setPendingReferralCode(normalizedCode);
@@ -6067,9 +6055,6 @@ export default function App() {
           onReferralCodeConsumed={() => {
             setPendingReferralCode('');
             persistPendingReferralCode('');
-          }}
-          onBetaInviteConsumed={() => {
-            setPendingBetaInviteToken('');
           }}
         />
       </Suspense>
@@ -6366,10 +6351,6 @@ export default function App() {
           }`}
         >
           <CheckoutResultBanner onSuccess={refreshSubscription} />
-          <BetaWelcomeBanner
-            onSendFeedback={() => setActiveTab('perfil')}
-            onStart={() => setActiveTab('home')}
-          />
 
           <Suspense
             fallback={

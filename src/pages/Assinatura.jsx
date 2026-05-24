@@ -204,7 +204,6 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
     : realPlanName;
 
   function getCurrentPlanName() {
-    if (activePlanId === 'beta') return 'Beta 3 meses';
     if (activePlanId === 'elite') return nomePlano3;
     if (activePlanId === 'tatico') return nomePlano2;
     return nomePlano1;
@@ -377,7 +376,7 @@ export default function Assinatura({ temaAtivo, setActiveTab, currentUserId = ''
               <CreditCard size={18} className="text-blue-500 shrink-0" aria-hidden="true" />
               Provedor:{' '}
               <span className="text-gray-800">
-                {subscription?.provider === 'manual' ? 'Acesso beta' : 'Stripe'}
+                {subscription?.provider === 'manual' ? 'Trial promocional' : 'Stripe'}
               </span>
             </div>
 

@@ -66,10 +66,10 @@ export default function AdminBetaFeedback() {
           titleAs="h1"
           badge={
             <PageHeadPremiumBadge icon={ShieldCheck}>
-              Admin · beta fechado
+              Admin · feedback
             </PageHeadPremiumBadge>
           }
-          title="Feedback do beta"
+          title="Feedback dos usuários"
           subtitle={
             loading
               ? 'Carregando...'
@@ -82,7 +82,7 @@ export default function AdminBetaFeedback() {
 
         <div className="section-card flex items-center justify-between gap-3">
           <p className="text-sm text-slate-600">
-            Feedbacks enviados pelos usuarios beta via widget in-app.
+            Feedbacks enviados pelos usuarios via widget in-app.
           </p>
           <button
             type="button"
@@ -113,7 +113,7 @@ export default function AdminBetaFeedback() {
             </div>
           ) : rows.length === 0 ? (
             <p className="py-8 text-center text-sm font-medium text-slate-500">
-              Nenhum feedback ainda. Compartilhe o app com os usuarios beta!
+              Nenhum feedback ainda. Compartilhe o app com os usuarios!
             </p>
           ) : (
             <ul className="space-y-3">

@@ -64,10 +64,8 @@ function DecorativePage() {
 export default function Login({
   setIsAuthenticated,
   initialReferralCode = '',
-  initialBetaInviteToken = '',
   onReferralCodeCaptured,
   onReferralCodeConsumed,
-  onBetaInviteConsumed,
 }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -90,13 +88,6 @@ export default function Login({
     if (!normalizedInitialCode) return;
     setReferralCode((prev) => prev || normalizedInitialCode);
   }, [initialReferralCode]);
-
-  // Se chegou com beta invite, vai direto pro cadastro
-  useEffect(() => {
-    if (initialBetaInviteToken) {
-      setIsLoginMode(false);
-    }
-  }, [initialBetaInviteToken]);
 
   const resetForm = () => {
     setNome('');
@@ -181,7 +172,6 @@ export default function Login({
         password,
         celular: '',
         referralCode: normalizedReferralCode || undefined,
-        betaInviteToken: initialBetaInviteToken || undefined,
       });
       if (!result.success) {
         const firstFieldError = result.fieldErrors ? Object.values(result.fieldErrors)[0] : null;
@@ -189,7 +179,6 @@ export default function Login({
       }
       setSuccessMsg(result.message || 'Conta criada. Verifique o seu e-mail para ativar o acesso.');
       if (normalizedReferralCode) onReferralCodeConsumed?.();
-      if (initialBetaInviteToken) onBetaInviteConsumed?.();
       setIsLoginMode(true);
       setPassword(''); setConfirmPassword(''); setCpf(''); setBirthDate('');
     } catch (err) {

@@ -5,7 +5,6 @@ import AdminPageHeader from '../components/AdminPageHeader';
 
 const PLAN_OPTIONS = [
   { value: 'gratuito', label: 'Gratuito' },
-  { value: 'beta', label: 'Beta 3 meses' },
   { value: 'tatico', label: 'Tático' },
   { value: 'elite', label: 'Elite' },
 ];

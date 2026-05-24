@@ -75,7 +75,7 @@ export async function loadAllSubscriptions() {
 }
 
 /**
- * Admin: atualiza manualmente o plano de um usuário (uso no beta)
+ * Admin: atualiza manualmente o plano de um usuário.
  */
 export async function adminSetPlan(subscriptionId, planName) {
   const { error } = await supabase
@@ -87,13 +87,13 @@ export async function adminSetPlan(subscriptionId, planName) {
 }
 
 /**
- * Admin: cria assinatura manual para um usuário (beta sem Stripe)
+ * Admin: cria assinatura manual para um usuário.
  * @param {{ userId: string, planName: string, billing: string }} opts
  */
 export async function adminCreateManualSubscription({ userId, planName, billing = 'monthly' }) {
   const now = new Date();
   const periodEnd = new Date(now);
-  periodEnd.setFullYear(periodEnd.getFullYear() + 1); // 1 ano de beta
+  periodEnd.setFullYear(periodEnd.getFullYear() + 1);
 
   const { data, error } = await supabase
     .from('subscriptions')

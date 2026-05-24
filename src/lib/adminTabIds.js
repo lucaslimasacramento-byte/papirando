@@ -12,7 +12,6 @@ export const ADMIN_TAB_IDS = [
   'admin_mapas_mentais',
   'admin_legislacao',
   'admin_beta_feedback',
-  'admin_beta_convites',
   'admin_assinaturas',
   'admin_configuracoes',
 ];
@@ -34,8 +33,7 @@ export const ADMIN_TAB_TITLES = {
   admin_audiolivros: 'Audiolivros',
   admin_mapas_mentais: 'Mapas mentais',
   admin_legislacao: 'Legislação',
-  admin_beta_feedback: 'Feedback beta',
-  admin_beta_convites: 'Convites beta',
+  admin_beta_feedback: 'Feedback',
   admin_assinaturas: 'Assinaturas',
   admin_configuracoes: 'Configurações',
 };
@@ -49,7 +47,6 @@ export const ADMIN_TAB_GROUP = {
   admin_disciplinas: 'Editorial',
   admin_usuarios: 'Usuários & Acesso',
   admin_assinaturas: 'Usuários & Acesso',
-  admin_beta_convites: 'Usuários & Acesso',
   admin_audiolivros: 'Conteúdo',
   admin_mapas_mentais: 'Conteúdo',
   admin_legislacao: 'Conteúdo',

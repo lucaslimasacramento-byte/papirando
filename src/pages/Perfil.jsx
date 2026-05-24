@@ -172,7 +172,6 @@ function formatPlanLabel(plan) {
   const normalized = String(plan || 'gratuito').toLowerCase();
   if (normalized === 'elite') return 'Elite';
   if (normalized === 'tatico') return 'Tático';
-  if (normalized === 'beta') return 'Beta 3 meses';
   return 'Gratuito';
 }
 

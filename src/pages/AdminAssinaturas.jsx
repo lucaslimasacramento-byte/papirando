@@ -201,7 +201,7 @@ export default function AdminAssinaturas() {
             className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold"
           >
             <Plus size={14} />
-            Assinatura manual (beta)
+            Assinatura manual
           </button>
           <button
             type="button"

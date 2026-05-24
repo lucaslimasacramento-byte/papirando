@@ -11,8 +11,8 @@
 | 5 | Redesign Hero Edital em Questão | Novo layout hero section |
 | 6 | Gate IA (VITE_AI_ENABLED) | Todos os entry points protegidos; produção segura sem a env var |
 | 7 | Sentry | Inicializa apenas com VITE_SENTRY_DSN; DSN configurado no .env.local |
-| 8 | Sistema de feedback beta | Tabela beta_feedback, botão Header, modal, AdminBetaFeedback |
-| 9 | Lançamento beta fechado | Tabela beta_invites, AdminBetaConvites, BetaWelcomeBanner (first-run) |
+| 8 | Sistema de feedback | Tabela beta_feedback legada, botão Header, modal, AdminBetaFeedback |
+| 9 | Trial aberto de lançamento | Todo cadastro recebe 3 meses do plano Elite automaticamente |
 | 10 | Gateway de pagamento | Edge Functions Stripe (checkout + webhook), tabela subscriptions, useSubscription hook, AdminAssinaturas, Assinatura.jsx com checkout real |
 
 ---
@@ -23,7 +23,7 @@ Arquivos criados localmente que precisam ser executados no Supabase:
 
 | Arquivo | Status | Descrição |
 |---------|--------|-----------|
-| `supabase/beta_invites.sql` | ✅ Rodado | Convites beta + RPC mark_beta_invite_used |
+| `supabase/beta_invites.sql` | ⛔ Legado | Convites beta fechados removidos do fluxo do app |
 | `supabase/subscriptions.sql` | ⏳ Pendente | Tabela subscriptions + RLS + get_my_subscription() |
 | `supabase/admin_user_helpers.sql` | ⏳ Pendente | get_user_id_by_email() e get_email_by_user_id() |
 
@@ -40,10 +40,10 @@ Guia completo: `supabase/STRIPE_SETUP.md`
 
 ---
 
-## 🔜 Próximas etapas (pós-beta)
+## 🔜 Próximas etapas (pós-lançamento)
 
 ### Alta prioridade
-- **E-mail de convite automático** — ao criar convite em AdminBetaConvites, enviar e-mail com link via Resend (https://resend.com) ou Supabase SMTP. Criar Edge Function `send-beta-invite`.
+- **Emails transacionais próprios** — padronizar confirmação, boas-vindas, recuperação, troca de e-mail, lembretes e indicações com identidade Papirando.
 - **Feature gates reais** — usar `isPremiumPlan` já conectado ao Stripe para bloquear funcionalidades (ex: limite de questões/dia no plano gratuito, IA gates)
 - **Portal do cliente Stripe** — botão "Gerenciar assinatura" em Assinatura.jsx que redireciona para `https://billing.stripe.com` com o customer ID
 
@@ -78,7 +78,7 @@ Guia completo: `supabase/STRIPE_SETUP.md`
 |---------|-----------|
 | `src/components/AppTabContent.jsx` | **Hub de roteamento** — TODA rota nova vai aqui |
 | `src/lib/subscriptionApi.js` | Hook `useSubscription()` + checkout Stripe |
-| `src/lib/betaInvitesApi.js` | CRUD convites beta |
+| `src/lib/betaInvitesApi.js` | Removido; o fluxo atual usa apenas indicação/referral |
 | `src/lib/adminTabIds.js` | Lista de abas admin + títulos |
 | `src/components/Sidebar.jsx` | Menu lateral — itens admin aqui |
 | `src/App.jsx` | `isPremiumPlan` e `isElitePlan` agora leem tabela Stripe |
