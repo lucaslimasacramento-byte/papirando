@@ -1,16 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import {
-  History,
-  BookOpen,
-  Search,
-  SlidersHorizontal,
-} from 'lucide-react';
+import { BookOpen, Search, SlidersHorizontal } from 'lucide-react';
 import {
   buildCanonicalHistory,
   buildHistoryTimelineItem,
   formatMinutesLabel,
 } from '../lib/studyAnalytics';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 /* ── Paleta por tipo de registro ────────────────────────────────── */
 const TYPE_PALETTE = {
@@ -70,123 +64,227 @@ export default function Historico({
   }, [filter, query, timeline]);
 
   const totalSessions = timeline.length;
-  const totalMinutes  = useMemo(() => timeline.reduce((s, i) => s + (i.duration || 0), 0), [timeline]);
 
   return (
-    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
+    <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5">
 
-      {/* Cabeçalho escuro — apenas ícone, título e subtítulo */}
-      <PageHeadPremium
-        icon={History}
-        title="Histórico"
-        subtitle="Linha do tempo dos seus registros. A análise fica na aba Estatísticas."
-      />
+      {/* ── Cabeçalho editorial ink ── */}
+      <PageHeader totalSessions={totalSessions} />
 
-      {/* Busca + filtros */}
-      <div className="section-card shrink-0" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-        {/* Campo de busca */}
-        <div style={{ position: 'relative' }}>
-          <Search
-            size={14}
-            style={{
-              position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)',
-              color: 'var(--pl-ink-3)', pointerEvents: 'none',
-            }}
-          />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por matéria, tópico ou observação…"
-            style={{
-              width: '100%', height: 36, paddingLeft: 34, paddingRight: 12,
-              border: '1px solid var(--pl-rule-strong)', borderRadius: 7,
-              background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)',
-              fontFamily: 'var(--pl-sans)', fontSize: 13, fontWeight: 500,
-              outline: 'none', transition: 'border-color .12s',
-            }}
-            onFocus={(e) => { e.target.style.borderColor = 'var(--pl-accent)'; }}
-            onBlur={(e)  => { e.target.style.borderColor = 'var(--pl-rule-strong)'; }}
-          />
-        </div>
-
-        {/* Pills de filtro + contadores */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            fontSize: 9.5, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: 'var(--pl-ink-3)', paddingRight: 2,
-          }}>
-            <SlidersHorizontal size={10} /> Filtro
-          </span>
-
-          {FILTERS.map((item) => {
-            const active = filter === item;
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setFilter(item)}
-                style={{
-                  height: 26, padding: '0 10px', borderRadius: 5,
-                  border: active ? '1px solid var(--pl-ink)' : '1px solid var(--pl-rule-2)',
-                  background: active ? 'var(--pl-ink)' : 'transparent',
-                  color: active ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
-                  fontFamily: 'var(--pl-sans)', fontSize: 11.5, fontWeight: 600,
-                  cursor: 'pointer', transition: 'background .1s, color .1s, border-color .1s',
-                }}
-              >
-                {item}
-              </button>
-            );
-          })}
-
-          {/* Contagem filtrada / total */}
-          <span style={{
-            marginLeft: 'auto', height: 22, padding: '0 9px', borderRadius: 4,
-            border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
-            color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-mono)',
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
-            display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-          }}>
-            {filtered.length} / {totalSessions}
-          </span>
-
-          {/* Tempo total — só aparece quando há registros */}
-          {totalMinutes > 0 && (
-            <span style={{
-              height: 22, padding: '0 9px', borderRadius: 4,
-              border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
-              color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-mono)',
-              fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
-              display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-            }}>
-              {formatMinutesLabel(totalMinutes)}
-            </span>
-          )}
-        </div>
+      {/* ── Busca ── */}
+      <div
+        style={{
+          flexShrink: 0,
+          background: 'var(--pl-surface)',
+          border: '1px solid var(--pl-rule-strong)',
+          borderRadius: 8,
+          padding: '13px 18px',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}
+      >
+        <Search size={15} style={{ color: 'var(--pl-ink-3)', flexShrink: 0 }} />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar por matéria, tópico ou observação…"
+          style={{
+            flex: 1, background: 'transparent', border: 0, outline: 0,
+            fontFamily: 'var(--pl-sans)', fontSize: 13.5, color: 'var(--pl-ink)',
+            letterSpacing: '-0.005em',
+          }}
+        />
+        <kbd style={{
+          fontFamily: 'var(--pl-mono)', fontSize: 10,
+          color: 'var(--pl-ink-3)', fontWeight: 500,
+          background: 'var(--pl-bg-soft)',
+          padding: '2px 6px', borderRadius: 3,
+          border: '1px solid var(--pl-rule)',
+          lineHeight: 1.6,
+        }}>⌘ /</kbd>
       </div>
 
-      {/* Timeline */}
-      <div
-        className="section-card"
-        style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}
-      >
-        <div style={{ flexShrink: 0 }}>
-          <p className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 3 }}>Linha do tempo</p>
-          <h3 style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 14.5, fontWeight: 700, color: 'var(--pl-ink)', letterSpacing: '-0.01em' }}>
+      {/* ── Filtros ── */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <span style={{
+          fontFamily: 'var(--pl-sans)',
+          fontSize: 10.5, fontWeight: 700, letterSpacing: '0.22em',
+          textTransform: 'uppercase', color: 'var(--pl-ink-3)',
+          display: 'inline-flex', alignItems: 'center', gap: 6, marginRight: 4,
+        }}>
+          <SlidersHorizontal size={11} /> Filtro
+        </span>
+
+        {FILTERS.map((item) => {
+          const active = filter === item;
+          return (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setFilter(item)}
+              style={{
+                padding: '6px 14px',
+                fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 600,
+                letterSpacing: '-0.005em',
+                color: active ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
+                background: active ? 'var(--pl-ink)' : 'var(--pl-surface)',
+                border: `1px solid ${active ? 'var(--pl-ink)' : 'var(--pl-rule-strong)'}`,
+                borderRadius: 6, cursor: 'pointer',
+                transition: 'background .12s, color .12s, border-color .12s',
+              }}
+            >
+              {item}
+            </button>
+          );
+        })}
+
+        <span style={{
+          marginLeft: 'auto',
+          fontFamily: 'var(--pl-mono)', fontSize: 11.5, fontWeight: 500,
+          color: 'var(--pl-ink-3)',
+        }}>
+          <span style={{ color: 'var(--pl-ink)', fontWeight: 600 }}>{filtered.length}</span>
+          {' / '}
+          <span style={{ color: 'var(--pl-ink)', fontWeight: 600 }}>{totalSessions}</span>
+        </span>
+      </div>
+
+      {/* ── Timeline ── */}
+      <div style={{
+        flex: 1, minHeight: 0,
+        background: 'var(--pl-surface)',
+        border: '1px solid var(--pl-rule-strong)',
+        borderRadius: 8,
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        {/* Cabeçalho da seção */}
+        <div style={{
+          flexShrink: 0,
+          padding: '16px 22px',
+          borderBottom: '1px solid var(--pl-rule)',
+          background: 'var(--pl-bg-soft)',
+          display: 'flex', alignItems: 'center', gap: 14,
+        }}>
+          <span style={{
+            fontFamily: 'var(--pl-sans)',
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.28em',
+            textTransform: 'uppercase', color: 'var(--pl-ink-3)',
+          }}>
+            Linha do tempo
+          </span>
+          <span style={{
+            fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400,
+            fontSize: 21, letterSpacing: '-0.025em',
+            color: 'var(--pl-ink)', lineHeight: 1,
+          }}>
             Registros por matéria
-          </h3>
+          </span>
         </div>
 
+        {/* Lista rolável */}
         <div
           className="custom-scrollbar"
-          style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7, paddingRight: 2 }}
+          style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}
         >
           {filtered.length === 0
             ? <EmptyState hasRecords={totalSessions > 0} />
             : filtered.map((item) => <HistoryCard key={item.id} item={item} />)
           }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Cabeçalho editorial da página (substitui PageHeadPremium) ── */
+function PageHeader({ totalSessions }) {
+  return (
+    <div style={{
+      flexShrink: 0,
+      background: 'var(--pl-ink)',
+      borderRadius: 8,
+      padding: '28px 30px 24px',
+      display: 'grid',
+      gridTemplateColumns: 'auto 1fr auto',
+      alignItems: 'center',
+      gap: 22,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Dog-ear canto superior direito */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0,
+        width: 72, height: 72,
+        background: 'linear-gradient(225deg, rgba(243,239,229,0.07) 0%, rgba(243,239,229,0) 55%)',
+        clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Mark — quadrado paper com ícone ink */}
+      <div style={{
+        width: 58, height: 58,
+        background: 'var(--pl-bg)',
+        borderRadius: 4,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--pl-ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        </svg>
+      </div>
+
+      {/* Bloco de texto */}
+      <div style={{ minWidth: 0 }}>
+        <div style={{
+          fontFamily: 'var(--pl-sans)',
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.32em',
+          textTransform: 'uppercase', color: '#93b4ff',
+          marginBottom: 8,
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ display: 'inline-block', width: 16, height: 1, background: '#93b4ff', flexShrink: 0 }} />
+          Estudos · trilha do tempo
+        </div>
+        <h2 style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 42, letterSpacing: '-0.04em',
+          color: 'var(--pl-bg)', lineHeight: 1,
+          margin: '0 0 9px',
+        }}>
+          Histórico<span style={{ color: '#93b4ff' }}>.</span>
+        </h2>
+        <p style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 15.5, lineHeight: 1.45,
+          color: 'rgba(243,239,229,0.70)',
+          margin: 0, maxWidth: '60ch',
+          letterSpacing: '-0.005em',
+        }}>
+          Toda sessão registrada, em ordem cronológica. A{' '}
+          <em style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--pl-bg)' }}>análise</em>
+          {' '}e gráficos ficam na aba Estatísticas.
+        </p>
+      </div>
+
+      {/* Stat direita */}
+      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+        <div style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 44, letterSpacing: '-0.04em', lineHeight: 1,
+          color: 'var(--pl-bg)',
+        }}>
+          {totalSessions}<span style={{ color: '#93b4ff' }}>.</span>
+        </div>
+        <div style={{
+          fontFamily: 'var(--pl-sans)',
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.24em',
+          textTransform: 'uppercase',
+          color: 'rgba(243,239,229,0.50)',
+          marginTop: 5,
+        }}>
+          Registros
         </div>
       </div>
     </div>
@@ -230,7 +328,6 @@ function HistoryCard({ item }) {
               {formatDate(item.date)}
             </span>
           </div>
-
           <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
             <MiniMetric label="Tempo"    value={formatMinutesLabel(item.duration)} />
             <MiniMetric label="Questões" value={String(item.questions)} />
@@ -293,29 +390,88 @@ function MiniMetric({ label, value, highlight = false }) {
   );
 }
 
-/* ── Estado vazio ── */
+/* ── Estado vazio editorial ── */
 function EmptyState({ hasRecords }) {
+  if (hasRecords) {
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        minHeight: 160, padding: '32px 20px', textAlign: 'center', gap: 10,
+      }}>
+        <h3 style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400,
+          fontSize: 24, letterSpacing: '-0.025em',
+          color: 'var(--pl-ink)', lineHeight: 1.1, margin: 0,
+        }}>
+          Nenhum resultado<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h3>
+        <p style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-3)', maxWidth: '36ch', lineHeight: 1.5 }}>
+          Tente outro filtro ou limpe a busca.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      minHeight: 160, borderRadius: 8, border: '1.5px dashed var(--pl-rule-strong)',
-      background: 'var(--pl-bg-soft)', padding: '28px 20px', textAlign: 'center', gap: 8,
+      padding: '56px 32px 68px', textAlign: 'center', gap: 14,
     }}>
+      {/* Mark com dog-ear */}
       <div style={{
-        width: 40, height: 40, borderRadius: 9,
-        background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+        width: 72, height: 72,
+        background: 'var(--pl-bg)',
+        border: '1px solid var(--pl-rule-strong)',
+        borderRadius: 8,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: 4,
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <BookOpen size={18} style={{ color: 'var(--pl-ink-3)' }} />
+        <div style={{
+          position: 'absolute', top: 0, right: 0,
+          width: 18, height: 18,
+          background: 'var(--pl-bg-soft)',
+          clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
+        }} />
+        <BookOpen size={28} strokeWidth={1.4} style={{ color: 'var(--pl-ink-3)' }} />
       </div>
-      <p style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)', letterSpacing: '-0.01em' }}>
-        {hasRecords ? 'Nenhum resultado para esse filtro.' : 'Nenhum registro ainda.'}
+
+      <h3 style={{
+        fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400,
+        fontSize: 26, letterSpacing: '-0.025em',
+        color: 'var(--pl-ink)', lineHeight: 1.1, margin: 0,
+      }}>
+        Nada registrado ainda<span style={{ color: 'var(--pl-accent)' }}>.</span>
+      </h3>
+
+      <p style={{
+        fontFamily: 'var(--pl-sans)', fontSize: 13.5, lineHeight: 1.55,
+        color: 'var(--pl-ink-3)', fontWeight: 500,
+        maxWidth: '44ch', margin: 0,
+      }}>
+        Comece uma sessão de estudo — em alguns minutos o primeiro
+        registro aparece por aqui, ordenado por matéria e dia.
       </p>
-      <p style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', maxWidth: 300, lineHeight: 1.5 }}>
-        {hasRecords
-          ? 'Tente outro filtro ou limpe a busca.'
-          : 'Registre uma sessão de estudo para começar a montar sua linha do tempo.'}
-      </p>
+
+      <button style={{
+        marginTop: 10,
+        padding: '10px 18px',
+        background: 'var(--pl-ink)', color: 'var(--pl-bg)',
+        border: 0, borderRadius: 6,
+        fontFamily: 'var(--pl-sans)', fontWeight: 600, fontSize: 13.5,
+        letterSpacing: '-0.005em', cursor: 'pointer',
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+      }}>
+        <span style={{
+          width: 14, height: 14, flexShrink: 0,
+          background: 'var(--pl-bg)', color: 'var(--pl-ink)',
+          borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 6.5, lineHeight: 1,
+        }}>▶</span>
+        Papirar agora
+      </button>
     </div>
   );
 }
