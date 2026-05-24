@@ -1,11 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, History, Search, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, Search, SlidersHorizontal } from 'lucide-react';
 import {
   buildCanonicalHistory,
   buildHistoryTimelineItem,
   formatMinutesLabel,
 } from '../lib/studyAnalytics';
-import PageHeadPremium from '../components/PageHeadPremium';
 
 /* ── Paleta por tipo de registro ────────────────────────────────── */
 const TYPE_PALETTE = {
@@ -69,24 +68,18 @@ export default function Historico({
   return (
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5">
 
-      {/* ── Cabeçalho padrão da plataforma ── */}
-      <PageHeadPremium
-        icon={History}
-        title="Histórico"
-        subtitle="Linha do tempo dos seus registros. A análise fica na aba Estatísticas."
-      />
+      {/* ── Cabeçalho editorial light ── */}
+      <PageHeader totalSessions={totalSessions} />
 
       {/* ── Busca ── */}
-      <div
-        style={{
-          flexShrink: 0,
-          background: 'var(--pl-surface)',
-          border: '1px solid var(--pl-rule-strong)',
-          borderRadius: 8,
-          padding: '13px 18px',
-          display: 'flex', alignItems: 'center', gap: 12,
-        }}
-      >
+      <div style={{
+        flexShrink: 0,
+        background: 'var(--pl-surface)',
+        border: '1px solid var(--pl-rule-strong)',
+        borderRadius: 8,
+        padding: '13px 18px',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
         <Search size={15} style={{ color: 'var(--pl-ink-3)', flexShrink: 0 }} />
         <input
           value={query}
@@ -94,7 +87,8 @@ export default function Historico({
           placeholder="Buscar por matéria, tópico ou observação…"
           style={{
             flex: 1, background: 'transparent', border: 0, outline: 0,
-            fontFamily: 'var(--pl-sans)', fontSize: 13.5, color: 'var(--pl-ink)',
+            fontFamily: 'var(--pl-sans)', fontSize: 13.5,
+            color: 'var(--pl-ink-2, #3a342c)',
             letterSpacing: '-0.005em',
           }}
         />
@@ -127,10 +121,10 @@ export default function Historico({
               type="button"
               onClick={() => setFilter(item)}
               style={{
-                padding: '6px 14px',
+                padding: '7px 14px',
                 fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 600,
                 letterSpacing: '-0.005em',
-                color: active ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
+                color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2, #3a342c)',
                 background: active ? 'var(--pl-ink)' : 'var(--pl-surface)',
                 border: `1px solid ${active ? 'var(--pl-ink)' : 'var(--pl-rule-strong)'}`,
                 borderRadius: 6, cursor: 'pointer',
@@ -144,19 +138,19 @@ export default function Historico({
 
         <span style={{
           marginLeft: 'auto',
-          fontFamily: 'var(--pl-mono)', fontSize: 11.5, fontWeight: 500,
-          color: 'var(--pl-ink-3)',
+          fontFamily: 'var(--pl-mono)', fontSize: 12,
+          color: 'var(--pl-ink-3)', fontWeight: 500,
         }}>
-          <span style={{ color: 'var(--pl-ink)', fontWeight: 600 }}>{filtered.length}</span>
+          <span style={{ color: 'var(--pl-ink-2, #3a342c)', fontWeight: 600 }}>{filtered.length}</span>
           {' / '}
-          <span style={{ color: 'var(--pl-ink)', fontWeight: 600 }}>{totalSessions}</span>
+          <span style={{ color: 'var(--pl-ink-2, #3a342c)', fontWeight: 600 }}>{totalSessions}</span>
         </span>
       </div>
 
       {/* ── Timeline ── */}
       <div style={{
         flex: 1, minHeight: 0,
-        background: 'var(--pl-surface)',
+        background: 'var(--pl-bg-soft)',
         border: '1px solid var(--pl-rule-strong)',
         borderRadius: 8,
         overflow: 'hidden',
@@ -167,13 +161,14 @@ export default function Historico({
           flexShrink: 0,
           padding: '16px 22px',
           borderBottom: '1px solid var(--pl-rule)',
-          background: 'var(--pl-bg-soft)',
+          background: 'var(--pl-surface)',
           display: 'flex', alignItems: 'center', gap: 14,
         }}>
           <span style={{
             fontFamily: 'var(--pl-sans)',
             fontSize: 10, fontWeight: 700, letterSpacing: '0.28em',
             textTransform: 'uppercase', color: 'var(--pl-ink-3)',
+            marginRight: 4,
           }}>
             Linha do tempo
           </span>
@@ -201,6 +196,113 @@ export default function Historico({
   );
 }
 
+/* ── Cabeçalho editorial light (paper-warm + ink mark) ── */
+function PageHeader({ totalSessions }) {
+  return (
+    <div style={{
+      flexShrink: 0,
+      background: 'var(--pl-surface)',
+      border: '1px solid var(--pl-rule-strong)',
+      borderRadius: 8,
+      padding: '28px 32px 26px',
+      display: 'grid',
+      gridTemplateColumns: 'auto 1fr auto',
+      alignItems: 'center',
+      gap: 24,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Textura de papel pautado (linhas horizontais sutis) */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'repeating-linear-gradient(0deg, transparent 0px 35px, rgba(20,17,13,0.035) 35px 36px)',
+        zIndex: 0,
+      }} />
+
+      {/* Dog-ear canto superior direito */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0,
+        width: 72, height: 72,
+        background: 'var(--pl-bg-soft)',
+        clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
+        borderLeft: '1px solid var(--pl-rule-strong)',
+        borderBottom: '1px solid var(--pl-rule-strong)',
+        pointerEvents: 'none', zIndex: 0,
+      }} />
+
+      {/* Mark — quadrado ink com ícone paper */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        width: 62, height: 62,
+        background: 'var(--pl-ink)',
+        borderRadius: 4,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+        boxShadow: '0 2px 8px rgba(20,17,13,0.12)',
+      }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--pl-bg)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        </svg>
+      </div>
+
+      {/* Bloco de texto */}
+      <div style={{ minWidth: 0, position: 'relative', zIndex: 1 }}>
+        <div style={{
+          fontFamily: 'var(--pl-sans)',
+          fontSize: 10.5, fontWeight: 700, letterSpacing: '0.32em',
+          textTransform: 'uppercase', color: 'var(--pl-accent)',
+          marginBottom: 8,
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ display: 'inline-block', width: 16, height: 1, background: 'var(--pl-accent)', flexShrink: 0 }} />
+          Estudos · trilha do tempo
+        </div>
+        <h2 style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 44, letterSpacing: '-0.04em',
+          color: 'var(--pl-ink)', lineHeight: 1,
+          margin: '0 0 9px',
+        }}>
+          Histórico<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h2>
+        <p style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 16, lineHeight: 1.45,
+          color: 'var(--pl-ink-2, #3a342c)',
+          margin: 0, maxWidth: '60ch',
+          letterSpacing: '-0.005em',
+        }}>
+          Toda sessão registrada, em ordem cronológica. A{' '}
+          <em style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--pl-ink)' }}>análise</em>
+          {' '}e gráficos comparativos ficam na aba Estatísticas.
+        </p>
+      </div>
+
+      {/* Stat direita */}
+      <div style={{ textAlign: 'right', flexShrink: 0, position: 'relative', zIndex: 1 }}>
+        <div style={{
+          fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 44, letterSpacing: '-0.04em', lineHeight: 1,
+          color: 'var(--pl-ink)',
+        }}>
+          {totalSessions}<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </div>
+        <div style={{
+          fontFamily: 'var(--pl-sans)',
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.24em',
+          textTransform: 'uppercase',
+          color: 'var(--pl-ink-3)',
+          marginTop: 5,
+        }}>
+          Registros
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Card de entrada da timeline ── */
 function HistoryCard({ item }) {
   const palette = TYPE_PALETTE[item.color] || TYPE_PALETTE.blue;
@@ -208,7 +310,7 @@ function HistoryCard({ item }) {
   return (
     <div
       style={{
-        position: 'relative', borderRadius: 9,
+        position: 'relative', borderRadius: 8,
         border: `1px solid ${palette.border}`,
         background: 'var(--pl-surface)', overflow: 'hidden',
         transition: 'box-shadow .14s',
@@ -325,26 +427,28 @@ function EmptyState({ hasRecords }) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '56px 32px 68px', textAlign: 'center', gap: 14,
+      padding: '64px 32px 72px', textAlign: 'center', gap: 14,
     }}>
       {/* Mark com dog-ear */}
       <div style={{
-        width: 72, height: 72,
+        width: 76, height: 76,
         background: 'var(--pl-bg)',
         border: '1px solid var(--pl-rule-strong)',
         borderRadius: 8,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 4,
         position: 'relative',
-        overflow: 'hidden',
+        flexShrink: 0,
       }}>
         <div style={{
           position: 'absolute', top: 0, right: 0,
-          width: 18, height: 18,
+          width: 20, height: 20,
           background: 'var(--pl-bg-soft)',
           clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
+          borderBottom: '1px solid var(--pl-rule)',
+          borderLeft: '1px solid var(--pl-rule)',
         }} />
-        <BookOpen size={28} strokeWidth={1.4} style={{ color: 'var(--pl-ink-3)' }} />
+        <BookOpen size={30} strokeWidth={1.4} style={{ color: 'var(--pl-ink-3)' }} />
       </div>
 
       <h3 style={{
@@ -357,7 +461,7 @@ function EmptyState({ hasRecords }) {
 
       <p style={{
         fontFamily: 'var(--pl-sans)', fontSize: 13.5, lineHeight: 1.55,
-        color: 'var(--pl-ink-3)', fontWeight: 500,
+        color: 'var(--pl-ink-2, #3a342c)', fontWeight: 500,
         maxWidth: '44ch', margin: 0,
       }}>
         Comece uma sessão de estudo — em alguns minutos o primeiro
@@ -382,6 +486,14 @@ function EmptyState({ hasRecords }) {
         }}>▶</span>
         Papirar agora
       </button>
+
+      <p style={{ margin: '2px 0 0', fontFamily: 'var(--pl-sans)', fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+        Ou explore o{' '}
+        <a href="#" style={{ color: 'var(--pl-accent)', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: 1, fontWeight: 600 }}>
+          edital verticalizado
+        </a>
+        {' '}antes de começar.
+      </p>
     </div>
   );
 }
