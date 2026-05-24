@@ -430,7 +430,7 @@ export default function Login({
             fontSize: 21, lineHeight: 1.45, letterSpacing: '-0.01em',
             color: 'var(--pl-ink-2)', maxWidth: '32ch',
           }}>
-            A plataforma de estudos para concurso que fala a sua língua. Marque a página,
+            O estúdio onde o seu material vira estudo de verdade. Marque a página,
             papire a questão e volte de onde parou.
           </p>
 
