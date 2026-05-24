@@ -79,7 +79,6 @@ export default function Login({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [concurso, setConcurso] = useState('');
   const [referralCode, setReferralCode] = useState(() => normalizeReferralCode(initialReferralCode));
 
   const [loading, setLoading] = useState(false);
@@ -106,7 +105,6 @@ export default function Login({
     setEmail('');
     setPassword('');
     setConfirmPassword('');
-    setConcurso('');
     setReferralCode(normalizeReferralCode(initialReferralCode));
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -215,12 +213,13 @@ export default function Login({
 
       .pl-login-card {
         width: min(100%, 560px);
-        min-height: min(800px, calc(100vh - 64px));
+        min-height: min(740px, calc(100vh - 48px));
         background: rgba(255, 255, 255, 0.86);
         border: 1px solid rgba(20, 17, 13, 0.12);
         border-radius: 22px;
         box-shadow: 0 26px 70px rgba(20, 17, 13, 0.14), 0 3px 12px rgba(20, 17, 13, 0.08);
         backdrop-filter: blur(14px);
+        overflow: hidden;
       }
 
       .pl-login-form {
@@ -237,6 +236,55 @@ export default function Login({
 
       .pl-login-form .pl-input:focus {
         border-color: rgba(29, 78, 216, 0.72);
+      }
+
+      .pl-login-card.is-register {
+        min-height: min(760px, calc(100vh - 32px));
+      }
+
+      .pl-login-card.is-register .pl-login-card-header {
+        margin-bottom: 18px !important;
+      }
+
+      .pl-login-card.is-register .pl-login-title {
+        font-size: 34px !important;
+        line-height: 1 !important;
+      }
+
+      .pl-login-card.is-register .pl-login-subtitle {
+        margin: 8px 0 16px !important;
+        font-size: 13.5px !important;
+        line-height: 1.38 !important;
+      }
+
+      .pl-login-card.is-register .pl-login-form {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 8px 10px !important;
+      }
+
+      .pl-login-card.is-register .pl-input {
+        height: 38px !important;
+        border-radius: 10px;
+        font-size: 13.5px;
+      }
+
+      .pl-login-card.is-register .pl-login-submit,
+      .pl-login-card.is-register .pl-login-google {
+        height: 40px !important;
+        min-height: 40px;
+        grid-column: 1 / -1;
+      }
+
+      .pl-login-card.is-register .pl-login-divider {
+        grid-column: 1 / -1;
+        margin: 2px 0;
+      }
+
+      .pl-login-card.is-register .pl-login-footer {
+        padding-top: 16px !important;
+        font-size: 11.5px !important;
+        line-height: 1.4 !important;
       }
 
       .pl-login-benefits {
@@ -282,14 +330,20 @@ export default function Login({
           min-height: 100svh;
           padding: 28px 18px !important;
           border-left: 0 !important;
-          overflow: visible !important;
+          overflow: hidden !important;
         }
 
         .pl-login-card {
+          max-height: calc(100svh - 56px);
           min-height: auto;
           border-radius: 18px;
           padding: 28px 22px !important;
           box-shadow: 0 18px 46px rgba(20, 17, 13, 0.13), 0 2px 10px rgba(20, 17, 13, 0.08);
+        }
+
+        .pl-login-card.is-register .pl-login-form {
+          display: flex !important;
+          flex-direction: column;
         }
       }
 
@@ -300,6 +354,7 @@ export default function Login({
 
         .pl-login-card {
           width: 100%;
+          max-height: calc(100svh - 36px);
           border-radius: 16px;
           padding: 24px 16px !important;
         }
@@ -323,6 +378,10 @@ export default function Login({
           gap: 13px !important;
         }
 
+        .pl-login-card.is-register .pl-login-form {
+          gap: 7px !important;
+        }
+
         .pl-login-footer {
           text-align: center;
         }
@@ -332,7 +391,7 @@ export default function Login({
       width: '100%', height: '100vh',
       display: 'grid',
       gridTemplateColumns: 'minmax(0, 1.35fr) minmax(460px, 0.95fr)',
-      minHeight: 680,
+      minHeight: 0,
       overflow: 'hidden',
       fontFamily: 'var(--pl-sans)',
     }}>
@@ -413,10 +472,10 @@ export default function Login({
         borderLeft: '1px solid var(--pl-rule-2)',
         padding: '32px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        overflowY: 'auto',
+        overflow: 'hidden',
       }}>
-        <div className="pl-login-card" style={{
-          padding: '44px 46px',
+        <div className={`pl-login-card ${isLoginMode ? '' : 'is-register'}`} style={{
+          padding: isLoginMode ? '44px 46px' : '22px 40px',
           display: 'flex',
           flexDirection: 'column',
         }}>
@@ -606,20 +665,6 @@ export default function Login({
             </PlField>
           )}
 
-          {/* Concurso-alvo (apenas cadastro) */}
-          {!isLoginMode && (
-            <PlField label={
-              <>Concurso-alvo <span style={{ color: 'var(--pl-ink-4)', fontWeight: 500 }}>(opcional)</span></>
-            }>
-              <input
-                className="pl-input" type="text"
-                placeholder="PC-BA · Investigador"
-                value={concurso} onChange={(e) => setConcurso(e.target.value)}
-                style={{ width: '100%', height: 44 }}
-              />
-            </PlField>
-          )}
-
           {/* Código de convite (apenas cadastro) */}
           {!isLoginMode && (
             <PlField label="Código de convite (opcional)">
@@ -658,7 +703,7 @@ export default function Login({
           </button>
 
           {/* Divisor */}
-          <div style={{
+          <div className="pl-login-divider" style={{
             display: 'flex', alignItems: 'center', gap: 14,
             color: 'var(--pl-ink-4)',
             fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase',
@@ -712,11 +757,10 @@ export default function Login({
                 color: 'var(--pl-accent)', cursor: 'pointer',
                 textDecoration: 'underline', textDecorationColor: 'rgba(29,78,216,0.3)',
               }}>Entra na sua conta</button>
-              <br /><br />
-              Criar conta significa que você aceita nossos{' '}
+              {' '}·{' '}
               <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>termos</a>
-              {' '}e a{' '}
-              <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>política de privacidade</a>.
+              {' '}e{' '}
+              <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>privacidade</a>
             </>
           )}
         </div>
