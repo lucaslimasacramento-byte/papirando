@@ -4,8 +4,6 @@ import {
   BookOpen,
   Search,
   SlidersHorizontal,
-  Clock,
-  Target,
 } from 'lucide-react';
 import {
   buildCanonicalHistory,
@@ -73,31 +71,15 @@ export default function Historico({
 
   const totalSessions = timeline.length;
   const totalMinutes  = useMemo(() => timeline.reduce((s, i) => s + (i.duration || 0), 0), [timeline]);
-  const avgAccuracy   = useMemo(() => {
-    const withAcc = timeline.filter((i) => i.questions > 0);
-    if (!withAcc.length) return null;
-    return Math.round(withAcc.reduce((s, i) => s + i.accuracy, 0) / withAcc.length);
-  }, [timeline]);
 
   return (
     <div className="page-shell flex h-full min-h-0 flex-col !gap-3 !pb-6 !pt-4 animate-in fade-in duration-500 sm:!pt-5 lg:!gap-4">
 
-      {/* Cabeçalho escuro — simples, sem KPIs no bloco premium */}
+      {/* Cabeçalho escuro — apenas ícone, título e subtítulo */}
       <PageHeadPremium
         icon={History}
         title="Histórico"
         subtitle="Linha do tempo dos seus registros. A análise fica na aba Estatísticas."
-        trailing={
-          totalSessions > 0 ? (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <HeaderStat icon={History} label="Sessões"    value={String(totalSessions)} />
-              <HeaderStat icon={Clock}   label="Tempo"      value={formatMinutesLabel(totalMinutes)} />
-              {avgAccuracy !== null && (
-                <HeaderStat icon={Target} label="Acerto médio" value={`${avgAccuracy}%`} />
-              )}
-            </div>
-          ) : null
-        }
       />
 
       {/* Busca + filtros */}
@@ -128,7 +110,7 @@ export default function Historico({
           />
         </div>
 
-        {/* Pills de filtro */}
+        {/* Pills de filtro + contadores */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -159,6 +141,7 @@ export default function Historico({
             );
           })}
 
+          {/* Contagem filtrada / total */}
           <span style={{
             marginLeft: 'auto', height: 22, padding: '0 9px', borderRadius: 4,
             border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
@@ -168,6 +151,19 @@ export default function Historico({
           }}>
             {filtered.length} / {totalSessions}
           </span>
+
+          {/* Tempo total — só aparece quando há registros */}
+          {totalMinutes > 0 && (
+            <span style={{
+              height: 22, padding: '0 9px', borderRadius: 4,
+              border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
+              color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-mono)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+              display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+            }}>
+              {formatMinutesLabel(totalMinutes)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -176,13 +172,11 @@ export default function Historico({
         className="section-card"
         style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}
       >
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <div>
-            <p className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 3 }}>Linha do tempo</p>
-            <h3 style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 14.5, fontWeight: 700, color: 'var(--pl-ink)', letterSpacing: '-0.01em' }}>
-              Registros por matéria
-            </h3>
-          </div>
+        <div style={{ flexShrink: 0 }}>
+          <p className="pl-eyebrow" style={{ fontSize: 9.5, marginBottom: 3 }}>Linha do tempo</p>
+          <h3 style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 14.5, fontWeight: 700, color: 'var(--pl-ink)', letterSpacing: '-0.01em' }}>
+            Registros por matéria
+          </h3>
         </div>
 
         <div
@@ -194,28 +188,6 @@ export default function Historico({
             : filtered.map((item) => <HistoryCard key={item.id} item={item} />)
           }
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Stat no trailing do header (sem KPI gigante) ── */
-function HeaderStat({ icon: Icon, label, value }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 7,
-      padding: '6px 12px', borderRadius: 10,
-      border: '1px solid rgba(255,255,255,0.10)',
-      background: 'rgba(255,255,255,0.07)',
-    }}>
-      <Icon size={13} style={{ color: 'rgba(255,255,255,0.50)', flexShrink: 0 }} />
-      <div>
-        <p style={{ margin: 0, fontFamily: 'var(--pl-sans)', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
-          {label}
-        </p>
-        <p style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 16, fontWeight: 400, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.02em' }}>
-          {value}
-        </p>
       </div>
     </div>
   );
@@ -236,7 +208,7 @@ function HistoryCard({ item }) {
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 3px 10px rgba(20,17,13,0.08)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
     >
-      {/* Faixa lateral */}
+      {/* Faixa lateral colorida */}
       <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 3, background: palette.stripe }} />
 
       <div style={{ padding: '11px 14px 11px 17px' }}>
