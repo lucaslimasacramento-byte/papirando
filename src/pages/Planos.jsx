@@ -628,23 +628,12 @@ function PlanosHeader({ onCriarCurso, onAbrirBiblioteca, onImportarIA }) {
         <button className="pl-btn" onClick={onAbrirBiblioteca}>
           <LibraryBig size={13} /> Biblioteca
         </button>
-        <button className="pl-btn pl-btn-ai" style={{ position: 'relative' }} onClick={onImportarIA}>
-          <Sparkles size={12} /> Importar com IA
-          <span style={{
-            position: 'absolute',
-            top: -6,
-            right: -6,
-            fontSize: 8.5,
-            fontWeight: 800,
-            letterSpacing: '0.08em',
-            padding: '2px 5px',
-            borderRadius: 3,
-            background: '#fbe9a0',
-            color: '#8a6d10',
-          }}>
-            BETA
-          </span>
-        </button>
+        <span className="btn-ai-aura">
+          <button className="pl-btn pl-btn-ai" onClick={onImportarIA}>
+            <Sparkles size={12} /> Importar com IA
+            <span className="beta">beta</span>
+          </button>
+        </span>
       </div>
     </header>
   );

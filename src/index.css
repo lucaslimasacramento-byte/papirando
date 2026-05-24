@@ -35,6 +35,295 @@
   --pl-mono:  'JetBrains Mono', ui-monospace, monospace;
   --pl-paper-rule: var(--pl-rule);
 }
+
+.ig-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 100%;
+  padding: 26px;
+  color: var(--pl-ink);
+  background: var(--pl-bg);
+}
+
+.ig-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--pl-rule-2);
+}
+
+.ig-header h1 {
+  margin: 4px 0 6px;
+  font-family: var(--pl-serif);
+  font-size: clamp(34px, 5vw, 54px);
+  font-weight: 300;
+  line-height: 0.95;
+}
+
+.ig-header p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--pl-ink-3);
+  font-size: 14px;
+}
+
+.ig-alert {
+  border: 1px solid rgba(185, 28, 28, 0.22);
+  background: var(--pl-danger-soft);
+  color: var(--pl-danger);
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ig-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.ig-kpi,
+.ig-panel {
+  border: 1px solid var(--pl-rule);
+  border-radius: 8px;
+  background: var(--pl-surface);
+  box-shadow: var(--pl-sh-low);
+}
+
+.ig-kpi {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  padding: 14px;
+}
+
+.ig-kpi svg {
+  grid-row: span 2;
+  color: var(--pl-accent);
+}
+
+.ig-kpi span {
+  color: var(--pl-ink-3);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ig-kpi strong {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ig-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  gap: 14px;
+}
+
+.ig-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.ig-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ig-panel h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.ig-panel input,
+.ig-panel select,
+.ig-panel textarea {
+  width: 100%;
+  border: 1px solid var(--pl-rule-2);
+  border-radius: 6px;
+  background: var(--pl-surface-2);
+  color: var(--pl-ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 10px 11px;
+}
+
+.ig-panel textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.ig-segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--pl-bg-soft);
+}
+
+.ig-segmented button {
+  height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pl-ink-3);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.ig-segmented button.active {
+  background: var(--pl-surface);
+  color: var(--pl-ink);
+  box-shadow: var(--pl-sh-low);
+}
+
+.ig-upload {
+  min-height: 116px;
+  border: 1px dashed var(--pl-rule-strong);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  color: var(--pl-ink-3);
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ig-upload input {
+  display: none;
+}
+
+.ig-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--pl-ink-3);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ig-preview {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 12px;
+  align-items: start;
+  min-height: 160px;
+  padding-top: 4px;
+}
+
+.ig-preview img,
+.ig-preview > svg {
+  width: 128px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--pl-rule);
+  background: var(--pl-bg-soft);
+  color: var(--pl-ink-4);
+}
+
+.ig-preview p {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--pl-ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ig-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid var(--pl-rule);
+}
+
+.ig-row div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ig-row span {
+  color: var(--pl-ink-3);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-status {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--pl-accent-soft);
+  color: var(--pl-accent);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.ig-status-published {
+  background: var(--pl-success-soft);
+  color: var(--pl-success);
+}
+
+.ig-status-failed {
+  background: var(--pl-danger-soft);
+  color: var(--pl-danger);
+}
+
+.ig-empty {
+  margin: 0;
+  color: var(--pl-ink-3);
+  font-size: 13px;
+}
+
+.ig-spin {
+  animation: ig-spin 0.8s linear infinite;
+}
+
+@keyframes ig-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .ig-page {
+    padding: 18px;
+  }
+
+  .ig-header,
+  .ig-band,
+  .ig-grid,
+  .ig-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ig-header {
+    align-items: stretch;
+  }
+
+  .ig-preview {
+    grid-template-columns: 1fr;
+  }
+}
 .pl-theme-dark {
   --pl-bg:           #1a1612;
   --pl-bg-soft:      #211c16;
@@ -267,20 +556,23 @@ html, body {
 .pl-btn-primary:hover { background: var(--pl-ink-2); border: 0; }
 .pl-btn-ghost { background: transparent; color: var(--pl-ink); border: 0; }
 .pl-btn-ghost:hover { background: var(--pl-bg-soft); border: 0; }
-/* Superfície IA Bizu — canvas claro (edital, planos, etc.) */
+/* Modifier IA para .pl-btn — ink sólido, sparkle azul-claro (v1.0) */
 .pl-btn-ai {
-  color: #ffffff;
-  border: 1px solid rgba(30, 58, 95, 0.45);
-  background: linear-gradient(135deg, #1e3a5f 0%, #255ea0 55%, #1e4d8c 100%);
-  box-shadow:
-    0 4px 14px rgba(30, 58, 95, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: var(--pl-ink, #14110d);
+  color: var(--pl-bg, #f3efe5);
+  border: 0;
 }
-.pl-btn-ai:hover {
-  background: linear-gradient(135deg, #22437a 0%, #2d6bb8 55%, #2358a0 100%);
-  box-shadow:
-    0 6px 18px rgba(30, 58, 95, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+.pl-btn-ai:hover { background: var(--pl-ink-2, #1f1a14); border: 0; }
+.pl-btn-ai > svg,
+.pl-btn-ai > .icon { color: #93b4ff; flex-shrink: 0; }
+.pl-btn-ai .beta {
+  font-family: var(--pl-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 11px;
+  color: #93b4ff;
+  letter-spacing: -0.01em;
+  margin-left: 4px;
 }
 .pl-btn-link {
   display: inline-flex; align-items: center; gap: 6px;
@@ -825,54 +1117,38 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── AI surfaces ── */
-@keyframes pl-ai-shimmer {
-  0%        { transform: translateX(-130%); }
-  55%, 100% { transform: translateX(130%); }
+/* ── AI surfaces — sistema Bizu v1.0 ── */
+@keyframes papirando-aura-pulse {
+  0%, 100% { opacity: 0.50; transform: scale(0.85); }
+  50%       { opacity: 1.00; transform: scale(1.18); }
 }
-.pl-btn-ai {
-  background: linear-gradient(135deg, #2557e5 0%, #4338ca 55%, #3730a3 100%);
-  color: #fff; border: 0; position: relative; overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 0 0 1px rgba(67,56,202,0.25), 0 6px 16px rgba(29,78,216,0.22);
-}
-.pl-btn-ai:hover {
-  background: linear-gradient(135deg, #2e63ec 0%, #4d44d4 55%, #4239a8 100%);
-  border: 0;
-}
-.pl-btn-ai::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%);
-  transform: translateX(-130%);
-  animation: pl-ai-shimmer 3.6s ease-in-out infinite;
-  pointer-events: none;
-}
-.pl-btn-ai > * { position: relative; z-index: 1; }
+
+/* Tag IA — ink sólido, sparkle #93b4ff */
 .pl-tag-ai {
   display: inline-flex; align-items: center; gap: 5px;
   height: 22px; padding: 0 9px; border-radius: 4px;
   font-size: 11px; font-weight: 700; letter-spacing: 0.01em;
-  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-  color: #4338ca; border: 1px solid rgba(99,102,241,0.28);
-  position: relative; overflow: hidden;
+  background: var(--pl-bg-soft);
+  color: var(--pl-ink);
+  border: 1px solid var(--pl-rule-2);
 }
-.pl-tag-ai::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
-  transform: translateX(-130%);
-  animation: pl-ai-shimmer 4.2s ease-in-out infinite;
-  animation-delay: 0.6s; pointer-events: none;
-}
-.pl-tag-ai > * { position: relative; z-index: 1; }
+.pl-tag-ai > svg,
+.pl-tag-ai > .icon { color: #93b4ff; }
+
+/* Card com borda suave de acento — usado em superfícies IA */
 .pl-card-ai {
-  position: relative; background: var(--pl-surface); border-radius: 6px; padding: 16px 18px;
-  background-image: linear-gradient(var(--pl-surface), var(--pl-surface)),
-    linear-gradient(135deg, #1e3a5f 0%, #6366f1 50%, #1e3a5f 100%);
-  background-origin: border-box; background-clip: padding-box, border-box;
-  border: 1px solid transparent; box-shadow: 0 2px 8px rgba(67,56,202,0.10);
+  position: relative;
+  background: var(--pl-surface);
+  border-radius: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--pl-accent-soft);
+  box-shadow: 0 2px 8px var(--pl-accent-soft);
 }
+
+/* Texto acento — cor de acento, sem gradiente */
 .pl-ai-accent {
-  background: linear-gradient(135deg, #1e3a5f 0%, #6366f1 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;
+  color: var(--pl-accent);
+  font-weight: 700;
 }
 
 .pl-overline {
@@ -1862,46 +2138,94 @@ html, body {
   }
 
   /**
-   * Botão de ação com IA — superfície Bizu (canvas claro: toolbars, cards, modais).
-   * Gradiente azul-marinho → azul médio (brandbook: “AI = blue→indigo, shimmer, escasso”).
-   * Não usar como CTA primário genérico — exclusivo para fluxos “gerar / sugerir com IA”.
+   * Botão de ação com IA — superfície Bizu v1.0 (canvas claro: toolbars, cards, modais).
+   * Ink sólido + sparkle #93b4ff. Sem gradiente. Parcimônia: só para fluxos “gerar / sugerir com IA”.
+   * Use .btn-ai-aura como wrapper para botões IA premium (Importar com IA, etc.).
    */
+  .btn-ai {
+    background: var(--ink, #14110d);
+    color: var(--paper, #f3efe5);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: -0.005em;
+    padding: 9px 16px;
+    border-radius: 6px;
+    border: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.04s;
+  }
+  .btn-ai:hover  { background: #1f1a14; }
+  .btn-ai:active { transform: translateY(1px); }
+  .btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ai > svg,
+  .btn-ai > .icon { color: #93b4ff; flex-shrink: 0; }
+  .btn-ai .beta {
+    font-family: 'Fraunces', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 11px;
+    color: #93b4ff;
+    letter-spacing: -0.01em;
+    margin-left: 4px;
+  }
+  /* Variante sobre fundo escuro (sidebar, dark mode) */
+  .btn-ai.is-on-dark { background: var(--paper, #f3efe5); color: var(--ink, #14110d); }
+  .btn-ai.is-on-dark > svg,
+  .btn-ai.is-on-dark > .icon { color: var(--accent, #1e3a5f); }
+  .btn-ai.is-on-dark .beta   { color: var(--accent, #1e3a5f); }
+
+  /* Alias retrocompatível — preferir .btn-ai em código novo */
   .btn-ia {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all sm:text-[13px];
-    color: #ffffff;
-    border: 1px solid rgba(30, 58, 95, 0.45);
-    background: linear-gradient(
-      135deg,
-      #1e3a5f 0%,
-      #255ea0 55%,
-      #1e4d8c 100%
+    background: var(--ink, #14110d);
+    color: var(--paper, #f3efe5);
+    @apply inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition-all sm:text-[13px];
+    border: 0;
+    cursor: pointer;
+  }
+  .btn-ia > svg { color: #93b4ff; }
+  .btn-ia:hover { background: #1f1a14; }
+  .btn-ia:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ───── Aura pulsante · apenas para CTA IA premium ───── */
+  /* Envolver o botão com <span class=”btn-ai-aura”><button class=”btn-ai”>…</button></span> */
+  .btn-ai-aura {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;   /* mantém ::before atrás do botão, não do body */
+    line-height: 0;       /* evita gap extra do line-height herdado */
+  }
+  .btn-ai-aura::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 22px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(147, 180, 255, 0.85) 0%,
+      rgba(147, 180, 255, 0.40) 40%,
+      rgba(147, 180, 255, 0.00) 75%
     );
+    z-index: -1;
+    filter: blur(12px);
+    animation: papirando-aura-pulse 2.4s cubic-bezier(.4, 0, .2, 1) infinite;
+    pointer-events: none;
+  }
+  .btn-ai-aura .btn-ai {
     box-shadow:
-      0 4px 14px rgba(30, 58, 95, 0.26),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      inset 0 0 0 1px rgba(147, 180, 255, 0.35),
+      0 0 0 1px rgba(147, 180, 255, 0.15);
   }
-
-  .btn-ia:hover {
-    border-color: rgba(37, 94, 160, 0.65);
-    background: linear-gradient(
-      135deg,
-      #22437a 0%,
-      #2d6bb8 55%,
-      #2358a0 100%
-    );
+  .btn-ai-aura .btn-ia {
     box-shadow:
-      0 6px 18px rgba(30, 58, 95, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      inset 0 0 0 1px rgba(147, 180, 255, 0.35),
+      0 0 0 1px rgba(147, 180, 255, 0.15);
   }
-
-  .btn-ia:focus-visible {
-    @apply ring-2 ring-offset-2 ring-offset-white;
-    --tw-ring-color: rgba(122, 155, 191, 0.65);
-  }
-
-  .btn-ia:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
+  @media (prefers-reduced-motion: reduce) {
+    .btn-ai-aura::before { animation: none; opacity: 0.7; }
   }
 
   .page-shell {

@@ -1136,7 +1136,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
             <button
               type="button"
               onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className="btn-ia hidden py-1.5 md:inline-flex"
+              className="btn-ai hidden py-1.5 md:inline-flex"
             >
               <Sparkles size={14} aria-hidden />
               Gerar com IA
@@ -1315,7 +1315,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
                   type="button"
                   onClick={() => handleAiGenerate()}
                   disabled={aiLoading}
-                  className="btn-ia gap-2 px-5 py-2.5 text-sm font-bold"
+                  className="btn-ai gap-2 px-5 py-2.5 text-sm font-bold"
                 >
                   {aiLoading ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Sparkles size={14} aria-hidden />}
                   {aiLoading ? 'Gerando flashcards...' : 'Gerar flashcards'}

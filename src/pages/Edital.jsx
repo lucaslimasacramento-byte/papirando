@@ -504,10 +504,13 @@ function EditalEmptyState({ canAnalyze, loading, onImportarIA, onAdicionar }) {
         Importe o edital com IA ou adicione as disciplinas manualmente para acompanhar tópico por tópico.
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 22 }}>
-        <button type="button" className="pl-btn-ai pl-btn" onClick={onImportarIA} disabled={!canAnalyze || loading} style={{ opacity: !canAnalyze || loading ? 0.62 : 1 }}>
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          Importar com IA
-        </button>
+        <span className="btn-ai-aura">
+          <button type="button" className="pl-btn-ai pl-btn" onClick={onImportarIA} disabled={!canAnalyze || loading} style={{ opacity: !canAnalyze || loading ? 0.62 : 1 }}>
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            Importar com IA
+            <span className="beta">beta</span>
+          </button>
+        </span>
         <button type="button" className="pl-btn pl-btn-secondary" onClick={onAdicionar}>
           <Upload size={14} />
           Adicionar manualmente
