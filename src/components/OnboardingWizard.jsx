@@ -15,7 +15,21 @@ import { normalizeCpf, isValidCpf } from '../lib/profileProgress';
 
 const TOTAL_STEPS = 4;
 
-const GOAL_OPTIONS = [5, 10, 15, 20, 25, 30];
+const DAYS = [
+  { id: 'seg', label: 'Segunda' },
+  { id: 'ter', label: 'Terça' },
+  { id: 'qua', label: 'Quarta' },
+  { id: 'qui', label: 'Quinta' },
+  { id: 'sex', label: 'Sexta' },
+  { id: 'sab', label: 'Sábado' },
+  { id: 'dom', label: 'Domingo' },
+];
+
+const EMPTY_DAILY = { seg: 0, ter: 0, qua: 0, qui: 0, sex: 0, sab: 0, dom: 0 };
+
+function sumHours(daily) {
+  return Object.values(daily).reduce((acc, v) => acc + (Number(v) || 0), 0);
+}
 
 function formatCpfMask(raw) {
   const d = raw.replace(/\D/g, '').slice(0, 11);
@@ -25,47 +39,56 @@ function formatCpfMask(raw) {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
-// ─── Step components ──────────────────────────────────────────────────────────
+// ─── Step 1: Boas-vindas ──────────────────────────────────────────────────────
 
 function StepWelcome({ profile }) {
   const nome = profile?.nome || profile?.name || profile?.full_name || '';
-  const firstName = nome.split(' ')[0] || 'Olá';
+  const firstName = nome.split(' ')[0] || '';
+
+  const features = [
+    { icon: Brain, label: 'IA para resumos, flashcards e questões' },
+    { icon: Target, label: 'Simulados e banco de questões' },
+    { icon: Timer, label: 'Cronômetro e ciclos de estudo' },
+    { icon: BookOpen, label: 'Edital verticalizado e plano adaptativo' },
+  ];
 
   return (
-    <div className="flex flex-col items-center gap-6 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-blue-600 to-indigo-700 shadow-xl shadow-blue-500/30">
-        <Trophy size={36} className="text-white" />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, textAlign: 'center' }}>
+      <div style={{
+        width: 72, height: 72, borderRadius: 20,
+        background: 'var(--pl-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Trophy size={32} color="var(--pl-bg)" />
       </div>
+
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600">Bem-vindo</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
-          Olá, {firstName}!
-        </h1>
-        <p className="mt-3 max-w-sm text-sm font-medium leading-relaxed text-slate-600">
+        <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Bem-vindo</p>
+        <h2 className="pl-display" style={{ fontSize: 28, marginBottom: 10 }}>
+          {firstName ? `Olá, ${firstName}!` : 'Olá!'}
+        </h2>
+        <p style={{ fontSize: 13.5, color: 'var(--pl-ink-2)', lineHeight: 1.55, maxWidth: 340 }}>
           O Papirando é seu estúdio de estudos pessoal com IA. Vamos configurar sua conta
-          em 3 passos rápidos para personalizar sua experiência.
+          em 3 passos rápidos.
         </p>
       </div>
 
-      <div className="grid w-full max-w-sm gap-3">
-        {[
-          { icon: Brain, label: 'IA para redações e flashcards' },
-          { icon: Target, label: 'Simulados e banco de questões' },
-          { icon: Timer, label: 'Cronômetro e ciclos de estudo' },
-          { icon: BookOpen, label: 'Edital verticalizado guiado' },
-        ].map(({ icon: Icon, label }) => (
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {features.map(({ icon: Icon, label }) => (
           <div
             key={label}
-            className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
+            className="pl-card-paper"
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}
           >
-            <Icon size={16} className="shrink-0 text-blue-600" />
-            <span className="text-sm font-semibold text-slate-700">{label}</span>
+            <Icon size={15} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{label}</span>
           </div>
         ))}
       </div>
     </div>
   );
 }
+
+// ─── Step 2: Objetivo ─────────────────────────────────────────────────────────
 
 function StepContest({ contestLibrary, selectedId, onSelect }) {
   const [query, setQuery] = useState('');
@@ -83,35 +106,45 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
   }, [contestLibrary, query]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600">Passo 1</p>
-        <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ textAlign: 'center' }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Passo 1</p>
+        <h2 className="pl-display" style={{ fontSize: 24, marginBottom: 8 }}>
           O que você está estudando?
         </h2>
-        <p className="mt-2 text-sm font-medium text-slate-500">
+        <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
           Isso orienta seu plano, suas questões e sua rotina. Pode pular se quiser.
         </p>
       </div>
 
-      <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div style={{ position: 'relative' }}>
+        <Search size={13} style={{
+          position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+          color: 'var(--pl-ink-4)', pointerEvents: 'none',
+        }} />
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar seu objetivo de estudo..."
-          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-8 pr-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="pl-input"
+          style={{ width: '100%', paddingLeft: 30, boxSizing: 'border-box' }}
         />
       </div>
 
-      <div className="max-h-64 overflow-y-auto rounded-2xl border border-slate-100">
+      <div style={{
+        maxHeight: 240, overflowY: 'auto',
+        border: '1px solid var(--pl-rule-2)', borderRadius: 8,
+        background: 'var(--pl-surface)',
+      }}>
         {filtered.length === 0 ? (
-          <p className="py-6 text-center text-sm text-slate-500">Nenhum resultado.</p>
+          <p style={{ padding: '20px 0', textAlign: 'center', fontSize: 13, color: 'var(--pl-ink-3)' }}>
+            Nenhum resultado.
+          </p>
         ) : (
           filtered.map((c) => {
             const id = c.id || c.slug || c.plano;
-            const name = c.nome || c.name || 'Concurso';
+            const name = c.nome || c.name || 'Objetivo';
             const org = c.orgao || c.organization || '';
             const logo = c.imagem_url || c.logo_url || '';
             const isSelected = selectedId === id;
@@ -120,22 +153,32 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
                 key={id}
                 type="button"
                 onClick={() => onSelect(isSelected ? '' : id)}
-                className={`flex w-full items-center gap-3 border-b border-slate-50 px-4 py-3 text-left last:border-0 transition hover:bg-blue-50 ${
-                  isSelected ? 'bg-blue-50' : 'bg-white'
-                }`}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px', border: 0,
+                  borderBottom: '1px solid var(--pl-rule)',
+                  background: isSelected ? 'var(--pl-accent-soft)' : 'transparent',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'background .1s',
+                }}
               >
                 {logo ? (
-                  <img src={logo} alt="" className="h-7 w-7 shrink-0 rounded-lg object-contain" />
+                  <img src={logo} alt="" style={{ width: 28, height: 28, flexShrink: 0, borderRadius: 6, objectFit: 'contain' }} />
                 ) : (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-slate-500">
+                  <div style={{
+                    width: 28, height: 28, flexShrink: 0, borderRadius: 6,
+                    background: 'var(--pl-bg-soft)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-3)',
+                  }}>
                     {name.slice(0, 2).toUpperCase()}
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-800">{name}</p>
-                  {org ? <p className="truncate text-[11px] text-slate-500">{org}</p> : null}
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</p>
+                  {org ? <p style={{ fontSize: 11, color: 'var(--pl-ink-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org}</p> : null}
                 </div>
-                {isSelected && <CheckCircle2 size={16} className="shrink-0 text-blue-600" />}
+                {isSelected && <CheckCircle2 size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />}
               </button>
             );
           })
@@ -145,67 +188,113 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
   );
 }
 
-function StepGoal({ value, onChange }) {
+// ─── Step 3: Horas por dia ────────────────────────────────────────────────────
+
+function StepGoal({ daily, onChange }) {
+  const total = sumHours(daily);
+
+  const feedback = total === 0
+    ? 'Preencha ao menos um dia para montar seu plano.'
+    : total < 7
+    ? 'Começando devagar — consistência é o que importa!'
+    : total < 20
+    ? 'Ritmo sólido — você vai longe com essa constância.'
+    : 'Modo foco máximo — sem distrações!';
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600">Passo 2</p>
-        <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
-          Qual é sua meta semanal?
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ textAlign: 'center' }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Passo 2</p>
+        <h2 className="pl-display" style={{ fontSize: 24, marginBottom: 8 }}>
+          Quanto você estuda por dia?
         </h2>
-        <p className="mt-2 text-sm font-medium text-slate-500">
-          Quantidade de horas que pretende estudar por semana. Pode ajustar a qualquer momento.
+        <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
+          Coloque as horas que consegue dedicar em cada dia. Pode ajustar depois.
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        {GOAL_OPTIONS.map((h) => (
-          <button
-            key={h}
-            type="button"
-            onClick={() => onChange(h)}
-            className={`rounded-2xl border px-4 py-5 text-center transition ${
-              value === h
-                ? 'border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50'
-            }`}
-          >
-            <span className="block text-2xl font-black">{h}h</span>
-            <span className={`mt-0.5 block text-[11px] font-semibold ${value === h ? 'text-blue-100' : 'text-slate-400'}`}>
-              por semana
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {DAYS.map(({ id, label }) => (
+          <div key={id} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '8px 12px',
+            border: '1px solid var(--pl-rule-2)', borderRadius: 8,
+            background: (Number(daily[id]) || 0) > 0 ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+            transition: 'background .15s',
+          }}>
+            <span style={{
+              width: 72, flexShrink: 0,
+              fontSize: 13, fontWeight: 600,
+              color: (Number(daily[id]) || 0) > 0 ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+            }}>
+              {label}
             </span>
-          </button>
+            <input
+              type="number"
+              min="0"
+              max="16"
+              step="0.5"
+              value={daily[id] === 0 ? '' : daily[id]}
+              placeholder="0"
+              onChange={(e) => {
+                const val = Math.min(16, Math.max(0, parseFloat(e.target.value) || 0));
+                onChange({ ...daily, [id]: val });
+              }}
+              style={{
+                flex: 1, minWidth: 0,
+                height: 34, padding: '0 10px',
+                border: '1px solid var(--pl-rule-2)', borderRadius: 6,
+                background: 'var(--pl-surface)',
+                fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)',
+                fontFamily: 'var(--pl-mono)',
+                textAlign: 'right',
+              }}
+            />
+            <span style={{ flexShrink: 0, fontSize: 12, color: 'var(--pl-ink-3)', width: 16 }}>h</span>
+          </div>
         ))}
       </div>
 
-      <p className="text-center text-xs font-medium text-slate-400">
-        {value < 10
-          ? 'Começando devagar — consistência é o que importa!'
-          : value < 20
-          ? 'Ritmo sólido — você vai longe com essa constância.'
-          : 'Modo foco máximo — sem distrações!'}
+      {/* Soma total */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 14px',
+        borderTop: '2px solid var(--pl-rule-strong)',
+        marginTop: 2,
+      }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          Total semanal
+        </span>
+        <span className="pl-num" style={{ fontSize: 22, color: total > 0 ? 'var(--pl-accent)' : 'var(--pl-ink-4)' }}>
+          {total % 1 === 0 ? total : total.toFixed(1)}h
+        </span>
+      </div>
+
+      <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--pl-ink-3)', marginTop: -8 }}>
+        {feedback}
       </p>
     </div>
   );
 }
 
+// ─── Step 4: CPF ─────────────────────────────────────────────────────────────
+
 function StepCpf({ value, onChange, error }) {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600">Passo 3</p>
-        <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ textAlign: 'center' }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Passo 3</p>
+        <h2 className="pl-display" style={{ fontSize: 24, marginBottom: 8 }}>
           Informe seu CPF
         </h2>
-        <p className="mt-2 text-sm font-medium text-slate-500">
-          Obrigatório para emissão de nota fiscal caso você assine um plano pago. Seus dados são
-          protegidos e criptografados.
+        <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
+          Necessário para nota fiscal se você assinar um plano pago. Pode pular por enquanto.
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-slate-600" htmlFor="onb-cpf">
-          CPF *
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }} htmlFor="onb-cpf">
+          CPF
         </label>
         <input
           id="onb-cpf"
@@ -215,30 +304,30 @@ function StepCpf({ value, onChange, error }) {
           onChange={(e) => onChange(formatCpfMask(e.target.value))}
           placeholder="000.000.000-00"
           maxLength={14}
-          className={`w-full rounded-xl border px-4 py-3 text-lg font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-100 ${
-            error ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white focus:border-blue-400'
-          }`}
+          className="pl-input"
+          style={{
+            fontSize: 18, fontWeight: 700, letterSpacing: '0.12em',
+            fontFamily: 'var(--pl-mono)',
+            borderColor: error ? 'var(--pl-danger)' : undefined,
+          }}
         />
         {error ? (
-          <p className="text-xs font-semibold text-red-600">{error}</p>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{error}</p>
         ) : (
-          <p className="text-xs font-medium text-slate-400">
-            Pode pular e preencher depois no seu Perfil.
-          </p>
+          <p style={{ fontSize: 12, color: 'var(--pl-ink-4)' }}>Pode preencher depois no seu Perfil.</p>
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-        <p className="text-xs font-semibold leading-relaxed text-slate-600">
-          O CPF é necessário somente no momento de contratar um plano. Sem assinatura, não é
-          exigido.
+      <div className="pl-card-paper" style={{ padding: '10px 14px' }}>
+        <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', lineHeight: 1.5 }}>
+          O CPF é exigido somente ao contratar um plano pago. Sem assinatura, não é obrigatório.
         </p>
       </div>
     </div>
   );
 }
 
-// ─── Main wizard ──────────────────────────────────────────────────────────────
+// ─── Wizard principal ─────────────────────────────────────────────────────────
 
 export default function OnboardingWizard({
   profile,
@@ -249,29 +338,23 @@ export default function OnboardingWizard({
 }) {
   const [step, setStep] = useState(1);
   const [contestId, setContestId] = useState('');
-  const [goal, setGoal] = useState(15);
+  const [daily, setDaily] = useState({ ...EMPTY_DAILY });
   const [cpf, setCpf] = useState('');
   const [cpfError, setCpfError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  const canAdvanceStep = () => {
-    if (step === 4) {
-      // CPF pode ser pulado, mas se preenchido deve ser válido
-      if (cpf) {
-        const digits = cpf.replace(/\D/g, '');
-        return isValidCpf(digits);
-      }
-      return true;
+  const totalHours = sumHours(daily);
+
+  const canAdvance = () => {
+    if (step === 4 && cpf) {
+      return isValidCpf(cpf.replace(/\D/g, ''));
     }
     return true;
   };
 
   const handleNext = () => {
-    if (step === 4) {
-      handleFinish();
-      return;
-    }
+    if (step === 4) { handleFinish(); return; }
     setStep((s) => s + 1);
   };
 
@@ -296,13 +379,11 @@ export default function OnboardingWizard({
     try {
       const updates = {
         onboarding_done: true,
-        meta_horas_semana: goal,
+        meta_horas_semana: totalHours || 0,
         updated_at: new Date().toISOString(),
       };
 
-      if (!skipCpf && cpf) {
-        updates.cpf = normalizeCpf(cpf);
-      }
+      if (!skipCpf && cpf) updates.cpf = normalizeCpf(cpf);
 
       const { error } = await supabase
         .from('profiles')
@@ -311,9 +392,7 @@ export default function OnboardingWizard({
 
       if (error) throw error;
 
-      if (contestId) {
-        setTargetContestId?.(contestId);
-      }
+      if (contestId) setTargetContestId?.(contestId);
 
       onComplete?.(updates);
     } catch (e) {
@@ -325,7 +404,7 @@ export default function OnboardingWizard({
   const stepContent = () => {
     if (step === 1) return <StepWelcome profile={profile} />;
     if (step === 2) return <StepContest contestLibrary={contestLibrary} selectedId={contestId} onSelect={setContestId} />;
-    if (step === 3) return <StepGoal value={goal} onChange={setGoal} />;
+    if (step === 3) return <StepGoal daily={daily} onChange={setDaily} />;
     if (step === 4) return <StepCpf value={cpf} onChange={(v) => { setCpf(v); setCpfError(''); }} error={cpfError} />;
     return null;
   };
@@ -333,69 +412,82 @@ export default function OnboardingWizard({
   const isLastStep = step === TOTAL_STEPS;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-      <div className="flex w-full max-w-md flex-col rounded-[2rem] bg-white shadow-2xl shadow-slate-900/20">
-        {/* Progress dots */}
-        <div className="flex items-center gap-2 px-8 pt-7">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                i + 1 <= step ? 'bg-blue-600' : 'bg-slate-100'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-8 py-6">{stepContent()}</div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-8 py-5">
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={saving}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
-            >
-              Voltar
-            </button>
-          ) : (
-            <div />
-          )}
-
-          <div className="flex items-center gap-2">
-            {isLastStep && (
-              <button
-                type="button"
-                onClick={handleSkipCpf}
-                disabled={saving}
-                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-50 disabled:opacity-50"
-              >
-                Pular CPF
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={saving || !canAdvanceStep()}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/25 hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 size={15} className="animate-spin" />
-              ) : (
-                <ChevronRight size={15} />
-              )}
-              {step === 1 ? 'Começar' : isLastStep ? 'Finalizar' : 'Próximo'}
-            </button>
-          </div>
-        </div>
-
-        {saveError ? (
-          <p className="px-8 pb-4 text-center text-xs font-semibold text-red-600">{saveError}</p>
-        ) : null}
+    <div className="pl-card" style={{
+      width: '100%', maxWidth: 480,
+      display: 'flex', flexDirection: 'column',
+      borderRadius: 12,
+      overflow: 'hidden',
+      background: 'var(--pl-surface)',
+    }}>
+      {/* Barra de progresso */}
+      <div style={{ display: 'flex', gap: 4, padding: '20px 24px 0' }}>
+        {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1, height: 3, borderRadius: 99,
+              background: i + 1 <= step ? 'var(--pl-accent)' : 'var(--pl-rule-2)',
+              transition: 'background .25s',
+            }}
+          />
+        ))}
       </div>
+
+      {/* Conteúdo do step */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+        {stepContent()}
+      </div>
+
+      {/* Rodapé */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        padding: '14px 24px',
+        borderTop: '1px solid var(--pl-rule-2)',
+      }}>
+        {step > 1 ? (
+          <button
+            type="button"
+            onClick={() => setStep((s) => s - 1)}
+            disabled={saving}
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+          >
+            Voltar
+          </button>
+        ) : (
+          <div />
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isLastStep && (
+            <button
+              type="button"
+              onClick={handleSkipCpf}
+              disabled={saving}
+              className="pl-btn pl-btn-ghost pl-btn-sm"
+            >
+              Pular CPF
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={saving || !canAdvance()}
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            {saving
+              ? <Loader2 size={14} className="animate-spin" />
+              : <ChevronRight size={14} />}
+            {step === 1 ? 'Começar' : isLastStep ? 'Finalizar' : 'Próximo'}
+          </button>
+        </div>
+      </div>
+
+      {saveError && (
+        <p style={{ padding: '0 24px 12px', textAlign: 'center', fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>
+          {saveError}
+        </p>
+      )}
     </div>
   );
 }
