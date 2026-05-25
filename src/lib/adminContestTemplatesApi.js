@@ -1,12 +1,27 @@
+import { supabase } from './supabase';
+
 async function parseJson(response) {
   return response.json().catch(() => ({}));
 }
 
+async function getAdminToken() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data?.session?.access_token || '';
+  } catch {
+    return '';
+  }
+}
+
 export async function saveContestTemplateAdmin({ templateData, existingId = null, adminEmail = '' } = {}) {
+  const token = await getAdminToken();
   const response = await fetch('/api/contest-templates', {
     method: 'POST',
     credentials: 'omit',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({ templateData, existingId, adminEmail }),
   });
 

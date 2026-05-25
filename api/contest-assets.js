@@ -86,6 +86,8 @@ function isTrustedRequestOrigin(req) {
       host === 'papirando.vercel.app' ||
       host.endsWith('-lucaslimasacramento-bytes-projects.vercel.app') ||
       host === 'localhost:5173' ||
+      host === 'localhost:5176' ||
+      host === 'localhost:5177' ||
       host === '127.0.0.1:5173'
     );
   } catch {

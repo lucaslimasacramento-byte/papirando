@@ -1,5 +1,16 @@
+import { supabase } from './supabase';
+
 async function parseJson(response) {
   return response.json().catch(() => ({}));
+}
+
+async function getAdminToken() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data?.session?.access_token || '';
+  } catch {
+    return '';
+  }
 }
 
 function fileToBase64(file) {
@@ -17,11 +28,15 @@ function fileToBase64(file) {
 export async function uploadContestAssetAdmin({ file, kind, existingUrl = '', adminEmail = '' } = {}) {
   if (!file) throw new Error('Selecione um arquivo antes de enviar.');
 
+  const token = await getAdminToken();
   const fileBase64 = await fileToBase64(file);
   const response = await fetch('/api/contest-assets', {
     method: 'POST',
     credentials: 'omit',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       kind,
       fileName: file.name || 'arquivo',
