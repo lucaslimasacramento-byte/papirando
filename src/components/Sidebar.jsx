@@ -24,6 +24,7 @@ import {
   Users,
   RefreshCw,
   Smartphone,
+  Instagram,
   HeartPulse,
   Gift,
   User,
@@ -38,6 +39,7 @@ import {
   Play,
   Moon,
   Sun,
+  GraduationCap,
 } from 'lucide-react';
 
 const NAV_SECTIONS_BASE = [
@@ -46,7 +48,7 @@ const NAV_SECTIONS_BASE = [
     items: [
       { id: 'home', icon: Home, label: 'Início' },
       { id: 'planos', icon: Book, label: 'Meus cursos' },
-      { id: 'concursos', icon: Compass, label: 'Concursos' },
+      { id: 'concursos', icon: Compass, label: 'Objetivos' },
       { id: 'lembretes', icon: AlarmClock, label: 'Lembretes' },
       { id: 'disciplinas', icon: Layers, label: 'Disciplinas' },
     ],
@@ -88,6 +90,7 @@ const NAV_SECTIONS_BASE = [
       { id: 'comunidades', icon: Users, label: 'Comunidade' },
       { id: 'esquadroes', icon: ShieldCheck, label: 'Esquadrões' },
       { id: 'conciliar', icon: RefreshCw, label: 'Conciliador' },
+      { id: 'instagram', icon: Instagram, label: 'Instagram', badge: 'IA' },
       { id: 'aplicativos', icon: Smartphone, label: 'Aplicativos' },
       { id: 'bem_estar', icon: HeartPulse, label: 'Bem-estar' },
       { id: 'convide_ganhe', icon: Gift, label: 'Convide e ganhe', badge: 'VIP' },
@@ -99,7 +102,7 @@ const ADMIN_SECTION = {
   title: 'Admin',
   items: [
     { id: 'admin_dashboard', icon: Crown, label: 'Dashboard', badge: 'Admin' },
-    { id: 'admin_concursos', icon: ShieldCheck, label: 'Concursos', badge: 'Admin' },
+    { id: 'admin_concursos', icon: GraduationCap, label: 'Catálogo', badge: 'Admin' },
     { id: 'admin_questoes', icon: HelpCircle, label: 'Questões', badge: 'Admin' },
     { id: 'admin_disciplinas', icon: Book, label: 'Disciplinas', badge: 'Admin' },
     { id: 'admin_usuarios', icon: Users, label: 'Usuários', badge: 'Admin' },
@@ -322,8 +325,9 @@ export default function Sidebar({
                   gap: 8,
                   cursor: 'pointer',
                   padding: '0 8px',
-                  marginBottom: shouldShowItems ? 4 : 0,
+                  marginBottom: isSectionOpen ? 4 : 0,
                   fontFamily: 'var(--pl-sans)',
+                  transition: 'background 0.16s ease, color 0.16s ease, margin-bottom 0.18s ease',
                 }}
               >
                 <span className="pl-eyebrow" style={{ fontSize: 9.5, padding: 0 }}>
@@ -332,8 +336,16 @@ export default function Sidebar({
                 {isSectionOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
               </button>
             )}
-            {shouldShowItems && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateRows: shouldShowItems ? '1fr' : '0fr',
+                opacity: shouldShowItems ? 1 : 0,
+                transform: shouldShowItems ? 'translateY(0)' : 'translateY(-4px)',
+                transition: 'grid-template-rows 0.22s ease, opacity 0.18s ease, transform 0.18s ease',
+              }}
+            >
+            <div style={{ minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 1 }}>
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -348,6 +360,7 @@ export default function Sidebar({
                     type="button"
                     onClick={() => handleItemClick(item.id, section.title)}
                     title={isCollapsed ? displayLabel : undefined}
+                    tabIndex={shouldShowItems ? 0 : -1}
                     style={{
                       display: 'flex', alignItems: 'center',
                       gap: isCollapsed ? 0 : 8,
@@ -386,7 +399,7 @@ export default function Sidebar({
                 );
               })}
             </div>
-            )}
+            </div>
           </div>
           );
         })}

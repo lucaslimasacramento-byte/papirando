@@ -11,6 +11,7 @@ import {
 import { Target } from 'lucide-react';
 
 import AppOverlays from './components/AppOverlays';
+import OnboardingWizard from './components/OnboardingWizard';
 import AppTabContent from './components/AppTabContent';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
@@ -100,7 +101,11 @@ import {
   fetchRedacaoSiteContent,
   upsertRedacaoSiteContent,
   upsertSidebarLabels,
+  upsertNotificationSettings,
+  upsertCourseTemplates,
 } from './lib/redacaoSiteContentApi';
+import { normalizeNotificationSettings } from './lib/notificationSettings';
+import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
 import { mergeRedacaoKitBundle, sanitizeRedacaoKitForSave } from './lib/redacaoKitMerge';
 import { saveStudySession, loadStudySessions, syncLocalToSupabase } from './lib/studySessionsApi';
@@ -147,6 +152,7 @@ const Revisoes = lazy(() => import('./pages/Revisoes'));
 const EditalQuestao = lazy(() => import('./pages/EditalQuestao'));
 const Historico = lazy(() => import('./pages/Historico'));
 const Login = lazy(() => import('./pages/Login'));
+const Instagram = lazy(() => import('./pages/Instagram'));
 
 function buildDistinctPastelCycleColor(index, total = 1) {
   const safeTotal = Math.max(1, Number(total || 1));
@@ -715,9 +721,13 @@ export default function App() {
   const [pendingReferralCode, setPendingReferralCode] = useState(() =>
     normalizeReferralCode(extractReferralCodeFromLocation() || getStoredReferralCode())
   );
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === 'undefined') return 'home';
+    return new URLSearchParams(window.location.search).get('tab') || 'home';
+  });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [showOnboardingPreview, setShowOnboardingPreview] = useState(false);
   const theme = { primary: '#1e3a5f', sidebarBg: '#14110d', bg: '#f3efe5' };
 
   useEffect(() => {
@@ -802,6 +812,8 @@ export default function App() {
   const [redacaoKitOverride, setRedacaoKitOverride] = useState(null);
   const [audiobookCatalogOverride, setAudiobookCatalogOverride] = useState(null);
   const [sidebarLabelsOverride, setSidebarLabelsOverride] = useState(null);
+  const [notificationSettings, setNotificationSettings] = useState(() => normalizeNotificationSettings(null));
+  const [courseTemplates, setCourseTemplates] = useState(() => normalizeCourseTemplates(null));
 
   useEffect(() => {
     let cancelled = false;
@@ -829,6 +841,12 @@ export default function App() {
           ? r.sidebarLabels
           : null
       );
+      if (r.notificationSettings) {
+        setNotificationSettings(normalizeNotificationSettings(r.notificationSettings));
+      }
+      if (r.courseTemplates) {
+        setCourseTemplates(normalizeCourseTemplates(r.courseTemplates));
+      }
     })();
     return () => {
       cancelled = true;
@@ -1441,6 +1459,7 @@ export default function App() {
   const contestNotifications = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const settings = normalizeNotificationSettings(notificationSettings);
 
     return contestLibrary
       .flatMap((contest) => {
@@ -1453,13 +1472,18 @@ export default function App() {
         const interested = interestedContestIds.includes(contest.id);
         const favorite = favoriteContestIds.includes(contest.id);
         const tracker = contestTrackers[contest.id] || {};
-        const isRelevant = imported || interested || favorite;
+        const isRelevantForAnyGlobalFlag =
+          settings.contestStatus.broadcastToAll ||
+          settings.examUpcoming.broadcastToAll ||
+          settings.editalPending.broadcastToAll ||
+          settings.tafPreparation.broadcastToAll;
+        const isRelevant = imported || interested || favorite || isRelevantForAnyGlobalFlag;
 
         if (!isRelevant) return [];
 
         const reminders = [];
 
-        if (normalizeContestStatus(contest.status_concurso) === 'homologado') {
+        if (settings.contestStatus.enabled && (imported || interested || favorite || settings.contestStatus.broadcastToAll) && normalizeContestStatus(contest.status_concurso) === 'homologado') {
           reminders.push({
             id: `${contest.id}-homologado`,
             contestId: contest.id,
@@ -1472,7 +1496,7 @@ export default function App() {
           });
         }
 
-        if (contest.prova_data) {
+        if (settings.examUpcoming.enabled && (imported || interested || favorite || settings.examUpcoming.broadcastToAll) && contest.prova_data) {
           const provaDate = new Date(`${contest.prova_data}T00:00:00`);
           provaDate.setHours(0, 0, 0, 0);
           const diffDays = Math.ceil((provaDate.getTime() - today.getTime()) / 86400000);
@@ -1494,7 +1518,7 @@ export default function App() {
           }
         }
 
-        if (!tracker.edital_lido) {
+        if (settings.editalPending.enabled && (imported || interested || favorite || settings.editalPending.broadcastToAll) && !tracker.edital_lido) {
           reminders.push({
             id: `${contest.id}-edital`,
             contestId: contest.id,
@@ -1507,7 +1531,7 @@ export default function App() {
           });
         }
 
-        if (contest.etapas_tags?.includes('taf') && !tracker.taf_em_preparacao) {
+        if (settings.tafPreparation.enabled && (imported || interested || favorite || settings.tafPreparation.broadcastToAll) && contest.etapas_tags?.includes('taf') && !tracker.taf_em_preparacao) {
           reminders.push({
             id: `${contest.id}-taf`,
             contestId: contest.id,
@@ -1529,9 +1553,12 @@ export default function App() {
         if (second.date) return 1;
         return first.title.localeCompare(second.title, 'pt-BR');
       });
-  }, [contestLibrary, cursos, interestedContestIds, favoriteContestIds, contestTrackers]);
+  }, [contestLibrary, cursos, interestedContestIds, favoriteContestIds, contestTrackers, notificationSettings]);
 
   const manualReminderNotifications = useMemo(() => {
+    const settings = normalizeNotificationSettings(notificationSettings);
+    if (!settings.manualReminders.enabled) return [];
+
     return (Array.isArray(manualReminders) ? manualReminders : [])
       .filter(Boolean)
       .map((item) => {
@@ -1561,7 +1588,7 @@ export default function App() {
         if (second.date) return 1;
         return first.title.localeCompare(second.title, 'pt-BR');
       });
-  }, [manualReminders, contestLibrary]);
+  }, [manualReminders, contestLibrary, notificationSettings]);
 
   const allReminderNotifications = useMemo(() => {
     return [...contestNotifications, ...manualReminderNotifications].sort((first, second) => {
@@ -3249,6 +3276,31 @@ export default function App() {
       return { ok: false, error: String(error?.message || error) };
     }
   };
+
+  const handleSaveNotificationSettings = async (settings) => {
+    const normalized = normalizeNotificationSettings(settings);
+    try {
+      const { notificationSettings: savedSettings } = await upsertNotificationSettings(normalized);
+      setNotificationSettings(normalizeNotificationSettings(savedSettings));
+      return { ok: true };
+    } catch (error) {
+      console.error('Erro ao salvar configurações de notificações:', error);
+      return { ok: false, error: String(error?.message || error) };
+    }
+  };
+
+  const handleSaveCourseTemplates = async (templates) => {
+    const normalized = normalizeCourseTemplates(templates);
+    try {
+      const { courseTemplates: savedTemplates } = await upsertCourseTemplates(normalized);
+      setCourseTemplates(normalizeCourseTemplates(savedTemplates));
+      return { ok: true };
+    } catch (error) {
+      console.error('Erro ao salvar cursos de faculdade:', error);
+      return { ok: false, error: String(error?.message || error) };
+    }
+  };
+
   const handleStartWellnessTrack = (trackId) => {
     if (!trackId) return;
     setActiveWellnessTrackId(trackId);
@@ -4237,12 +4289,23 @@ export default function App() {
   const createCourse = (courseData) => {
     assertCourseLimitAvailable();
 
+    const courseIntent =
+      courseData.intent ||
+      courseData.tipo ||
+      (courseData.origem === 'catalogo' || courseData.origem === 'ia' ? 'concurso' : 'livre');
+    const isContestCourse = courseIntent === 'concurso';
+
     const novoCurso = {
       id: `curso-${Date.now()}`,
       nome: courseData.nome,
       plano: courseData.plano || courseData.nome,
       concurso: courseData.concurso || courseData.nome,
+      intent: courseIntent,
+      tipo: courseIntent,
       area: courseData.area || 'Geral',
+      instituicao: courseData.instituicao || '',
+      periodo: courseData.periodo || '',
+      curso_superior: courseData.curso_superior || '',
       cargo: courseData.cargo || '',
       banca: courseData.banca || 'A definir',
       salario: courseData.salario || '',
@@ -4253,7 +4316,7 @@ export default function App() {
       etapas: courseData.etapas || '',
       etapas_tags: courseData.etapas_tags || [],
       taf_itens: courseData.taf_itens || [],
-      status_concurso: normalizeContestStatus(courseData.status_concurso || 'edital_publicado'),
+      status_concurso: isContestCourse ? normalizeContestStatus(courseData.status_concurso || 'edital_publicado') : '',
       prova_data: courseData.prova_data || '',
       imagem_url: courseData.imagem_url || '',
       edital_url: courseData.edital_url || '',
@@ -4263,6 +4326,80 @@ export default function App() {
     };
 
     setCursos((prev) => [novoCurso, ...prev]);
+    return novoCurso;
+  };
+
+  const createCourseWithStarterSubjects = async (courseData) => {
+    const novoCurso = createCourse(courseData);
+    const starterSubjects = Array.isArray(courseData.subjects) ? courseData.subjects : [];
+
+    if (starterSubjects.length === 0) {
+      return novoCurso;
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) throw userError;
+    if (!user) throw new Error('Sessão expirada. Faça login novamente.');
+
+    const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+    const novasDisciplinas = [];
+
+    for (const [index, subjectTemplate] of starterSubjects.entries()) {
+      const rawName = typeof subjectTemplate === 'string' ? subjectTemplate : subjectTemplate.nome;
+      const disciplinaNome = normalizeSubjectNameForApp(rawName || `Disciplina ${index + 1}`);
+      const subject = await insertSubjectWithCatalogFallback({
+        user_id: user.id,
+        nome: disciplinaNome,
+        subject_catalog_id: resolveSubjectCatalogIdForApp(disciplinaNome),
+        plano: novoCurso.plano,
+        cor: subjectTemplate?.cor || palette[index % palette.length],
+        percentual: 0,
+        tempo_total_min: 0,
+      });
+
+      const topicosTemplate =
+        typeof subjectTemplate === 'string'
+          ? ['Leituras principais', 'Aulas e fichamentos', 'Exercicios e revisao']
+          : subjectTemplate.topicos || ['Leituras principais', 'Aulas e fichamentos', 'Exercicios e revisao'];
+      let topicosInseridos = [];
+
+      if (topicosTemplate.length > 0) {
+        const payloadTopicos = topicosTemplate.map((topico, topicIndex) => ({
+          subject_id: subject.id,
+          nome: typeof topico === 'string' ? topico : topico.nome,
+          ordem: Number(typeof topico === 'string' ? topicIndex : topico.ordem ?? topicIndex),
+          concluido: false,
+          acertos: 0,
+          erros: 0,
+          percentual: 0,
+        }));
+
+        const { data: topicsData, error: topicsError } = await supabase
+          .from('topics')
+          .insert(payloadTopicos)
+          .select('*');
+
+        if (topicsError) throw topicsError;
+        topicosInseridos = (topicsData || []).map((topic) => ({
+          id: topic.id,
+          nome: topic.nome,
+          concluido: topic.concluido,
+          acertos: Number(topic.acertos || 0),
+          erros: Number(topic.erros || 0),
+          percentual: Number(topic.percentual || 0),
+          data: topic.data_conclusao || null,
+          ordem: Number(topic.ordem || 0),
+        }));
+      }
+
+      novasDisciplinas.push(buildUpdatedDiscipline(subject, topicosInseridos, 0));
+    }
+
+    setBancoDisciplinas((prev) => [...novasDisciplinas, ...prev]);
     return novoCurso;
   };
 
@@ -6244,6 +6381,10 @@ export default function App() {
     handleSaveRedacaoSiteContent,
     handleSaveAudiolivrosContent,
     handleSaveSidebarLabels,
+    notificationSettings,
+    handleSaveNotificationSettings,
+    courseTemplates,
+    handleSaveCourseTemplates,
     saveSimuladoNoApp,
     audiobookCatalogOverride,
     sidebarLabelsOverride,
@@ -6325,16 +6466,27 @@ export default function App() {
           currentUserEmail={currentUserEmail}
           currentUsername={effectiveProfile?.username || ''}
           profileHasValidCpf={profileHasValidCpf}
-          onOpenNotification={(contestId) => {
-            setSelectedContestDetailId(contestId);
-            setActiveTab('concurso_detalhe');
+          onOpenNotification={(item) => {
+            const contestId = typeof item === 'string' ? item : item?.contestId;
+            if (contestId) {
+              setSelectedContestDetailId(contestId);
+              setActiveTab('concurso_detalhe');
+              return;
+            }
+            setActiveTab('lembretes');
           }}
           onOpenProfile={() => setActiveTab('perfil')}
           onLogout={handleLogout}
           onOpenMobileNav={() => setMobileNavOpen(true)}
-          subscriptionPlan={String(effectiveProfile?.subscription_plan || 'gratuito').toLowerCase()}
+          subscriptionPlan={isAdmin ? 'master' : String(effectiveProfile?.subscription_plan || 'gratuito').toLowerCase()}
           onOpenAssinatura={() => setActiveTab('assinatura')}
+          isAdmin={isAdmin}
+          onNavigate={(tabId) => {
+            setViewingDiscipline(null);
+            setActiveTab(tabId);
+          }}
           onOpenTimer={() => openTimerSetup?.()}
+          onOpenOnboarding={isAdmin ? () => setShowOnboardingPreview(true) : undefined}
         />
 
         <div
@@ -6417,7 +6569,14 @@ export default function App() {
           )}
 
           {activeTab === 'assinatura' && (
-            <Assinatura temaAtivo={temaAtivo} setActiveTab={setActiveTab} />
+            <Assinatura
+              temaAtivo={temaAtivo}
+              setActiveTab={setActiveTab}
+              currentUserId={currentUserId}
+              currentProfile={effectiveProfile}
+              isAdmin={isAdmin}
+              onProfileUpdate={(patch) => handleSaveProfile({ ...(effectiveProfile || {}), ...(patch || {}) })}
+            />
           )}
 
           {activeTab === 'bem_estar' && (
@@ -6452,7 +6611,7 @@ export default function App() {
                 setSelectedContestDetailId(contestId);
                 setActiveTab('concurso_detalhe');
               }}
-              onCreateCourse={createCourse}
+              onCreateCourse={createCourseWithStarterSubjects}
               onImportCatalogCourse={createCourseFromCatalog}
               onImportEdital={importSelectedEditalWithAI}
               onAnalyzeEdital={analyzeEditalDocument}
@@ -6463,6 +6622,7 @@ export default function App() {
               currentCourseCount={currentCourseCount}
               remainingCourseSlots={remainingCourseSlots}
               isAdmin={isAdmin}
+              courseTemplates={courseTemplates}
             />
           )}
 
@@ -6590,6 +6750,8 @@ export default function App() {
               onUploadEdital={uploadContestEdital}
               onRemoveImage={removeContestImage}
               onRemoveEdital={removeContestEdital}
+              courseTemplates={courseTemplates}
+              onSaveCourseTemplates={handleSaveCourseTemplates}
             />
           )}
 
@@ -6647,6 +6809,7 @@ export default function App() {
 
           {activeTab === 'admin_configuracoes' && isAdmin && (
             <AdminConfiguracoes
+              initialSection="conteudo"
               contestLibrary={contestLibrary}
               cursos={cursos}
               bancoDisciplinas={bancoDisciplinas}
@@ -6662,6 +6825,10 @@ export default function App() {
               onSaveRedacaoSiteContent={handleSaveRedacaoSiteContent}
               sidebarLabelsOverride={sidebarLabelsOverride}
               onSaveSidebarLabels={handleSaveSidebarLabels}
+              notificationSettings={notificationSettings}
+              onSaveNotificationSettings={handleSaveNotificationSettings}
+              courseTemplates={courseTemplates}
+              onSaveCourseTemplates={handleSaveCourseTemplates}
             />
           )}
 
@@ -6821,6 +6988,13 @@ export default function App() {
               setMetaDiariaQuestoes={setMetaDiariaQuestoes}
               setIsCadernoModalOpen={setIsCadernoModalOpen}
               setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
+              historicoReal={historicoReal}
+              subjectCatalog={subjectCatalog}
+              studyRecommendation={smartStudyPlan}
+              onStartRecommendedSession={startRecommendedStudySession}
+              bancoDisciplinas={bancoDisciplinas}
+              selectedCoursePlan={selectedCoursePlan}
+              planningCourseOptions={planningCourseOptions}
             />
           )}
           {activeTab === 'simulados' && (
@@ -6969,6 +7143,7 @@ export default function App() {
             />
           )}
           {activeTab === 'aplicativos' && <Aplicativos />}
+          {activeTab === 'instagram' && <Instagram currentUserId={currentUserId} />}
 
           {![
             'home',
@@ -7007,6 +7182,7 @@ export default function App() {
             'esquadroes',
             'conciliar',
             'aplicativos',
+            'instagram',
             'bem_estar',
             'convide_ganhe',
             'perfil',
@@ -7072,6 +7248,43 @@ export default function App() {
         isFilterPanelOpen={isFilterPanelOpen}
         setIsFilterPanelOpen={setIsFilterPanelOpen}
       />
+      {showOnboardingPreview && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9000,
+            background: 'rgba(20,17,13,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px 16px',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowOnboardingPreview(false); }}
+        >
+          <div style={{ position: 'relative', width: '100%', maxWidth: 520 }}>
+            <button
+              type="button"
+              onClick={() => setShowOnboardingPreview(false)}
+              style={{
+                position: 'absolute', top: -12, right: -12, zIndex: 1,
+                width: 28, height: 28, borderRadius: 999,
+                background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
+                fontSize: 16, lineHeight: 1, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--pl-ink-2)',
+              }}
+              aria-label="Fechar preview"
+            >
+              ×
+            </button>
+            <OnboardingWizard
+              profile={effectiveProfile}
+              contestLibrary={contestLibrary}
+              currentUserId={currentUserId}
+              setTargetContestId={setTargetContestId}
+              onComplete={() => setShowOnboardingPreview(false)}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
       </ToastProvider>
     </ErrorBoundary>

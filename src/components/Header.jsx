@@ -75,6 +75,7 @@ export default function Header({
   onOpenAssinatura,
   isAdmin = false,
   onNavigate,
+  onOpenOnboarding,
 }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,6 +118,7 @@ export default function Header({
     if (key.startsWith('admin_')) return 'Admin / ' + formatTitle(key);
     if (key === 'home') return 'Início / Dashboard';
     if (key === 'questoes') return 'Prática / Questões';
+    if (key === 'concursos') return 'Objetivos';
     return formatTitle(key);
   })();
 
@@ -245,6 +247,24 @@ export default function Header({
 
       {/* Right actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        {isAdmin && typeof onOpenOnboarding === 'function' && (
+          <button
+            type="button"
+            onClick={onOpenOnboarding}
+            title="Visualizar fluxo de onboarding (admin)"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              height: 28, padding: '0 10px', borderRadius: 6,
+              border: '1px dashed var(--pl-warn)',
+              background: 'var(--pl-warn-soft)',
+              fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-2)',
+              cursor: 'pointer', letterSpacing: '0.02em',
+            }}
+          >
+            <ShieldAlert size={12} strokeWidth={2} style={{ color: 'var(--pl-warn)' }} />
+            <span className="hidden md:inline">Onboarding</span>
+          </button>
+        )}
         {typeof onOpenAssinatura === 'function' && (
           <SubscriptionPlanSeal planId={subscriptionPlan} onClick={onOpenAssinatura} />
         )}
