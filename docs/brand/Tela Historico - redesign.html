@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papirando · Histórico</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M 0 0 H 68 L 100 32 V 100 H 0 Z' fill='%2314110d'/><path d='M 68 0 L 100 32 H 68 Z' fill='%233a342c'/><text x='50' y='78' font-family='Fraunces,serif' font-style='italic' font-weight='500' font-size='80' fill='%23f3efe5' text-anchor='middle' letter-spacing='-3'>P</text></svg>"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+<style>
+  :root {
+    --paper:        #f3efe5;
+    --paper-soft:   #ebe6d8;
+    --paper-warm:   #fbfaf6;
+    --paper-warmer: #f7f2e6;
+    --ink:          #14110d;
+    --ink-2:        #3a342c;
+    --ink-3:        #847b6c;
+    --ink-4:        #b6ad9c;
+    --rule:         rgba(20, 17, 13, 0.08);
+    --rule-2:       rgba(20, 17, 13, 0.16);
+    --accent:       #1e3a5f;
+    --accent-light: #93b4ff;
+    --accent-soft:  rgba(30, 58, 95, 0.08);
+
+    --sans:  'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    --serif: 'Fraunces', 'Times New Roman', serif;
+    --mono:  'JetBrains Mono', ui-monospace, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+  /* ═════════════════════════════════════════════════════════
+     APP SHELL — top bar + sidebar + main
+     ═════════════════════════════════════════════════════════ */
+  .app {
+    display: grid;
+    grid-template-columns: 228px 1fr;
+    grid-template-rows: 48px 1fr;
+    height: 100vh;
+  }
+  .app > .topbar { grid-column: 1 / -1; }
+
+  /* ─── Top bar (dark, com nav) ─────────────────────────── */
+  .topbar {
+    background: var(--ink);
+    color: var(--paper);
+    display: flex; align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(243,239,229,0.08);
+    gap: 28px;
+  }
+  .topbar .mini-mark {
+    width: 28px; height: 28px;
+    display: inline-block;
+  }
+  .topbar nav {
+    display: flex; gap: 4px;
+  }
+  .topbar nav a {
+    color: rgba(243,239,229,0.7);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13.5px; font-weight: 500;
+    letter-spacing: -0.005em;
+    transition: background 0.15s, color 0.15s;
+  }
+  .topbar nav a:hover { color: var(--paper); }
+  .topbar nav a.on {
+    background: rgba(243,239,229,0.10);
+    color: var(--paper); font-weight: 600;
+  }
+  .topbar .right {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12.5px;
+    color: rgba(243,239,229,0.55); font-weight: 500;
+  }
+  .topbar .right .plus {
+    background: rgba(243,239,229,0.10);
+    color: var(--paper);
+    width: 22px; height: 22px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; line-height: 0;
+  }
+
+  /* ─── Sidebar ─────────────────────────────────────────── */
+  .sidebar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    border-right: 1px solid rgba(243,239,229,0.04);
+    overflow-y: auto;
+  }
+  .sb-brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 8px 18px;
+    border-bottom: 1px solid rgba(243,239,229,0.08);
+    margin-bottom: 14px;
+  }
+  .sb-mark { width: 26px; height: 26px; }
+  .sb-name {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 22px; letter-spacing: -0.045em;
+    color: var(--paper); line-height: 1;
+  }
+  .sb-name .dot { color: var(--accent-light); }
+  .sb-collapse {
+    margin-left: auto;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(243,239,229,0.5); cursor: pointer;
+    border-radius: 4px;
+  }
+  .sb-collapse:hover { background: rgba(243,239,229,0.06); }
+
+  /* Papirar agora CTA */
+  .sb-papirar {
+    background: var(--paper);
+    color: var(--ink);
+    border: 0;
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 6px;
+    font-family: var(--sans); font-weight: 700; font-size: 13.5px;
+    letter-spacing: -0.005em;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    margin-bottom: 18px;
+    transition: background 0.15s;
+  }
+  .sb-papirar:hover { background: #fff; }
+  .sb-papirar .play {
+    width: 16px; height: 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
+
+  .sb-group {
+    padding: 12px 8px 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: rgba(243,239,229,0.45);
+    display: flex; align-items: center;
+  }
+  .sb-group .chevron { margin-left: auto; font-size: 11px; opacity: 0.6; }
+  .sb-group.collapsed .chevron { transform: rotate(-90deg); }
+
+  .sb-items { display: flex; flex-direction: column; gap: 1px; margin-bottom: 6px; }
+  .sb-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 13px; font-weight: 500;
+    color: rgba(243,239,229,0.7);
+    cursor: pointer;
+    transition: background 0.12s;
+    letter-spacing: -0.005em;
+  }
+  .sb-item:hover { background: rgba(243,239,229,0.06); }
+  .sb-item.on {
+    background: rgba(243,239,229,0.10);
+    color: var(--paper);
+    font-weight: 600;
+  }
+  .sb-item svg { flex-shrink: 0; opacity: 0.85; }
+
+  .sb-user {
+    margin-top: auto;
+    padding: 10px;
+    display: flex; align-items: center; gap: 10px;
+    border-top: 1px solid rgba(243,239,229,0.08);
+    padding-top: 14px;
+  }
+  .sb-user .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--paper-soft); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px;
+    flex-shrink: 0;
+  }
+  .sb-user .info { line-height: 1.25; min-width: 0; }
+  .sb-user .info .name { font-size: 12.5px; color: var(--paper); font-weight: 600; }
+  .sb-user .info .role { font-size: 10.5px; color: rgba(243,239,229,0.5); }
+
+  /* ─── Main ────────────────────────────────────────────── */
+  .main {
+    background: var(--paper);
+    overflow-y: auto;
+    padding: 22px 32px 40px;
+  }
+
+  /* Breadcrumb / header strip */
+  .crumb {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .crumb-trail {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .crumb-pill {
+    background: var(--paper-warmer);
+    border: 1px solid var(--rule-2);
+    color: var(--ink-2);
+    padding: 3px 9px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 5px;
+    letter-spacing: 0.02em;
+  }
+  .crumb-pill .dot-orange {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #c08438;
+  }
+  .crumb-spacer { flex: 1; }
+  .crumb-search {
+    flex: 0 0 320px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-2);
+    border-radius: 6px;
+    padding: 6px 12px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: var(--ink-3);
+  }
+  .crumb-tools { display: flex; align-items: center; gap: 8px; }
+  .crumb-tag {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid var(--rule-2);
+    background: var(--paper-warm);
+    color: var(--ink-2);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .crumb-tag.ia {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .crumb-tag.ia .spark { color: var(--accent-light); }
+  .crumb-icon-btn {
+    width: 30px; height: 30px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .crumb-icon-btn:hover { background: var(--paper-warmer); }
+  .crumb-contato {
+    padding: 6px 12px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-2);
+    border-radius: 6px;
+    font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .crumb-sair {
+    padding: 6px 12px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 6px;
+    font-size: 12.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 0;
+  }
+
+  /* ═════════════════════════════════════════════════════════
+     PAGE HEAD · pl-page-head (canonical · no box)
+     Plain header direct on paper · grid 1fr auto · align-items end
+     ═════════════════════════════════════════════════════════ */
+  .pl-page-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: end;
+    margin: 4px 0 28px;
+  }
+  .pl-page-head-text { min-width: 0; }
+  .pl-page-head-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 56px;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    color: var(--ink);
+    margin: 0;
+  }
+  .pl-page-head-title .dot { color: var(--accent); }
+  .pl-page-head-subtitle {
+    margin: 12px 0 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 660px;
+    text-wrap: pretty;
+  }
+  .pl-page-head-stats {
+    display: flex; gap: 8px;
+    flex-shrink: 0;
+  }
+  .stat-tile {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    min-width: 100px;
+    text-align: left;
+  }
+  .stat-tile .stat-label {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--ink-3);
+    line-height: 1;
+  }
+  .stat-tile .stat-value {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 34px; letter-spacing: -0.04em; line-height: 1;
+    color: var(--ink); margin-top: 6px;
+  }
+  .stat-tile .stat-value .dot { color: var(--accent); }
+
+  /* ═════════════════════════════════════════════════════════
+     SEARCH BAR + FILTERS
+     ═════════════════════════════════════════════════════════ */
+  .search-block {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .search-block .icon-search { color: var(--ink-3); flex-shrink: 0; }
+  .search-block input {
+    flex: 1;
+    background: transparent; border: 0; outline: 0;
+    font-family: var(--sans); font-size: 14px; color: var(--ink-2);
+    letter-spacing: -0.005em;
+  }
+  .search-block input::placeholder { color: var(--ink-3); }
+  .search-block .kbd {
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--ink-3); font-weight: 500;
+    background: var(--paper-warmer);
+    padding: 2px 6px; border-radius: 3px;
+    border: 1px solid var(--rule);
+  }
+
+  .filters-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 22px;
+  }
+  .filter-label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--ink-3);
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-right: 6px;
+  }
+  .filter-chip {
+    padding: 7px 14px;
+    font-size: 12.5px; font-weight: 600;
+    color: var(--ink-2);
+    background: var(--paper-warm);
+    border: 1px solid var(--rule-2);
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: -0.005em;
+    transition: background 0.15s;
+  }
+  .filter-chip:hover { background: var(--paper-warmer); }
+  .filter-chip.on {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .filters-count {
+    margin-left: auto;
+    font-family: var(--mono); font-size: 12px;
+    color: var(--ink-3); font-weight: 500;
+  }
+  .filters-count .num { color: var(--ink-2); font-weight: 600; }
+
+  /* ═════════════════════════════════════════════════════════
+     TIMELINE SECTION
+     ═════════════════════════════════════════════════════════ */
+  .timeline-section {
+    background: var(--paper-warmer);
+    border: 1px solid var(--rule-2);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .timeline-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-warm);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .timeline-head .eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ink-3);
+    margin-right: 6px;
+  }
+  .timeline-head .title {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 22px; letter-spacing: -0.025em;
+    color: var(--ink); line-height: 1;
+  }
+  .timeline-head .actions {
+    margin-left: auto;
+    display: flex; gap: 6px;
+  }
+  .timeline-head .action {
+    width: 30px; height: 30px;
+    background: transparent;
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .timeline-head .action:hover { background: var(--paper-warm); }
+
+  /* Empty state */
+  .empty {
+    padding: 88px 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    text-align: center;
+  }
+  .empty-mark {
+    width: 80px; height: 80px;
+    background: var(--paper);
+    border: 1px solid var(--rule-2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .empty-mark::after {
+    /* dog-ear corner accent */
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 20px;
+    background: var(--paper-warmer);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    border-bottom: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+  .empty-mark svg { width: 32px; height: 32px; color: var(--ink-3); }
+
+  .empty-title {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 26px; letter-spacing: -0.025em;
+    color: var(--ink); line-height: 1.1;
+    margin: 0;
+  }
+  .empty-desc {
+    font-size: 13.5px; line-height: 1.55; color: var(--ink-2);
+    font-weight: 500; max-width: 44ch;
+    text-wrap: pretty; margin: 0;
+  }
+  .empty-cta {
+    margin-top: 12px;
+    padding: 10px 18px;
+    background: var(--ink); color: var(--paper);
+    border: 0; border-radius: 6px;
+    font-family: var(--sans); font-weight: 600; font-size: 13.5px;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .empty-cta .play {
+    width: 14px; height: 14px;
+    background: var(--paper); color: var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7px;
+    flex-shrink: 0;
+  }
+  .empty-secondary {
+    font-size: 12.5px; color: var(--ink-3); font-weight: 500;
+    margin-top: 4px;
+  }
+  .empty-secondary a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid currentColor; padding-bottom: 1px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══════════════════ TOP BAR ═══════════════════ -->
+  <header class="topbar">
+    <span class="mini-mark">
+      <svg viewBox="0 0 100 100"><path d="M 3 0 H 72 L 100 28 V 96 Q 100 100 96 100 H 4 Q 0 100 0 96 V 4 Q 0 0 4 0 Z" fill="#f3efe5"/><path d="M 72 0 L 100 28 H 72 Z" fill="rgba(0,0,0,0.18)"/><text x="50" y="75" font-family="Fraunces, serif" font-style="italic" font-weight="400" font-size="74" fill="#14110d" text-anchor="middle" letter-spacing="-3">P</text></svg>
+    </span>
+    <nav>
+      <a href="#">Dashboard</a>
+      <a href="#">Questões</a>
+      <a href="#">Resolver questão</a>
+      <a href="#">Plano</a>
+    </nav>
+    <div class="right">
+      <span class="plus">+</span>
+      <span>Aplicação editorial · 16 mai 2026</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <span class="sb-mark">
+        <svg viewBox="0 0 100 100"><path d="M 3 0 H 72 L 100 28 V 96 Q 100 100 96 100 H 4 Q 0 100 0 96 V 4 Q 0 0 4 0 Z" fill="#f3efe5"/><path d="M 72 0 L 100 28 H 72 Z" fill="rgba(0,0,0,0.18)"/><text x="50" y="75" font-family="Fraunces, serif" font-style="italic" font-weight="400" font-size="74" fill="#14110d" text-anchor="middle" letter-spacing="-3">P</text></svg>
+      </span>
+      <span class="sb-name">Papirando<span class="dot">.</span></span>
+      <span class="sb-collapse">‹</span>
+    </div>
+
+    <button class="sb-papirar">
+      <span class="play">▶</span>
+      Papirar agora
+    </button>
+
+    <div class="sb-group">Principal <span class="chevron">›</span></div>
+    <div class="sb-group collapsed">Estudos <span class="chevron">▾</span></div>
+    <div class="sb-items">
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Edital verticalizado
+      </div>
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Planejamento
+      </div>
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg>
+        Metas semanais
+      </div>
+      <div class="sb-item on">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        Histórico
+      </div>
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 16 4-8 4 4 5-9"/></svg>
+        Estatísticas
+      </div>
+    </div>
+
+    <div class="sb-group">Prática <span class="chevron">›</span></div>
+    <div class="sb-group">Biblioteca <span class="chevron">›</span></div>
+    <div class="sb-group">Apoio <span class="chevron">›</span></div>
+    <div class="sb-group">Admin <span class="chevron">›</span></div>
+
+    <div class="sb-user">
+      <span class="avatar">C</span>
+      <div class="info">
+        <div class="name">Contato</div>
+        <div class="role">Administrador</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main">
+
+    <!-- crumb / page meta row -->
+    <div class="crumb">
+      <span class="crumb-trail">Histórico</span>
+      <span class="crumb-pill"><span class="dot-orange"></span>CPF pendente</span>
+      <div class="crumb-spacer"></div>
+      <div class="crumb-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        Buscar…
+        <span style="margin-left:auto" class="kbd">⌘ K</span>
+      </div>
+      <div class="crumb-tools">
+        <span class="crumb-tag">Gratuito</span>
+        <span class="crumb-tag ia">
+          <svg class="spark" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.4 7.2L21.6 8l-5.6 4.4L18 19.6 12 16l-6 3.6 2-7.2L2.4 8l7.2-.8z"/></svg>
+          IA ativa
+        </span>
+        <span class="crumb-icon-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+        </span>
+        <span class="crumb-contato">
+          <span style="width:18px;height:18px;background:var(--ink-3);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">C</span>
+          Contato
+        </span>
+        <button class="crumb-sair">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
+
+    <!-- ═════════ PAGE HEAD · pl-page-head canonical pattern ═════════ -->
+    <header class="pl-page-head">
+      <div class="pl-page-head-text">
+        <h1 class="pl-page-head-title">Histórico<span class="dot">.</span></h1>
+        <p class="pl-page-head-subtitle">
+          Toda sessão registrada, em ordem cronológica. A <em style="font-family: var(--serif); font-style: italic; font-weight: 500; color: var(--ink);">análise</em> e gráficos comparativos ficam na aba Estatísticas.
+        </p>
+      </div>
+      <div class="pl-page-head-stats">
+        <div class="stat-tile">
+          <div class="stat-label">Registros</div>
+          <div class="stat-value">0<span class="dot">.</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search -->
+    <div class="search-block">
+      <svg class="icon-search" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" placeholder="Buscar por matéria, tópico ou observação…" />
+      <span class="kbd">⌘ /</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <span class="filter-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+        Filtro
+      </span>
+      <button class="filter-chip on">Todos</button>
+      <button class="filter-chip">Estudo</button>
+      <button class="filter-chip">Questões</button>
+      <button class="filter-chip">Simulado</button>
+      <button class="filter-chip">Revisão</button>
+      <span class="filters-count"><span class="num">0</span> / <span class="num">0</span></span>
+    </div>
+
+    <!-- Timeline -->
+    <section class="timeline-section">
+      <div class="timeline-head">
+        <span class="eyebrow">Linha do tempo</span>
+        <span class="title">Registros por matéria</span>
+        <div class="actions">
+          <button class="action" title="Agrupar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="action" title="Mais opções">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="empty">
+        <div class="empty-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        </div>
+        <h3 class="empty-title">Nada registrado ainda<span style="color: var(--accent);">.</span></h3>
+        <p class="empty-desc">
+          Comece uma sessão de estudo &mdash; em alguns minutos o primeiro
+          registro aparece por aqui, ordenado por matéria e dia.
+        </p>
+        <button class="empty-cta">
+          <span class="play">▶</span>
+          Papirar agora
+        </button>
+        <p class="empty-secondary">
+          Ou explore o <a href="#">edital verticalizado</a> antes de começar.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>

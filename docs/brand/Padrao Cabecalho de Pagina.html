@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papirando · Padrão de Cabeçalho de Página</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+<style>
+  :root {
+    --pl-bg:        #f3efe5;
+    --pl-paper:     #f3efe5;
+    --pl-paper-soft:#ebe6d8;
+    --pl-paper-warm:#fbfaf6;
+    --pl-surface:   #ffffff;
+    --pl-ink:       #14110d;
+    --pl-ink-2:     #3a342c;
+    --pl-ink-3:     #847b6c;
+    --pl-ink-4:     #b6ad9c;
+    --pl-rule:      rgba(20, 17, 13, 0.08);
+    --pl-rule-2:    rgba(20, 17, 13, 0.16);
+    --pl-accent:    #1e3a5f;
+
+    --pl-sans:  'Plus Jakarta Sans', system-ui, sans-serif;
+    --pl-serif: 'Fraunces', 'Times New Roman', serif;
+    --pl-mono:  'JetBrains Mono', ui-monospace, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--pl-bg); color: var(--pl-ink); font-family: var(--pl-sans); -webkit-font-smoothing: antialiased; }
+
+  .doc { max-width: 1220px; margin: 0 auto; padding: 56px 40px 80px; }
+
+  /* ─── Doc masthead ─────────────────────────────────── */
+  .doc-mast { margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--pl-rule-2); }
+  .doc-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--pl-ink-3); }
+  .doc-mast h1 { font-family: var(--pl-serif); font-style: italic; font-weight: 300; font-size: 56px; letter-spacing: -0.04em; line-height: 1.02; margin: 10px 0 16px; color: var(--pl-ink); }
+  .doc-mast h1 em { font-family: var(--pl-serif); font-style: italic; font-weight: 500; }
+  .doc-mast .lede { font-family: var(--pl-serif); font-style: italic; font-weight: 300; font-size: 20px; line-height: 1.5; color: var(--pl-ink-2); letter-spacing: -0.01em; max-width: 70ch; margin: 0; text-wrap: pretty; }
+  .doc-mast .lede em { font-family: var(--pl-serif); font-style: italic; color: var(--pl-ink); font-weight: 500; }
+
+  .doc-section { margin: 56px 0 0; }
+  .sec-num { font-family: var(--pl-serif); font-style: italic; font-weight: 400; font-size: 32px; color: var(--pl-ink-4); letter-spacing: -0.03em; line-height: 1; }
+  .sec-title { font-family: var(--pl-serif); font-style: italic; font-weight: 400; font-size: 38px; color: var(--pl-ink); letter-spacing: -0.035em; line-height: 1; margin: 8px 0 0; }
+  .sec-intro { font-family: var(--pl-serif); font-style: italic; font-weight: 300; font-size: 18px; line-height: 1.55; color: var(--pl-ink-2); max-width: 70ch; margin: 16px 0 24px; letter-spacing: -0.01em; text-wrap: pretty; }
+  .sec-intro em { font-family: var(--pl-serif); font-style: italic; color: var(--pl-ink); font-weight: 500; }
+
+  /* ─── Example stage ──────────────────────────────────── */
+  .stage {
+    background: var(--pl-paper);
+    border: 1px solid var(--pl-rule-2);
+    border-radius: 8px;
+    padding: 28px 32px;
+    position: relative;
+  }
+  .stage-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 14px; }
+  .stage-tag {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 4px 9px; border-radius: 3px;
+  }
+  .stage-tag.bad { background: #b54128; color: #fff; }
+  .stage-tag.good { background: #2e5f22; color: #fff; }
+
+  /* ═══════════════════════════════════════════════════════════
+     pl-display & pl-eyebrow — espelhando o que está no index.css
+     ═══════════════════════════════════════════════════════════ */
+  .pl-display {
+    font-family: var(--pl-serif);
+    font-style: italic;
+    font-weight: 300;
+    color: var(--pl-ink);
+    letter-spacing: -0.045em;
+    line-height: 1;
+    margin: 0;
+  }
+  .pl-eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--pl-ink-3);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pl-mark-text {
+    background: linear-gradient(180deg, transparent 60%, rgba(30, 58, 95, 0.18) 60%);
+    padding: 0 2px;
+  }
+  .pl-card-paper {
+    background: var(--pl-paper-warm);
+    border: 1px solid var(--pl-rule-2);
+    border-radius: 10px;
+  }
+  /* Botões mockados */
+  .pl-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--pl-sans); font-weight: 600; font-size: 13px;
+    padding: 8px 14px; border-radius: 6px;
+    background: var(--pl-paper-warm);
+    color: var(--pl-ink); border: 1px solid var(--pl-rule-2);
+    cursor: pointer;
+  }
+  .pl-btn-primary {
+    background: var(--pl-ink); color: var(--pl-paper); border-color: var(--pl-ink);
+  }
+  .pl-btn-ai {
+    background: var(--pl-ink); color: var(--pl-paper); border-color: var(--pl-ink);
+  }
+  .pl-btn-ai svg { color: #93b4ff; }
+  .pl-btn-ai .beta {
+    font-family: var(--pl-serif); font-style: italic; font-weight: 400;
+    font-size: 11px; color: #93b4ff; margin-left: 3px;
+  }
+  /* Stat tile */
+  .stat-tile {
+    background: var(--pl-paper-warm);
+    border: 1px solid var(--pl-rule-2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    min-width: 92px;
+    text-align: left;
+  }
+  .stat-tile .stat-label {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--pl-ink-3);
+    line-height: 1;
+  }
+  .stat-tile .stat-value {
+    font-family: var(--pl-serif); font-style: italic; font-weight: 300;
+    font-size: 34px; letter-spacing: -0.04em; line-height: 1;
+    color: var(--pl-ink); margin-top: 6px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     PL-PAGE-HEAD — o componente proposto
+     ═══════════════════════════════════════════════════════════ */
+  .pl-page-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: end;
+    /* NO border, NO background, NO border-radius */
+  }
+  .pl-page-head-text {
+    min-width: 0;
+  }
+  .pl-page-head-title {
+    font-family: var(--pl-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 56px;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    color: var(--pl-ink);
+    margin: 0;
+  }
+  .pl-page-head-title .dot { color: var(--pl-accent); }
+  .pl-page-head-eyebrow {
+    margin: 0 0 12px;
+  }
+  .pl-page-head-subtitle {
+    margin: 12px 0 0;
+    font-size: 15px; font-weight: 500;
+    color: var(--pl-ink-2); line-height: 1.5;
+    max-width: 660px;
+    text-wrap: pretty;
+  }
+  .pl-page-head-actions {
+    display: flex; gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+  .pl-page-head-stats {
+    display: flex; gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ─── Annotation callouts ─────────────────────────────── */
+  .anno-grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .anno {
+    border-left: 2px solid var(--pl-ink-4);
+    padding: 4px 0 4px 14px;
+  }
+  .anno-k {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--pl-ink-3);
+    margin-bottom: 4px;
+  }
+  .anno-v {
+    font-size: 12.5px; font-weight: 500; color: var(--pl-ink-2);
+    line-height: 1.5;
+  }
+  .anno-v code {
+    font-family: var(--pl-mono); font-size: 11.5px;
+    color: var(--pl-ink); background: var(--pl-paper-soft);
+    padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* ─── Code block ─────────────────────────────────────── */
+  pre.code {
+    background: var(--pl-ink);
+    color: #d8d0bd;
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: var(--pl-mono); font-size: 12.5px;
+    line-height: 1.65; letter-spacing: 0;
+    overflow-x: auto;
+    margin: 18px 0 0;
+  }
+  pre.code .k { color: #93b4ff; }
+  pre.code .s { color: #c9b88a; }
+  pre.code .t { color: #f3efe5; font-weight: 600; }
+  pre.code .c { color: #7a7263; font-style: italic; }
+
+  /* ─── Files table ─────────────────────────────────── */
+  .files {
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-rule-2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 18px;
+  }
+  .files-row {
+    display: grid;
+    grid-template-columns: 1.5fr 80px 2fr 110px;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--pl-rule);
+    font-size: 12.5px; color: var(--pl-ink-2);
+    align-items: center;
+  }
+  .files-row:last-child { border-bottom: 0; }
+  .files-row.head {
+    background: var(--pl-paper-warm);
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--pl-ink-3);
+  }
+  .files-row code {
+    font-family: var(--pl-mono); font-size: 12px;
+    color: var(--pl-ink); background: transparent;
+  }
+  .files-row .line { font-family: var(--pl-mono); color: var(--pl-ink-3); }
+  .files-row .status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 3px;
+    text-align: center;
+  }
+  .files-row .status.bad { background: rgba(181, 65, 40, 0.12); color: #b54128; }
+  .files-row .status.good { background: rgba(46, 95, 34, 0.12); color: #2e5f22; }
+
+  /* sec divider */
+  .divider {
+    margin-top: 56px;
+    height: 1px;
+    background: var(--pl-rule-2);
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ════════════════════ MASTHEAD ════════════════════ -->
+  <header class="doc-mast">
+    <div class="doc-eyebrow">Papirando · Sistema de UI</div>
+    <h1>Padrão de <em>cabeçalho</em> de página<span style="color:var(--pl-accent)">.</span></h1>
+    <p class="lede">
+      Toda página do produto começa do mesmo jeito: um <em>título grande em itálico</em>,
+      direto sobre o papel, com subtítulo abaixo e ações (ou stats) à direita.
+      <em>Sem caixa, sem moldura, sem background colorido.</em> O título é o herói da página &mdash;
+      tudo que vem antes ele atrapalha.
+    </p>
+  </header>
+
+  <!-- ════════════════════ § 01 · A REGRA ════════════════════ -->
+  <section class="doc-section">
+    <div class="sec-num">№ 01</div>
+    <h2 class="sec-title">A regra (um exemplo vale mil palavras)</h2>
+    <p class="sec-intro">
+      <em>Dashboard</em>, <em>Meus cursos</em> e <em>Biblioteca</em> já seguem o padrão correto.
+      O resto do produto precisa convergir para o mesmo gesto.
+    </p>
+
+    <!-- WRONG -->
+    <div class="stage">
+      <span class="stage-tag bad">❌ Errado</span>
+      <div class="pl-card-paper" style="padding: 28px;">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: end;">
+          <div>
+            <h1 class="pl-display" style="margin: 0 0 8px; font-size: 56px;">Edital verticalizado.</h1>
+            <p style="margin: 0; font-size: 18px; color: var(--pl-ink-2); font-weight: 500; line-height: 1.5;">
+              Acompanhe o progresso tópico por tópico, sem bagunça e sem sumir matéria no meio do caminho.
+            </p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap: 10px;">
+            <span class="pl-eyebrow">Edital ativo</span>
+            <button class="pl-btn" style="justify-content:flex-start; padding: 12px 14px;">
+              <span style="width:10px;height:10px;border-radius:50%;background:var(--pl-ink-3);"></span>
+              Sem concurso ativo
+            </button>
+            <button class="pl-btn pl-btn-primary">+ Adicionar estudo</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno-grid">
+        <div class="anno"><div class="anno-k">Problema</div><div class="anno-v">Wrapper <code>&lt;section className="pl-card-paper"&gt;</code> cria <em>caixa</em> ao redor do título.</div></div>
+        <div class="anno"><div class="anno-k">Resultado</div><div class="anno-v">Sensação de "componente de banner" template-SaaS, não editorial. Quebra com o resto do produto.</div></div>
+        <div class="anno"><div class="anno-k">Onde</div><div class="anno-v">Edital, Disciplinas, Estatísticas, Metas, Planejamento, Sessões, Histórico (novo).</div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="stage" style="margin-top: 18px;">
+      <span class="stage-tag good">✅ Certo</span>
+      <header class="pl-page-head">
+        <div class="pl-page-head-text">
+          <h1 class="pl-page-head-title">Edital verticalizado<span class="dot">.</span></h1>
+          <p class="pl-page-head-subtitle">
+            Acompanhe o progresso tópico por tópico, sem bagunça e sem sumir matéria no meio do caminho.
+          </p>
+        </div>
+        <div class="pl-page-head-actions" style="flex-direction: column; align-items: stretch; min-width: 260px;">
+          <span class="pl-eyebrow">Edital ativo</span>
+          <button class="pl-btn" style="justify-content:flex-start; padding: 10px 14px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--pl-ink-3);"></span>
+            Sem concurso ativo
+          </button>
+          <button class="pl-btn pl-btn-primary">+ Adicionar estudo</button>
+        </div>
+      </header>
+      <div class="anno-grid">
+        <div class="anno"><div class="anno-k">Estrutura</div><div class="anno-v"><code>&lt;header&gt;</code> com grid <code>1fr auto</code>, <em>sem wrapper</em>.</div></div>
+        <div class="anno"><div class="anno-k">Resultado</div><div class="anno-v">Título é o primeiro contato visual. Conteúdo respira no papel.</div></div>
+        <div class="anno"><div class="anno-k">Consistência</div><div class="anno-v">Idêntico ao padrão de Dashboard / Meus cursos / Biblioteca.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ § 02 · ESPECIFICAÇÃO ════════════════════ -->
+  <section class="doc-section">
+    <div class="sec-num">№ 02</div>
+    <h2 class="sec-title">Especificação</h2>
+    <p class="sec-intro">
+      Os tokens abaixo são os mesmos do componente já em uso em <em>Planos.jsx</em> (Meus cursos)
+      e <em>ConcursosDisponiveis.jsx</em> (Biblioteca). Tipografia e espaços já existem no
+      <em>index.css</em> — basta padronizar o uso.
+    </p>
+
+    <pre class="code"><span class="c">// Estrutura canonical · usar em TODA página do produto.</span>
+<span class="k">&lt;header</span> <span class="k">style</span>=<span class="s">{{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}</span><span class="k">&gt;</span>
+  <span class="k">&lt;div&gt;</span>
+    <span class="c">{/* Eyebrow opcional */}</span>
+    <span class="k">&lt;span</span> <span class="k">className</span>=<span class="s">"pl-eyebrow"</span><span class="k">&gt;</span><span class="t">Estudos</span><span class="k">&lt;/span&gt;</span>
+
+    <span class="c">{/* Título — pl-display + ponto azul */}</span>
+    <span class="k">&lt;h1</span> <span class="k">className</span>=<span class="s">"pl-display"</span> <span class="k">style</span>=<span class="s">{{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}</span><span class="k">&gt;</span>
+      <span class="t">Histórico</span><span class="k">&lt;span</span> <span class="k">style</span>=<span class="s">{{ color: 'var(--pl-accent)' }}</span><span class="k">&gt;</span>.<span class="k">&lt;/span&gt;</span>
+    <span class="k">&lt;/h1&gt;</span>
+
+    <span class="c">{/* Subtítulo — tom Papirando */}</span>
+    <span class="k">&lt;p</span> <span class="k">style</span>=<span class="s">{{ margin: '12px 0 0', fontSize: 15, fontWeight: 500,
+                color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}</span><span class="k">&gt;</span>
+      <span class="t">Toda sessão registrada, em ordem cronológica. A análise fica na aba Estatísticas.</span>
+    <span class="k">&lt;/p&gt;</span>
+  <span class="k">&lt;/div&gt;</span>
+
+  <span class="c">{/* Direita: ações OU stats OU ambos. Pode omitir tudo. */}</span>
+  <span class="k">&lt;div</span> <span class="k">style</span>=<span class="s">{{ display: 'flex', gap: 8, alignItems: 'center' }}</span><span class="k">&gt;</span>
+    <span class="k">&lt;button</span> <span class="k">className</span>=<span class="s">"pl-btn pl-btn-primary"</span><span class="k">&gt;</span><span class="t">Ação primária</span><span class="k">&lt;/button&gt;</span>
+  <span class="k">&lt;/div&gt;</span>
+<span class="k">&lt;/header&gt;</span></pre>
+
+    <div class="anno-grid" style="margin-top: 22px;">
+      <div class="anno"><div class="anno-k">Tipografia do título</div><div class="anno-v"><code>.pl-display</code> · Fraunces italic 300 · font-size 56 default · letter-spacing -0.045em</div></div>
+      <div class="anno"><div class="anno-k">Ponto azul</div><div class="anno-v">Encerra a frase &mdash; é assinatura da marca. Use <code>var(--pl-accent)</code>.</div></div>
+      <div class="anno"><div class="anno-k">Subtítulo</div><div class="anno-v">15px Plus Jakarta 500 em ink-2, max-width ~660px, line-height 1.5.</div></div>
+      <div class="anno"><div class="anno-k">Grid</div><div class="anno-v"><code>minmax(0,1fr) auto</code>, gap 32, align-items <em>end</em>. <em>End</em> alinha lado direito ao subtítulo.</div></div>
+      <div class="anno"><div class="anno-k">Wrapper</div><div class="anno-v"><em>Nenhum.</em> Sem <code>pl-card-paper</code>, sem border, sem padding wrapper.</div></div>
+      <div class="anno"><div class="anno-k">Espaço inferior</div><div class="anno-v">Próxima seção começa com margin-top 32-48px. Pode ser <code>&lt;section&gt;</code> normal.</div></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ § 03 · VARIANTES ════════════════════ -->
+  <section class="doc-section">
+    <div class="sec-num">№ 03</div>
+    <h2 class="sec-title">Quatro variantes oficiais</h2>
+    <p class="sec-intro">
+      O lado direito do header tem 4 configurações. Escolha a que faz sentido para cada página.
+      Tudo sai do mesmo grid, só muda o que vai no <em>auto</em>.
+    </p>
+
+    <!-- VARIANT A · simples -->
+    <div class="stage" style="margin-top: 18px;">
+      <span class="stage-tag good">A · Plano</span>
+      <header class="pl-page-head">
+        <div class="pl-page-head-text">
+          <h1 class="pl-page-head-title">Disciplinas<span class="dot">.</span></h1>
+          <p class="pl-page-head-subtitle">
+            Cada disciplina vem do edital e mantém seu progresso de tópicos, revisões e questões.
+          </p>
+        </div>
+      </header>
+      <div class="anno-grid">
+        <div class="anno"><div class="anno-k">Quando</div><div class="anno-v">Página sem ações primárias no topo. A maioria.</div></div>
+        <div class="anno"><div class="anno-k">Como</div><div class="anno-v">Omitir o <code>&lt;div&gt;</code> da direita ou usar <code>gridTemplateColumns: '1fr'</code>.</div></div>
+        <div class="anno"><div class="anno-k">Exemplos</div><div class="anno-v">Disciplinas, Histórico, Estatísticas.</div></div>
+      </div>
+    </div>
+
+    <!-- VARIANT B · ações -->
+    <div class="stage" style="margin-top: 18px;">
+      <span class="stage-tag good">B · Com ações</span>
+      <header class="pl-page-head">
+        <div class="pl-page-head-text">
+          <h1 class="pl-page-head-title">Meus cursos<span class="dot">.</span></h1>
+          <p class="pl-page-head-subtitle">
+            Cursos são a origem das disciplinas. Cadastre do seu jeito, escolha um concurso pronto da biblioteca,
+            ou cole um edital e a gente <span class="pl-mark-text">papira</span> a estrutura pra você.
+          </p>
+        </div>
+        <div class="pl-page-head-actions">
+          <button class="pl-btn pl-btn-primary">▶ Criar curso</button>
+          <button class="pl-btn">📚 Biblioteca</button>
+          <button class="pl-btn pl-btn-ai">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.4 7.2L21.6 8l-5.6 4.4L18 19.6 12 16l-6 3.6 2-7.2L2.4 8l7.2-.8z"/></svg>
+            Importar com IA<span class="beta">beta</span>
+          </button>
+        </div>
+      </header>
+      <div class="anno-grid">
+        <div class="anno"><div class="anno-k">Quando</div><div class="anno-v">A página tem 1–3 ações primárias contextuais.</div></div>
+        <div class="anno"><div class="anno-k">Botões</div><div class="anno-v">Use <code>.pl-btn</code> / <code>.pl-btn-primary</code> / <code>.pl-btn-ai</code> (com aura).</div></div>
+        <div class="anno"><div class="anno-k">Exemplos</div><div class="anno-v">Meus cursos, Flashcards, Simulados.</div></div>
+      </div>
+    </div>
+
+    <!-- VARIANT C · stats -->
+    <div class="stage" style="margin-top: 18px;">
+      <span class="stage-tag good">C · Com stats</span>
+      <header class="pl-page-head">
+        <div class="pl-page-head-text">
+          <h1 class="pl-page-head-title">Biblioteca<span class="dot">.</span></h1>
+          <p class="pl-page-head-subtitle">
+            Procure por área, banca, cargo ou data de prova. Importe os que valem a pena para o seu painel;
+            o resto a gente <span class="pl-mark-text">papira</span> depois.
+          </p>
+        </div>
+        <div class="pl-page-head-stats">
+          <div class="stat-tile">
+            <div class="stat-label">Publicados</div>
+            <div class="stat-value">4<span style="color: var(--pl-accent);">.</span></div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-label">Áreas</div>
+            <div class="stat-value">2<span style="color: var(--pl-accent);">.</span></div>
+          </div>
+        </div>
+      </header>
+      <div class="anno-grid">
+        <div class="anno"><div class="anno-k">Quando</div><div class="anno-v">A página é um <em>dashboard</em> e o usuário quer ver totais imediatos.</div></div>
+        <div class="anno"><div class="anno-k">Stat tile</div><div class="anno-v">Paper-warm bg, ink-2 number Fraunces italic 34px, label caps 9.5px.</div></div>
+        <div class="anno"><div class="anno-k">Exemplos</div><div class="anno-v">Biblioteca, Histórico (com nº registros), Estatísticas.</div></div>
+      </div>
+    </div>
+
+    <!-- VARIANT D · contexto -->
+    <div class="stage" style="margin-top: 18px;">
+      <span class="stage-tag good">D · Com contexto/seletor</span>
+      <header class="pl-page-head">
+        <div class="pl-page-head-text">
+          <h1 class="pl-page-head-title">Edital verticalizado<span class="dot">.</span></h1>
+          <p class="pl-page-head-subtitle">
+            Acompanhe o progresso tópico por tópico, sem bagunça e sem sumir matéria no meio do caminho.
+          </p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 280px;">
+          <span class="pl-eyebrow">Edital ativo</span>
+          <button class="pl-btn" style="justify-content: flex-start; padding: 12px 14px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--pl-ink-3);"></span>
+            <div style="text-align: left; line-height: 1.25;">
+              <strong style="font-size: 13px; color: var(--pl-ink);">Sem concurso ativo</strong>
+              <div style="font-size: 11.5px; color: var(--pl-ink-3); font-weight: 500;">Selecione um edital</div>
+            </div>
+            <span style="margin-left: auto; color: var(--pl-ink-3);">▾</span>
+          </button>
+          <button class="pl-btn pl-btn-primary" style="justify-content: center;">+ Adicionar estudo</button>
+        </div>
+      </header>
+      <div class="anno-grid">
+        <div class="anno"><div class="anno-k">Quando</div><div class="anno-v">A página precisa de um <em>seletor</em> (concurso, semana, ciclo) + CTA.</div></div>
+        <div class="anno"><div class="anno-k">Largura</div><div class="anno-v">Coluna direita ~280px, dropdown ocupa toda a largura.</div></div>
+        <div class="anno"><div class="anno-k">Exemplos</div><div class="anno-v">Edital, Metas semanais, Planejamento.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ § 04 · CONTAINER DA PÁGINA (NOVO) ════════════════════ -->
+  <section class="doc-section">
+    <div class="sec-num">№ 04</div>
+    <h2 class="sec-title">Container da página</h2>
+    <p class="sec-intro">
+      A posição <em>X</em> do título depende do <em>wrapper externo</em> da página &mdash; não do
+      header em si. Hoje há dois padrões competindo, criando a inconsistência visível
+      nos prints de <em>Histórico</em> vs <em>Meus cursos</em>.
+    </p>
+
+    <div class="files">
+      <div class="files-row head">
+        <div>Wrapper atual</div>
+        <div>Comportamento</div>
+        <div>Páginas que usam</div>
+        <div style="text-align:center;">Posição do título</div>
+      </div>
+      <div class="files-row">
+        <code>page-shell</code>
+        <div><code>max-w-[1540px] mx-auto px-2 lg:px-3</code> &mdash; centraliza e limita largura.</div>
+        <div>Histórico, Planejamento, Questões, Esquadrões, Admin/*</div>
+        <div class="status bad">Indentado em monitores wide</div>
+      </div>
+      <div class="files-row">
+        <code>Sem wrapper canônico</code>
+        <div>Padding inline custom (geralmente <code>22px 32px</code>). Ocupa 100% da largura disponível.</div>
+        <div>Dashboard, Planos, Biblioteca, Lembretes, MeusConcursos, etc.</div>
+        <div class="status good">Flush à esquerda</div>
+      </div>
+    </div>
+
+    <p class="sec-intro" style="margin-top: 26px;">
+      <em>Resolução proposta:</em> criar uma classe canônica <em>.pl-page</em>
+      que substitui ambos os padrões. Largura total do <em>main</em>, padding lateral
+      consistente (32px), opcional <em>max-width</em> em monitores ultra-wide (1680px).
+      Aplicar em <em>todas</em> as páginas para que o título &mdash; e tudo abaixo &mdash; sempre comece no mesmo X.
+    </p>
+
+    <pre class="code"><span class="c">/* Adicionar em src/index.css */</span>
+.pl-page {
+  width: 100%;
+  max-width: 1680px;          <span class="c">/* só protege contra 4K — em &lt; 1680px é 100% */</span>
+  margin: 0 auto;
+  padding: 22px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 720px) {
+  .pl-page { padding: 16px 18px 32px; }
+}</pre>
+
+    <p style="margin-top: 22px; font-size: 13px; color: var(--pl-ink-3); font-weight: 500; line-height: 1.55; max-width: 80ch; text-wrap: pretty;">
+      <strong style="color: var(--pl-ink);">Migração:</strong>
+      em cada página, trocar o wrapper raiz por <code>&lt;div className="pl-page"&gt;</code>.
+      Wrappers antigos como <code>page-shell</code>, <code>pl-mc-shell</code>, <code>pl-be-shell</code>
+      podem ser <em>removidos do JSX</em> &mdash; as classes em CSS continuam definidas pra não quebrar
+      nada que ainda não foi migrado.
+    </p>
+
+    <div class="anno-grid" style="margin-top: 18px;">
+      <div class="anno"><div class="anno-k">Padding lateral</div><div class="anno-v"><code>32px</code> em desktop &mdash; mesmo valor de Dashboard hoje.</div></div>
+      <div class="anno"><div class="anno-k">Padding vertical</div><div class="anno-v"><code>22px</code> topo / <code>40px</code> base &mdash; sobra pra última seção respirar.</div></div>
+      <div class="anno"><div class="anno-k">Max-width</div><div class="anno-v"><code>1680px</code> &mdash; em ultra-wide 4K não estica indefinidamente, mas em monitor &le; 1680 vai 100%.</div></div>
+      <div class="anno"><div class="anno-k">Gap padrão</div><div class="anno-v"><code>24px</code> entre seções &mdash; equilibra densidade.</div></div>
+      <div class="anno"><div class="anno-k">Mobile</div><div class="anno-v"><code>18px</code> de padding lateral em &lt; 720px.</div></div>
+      <div class="anno"><div class="anno-k">Compatibilidade</div><div class="anno-v">Substitui <em>page-shell</em>, <em>pl-mc-shell</em>, <em>pl-be-shell</em>, etc. em um único nome.</div></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ § 05 · ARQUIVOS ════════════════════ -->
+  <section class="doc-section">
+    <div class="sec-num">№ 05</div>
+    <h2 class="sec-title">Arquivos no codebase que precisam migrar</h2>
+    <p class="sec-intro">
+      A correção é mecânica: remover o wrapper <code style="font-family:var(--pl-mono);font-size:0.92em;background:var(--pl-paper-soft);padding:1px 5px;border-radius:3px;">&lt;section className="pl-card-paper" style={{ padding: 28 }}&gt;</code>
+      que envolve o título e deixar o <em>header</em> direto na página.
+    </p>
+
+    <div class="files">
+      <div class="files-row head">
+        <div>Arquivo</div>
+        <div>Linha</div>
+        <div>Mudança necessária</div>
+        <div style="text-align:center;">Status</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Planos.jsx</code>
+        <div class="line">L612-640</div>
+        <div>Já está correto — é a referência.</div>
+        <div class="status good">Referência</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Dashboard.jsx</code>
+        <div class="line">L160, L500</div>
+        <div>Já está correto — é a referência.</div>
+        <div class="status good">Referência</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/ConcursosDisponiveis.jsx</code>
+        <div class="line">L435-450</div>
+        <div>Já está correto — é a referência (Biblioteca).</div>
+        <div class="status good">Referência</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Edital.jsx</code>
+        <div class="line">L232</div>
+        <div>Remover <code>pl-card-paper</code> wrapper. Manter conteúdo, mover seletor pra direita do grid.</div>
+        <div class="status bad">Corrigir</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Disciplinas.jsx</code>
+        <div class="line">L239</div>
+        <div>Remover wrapper. Disciplinas vira variante A (plano).</div>
+        <div class="status bad">Corrigir</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Estatisticas.jsx</code>
+        <div class="line">L118</div>
+        <div>Remover wrapper. Pode usar variante C (com stats à direita).</div>
+        <div class="status bad">Corrigir</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/MetasSemana.jsx</code>
+        <div class="line">L538</div>
+        <div>Remover wrapper. Variante D (seletor de semana).</div>
+        <div class="status bad">Corrigir</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Planejamento.jsx</code>
+        <div class="line">L1184</div>
+        <div>Remover wrapper. Variante D (seletor de ciclo) ou B (criar plano).</div>
+        <div class="status bad">Corrigir</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Sessoes.jsx</code>
+        <div class="line">L148</div>
+        <div>Remover wrapper. Variante A ou B.</div>
+        <div class="status bad">Corrigir</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Flashcards.jsx</code>
+        <div class="line">L69 (verificar)</div>
+        <div>Confirmar se está plano ou em <code>pl-card-paper</code>. Padronizar.</div>
+        <div class="status bad">Auditar</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/LembretesCalendario.jsx</code>
+        <div class="line">L527 (verificar)</div>
+        <div>Confirmar se está plano ou em <code>pl-card-paper</code>. Padronizar.</div>
+        <div class="status bad">Auditar</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Revisoes.jsx</code>
+        <div class="line">L391</div>
+        <div>Confirmar — title já plano? Aparenta sim.</div>
+        <div class="status bad">Auditar</div>
+      </div>
+      <div class="files-row">
+        <code>src/pages/Simulados.jsx</code>
+        <div class="line">L275</div>
+        <div>Confirmar — title já plano? Aparenta sim.</div>
+        <div class="status bad">Auditar</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 22px; font-size: 13px; color: var(--pl-ink-3); font-weight: 500; line-height: 1.55; max-width: 80ch; text-wrap: pretty;">
+      <strong style="color: var(--pl-ink);">Observação importante:</strong>
+      <em>pl-card-paper</em> continua válido para <em>cards dentro do conteúdo</em> &mdash; lista de
+      disciplinas, ranking, cards de questões etc. A regra é apenas: <em>não usar como wrapper do título da página</em>.
+    </p>
+  </section>
+
+  <!-- ════════════════════ § 06 · MIGRAÇÃO ════════════════════ -->
+  <section class="doc-section">
+    <div class="sec-num">№ 06</div>
+    <h2 class="sec-title">Migração · antes e depois</h2>
+    <p class="sec-intro">
+      Diff conceitual da mudança em qualquer página da lista acima.
+      A IA do codebase aplica esse padrão em cada arquivo.
+    </p>
+
+    <pre class="code"><span class="c">// ─── ANTES ────────────────────────────────────────</span>
+<span class="k">&lt;section</span> <span class="k">className</span>=<span class="s">"pl-card-paper"</span> <span class="k">style</span>=<span class="s">{{ padding: 28 }}</span><span class="k">&gt;</span>     <span class="c">// ← REMOVER</span>
+  <span class="k">&lt;div</span> <span class="k">style</span>=<span class="s">{{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 24, alignItems: 'end' }}</span><span class="k">&gt;</span>
+    <span class="k">&lt;div&gt;</span>
+      <span class="k">&lt;h1</span> <span class="k">className</span>=<span class="s">"pl-display"</span> <span class="k">style</span>=<span class="s">{{ margin: '0 0 8px', fontSize: 'clamp(44px, 5vw, 78px)' }}</span><span class="k">&gt;</span>
+        <span class="t">Histórico.</span>
+      <span class="k">&lt;/h1&gt;</span>
+      ...
+    <span class="k">&lt;/div&gt;</span>
+    ...
+  <span class="k">&lt;/div&gt;</span>
+<span class="k">&lt;/section&gt;</span>
+
+<span class="c">// ─── DEPOIS ───────────────────────────────────────</span>
+<span class="k">&lt;header</span> <span class="k">style</span>=<span class="s">{{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}</span><span class="k">&gt;</span>
+  <span class="k">&lt;div&gt;</span>
+    <span class="k">&lt;h1</span> <span class="k">className</span>=<span class="s">"pl-display"</span> <span class="k">style</span>=<span class="s">{{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}</span><span class="k">&gt;</span>
+      <span class="t">Histórico</span><span class="k">&lt;span</span> <span class="k">style</span>=<span class="s">{{ color: 'var(--pl-accent)' }}</span><span class="k">&gt;</span>.<span class="k">&lt;/span&gt;</span>
+    <span class="k">&lt;/h1&gt;</span>
+    <span class="k">&lt;p</span> <span class="k">style</span>=<span class="s">{{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}</span><span class="k">&gt;</span>
+      <span class="t">Toda sessão registrada, em ordem cronológica. A análise fica na aba Estatísticas.</span>
+    <span class="k">&lt;/p&gt;</span>
+  <span class="k">&lt;/div&gt;</span>
+  <span class="k">&lt;div</span> <span class="k">style</span>=<span class="s">{{ display: 'flex', gap: 8 }}</span><span class="k">&gt;</span> <span class="c">{/* opcional */}</span>
+    ...
+  <span class="k">&lt;/div&gt;</span>
+<span class="k">&lt;/header&gt;</span></pre>
+
+    <div class="anno-grid" style="margin-top: 22px;">
+      <div class="anno"><div class="anno-k">Mudança 1</div><div class="anno-v"><code>&lt;section className="pl-card-paper"&gt;</code> → <code>&lt;header&gt;</code></div></div>
+      <div class="anno"><div class="anno-k">Mudança 2</div><div class="anno-v">Remover <code>style={{ padding: 28 }}</code> do wrapper.</div></div>
+      <div class="anno"><div class="anno-k">Mudança 3</div><div class="anno-v">Grid <code>320px</code> → <code>auto</code> (ações se acomodam).</div></div>
+      <div class="anno"><div class="anno-k">Mudança 4</div><div class="anno-v">Font-size <code>clamp(44px, 5vw, 78px)</code> → <code>56</code> fixo (padrão Planos/Biblioteca).</div></div>
+      <div class="anno"><div class="anno-k">Mudança 5</div><div class="anno-v">Adicionar ponto azul: <code>&lt;span style={{ color: 'var(--pl-accent)' }}&gt;.&lt;/span&gt;</code></div></div>
+      <div class="anno"><div class="anno-k">Mudança 6</div><div class="anno-v">Subtítulo: classe da página → estilo inline <em>padronizado</em> (font 15 ink-2 max-w 660).</div></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

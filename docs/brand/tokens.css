@@ -1,0 +1,138 @@
+/* ═══════════════════════════════════════════════════════════
+   Papirando · Design Tokens v1.0
+   Plug-and-play CSS — copie para src/index.css
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ──────────────────────────────────────────
+     Paper · Ink scale (warm)
+     ────────────────────────────────────────── */
+  --paper:        #f3efe5;  /* background base */
+  --paper-soft:   #ebe6d8;  /* hover de cards */
+  --paper-warm:   #fbfaf6;  /* surface (cards) */
+  --paper-dark:   #1a1612;  /* dark mode bg base */
+
+  --ink:          #14110d;  /* texto principal · 100% */
+  --ink-2:        #3a342c;  /* texto secundário · 78% */
+  --ink-3:        #847b6c;  /* texto muted · 52% */
+  --ink-4:        #b6ad9c;  /* texto desabilitado · 32% */
+
+  /* ──────────────────────────────────────────
+     Accent · Tinta de caneta (novo)
+     ────────────────────────────────────────── */
+  --brand:        #1e3a5f;
+  --accent:       #1e3a5f;
+  --accent-hover: #2a4d76;       /* hover · +10% lightness */
+  --accent-active:#162a45;       /* pressed · -10% lightness */
+  --accent-soft:  rgba(30, 58, 95, 0.08);
+  --accent-tint:  rgba(30, 58, 95, 0.16);
+
+  /* ──────────────────────────────────────────
+     Lines / rules
+     ────────────────────────────────────────── */
+  --line:         rgba(20, 17, 13, 0.08);
+  --line-strong:  rgba(20, 17, 13, 0.16);
+  --line-bold:    rgba(20, 17, 13, 0.28);
+
+  /* ──────────────────────────────────────────
+     Aliases (compat com nomes legados do projeto)
+     ────────────────────────────────────────── */
+  --text-main:    #14110d;
+  --text-soft:    #847b6c;
+  --bg-paper:     #f3efe5;
+  --bg-paper-soft:#ebe6d8;
+
+  /* ──────────────────────────────────────────
+     Semantic (status — independentes do accent)
+     ────────────────────────────────────────── */
+  --success:      #305e22;
+  --success-soft: rgba(48, 94, 34, 0.10);
+  --warning:      #a85a0b;
+  --warning-soft: rgba(168, 90, 11, 0.10);
+  --danger:       #b54128;
+  --danger-soft:  rgba(181, 65, 40, 0.10);
+
+  /* ──────────────────────────────────────────
+     Type
+     ────────────────────────────────────────── */
+  --sans:  'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+
+  /* ──────────────────────────────────────────
+     Spacing / radius / shadow
+     ────────────────────────────────────────── */
+  --radius-sm: 3px;
+  --radius:    4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+
+  --shadow-low:  0 1px 2px rgba(20,17,13,0.04), 0 2px 4px rgba(20,17,13,0.04);
+  --shadow-mid:  0 4px 8px rgba(20,17,13,0.06), 0 12px 24px rgba(20,17,13,0.08);
+  --shadow-high: 0 10px 20px rgba(20,17,13,0.08), 0 24px 48px rgba(20,17,13,0.14);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DARK THEME — ativar via [data-theme="dark"] ou .dark no <html>
+   ═══════════════════════════════════════════════════════════ */
+[data-theme="dark"], .dark {
+  --paper:        #1a1612;
+  --paper-soft:   #1f1a14;
+  --paper-warm:   #1f1a14;
+
+  --ink:          #f3efe5;
+  --ink-2:        #d8d0bd;
+  --ink-3:        #b6ad9c;
+  --ink-4:        #847b6c;
+
+  --brand:        #7a9bbf;
+  --accent:       #7a9bbf;
+  --accent-hover: #93b1d1;
+  --accent-active:#6688af;
+  --accent-soft:  rgba(122, 155, 191, 0.12);
+  --accent-tint:  rgba(122, 155, 191, 0.20);
+
+  --line:         rgba(243, 239, 229, 0.08);
+  --line-strong:  rgba(243, 239, 229, 0.16);
+  --line-bold:    rgba(243, 239, 229, 0.28);
+
+  --text-main:    #f3efe5;
+  --text-soft:    #b6ad9c;
+  --bg-paper:     #1a1612;
+  --bg-paper-soft:#1f1a14;
+
+  --success:      #6fa15f;
+  --warning:      #d4a05a;
+  --danger:       #e07a5f;
+
+  --shadow-low:  0 1px 2px rgba(0,0,0,0.30), 0 2px 4px rgba(0,0,0,0.20);
+  --shadow-mid:  0 4px 8px rgba(0,0,0,0.30), 0 12px 24px rgba(0,0,0,0.40);
+  --shadow-high: 0 10px 20px rgba(0,0,0,0.40), 0 24px 48px rgba(0,0,0,0.50);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ROOT — aplicar background e cor base
+   ═══════════════════════════════════════════════════════════ */
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY · classes wordmark
+   ═══════════════════════════════════════════════════════════ */
+.pl-wordmark {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.pl-wordmark .dot {
+  color: var(--accent);
+}

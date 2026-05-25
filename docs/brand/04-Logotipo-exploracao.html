@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papirando · Logotipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&display=swap" />
+<style>
+  :root {
+    --paper:        #f3efe5;
+    --paper-soft:   #ebe6d8;
+    --paper-rule:   rgba(15, 23, 42, 0.07);
+    --paper-rule-2: rgba(15, 23, 42, 0.14);
+    --ink:          #14110d;       /* almost-black, slightly warm */
+    --ink-soft:     #3a342c;
+    --ink-quiet:    #847b6c;
+    --ink-faint:    #b6ad9c;
+    --surface:      #ffffff;
+    --accent:       #1d4ed8;       /* same blue from the platform */
+    --accent-soft:  #eaf0fd;
+    --warn:         #b45309;
+    --rule:         rgba(20, 17, 13, 0.12);
+    --rule-strong:  rgba(20, 17, 13, 0.22);
+    --sans:  'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    --serif: 'Fraunces', 'Plus Jakarta Sans', serif;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    background-image:
+      radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.55), transparent 60%),
+      repeating-linear-gradient(0deg, transparent 0 47px, var(--paper-rule) 47px 48px);
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+
+  /* ─── editorial atoms ────────────────────────────────────── */
+  .page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 64px 96px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-quiet);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .rule { height: 1px; background: var(--rule); }
+  .rule-strong { height: 1px; background: var(--rule-strong); }
+  .num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink-faint);
+    letter-spacing: -0.04em;
+  }
+
+  /* masthead */
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .mast-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 92px;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+    margin: 8px 0 0;
+  }
+  .mast-meta {
+    text-align: right;
+    color: var(--ink-quiet);
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  /* concept lede */
+  .lede {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+  }
+  .lede h3 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-quiet);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .lede p {
+    margin: 0 0 14px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+  .lede p:first-of-type {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .lede em.h { font-family: var(--serif); font-style: italic; color: var(--ink); font-weight: 500; }
+
+  /* etymology trail */
+  .etym {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .etym > div {
+    padding: 18px 22px;
+    border-right: 1px solid var(--rule);
+  }
+  .etym > div:last-child { border-right: 0; }
+  .etym .word {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .etym .gloss {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ink-quiet);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  .etym .arrow {
+    position: relative;
+  }
+  .etym .arrow::before {
+    content: '→';
+    position: absolute;
+    left: -10px;
+    top: 22px;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  /* section heading */
+  .section {
+    margin-top: 64px;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .section-num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--ink-faint);
+    letter-spacing: -0.03em;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 36px;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0;
+  }
+  .section-meta {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--ink-quiet);
+    font-weight: 500;
+  }
+
+  /* hero stage — the wordmark in full glory */
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 88px 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .stage::before, .stage::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border: 1px dashed transparent;
+    pointer-events: none;
+  }
+  .stage-corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: var(--ink-faint);
+    border-style: solid;
+    border-width: 0;
+  }
+  .stage-corner.tl { top: 12px; left: 12px; border-top-width: 1px; border-left-width: 1px; }
+  .stage-corner.tr { top: 12px; right: 12px; border-top-width: 1px; border-right-width: 1px; }
+  .stage-corner.bl { bottom: 12px; left: 12px; border-bottom-width: 1px; border-left-width: 1px; }
+  .stage-corner.br { bottom: 12px; right: 12px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* the wordmark itself */
+  .wordmark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.045em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .wordmark .dot {
+    color: var(--accent);
+  }
+
+  /* P monogram — paper sheet with folded corner */
+  /* The mark is built as: a square tile (the page) with a triangular fold cut from
+     the top-right, plus a Fraunces italic capital P inside. The fold is the
+     "papirando" gesture — the dog-ear that marks where you stopped studying. */
+  .mark {
+    --mark-size: 220px;
+    --mark-fold: 56px;
+    --mark-bg: var(--ink);
+    --mark-fg: var(--paper);
+    --mark-fold-shadow: rgba(0,0,0,0.28);
+    --mark-radius: 6px;
+    position: relative;
+    width: var(--mark-size);
+    height: var(--mark-size);
+  }
+  .mark-tile {
+    position: absolute; inset: 0;
+    background: var(--mark-bg);
+    border-radius: var(--mark-radius);
+    /* clip top-right corner to create the folded look */
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--mark-fold)) 0,
+      100% var(--mark-fold),
+      100% 100%,
+      0 100%
+    );
+  }
+  .mark-fold {
+    position: absolute;
+    top: 0; right: 0;
+    width: var(--mark-fold);
+    height: var(--mark-fold);
+    background: var(--mark-fold-shadow);
+    /* triangular fold underside */
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    border-top-right-radius: var(--mark-radius);
+  }
+  .mark-fold-line {
+    position: absolute;
+    top: 0; right: 0;
+    width: var(--mark-fold);
+    height: var(--mark-fold);
+    background: linear-gradient(45deg, transparent 49.5%, rgba(255,255,255,0.06) 50%, transparent 50.5%);
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  }
+  .mark-p {
+    position: absolute; inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: calc(var(--mark-size) * 0.74);
+    color: var(--mark-fg);
+    letter-spacing: -0.06em;
+    line-height: 1;
+    /* nudge for italic optical centering */
+    padding-right: 0.05em;
+    padding-bottom: 0.06em;
+  }
+
+  /* ─── 3-up grid of refinements ───────────────────────────── */
+  .threeup {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .card-stage {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--rule);
+    padding: 28px;
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.0), rgba(20,17,13,0.015));
+  }
+  .card-meta {
+    padding: 14px 18px 16px;
+  }
+  .card-meta .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-quiet);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .card-meta .desc {
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    font-weight: 500;
+  }
+
+  /* the "best" badge — the one we recommend */
+  .pick {
+    position: relative;
+  }
+  .pick::after {
+    content: 'recomendado';
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 3px;
+  }
+
+  /* ─── anatomy panel ──────────────────────────────────────── */
+  .anatomy {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 28px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 36px;
+  }
+  .anatomy-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      linear-gradient(0deg, var(--paper-rule) 1px, transparent 1px) 0 0 / 100% 28px,
+      linear-gradient(90deg, var(--paper-rule) 1px, transparent 1px) 0 0 / 28px 100%;
+    border-radius: 4px;
+    padding: 24px;
+    min-height: 360px;
+  }
+  .anatomy-side h4 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    margin: 0 0 14px;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .anatomy-side p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .spec-list {
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--rule);
+  }
+  .spec-list li {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .spec-list .k {
+    color: var(--ink-quiet);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .spec-list .v {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .spec-list .v em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* annotations around the anatomy mark */
+  .anno {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-quiet);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+  .anno .v {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+  .anno-line {
+    position: absolute;
+    background: var(--ink-faint);
+  }
+
+  /* ─── lockups ────────────────────────────────────────────── */
+  .lockups {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .lockup-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 36px 28px;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lockup-card.dark {
+    background: var(--ink);
+  }
+  .lockup-card .label {
+    position: absolute;
+  }
+  .lockup-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lockup-label {
+    position: absolute;
+    top: 12px; left: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink-quiet);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+  .lockup-card.dark .lockup-label { color: rgba(255,255,255,0.45); }
+
+  /* horizontal lockup (mark + wordmark) */
+  .lockup-horiz {
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .lockup-horiz .mark { --mark-size: 72px; --mark-fold: 18px; --mark-radius: 3px; }
+  .lockup-horiz .wm {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 56px; letter-spacing: -0.045em; line-height: 1; color: var(--ink);
+  }
+  .lockup-horiz .wm .dot { color: var(--accent); }
+
+  /* stacked lockup */
+  .lockup-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .lockup-stack .mark { --mark-size: 84px; --mark-fold: 22px; --mark-radius: 4px; }
+  .lockup-stack .wm {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 44px; letter-spacing: -0.045em; line-height: 1; color: var(--ink);
+  }
+  .lockup-stack .wm .dot { color: var(--accent); }
+  .lockup-stack .tagline {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.36em;
+    text-transform: uppercase; color: var(--ink-quiet);
+    border-top: 1px solid var(--rule); padding-top: 10px;
+    margin-top: -6px;
+  }
+
+  /* dark variants */
+  .on-dark .wm { color: var(--paper); }
+  .on-dark .wm .dot { color: #93b4ff; }
+  .on-dark .mark { --mark-bg: var(--paper); --mark-fg: var(--ink); --mark-fold-shadow: rgba(0,0,0,0.20); }
+
+  /* ─── applications strip ─────────────────────────────────── */
+  .apps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+  .app {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 22px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .app .app-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink-quiet);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .app-stage {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+  }
+
+  /* favicon scales */
+  .mark-xs { --mark-size: 32px;  --mark-fold: 8px;  --mark-radius: 2px; }
+  .mark-sm { --mark-size: 48px;  --mark-fold: 12px; --mark-radius: 3px; }
+  .mark-md { --mark-size: 72px;  --mark-fold: 18px; --mark-radius: 3px; }
+  .mark-lg { --mark-size: 96px;  --mark-fold: 24px; --mark-radius: 4px; }
+
+  /* accent variant */
+  .mark.accent { --mark-bg: var(--accent); --mark-fg: #fff; --mark-fold-shadow: rgba(0,0,0,0.20); }
+  .mark.paper  { --mark-bg: var(--paper); --mark-fg: var(--ink); --mark-fold-shadow: rgba(0,0,0,0.10); }
+  .mark.outline {
+    --mark-bg: transparent; --mark-fg: var(--ink); --mark-fold-shadow: transparent;
+  }
+  .mark.outline .mark-tile {
+    border: 1.5px solid var(--ink);
+    background: transparent;
+  }
+  .mark.outline .mark-fold {
+    background: var(--ink);
+    opacity: 0.08;
+  }
+
+  /* favicon row scale showcase */
+  .scale-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+  }
+
+  /* mini browser tab mock */
+  .tab {
+    background: var(--paper-soft);
+    border: 1px solid var(--rule);
+    border-radius: 6px 6px 0 0;
+    padding: 7px 10px 7px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .tab .mark { --mark-size: 14px; --mark-fold: 4px; --mark-radius: 1.5px; }
+
+  /* mobile shoulder */
+  @media (max-width: 920px) {
+    .page { padding: 32px 22px 64px; }
+    .mast-title { font-size: 56px; }
+    .lede { grid-template-columns: 1fr; gap: 20px; }
+    .etym { grid-template-columns: 1fr 1fr; }
+    .etym > div { border-right: 0; border-bottom: 1px solid var(--rule); }
+    .threeup { grid-template-columns: 1fr; }
+    .anatomy { grid-template-columns: 1fr; }
+    .lockups { grid-template-columns: 1fr; }
+    .apps { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MASTHEAD
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Papirando · Sistema de marca · v2</div>
+      <h1 class="mast-title">Logotipo<span style="color: var(--accent)">.</span></h1>
+    </div>
+    <div class="mast-meta">
+      Refinamento das direções № 01 e № 03<br />
+      Wordmark editorial + monograma reduzido
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CONCEPT — what "Papirando" means and where the mark comes from
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="lede">
+    <div>
+      <h3>O conceito</h3>
+    </div>
+    <div>
+      <p>
+        <em class="h">Papirando</em> é a gíria de quem está com a cara enfiada no caderno —
+        é o estudo <em class="h">em movimento</em>, no gerúndio.
+      </p>
+      <p>
+        A raiz é <em class="h">papiro</em>, o suporte original do estudo: a folha onde
+        se anota, se sublinha, se dobra a ponta pra marcar onde parou. A terminação
+        <em class="h">‑ando</em> (gerúndio) coloca a marca em ação: não é um substantivo,
+        é um verbo continuado — <em class="h">papir‑ar</em>, no presente. Estudar pra
+        prova de amanhã, virar a noite na questão de matemática, marcar a página
+        antes de dormir.
+      </p>
+      <p>
+        Por isso o sistema gira em torno de dois gestos: a <em class="h">tipografia
+        editorial</em> (livro aberto, texto corrido) e a <em class="h">página dobrada</em>
+        (o dog‑ear, o marcador). Um diz que aqui se estuda de verdade; o outro diz
+        que você parou — e vai voltar.
+      </p>
+    </div>
+  </div>
+
+  <!-- etymology trail -->
+  <div class="etym">
+    <div>
+      <div class="word">papyrus</div>
+      <div class="gloss">latim · suporte original onde se escrevia e estudava na antiguidade</div>
+    </div>
+    <div class="arrow">
+      <div class="word">papiro</div>
+      <div class="gloss">português · planta &amp; folha de estudo — caderno, apostila, livro</div>
+    </div>
+    <div class="arrow">
+      <div class="word">papirar</div>
+      <div class="gloss">gíria br · estudar a fundo, "se enfiar nos papéis"</div>
+    </div>
+    <div class="arrow">
+      <div class="word">papirando</div>
+      <div class="gloss">gerúndio · o estudo acontecendo agora — em movimento, em curso</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 1 — THE WORDMARK
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">№ 01</span>
+      <h2 class="section-title">O logotipo principal</h2>
+      <span class="section-meta">Wordmark em Fraunces itálico · uso oficial</span>
+    </div>
+
+    <!-- HERO -->
+    <div class="stage" style="padding: 120px 32px;">
+      <span class="stage-corner tl"></span>
+      <span class="stage-corner tr"></span>
+      <span class="stage-corner bl"></span>
+      <span class="stage-corner br"></span>
+      <span class="wordmark" style="font-size: 168px;">
+        Papirando<span class="dot">.</span>
+      </span>
+    </div>
+
+    <!-- 3-up refinements -->
+    <div class="threeup" style="margin-top: 16px;">
+      <div class="card pick">
+        <div class="card-stage">
+          <span class="wordmark" style="font-size: 46px;">
+            Papirando<span class="dot">.</span>
+          </span>
+        </div>
+        <div class="card-meta">
+          <div class="label">№ 01a · Wordmark + ponto azul</div>
+          <div class="desc">
+            Fraunces itálico Light, ponto final na cor de acento. O ponto encerra
+            a frase — referência direta ao texto corrido de página de livro.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-stage">
+          <span class="wordmark" style="font-size: 46px; color: var(--ink);">
+            Papirando<span style="color: var(--ink)">.</span>
+          </span>
+        </div>
+        <div class="card-meta">
+          <div class="label">№ 01b · Monocromático</div>
+          <div class="desc">
+            Versão sem o acento de cor — para impressão em uma cor, fundo escuro,
+            ou contextos onde o azul não funciona (parceiros, white‑label).
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-stage" style="background: var(--ink);">
+          <span class="wordmark" style="font-size: 46px; color: var(--paper);">
+            Papirando<span style="color: #93b4ff;">.</span>
+          </span>
+        </div>
+        <div class="card-meta">
+          <div class="label">№ 01c · Sobre escuro</div>
+          <div class="desc">
+            Mesma estrutura sobre fundo tinta. O ponto sobe pra um azul mais
+            claro pra manter o contraste — não perde a personalidade no dark.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 2 — THE REDUCED P (monogram)
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">№ 02</span>
+      <h2 class="section-title">O P reduzido</h2>
+      <span class="section-meta">Monograma · favicon, ícone de app, selo</span>
+    </div>
+
+    <!-- HERO -->
+    <div class="stage" style="padding: 80px 32px;">
+      <span class="stage-corner tl"></span>
+      <span class="stage-corner tr"></span>
+      <span class="stage-corner bl"></span>
+      <span class="stage-corner br"></span>
+
+      <div style="display: flex; align-items: center; gap: 56px;">
+        <div class="mark" style="--mark-size: 280px; --mark-fold: 72px;">
+          <div class="mark-tile"></div>
+          <div class="mark-fold"></div>
+          <div class="mark-fold-line"></div>
+          <div class="mark-p">P</div>
+        </div>
+        <div style="max-width: 280px;">
+          <div class="eyebrow" style="margin-bottom: 10px;">Monograma</div>
+          <div style="font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 36px; line-height: 1.15; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 14px;">
+            Uma página com o canto dobrado.
+          </div>
+          <p style="font-size: 14px; color: var(--ink-soft); line-height: 1.6; margin: 0;">
+            O quadrado é a folha. A dobra no canto superior direito é o gesto
+            de quem parou ali pra continuar depois. O <em style="font-family: var(--serif); font-style: italic;">P</em>
+            em Fraunces itálico no centro amarra o monograma à mesma família
+            tipográfica do logotipo principal — não é um símbolo solto, é a
+            mesma marca em formato compacto.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-up variations of the P -->
+    <div class="threeup" style="margin-top: 16px;">
+      <div class="card pick">
+        <div class="card-stage">
+          <div class="mark" style="--mark-size: 132px; --mark-fold: 32px;">
+            <div class="mark-tile"></div>
+            <div class="mark-fold"></div>
+            <div class="mark-fold-line"></div>
+            <div class="mark-p">P</div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="label">№ 02a · Tinta sobre creme</div>
+          <div class="desc">
+            Versão principal. Fundo tinta (quase preto), P em creme. Funciona em
+            qualquer escala — de favicon 16px a outdoor.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-stage">
+          <div class="mark accent" style="--mark-size: 132px; --mark-fold: 32px;">
+            <div class="mark-tile"></div>
+            <div class="mark-fold"></div>
+            <div class="mark-fold-line"></div>
+            <div class="mark-p">P</div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="label">№ 02b · Acento</div>
+          <div class="desc">
+            Versão em azul de marca. Para ícone de app na tela do celular, onde
+            ela precisa "saltar" entre outros apps.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-stage">
+          <div class="mark outline" style="--mark-size: 132px; --mark-fold: 32px;">
+            <div class="mark-tile"></div>
+            <div class="mark-fold"></div>
+            <div class="mark-p" style="color: var(--ink);">P</div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="label">№ 02c · Outline</div>
+          <div class="desc">
+            Contorno apenas — para marca d'água, selo em certificado de conclusão,
+            ou marca sutil em material impresso.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 3 — ANATOMY / CONSTRUCTION
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">№ 03</span>
+      <h2 class="section-title">Anatomia da marca</h2>
+      <span class="section-meta">Como o P foi construído</span>
+    </div>
+
+    <div class="anatomy">
+      <!-- annotated mark -->
+      <div class="anatomy-stage">
+        <div class="mark" style="--mark-size: 240px; --mark-fold: 60px;">
+          <div class="mark-tile"></div>
+          <div class="mark-fold"></div>
+          <div class="mark-fold-line"></div>
+          <div class="mark-p">P</div>
+        </div>
+
+        <!-- annotation: page -->
+        <div class="anno" style="top: 36px; left: 18px;">
+          A folha
+          <span class="v">tile quadrado</span>
+        </div>
+        <div class="anno-line" style="top: 56px; left: 84px; width: 32px; height: 1px;"></div>
+
+        <!-- annotation: fold -->
+        <div class="anno" style="top: 22px; right: 14px; text-align: right;">
+          A dobra
+          <span class="v">canto 1/4 da folha</span>
+        </div>
+        <div class="anno-line" style="top: 42px; right: 92px; width: 28px; height: 1px;"></div>
+
+        <!-- annotation: P -->
+        <div class="anno" style="bottom: 80px; left: 14px;">
+          O P
+          <span class="v">Fraunces itálico 400</span>
+        </div>
+        <div class="anno-line" style="bottom: 100px; left: 70px; width: 38px; height: 1px;"></div>
+
+        <!-- annotation: fold underside -->
+        <div class="anno" style="bottom: 56px; right: 14px; text-align: right;">
+          Sombra
+          <span class="v">underside da página</span>
+        </div>
+        <div class="anno-line" style="bottom: 76px; right: 84px; width: 32px; height: 1px;"></div>
+      </div>
+
+      <!-- spec sheet -->
+      <div class="anatomy-side">
+        <h4>Três elementos. Só isso.</h4>
+        <p>
+          A construção é deliberadamente simples — porque a marca tem que funcionar
+          em <em>16px</em> de favicon, e tem que aguentar uma tampa de caderno
+          impressa em uma cor só.
+        </p>
+        <p>
+          O tamanho da dobra é <em>1/4 da folha</em> (25%). Esse é o ponto onde
+          a dobra fica grande o suficiente pra ser reconhecida como gesto, mas
+          não atrapalha a leitura do P. Vai pra menos que isso e parece defeito;
+          vai pra mais e o P perde espaço.
+        </p>
+
+        <ul class="spec-list">
+          <li>
+            <span class="k">Proporção</span>
+            <span class="v">1 : 1 (quadrado)</span>
+          </li>
+          <li>
+            <span class="k">Dobra</span>
+            <span class="v">25% do lado · triangular</span>
+          </li>
+          <li>
+            <span class="k">Raio</span>
+            <span class="v">~2.5% do lado (suave)</span>
+          </li>
+          <li>
+            <span class="k">Letra</span>
+            <span class="v"><em>Fraunces Italic, weight 400</em></span>
+          </li>
+          <li>
+            <span class="k">Tamanho do P</span>
+            <span class="v">74% do lado · centralizado</span>
+          </li>
+          <li>
+            <span class="k">Cor padrão</span>
+            <span class="v">Tinta <code style="font-size: 11px; color: var(--ink-quiet);">#14110d</code> · P em creme <code style="font-size: 11px; color: var(--ink-quiet);">#f3efe5</code></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 4 — LOCKUPS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">№ 04</span>
+      <h2 class="section-title">Lockups</h2>
+      <span class="section-meta">Como combinar o P com o nome</span>
+    </div>
+
+    <div class="lockups">
+      <!-- horizontal -->
+      <div class="lockup-card">
+        <div class="lockup-wrap">
+          <span class="lockup-label">Horizontal</span>
+          <div class="lockup-horiz">
+            <div class="mark">
+              <div class="mark-tile"></div>
+              <div class="mark-fold"></div>
+              <div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+            <span class="wm">Papirando<span class="dot">.</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- stacked + tagline -->
+      <div class="lockup-card">
+        <div class="lockup-wrap">
+          <span class="lockup-label">Vertical · com tagline</span>
+          <div class="lockup-stack">
+            <div class="mark">
+              <div class="mark-tile"></div>
+              <div class="mark-fold"></div>
+              <div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span class="wm">Papirando<span class="dot">.</span></span>
+              <span class="tagline">Plataforma de estudos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- dark horizontal -->
+      <div class="lockup-card dark on-dark">
+        <div class="lockup-wrap">
+          <span class="lockup-label">Sobre escuro</span>
+          <div class="lockup-horiz">
+            <div class="mark">
+              <div class="mark-tile"></div>
+              <div class="mark-fold"></div>
+              <div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+            <span class="wm">Papirando<span class="dot">.</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 5 — APPLICATIONS / SCALE
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">№ 05</span>
+      <h2 class="section-title">Aplicações</h2>
+      <span class="section-meta">Como o sistema vive</span>
+    </div>
+
+    <div class="apps">
+      <!-- favicon scale -->
+      <div class="app">
+        <div class="app-stage">
+          <div class="scale-row">
+            <div class="mark mark-xs">
+              <div class="mark-tile"></div><div class="mark-fold"></div><div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+            <div class="mark mark-sm">
+              <div class="mark-tile"></div><div class="mark-fold"></div><div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+            <div class="mark mark-md">
+              <div class="mark-tile"></div><div class="mark-fold"></div><div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+          </div>
+        </div>
+        <div class="app-label">Escala · 32 / 48 / 72</div>
+      </div>
+
+      <!-- browser tab -->
+      <div class="app">
+        <div class="app-stage">
+          <div class="tab">
+            <div class="mark">
+              <div class="mark-tile"></div><div class="mark-fold"></div><div class="mark-fold-line"></div>
+              <div class="mark-p">P</div>
+            </div>
+            <span>Papirando · Plataforma</span>
+          </div>
+        </div>
+        <div class="app-label">Aba de navegador</div>
+      </div>
+
+      <!-- app icon -->
+      <div class="app">
+        <div class="app-stage">
+          <div class="mark accent" style="--mark-size: 96px; --mark-fold: 24px; --mark-radius: 20px;">
+            <div class="mark-tile"></div>
+            <div class="mark-fold"></div>
+            <div class="mark-fold-line"></div>
+            <div class="mark-p">P</div>
+          </div>
+        </div>
+        <div class="app-label">Ícone de app</div>
+      </div>
+
+      <!-- avatar / circle -->
+      <div class="app">
+        <div class="app-stage">
+          <div style="
+            width: 96px; height: 96px; border-radius: 50%;
+            background: var(--ink); color: var(--paper);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--serif); font-style: italic; font-weight: 400;
+            font-size: 56px; letter-spacing: -0.05em;
+            position: relative; overflow: hidden;
+            padding-bottom: 6px;
+          ">
+            P
+            <div style="
+              position: absolute; top: 0; right: 0; width: 28px; height: 28px;
+              background: rgba(255,255,255,0.10);
+              clip-path: polygon(100% 0, 0 0, 100% 100%);
+            "></div>
+          </div>
+        </div>
+        <div class="app-label">Avatar circular</div>
+      </div>
+
+      <!-- mono / one color print -->
+      <div class="app">
+        <div class="app-stage">
+          <div class="mark outline">
+            <div class="mark-tile"></div>
+            <div class="mark-fold"></div>
+            <div class="mark-p" style="color: var(--ink);">P</div>
+          </div>
+        </div>
+        <div class="app-label">Uma cor · impresso</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER NOTE
+       ═══════════════════════════════════════════════════════════ -->
+  <div style="margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--rule-strong); display: flex; justify-content: space-between; align-items: baseline; gap: 24px;">
+    <div style="font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 22px; color: var(--ink); letter-spacing: -0.02em;">
+      Papirando<span style="color: var(--accent);">.</span>
+    </div>
+    <div class="eyebrow">Concept v2 · 16 mai 2026</div>
+  </div>
+
+</div>
+
+</body>
+</html>

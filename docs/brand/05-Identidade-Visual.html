@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papirando · Identidade Visual — Plataforma + Logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" />
+<style>
+  :root {
+    --paper: #f6f4ee;
+    --paper-soft: #f1efe8;
+    --paper-rule: rgba(15, 23, 42, 0.06);
+    --paper-rule-strong: rgba(15, 23, 42, 0.12);
+    --surface: #ffffff;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-500: #64748b;
+    --slate-400: #94a3b8;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --accent: #1d4ed8;
+    --accent-hover: #1e40af;
+    --accent-soft: #eff5ff;
+    --success: #059669;
+    --amber: #d97706;
+    --rose: #be123c;
+    --font-sans: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-serif: 'Fraunces', 'Plus Jakarta Sans', serif;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: #f0eee9;
+    font-family: var(--font-sans);
+    color: var(--slate-900);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  button, input { font-family: inherit; }
+
+  /* Reusable atoms inside the screens */
+  .iv-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--slate-400);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .iv-rule { height: 1px; background: var(--paper-rule-strong); }
+  .iv-rule-soft { height: 1px; background: var(--paper-rule); }
+
+  .iv-card {
+    background: var(--surface);
+    border: 1px solid var(--slate-200);
+    border-radius: 14px;
+  }
+  .iv-card-paper {
+    background: rgba(255,255,255,0.55);
+    border: 1px solid var(--paper-rule-strong);
+    border-radius: 14px;
+  }
+
+  .iv-btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: 1px solid var(--slate-200);
+    background: #fff;
+    color: var(--slate-700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: border-color .12s, background .12s;
+  }
+  .iv-btn:hover { border-color: var(--slate-300); background: #fafbfc; }
+  .iv-btn-primary {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 9px;
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    box-shadow: 0 1px 0 rgba(15,23,42,0.05);
+  }
+  .iv-btn-primary:hover { background: var(--accent-hover); }
+  .iv-btn-ghost {
+    background: transparent;
+    border: 0;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .iv-btn-ghost:hover { color: var(--accent-hover); }
+
+  .iv-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--slate-100);
+    color: var(--slate-700);
+    letter-spacing: 0.01em;
+  }
+  .iv-tag-accent { background: var(--accent-soft); color: var(--accent); }
+  .iv-tag-success { background: rgba(5,150,105,0.10); color: var(--success); }
+  .iv-tag-amber { background: rgba(217,119,6,0.10); color: var(--amber); }
+
+  /* numeric display in Fraunces */
+  .iv-num {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+  }
+  .iv-display {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+  }
+
+  /* paper ruled background */
+  .iv-paper {
+    background: var(--paper);
+    background-image: repeating-linear-gradient(0deg, transparent 0 39px, var(--paper-rule) 39px 40px);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="iv-shared.jsx"></script>
+<script type="text/babel" src="iv-dashboard.jsx"></script>
+<script type="text/babel" src="iv-questoes.jsx"></script>
+<script type="text/babel" src="iv-logos.jsx"></script>
+<script type="text/babel" src="iv-app.jsx"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papirando · Login Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap" />
+<style>
+  :root {
+    --bg-app: #e6ebf2;
+    --bg-canvas: #edf2f8;
+    --surface: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --accent: #1d4ed8;
+    --accent-hover: #1e40af;
+    --accent-soft: #eff5ff;
+    --border-subtle: #e2e8f0;
+    --border-default: #cbd5e1;
+    --success: #059669;
+    --font-sans: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-display: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    background: #f0eee9;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+  input { font-family: inherit; }
+
+  /* ─── Shared form atoms used inside every variation ─── */
+  .pp-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px 0 42px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: #fff;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  .pp-input::placeholder { color: #94a3b8; font-weight: 400; }
+  .pp-input:hover { border-color: #cbd5e1; }
+  .pp-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12); }
+  .pp-input-wrap { position: relative; }
+  .pp-input-wrap > svg.pp-input-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: #94a3b8; pointer-events: none;
+  }
+  .pp-input-wrap > .pp-eye {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 32px; border: 0; background: transparent;
+    color: #94a3b8; cursor: pointer; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s, color .12s;
+  }
+  .pp-eye:hover { background: #f1f5f9; color: var(--text-secondary); }
+
+  .pp-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .pp-btn-primary {
+    width: 100%;
+    height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: background .15s, transform .05s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .pp-btn-primary:hover { background: var(--accent-hover); }
+  .pp-btn-primary:active { transform: translateY(1px); }
+
+  .pp-btn-social {
+    flex: 1;
+    height: 44px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .pp-btn-social:hover { border-color: var(--border-default); background: #fafbfc; }
+
+  .pp-divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--text-muted); font-size: 12px; font-weight: 500;
+  }
+  .pp-divider::before, .pp-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border-subtle);
+  }
+
+  .pp-link {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .pp-link:hover { color: var(--accent-hover); }
+
+  .pp-check {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+  .pp-check input {
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="login-shared.jsx"></script>
+<script type="text/babel" src="login-conservador.jsx"></script>
+<script type="text/babel" src="login-medio.jsx"></script>
+<script type="text/babel" src="login-ousado.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+</body>
+</html>

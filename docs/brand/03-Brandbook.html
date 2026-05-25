@@ -1,0 +1,2287 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papirando · Brandbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" />
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     TOKENS — single source of truth for the whole brand.
+     Light & dark live side-by-side; pages opt into dark by
+     adding class="dark" to a container.
+     ═══════════════════════════════════════════════════════════ */
+  :root {
+    /* surfaces */
+    --bg-paper:        #f3efe5;    /* primary background — warm cream */
+    --bg-paper-soft:   #ebe6d8;    /* hover, subtle alternation */
+    --bg-surface:      #ffffff;    /* cards */
+    --bg-surface-2:    #f9f7f0;    /* elevated alt */
+
+    /* ink scale */
+    --ink:    #14110d;             /* primary text, near-black warm */
+    --ink-2:  #3a342c;             /* secondary text */
+    --ink-3:  #847b6c;             /* tertiary, captions */
+    --ink-4:  #b6ad9c;             /* faint, placeholders */
+    --ink-5:  #d8d0bf;             /* very faint */
+
+    /* rules */
+    --rule:        rgba(20, 17, 13, 0.10);
+    --rule-2:      rgba(20, 17, 13, 0.18);
+    --rule-strong: rgba(20, 17, 13, 0.28);
+
+    /* accent — the "ponto" */
+    --accent:        #1d4ed8;
+    --accent-2:      #1e40af;
+    --accent-soft:   #eaf0fd;
+    --accent-ring:   rgba(29, 78, 216, 0.30);
+
+    /* highlight — like a real marker on paper */
+    --highlight:      #f4d04e;
+    --highlight-soft: #fdf3ce;
+
+    /* states */
+    --success:      #4d7c3f;
+    --success-soft: #e8efdc;
+    --warn:         #b45309;
+    --warn-soft:    #fbeacd;
+    --danger:       #b91c1c;
+    --danger-soft:  #fde4e4;
+
+    /* type */
+    --sans:  'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    --serif: 'Fraunces', 'Plus Jakarta Sans', serif;
+    --mono:  'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  .dark {
+    /* surfaces — warm dark, "studying by lamplight" */
+    --bg-paper:        #1a1612;
+    --bg-paper-soft:   #211c16;
+    --bg-surface:      #25201a;
+    --bg-surface-2:    #2c2620;
+
+    /* ink — warm cream against warm dark */
+    --ink:    #ece4d2;
+    --ink-2:  #c3bba7;
+    --ink-3:  #8e8675;
+    --ink-4:  #5d574c;
+    --ink-5:  #3a3530;
+
+    --rule:        rgba(236, 228, 210, 0.09);
+    --rule-2:      rgba(236, 228, 210, 0.16);
+    --rule-strong: rgba(236, 228, 210, 0.28);
+
+    /* accent lifts for contrast on dark */
+    --accent:        #93b4ff;
+    --accent-2:      #b1c8ff;
+    --accent-soft:   rgba(147, 180, 255, 0.12);
+    --accent-ring:   rgba(147, 180, 255, 0.35);
+
+    --highlight-soft: rgba(244, 208, 78, 0.18);
+
+    --success-soft: rgba(122, 180, 105, 0.16);
+    --warn-soft:    rgba(217, 142, 41, 0.16);
+    --danger-soft:  rgba(220, 80, 80, 0.16);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-paper);
+    background-image: repeating-linear-gradient(0deg, transparent 0 47px, var(--rule) 47px 48px);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+
+  /* ═══════════════════════════════════════════════════════════
+     SHARED EDITORIAL ATOMS
+     ═══════════════════════════════════════════════════════════ */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 56px 64px 96px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-3);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink-4);
+    letter-spacing: -0.04em;
+  }
+  .rule { height: 1px; background: var(--rule-2); }
+
+  /* the wordmark — small inline use */
+  .wm {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    letter-spacing: -0.045em; line-height: 1; color: var(--ink);
+  }
+  .wm .dot { color: var(--accent); }
+
+  /* the P mark — same construction as Logotipo.html */
+  .mark {
+    --mark-size: 64px;
+    --mark-fold: 16px;
+    --mark-bg: var(--ink);
+    --mark-fg: var(--bg-paper);
+    --mark-fold-shadow: rgba(0,0,0,0.28);
+    --mark-radius: 3px;
+    position: relative;
+    width: var(--mark-size);
+    height: var(--mark-size);
+    flex: 0 0 var(--mark-size);
+  }
+  .mark-tile {
+    position: absolute; inset: 0;
+    background: var(--mark-bg);
+    border-radius: var(--mark-radius);
+    clip-path: polygon(0 0, calc(100% - var(--mark-fold)) 0, 100% var(--mark-fold), 100% 100%, 0 100%);
+  }
+  .mark-fold {
+    position: absolute; top: 0; right: 0;
+    width: var(--mark-fold); height: var(--mark-fold);
+    background: var(--mark-fold-shadow);
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    border-top-right-radius: var(--mark-radius);
+  }
+  .mark-p {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: calc(var(--mark-size) * 0.74);
+    color: var(--mark-fg);
+    letter-spacing: -0.06em; line-height: 1;
+    padding-right: 0.05em; padding-bottom: 0.06em;
+  }
+  .mark.accent { --mark-bg: var(--accent); --mark-fg: #fff; }
+  .mark.outline { --mark-bg: transparent; --mark-fold-shadow: transparent; --mark-fg: var(--ink); }
+  .mark.outline .mark-tile { border: 1.5px solid var(--ink); }
+
+  /* ═══════════════════════════════════════════════════════════
+     MASTHEAD
+     ═══════════════════════════════════════════════════════════ */
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .mast-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 104px;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+    margin: 12px 0 0;
+  }
+  .mast-meta {
+    text-align: right;
+    color: var(--ink-3);
+    font-size: 12px;
+    line-height: 1.7;
+    font-weight: 500;
+  }
+
+  /* lede */
+  .lede {
+    margin-top: 36px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 40px;
+  }
+  .lede h3 {
+    margin: 0; font-size: 12px; font-weight: 700;
+    color: var(--ink-3); letter-spacing: 0.28em; text-transform: uppercase;
+  }
+  .lede .pull {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 26px; line-height: 1.35; color: var(--ink);
+    letter-spacing: -0.015em; margin: 0 0 18px;
+    text-wrap: pretty;
+  }
+  .lede p {
+    margin: 0 0 14px; font-size: 15px; line-height: 1.7;
+    color: var(--ink-2); max-width: 62ch;
+  }
+  .lede em {
+    font-family: var(--serif); font-style: italic; color: var(--ink); font-weight: 500;
+  }
+
+  /* TOC */
+  .toc {
+    margin-top: 56px;
+    padding: 28px 32px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .toc-item {
+    padding: 14px 18px;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .toc-item:nth-child(3n) { border-right: 0; }
+  .toc-item:nth-last-child(-n+3) { border-bottom: 0; }
+  .toc-num {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 22px; color: var(--ink-4); letter-spacing: -0.03em;
+  }
+  .toc-name {
+    margin-top: 4px; font-size: 15px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+  .toc-desc {
+    margin-top: 4px; font-size: 12px; color: var(--ink-3); font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     SECTIONS
+     ═══════════════════════════════════════════════════════════ */
+  section.sec {
+    margin-top: 96px;
+    scroll-margin-top: 24px;
+  }
+  .sec-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .sec-num {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 32px; color: var(--ink-4); letter-spacing: -0.03em;
+  }
+  .sec-title {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 44px; color: var(--ink); letter-spacing: -0.035em;
+    line-height: 1; margin: 0;
+  }
+  .sec-meta {
+    font-size: 12px; color: var(--ink-3); font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .sec-intro {
+    font-size: 16px;
+    color: var(--ink-2);
+    line-height: 1.65;
+    max-width: 70ch;
+    margin: 0 0 32px;
+    text-wrap: pretty;
+  }
+  .sec-intro em {
+    font-family: var(--serif); font-style: italic; color: var(--ink); font-weight: 500;
+  }
+
+  .panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     § COLORS
+     ═══════════════════════════════════════════════════════════ */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .palette-block {
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    padding: 22px 24px;
+  }
+  .palette-block.dark-block {
+    background: #1a1612;
+    border-color: rgba(236,228,210,0.16);
+    color: #ece4d2;
+  }
+  .palette-block.dark-block .swatch-name { color: #ece4d2; }
+  .palette-block.dark-block .swatch-token { color: #8e8675; }
+  .palette-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .palette-head h4 {
+    margin: 0; font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: 26px; letter-spacing: -0.03em;
+  }
+  .palette-head .modetag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .palette-block.dark-block .palette-head .modetag { color: #8e8675; }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .palette-block.dark-block .swatches {
+    background: rgba(236,228,210,0.12);
+    border-color: rgba(236,228,210,0.12);
+  }
+  .swatch {
+    background: var(--bg-surface);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .palette-block.dark-block .swatch { background: #25201a; }
+  .swatch-chip {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.08);
+    flex: 0 0 36px;
+  }
+  .palette-block.dark-block .swatch-chip { border-color: rgba(255,255,255,0.10); }
+  .swatch-info { flex: 1; min-width: 0; }
+  .swatch-name {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .swatch-token {
+    margin-top: 2px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0;
+  }
+
+  /* role grid — semantic uses */
+  .role-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  .role {
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+  .role-chip {
+    width: 100%; height: 56px;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .role-name {
+    font-size: 12px; font-weight: 700; color: var(--ink);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .role-use {
+    margin-top: 4px; font-size: 12px; color: var(--ink-3);
+    line-height: 1.45; font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     § TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════ */
+  .type-table {
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .type-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 180px;
+    align-items: baseline;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--rule);
+    gap: 24px;
+  }
+  .type-row:last-child { border-bottom: 0; }
+  .type-label {
+    font-size: 11px; font-weight: 700; color: var(--ink-3);
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .type-label .role {
+    display: block; margin-top: 6px;
+    background: none; border: 0; padding: 0;
+    color: var(--ink-2); text-transform: none;
+    letter-spacing: 0; font-size: 11.5px; font-weight: 500;
+    line-height: 1.5;
+  }
+  .type-sample { color: var(--ink); }
+  .type-specs {
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
+
+  .type-sample.h-display { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 96px; letter-spacing: -0.045em; line-height: 0.92; }
+  .type-sample.h-1       { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 64px; letter-spacing: -0.04em;  line-height: 0.96; }
+  .type-sample.h-2       { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 40px; letter-spacing: -0.03em;  line-height: 1.05; }
+  .type-sample.h-3       { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 26px; letter-spacing: -0.025em; line-height: 1.15; }
+  .type-sample.h-4       { font-family: var(--sans);  font-weight: 600;   font-size: 18px; letter-spacing: -0.01em;  line-height: 1.3; }
+  .type-sample.body-lg   { font-family: var(--sans);  font-weight: 500;   font-size: 16px; line-height: 1.6; }
+  .type-sample.body      { font-family: var(--sans);  font-weight: 500;   font-size: 14px; line-height: 1.55; }
+  .type-sample.body-sm   { font-family: var(--sans);  font-weight: 500;   font-size: 13px; line-height: 1.5; }
+  .type-sample.caption   { font-family: var(--sans);  font-weight: 500;   font-size: 12px; line-height: 1.45; color: var(--ink-3); }
+  .type-sample.eyebrow-s { font-family: var(--sans);  font-weight: 700;   font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-3); }
+  .type-sample.num       { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 56px; letter-spacing: -0.04em;  line-height: 1; }
+  .type-sample.mono-s    { font-family: var(--mono);  font-weight: 500;   font-size: 13px; color: var(--ink-2); }
+
+  .type-rules {
+    margin-top: 18px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .type-rule {
+    padding: 18px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+  .type-rule .k {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .type-rule h5 {
+    margin: 6px 0 6px; font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: 22px; color: var(--ink); letter-spacing: -0.025em;
+  }
+  .type-rule p {
+    margin: 0; font-size: 13px; color: var(--ink-2); line-height: 1.6;
+  }
+  .type-rule p em {
+    font-family: var(--serif); font-style: italic; color: var(--ink); font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     § SPACING / GRID / RADII / SHADOWS
+     ═══════════════════════════════════════════════════════════ */
+  .four-col {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .stat-card {
+    padding: 22px 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+  .stat-card h4 {
+    margin: 0; font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: 22px; letter-spacing: -0.025em;
+  }
+  .stat-card .lab {
+    font-size: 10.5px; font-weight: 700; color: var(--ink-3);
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+
+  .spacer-row {
+    display: flex; align-items: flex-end; gap: 18px;
+    margin-top: 20px; padding: 28px 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+  .spacer-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .spacer-block {
+    background: var(--ink);
+    width: 28px;
+  }
+  .spacer-name {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  .radii-row {
+    display: flex; gap: 20px; align-items: flex-end;
+    margin-top: 18px; padding: 28px 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+  .radii-item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .radii-box {
+    width: 72px; height: 56px;
+    background: var(--ink);
+  }
+  .radii-name {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
+  }
+
+  .shadow-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-top: 16px;
+  }
+  .shadow-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    padding: 28px 22px 22px;
+  }
+  .shadow-box {
+    height: 96px; background: var(--bg-surface);
+    border-radius: 6px;
+    margin: 0 auto 16px;
+    width: 90%;
+  }
+  .shadow-flat   { border: 1px solid var(--rule-2); }
+  .shadow-low    { border: 1px solid var(--rule-2); box-shadow: 0 1px 2px rgba(20,17,13,0.05), 0 2px 6px rgba(20,17,13,0.04); }
+  .shadow-mid    { border: 1px solid var(--rule-2); box-shadow: 0 4px 8px rgba(20,17,13,0.06), 0 12px 24px rgba(20,17,13,0.08); }
+  .shadow-high   { box-shadow: 0 10px 20px rgba(20,17,13,0.08), 0 24px 48px rgba(20,17,13,0.14); }
+  .shadow-name { font-size: 12px; font-weight: 700; color: var(--ink); letter-spacing: 0.08em; text-transform: uppercase; }
+  .shadow-use { font-size: 12px; color: var(--ink-3); font-weight: 500; margin-top: 2px; line-height: 1.45; }
+
+  /* ═══════════════════════════════════════════════════════════
+     § ICONS
+     ═══════════════════════════════════════════════════════════ */
+  .icon-grid {
+    display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;
+    background: var(--bg-surface); border: 1px solid var(--rule-2);
+    border-radius: 4px; padding: 18px;
+  }
+  .icon-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 8px; border-radius: 3px;
+  }
+  .icon-cell:hover { background: var(--bg-paper-soft); }
+  .icon-cell svg { width: 24px; height: 24px; stroke: var(--ink); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-name {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     § VOICE
+     ═══════════════════════════════════════════════════════════ */
+  .voice-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .voice-block {
+    padding: 26px 28px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+  .voice-block.no { border-color: var(--rule-2); }
+  .voice-block h5 {
+    margin: 0 0 12px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .voice-block.yes h5 { color: var(--success); }
+  .voice-block.no h5 { color: var(--danger); }
+  .voice-line {
+    display: flex; gap: 10px; padding: 10px 0;
+    border-top: 1px solid var(--rule);
+    font-size: 14px; line-height: 1.5; color: var(--ink-2);
+  }
+  .voice-line:first-of-type { border-top: 0; padding-top: 0; }
+  .voice-line .ctx {
+    flex: 0 0 110px;
+    font-size: 10.5px; font-weight: 700; color: var(--ink-3);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding-top: 4px;
+  }
+  .voice-line .copy {
+    flex: 1;
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 17px; line-height: 1.45;
+    color: var(--ink); letter-spacing: -0.015em;
+  }
+  .voice-block.no .voice-line .copy {
+    font-family: var(--sans); font-style: normal; font-weight: 500;
+    font-size: 14px; color: var(--ink-3);
+    text-decoration: line-through;
+    text-decoration-color: var(--ink-4);
+  }
+
+  .lex {
+    margin-top: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    padding: 28px 32px;
+  }
+  .lex h5 {
+    margin: 0 0 18px;
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 24px; letter-spacing: -0.025em;
+  }
+  .lex-row {
+    display: grid;
+    grid-template-columns: 160px 200px 1fr;
+    gap: 18px; padding: 12px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .lex-row:first-of-type { border-top: 0; padding-top: 0; }
+  .lex-word {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 18px; color: var(--ink); letter-spacing: -0.02em;
+  }
+  .lex-meaning {
+    font-size: 12.5px; color: var(--ink-3); font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding-top: 4px;
+  }
+  .lex-example {
+    font-size: 13.5px; color: var(--ink-2); font-weight: 500;
+    line-height: 1.55; padding-top: 2px;
+  }
+  .lex-example em {
+    font-family: var(--serif); font-style: italic; color: var(--ink); font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     § ILLUSTRATION
+     ═══════════════════════════════════════════════════════════ */
+  .illos {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .illo-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .illo-stage {
+    aspect-ratio: 4/3;
+    background: var(--bg-paper);
+    background-image: repeating-linear-gradient(0deg, transparent 0 27px, var(--rule) 27px 28px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .illo-meta { padding: 14px 18px 18px; }
+  .illo-meta .label {
+    font-size: 11px; font-weight: 700; color: var(--ink-3);
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .illo-meta p {
+    margin: 6px 0 0; font-size: 12.5px; color: var(--ink-2);
+    line-height: 1.55; font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     § COMPONENTS
+     ═══════════════════════════════════════════════════════════ */
+  .comp-group {
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin-bottom: 14px;
+  }
+  .comp-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 18px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .comp-head h4 {
+    margin: 0; font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: 26px; letter-spacing: -0.025em; color: var(--ink);
+  }
+  .comp-head .note {
+    font-size: 12px; color: var(--ink-3); font-weight: 500;
+    max-width: 50ch; text-align: right; line-height: 1.5;
+  }
+  .comp-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 0; flex-wrap: wrap;
+    border-top: 1px solid var(--rule);
+  }
+  .comp-row:first-of-type { border-top: 0; padding-top: 4px; }
+  .comp-row .label {
+    flex: 0 0 110px;
+    font-size: 10.5px; font-weight: 700; color: var(--ink-3);
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 38px; padding: 0 16px;
+    border-radius: 8px;
+    font-family: var(--sans); font-size: 13.5px; font-weight: 600;
+    letter-spacing: -0.005em;
+    cursor: pointer; border: 0;
+    transition: background .12s, border-color .12s, transform .04s;
+  }
+  .btn:active { transform: translateY(0.5px); }
+  .btn svg { width: 14px; height: 14px; stroke-width: 1.75; }
+
+  .btn-primary {
+    background: var(--ink); color: var(--bg-paper);
+  }
+  .btn-primary:hover { background: var(--ink-2); }
+
+  .btn-secondary {
+    background: var(--bg-surface);
+    color: var(--ink);
+    border: 1px solid var(--rule-strong);
+  }
+  .btn-secondary:hover { background: var(--bg-paper-soft); }
+
+  .btn-ghost {
+    background: transparent; color: var(--ink);
+  }
+  .btn-ghost:hover { background: var(--bg-paper-soft); }
+
+  .btn-link {
+    background: transparent; color: var(--accent);
+    padding: 0; height: auto;
+    text-decoration: underline; text-decoration-thickness: 1px;
+    text-underline-offset: 3px; text-decoration-color: rgba(29,78,216,0.30);
+  }
+  .btn-link:hover { text-decoration-color: var(--accent); }
+
+  .btn-danger {
+    background: var(--danger); color: #fff;
+  }
+  .btn-danger:hover { background: #a01818; }
+
+  .btn-sm { height: 30px; padding: 0 12px; font-size: 12.5px; border-radius: 6px; }
+  .btn-lg { height: 46px; padding: 0 22px; font-size: 15px; border-radius: 10px; }
+
+  .btn[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Inputs */
+  .input {
+    display: block; width: 280px;
+    height: 38px; padding: 0 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    color: var(--ink);
+    transition: border-color .12s, box-shadow .12s;
+  }
+  .input::placeholder { color: var(--ink-4); }
+  .input:hover { border-color: var(--ink-3); }
+  .input:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+  .input.err { border-color: var(--danger); }
+  .input.err:focus { box-shadow: 0 0 0 3px rgba(185,28,28,0.20); }
+
+  .field {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .field label {
+    font-size: 12px; font-weight: 600; color: var(--ink-2);
+    letter-spacing: -0.005em;
+  }
+  .field .hint { font-size: 11.5px; color: var(--ink-3); font-weight: 500; }
+  .field .err  { font-size: 11.5px; color: var(--danger); font-weight: 600; }
+
+  /* tags */
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 22px; padding: 0 8px;
+    border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+    background: var(--bg-paper-soft); color: var(--ink-2);
+    letter-spacing: 0.01em;
+  }
+  .tag.accent  { background: var(--accent-soft); color: var(--accent); }
+  .tag.success { background: var(--success-soft); color: var(--success); }
+  .tag.warn    { background: var(--warn-soft); color: var(--warn); }
+  .tag.danger  { background: var(--danger-soft); color: var(--danger); }
+  .tag.highlight { background: var(--highlight-soft); color: #8a6d10; }
+  .dark .tag.highlight { color: #f4d04e; }
+
+  /* Cards demo */
+  .card-demo {
+    width: 320px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 6px;
+    padding: 18px 20px;
+  }
+  .card-demo .eyebrow-s {
+    font-size: 11px; font-weight: 700; color: var(--ink-3);
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .card-demo h5 {
+    margin: 8px 0 6px;
+    font-size: 17px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
+  }
+  .card-demo p {
+    margin: 0; font-size: 13px; color: var(--ink-3); font-weight: 500; line-height: 1.5;
+  }
+
+  /* tabs */
+  .tabs {
+    display: inline-flex; gap: 4px;
+    padding: 4px;
+    background: var(--bg-paper-soft);
+    border-radius: 8px;
+  }
+  .tab-btn {
+    height: 30px; padding: 0 14px;
+    border-radius: 6px;
+    background: transparent; border: 0;
+    font-size: 12.5px; font-weight: 600; color: var(--ink-3);
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: var(--bg-surface); color: var(--ink);
+    box-shadow: 0 1px 2px rgba(20,17,13,0.06);
+  }
+
+  /* segmented (used for filters etc) */
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px; overflow: hidden;
+  }
+  .seg-btn {
+    height: 30px; padding: 0 14px;
+    background: var(--bg-surface);
+    border: 0; border-right: 1px solid var(--rule-strong);
+    font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+    cursor: pointer;
+  }
+  .seg-btn:last-child { border-right: 0; }
+  .seg-btn.active { background: var(--ink); color: var(--bg-paper); }
+
+  /* progress */
+  .progress {
+    width: 240px; height: 4px;
+    background: var(--bg-paper-soft);
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress .fill { height: 100%; background: var(--ink); }
+  .progress.accent .fill { background: var(--accent); }
+  .progress.highlight .fill { background: var(--highlight); }
+
+  /* toast / banner */
+  .toast {
+    display: inline-flex; align-items: flex-start; gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(20,17,13,0.06), 0 12px 24px rgba(20,17,13,0.08);
+    max-width: 380px;
+  }
+  .toast .dot {
+    width: 8px; height: 8px; border-radius: 50%; margin-top: 6px;
+    flex: 0 0 8px;
+  }
+  .toast.success .dot { background: var(--success); }
+  .toast.warn    .dot { background: var(--warn); }
+  .toast.danger  .dot { background: var(--danger); }
+  .toast h6 {
+    margin: 0 0 2px; font-size: 13.5px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .toast p {
+    margin: 0; font-size: 12.5px; color: var(--ink-3); font-weight: 500; line-height: 1.5;
+  }
+
+  /* highlighter — text marker like real ink */
+  .highlight-text {
+    background: linear-gradient(0deg, var(--highlight-soft) 60%, transparent 60%);
+    padding: 0 2px;
+  }
+
+  /* motion easing demo */
+  .ease-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ease-card {
+    padding: 18px 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 4px;
+  }
+  .ease-card h6 {
+    margin: 0 0 4px; font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: 22px; letter-spacing: -0.025em;
+  }
+  .ease-card p {
+    margin: 0 0 12px; font-size: 12.5px; color: var(--ink-3); line-height: 1.5; font-weight: 500;
+  }
+  .ease-curve {
+    height: 60px; background: var(--bg-paper);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    position: relative;
+  }
+  .ease-spec { margin-top: 8px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+
+  /* AI surfaces — the "bizu" tech treatment.
+     Gradient blue → indigo, soft glow, shimmer overlay.
+     Used ONLY for AI-driven features so it stays scarce + special. */
+  @keyframes ai-shimmer {
+    0%        { transform: translateX(-130%); }
+    55%, 100% { transform: translateX(130%); }
+  }
+  .btn-ai {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 38px; padding: 0 16px;
+    border-radius: 8px; border: 0;
+    font-family: var(--sans); font-size: 13.5px; font-weight: 600;
+    cursor: pointer; color: #fff;
+    background: linear-gradient(135deg, #2557e5 0%, #4338ca 55%, #3730a3 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.20),
+      0 0 0 1px rgba(67, 56, 202, 0.25),
+      0 6px 16px rgba(29, 78, 216, 0.22);
+    position: relative; overflow: hidden;
+  }
+  .btn-ai svg { width: 14px; height: 14px; stroke-width: 1.75; }
+  .btn-ai::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%);
+    transform: translateX(-130%);
+    animation: ai-shimmer 3.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .btn-ai > * { position: relative; z-index: 1; }
+  .btn-ai-sm { height: 30px; padding: 0 12px; font-size: 12.5px; border-radius: 6px; }
+
+  .tag-ai {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 22px; padding: 0 9px;
+    border-radius: 4px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.01em;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    color: #4338ca;
+    border: 1px solid rgba(99, 102, 241, 0.28);
+    position: relative; overflow: hidden;
+  }
+  .tag-ai::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+    transform: translateX(-130%);
+    animation: ai-shimmer 4.2s ease-in-out infinite;
+    animation-delay: .6s;
+    pointer-events: none;
+  }
+  .tag-ai > * { position: relative; z-index: 1; }
+
+  .card-ai {
+    position: relative;
+    background: var(--bg-surface);
+    border-radius: 6px;
+    padding: 18px 20px;
+    background-image:
+      linear-gradient(var(--bg-surface), var(--bg-surface)),
+      linear-gradient(135deg, #1d4ed8 0%, #6366f1 50%, #1d4ed8 100%);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 8px rgba(67, 56, 202, 0.10);
+  }
+  .ai-accent {
+    background: linear-gradient(135deg, #1d4ed8 0%, #6366f1 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 700;
+  }
+
+  /* responsive */
+  @media (max-width: 920px) {
+    .page { padding: 32px 22px 64px; }
+    .mast-title { font-size: 60px; }
+    .lede { grid-template-columns: 1fr; gap: 16px; }
+    .toc { grid-template-columns: 1fr; }
+    .toc-item { border-right: 0 !important; }
+    .palette-grid, .voice-grid, .two-col, .ease-row { grid-template-columns: 1fr; }
+    .role-grid { grid-template-columns: 1fr 1fr; }
+    .shadow-row { grid-template-columns: 1fr 1fr; }
+    .icon-grid { grid-template-columns: repeat(4, 1fr); }
+    .type-row { grid-template-columns: 1fr; }
+    .type-specs { text-align: left; }
+    .illos { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MASTHEAD
+       ═══════════════════════════════════════════════════════════ -->
+  <header class="masthead">
+    <div>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div class="mark" style="--mark-size: 32px; --mark-fold: 8px; --mark-radius: 2px;">
+          <div class="mark-tile"></div>
+          <div class="mark-fold"></div>
+          <div class="mark-p">P</div>
+        </div>
+        <div class="eyebrow">Papirando · Sistema visual · v1.0 · maio 2026</div>
+      </div>
+      <h1 class="mast-title">Brandbook<span style="color: var(--accent);">.</span></h1>
+    </div>
+    <div class="mast-meta">
+      Cores · Tipografia · Espaçamento<br />
+      Componentes · Voz · Ilustração<br />
+      <span style="color: var(--ink); font-weight: 600;">Pronto pra implementar.</span>
+    </div>
+  </header>
+
+  <!-- LEDE -->
+  <div class="lede">
+    <div>
+      <h3>Como ler este documento</h3>
+    </div>
+    <div>
+      <p class="pull">
+        Tudo aqui é decisão tomada — não é exploração. Quando a interface diverge
+        deste documento, é a interface que está errada.
+      </p>
+      <p>
+        O brandbook é a única fonte da verdade para a plataforma <em>Papirando</em>.
+        Cada token tem um nome, um valor e um lugar pra ser usado. Se você precisa
+        de uma cor que não está aqui, não invente: pergunte. Se a tipografia parece
+        pequena demais, abra a seção e veja se existe um tamanho pra esse caso antes
+        de inventar um novo.
+      </p>
+      <p>
+        O sistema cobre <em>modo claro</em> e <em>modo escuro</em> desde o primeiro
+        token — não é um afterthought. Quem estuda à noite, estuda aqui também.
+      </p>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <a class="toc-item" href="#cores" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 01</div>
+      <div class="toc-name">Cores</div>
+      <div class="toc-desc">Paleta light + dark, papéis semânticos</div>
+    </a>
+    <a class="toc-item" href="#tipografia" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 02</div>
+      <div class="toc-name">Tipografia</div>
+      <div class="toc-desc">Fraunces (editorial) + Jakarta (UI)</div>
+    </a>
+    <a class="toc-item" href="#espaco" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 03</div>
+      <div class="toc-name">Espaço &amp; forma</div>
+      <div class="toc-desc">Escala de espaçamento, raios, elevação</div>
+    </a>
+    <a class="toc-item" href="#icones" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 04</div>
+      <div class="toc-name">Iconografia</div>
+      <div class="toc-desc">Lucide, stroke 1.5, 24px padrão</div>
+    </a>
+    <a class="toc-item" href="#voz" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 05</div>
+      <div class="toc-name">Voz &amp; léxico</div>
+      <div class="toc-desc">Papirar/papirando como verbo do produto</div>
+    </a>
+    <a class="toc-item" href="#ilustracao" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 06</div>
+      <div class="toc-name">Ilustração</div>
+      <div class="toc-desc">Linguagem de papel, dobra, anotação</div>
+    </a>
+    <a class="toc-item" href="#movimento" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 07</div>
+      <div class="toc-name">Movimento</div>
+      <div class="toc-desc">Durações e easings padrão</div>
+    </a>
+    <a class="toc-item" href="#componentes" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 08</div>
+      <div class="toc-name">Componentes</div>
+      <div class="toc-desc">Botões, inputs, cards, tags, toasts…</div>
+    </a>
+    <a class="toc-item" href="Logotipo.html" style="text-decoration: none; color: inherit;">
+      <div class="toc-num">№ 09</div>
+      <div class="toc-name">Logotipo →</div>
+      <div class="toc-desc">Wordmark, monograma, lockups (arquivo separado)</div>
+    </a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 01 · COLORS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="cores">
+    <div class="sec-head">
+      <span class="sec-num">№ 01</span>
+      <h2 class="sec-title">Cores</h2>
+      <span class="sec-meta">Papel quente + tinta + um ponto de azul</span>
+    </div>
+
+    <p class="sec-intro">
+      A paleta tem três famílias: <em>superfícies</em> (tons de papel), <em>tinta</em>
+      (escala de texto) e <em>acento</em> (o azul de marca, usado com economia). O
+      modo escuro inverte papel ↔ tinta mantendo a mesma temperatura quente — não
+      vira um preto frio genérico, continua parecendo página.
+    </p>
+
+    <!-- Light + Dark palettes side by side -->
+    <div class="palette-grid">
+
+      <!-- LIGHT -->
+      <div class="palette-block">
+        <div class="palette-head">
+          <h4>Modo claro</h4>
+          <span class="modetag">Padrão · dia</span>
+        </div>
+        <div class="swatches">
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #f3efe5;"></div>
+            <div class="swatch-info"><div class="swatch-name">Paper</div><div class="swatch-token">--bg-paper · #f3efe5</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #ffffff;"></div>
+            <div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-token">--bg-surface · #ffffff</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #14110d;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink</div><div class="swatch-token">--ink · #14110d</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #3a342c;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink-2</div><div class="swatch-token">--ink-2 · #3a342c</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #847b6c;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink-3</div><div class="swatch-token">--ink-3 · #847b6c</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #b6ad9c;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink-4</div><div class="swatch-token">--ink-4 · #b6ad9c</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #1d4ed8;"></div>
+            <div class="swatch-info"><div class="swatch-name">Accent</div><div class="swatch-token">--accent · #1d4ed8</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #f4d04e;"></div>
+            <div class="swatch-info"><div class="swatch-name">Highlight</div><div class="swatch-token">--highlight · #f4d04e</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DARK -->
+      <div class="palette-block dark-block">
+        <div class="palette-head">
+          <h4 style="color: #ece4d2;">Modo escuro</h4>
+          <span class="modetag">Noite · lamparina</span>
+        </div>
+        <div class="swatches">
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #1a1612;"></div>
+            <div class="swatch-info"><div class="swatch-name">Paper</div><div class="swatch-token">--bg-paper · #1a1612</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #25201a;"></div>
+            <div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-token">--bg-surface · #25201a</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #ece4d2;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink</div><div class="swatch-token">--ink · #ece4d2</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #c3bba7;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink-2</div><div class="swatch-token">--ink-2 · #c3bba7</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #8e8675;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink-3</div><div class="swatch-token">--ink-3 · #8e8675</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #5d574c;"></div>
+            <div class="swatch-info"><div class="swatch-name">Ink-4</div><div class="swatch-token">--ink-4 · #5d574c</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #93b4ff;"></div>
+            <div class="swatch-info"><div class="swatch-name">Accent</div><div class="swatch-token">--accent · #93b4ff</div></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background: #f4d04e;"></div>
+            <div class="swatch-info"><div class="swatch-name">Highlight</div><div class="swatch-token">--highlight · #f4d04e</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- semantic roles -->
+    <div class="eyebrow" style="margin: 32px 0 14px;">Cores de estado &amp; uso</div>
+    <div class="role-grid">
+      <div class="role">
+        <div class="role-chip" style="background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; font-family: var(--serif); font-style: italic; font-size: 24px;">Ponto.</div>
+        <div class="role-name">Accent</div>
+        <div class="role-use">Links, foco, CTAs secundários, o ponto da marca. Use com economia.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: linear-gradient(0deg, var(--highlight-soft) 70%, transparent 70%); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: var(--ink);">marca-texto</div>
+        <div class="role-name">Highlight</div>
+        <div class="role-use">Marca-texto em anotações, questões favoritadas, conteúdo destacado.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: var(--success-soft); display: flex; align-items: center; justify-content: center; color: var(--success); font-weight: 600; font-size: 13px;">✓ Acertou</div>
+        <div class="role-name">Success</div>
+        <div class="role-use">Gabarito correto, meta batida, streak mantido.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: var(--warn-soft); display: flex; align-items: center; justify-content: center; color: var(--warn); font-weight: 600; font-size: 13px;">! Revisar</div>
+        <div class="role-name">Warn</div>
+        <div class="role-use">Revisão atrasada, precisão caindo, prazos.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: var(--danger-soft); display: flex; align-items: center; justify-content: center; color: var(--danger); font-weight: 600; font-size: 13px;">× Errou</div>
+        <div class="role-name">Danger</div>
+        <div class="role-use">Erros, sequência quebrada, ações destrutivas.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: var(--ink); display: flex; align-items: center; justify-content: center; color: var(--bg-paper); font-family: var(--serif); font-style: italic; font-size: 22px;">Ação</div>
+        <div class="role-name">Ink (primary CTA)</div>
+        <div class="role-use">Botão primário. O azul é da marca; a tinta é da ação.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: var(--bg-paper); border: 1px solid var(--rule-strong); display: flex; align-items: center; justify-content: center; color: var(--ink); font-weight: 600; font-size: 13px;">Cancelar</div>
+        <div class="role-name">Paper (secondary)</div>
+        <div class="role-use">Botão secundário, ações neutras.</div>
+      </div>
+      <div class="role">
+        <div class="role-chip" style="background: var(--bg-paper-soft); border: 1px solid var(--rule); display: flex; align-items: center; justify-content: center; color: var(--ink-3); font-weight: 500; font-size: 13px;">Hover / alt</div>
+        <div class="role-name">Paper-soft</div>
+        <div class="role-use">Hover sutil, fundo de linhas zebradas, blocos quietos.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 02 · TYPOGRAPHY
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="tipografia">
+    <div class="sec-head">
+      <span class="sec-num">№ 02</span>
+      <h2 class="sec-title">Tipografia</h2>
+      <span class="sec-meta">Fraunces para o editorial · Jakarta para a UI</span>
+    </div>
+
+    <p class="sec-intro">
+      Duas famílias, com papéis claros. <em>Fraunces itálico</em> aparece sempre que
+      há intenção editorial — títulos, números, citações, dados estatísticos. <em>Plus
+      Jakarta Sans</em> faz o trabalho braçal: botões, labels, formulários, corpo de
+      texto longo. Quando estiver na dúvida sobre qual usar, pergunte: <em>isso é
+      conteúdo ou é UI?</em> Conteúdo = serifa. UI = sans.
+    </p>
+
+    <div class="type-table">
+      <div class="type-row">
+        <div class="type-label">Display
+          <span class="role">Hero de tela, página de marca</span>
+        </div>
+        <div class="type-sample h-display">Bora papirar.</div>
+        <div class="type-specs">Fraunces Italic 300<br />96 / 0.92 / -0.045em</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">H1
+          <span class="role">Título principal de tela</span>
+        </div>
+        <div class="type-sample h-1">Dashboard.</div>
+        <div class="type-specs">Fraunces Italic 300<br />64 / 0.96 / -0.04em</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">H2
+          <span class="role">Seção dentro de uma tela</span>
+        </div>
+        <div class="type-sample h-2">Próximos blocos de estudo</div>
+        <div class="type-specs">Fraunces Italic 400<br />40 / 1.05 / -0.03em</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">H3
+          <span class="role">Subtítulo, card destacado</span>
+        </div>
+        <div class="type-sample h-3">Reforce princípios constitucionais</div>
+        <div class="type-specs">Fraunces Italic 400<br />26 / 1.15 / -0.025em</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">H4
+          <span class="role">Título de card padrão · UI</span>
+        </div>
+        <div class="type-sample h-4">Direito Constitucional</div>
+        <div class="type-specs">Jakarta 600<br />18 / 1.3 / -0.01em</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Body lg
+          <span class="role">Subtítulo, lede</span>
+        </div>
+        <div class="type-sample body-lg">Você está papirando há 12 dias sem parar. Continua amanhã às 8:00.</div>
+        <div class="type-specs">Jakarta 500<br />16 / 1.6</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Body
+          <span class="role">Texto padrão</span>
+        </div>
+        <div class="type-sample body">Última precisão no tópico caiu para 64%. 20 questões dirigidas devem recuperar até quinta-feira.</div>
+        <div class="type-specs">Jakarta 500<br />14 / 1.55</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Body sm
+          <span class="role">Descrição secundária</span>
+        </div>
+        <div class="type-sample body-sm">60 questões · banca FGV · reserve 1h30 contínua.</div>
+        <div class="type-specs">Jakarta 500<br />13 / 1.5</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Caption
+          <span class="role">Metadados, legendas</span>
+        </div>
+        <div class="type-sample caption">3.421 papireiros resolveram esta questão</div>
+        <div class="type-specs">Jakarta 500<br />12 / 1.45</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Eyebrow
+          <span class="role">Categoria · acima de título</span>
+        </div>
+        <div class="type-sample eyebrow-s">№ 01 · Prática · Constitucional</div>
+        <div class="type-specs">Jakarta 700<br />11 / +0.24em uppercase</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Numeric
+          <span class="role">Stats, KPIs, contagens</span>
+        </div>
+        <div class="type-sample num">12<span style="font-size: 0.5em; color: var(--ink-3); margin-left: 6px;">dias</span></div>
+        <div class="type-specs">Fraunces Italic 400<br />tabular · -0.04em</div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-label">Mono
+          <span class="role">Códigos, IDs, tokens</span>
+        </div>
+        <div class="type-sample mono-s">Q-48201 · #14110d</div>
+        <div class="type-specs">JetBrains Mono 500<br />13 / 1.5</div>
+      </div>
+    </div>
+
+    <!-- usage rules -->
+    <div class="type-rules">
+      <div class="type-rule">
+        <div class="k">Regra · 01</div>
+        <h5>Itálico = conteúdo</h5>
+        <p>
+          O Fraunces itálico carrega a personalidade da marca. Use em
+          <em>títulos, números e citações</em> — nunca em CTAs, labels de form ou
+          texto corrido longo. Itálico em parágrafo cansa a leitura.
+        </p>
+      </div>
+      <div class="type-rule">
+        <div class="k">Regra · 02</div>
+        <h5>O ponto é da marca</h5>
+        <p>
+          Títulos de tela terminam com <em>ponto azul</em> (.) — é a assinatura
+          que veio do logotipo. Outros títulos (h2, h3, h4) não levam o ponto, pra
+          não banalizar o gesto.
+        </p>
+      </div>
+      <div class="type-rule">
+        <div class="k">Regra · 03</div>
+        <h5>Não invente tamanho</h5>
+        <p>
+          Se um número da escala não serve, o problema é o layout, não o tipo. O
+          conjunto cobre <em>todos</em> os casos previstos. Tamanhos fora da escala
+          quebram o ritmo vertical.
+        </p>
+      </div>
+      <div class="type-rule">
+        <div class="k">Regra · 04</div>
+        <h5>Number = serifa itálica</h5>
+        <p>
+          Toda estatística da plataforma (tempo, sequência, %, contagem) usa
+          <em>Fraunces itálico</em> com numerais tabulares. Isso dá personalidade
+          aos números e mantém colunas alinhadas.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 03 · SPACE & FORM
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="espaco">
+    <div class="sec-head">
+      <span class="sec-num">№ 03</span>
+      <h2 class="sec-title">Espaço &amp; forma</h2>
+      <span class="sec-meta">Base 4 · raios pequenos · sombras quase só em popovers</span>
+    </div>
+
+    <p class="sec-intro">
+      Tudo cresce a partir de uma unidade base de <em>4px</em>. Os raios são pequenos
+      e editoriais — papel não é arredondado de mais. As sombras existem apenas
+      quando há sobreposição real (modais, popovers, toasts). Em layout normal,
+      bordas finas fazem o trabalho.
+    </p>
+
+    <!-- Spacing -->
+    <div class="eyebrow">Escala de espaçamento · base 4px</div>
+    <div class="spacer-row">
+      <div class="spacer-item"><div class="spacer-block" style="height: 4px;"></div><div class="spacer-name">1 · 4px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 8px;"></div><div class="spacer-name">2 · 8px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 12px;"></div><div class="spacer-name">3 · 12px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 16px;"></div><div class="spacer-name">4 · 16px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 20px;"></div><div class="spacer-name">5 · 20px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 24px;"></div><div class="spacer-name">6 · 24px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 32px;"></div><div class="spacer-name">8 · 32px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 48px;"></div><div class="spacer-name">12 · 48px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 64px;"></div><div class="spacer-name">16 · 64px</div></div>
+      <div class="spacer-item"><div class="spacer-block" style="height: 96px;"></div><div class="spacer-name">24 · 96px</div></div>
+    </div>
+
+    <!-- Radii + grid -->
+    <div class="two-col" style="margin-top: 28px;">
+      <div>
+        <div class="eyebrow">Raios</div>
+        <div class="radii-row">
+          <div class="radii-item"><div class="radii-box" style="border-radius: 2px;"></div><div class="radii-name">xs · 2</div></div>
+          <div class="radii-item"><div class="radii-box" style="border-radius: 4px;"></div><div class="radii-name">sm · 4</div></div>
+          <div class="radii-item"><div class="radii-box" style="border-radius: 6px;"></div><div class="radii-name">md · 6</div></div>
+          <div class="radii-item"><div class="radii-box" style="border-radius: 8px;"></div><div class="radii-name">lg · 8</div></div>
+          <div class="radii-item"><div class="radii-box" style="border-radius: 12px;"></div><div class="radii-name">xl · 12</div></div>
+          <div class="radii-item"><div class="radii-box" style="border-radius: 999px;"></div><div class="radii-name">pill</div></div>
+        </div>
+        <div style="margin-top: 10px; font-size: 12.5px; color: var(--ink-3); line-height: 1.6;">
+          <strong style="color: var(--ink-2);">sm (4px)</strong> em cards. <strong style="color: var(--ink-2);">md (6px)</strong> em cards densos &amp; tags.
+          <strong style="color: var(--ink-2);">lg (8px)</strong> em botões &amp; inputs. <strong style="color: var(--ink-2);">xl (12px)</strong> em modais &amp; popovers.
+        </div>
+      </div>
+
+      <div>
+        <div class="eyebrow">Grid &amp; container</div>
+        <div class="stat-card" style="margin-top: 18px;">
+          <div class="lab">Container max</div>
+          <h4 style="font-size: 36px; margin-top: 6px;">1240<span style="font-size: 18px; color: var(--ink-3); margin-left: 2px;">px</span></h4>
+          <p style="margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); font-weight: 500; line-height: 1.55;">
+            Padding lateral: 64px desktop · 32px tablet · 20px mobile.
+            Coluna mínima de conteúdo: 320px.
+          </p>
+        </div>
+        <div class="stat-card" style="margin-top: 12px;">
+          <div class="lab">Conteúdo de leitura</div>
+          <h4 style="font-size: 22px; margin-top: 6px;">62ch <span style="font-size: 13px; color: var(--ink-3); font-family: var(--sans); font-style: normal;">· ~640px</span></h4>
+          <p style="margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); font-weight: 500; line-height: 1.55;">
+            Largura máxima de parágrafo. Acima disso, a leitura cansa.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shadows / elevation -->
+    <div class="eyebrow" style="margin-top: 28px;">Elevação</div>
+    <div class="shadow-row">
+      <div class="shadow-card">
+        <div class="shadow-box shadow-flat"></div>
+        <div class="shadow-name">Plana</div>
+        <div class="shadow-use">Default. Cards, blocos. Só borda fina, sem sombra.</div>
+      </div>
+      <div class="shadow-card">
+        <div class="shadow-box shadow-low"></div>
+        <div class="shadow-name">Baixa</div>
+        <div class="shadow-use">Card destacado, hover sobre clicável.</div>
+      </div>
+      <div class="shadow-card">
+        <div class="shadow-box shadow-mid"></div>
+        <div class="shadow-name">Média</div>
+        <div class="shadow-use">Dropdown, popover, toast. Sobreposição leve.</div>
+      </div>
+      <div class="shadow-card">
+        <div class="shadow-box shadow-high"></div>
+        <div class="shadow-name">Alta</div>
+        <div class="shadow-use">Modal, sheet. Quando precisa parar o fundo.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 04 · ICONS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="icones">
+    <div class="sec-head">
+      <span class="sec-num">№ 04</span>
+      <h2 class="sec-title">Iconografia</h2>
+      <span class="sec-meta">Lucide · stroke 1.5 · grid 24px</span>
+    </div>
+
+    <p class="sec-intro">
+      Família única: <em>Lucide</em>, em <em>stroke de 1.5px</em>, tamanho padrão
+      <em>24×24</em>. Em UI compacta (chips, tags), reduzir pra 14–16px e aumentar
+      o stroke pra 1.75. Cor herdada do contexto (<em>currentColor</em>) — quase
+      sempre <em>--ink-2</em>. Ícones decorativos em <em>--ink-3</em>.
+    </p>
+
+    <div class="icon-grid">
+      <!-- a curated subset of Lucide -->
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 12 L21 12 M3 6 L21 6 M3 18 L21 18"/></svg><div class="icon-name">menu</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21 l-4-4"/></svg><div class="icon-name">search</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 9 L12 3 L21 9 L21 20 L3 20 Z M9 20 L9 13 L15 13 L15 20"/></svg><div class="icon-name">home</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M4 4 H20 V20 H4 Z M4 9 H20"/></svg><div class="icon-name">book-open</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M5 4 L19 4 L19 21 L12 17 L5 21 Z"/></svg><div class="icon-name">bookmark</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7 V12 L15 14"/></svg><div class="icon-name">clock</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M8 2 V6 M16 2 V6 M3 10 H21 M5 6 H19 a2 2 0 0 1 2 2 V20 a2 2 0 0 1-2 2 H5 a2 2 0 0 1-2-2 V8 a2 2 0 0 1 2-2"/></svg><div class="icon-name">calendar</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 2 L13 7 L17 7 L9 22 L11 13 L7 13 Z"/></svg><div class="icon-name">flame</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M5 12 L10 17 L20 7"/></svg><div class="icon-name">check</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 6 L18 18 M6 18 L18 6"/></svg><div class="icon-name">x</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 5 V19 M5 12 H19"/></svg><div class="icon-name">plus</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 6 L21 6 M6 6 V20 a2 2 0 0 0 2 2 H16 a2 2 0 0 0 2-2 V6 M9 11 V17 M15 11 V17 M8 6 V4 a2 2 0 0 1 2-2 H14 a2 2 0 0 1 2 2 V6"/></svg><div class="icon-name">trash</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M5 12 L19 12 M13 6 L19 12 L13 18"/></svg><div class="icon-name">arrow</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M8 5 L19 12 L8 19 Z"/></svg><div class="icon-name">play</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 4 L6 20 M18 4 L18 20"/></svg><div class="icon-name">pause</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M4 17 L4 21 L8 21 M20 7 L20 3 L16 3 M14 10 L21 3 M3 21 L10 14"/></svg><div class="icon-name">expand</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 2 V4 M12 20 V22 M4 12 H2 M22 12 H20 M5 5 L6.5 6.5 M17.5 17.5 L19 19 M5 19 L6.5 17.5 M17.5 6.5 L19 5"/><circle cx="12" cy="12" r="4"/></svg><div class="icon-name">sun</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M21 12.5 a9 9 0 1 1-9.5-9.5 a7 7 0 0 0 9.5 9.5 Z"/></svg><div class="icon-name">moon</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M18 8 a6 6 0 0 0-12 0 c0 7-3 9-3 9 H21 s-3-2-3-9 M10 21 a2 2 0 0 0 4 0"/></svg><div class="icon-name">bell</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21 a7 7 0 0 1 14 0"/></svg><div class="icon-name">user</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12 a7 7 0 0 0-.1-1.2 l2-1.5 l-2-3.5 l-2.4 1 a7 7 0 0 0-2-1.2 l-.4-2.6 H10 l-.4 2.6 a7 7 0 0 0-2 1.2 l-2.4-1 l-2 3.5 l2 1.5 a7 7 0 0 0 0 2.4 l-2 1.5 l2 3.5 l2.4-1 a7 7 0 0 0 2 1.2 l.4 2.6 H14 l.4-2.6 a7 7 0 0 0 2-1.2 l2.4 1 l2-3.5 l-2-1.5 a7 7 0 0 0 .2-1.2"/></svg><div class="icon-name">settings</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M21 16 V8 a2 2 0 0 0-1-1.7 l-7-4 a2 2 0 0 0-2 0 l-7 4 A2 2 0 0 0 3 8 v8 a2 2 0 0 0 1 1.7 l7 4 a2 2 0 0 0 2 0 l7-4 A2 2 0 0 0 21 16 Z M3.3 7 L12 12 L20.7 7 M12 22 V12"/></svg><div class="icon-name">package</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 20 V10 M18 20 V4 M6 20 V14"/></svg><div class="icon-name">bar-chart</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 3 V21 H21 M7 14 L11 10 L15 14 L21 8"/></svg><div class="icon-name">trending-up</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M9.9 4.2 L11 2 L12 4 L14 5 L12 6 L11 8 L10 6 L8 5 Z M19 11 L20 13 L22 14 L20 15 L19 17 L18 15 L16 14 L18 13 Z M12 13 L13.5 16 L16.5 17 L13.5 18 L12 21 L10.5 18 L7.5 17 L10.5 16 Z"/></svg><div class="icon-name">sparkles</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M21 11.5 a8.4 8.4 0 0 1-.9 3.8 a8.5 8.5 0 0 1-7.6 4.7 a8.4 8.4 0 0 1-3.8-.9 L3 21 l1.9-5.7 a8.4 8.4 0 0 1-.9-3.8 a8.5 8.5 0 0 1 4.7-7.6 a8.4 8.4 0 0 1 3.8-.9 h.5 a8.5 8.5 0 0 1 8 8 Z"/></svg><div class="icon-name">message</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M14 3 H19 V8 M21 3 L12 12 M19 14 V20 a1 1 0 0 1-1 1 H5 a1 1 0 0 1-1-1 V7 a1 1 0 0 1 1-1 H11"/></svg><div class="icon-name">external</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 17 V19 a2 2 0 0 0 2 2 H19 a2 2 0 0 0 2-2 V17 M7 11 L12 16 L17 11 M12 4 V16"/></svg><div class="icon-name">download</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 21 a9 9 0 1 0-9-9 M3 4 V9 H8"/></svg><div class="icon-name">refresh</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M4 6 H20 M7 12 H17 M10 18 H14"/></svg><div class="icon-name">filter</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M19 14 a4 4 0 0 0-4-4 h-1 V7 a3 3 0 0 0-6 0 a3 3 0 0 0-3 3 a4 4 0 0 0-1 7 H19 a3.5 3.5 0 0 0 0-7 Z"/></svg><div class="icon-name">cloud</div></div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.1 9 a3 3 0 0 1 5.8 1 c0 2-3 3-3 3 M12 17 v.01"/></svg><div class="icon-name">help</div></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 05 · VOICE & LEXICON
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="voz">
+    <div class="sec-head">
+      <span class="sec-num">№ 05</span>
+      <h2 class="sec-title">Voz &amp; léxico</h2>
+      <span class="sec-meta">Papirar / papirando como verbo do produto</span>
+    </div>
+
+    <p class="sec-intro">
+      <em>Papirar</em> é o verbo do produto. A plataforma fala como quem está
+      estudando junto: direta, calorosa, sem formalidade desnecessária — mas sem
+      forçar gíria onde não cabe. Pensa no <em>monitor que você gosta</em>: trata
+      você por nome, conta como você está indo, te empurra de volta pro caderno
+      quando você some.
+    </p>
+
+    <!-- Lexicon -->
+    <div class="lex">
+      <h5>Léxico do produto</h5>
+
+      <div class="lex-row">
+        <div class="lex-word">papirar</div>
+        <div class="lex-meaning">verbo · estudar a fundo</div>
+        <div class="lex-example">"Hoje você <em>papirou</em> 2h14min." · "<em>Papirar</em> 30 questões antes do simulado."</div>
+      </div>
+      <div class="lex-row">
+        <div class="lex-word">papirando</div>
+        <div class="lex-meaning">gerúndio · em ação agora</div>
+        <div class="lex-example">"Você está <em>papirando</em> há 12 dias seguidos." · "Quem está <em>papirando</em> agora: 1.247 pessoas."</div>
+      </div>
+      <div class="lex-row">
+        <div class="lex-word">papireiro · papireira</div>
+        <div class="lex-meaning">substantivo · quem usa a plataforma</div>
+        <div class="lex-example">"3.421 <em>papireiros</em> resolveram esta questão." · "Você é <em>papireiro</em> nível 7."</div>
+      </div>
+      <div class="lex-row">
+        <div class="lex-word">papirada</div>
+        <div class="lex-meaning">substantivo · sessão de estudo</div>
+        <div class="lex-example">"Que <em>papirada</em> hoje, hein?" · "Última <em>papirada</em>: ontem, 23:14."</div>
+      </div>
+      <div class="lex-row">
+        <div class="lex-word">papiraço</div>
+        <div class="lex-meaning">substantivo · maratona, sessão longa</div>
+        <div class="lex-example">"<em>Papiraço</em> de fim de semana." · "Modo <em>papiraço</em>: 4h+ contínuas."</div>
+      </div>
+      <div class="lex-row">
+        <div class="lex-word">marcar a página</div>
+        <div class="lex-meaning">expressão · salvar pra revisão</div>
+        <div class="lex-example">"<em>Marcar página</em> nessa questão." · "12 páginas marcadas pra revisar."</div>
+      </div>
+    </div>
+
+    <!-- Voice yes/no -->
+    <div class="voice-grid" style="margin-top: 22px;">
+      <div class="voice-block yes">
+        <h5>↗ Como a gente fala</h5>
+        <div class="voice-line">
+          <span class="ctx">Saudação</span>
+          <span class="copy">Bom dia, Lucas. Bora papirar?</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Streak</span>
+          <span class="copy">Você está papirando há 12 dias seguidos.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Empty state</span>
+          <span class="copy">Nada papirado por aqui ainda. Começa por uma questão fácil?</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Acerto</span>
+          <span class="copy">Boa. Marcou ponto pra revisão de quinta.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Erro</span>
+          <span class="copy">Errou — vai pra trilha de revisão. Você vê ela de novo em 3 dias.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Notificação</span>
+          <span class="copy">Tá na hora de papirar. Bloco das 8:00 abre em 5min.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">CTA</span>
+          <span class="copy">Papirar agora · Marcar página · Ver gabarito</span>
+        </div>
+      </div>
+
+      <div class="voice-block no">
+        <h5>↘ Como a gente NÃO fala</h5>
+        <div class="voice-line">
+          <span class="ctx">Saudação</span>
+          <span class="copy">Olá, usuário. Bem-vindo à plataforma.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Streak</span>
+          <span class="copy">Sua sequência de estudos atual é de 12 dias.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Empty state</span>
+          <span class="copy">Nenhum dado disponível no momento.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Acerto</span>
+          <span class="copy">Resposta correta. Item adicionado à revisão.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Erro</span>
+          <span class="copy">Resposta incorreta. Reveja o conteúdo.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">Notificação</span>
+          <span class="copy">Lembrete: sessão de estudo às 08:00.</span>
+        </div>
+        <div class="voice-line">
+          <span class="ctx">CTA</span>
+          <span class="copy">Iniciar sessão · Adicionar à revisão · Visualizar resposta</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="sec-intro" style="margin-top: 24px;">
+      <strong>Limite:</strong> a gíria <em>nunca</em> entra em conteúdo legal (termos,
+      privacidade), em mensagens de erro de sistema, ou onde o usuário precisa de
+      clareza absoluta. "Senha incorreta." continua sendo "Senha incorreta." — não
+      vira "Eita, deu ruim na senha."
+    </p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 06 · ILLUSTRATION
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="ilustracao">
+    <div class="sec-head">
+      <span class="sec-num">№ 06</span>
+      <h2 class="sec-title">Ilustração</h2>
+      <span class="sec-meta">Linguagem de papel: folhas, dobras, anotações</span>
+    </div>
+
+    <p class="sec-intro">
+      O sistema de ilustração é uma extensão do logotipo. Todo desenho é feito de
+      <em>papel</em>: folhas planas, com dobras, sombras chapadas, pequenas anotações
+      a marca-texto. Sem gradientes complexos, sem 3D, sem personagens. Quando uma
+      tela precisa de uma imagem, ela ganha uma <em>cena de mesa de estudo</em>.
+    </p>
+
+    <div class="illos">
+      <div class="illo-card">
+        <div class="illo-stage">
+          <!-- empty state: blank page with dog-ear -->
+          <svg viewBox="0 0 200 150" width="200" height="150">
+            <!-- shadow page behind -->
+            <rect x="50" y="30" width="100" height="110" fill="#ece4d2" stroke="#b6ad9c" stroke-width="1"/>
+            <!-- front page with dog-ear -->
+            <path d="M 40 20 L 130 20 L 150 40 L 150 130 L 40 130 Z" fill="#ffffff" stroke="#14110d" stroke-width="1.5"/>
+            <path d="M 130 20 L 130 40 L 150 40 Z" fill="#ebe6d8" stroke="#14110d" stroke-width="1.5"/>
+            <!-- lines on page -->
+            <line x1="55" y1="55" x2="135" y2="55" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="55" y1="70" x2="125" y2="70" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="55" y1="85" x2="130" y2="85" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="55" y1="100" x2="115" y2="100" stroke="#b6ad9c" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="illo-meta">
+          <div class="label">Empty state · padrão</div>
+          <p>Folha em branco com canto dobrado. Para listas vazias, busca sem resultado, primeira sessão.</p>
+        </div>
+      </div>
+
+      <div class="illo-card">
+        <div class="illo-stage">
+          <!-- stack of pages with highlight -->
+          <svg viewBox="0 0 220 150" width="220" height="150">
+            <!-- back page -->
+            <rect x="30" y="40" width="120" height="100" fill="#ebe6d8" stroke="#b6ad9c" stroke-width="1" transform="rotate(-4 90 90)"/>
+            <!-- middle page -->
+            <rect x="50" y="30" width="120" height="100" fill="#ffffff" stroke="#14110d" stroke-width="1.25" transform="rotate(2 110 80)"/>
+            <!-- top page with highlight band -->
+            <g>
+              <rect x="60" y="20" width="120" height="100" fill="#ffffff" stroke="#14110d" stroke-width="1.5"/>
+              <!-- highlight band -->
+              <rect x="68" y="40" width="100" height="10" fill="#f4d04e" opacity="0.85"/>
+              <line x1="68" y1="60" x2="170" y2="60" stroke="#847b6c" stroke-width="1"/>
+              <line x1="68" y1="72" x2="155" y2="72" stroke="#847b6c" stroke-width="1"/>
+              <line x1="68" y1="84" x2="160" y2="84" stroke="#847b6c" stroke-width="1"/>
+              <line x1="68" y1="96" x2="140" y2="96" stroke="#847b6c" stroke-width="1"/>
+            </g>
+          </svg>
+        </div>
+        <div class="illo-meta">
+          <div class="label">Conteúdo marcado</div>
+          <p>Pilha de folhas com marca-texto. Para revisão, anotações salvas, conteúdo grifado.</p>
+        </div>
+      </div>
+
+      <div class="illo-card">
+        <div class="illo-stage">
+          <!-- pencil + page  -->
+          <svg viewBox="0 0 220 150" width="220" height="150">
+            <rect x="50" y="30" width="100" height="100" fill="#ffffff" stroke="#14110d" stroke-width="1.5"/>
+            <!-- check on page -->
+            <path d="M 65 75 L 80 90 L 110 55" fill="none" stroke="#4d7c3f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- pencil -->
+            <g transform="rotate(35 165 110)">
+              <rect x="115" y="105" width="80" height="10" fill="#1d4ed8"/>
+              <rect x="115" y="105" width="14" height="10" fill="#14110d"/>
+              <path d="M 195 105 L 205 110 L 195 115 Z" fill="#f4d04e"/>
+              <path d="M 205 110 L 210 110 L 207 113 Z" fill="#14110d"/>
+            </g>
+          </svg>
+        </div>
+        <div class="illo-meta">
+          <div class="label">Sucesso · meta batida</div>
+          <p>Folha com check verde + lápis. Para acertos, conclusões, sequências mantidas.</p>
+        </div>
+      </div>
+
+      <div class="illo-card">
+        <div class="illo-stage">
+          <!-- folded plane -->
+          <svg viewBox="0 0 220 150" width="220" height="150">
+            <path d="M 30 110 L 190 30 L 100 80 L 130 95 L 100 90 L 80 130 Z" fill="#ffffff" stroke="#14110d" stroke-width="1.5" stroke-linejoin="round"/>
+            <line x1="100" y1="80" x2="80" y2="130" stroke="#14110d" stroke-width="1"/>
+            <line x1="30" y1="110" x2="100" y2="80" stroke="#14110d" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="illo-meta">
+          <div class="label">Envio · achievement</div>
+          <p>Avião de papel. Para mensagens enviadas, badges, prêmios, conclusões de plano.</p>
+        </div>
+      </div>
+
+      <div class="illo-card">
+        <div class="illo-stage">
+          <!-- notebook spread -->
+          <svg viewBox="0 0 220 150" width="220" height="150">
+            <!-- left page -->
+            <rect x="30" y="25" width="80" height="110" fill="#ffffff" stroke="#14110d" stroke-width="1.5"/>
+            <!-- right page -->
+            <rect x="110" y="25" width="80" height="110" fill="#ffffff" stroke="#14110d" stroke-width="1.5"/>
+            <!-- spine -->
+            <line x1="110" y1="25" x2="110" y2="135" stroke="#14110d" stroke-width="1.5"/>
+            <!-- ring binding -->
+            <circle cx="110" cy="40" r="2.5" fill="none" stroke="#14110d" stroke-width="1.2"/>
+            <circle cx="110" cy="65" r="2.5" fill="none" stroke="#14110d" stroke-width="1.2"/>
+            <circle cx="110" cy="90" r="2.5" fill="none" stroke="#14110d" stroke-width="1.2"/>
+            <circle cx="110" cy="115" r="2.5" fill="none" stroke="#14110d" stroke-width="1.2"/>
+            <!-- lines left -->
+            <line x1="38" y1="50" x2="100" y2="50" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="38" y1="62" x2="100" y2="62" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="38" y1="74" x2="92" y2="74" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="38" y1="86" x2="100" y2="86" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="38" y1="98" x2="86" y2="98" stroke="#b6ad9c" stroke-width="1"/>
+            <!-- right: blue underline -->
+            <line x1="120" y1="50" x2="180" y2="50" stroke="#1d4ed8" stroke-width="2"/>
+            <line x1="120" y1="68" x2="170" y2="68" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="120" y1="80" x2="178" y2="80" stroke="#b6ad9c" stroke-width="1"/>
+            <line x1="120" y1="92" x2="160" y2="92" stroke="#b6ad9c" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="illo-meta">
+          <div class="label">Caderno aberto</div>
+          <p>Para plano de estudos, trilha aberta, conteúdo de estudo. O destaque azul ancora o "onde você está".</p>
+        </div>
+      </div>
+
+      <div class="illo-card">
+        <div class="illo-stage">
+          <!-- sticky note -->
+          <svg viewBox="0 0 220 150" width="220" height="150">
+            <g transform="rotate(-4 110 80)">
+              <rect x="60" y="25" width="100" height="100" fill="#f4d04e"/>
+              <path d="M 140 25 L 160 25 L 160 45 Z" fill="#d9b536"/>
+              <path d="M 140 25 L 160 45 L 140 45 Z" fill="#fce18b"/>
+              <line x1="72" y1="60" x2="140" y2="60" stroke="#14110d" stroke-width="1.2" opacity="0.6"/>
+              <line x1="72" y1="75" x2="130" y2="75" stroke="#14110d" stroke-width="1.2" opacity="0.6"/>
+              <line x1="72" y1="90" x2="135" y2="90" stroke="#14110d" stroke-width="1.2" opacity="0.6"/>
+              <line x1="72" y1="105" x2="120" y2="105" stroke="#14110d" stroke-width="1.2" opacity="0.6"/>
+            </g>
+          </svg>
+        </div>
+        <div class="illo-meta">
+          <div class="label">Lembrete · post-it</div>
+          <p>Para notificações ativas, prazos, alertas. Usa o highlight amarelo como cor primária.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="type-rule" style="margin-top: 22px;">
+      <div class="k">Princípios</div>
+      <h5>O que toda ilustração tem em comum</h5>
+      <p>
+        <em>Stroke preto 1.5px.</em> Sempre. Linha consistente que amarra o sistema com a iconografia.<br />
+        <em>Sombra chapada</em>, nunca degradê — uma cor única mais escura pra dar volume.<br />
+        <em>Marca-texto amarelo</em> como acento secundário pode aparecer.<br />
+        <em>Sem rosto, sem mãos, sem personagens</em> — a plataforma é sobre o conteúdo, não sobre quem está estudando.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 07 · MOTION
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="movimento">
+    <div class="sec-head">
+      <span class="sec-num">№ 07</span>
+      <h2 class="sec-title">Movimento</h2>
+      <span class="sec-meta">Curto · funcional · nunca decorativo</span>
+    </div>
+
+    <p class="sec-intro">
+      Movimento serve pra <em>guiar o olho</em>, não pra entreter. Tudo é curto:
+      micro-interações em <em>120ms</em>, transições de painel em <em>240ms</em>, no
+      máximo <em>400ms</em>. Easing padrão é <em>ease-out</em> (entra rápido, freia
+      no fim) — é o que parece mais natural na maioria dos casos.
+    </p>
+
+    <div class="ease-row">
+      <div class="ease-card">
+        <h6>Micro · 120ms</h6>
+        <p>Hover, focus, toggle. Coisa de quase invisível.</p>
+        <div class="ease-curve">
+          <svg viewBox="0 0 100 60" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+            <path d="M 0 60 Q 5 0, 100 0" stroke="var(--accent)" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <div class="ease-spec">cubic-bezier(0.2, 0.8, 0.2, 1) · ease-out</div>
+      </div>
+      <div class="ease-card">
+        <h6>Standard · 240ms</h6>
+        <p>Dropdown, popover, tab change. A maioria das transições.</p>
+        <div class="ease-curve">
+          <svg viewBox="0 0 100 60" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+            <path d="M 0 60 C 20 60, 30 0, 100 0" stroke="var(--accent)" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <div class="ease-spec">cubic-bezier(0.16, 1, 0.3, 1) · expo-out</div>
+      </div>
+      <div class="ease-card">
+        <h6>Slow · 400ms</h6>
+        <p>Modal, sheet, página inteira. Quando vale chamar atenção.</p>
+        <div class="ease-curve">
+          <svg viewBox="0 0 100 60" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+            <path d="M 0 60 C 40 60, 50 0, 100 0" stroke="var(--accent)" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <div class="ease-spec">cubic-bezier(0.32, 0.72, 0, 1) · spring-out</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 08 · COMPONENTS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="componentes">
+    <div class="sec-head">
+      <span class="sec-num">№ 08</span>
+      <h2 class="sec-title">Componentes</h2>
+      <span class="sec-meta">Os blocos de construção · estados &amp; variantes</span>
+    </div>
+
+    <p class="sec-intro">
+      Os componentes seguem todos os tokens das seções anteriores. Quando algo
+      parecer "fora", investigue qual token está errado — não invente um novo
+      componente. Cada componente abaixo aparece em <em>claro</em> e <em>escuro</em>
+      pra confirmar que vive nos dois ambientes.
+    </p>
+
+    <!-- BUTTONS -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Botões</h4>
+        <div class="note">Primário em <em>tinta</em>, não em azul. O azul é da marca; a tinta é da ação. Radius 8px. Altura 38px (default), 30 (sm), 46 (lg).</div>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Primário</div>
+        <button class="btn btn-primary">Papirar agora</button>
+        <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5 L19 12 L8 19 Z" fill="currentColor" stroke="none"/></svg>Iniciar sessão</button>
+        <button class="btn btn-primary btn-sm">Salvar</button>
+        <button class="btn btn-primary btn-lg">Começar a papirar</button>
+        <button class="btn btn-primary" disabled>Disabled</button>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Secundário</div>
+        <button class="btn btn-secondary">Marcar página</button>
+        <button class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6 H20 M7 12 H17 M10 18 H14"/></svg>Filtrar</button>
+        <button class="btn btn-secondary btn-sm">Cancelar</button>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Ghost</div>
+        <button class="btn btn-ghost">Ver tudo</button>
+        <button class="btn btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12 L19 12 M13 6 L19 12 L13 18"/></svg>Continuar</button>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Link</div>
+        <button class="btn btn-link">Ver planejamento da semana</button>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Destrutivo</div>
+        <button class="btn btn-danger">Apagar trilha</button>
+      </div>
+    </div>
+
+    <!-- Same buttons in DARK -->
+    <div class="comp-group dark" style="background: #1a1612; border-color: rgba(236,228,210,0.16); color: #ece4d2;">
+      <div class="comp-head" style="border-color: rgba(236,228,210,0.10);">
+        <h4 style="color: #ece4d2;">Botões · escuro</h4>
+        <div class="note" style="color: #8e8675;">Mesma estrutura, tokens dark. Primário inverte: passa a ser creme sobre tinta-paper.</div>
+      </div>
+
+      <div class="comp-row" style="border-color: rgba(236,228,210,0.10);">
+        <div class="label" style="color: #8e8675;">Primário</div>
+        <button class="btn btn-primary" style="background: #ece4d2; color: #14110d;">Papirar agora</button>
+        <button class="btn btn-primary btn-sm" style="background: #ece4d2; color: #14110d;">Salvar</button>
+      </div>
+      <div class="comp-row" style="border-color: rgba(236,228,210,0.10);">
+        <div class="label" style="color: #8e8675;">Secundário</div>
+        <button class="btn btn-secondary" style="background: transparent; color: #ece4d2; border-color: rgba(236,228,210,0.28);">Marcar página</button>
+      </div>
+      <div class="comp-row" style="border-color: rgba(236,228,210,0.10);">
+        <div class="label" style="color: #8e8675;">Ghost</div>
+        <button class="btn btn-ghost" style="color: #ece4d2;">Ver tudo</button>
+      </div>
+      <div class="comp-row" style="border-color: rgba(236,228,210,0.10);">
+        <div class="label" style="color: #8e8675;">Link</div>
+        <button class="btn btn-link" style="color: #93b4ff; text-decoration-color: rgba(147,180,255,0.40);">Ver planejamento</button>
+      </div>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Inputs &amp; formulários</h4>
+        <div class="note">Mesma altura dos botões (38px). Foco com anel azul de 3px. Erros com borda + label vermelha — copy direto, sem "por favor".</div>
+      </div>
+
+      <div class="comp-row" style="gap: 32px; align-items: flex-start;">
+        <div class="field">
+          <label>E-mail</label>
+          <input class="input" placeholder="seu@email.com" />
+          <span class="hint">Usamos pra avisar quando você some.</span>
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input class="input" type="password" value="••••••" />
+          <span class="hint">Mínimo 8 caracteres.</span>
+        </div>
+        <div class="field">
+          <label>Concurso-alvo</label>
+          <input class="input" value="PC-BA · Investigador" />
+          <span class="hint">Pode trocar a qualquer momento.</span>
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input class="input err" type="password" value="123" />
+          <span class="err">Curta demais — fica fácil de quebrar.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAGS -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Tags &amp; chips</h4>
+        <div class="note">Para banca, nível, status, conquistas. Altura 22px. Cor herdada do papel semântico.</div>
+      </div>
+      <div class="comp-row">
+        <div class="label">Neutra</div>
+        <span class="tag">FGV</span>
+        <span class="tag">Médio</span>
+        <span class="tag">2024</span>
+        <span class="tag">Direito Constitucional</span>
+      </div>
+      <div class="comp-row">
+        <div class="label">Estado</div>
+        <span class="tag accent">Agora</span>
+        <span class="tag success">✓ Acertou · 2x</span>
+        <span class="tag warn">! Revisar</span>
+        <span class="tag danger">× Errou · 3x</span>
+        <span class="tag highlight">Marcado</span>
+      </div>
+    </div>
+
+    <!-- TABS / SEGMENTED -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Tabs &amp; segmentado</h4>
+        <div class="note">Tabs (pill) pra navegação dentro de tela. Segmentado pra filtros binários ou modos.</div>
+      </div>
+      <div class="comp-row">
+        <div class="label">Tabs</div>
+        <div class="tabs">
+          <button class="tab-btn active">Hoje</button>
+          <button class="tab-btn">Semana</button>
+          <button class="tab-btn">Mês</button>
+          <button class="tab-btn">Tudo</button>
+        </div>
+      </div>
+      <div class="comp-row">
+        <div class="label">Segmentado</div>
+        <div class="seg">
+          <button class="seg-btn active">Teoria</button>
+          <button class="seg-btn">Questões</button>
+          <button class="seg-btn">Flashcards</button>
+        </div>
+      </div>
+      <div class="comp-row">
+        <div class="label">Progress</div>
+        <div class="progress"><div class="fill" style="width: 64%;"></div></div>
+        <div class="progress accent"><div class="fill" style="width: 38%;"></div></div>
+        <div class="progress highlight"><div class="fill" style="width: 82%;"></div></div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Cards</h4>
+        <div class="note">Quase sempre planos (sem sombra). Border 1px + paper-soft pra alternar. Padding interno: 18–24px.</div>
+      </div>
+      <div class="comp-row" style="align-items: flex-start;">
+        <div class="card-demo">
+          <div class="eyebrow-s">Próximo bloco</div>
+          <h5>Direito Constitucional</h5>
+          <p>Controle de constitucionalidade · Teoria + resumo · 1h30</p>
+          <div style="margin-top: 14px; display: flex; gap: 8px;">
+            <button class="btn btn-primary btn-sm">Papirar agora</button>
+            <button class="btn btn-ghost btn-sm">Reagendar</button>
+          </div>
+        </div>
+
+        <div class="card-demo">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.9 4.2 L11 2 L12 4 L14 5 L12 6 L11 8 L10 6 L8 5 Z M19 11 L20 13 L22 14 L20 15 L19 17 L18 15 L16 14 L18 13 Z M12 13 L13.5 16 L16.5 17 L13.5 18 L12 21 L10.5 18 L7.5 17 L10.5 16 Z"/>
+            </svg>
+            <div class="eyebrow-s" style="color: var(--accent);">Dica · IA</div>
+          </div>
+          <h5>Reforce princípios constitucionais</h5>
+          <p>Sua precisão no tópico caiu pra 64%. <span class="highlight-text">20 questões dirigidas</span> deveriam recuperar até quinta.</p>
+          <div style="margin-top: 14px;">
+            <button class="btn btn-primary btn-sm">Aceitar sugestão</button>
+          </div>
+        </div>
+
+        <div class="card-demo" style="background: var(--bg-paper-soft); border: 1px solid var(--rule);">
+          <div class="eyebrow-s">Concurso-alvo</div>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
+            <span style="font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 44px; color: var(--ink); letter-spacing: -0.04em; line-height: 1;">83</span>
+            <span style="font-size: 13px; font-weight: 600; color: var(--ink-2);">dias até a prova</span>
+          </div>
+          <p style="margin-top: 6px;">PC-BA Investigador · edital 2026</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Toasts &amp; feedback</h4>
+        <div class="note">Aparece em <em>baixo-direita</em>, soma 240ms. Stack vertical, até 3 visíveis. Linguagem direta, com voz de papirando.</div>
+      </div>
+      <div class="comp-row" style="align-items: flex-start; gap: 20px;">
+        <div class="toast success">
+          <div class="dot"></div>
+          <div>
+            <h6>Boa, acertou.</h6>
+            <p>Marcou ponto pra revisão de quinta. Próxima questão vem aí.</p>
+          </div>
+        </div>
+        <div class="toast warn">
+          <div class="dot"></div>
+          <div>
+            <h6>Tá quase quebrando o streak.</h6>
+            <p>Você tem até meia-noite pra papirar pelo menos 15 minutos hoje.</p>
+          </div>
+        </div>
+        <div class="toast danger">
+          <div class="dot"></div>
+          <div>
+            <h6>Sessão pausada por inatividade.</h6>
+            <p>Voltamos exatamente onde você parou.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI / PAPIRINHO SURFACES -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Surfaces de IA · <em style="font-family: var(--serif); font-style: italic; color: var(--ink);">Bizu</em></h4>
+        <div class="note">Tudo que vier da <em>IA</em> ganha o tratamento de degradê azul → índigo com brilho em movimento. Não é decoração — é <em>linguagem</em>: separa o que a máquina sugeriu do que o professor / o sistema afirmam.</div>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Botão IA</div>
+        <button class="btn-ai">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.5 8.5 L19 10 L13.5 11.5 L12 17 L10.5 11.5 L5 10 L10.5 8.5 Z M18 16 L18.7 18 L20.5 18.5 L18.7 19 L18 21 L17.3 19 L15.5 18.5 L17.3 18 Z"/></svg>
+          Conversar com o Bizu
+        </button>
+        <button class="btn-ai btn-ai-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.5 8.5 L19 10 L13.5 11.5 L12 17 L10.5 11.5 L5 10 L10.5 8.5 Z"/></svg>
+          Aceitar sugestão
+        </button>
+      </div>
+
+      <div class="comp-row">
+        <div class="label">Tag IA</div>
+        <span class="tag-ai">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.5 8.5 L19 10 L13.5 11.5 L12 17 L10.5 11.5 L5 10 L10.5 8.5 Z"/></svg>
+          Bizu IA
+        </span>
+        <span class="tag-ai">Gerado por IA</span>
+        <span style="font-size: 13px; color: var(--ink-2); font-weight: 500;">
+          Pode aparecer também como <span class="ai-accent">IA</span> dentro de eyebrows.
+        </span>
+      </div>
+
+      <div class="comp-row" style="align-items: flex-start; gap: 18px;">
+        <div class="label" style="padding-top: 14px;">Card IA</div>
+        <div class="card-ai" style="width: 320px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="tag-ai">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.5 8.5 L19 10 L13.5 11.5 L12 17 L10.5 11.5 L5 10 L10.5 8.5 Z"/></svg>
+              Bizu IA
+            </span>
+            <span style="font-size: 10.5px; font-weight: 600; color: var(--ink-3); letter-spacing: 0.04em;">analisou seu desempenho</span>
+          </div>
+          <h5 style="margin: 12px 0 4px; font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;">
+            Reforça princípios constitucionais
+          </h5>
+          <p style="margin: 0; font-size: 13px; color: var(--ink-3); font-weight: 500; line-height: 1.5;">
+            Sua precisão caiu pra 64%. <span class="highlight-text">20 questões dirigidas</span> recuperam até quinta.
+          </p>
+          <button class="btn-ai btn-ai-sm" style="margin-top: 12px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.5 8.5 L19 10 L13.5 11.5 L12 17 L10.5 11.5 L5 10 L10.5 8.5 Z"/></svg>
+            Aceitar sugestão
+          </button>
+        </div>
+        <div style="flex: 1; max-width: 440px;">
+          <div class="k" style="color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;">Regras</div>
+          <p style="margin: 10px 0 0; font-size: 13px; color: var(--ink-2); line-height: 1.65;">
+            <em style="font-family: var(--serif); font-style: italic; color: var(--ink); font-weight: 500;">Use com economia.</em>
+            Só em superfícies onde a <em>IA é a fonte</em> — sugestões, explicações geradas, geração de conteúdo,
+            assistente. Nunca aplicar em ações comuns (salvar, navegar, filtrar) só pra "deixar bonito".
+            Esse degradê é da <em>casa do Bizu</em>. Se usar em todo lugar, perde o sinal.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE example -->
+    <div class="comp-group">
+      <div class="comp-head">
+        <h4>Empty states</h4>
+        <div class="note">Sempre: ilustração + título + 1 frase + 1 CTA. Nunca: 4 CTAs ou texto longo.</div>
+      </div>
+      <div class="comp-row" style="justify-content: center; padding: 32px 0; flex-direction: column; gap: 16px;">
+        <svg viewBox="0 0 200 150" width="180" height="135">
+          <rect x="50" y="30" width="100" height="110" fill="#ece4d2" stroke="#b6ad9c" stroke-width="1"/>
+          <path d="M 40 20 L 130 20 L 150 40 L 150 130 L 40 130 Z" fill="#ffffff" stroke="#14110d" stroke-width="1.5"/>
+          <path d="M 130 20 L 130 40 L 150 40 Z" fill="#ebe6d8" stroke="#14110d" stroke-width="1.5"/>
+          <line x1="55" y1="55" x2="135" y2="55" stroke="#b6ad9c" stroke-width="1"/>
+          <line x1="55" y1="70" x2="125" y2="70" stroke="#b6ad9c" stroke-width="1"/>
+          <line x1="55" y1="85" x2="130" y2="85" stroke="#b6ad9c" stroke-width="1"/>
+        </svg>
+        <div style="font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 28px; color: var(--ink); letter-spacing: -0.025em; text-align: center;">
+          Nada papirado por aqui ainda.
+        </div>
+        <div style="font-size: 14px; color: var(--ink-3); font-weight: 500; max-width: 360px; text-align: center; line-height: 1.55;">
+          Suas questões marcadas pra revisão vão aparecer aqui. Começa por uma fácil?
+        </div>
+        <button class="btn btn-primary">Resolver uma fácil</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════ -->
+  <footer style="margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--rule-strong); display: flex; justify-content: space-between; align-items: baseline; gap: 24px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="mark" style="--mark-size: 28px; --mark-fold: 7px; --mark-radius: 2px;">
+        <div class="mark-tile"></div>
+        <div class="mark-fold"></div>
+        <div class="mark-p">P</div>
+      </div>
+      <span class="wm" style="font-size: 22px;">Papirando<span class="dot">.</span></span>
+    </div>
+    <div class="eyebrow">Brandbook v1.0 · 16 mai 2026 · feito pra durar</div>
+  </footer>
+
+</div>
+
+</body>
+</html>
