@@ -1,8 +1,54 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Bell, Cpu, LogOut, Menu, Search, ShieldAlert, UserCircle2 } from 'lucide-react';
-import { checkAiHealth } from '../lib/aiClient';
+import React, { useMemo, useState } from 'react';
+import { Bell, Lightbulb, LogOut, Menu, Search, ShieldAlert, Sparkles, UserCircle2 } from 'lucide-react';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
+
+const SEARCH_ITEMS_BASE = [
+  { id: 'home', label: 'Início', group: 'Principal' },
+  { id: 'planos', label: 'Meus cursos', group: 'Principal' },
+  { id: 'concursos', label: 'Objetivos de estudo', group: 'Principal' },
+  { id: 'lembretes', label: 'Lembretes', group: 'Principal' },
+  { id: 'disciplinas', label: 'Disciplinas', group: 'Estudos' },
+  { id: 'edital', label: 'Edital verticalizado', group: 'Estudos' },
+  { id: 'planejamento', label: 'Planejamento', group: 'Estudos' },
+  { id: 'metas', label: 'Metas semanais', group: 'Estudos' },
+  { id: 'historico', label: 'Histórico', group: 'Estudos' },
+  { id: 'estatisticas', label: 'Estatísticas', group: 'Estudos' },
+  { id: 'sessoes', label: 'Sessões', group: 'Prática' },
+  { id: 'flashcards', label: 'Flashcards', group: 'Prática' },
+  { id: 'revisoes', label: 'Revisões', group: 'Prática' },
+  { id: 'questoes', label: 'Questões', group: 'Prática' },
+  { id: 'simulados', label: 'Simulados', group: 'Prática' },
+  { id: 'redacoes', label: 'Redações', group: 'Prática' },
+  { id: 'materiais', label: 'Materiais PDF', group: 'Biblioteca' },
+  { id: 'audiobooks', label: 'Audiolivros', group: 'Biblioteca' },
+  { id: 'mapas', label: 'Mapas mentais', group: 'Biblioteca' },
+  { id: 'legislacao', label: 'Legislação', group: 'Biblioteca' },
+  { id: 'edital_questao', label: 'Edital em questão', group: 'Biblioteca' },
+  { id: 'comunidades', label: 'Comunidade', group: 'Apoio' },
+  { id: 'esquadroes', label: 'Esquadrões', group: 'Apoio' },
+  { id: 'conciliar', label: 'Conciliador', group: 'Apoio' },
+  { id: 'instagram', label: 'Instagram', group: 'Apoio' },
+  { id: 'aplicativos', label: 'Aplicativos', group: 'Apoio' },
+  { id: 'bem_estar', label: 'Bem-estar', group: 'Apoio' },
+  { id: 'convide_ganhe', label: 'Convide e ganhe', group: 'Apoio' },
+  { id: 'perfil', label: 'Perfil', group: 'Conta' },
+  { id: 'assinatura', label: 'Assinatura', group: 'Conta' },
+];
+
+const SEARCH_ITEMS_ADMIN = Object.entries(ADMIN_TAB_TITLES).map(([id, label]) => ({
+  id,
+  label: `Admin · ${label}`,
+  group: 'Admin',
+}));
+
+function normalizeSearch(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
 
 function formatTitle(activeTab) {
   if (activeTab === 'home') return 'Painel inicial';
@@ -27,9 +73,12 @@ export default function Header({
   onOpenMobileNav,
   subscriptionPlan = 'gratuito',
   onOpenAssinatura,
+  isAdmin = false,
+  onNavigate,
 }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [aiStatus, setAiStatus] = useState({ provider: 'offline', status: 'offline' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const displayName = useMemo(() => {
     const capitalizeFirst = (value = '') => {
@@ -43,21 +92,25 @@ export default function Header({
     return capitalizeFirst(raw.split('@')[0]);
   }, [currentUserEmail, currentUsername]);
 
-  useEffect(() => {
-    let ignore = false;
-    const refreshStatus = async () => {
-      const status = await checkAiHealth();
-      if (!ignore) setAiStatus(status);
-    };
-    refreshStatus();
-    const intervalId = window.setInterval(refreshStatus, 60000);
-    return () => {
-      ignore = true;
-      window.clearInterval(intervalId);
-    };
-  }, []);
+  const searchItems = useMemo(
+    () => (isAdmin ? [...SEARCH_ITEMS_BASE, ...SEARCH_ITEMS_ADMIN] : SEARCH_ITEMS_BASE),
+    [isAdmin]
+  );
 
-  const aiOnline = aiStatus?.provider && aiStatus.provider !== 'offline';
+  const searchResults = useMemo(() => {
+    const query = normalizeSearch(searchQuery);
+    if (!query) return [];
+    return searchItems
+      .filter((item) => normalizeSearch(`${item.label} ${item.group} ${item.id}`).includes(query))
+      .slice(0, 8);
+  }, [searchItems, searchQuery]);
+
+  const handleSearchSelect = (item) => {
+    if (!item?.id) return;
+    setSearchQuery('');
+    setIsSearchOpen(false);
+    onNavigate?.(item.id);
+  };
 
   const breadcrumb = (() => {
     const key = String(activeTab || 'home');
@@ -123,9 +176,71 @@ export default function Header({
         }} />
         <input
           className="pl-input"
-          placeholder="Buscar…"
+          placeholder="Buscar..."
+          value={searchQuery}
+          onChange={(event) => {
+            setSearchQuery(event.target.value);
+            setIsSearchOpen(true);
+          }}
+          onFocus={() => setIsSearchOpen(true)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && searchResults[0]) {
+              event.preventDefault();
+              handleSearchSelect(searchResults[0]);
+            }
+            if (event.key === 'Escape') {
+              setIsSearchOpen(false);
+            }
+          }}
           style={{ width: '100%', paddingLeft: 30, height: 32, fontSize: 12.5 }}
         />
+        {isSearchOpen && searchQuery ? (
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 'calc(100% + 6px)',
+              border: '1px solid var(--pl-rule-2)',
+              borderRadius: 8,
+              background: 'var(--pl-surface)',
+              boxShadow: 'var(--pl-sh-mid)',
+              overflow: 'hidden',
+              zIndex: 50,
+            }}
+          >
+            {searchResults.length === 0 ? (
+              <div style={{ padding: '11px 12px', color: 'var(--pl-ink-3)', fontSize: 12.5 }}>
+                Nenhum atalho encontrado.
+              </div>
+            ) : (
+              searchResults.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleSearchSelect(item)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    padding: '9px 12px',
+                    border: 0,
+                    borderBottom: '1px solid var(--pl-rule)',
+                    background: 'transparent',
+                    color: 'var(--pl-ink)',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ fontSize: 12.5, fontWeight: 700 }}>{item.label}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--pl-ink-3)' }}>{item.group}</span>
+                </button>
+              ))
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Right actions */}
@@ -134,9 +249,10 @@ export default function Header({
           <SubscriptionPlanSeal planId={subscriptionPlan} onClick={onOpenAssinatura} />
         )}
 
-        {/* AI status pill */}
-        <div
-          title={aiOnline ? 'Serviço de IA disponível' : 'Serviço de IA indisponível'}
+        <button
+          type="button"
+          title="Em breve: assistente IA da plataforma para orientar estudos, materiais e próximos passos."
+          onClick={() => window.alert('Em breve: o assistente IA da plataforma vai ajudar a estruturar estudos, materiais e próximos passos.')}
           style={{
             display: 'none',
             alignItems: 'center', gap: 5,
@@ -144,19 +260,14 @@ export default function Header({
             border: '1px solid var(--pl-rule-strong)',
             background: 'var(--pl-surface-2)',
             fontSize: 11.5, fontWeight: 600, color: 'var(--pl-ink-3)',
-            cursor: 'default',
+            cursor: 'pointer',
           }}
           className="md:!flex"
         >
-          <Cpu size={12} strokeWidth={1.75} />
-          <span
-            style={{
-              width: 6, height: 6, borderRadius: 999,
-              background: aiOnline ? 'var(--pl-success)' : 'var(--pl-ink-5)',
-            }}
-          />
-          <span className="hidden lg:inline">{aiOnline ? 'IA ativa' : 'IA off'}</span>
-        </div>
+          <Lightbulb size={12} strokeWidth={1.75} />
+          <Sparkles size={11} strokeWidth={1.75} style={{ color: 'var(--pl-accent)' }} />
+          <span className="hidden lg:inline">Assistente</span>
+        </button>
 
         {/* Notifications */}
         <button
@@ -254,7 +365,7 @@ export default function Header({
                     type="button"
                     onClick={() => {
                       setIsNotificationsOpen(false);
-                      onOpenNotification?.(item.contestId);
+                      onOpenNotification?.(item);
                     }}
                     className="pl-card"
                     style={{

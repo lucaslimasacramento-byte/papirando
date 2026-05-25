@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ArrowRight,
   FileText,
@@ -68,10 +68,10 @@ export default function Dashboard({
     }
     if (amanha) {
       return {
-        badge: 'Amanha',
+        badge: 'Amanhã',
         badgeTone: '',
-        title: amanha.titulo || amanha.nome || 'Algo pede atencao amanha',
-        detail: amanha.detalhe || amanha.texto || 'Antecipe o que ja estiver claro.',
+        title: amanha.titulo || amanha.nome || 'Algo pede atenção amanhã',
+        detail: amanha.detalhe || amanha.texto || 'Antecipe o que já estiver claro.',
       };
     }
     if (targetDaysRemaining !== null && targetDaysRemaining <= 15) {
@@ -84,17 +84,17 @@ export default function Dashboard({
     }
     if (urgentReviews > 0) {
       return {
-        badge: 'Revisoes',
+        badge: 'Revisões',
         badgeTone: 'warn',
-        title: `${urgentReviews} revisao(oes) em alta prioridade`,
-        detail: 'Existe espaco claro para reforco hoje.',
+        title: `${urgentReviews} revisão(ões) em alta prioridade`,
+        detail: 'Existe espaço claro para reforço hoje.',
       };
     }
     return {
-      badge: 'Estavel',
+      badge: 'Estável',
       badgeTone: 'success',
-      title: 'Sem alerta critico agora',
-      detail: 'O melhor movimento e seguir a sessao sugerida.',
+      title: 'Sem alerta crítico agora',
+      detail: 'O melhor movimento é seguir a sessão sugerida.',
     };
   }, [safeAgendaHoje, safeAgendaAmanha, targetDaysRemaining, urgentReviews]);
 
@@ -138,6 +138,7 @@ export default function Dashboard({
             greeting={greeting}
             userName={cleanUserName}
             onStart={() => setActiveTab?.('planejamento')}
+            onOpenContests={() => setActiveTab?.('planos')}
             onOpenQuestions={() => setActiveTab?.('questoes')}
             onOpenTimer={quickAction.onClick}
           />
@@ -156,7 +157,7 @@ export default function Dashboard({
               {historyOverview.streakDays > 0 && (
                 <>
                   <span style={{ margin: '0 8px', opacity: 0.5 }}>-</span>
-                  <span>voce esta papirando ha {historyOverview.streakDays} {historyOverview.streakDays === 1 ? 'dia' : 'dias'}</span>
+                  <span>você está papirando há {historyOverview.streakDays} {historyOverview.streakDays === 1 ? 'dia' : 'dias'}</span>
                 </>
               )}
             </div>
@@ -186,13 +187,13 @@ export default function Dashboard({
 
           {targetDaysRemaining !== null && (
             <div className="pl-card" style={{ width: 220, padding: '17px 22px' }}>
-              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Concurso-alvo</div>
+              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Objetivo-alvo</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, marginTop: 8 }}>
                 <span className="pl-num" style={{ fontSize: 54, color: 'var(--pl-ink)', lineHeight: 1 }}>{targetDaysRemaining}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)' }}>dias</span>
               </div>
               <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                {targetContest?.nome || 'Concurso definido'}
+                {targetContest?.nome || 'Objetivo definido'}
               </div>
               <div style={{ marginTop: 3, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
                 {[targetContest?.banca, targetContest?.cargo || targetContest?.concurso].filter(Boolean).join(' - ')}
@@ -208,7 +209,7 @@ export default function Dashboard({
           <PlKpi label="Sequencia" num={String(historyOverview.streakDays)} unit="d" detail="dias sem falhar" icon={<Flame size={14} style={{ color: 'var(--pl-warn)' }} />} />
           <PlKpi label="Precisao" num={String(weeklyAccuracy)} unit="%" detail={`${totalAcertos} acertos - ${totalErros} erros`} />
           <PlKpi label="Meta diaria" num={String(historyOverview.todayGoalProgress)} unit="%" detail="do objetivo de hoje" progress={historyOverview.todayGoalProgress / 100} />
-          <PlKpi label="Revisoes" num={String(urgentReviews).padStart(2, '0')} detail="Alta prioridade" accentColor={urgentReviews > 0 ? 'warn' : undefined} />
+          <PlKpi label="Revisões" num={String(urgentReviews).padStart(2, '0')} detail="Alta prioridade" accentColor={urgentReviews > 0 ? 'warn' : undefined} />
         </section>
 
         <section style={{ display: 'grid', gridTemplateColumns: '1.65fr 1fr', gap: 14, marginTop: 18 }}>
@@ -229,7 +230,7 @@ export default function Dashboard({
 
             {safeRoutine.length === 0 ? (
               <p style={{ fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.6, padding: '14px 0 4px' }}>
-                Defina um concurso-alvo e registre mais estudo para montar sua rotina automaticamente.
+                Defina um objetivo-alvo e registre mais estudo para montar sua rotina automaticamente.
               </p>
             ) : (
               <div>
@@ -344,7 +345,7 @@ function PlRoutineRow({ item, onStart, index, isFirst, isLast }) {
           {isFirst && <span className="pl-tag pl-tag-accent">Agora</span>}
         </div>
         <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500, marginTop: 1 }}>
-          {item.detail || item.description || 'Sessao de estudo planejada'}
+          {item.detail || item.description || 'Sessão de estudo planejada'}
           {item.duration && (
             <><span style={{ opacity: 0.4, margin: '0 6px' }}>-</span>{item.duration}</>
           )}
@@ -358,8 +359,8 @@ function PlRoutineRow({ item, onStart, index, isFirst, isLast }) {
 }
 
 function PlBizuCard({ recommendation, reminder, progress, onStart, onPlan }) {
-  const title = recommendation?.nome || reminder?.title || 'Monte sua proxima sessao';
-  const detail = recommendation?.reason || recommendation?.nextTopic?.nome || reminder?.detail || 'O Bizu IA usa seu desempenho para sugerir o melhor proximo passo.';
+  const title = recommendation?.nome || reminder?.title || 'Monte sua próxima sessão';
+  const detail = recommendation?.reason || recommendation?.nextTopic?.nome || reminder?.detail || 'O Bizu IA usa seu desempenho para sugerir o melhor próximo passo.';
 
   return (
     <div className="pl-card-ai" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 13 }}>
@@ -368,7 +369,7 @@ function PlBizuCard({ recommendation, reminder, progress, onStart, onPlan }) {
         <span className={`pl-tag${reminder?.badgeTone ? ` pl-tag-${reminder.badgeTone}` : ''}`}>{reminder?.badge || 'Agora'}</span>
       </div>
       <div>
-        <div className="pl-eyebrow" style={{ fontSize: 10 }}>Proxima sessao sugerida</div>
+        <div className="pl-eyebrow" style={{ fontSize: 10 }}>Próxima sessão sugerida</div>
         <h3 style={{ margin: '7px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, lineHeight: 1.12, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>
           {title}
         </h3>
@@ -387,7 +388,7 @@ function PlBizuCard({ recommendation, reminder, progress, onStart, onPlan }) {
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
         <button className="pl-btn pl-btn-ai" onClick={onStart} style={{ flex: 1, justifyContent: 'center' }}>
-          <Sparkles size={11} /> Iniciar sessao
+          <Sparkles size={11} /> Iniciar sessão
         </button>
         <button className="pl-btn pl-btn-sm" onClick={onPlan}>
           Ajustar plano
@@ -463,7 +464,35 @@ function PlEditalProgress({ data, onOpen }) {
   );
 }
 
-function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpenTimer }) {
+function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQuestions, onOpenTimer }) {
+  const [tutorialStep, setTutorialStep] = useState(null);
+  const tutorialSteps = [
+    {
+      title: 'Primeiro, escolha seu alvo.',
+      text: 'Seu objetivo orienta plano, questões e rotina. Se ainda não tiver certeza, escolha provisório e ajuste depois.',
+      actionLabel: 'Abrir cursos',
+      onAction: onOpenContests,
+    },
+    {
+      title: 'Depois, monte sua semana.',
+      text: 'Organize os dias disponíveis, as matérias principais e uma cadência realista para começar sem bagunça.',
+      actionLabel: 'Montar semana',
+      onAction: onStart,
+    },
+    {
+      title: 'Por fim, registre a primeira sessão.',
+      text: 'Uma sessão curta já cria histórico e ajuda a plataforma a sugerir melhor o próximo estudo.',
+      actionLabel: 'Abrir timer',
+      onAction: onOpenTimer,
+    },
+  ];
+  const isTutorialActive = tutorialStep !== null;
+  const currentTutorial = isTutorialActive ? tutorialSteps[tutorialStep] : null;
+  const startTutorial = () => setTutorialStep(0);
+  const closeTutorial = () => setTutorialStep(null);
+  const nextTutorial = () => setTutorialStep((step) => (step >= tutorialSteps.length - 1 ? null : step + 1));
+  const previousTutorial = () => setTutorialStep((step) => Math.max(0, step - 1));
+
   return (
     <div style={{ minHeight: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
       <section>
@@ -476,10 +505,69 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpen
         </p>
       </section>
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-        <PlOnboardStep number="1" title="Escolha seu alvo" text="Defina concurso, banca e data para orientar o plano." />
-        <PlOnboardStep number="2" title="Monte a semana" text="Ajuste disponibilidade e matérias principais." />
-        <PlOnboardStep number="3" title="Papire agora" text="Abra uma sessão e registre o primeiro estudo." />
+        <PlOnboardStep number="1" title="Escolha seu alvo" text="Escolha seu objetivo de estudo." active={tutorialStep === 0} dimmed={isTutorialActive && tutorialStep !== 0} />
+        <PlOnboardStep number="2" title="Monte a semana" text="Ajuste disponibilidade e matérias principais." active={tutorialStep === 1} dimmed={isTutorialActive && tutorialStep !== 1} />
+        <PlOnboardStep number="3" title="Papire agora" text="Abra uma sessão e registre o primeiro estudo." active={tutorialStep === 2} dimmed={isTutorialActive && tutorialStep !== 2} />
       </section>
+      {currentTutorial && (
+        <section
+          style={{
+            position: 'relative',
+            marginTop: -10,
+            maxWidth: 650,
+            border: '1px solid rgba(30,58,95,0.22)',
+            background: '#fffaf0',
+            borderRadius: 12,
+            padding: '18px 20px',
+            boxShadow: '0 16px 34px rgba(20,17,13,0.12)',
+          }}
+        >
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: -8,
+              left: `${Math.min(86, 14 + tutorialStep * 32)}%`,
+              width: 16,
+              height: 16,
+              background: '#fffaf0',
+              borderLeft: '1px solid rgba(30,58,95,0.22)',
+              borderTop: '1px solid rgba(30,58,95,0.22)',
+              transform: 'rotate(45deg)',
+            }}
+          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <div className="pl-eyebrow" style={{ color: '#1e3a5f' }}>Passo {tutorialStep + 1} de {tutorialSteps.length}</div>
+              <h3 style={{ margin: '7px 0 0', fontSize: 19, lineHeight: 1.25, color: 'var(--pl-ink)' }}>{currentTutorial.title}</h3>
+              <p style={{ margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
+                {currentTutorial.text}
+              </p>
+            </div>
+            <button type="button" className="pl-btn pl-btn-sm" onClick={closeTutorial} style={{ flexShrink: 0 }}>
+              Fechar
+            </button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+            <button type="button" className="pl-btn pl-btn-sm" onClick={previousTutorial} disabled={tutorialStep === 0}>
+              Voltar
+            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <button type="button" className="pl-btn pl-btn-sm" onClick={currentTutorial.onAction}>
+                {currentTutorial.actionLabel}
+              </button>
+              <button
+                type="button"
+                className="pl-btn pl-btn-sm"
+                style={{ background: '#1e3a5f', color: '#fff', borderColor: '#1e3a5f' }}
+                onClick={nextTutorial}
+              >
+                {tutorialStep >= tutorialSteps.length - 1 ? 'Concluir' : 'Próximo passo'}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
       <section
         style={{
           position: 'relative',
@@ -550,7 +638,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpen
             Eu te guio por alvo, disponibilidade e primeira sessão. Siga o roteiro agora ou comece praticando e ajuste depois.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-            {['1. Concurso-alvo', '2. Semana de estudo', '3. Primeira sessão'].map((step) => (
+            {['1. Objetivo-alvo', '2. Semana de estudo', '3. Primeira sessão'].map((step) => (
               <span
                 key={step}
                 style={{
@@ -571,7 +659,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpen
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end', position: 'relative' }}>
           <button
             className="pl-btn pl-btn-sm pl-btn-ai"
-            onClick={onStart}
+            onClick={startTutorial}
           >
             <Sparkles size={11} /> Começar tutorial
           </button>
@@ -583,10 +671,21 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenQuestions, onOpen
   );
 }
 
-function PlOnboardStep({ number, title, text }) {
+function PlOnboardStep({ number, title, text, active = false, dimmed = false }) {
   return (
-    <div className="pl-card" style={{ padding: '18px 20px' }}>
-      <div className="pl-num" style={{ fontSize: 38, color: 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
+    <div
+      className="pl-card"
+      style={{
+        padding: '18px 20px',
+        borderColor: active ? 'rgba(30,58,95,0.38)' : undefined,
+        background: active ? 'linear-gradient(135deg, #fffaf0 0%, #f4ead2 100%)' : undefined,
+        boxShadow: active ? '0 16px 32px rgba(30,58,95,0.14)' : undefined,
+        opacity: dimmed ? 0.56 : 1,
+        transform: active ? 'translateY(-2px)' : 'none',
+        transition: 'opacity 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease',
+      }}
+    >
+      <div className="pl-num" style={{ fontSize: 38, color: active ? '#1e3a5f' : 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
       <h3 style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{title}</h3>
       <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{text}</p>
     </div>
