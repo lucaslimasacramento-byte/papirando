@@ -40,7 +40,7 @@ export default function Aplicativos() {
       <section className="pl-app-stage">
         <div>
           <span className="eyebrow"><Sparkles size={11} /> Experiência mobile</span>
-          <h2>A sua aprovação não tira férias<span className="dot">.</span></h2>
+          <h2>Seus estudos não param<span className="dot">.</span></h2>
           <p className="copy">
             Sincronize seu progresso na nuvem. Resolva questões no ônibus, ouça as leis enquanto treina e receba lembretes para não perder o ritmo.
           </p>

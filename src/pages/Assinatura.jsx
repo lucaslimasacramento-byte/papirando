@@ -83,7 +83,7 @@ const FAQS = [
   },
   {
     question: 'E se eu não tiver material pronto?',
-    answer: 'Temos trilhas e editais mapeados para os concursos mais procurados. Comece por lá.',
+    answer: 'Temos trilhas prontas para os objetivos mais populares — concursos, vestibulares e áreas de faculdade. Comece por lá.',
   },
   {
     question: 'O plano Folha expira?',

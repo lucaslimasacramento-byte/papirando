@@ -100,7 +100,7 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar concurso..."
+          placeholder="Buscar seu objetivo de estudo..."
           className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-8 pr-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
         />
       </div>
@@ -183,7 +183,7 @@ function StepGoal({ value, onChange }) {
           ? 'Começando devagar — consistência é o que importa!'
           : value < 20
           ? 'Ritmo sólido — você vai longe com essa constância.'
-          : 'Modo aprovação total — foco total no objetivo!'}
+          : 'Modo foco máximo — sem distrações!'}
       </p>
     </div>
   );
