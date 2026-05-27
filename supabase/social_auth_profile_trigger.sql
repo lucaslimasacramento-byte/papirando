@@ -39,7 +39,11 @@ begin
   on conflict (id) do update
     set
       email = excluded.email,
-      nome = coalesce(nullif(public.profiles.nome, ''), excluded.nome),
+      nome = case
+        when nullif(public.profiles.nome, '') is null then excluded.nome
+        when lower(public.profiles.nome) = lower(split_part(coalesce(excluded.email, ''), '@', 1)) then excluded.nome
+        else public.profiles.nome
+      end,
       avatar_url = coalesce(nullif(public.profiles.avatar_url, ''), excluded.avatar_url),
       email_verificado = public.profiles.email_verificado or excluded.email_verificado,
       status_cadastro = case

@@ -7,6 +7,34 @@ const rawSupabaseDevProxy = import.meta.env.VITE_SUPABASE_DEV_PROXY
 const browserOrigin =
   typeof window !== 'undefined' && window.location?.origin ? String(window.location.origin).replace(/\/+$/, '') : ''
 
+function stripOAuthErrorFromLocation() {
+  if (typeof window === 'undefined' || !window.location?.href) return
+
+  try {
+    const url = new URL(window.location.href)
+    const hashParams = new URLSearchParams(url.hash.startsWith('#') ? url.hash.slice(1) : url.hash)
+    const hasOAuthError =
+      url.searchParams.has('error') ||
+      url.searchParams.has('error_description') ||
+      hashParams.has('error') ||
+      hashParams.has('error_description')
+
+    if (!hasOAuthError) return
+
+    url.searchParams.delete('error')
+    url.searchParams.delete('error_description')
+    url.searchParams.delete('sb')
+    hashParams.delete('error')
+    hashParams.delete('error_description')
+    hashParams.delete('sb')
+
+    const nextHash = hashParams.toString()
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${nextHash ? `#${nextHash}` : ''}`)
+  } catch (error) {
+    console.warn('[Supabase] Nao foi possivel limpar erro OAuth da URL.', error)
+  }
+}
+
 function getProjectRefFromUrl(value) {
   try {
     const host = new URL(value).host
@@ -156,6 +184,7 @@ if (supabaseConfigError) {
 }
 
 migrateSupabaseAuthStorage()
+stripOAuthErrorFromLocation()
 
 export const supabase = createClient(supabaseClientUrl, supabaseClientAnonKey, {
   global: {

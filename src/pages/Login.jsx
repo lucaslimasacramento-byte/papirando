@@ -47,6 +47,19 @@ async function sha256Hex(value) {
   return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+function getGoogleProfileName(user) {
+  const metadata = user?.user_metadata || {};
+  const joinedGoogleName = [metadata.given_name, metadata.family_name].filter(Boolean).join(' ').trim();
+  return String(
+    metadata.nome ||
+      metadata.name ||
+      metadata.full_name ||
+      joinedGoogleName ||
+      user?.email?.split('@')[0] ||
+      ''
+  ).trim();
+}
+
 // ── Logo mark ──────────────────────────────────────────────────────────────
 function PlMark({ size = 36 }) {
   const fold = Math.round(size * 0.25);
@@ -214,7 +227,7 @@ export default function Login({
       const googleUser = sessionData?.session?.user;
       if (googleUser?.id) {
         await updateProfile(googleUser.id, {
-          nome: googleUser.user_metadata?.name || googleUser.user_metadata?.full_name || googleUser.email?.split('@')[0] || '',
+          nome: getGoogleProfileName(googleUser),
           avatar_url: googleUser.user_metadata?.avatar_url || googleUser.user_metadata?.picture || '',
         }).catch((profileError) => {
           console.warn('[Google Auth] Sessão criada, mas o perfil não foi sincronizado.', profileError);

@@ -197,6 +197,52 @@ function resolveCycleWeightKey(input) {
   return String(input || '');
 }
 
+function getAuthUserDisplayName(user) {
+  const metadata = user?.user_metadata || {};
+  const joinedGoogleName = [metadata.given_name, metadata.family_name].filter(Boolean).join(' ').trim();
+  return String(
+    metadata.nome ||
+      metadata.name ||
+      metadata.full_name ||
+      joinedGoogleName ||
+      user?.email?.split('@')[0] ||
+      ''
+  ).trim();
+}
+
+function getAuthUserAvatarUrl(user) {
+  const metadata = user?.user_metadata || {};
+  return String(metadata.avatar_url || metadata.picture || '').trim();
+}
+
+function stripOAuthErrorFromLocation() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(url.hash.startsWith('#') ? url.hash.slice(1) : url.hash);
+    const hasOAuthError =
+      url.searchParams.has('error') ||
+      url.searchParams.has('error_description') ||
+      hashParams.has('error') ||
+      hashParams.has('error_description');
+
+    if (!hasOAuthError) return;
+
+    url.searchParams.delete('error');
+    url.searchParams.delete('error_description');
+    url.searchParams.delete('sb');
+    hashParams.delete('error');
+    hashParams.delete('error_description');
+    hashParams.delete('sb');
+
+    const nextHash = hashParams.toString();
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${nextHash ? `#${nextHash}` : ''}`);
+  } catch (error) {
+    console.warn('Nao foi possivel limpar parametros OAuth da URL.', error);
+  }
+}
+
 function EditorialTopStrip({ activeTab, setActiveTab }) {
   const tabs = [
     { id: 'home', label: 'Dashboard' },
@@ -755,6 +801,7 @@ export default function App() {
 
   useEffect(() => {
     const initSession = async () => {
+      stripOAuthErrorFromLocation();
       const { data, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -2628,10 +2675,10 @@ export default function App() {
           setCurrentProfile({
             id: user.id,
             email: user.email || '',
-            nome: user.user_metadata?.nome || '',
+            nome: getAuthUserDisplayName(user),
             username: user.user_metadata?.username || '',
             celular: user.user_metadata?.celular || '',
-            avatar_url: user.user_metadata?.avatar_url || '',
+            avatar_url: getAuthUserAvatarUrl(user),
             referral_code: fallbackReferralCode,
             referred_by_code: user.user_metadata?.referred_by_code || '',
           });
@@ -2643,10 +2690,10 @@ export default function App() {
         data || {
           id: user.id,
           email: user.email || '',
-          nome: user.user_metadata?.nome || '',
+          nome: getAuthUserDisplayName(user),
           username: user.user_metadata?.username || '',
           celular: user.user_metadata?.celular || '',
-          avatar_url: user.user_metadata?.avatar_url || '',
+          avatar_url: getAuthUserAvatarUrl(user),
           referral_code: user.user_metadata?.referral_code || '',
           referred_by_code: user.user_metadata?.referred_by_code || '',
         };
@@ -2667,10 +2714,10 @@ export default function App() {
               {
                 id: user.id,
                 email: profileData?.email || user.email || '',
-                nome: profileData?.nome || user.user_metadata?.nome || '',
+                nome: profileData?.nome || getAuthUserDisplayName(user),
                 username: profileData?.username || user.user_metadata?.username || '',
                 celular: profileData?.celular || user.user_metadata?.celular || '',
-                avatar_url: profileData?.avatar_url || user.user_metadata?.avatar_url || '',
+                avatar_url: profileData?.avatar_url || getAuthUserAvatarUrl(user),
                 referral_code: ensuredReferralCode,
                 referred_by_code: profileData?.referred_by_code || user.user_metadata?.referred_by_code || '',
               },
@@ -2726,6 +2773,38 @@ export default function App() {
       ignore = true;
     };
   }, [isAuthenticated, currentUserId]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !currentUserId || !currentAuthUser) return;
+
+    const googleName = getAuthUserDisplayName(currentAuthUser);
+    const googleAvatarUrl = getAuthUserAvatarUrl(currentAuthUser);
+    const emailPrefix = String(currentAuthUser.email || '').split('@')[0].trim().toLowerCase();
+    const currentName = String(currentProfile?.nome || '').trim();
+    const shouldPatchName = googleName && (!currentName || currentName.toLowerCase() === emailPrefix);
+    const shouldPatchAvatar = googleAvatarUrl && !String(currentProfile?.avatar_url || '').trim();
+
+    if (!shouldPatchName && !shouldPatchAvatar) return;
+
+    const patch = {};
+    if (shouldPatchName) patch.nome = googleName;
+    if (shouldPatchAvatar) patch.avatar_url = googleAvatarUrl;
+
+    let cancelled = false;
+    updateProfile(currentUserId, patch)
+      .then((updatedProfile) => {
+        if (!cancelled && updatedProfile) {
+          setCurrentProfile((prev) => ({ ...(prev || {}), ...updatedProfile }));
+        }
+      })
+      .catch((error) => {
+        console.warn('[profiles] Nao foi possivel sincronizar nome/foto do Google.', error?.message || error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, currentUserId, currentAuthUser, currentProfile?.nome, currentProfile?.avatar_url]);
 
   useEffect(() => {
     let ignore = false;
@@ -6216,6 +6295,39 @@ export default function App() {
           }}
         />
       </Suspense>
+    );
+  }
+
+  const needsOnboarding =
+    !isAdmin &&
+    Boolean(currentUserId) &&
+    currentProfile !== null &&
+    currentProfile?.onboarding_done !== true;
+
+  if (needsOnboarding) {
+    return (
+      <ToastProvider>
+        <div
+          className="min-h-screen"
+          style={{
+            background: 'var(--pl-bg)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px 16px',
+          }}
+        >
+          <OnboardingWizard
+            profile={effectiveProfile}
+            contestLibrary={contestLibrary}
+            currentUserId={currentUserId}
+            setTargetContestId={setTargetContestId}
+            onComplete={(updates) => {
+              setCurrentProfile((prev) => ({ ...(prev || {}), ...(updates || {}), onboarding_done: true }));
+            }}
+          />
+        </div>
+      </ToastProvider>
     );
   }
 
