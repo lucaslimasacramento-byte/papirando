@@ -3,6 +3,7 @@ import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Bookmark, MessageSquar
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { registerFreeAccount } from '../lib/registerApi';
+import { updateProfile } from '../lib/profileApi';
 
 const GOOGLE_IDENTITY_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
 const googleClientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
@@ -208,6 +209,18 @@ export default function Login({
         nonce: googleNonceRef.current.raw,
       });
       if (idTokenError) throw idTokenError;
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const googleUser = sessionData?.session?.user;
+      if (googleUser?.id) {
+        await updateProfile(googleUser.id, {
+          nome: googleUser.user_metadata?.name || googleUser.user_metadata?.full_name || googleUser.email?.split('@')[0] || '',
+          avatar_url: googleUser.user_metadata?.avatar_url || googleUser.user_metadata?.picture || '',
+        }).catch((profileError) => {
+          console.warn('[Google Auth] Sessão criada, mas o perfil não foi sincronizado.', profileError);
+        });
+      }
+
       setIsAuthenticated(true);
     } catch (err) {
       setError(getReadableError(err));
