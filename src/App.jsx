@@ -6320,6 +6320,7 @@ export default function App() {
           <OnboardingWizard
             profile={effectiveProfile}
             contestLibrary={contestLibrary}
+            courseTemplates={courseTemplates}
             currentUserId={currentUserId}
             setTargetContestId={setTargetContestId}
             onComplete={(updates) => {
@@ -7414,6 +7415,7 @@ export default function App() {
             <OnboardingWizard
               profile={effectiveProfile}
               contestLibrary={contestLibrary}
+              courseTemplates={courseTemplates}
               currentUserId={currentUserId}
               setTargetContestId={setTargetContestId}
               onComplete={() => setShowOnboardingPreview(false)}

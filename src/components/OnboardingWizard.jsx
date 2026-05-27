@@ -11,6 +11,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { DEFAULT_COURSE_TEMPLATES, normalizeCourseTemplates } from '../lib/courseTemplates';
 import { normalizeCpf, isValidCpf } from '../lib/profileProgress';
 import { showToast } from '../lib/dialogs';
 
@@ -101,20 +102,71 @@ function StepWelcome({ profile }) {
 
 // ─── Step 2: Objetivo ─────────────────────────────────────────────────────────
 
-function StepContest({ contestLibrary, selectedId, onSelect }) {
+function makeObjectiveId(kind, rawId, index) {
+  return `${kind}:${rawId || index}`;
+}
+
+function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
+  const templateSource = Array.isArray(courseTemplates) && courseTemplates.length
+    ? courseTemplates
+    : DEFAULT_COURSE_TEMPLATES;
+  const templates = normalizeCourseTemplates(templateSource)
+    .map((template, index) => {
+      const rawId = template.id || template.slug || template.nome || template.name;
+      const name = template.nome || template.name || 'Objetivo';
+      const lowerName = name.toLowerCase();
+      const intent = String(template.intent || template.tipo || template.category || '').toLowerCase();
+      const isVestibular = intent.includes('vestibular') || lowerName.includes('vestibular') || lowerName.includes('enem');
+      return {
+        ...template,
+        id: makeObjectiveId('course', rawId, index),
+        rawId,
+        nome: name,
+        orgao: template.area || template.orgao || template.organization || (isVestibular ? 'Vestibular' : 'Faculdade'),
+        objectiveType: isVestibular ? 'Vestibular' : 'Faculdade',
+        sourceKind: 'course',
+      };
+    });
+
+  const contests = (contestLibrary || [])
+    .map((contest, index) => {
+      const rawId = contest.id || contest.slug || contest.plano || contest.nome || contest.name;
+      return {
+        ...contest,
+        id: makeObjectiveId('contest', rawId, index),
+        rawId,
+        nome: contest.nome || contest.name || 'Objetivo',
+        orgao: contest.orgao || contest.organization || 'Concurso público',
+        objectiveType: 'Concurso',
+        sourceKind: 'contest',
+      };
+    });
+
+  const seen = new Set();
+  return [...templates, ...contests].filter((item) => {
+    const key = `${item.sourceKind}:${String(item.rawId || item.id).toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return Boolean(item.nome);
+  });
+}
+
+function StepContest({ objectiveLibrary, selectedId, onSelect }) {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return (contestLibrary || []).slice(0, 30);
-    return (contestLibrary || [])
+    if (!q) return (objectiveLibrary || []).slice(0, 80);
+    return (objectiveLibrary || [])
       .filter(
         (c) =>
           (c.nome || c.name || '').toLowerCase().includes(q) ||
-          (c.orgao || c.organization || '').toLowerCase().includes(q)
+          (c.orgao || c.organization || '').toLowerCase().includes(q) ||
+          (c.area || '').toLowerCase().includes(q) ||
+          (c.objectiveType || '').toLowerCase().includes(q)
       )
-      .slice(0, 30);
-  }, [contestLibrary, query]);
+      .slice(0, 80);
+  }, [objectiveLibrary, query]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -143,6 +195,34 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
         />
       </div>
 
+      <button
+        type="button"
+        onClick={() => onSelect('')}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          padding: '11px 14px',
+          border: '1px solid var(--pl-rule-2)',
+          borderRadius: 8,
+          background: !selectedId ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
+            Pular escolha por enquanto
+          </p>
+          <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', margin: '2px 0 0' }}>
+            Você pode escolher curso, faculdade, vestibular ou concurso depois.
+          </p>
+        </div>
+        {!selectedId && <CheckCircle2 size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />}
+      </button>
+
       <div style={{
         maxHeight: 240, overflowY: 'auto',
         border: '1px solid var(--pl-rule-2)', borderRadius: 8,
@@ -158,6 +238,7 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
             const name = c.nome || c.name || 'Objetivo';
             const org = c.orgao || c.organization || '';
             const logo = c.imagem_url || c.logo_url || '';
+            const type = c.objectiveType || 'Objetivo';
             const isSelected = selectedId === id;
             return (
               <button
@@ -189,6 +270,19 @@ function StepContest({ contestLibrary, selectedId, onSelect }) {
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</p>
                   {org ? <p style={{ fontSize: 11, color: 'var(--pl-ink-3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org}</p> : null}
                 </div>
+                <span style={{
+                  flexShrink: 0,
+                  padding: '3px 7px',
+                  borderRadius: 999,
+                  background: 'var(--pl-bg-soft)',
+                  color: 'var(--pl-ink-3)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '.04em',
+                }}>
+                  {type}
+                </span>
                 {isSelected && <CheckCircle2 size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />}
               </button>
             );
@@ -376,6 +470,7 @@ function StepCpf({ value, onChange, error }) {
 export default function OnboardingWizard({
   profile,
   contestLibrary = [],
+  courseTemplates = [],
   currentUserId,
   setTargetContestId,
   onComplete,
@@ -390,6 +485,14 @@ export default function OnboardingWizard({
   const [saveError, setSaveError] = useState('');
 
   const totalHours = sumHours(daily);
+  const objectiveLibrary = useMemo(
+    () => buildObjectiveLibrary(contestLibrary, courseTemplates),
+    [contestLibrary, courseTemplates]
+  );
+  const selectedObjective = useMemo(
+    () => objectiveLibrary.find((item) => item.id === contestId) || null,
+    [objectiveLibrary, contestId]
+  );
 
   const canAdvance = () => {
     if (step === 4 && cpf) {
@@ -454,7 +557,9 @@ export default function OnboardingWizard({
 
       if (error) throw error;
 
-      if (contestId) setTargetContestId?.(contestId);
+      if (selectedObjective?.sourceKind === 'contest') {
+        setTargetContestId?.(selectedObjective.rawId || contestId.replace(/^contest:/, ''));
+      }
 
       showToast('Configuração salva! Bem-vindo ao Papirando.', 'success');
       onComplete?.(updates);
@@ -468,7 +573,7 @@ export default function OnboardingWizard({
 
   const stepContent = () => {
     if (step === 1) return <StepWelcome profile={profile} />;
-    if (step === 2) return <StepContest contestLibrary={contestLibrary} selectedId={contestId} onSelect={setContestId} />;
+    if (step === 2) return <StepContest objectiveLibrary={objectiveLibrary} selectedId={contestId} onSelect={setContestId} />;
     if (step === 3) return <StepGoal daily={daily} onChange={setDaily} />;
     if (step === 4) return <StepCpf value={cpf} onChange={(v) => { setCpf(v); setCpfError(''); }} error={cpfError} />;
     return null;
@@ -543,7 +648,7 @@ export default function OnboardingWizard({
             {saving
               ? <Loader2 size={14} className="animate-spin" />
               : <ChevronRight size={14} />}
-            {step === 1 ? 'Começar' : isLastStep ? 'Finalizar' : 'Próximo'}
+            {step === 1 ? 'Começar' : step === 2 && !contestId ? 'Pular etapa' : isLastStep ? 'Finalizar' : 'Próximo'}
           </button>
         </div>
       </div>
