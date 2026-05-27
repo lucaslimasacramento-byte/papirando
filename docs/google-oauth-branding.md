@@ -32,4 +32,22 @@ Site URL: https://papirando.app
 Redirect URLs: https://papirando.app/**
 ```
 
-Sem custom domain ou verificacao de branding no Google, a tela do Google pode continuar exibindo o dominio `supabase.co`.
+## Alternativa sem mostrar `supabase.co`
+
+O app tambem suporta Google Identity Services direto no navegador. Nesse modo o Google autentica no dominio do site e o app entrega o ID token ao Supabase via `supabase.auth.signInWithIdToken`.
+
+Para ativar:
+
+```text
+VITE_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
+```
+
+No Google Cloud, o OAuth Client precisa autorizar estas origens JavaScript:
+
+```text
+https://www.papirando.com
+https://papirando.com
+http://localhost:5173
+```
+
+Sem `VITE_GOOGLE_CLIENT_ID`, custom domain ou verificacao de branding no Google, a tela do Google pode continuar exibindo o dominio `supabase.co`.

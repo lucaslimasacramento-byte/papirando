@@ -1,8 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Bookmark, MessageSquareText, RotateCcw, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { registerFreeAccount } from '../lib/registerApi';
+
+const GOOGLE_IDENTITY_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
+const googleClientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+let googleIdentityScriptPromise;
+
+function loadGoogleIdentityScript() {
+  if (typeof window === 'undefined') return Promise.reject(new Error('Login com Google indisponível neste ambiente.'));
+  if (window.google?.accounts?.id) return Promise.resolve(window.google);
+
+  if (!googleIdentityScriptPromise) {
+    googleIdentityScriptPromise = new Promise((resolve, reject) => {
+      const existingScript = document.querySelector(`script[src="${GOOGLE_IDENTITY_SCRIPT_SRC}"]`);
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(window.google), { once: true });
+        existingScript.addEventListener('error', () => reject(new Error('Não foi possível carregar o login do Google.')), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = GOOGLE_IDENTITY_SCRIPT_SRC;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve(window.google);
+      script.onerror = () => reject(new Error('Não foi possível carregar o login do Google.'));
+      document.head.appendChild(script);
+    });
+  }
+
+  return googleIdentityScriptPromise;
+}
+
+function createNonce() {
+  const bytes = new Uint8Array(24);
+  window.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function sha256Hex(value) {
+  const encoded = new TextEncoder().encode(value);
+  const hash = await window.crypto.subtle.digest('SHA-256', encoded);
+  return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 // ── Logo mark ──────────────────────────────────────────────────────────────
 function PlMark({ size = 36 }) {
@@ -82,6 +124,9 @@ export default function Login({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [googleReady, setGoogleReady] = useState(false);
+  const googleButtonRef = useRef(null);
+  const googleNonceRef = useRef({ raw: '', hashed: '' });
 
   useEffect(() => {
     const normalizedInitialCode = normalizeReferralCode(initialReferralCode);
@@ -148,8 +193,79 @@ export default function Login({
     }
   };
 
+  const handleGoogleCredential = useCallback(async (response) => {
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      const token = String(response?.credential || '').trim();
+      if (!token) throw new Error('O Google não retornou uma credencial válida.');
+
+      const { error: idTokenError } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token,
+        nonce: googleNonceRef.current.raw,
+      });
+      if (idTokenError) throw idTokenError;
+      setIsAuthenticated(true);
+    } catch (err) {
+      setError(getReadableError(err));
+      setLoading(false);
+    }
+  }, [loading, setIsAuthenticated]);
+
+  useEffect(() => {
+    if (!googleClientId || !googleButtonRef.current) return undefined;
+
+    let cancelled = false;
+
+    async function mountGoogleButton() {
+      try {
+        const rawNonce = createNonce();
+        const hashedNonce = await sha256Hex(rawNonce);
+        googleNonceRef.current = { raw: rawNonce, hashed: hashedNonce };
+
+        const google = await loadGoogleIdentityScript();
+        if (cancelled || !googleButtonRef.current) return;
+
+        google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleCredential,
+          nonce: hashedNonce,
+          use_fedcm_for_prompt: true,
+        });
+
+        googleButtonRef.current.innerHTML = '';
+        google.accounts.id.renderButton(googleButtonRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'rectangular',
+          logo_alignment: 'left',
+          width: Math.min(460, googleButtonRef.current.offsetWidth || 360),
+        });
+        setGoogleReady(true);
+      } catch (err) {
+        console.error('[Google Auth] Falha ao preparar login direto.', err);
+        if (!cancelled) setGoogleReady(false);
+      }
+    }
+
+    mountGoogleButton();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [handleGoogleCredential]);
+
   const handleGoogleAuth = async () => {
     if (loading) return;
+    if (googleClientId) {
+      if (!googleReady) setError('Login com Google ainda está carregando. Tente novamente em alguns segundos.');
+      return;
+    }
     setLoading(true);
     setError('');
     setSuccessMsg('');
@@ -728,24 +844,39 @@ export default function Login({
           </div>
 
           {/* Google */}
-          <button className="pl-login-google" type="button" onClick={handleGoogleAuth} disabled={loading} style={{
-            height: 52,
-            background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
-            borderRadius: 12,
-            fontFamily: 'var(--pl-sans)', fontSize: 13.5, fontWeight: 600,
-            color: 'var(--pl-ink)', cursor: loading ? 'not-allowed' : 'pointer',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            transition: 'background .12s, border-color .12s',
-            opacity: loading ? 0.72 : 1,
-          }}>
-            <svg viewBox="0 0 48 48" style={{ width: 18, height: 18 }}>
-              <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.5 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z" />
-              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 18.9 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.5 6.1 29.6 4 24 4 16.3 4 9.6 8.3 6.3 14.7z" />
-              <path fill="#4CAF50" d="M24 44c5.5 0 10.4-2 14.1-5.4l-6.5-5.5C29.6 34.5 26.9 35.5 24 35.5c-5.3 0-9.7-3.4-11.3-8L6.2 32.5C9.5 39.7 16.2 44 24 44z" />
-              <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.1 4-3.9 5.3l6.5 5.5c-.5.5 7.1-5.2 7.1-15.8 0-1.3-.1-2.6-.4-3.9z" />
-            </svg>
-            Continuar com Google
-          </button>
+          {googleClientId ? (
+            <div
+              className="pl-login-google"
+              ref={googleButtonRef}
+              style={{
+                minHeight: 52,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: loading ? 0.72 : 1,
+                pointerEvents: loading ? 'none' : 'auto',
+              }}
+            />
+          ) : (
+            <button className="pl-login-google" type="button" onClick={handleGoogleAuth} disabled={loading} style={{
+              height: 52,
+              background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
+              borderRadius: 12,
+              fontFamily: 'var(--pl-sans)', fontSize: 13.5, fontWeight: 600,
+              color: 'var(--pl-ink)', cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              transition: 'background .12s, border-color .12s',
+              opacity: loading ? 0.72 : 1,
+            }}>
+              <svg viewBox="0 0 48 48" style={{ width: 18, height: 18 }}>
+                <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.5 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z" />
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 18.9 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.5 6.1 29.6 4 24 4 16.3 4 9.6 8.3 6.3 14.7z" />
+                <path fill="#4CAF50" d="M24 44c5.5 0 10.4-2 14.1-5.4l-6.5-5.5C29.6 34.5 26.9 35.5 24 35.5c-5.3 0-9.7-3.4-11.3-8L6.2 32.5C9.5 39.7 16.2 44 24 44z" />
+                <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.1 4-3.9 5.3l6.5 5.5c-.5.5 7.1-5.2 7.1-15.8 0-1.3-.1-2.6-.4-3.9z" />
+              </svg>
+              Continuar com Google
+            </button>
+          )}
         </form>
 
         {/* Rodape do formulario */}
