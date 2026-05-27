@@ -51,6 +51,21 @@ function formatCpfMask(raw) {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
+function normalizeDateInput(value) {
+  return String(value || '').trim().slice(0, 10);
+}
+
+function isValidBirthDate(value) {
+  const normalized = normalizeDateInput(value);
+  if (!normalized) return false;
+  const date = new Date(`${normalized}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return false;
+  const min = new Date('1900-01-01T00:00:00');
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  return date >= min && date <= today;
+}
+
 // ─── Step 1: Boas-vindas ──────────────────────────────────────────────────────
 
 function StepWelcome({ profile }) {
@@ -400,7 +415,7 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
 
 // ─── Step 3: Horas por dia ────────────────────────────────────────────────────
 
-function StepGoal({ daily, onChange }) {
+function StepGoal({ daily, onChange, onSkip }) {
   const total = sumHours(daily);
 
   const feedback = total === 0
@@ -419,9 +434,39 @@ function StepGoal({ daily, onChange }) {
           Quanto você estuda por dia?
         </h2>
         <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
-          Coloque as horas que consegue dedicar em cada dia. Pode ajustar depois.
+          Coloque as horas que consegue dedicar em cada dia, ou pule e ajuste depois.
         </p>
       </div>
+
+      {total === 0 && (
+        <button
+          type="button"
+          onClick={onSkip}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '11px 14px',
+            border: '1px solid var(--pl-rule-2)',
+            borderRadius: 8,
+            background: 'var(--pl-accent-soft)',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
+              Pular rotina por enquanto
+            </p>
+            <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', margin: '2px 0 0' }}>
+              Você pode configurar seus horários depois no planejamento.
+            </p>
+          </div>
+          <ChevronRight size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />
+        </button>
+      )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {DAYS.map(({ id, label }) => {
@@ -522,17 +567,49 @@ function StepGoal({ daily, onChange }) {
 
 // ─── Step 4: CPF ─────────────────────────────────────────────────────────────
 
-function StepCpf({ value, onChange, error }) {
+function StepRequiredProfile({ name, birthDate, cpf, onNameChange, onBirthDateChange, onCpfChange, errors }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ textAlign: 'center' }}>
         <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Passo 3</p>
         <h2 className="pl-display" style={{ fontSize: 24, marginBottom: 8 }}>
-          Informe seu CPF
+          Confirme seus dados
         </h2>
         <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
-          Necessário para nota fiscal se você assinar um plano pago. Pode pular por enquanto.
+          Essas informações são obrigatórias para manter seu perfil correto e seguro.
         </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }} htmlFor="onb-name">
+          Nome completo
+        </label>
+        <input
+          id="onb-name"
+          type="text"
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          placeholder="Seu nome completo"
+          className="pl-input"
+          style={{ borderColor: errors?.name ? 'var(--pl-danger)' : undefined }}
+        />
+        {errors?.name && <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{errors.name}</p>}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }} htmlFor="onb-birth-date">
+          Data de nascimento
+        </label>
+        <input
+          id="onb-birth-date"
+          type="date"
+          value={birthDate}
+          onChange={(e) => onBirthDateChange(e.target.value)}
+          className="pl-input"
+          max={new Date().toISOString().slice(0, 10)}
+          style={{ borderColor: errors?.birthDate ? 'var(--pl-danger)' : undefined }}
+        />
+        {errors?.birthDate && <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{errors.birthDate}</p>}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -543,27 +620,23 @@ function StepCpf({ value, onChange, error }) {
           id="onb-cpf"
           type="text"
           inputMode="numeric"
-          value={value}
-          onChange={(e) => onChange(formatCpfMask(e.target.value))}
+          value={cpf}
+          onChange={(e) => onCpfChange(formatCpfMask(e.target.value))}
           placeholder="000.000.000-00"
           maxLength={14}
           className="pl-input"
           style={{
             fontSize: 18, fontWeight: 700, letterSpacing: '0.12em',
             fontFamily: 'var(--pl-mono)',
-            borderColor: error ? 'var(--pl-danger)' : undefined,
+            borderColor: errors?.cpf ? 'var(--pl-danger)' : undefined,
           }}
         />
-        {error ? (
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{error}</p>
-        ) : (
-          <p style={{ fontSize: 12, color: 'var(--pl-ink-4)' }}>Pode preencher depois no seu Perfil.</p>
-        )}
+        {errors?.cpf && <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{errors.cpf}</p>}
       </div>
 
       <div className="pl-card-paper" style={{ padding: '10px 14px' }}>
         <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', lineHeight: 1.5 }}>
-          O CPF é exigido somente ao contratar um plano pago. Sem assinatura, não é obrigatório.
+          Objetivo, faculdade, vestibular, concursos e rotina de estudos são opcionais. Nome, nascimento e CPF ficam como pendência obrigatória do perfil.
         </p>
       </div>
     </div>
@@ -584,8 +657,10 @@ export default function OnboardingWizard({
   const [step, setStep] = useState(1);
   const [contestId, setContestId] = useState('');
   const [daily, setDaily] = useState({ ...EMPTY_DAILY });
-  const [cpf, setCpf] = useState('');
-  const [cpfError, setCpfError] = useState('');
+  const [profileName, setProfileName] = useState(() => String(profile?.nome || profile?.name || profile?.full_name || '').trim());
+  const [birthDate, setBirthDate] = useState(() => normalizeDateInput(profile?.birth_date || profile?.data_nascimento || ''));
+  const [cpf, setCpf] = useState(() => formatCpfMask(profile?.cpf || ''));
+  const [profileErrors, setProfileErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
@@ -599,33 +674,47 @@ export default function OnboardingWizard({
     [objectiveLibrary, contestId]
   );
 
-  const canAdvance = () => {
-    if (step === 4 && cpf) {
-      return isValidCpf(cpf.replace(/\D/g, ''));
-    }
-    return true;
-  };
+  const canAdvance = () => true;
 
   const handleNext = () => {
     if (step === 4) { handleFinish(); return; }
     setStep((s) => s + 1);
   };
 
-  const handleSkipCpf = () => {
-    setCpf('');
-    setCpfError('');
-    if (isPreview) { onComplete?.(); return; }
-    handleFinish(true);
+  const handleSkipRoutine = () => {
+    setDaily({ ...EMPTY_DAILY });
+    setStep(4);
   };
 
-  const handleFinish = async (skipCpf = false) => {
-    if (!skipCpf && cpf) {
-      const digits = cpf.replace(/\D/g, '');
-      if (!isValidCpf(digits)) {
-        setCpfError('CPF inválido. Verifique os dígitos.');
-        return;
-      }
+  const validateRequiredProfile = () => {
+    const errors = {};
+    const cleanName = profileName.trim().replace(/\s+/g, ' ');
+    const cpfDigits = normalizeCpf(cpf);
+
+    if (!cleanName || cleanName.split(' ').filter(Boolean).length < 2) {
+      errors.name = 'Confirme seu nome completo.';
     }
+    if (!isValidBirthDate(birthDate)) {
+      errors.birthDate = 'Informe uma data de nascimento válida.';
+    }
+    if (!cpfDigits) {
+      errors.cpf = 'Informe seu CPF.';
+    } else if (!isValidCpf(cpfDigits)) {
+      errors.cpf = 'CPF inválido. Verifique os dígitos.';
+    }
+
+    setProfileErrors(errors);
+    return {
+      valid: Object.keys(errors).length === 0,
+      cleanName,
+      cleanBirthDate: normalizeDateInput(birthDate),
+      cpfDigits,
+    };
+  };
+
+  const handleFinish = async () => {
+    const validation = validateRequiredProfile();
+    if (!validation.valid) return;
 
     if (isPreview) { onComplete?.(); return; }
 
@@ -634,25 +723,24 @@ export default function OnboardingWizard({
 
     try {
       const updates = {
+        nome: validation.cleanName,
+        birth_date: validation.cleanBirthDate,
+        cpf: validation.cpfDigits,
         onboarding_done: true,
         meta_horas_semana: totalHours || 0,
         updated_at: new Date().toISOString(),
       };
 
-      if (!skipCpf && cpf) {
-        const normalizedCpf = normalizeCpf(cpf);
-        const { data: existing } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('cpf', normalizedCpf)
-          .neq('id', currentUserId)
-          .maybeSingle();
-        if (existing) {
-          setCpfError('Este CPF já está cadastrado em outra conta.');
-          setSaving(false);
-          return;
-        }
-        updates.cpf = normalizedCpf;
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('cpf', validation.cpfDigits)
+        .neq('id', currentUserId)
+        .maybeSingle();
+      if (existing) {
+        setProfileErrors((prev) => ({ ...prev, cpf: 'Este CPF já está cadastrado em outra conta.' }));
+        setSaving(false);
+        return;
       }
 
       const { error } = await supabase
@@ -679,8 +767,20 @@ export default function OnboardingWizard({
   const stepContent = () => {
     if (step === 1) return <StepWelcome profile={profile} />;
     if (step === 2) return <StepContest objectiveLibrary={objectiveLibrary} selectedId={contestId} onSelect={setContestId} />;
-    if (step === 3) return <StepGoal daily={daily} onChange={setDaily} />;
-    if (step === 4) return <StepCpf value={cpf} onChange={(v) => { setCpf(v); setCpfError(''); }} error={cpfError} />;
+    if (step === 3) return <StepGoal daily={daily} onChange={setDaily} onSkip={handleSkipRoutine} />;
+    if (step === 4) {
+      return (
+        <StepRequiredProfile
+          name={profileName}
+          birthDate={birthDate}
+          cpf={cpf}
+          onNameChange={(value) => { setProfileName(value); setProfileErrors((prev) => ({ ...prev, name: '' })); }}
+          onBirthDateChange={(value) => { setBirthDate(value); setProfileErrors((prev) => ({ ...prev, birthDate: '' })); }}
+          onCpfChange={(value) => { setCpf(value); setProfileErrors((prev) => ({ ...prev, cpf: '' })); }}
+          errors={profileErrors}
+        />
+      );
+    }
     return null;
   };
 
@@ -733,16 +833,6 @@ export default function OnboardingWizard({
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {isLastStep && (
-            <button
-              type="button"
-              onClick={handleSkipCpf}
-              disabled={saving}
-              className="pl-btn pl-btn-ghost pl-btn-sm"
-            >
-              Pular CPF
-            </button>
-          )}
           <button
             type="button"
             onClick={handleNext}
@@ -753,7 +843,7 @@ export default function OnboardingWizard({
             {saving
               ? <Loader2 size={14} className="animate-spin" />
               : <ChevronRight size={14} />}
-            {step === 1 ? 'Começar' : step === 2 && !contestId ? 'Pular etapa' : isLastStep ? 'Finalizar' : 'Próximo'}
+            {step === 1 ? 'Começar' : (step === 2 && !contestId) || (step === 3 && totalHours === 0) ? 'Pular etapa' : isLastStep ? 'Finalizar' : 'Próximo'}
           </button>
         </div>
       </div>
