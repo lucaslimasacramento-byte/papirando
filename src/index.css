@@ -1105,10 +1105,118 @@ html, body {
 .pl-progress.accent .fill { background: var(--pl-accent); }
 .pl-progress.highlight .fill { background: var(--pl-highlight); }
 
+/* ── Tipografia de conteúdo longo ── */
+.pl-prose {
+  font-family: var(--pl-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--pl-ink);
+  max-width: 72ch;
+}
+
+.pl-prose p {
+  margin: 0 0 1.1em;
+}
+
+.pl-prose h1,
+.pl-prose h2,
+.pl-prose h3,
+.pl-prose h4 {
+  font-family: var(--pl-serif);
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--pl-ink);
+  margin: 1.6em 0 0.5em;
+  line-height: 1.2;
+}
+
+.pl-prose h1 { font-size: 2rem; }
+.pl-prose h2 { font-size: 1.5rem; }
+.pl-prose h3 { font-size: 1.15rem; }
+.pl-prose h4 { font-size: 1rem; font-style: normal; font-weight: 600; }
+
+.pl-prose strong { font-weight: 700; color: var(--pl-ink); }
+.pl-prose em { font-style: italic; color: var(--pl-ink-2); }
+
+.pl-prose a {
+  color: var(--pl-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.pl-prose a:hover { text-decoration-thickness: 2px; }
+
+.pl-prose ul,
+.pl-prose ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.5em;
+}
+
+.pl-prose li { margin-bottom: 0.35em; }
+
+.pl-prose blockquote {
+  border-left: 3px solid var(--pl-rule-strong);
+  margin: 1.4em 0;
+  padding: 0.2em 0 0.2em 1.2em;
+  color: var(--pl-ink-2);
+  font-style: italic;
+}
+
+.pl-prose code {
+  font-family: var(--pl-mono);
+  font-size: 0.875em;
+  background: var(--pl-bg-soft);
+  border: 1px solid var(--pl-rule-2);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+
+.pl-prose pre {
+  background: var(--pl-bg-soft);
+  border: 1px solid var(--pl-rule-2);
+  border-radius: 6px;
+  padding: 1em 1.2em;
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+
+.pl-prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+.pl-prose hr {
+  border: none;
+  border-top: 1px solid var(--pl-rule-2);
+  margin: 2em 0;
+}
+
+/* Variante sem max-width (para layouts que já controlam a largura) */
+.pl-prose-full {
+  max-width: none;
+}
+
 /* ── Live pill pulse ── */
+@keyframes pl-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pl-slide-up {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @keyframes pl-live-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(77,124,63,0.30); }
   50%      { box-shadow: 0 0 0 6px rgba(77,124,63,0.00); }
+}
+
+.pl-live-pulse {
+  animation: pl-live-pulse 1.8s ease-in-out infinite;
 }
 
 /* ── Gabarito reveal ── */
@@ -1117,10 +1225,19 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.pl-gabarito-reveal {
+  animation: pl-gabarito-reveal 0.28s ease-out both;
+}
+
 /* ── AI surfaces — sistema Bizu v1.0 ── */
 @keyframes papirando-aura-pulse {
   0%, 100% { opacity: 0.50; transform: scale(0.85); }
   50%       { opacity: 1.00; transform: scale(1.18); }
+}
+
+@keyframes pl-ai-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
 
 /* Tag IA — ink sólido, sparkle #93b4ff */
@@ -1131,6 +1248,21 @@ html, body {
   background: var(--pl-bg-soft);
   color: var(--pl-ink);
   border: 1px solid var(--pl-rule-2);
+  overflow: hidden; position: relative;
+}
+.pl-tag-ai::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(147,180,255,0.18) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: pl-ai-shimmer 2.4s ease-in-out infinite;
+  pointer-events: none;
 }
 .pl-tag-ai > svg,
 .pl-tag-ai > .icon { color: #93b4ff; }
@@ -9180,4 +9312,58 @@ textarea.simulados-register-input {
   padding: 10px 16px !important; border-radius: 10px !important;
   font-size: 12px !important; font-weight: 700 !important;
   display: inline-flex; align-items: center; gap: 6px;
+}
+
+/* ─── Mobile responsiveness (max-width: 640px) ─── */
+@media (max-width: 640px) {
+
+  /* Modais — largura máxima */
+  .simulados-registro-modal,
+  .simulados-caderno-modal {
+    max-width: 95vw !important;
+    width: 95vw !important;
+  }
+
+  /* RegistroSimuladoModal — cabeçalho e rodapé */
+  .simulados-modal-head,
+  .simulados-modal-footer {
+    padding: 14px 12px !important;
+  }
+
+  .simulados-modal-body {
+    padding: 12px !important;
+  }
+
+  /* RegistroSimuladoModal — form meta (5 colunas → 1) */
+  .simulados-registro-meta {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* RegistroSimuladoModal — tabela de questões (7 colunas → scroll) */
+  .simulados-registro-table-head,
+  .simulados-registro-row {
+    grid-template-columns: minmax(0, 1fr) 56px 56px !important;
+    font-size: 10px !important;
+  }
+
+  /* Ocultar colunas extras da tabela de questões em mobile */
+  .simulados-registro-table-head > div:nth-child(n+4),
+  .simulados-registro-row > div:nth-child(n+4) {
+    display: none !important;
+  }
+
+  /* CadernoModal — form grids (2/3 colunas → 1) */
+  .simulados-form-grid.two,
+  .simulados-form-grid.three {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* CadernoModal — hero section */
+  .simulados-caderno-hero {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
 }

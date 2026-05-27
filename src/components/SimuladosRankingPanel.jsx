@@ -53,7 +53,7 @@ export default function SimuladosRankingPanel({
       });
       setRows(Array.isArray(data) ? data : []);
     } catch (e) {
-      setLoadError(String(e?.message || 'Não foi possível carregar o ranking.'));
+      setLoadError(String(e?.message || 'Nao foi possivel carregar o ranking.'));
       setRows([]);
     } finally {
       setLoading(false);
@@ -82,8 +82,8 @@ export default function SimuladosRankingPanel({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-[#14110d]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-      <button type="button" aria-label="Fechar ranking" className="absolute inset-0" onClick={onClose} />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 95, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(20,17,13,0.70)', backdropFilter: 'blur(4px)', padding: 0 }}>
+      <button type="button" aria-label="Fechar ranking" style={{ position: 'absolute', inset: 0 }} onClick={onClose} />
       <div className="simulados-modal-shell simulados-ranking-modal" role="dialog" aria-modal="true" aria-labelledby="ranking-dialog-title">
         <header className="simulados-modal-head">
           <div>
@@ -139,67 +139,265 @@ function MiniProfileSheet({ person, profile, onClose }) {
   const full = isSelf ? String(profile?.full_name || person.fullName || '').trim() : String(person.fullName || '').trim();
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end sm:justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true">
-      <button type="button" className="absolute inset-0 bg-slate-950/35 backdrop-blur-sm" aria-label="Fechar" onClick={onClose} />
-      <div className="relative z-10 flex h-full w-full max-w-md animate-in slide-in-from-bottom-4 flex-col overflow-hidden rounded-t-3xl border border-slate-200/90 bg-white shadow-[0_-12px_60px_rgba(15,23,42,0.2)] duration-300 sm:h-auto sm:max-h-[90vh] sm:rounded-3xl sm:shadow-2xl">
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-blue-600/10 via-violet-500/5 to-transparent" />
-        <div className="relative flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Perfil</p>
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}
+      role="dialog"
+      aria-modal="true"
+    >
+      {/* Overlay */}
+      <button
+        type="button"
+        style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.35)', backdropFilter: 'blur(4px)' }}
+        aria-label="Fechar"
+        onClick={onClose}
+      />
+      {/* Sheet */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          maxWidth: 448,
+          height: '100%',
+          overflow: 'hidden',
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          border: '1px solid var(--pl-rule-2)',
+          background: 'var(--pl-surface)',
+          boxShadow: 'var(--pl-sh-high)',
+        }}
+      >
+        {/* Decorative header gradient */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 160,
+            background: 'linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(139,92,246,0.04) 60%, transparent 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Top bar */}
+        <div
+          style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid var(--pl-rule)',
+            padding: '16px 20px',
+          }}
+        >
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.22em',
+              color: 'var(--pl-ink-3)',
+            }}
+          >
+            Perfil
+          </p>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition hover:bg-slate-50"
+            style={{
+              borderRadius: 10,
+              border: '1px solid var(--pl-rule-2)',
+              background: 'var(--pl-surface)',
+              padding: 8,
+              color: 'var(--pl-ink-2)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
             <X size={16} />
           </button>
         </div>
-        <div className="relative flex-1 overflow-y-auto px-5 pb-8 pt-2">
-          <div className="mx-auto flex max-w-[220px] flex-col items-center text-center">
-            <div className="relative">
-              <div className="h-28 w-28 overflow-hidden rounded-3xl border-4 border-white shadow-xl ring-2 ring-slate-100">
-                <img src={avatarSrc(person)} alt="" className="h-full w-full object-cover" />
+
+        {/* Body */}
+        <div style={{ position: 'relative', flex: 1, overflowY: 'auto', padding: '8px 20px 32px' }}>
+          {/* Avatar */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', maxWidth: 220, margin: '0 auto' }}>
+            <div style={{ position: 'relative' }}>
+              <div
+                style={{
+                  width: 112,
+                  height: 112,
+                  overflow: 'hidden',
+                  borderRadius: 24,
+                  border: '4px solid var(--pl-surface)',
+                  boxShadow: 'var(--pl-sh-high)',
+                  outline: '2px solid var(--pl-rule-2)',
+                }}
+              >
+                <img src={avatarSrc(person)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               {isSelf ? (
-                <span className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-md">
+                <span
+                  style={{
+                    position: 'absolute',
+                    bottom: -8,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    borderRadius: 999,
+                    background: 'var(--pl-accent)',
+                    padding: '4px 12px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    color: 'var(--pl-bg)',
+                    boxShadow: 'var(--pl-sh-low)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   <User size={11} />
-                  Você
+                  Voce
                 </span>
               ) : null}
             </div>
-            <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-900">{display}</h3>
+
+            <h3
+              style={{
+                marginTop: 20,
+                fontSize: 20,
+                fontWeight: 600,
+                letterSpacing: '-0.02em',
+                color: 'var(--pl-ink)',
+              }}
+            >
+              {display}
+            </h3>
             {full && full !== display.replace(/^@/, '') ? (
-              <p className="mt-1 text-sm font-medium text-slate-500">{full}</p>
+              <p style={{ marginTop: 4, fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{full}</p>
             ) : null}
             {person.rank ? (
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
-                Posição <span className="tabular-nums text-slate-900">#{person.rank}</span>
+              <p
+                style={{
+                  marginTop: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  borderRadius: 999,
+                  border: '1px solid var(--pl-rule-2)',
+                  background: 'var(--pl-bg-soft)',
+                  padding: '4px 12px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--pl-ink-2)',
+                }}
+              >
+                Posicao{' '}
+                <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--pl-ink)' }}>#{person.rank}</span>
               </p>
             ) : null}
           </div>
 
-          <div className="mt-8 grid grid-cols-3 gap-2 rounded-2xl border border-slate-100 bg-slate-50/90 p-3 sm:gap-3 sm:p-4">
-            <div className="rounded-xl bg-white px-2 py-3 text-center shadow-sm sm:py-4">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Total</p>
-              <p className="mt-1 text-xl font-bold tabular-nums text-slate-900">{person.totalScore}</p>
-            </div>
-            <div className="rounded-xl bg-white px-2 py-3 text-center shadow-sm sm:py-4">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-blue-600">Questões</p>
-              <p className="mt-1 text-xl font-bold tabular-nums text-blue-700">{person.questionPoints}</p>
-            </div>
-            <div className="rounded-xl bg-white px-2 py-3 text-center shadow-sm sm:py-4">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-violet-600">Redação</p>
-              <p className="mt-1 text-xl font-bold tabular-nums text-violet-800">{person.redacaoPoints || 0}</p>
-            </div>
+          {/* Stats grid */}
+          <div
+            style={{
+              marginTop: 32,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 8,
+              borderRadius: 16,
+              border: '1px solid var(--pl-rule)',
+              background: 'var(--pl-bg-soft)',
+              padding: 12,
+            }}
+          >
+            {[
+              { label: 'Total', value: person.totalScore, color: 'var(--pl-ink)' },
+              { label: 'Questoes', value: person.questionPoints, color: 'var(--pl-accent)' },
+              { label: 'Redacao', value: person.redacaoPoints || 0, color: 'var(--pl-accent)' },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                style={{
+                  borderRadius: 10,
+                  background: 'var(--pl-surface)',
+                  padding: '12px 8px',
+                  textAlign: 'center',
+                  boxShadow: 'var(--pl-sh-low)',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    color: 'var(--pl-ink-3)',
+                  }}
+                >
+                  {stat.label}
+                </p>
+                <p
+                  style={{
+                    marginTop: 4,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    fontVariantNumeric: 'tabular-nums',
+                    color: stat.color,
+                  }}
+                >
+                  {stat.value}
+                </p>
+              </div>
+            ))}
           </div>
 
-          <dl className="mt-6 space-y-3 rounded-2xl border border-slate-100 bg-white p-4 text-sm shadow-sm">
-            <div className="flex justify-between gap-3 border-b border-slate-50 pb-3">
-              <dt className="font-medium text-slate-500">Tentativas (questões)</dt>
-              <dd className="font-semibold tabular-nums text-slate-900">{person.questionAttempts}</dd>
+          {/* Details list */}
+          <dl
+            style={{
+              marginTop: 24,
+              borderRadius: 16,
+              border: '1px solid var(--pl-rule)',
+              background: 'var(--pl-surface)',
+              padding: 16,
+              fontSize: 14,
+              boxShadow: 'var(--pl-sh-low)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 12,
+                borderBottom: '1px solid var(--pl-rule)',
+                paddingBottom: 12,
+                marginBottom: 12,
+              }}
+            >
+              <dt style={{ fontWeight: 500, color: 'var(--pl-ink-2)' }}>Tentativas (questoes)</dt>
+              <dd style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: 'var(--pl-ink)' }}>
+                {person.questionAttempts}
+              </dd>
             </div>
-            <div className="flex justify-between gap-3">
-              <dt className="font-medium text-slate-500">Plano</dt>
-              <dd className="max-w-[55%] text-right font-semibold capitalize text-slate-800">{person.plan || '—'}</dd>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+              <dt style={{ fontWeight: 500, color: 'var(--pl-ink-2)' }}>Plano</dt>
+              <dd
+                style={{
+                  maxWidth: '55%',
+                  textAlign: 'right',
+                  fontWeight: 600,
+                  textTransform: 'capitalize',
+                  color: 'var(--pl-ink)',
+                }}
+              >
+                {person.plan || '—'}
+              </dd>
             </div>
           </dl>
         </div>

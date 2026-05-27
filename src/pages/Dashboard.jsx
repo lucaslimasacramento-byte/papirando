@@ -1,10 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import {
   ArrowRight,
+  BookOpen,
   FileText,
   Flame,
   Play,
   Sparkles,
+  Star,
+  Target,
+  Trophy,
+  Zap,
 } from 'lucide-react';
 import { buildStudyHistoryOverview, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
@@ -133,7 +138,7 @@ export default function Dashboard({
   if (!targetContest && safeHistorico.length === 0) {
     return (
       <div style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
-        <div style={{ width: '100%', padding: '22px 32px 38px' }}>
+        <div style={{ width: '100%', padding: 'clamp(16px, 4vw, 38px) clamp(12px, 3vw, 32px)' }}>
           <PlDashboardEmpty
             greeting={greeting}
             userName={cleanUserName}
@@ -149,7 +154,7 @@ export default function Dashboard({
 
   return (
     <div style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
-      <div style={{ width: '100%', padding: '22px 32px 36px' }}>
+      <div style={{ width: '100%', padding: 'clamp(16px, 4vw, 36px) clamp(12px, 3vw, 32px)' }}>
         <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: 28, alignItems: 'center' }}>
           <div style={{ minWidth: 0 }}>
             <div className="pl-eyebrow">
@@ -204,7 +209,7 @@ export default function Dashboard({
 
         <div className="pl-rule" style={{ margin: '18px 0 16px' }} />
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 12 }}>
           <PlKpi label="Papirado hoje" num={historyOverview.todayMinutesLabel} detail="Volume efetivo" />
           <PlKpi label="Sequencia" num={String(historyOverview.streakDays)} unit="d" detail="dias sem falhar" icon={<Flame size={14} style={{ color: 'var(--pl-warn)' }} />} />
           <PlKpi label="Precisao" num={String(weeklyAccuracy)} unit="%" detail={`${totalAcertos} acertos - ${totalErros} erros`} />
@@ -212,7 +217,24 @@ export default function Dashboard({
           <PlKpi label="Revisões" num={String(urgentReviews).padStart(2, '0')} detail="Alta prioridade" accentColor={urgentReviews > 0 ? 'warn' : undefined} />
         </section>
 
-        <section style={{ display: 'grid', gridTemplateColumns: '1.65fr 1fr', gap: 14, marginTop: 18 }}>
+        {/* ── Foco do Dia + Streak ── */}
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 18 }}>
+          <PlFocoDia
+            recommendation={primaryRecommendation}
+            todayProgress={historyOverview.todayGoalProgress}
+            todayMinutesLabel={historyOverview.todayMinutesLabel}
+            urgentReviews={urgentReviews}
+            onStart={quickAction.onClick}
+            onRevisoes={() => setActiveTab?.('revisoes')}
+          />
+          <PlStreakCard
+            streakDays={historyOverview.streakDays}
+            todayMinutes={historyOverview.todayMinutes}
+            todayGoalProgress={historyOverview.todayGoalProgress}
+          />
+        </section>
+
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginTop: 18 }}>
           <div className="pl-card" style={{ padding: '16px 18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
               <div>
@@ -516,7 +538,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
             marginTop: -10,
             maxWidth: 650,
             border: '1px solid rgba(30,58,95,0.22)',
-            background: '#fffaf0',
+            background: 'var(--pl-bg)',
             borderRadius: 12,
             padding: '18px 20px',
             boxShadow: '0 16px 34px rgba(20,17,13,0.12)',
@@ -530,7 +552,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
               left: `${Math.min(86, 14 + tutorialStep * 32)}%`,
               width: 16,
               height: 16,
-              background: '#fffaf0',
+              background: 'var(--pl-bg)',
               borderLeft: '1px solid rgba(30,58,95,0.22)',
               borderTop: '1px solid rgba(30,58,95,0.22)',
               transform: 'rotate(45deg)',
@@ -578,7 +600,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
           gap: 20,
           borderRadius: 12,
           border: '1px solid rgba(20,17,13,0.16)',
-          background: 'linear-gradient(135deg, #fbfaf6 0%, #f4ead2 68%, #ede8dc 100%)',
+          background: 'var(--pl-bg-soft)',
           boxShadow: '0 18px 40px rgba(20,17,13,0.08)',
         }}
       >
@@ -623,7 +645,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
               padding: '0 9px',
               borderRadius: 999,
               border: '1px solid rgba(30,58,95,0.22)',
-              background: 'rgba(255,255,255,0.65)',
+              background: 'var(--pl-surface)',
               color: '#1e3a5f',
               fontSize: 11,
               fontWeight: 800,
@@ -643,7 +665,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
                 key={step}
                 style={{
                   border: '1px solid rgba(20,17,13,0.13)',
-                  background: 'rgba(251,250,246,0.7)',
+                  background: 'var(--pl-bg-soft)',
                   borderRadius: 999,
                   padding: '6px 10px',
                   fontSize: 12,
@@ -678,7 +700,7 @@ function PlOnboardStep({ number, title, text, active = false, dimmed = false }) 
       style={{
         padding: '18px 20px',
         borderColor: active ? 'rgba(30,58,95,0.38)' : undefined,
-        background: active ? 'linear-gradient(135deg, #fffaf0 0%, #f4ead2 100%)' : undefined,
+        background: active ? 'var(--pl-bg-soft)' : undefined,
         boxShadow: active ? '0 16px 32px rgba(30,58,95,0.14)' : undefined,
         opacity: dimmed ? 0.56 : 1,
         transform: active ? 'translateY(-2px)' : 'none',
@@ -688,6 +710,185 @@ function PlOnboardStep({ number, title, text, active = false, dimmed = false }) 
       <div className="pl-num" style={{ fontSize: 38, color: active ? '#1e3a5f' : 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
       <h3 style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{title}</h3>
       <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{text}</p>
+    </div>
+  );
+}
+
+function PlFocoDia({ recommendation, todayProgress, todayMinutesLabel, urgentReviews, onStart, onRevisoes }) {
+  const topico = recommendation?.nextTopic?.nome || null;
+  const disciplina = recommendation?.nome || null;
+  const reason = recommendation?.reason || null;
+  const goalDone = todayProgress >= 100;
+
+  return (
+    <div className="pl-card" style={{ padding: '18px 22px', display: 'flex', gap: 20, alignItems: 'stretch', overflow: 'hidden', position: 'relative' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <span className="pl-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Target size={10} /> Foco do dia
+          </span>
+          {goalDone && (
+            <span style={{ borderRadius: 999, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: '2px 10px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-success)' }}>
+              Meta atingida!
+            </span>
+          )}
+          {urgentReviews > 0 && (
+            <span style={{ borderRadius: 999, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: '2px 10px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-warn)' }}>
+              {urgentReviews} revisão urgente
+            </span>
+          )}
+        </div>
+
+        {disciplina ? (
+          <>
+            <h3 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>
+              {disciplina}<span style={{ color: 'var(--pl-accent)' }}>.</span>
+            </h3>
+            {topico && (
+              <p style={{ margin: '6px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <BookOpen size={12} /> {topico}
+              </p>
+            )}
+            {reason && (
+              <p style={{ margin: '10px 0 0', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)', fontWeight: 500, maxWidth: 480 }}>
+                {reason}
+              </p>
+            )}
+          </>
+        ) : (
+          <p style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 24, color: 'var(--pl-ink-2)', lineHeight: 1.2 }}>
+            Registre estudo para personalizar o foco diário.
+          </p>
+        )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
+          <button className="pl-btn pl-btn-primary pl-btn-sm" onClick={onStart} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Zap size={12} /> Estudar agora
+          </button>
+          {urgentReviews > 0 && (
+            <button className="pl-btn pl-btn-sm" onClick={onRevisoes} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              Revisar <ArrowRight size={11} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <ProgressRing percent={todayProgress} />
+        <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-3)', textAlign: 'center' }}>
+          {todayMinutesLabel}<br />papirado
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ProgressRing({ percent }) {
+  const r = 34;
+  const circ = 2 * Math.PI * r;
+  const fill = circ - (Math.min(percent, 100) / 100) * circ;
+  const done = percent >= 100;
+  return (
+    <svg width={84} height={84} viewBox="0 0 84 84">
+      <circle cx={42} cy={42} r={r} fill="none" stroke="var(--pl-rule-2)" strokeWidth={7} />
+      <circle
+        cx={42} cy={42} r={r} fill="none"
+        stroke={done ? 'var(--pl-success)' : 'var(--pl-accent)'}
+        strokeWidth={7} strokeLinecap="round"
+        strokeDasharray={circ} strokeDashoffset={fill}
+        style={{ transform: 'rotate(-90deg)', transformOrigin: '42px 42px', transition: 'stroke-dashoffset 0.6s ease' }}
+      />
+      <text x={42} y={47} textAnchor="middle" style={{ fontSize: 14, fontWeight: 800, fill: done ? 'var(--pl-success)' : 'var(--pl-ink)', fontFamily: 'var(--pl-sans)' }}>
+        {percent}%
+      </text>
+    </svg>
+  );
+}
+
+const STREAK_MILESTONES = [3, 7, 14, 21, 30, 60, 100];
+
+function PlStreakCard({ streakDays, todayMinutes, todayGoalProgress }) {
+  const nextMilestone = STREAK_MILESTONES.find((m) => m > streakDays) || STREAK_MILESTONES[STREAK_MILESTONES.length - 1];
+  const prevMilestone = [...STREAK_MILESTONES].reverse().find((m) => m <= streakDays) || 0;
+  const pct = nextMilestone > prevMilestone ? Math.min(100, Math.round(((streakDays - prevMilestone) / (nextMilestone - prevMilestone)) * 100)) : 100;
+  const isActive = todayMinutes > 0;
+  const isMilestone = STREAK_MILESTONES.includes(streakDays) && streakDays > 0;
+
+  return (
+    <div
+      className="pl-card"
+      style={{
+        padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 14,
+        background: isMilestone ? 'var(--pl-bg-soft)' : 'var(--pl-surface)',
+        borderColor: isMilestone ? 'var(--pl-warn)' : undefined,
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      {isMilestone && (
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 64, height: 64, overflow: 'hidden', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', top: 8, right: -16, width: 64, transform: 'rotate(45deg)', background: 'var(--pl-warn)', textAlign: 'center', fontSize: 8.5, fontWeight: 800, color: 'white', padding: '3px 0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Marco!
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+        <div>
+          <p className="pl-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Flame size={10} style={{ color: streakDays > 0 ? 'var(--pl-warn)' : 'var(--pl-ink-4)' }} />
+            Sequência
+          </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 6 }}>
+            {streakDays > 0 && (
+              <span className="pl-live-pulse" style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 999, background: 'var(--pl-success)', flexShrink: 0, alignSelf: 'center' }} />
+            )}
+            <span className="pl-num" style={{ fontSize: 46, lineHeight: 1, color: streakDays > 0 ? 'var(--pl-ink)' : 'var(--pl-ink-3)' }}>
+              {streakDays}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
+              {streakDays === 1 ? 'dia' : 'dias'}
+            </span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {STREAK_MILESTONES.slice(0, 5).map((m) => (
+            <div key={m} title={`${m} dias`} style={{ width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: streakDays >= m ? 'var(--pl-warn)' : 'var(--pl-bg-soft)', border: `1px solid ${streakDays >= m ? 'var(--pl-warn)' : 'var(--pl-rule-2)'}`, transition: 'background 0.2s' }}>
+              {streakDays >= m
+                ? <Star size={11} fill="white" style={{ color: 'white' }} />
+                : <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{m}</span>
+              }
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {streakDays < 100 && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, color: 'var(--pl-ink-3)', fontWeight: 600 }}>
+            <span>{streakDays}d</span>
+            <span>Próximo: {nextMilestone}d</span>
+          </div>
+          <div style={{ height: 5, borderRadius: 99, background: 'var(--pl-rule-2)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 99, background: streakDays > 0 ? 'var(--pl-warn)' : 'var(--pl-rule-strong)', width: `${pct}%`, transition: 'width 0.6s ease' }} />
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: isActive ? 'var(--pl-success-soft)' : 'var(--pl-bg-soft)', border: `1px solid ${isActive ? 'var(--pl-success-soft)' : 'var(--pl-rule)'}` }}>
+        <div style={{ width: 7, height: 7, borderRadius: '50%', background: isActive ? 'var(--pl-success)' : 'var(--pl-ink-4)', flexShrink: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? 'var(--pl-success)' : 'var(--pl-ink-3)' }}>
+          {isActive ? `Ativo hoje — ${todayGoalProgress}% da meta` : 'Ainda não estudou hoje'}
+        </span>
+      </div>
+
+      {isMilestone && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn-soft)' }}>
+          <Trophy size={14} style={{ color: 'var(--pl-warn)', flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-warn)' }}>
+            {streakDays} dias sem parar! Sequência incrível.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

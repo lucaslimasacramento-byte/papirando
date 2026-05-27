@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { normalizeCpf, isValidCpf } from '../lib/profileProgress';
+import { showToast } from '../lib/dialogs';
 
 const TOTAL_STEPS = 4;
 
@@ -29,6 +30,16 @@ const EMPTY_DAILY = { seg: 0, ter: 0, qua: 0, qui: 0, sex: 0, sab: 0, dom: 0 };
 
 function sumHours(daily) {
   return Object.values(daily).reduce((acc, v) => acc + (Number(v) || 0), 0);
+}
+
+function formatHours(h) {
+  if (!h || h <= 0) return '—';
+  const totalMin = Math.round(h * 60);
+  const hrs = Math.floor(totalMin / 60);
+  const min = totalMin % 60;
+  if (hrs === 0) return `${min}min`;
+  if (min === 0) return `${hrs}h`;
+  return `${hrs}h ${min}min`;
 }
 
 function formatCpfMask(raw) {
@@ -214,45 +225,78 @@ function StepGoal({ daily, onChange }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {DAYS.map(({ id, label }) => (
-          <div key={id} style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '8px 12px',
-            border: '1px solid var(--pl-rule-2)', borderRadius: 8,
-            background: (Number(daily[id]) || 0) > 0 ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
-            transition: 'background .15s',
-          }}>
-            <span style={{
-              width: 72, flexShrink: 0,
-              fontSize: 13, fontWeight: 600,
-              color: (Number(daily[id]) || 0) > 0 ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+        {DAYS.map(({ id, label }) => {
+          const val = Number(daily[id]) || 0;
+          const totalMin = Math.round(val * 60);
+          const hrs = Math.floor(totalMin / 60);
+          const mins = totalMin % 60;
+          const active = val > 0;
+
+          const setDay = (newHrs, newMins) => {
+            const clampedH = Math.min(16, Math.max(0, newHrs));
+            const clampedM = Math.min(59, Math.max(0, newMins));
+            onChange({ ...daily, [id]: clampedH + clampedM / 60 });
+          };
+
+          return (
+            <div key={id} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '7px 12px',
+              border: '1px solid var(--pl-rule-2)', borderRadius: 8,
+              background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+              transition: 'background .15s',
             }}>
-              {label}
-            </span>
-            <input
-              type="number"
-              min="0"
-              max="16"
-              step="0.5"
-              value={daily[id] === 0 ? '' : daily[id]}
-              placeholder="0"
-              onChange={(e) => {
-                const val = Math.min(16, Math.max(0, parseFloat(e.target.value) || 0));
-                onChange({ ...daily, [id]: val });
-              }}
-              style={{
-                flex: 1, minWidth: 0,
-                height: 34, padding: '0 10px',
-                border: '1px solid var(--pl-rule-2)', borderRadius: 6,
-                background: 'var(--pl-surface)',
-                fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)',
-                fontFamily: 'var(--pl-mono)',
-                textAlign: 'right',
-              }}
-            />
-            <span style={{ flexShrink: 0, fontSize: 12, color: 'var(--pl-ink-3)', width: 16 }}>h</span>
-          </div>
-        ))}
+              <span style={{
+                width: 68, flexShrink: 0,
+                fontSize: 13, fontWeight: 600,
+                color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+              }}>
+                {label}
+              </span>
+
+              {/* Horas */}
+              <input
+                type="number"
+                min="0"
+                max="16"
+                step="1"
+                value={hrs === 0 ? '' : hrs}
+                placeholder="0"
+                onChange={(e) => setDay(parseInt(e.target.value) || 0, mins)}
+                style={{
+                  width: 44, height: 32, padding: '0 6px',
+                  border: '1px solid var(--pl-rule-2)', borderRadius: 6,
+                  background: 'var(--pl-surface)',
+                  fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)',
+                  fontFamily: 'var(--pl-mono)', textAlign: 'center',
+                }}
+              />
+              <span style={{ fontSize: 12, color: 'var(--pl-ink-3)', flexShrink: 0 }}>h</span>
+
+              {/* Minutos */}
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="1"
+                value={mins === 0 ? '' : mins}
+                placeholder="00"
+                onChange={(e) => {
+                  const m = Math.min(59, Math.max(0, parseInt(e.target.value) || 0));
+                  setDay(hrs, m);
+                }}
+                style={{
+                  width: 44, height: 32, padding: '0 6px',
+                  border: '1px solid var(--pl-rule-2)', borderRadius: 6,
+                  background: 'var(--pl-surface)',
+                  fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)',
+                  fontFamily: 'var(--pl-mono)', textAlign: 'center',
+                }}
+              />
+              <span style={{ fontSize: 12, color: 'var(--pl-ink-3)', flexShrink: 0 }}>min</span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Soma total */}
@@ -266,7 +310,7 @@ function StepGoal({ daily, onChange }) {
           Total semanal
         </span>
         <span className="pl-num" style={{ fontSize: 22, color: total > 0 ? 'var(--pl-accent)' : 'var(--pl-ink-4)' }}>
-          {total % 1 === 0 ? total : total.toFixed(1)}h
+          {formatHours(total)}
         </span>
       </div>
 
@@ -335,6 +379,7 @@ export default function OnboardingWizard({
   currentUserId,
   setTargetContestId,
   onComplete,
+  isPreview = false,
 }) {
   const [step, setStep] = useState(1);
   const [contestId, setContestId] = useState('');
@@ -361,6 +406,7 @@ export default function OnboardingWizard({
   const handleSkipCpf = () => {
     setCpf('');
     setCpfError('');
+    if (isPreview) { onComplete?.(); return; }
     handleFinish(true);
   };
 
@@ -373,6 +419,8 @@ export default function OnboardingWizard({
       }
     }
 
+    if (isPreview) { onComplete?.(); return; }
+
     setSaving(true);
     setSaveError('');
 
@@ -383,7 +431,21 @@ export default function OnboardingWizard({
         updated_at: new Date().toISOString(),
       };
 
-      if (!skipCpf && cpf) updates.cpf = normalizeCpf(cpf);
+      if (!skipCpf && cpf) {
+        const normalizedCpf = normalizeCpf(cpf);
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('cpf', normalizedCpf)
+          .neq('id', currentUserId)
+          .maybeSingle();
+        if (existing) {
+          setCpfError('Este CPF já está cadastrado em outra conta.');
+          setSaving(false);
+          return;
+        }
+        updates.cpf = normalizedCpf;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -394,9 +456,12 @@ export default function OnboardingWizard({
 
       if (contestId) setTargetContestId?.(contestId);
 
+      showToast('Configuração salva! Bem-vindo ao Papirando.', 'success');
       onComplete?.(updates);
     } catch (e) {
-      setSaveError(e?.message || 'Não foi possível salvar. Tente novamente.');
+      const msg = e?.message || 'Não foi possível salvar. Tente novamente.';
+      setSaveError(msg);
+      showToast(msg, 'error');
       setSaving(false);
     }
   };

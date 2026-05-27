@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { showConfirm } from '../lib/dialogs';
 import {
   ArrowBigUp,
   Bookmark,
@@ -57,35 +58,50 @@ function hotEngagementScore(post) {
 
 function CommunityTopTenSidebar({ posts = [], tags = [], onPickTrend, className = '' }) {
   return (
-    <div className={cx('flex min-h-0 flex-1 flex-col rounded-[20px] border border-slate-200 bg-white', className)}>
-      <div className="shrink-0 border-b border-slate-100 px-4 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Top 10</p>
-        <p className="mt-0.5 text-sm font-bold text-slate-900">Tópicos mais engajados</p>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">Clique para abrir no feed central.</p>
+    <div
+      className={className}
+      style={{
+        display: 'flex', minHeight: 0, flex: 1, flexDirection: 'column',
+        borderRadius: 20, border: '1px solid var(--pl-rule-2)',
+        background: 'var(--pl-surface)',
+      }}
+    >
+      <div style={{ flexShrink: 0, borderBottom: '1px solid var(--pl-rule)', padding: '12px 16px' }}>
+        <p className="pl-eyebrow">Top 10</p>
+        <p style={{ marginTop: 2, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Tópicos mais engajados</p>
+        <p style={{ marginTop: 4, fontSize: 12, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>Clique para abrir no feed central.</p>
       </div>
-      <ul className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain">
+      <ul style={{ minHeight: 0, flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', margin: 0, padding: 0, listStyle: 'none' }}>
         {posts.map((tp, idx) => {
           const slug = String(tp.categorySlug || 'geral').toLowerCase();
           return (
-            <li key={`top-${tp.id}`}>
+            <li key={`top-${tp.id}`} style={{ borderTop: idx === 0 ? 'none' : '1px solid var(--pl-rule)' }}>
               <button
                 type="button"
                 onClick={() => onPickTrend?.({ type: 'post', post: tp, tags })}
-                className="flex w-full gap-3 px-3 py-3 text-left transition hover:bg-slate-50"
+                style={{
+                  display: 'flex', width: '100%', gap: 12, padding: '12px',
+                  textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
+                }}
               >
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-slate-100">
+                <div style={{ position: 'relative', height: 48, width: 48, flexShrink: 0, overflow: 'hidden', borderRadius: 6, background: 'var(--pl-bg-soft)' }}>
                   {tp.avatar ? (
-                    <img src={tp.avatar} alt="" className="h-full w-full object-cover" />
+                    <img src={tp.avatar} alt="" className="object-cover" style={{ height: '100%', width: '100%' }} />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-[11px] font-bold text-slate-500">{initials(tp.author)}</span>
+                    <span style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{initials(tp.author)}</span>
                   )}
-                  <span className="absolute -bottom-0.5 -right-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-slate-200 bg-white px-0.5 text-[10px] font-bold text-slate-700">
+                  <span style={{
+                    position: 'absolute', bottom: -2, right: -2, display: 'flex',
+                    height: 20, minWidth: 20, alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 4, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)',
+                    padding: '0 2px', fontSize: 10, fontWeight: 700, color: 'var(--pl-ink)',
+                  }}>
                     {idx + 1}
                   </span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-xs font-semibold leading-snug text-slate-800">{tp.title}</p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, fontWeight: 600, lineHeight: 1.35, color: 'var(--pl-ink)' }}>{tp.title}</p>
+                  <p style={{ marginTop: 4, fontSize: 11, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
                     s/{slug} · {formatCommunityRelativeTime(tp.createdAt)} · {Number(tp.upvotesCount || 0)} apoios · {Number(tp.commentsCount || 0)} com.
                   </p>
                 </div>
@@ -114,38 +130,43 @@ function sortPostsByMode(posts, mode) {
   });
 }
 
-function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', onAdminCommentAction, redditDark = false }) {
+function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', onAdminCommentAction }) {
   return (
-    <div
-      className={cx(
-        'rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md',
-        redditDark ? 'border-[#343536] bg-[#272729]' : 'border-slate-100 bg-slate-50'
-      )}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div
-            className={cx(
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-xs font-semibold',
-              redditDark ? 'bg-[#1a1a1b] text-[#D7DADC]' : 'bg-slate-200 text-slate-700'
-            )}
-          >
-            {comment.avatar ? <img src={comment.avatar} alt="" className="h-full w-full rounded-2xl object-cover" /> : initials(comment.author)}
+    <div style={{
+      borderRadius: 12,
+      border: '1px solid var(--pl-rule)',
+      padding: 16,
+      background: 'var(--pl-bg-soft)',
+      boxShadow: 'var(--pl-sh-low)',
+    }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', minWidth: 0, flex: 1, alignItems: 'center', gap: 12 }}>
+          <div style={{
+            display: 'flex', height: 36, width: 36, flexShrink: 0,
+            alignItems: 'center', justifyContent: 'center', borderRadius: 12,
+            background: 'var(--pl-rule-2)', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)',
+            overflow: 'hidden',
+          }}>
+            {comment.avatar ? <img src={comment.avatar} alt="" className="object-cover" style={{ height: '100%', width: '100%', borderRadius: 12 }} /> : initials(comment.author)}
           </div>
-          <div className="min-w-0">
-            <p className={cx('truncate text-sm font-semibold', redditDark ? 'text-[#D7DADC]' : 'text-slate-800')}>{comment.author}</p>
-            <p className={cx('text-[10px] font-semibold uppercase tracking-[0.16em]', redditDark ? 'text-[#818384]' : 'text-slate-400')}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>{comment.author}</p>
+            <p className="pl-eyebrow" style={{ letterSpacing: '0.16em' }}>
               {formatCommunityRelativeTime(comment.createdAt)}
             </p>
           </div>
         </div>
         {isAdmin ? (
-          <div className="flex shrink-0 flex-wrap gap-1.5">
+          <div style={{ display: 'flex', flexShrink: 0, flexWrap: 'wrap', gap: 6 }}>
             <button
               type="button"
               disabled={adminBusyId === comment.id}
               onClick={() => onAdminCommentAction?.(postId, comment, 'censor')}
-              className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-800 transition hover:bg-amber-100 disabled:opacity-50"
+              style={{
+                borderRadius: 999, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)',
+                padding: '4px 10px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
+                color: 'var(--pl-warn)', cursor: 'pointer', opacity: adminBusyId === comment.id ? 0.5 : 1,
+              }}
             >
               Censurar
             </button>
@@ -153,14 +174,18 @@ function CommentItem({ comment, isAdmin = false, adminBusyId = '', postId = '', 
               type="button"
               disabled={adminBusyId === comment.id}
               onClick={() => onAdminCommentAction?.(postId, comment, 'delete')}
-              className="rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+              style={{
+                borderRadius: 999, border: '1px solid var(--pl-danger)', background: 'var(--pl-surface)',
+                padding: '4px 10px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
+                color: 'var(--pl-danger)', cursor: 'pointer', opacity: adminBusyId === comment.id ? 0.5 : 1,
+              }}
             >
               Excluir
             </button>
           </div>
         ) : null}
       </div>
-      <p className={cx('mt-3 text-sm leading-relaxed', redditDark ? 'text-[#D7DADC]' : 'text-slate-600')}>{comment.content}</p>
+      <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{comment.content}</p>
     </div>
   );
 }
@@ -780,7 +805,7 @@ export default function Comunidades({
 
   async function handleDeactivateAdminCategory(row) {
     if (!isAdmin || !row?.id) return;
-    if (!window.confirm(`Desativar a sala “${row.name}”? Ela some dos filtros; tópicos antigos permanecem no banco.`)) return;
+    if (!await showConfirm(`Desativar a sala “${row.name}”? Ela some dos filtros; tópicos antigos permanecem no banco.`, { confirmLabel: 'Desativar', danger: true })) return;
     setAdminBusyId(String(row.id));
     setAdminNotice('');
     try {
@@ -825,7 +850,7 @@ export default function Comunidades({
           slug: slugifyCategory(name),
           name,
           description,
-          color: '#e0e7ff',
+          color: 'var(--pl-accent-soft)',
           position: (adminCategoriesDraft.length || 0) + 1,
         });
         setNewRoomName('');
@@ -839,7 +864,7 @@ export default function Comunidades({
             ...norm,
             categories: [
               ...norm.categories,
-              { id: `category-${slug}`, slug, name, description, color: '#e0e7ff' },
+              { id: `category-${slug}`, slug, name, description, color: 'var(--pl-accent-soft)' },
             ],
           });
         });
@@ -1110,38 +1135,66 @@ export default function Comunidades({
 
         {adminPanelOpen ? (
           <div
-            className="fixed inset-0 z-[180] flex items-end justify-center bg-slate-900/50 p-4 sm:items-center"
+            style={{
+              position: 'fixed', inset: 0, zIndex: 180,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(0,0,0,0.45)', padding: 16,
+            }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="community-admin-title"
           >
-            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white shadow-2xl">
-              <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-6">
+            <div style={{
+              maxHeight: '90vh', width: '100%', maxWidth: 672,
+              overflowY: 'auto', borderRadius: 28,
+              border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)',
+              boxShadow: 'var(--pl-sh-high)',
+            }}>
+              <div style={{
+                position: 'sticky', top: 0, display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between', gap: 12,
+                borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-surface)',
+                padding: '16px 24px',
+              }}>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-rose-600">Administração</p>
-                  <h2 id="community-admin-title" className="text-lg font-semibold text-slate-900">
+                  <p className="pl-eyebrow" style={{ color: 'var(--pl-danger)' }}>Administração</p>
+                  <h2 id="community-admin-title" style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '4px 0 0' }}>
                     Salas do fórum
                   </h2>
-                  <p className="mt-1 text-xs font-medium text-slate-500">Renomeie, crie ou desative salas. Moderação de tópicos fica nos cards (fixar, ocultar, censurar, excluir).</p>
+                  <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>Renomeie, crie ou desative salas. Moderação de tópicos fica nos cards (fixar, ocultar, censurar, excluir).</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAdminPanelOpen(false)}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
+                  style={{
+                    display: 'flex', height: 40, width: 40, flexShrink: 0,
+                    alignItems: 'center', justifyContent: 'center', borderRadius: 12,
+                    border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)',
+                    color: 'var(--pl-ink-2)', cursor: 'pointer',
+                  }}
                   aria-label="Fechar painel admin"
                 >
                   <X size={18} />
                 </button>
               </div>
-              <div className="space-y-4 px-5 py-5 sm:px-6">
-                {adminNotice ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{adminNotice}</p> : null}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 24px' }}>
+                {adminNotice ? (
+                  <p style={{
+                    borderRadius: 12, border: '1px solid var(--pl-danger-soft)',
+                    background: 'var(--pl-danger-soft)', padding: '8px 12px',
+                    fontSize: 14, color: 'var(--pl-danger)',
+                  }}>{adminNotice}</p>
+                ) : null}
                 {adminPanelLoading ? (
-                  <p className="text-sm font-medium text-slate-500">Carregando salas…</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)' }}>Carregando salas…</p>
                 ) : null}
                 {adminCategoriesDraft.map((row) => (
-                  <div key={row.id} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">slug · {row.slug}</p>
-                    <label className="mt-2 block text-xs font-semibold text-slate-600" htmlFor={`room-name-${row.id}`}>
+                  <div key={row.id} style={{
+                    borderRadius: 16, border: '1px solid var(--pl-rule-2)',
+                    background: 'var(--pl-bg-soft)', padding: 16,
+                  }}>
+                    <p className="pl-eyebrow">slug · {row.slug}</p>
+                    <label style={{ marginTop: 8, display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }} htmlFor={`room-name-${row.id}`}>
                       Nome exibido
                     </label>
                     <input
@@ -1150,9 +1203,10 @@ export default function Comunidades({
                       onChange={(e) =>
                         setAdminCategoriesDraft((prev) => prev.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
                       }
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="pl-input"
+                      style={{ marginTop: 4 }}
                     />
-                    <label className="mt-3 block text-xs font-semibold text-slate-600" htmlFor={`room-desc-${row.id}`}>
+                    <label style={{ marginTop: 12, display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }} htmlFor={`room-desc-${row.id}`}>
                       Descrição
                     </label>
                     <textarea
@@ -1162,14 +1216,16 @@ export default function Comunidades({
                       onChange={(e) =>
                         setAdminCategoriesDraft((prev) => prev.map((r) => (r.id === row.id ? { ...r, description: e.target.value } : r)))
                       }
-                      className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="pl-input"
+                      style={{ marginTop: 4, resize: 'none' }}
                     />
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       <button
                         type="button"
                         disabled={adminBusyId === String(row.id)}
                         onClick={() => handleSaveAdminCategoryRow(row)}
-                        className="rounded-full bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-slate-950 disabled:opacity-50"
+                        className="pl-btn pl-btn-primary pl-btn-sm"
+                        style={{ borderRadius: 999, opacity: adminBusyId === String(row.id) ? 0.5 : 1 }}
                       >
                         Salvar sala
                       </button>
@@ -1177,33 +1233,45 @@ export default function Comunidades({
                         type="button"
                         disabled={adminBusyId === String(row.id) || row.is_active === false}
                         onClick={() => handleDeactivateAdminCategory(row)}
-                        className="rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                        style={{
+                          borderRadius: 999, border: '1px solid var(--pl-danger)',
+                          background: 'var(--pl-surface)', padding: '6px 16px',
+                          fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
+                          color: 'var(--pl-danger)', cursor: 'pointer',
+                          opacity: (adminBusyId === String(row.id) || row.is_active === false) ? 0.5 : 1,
+                        }}
                       >
                         Desativar
                       </button>
                     </div>
                   </div>
                 ))}
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Nova sala</p>
+                <div style={{
+                  borderRadius: 16, border: '1px dashed var(--pl-rule-strong)',
+                  background: 'var(--pl-surface)', padding: 16,
+                }}>
+                  <p className="pl-eyebrow">Nova sala</p>
                   <input
                     value={newRoomName}
                     onChange={(e) => setNewRoomName(e.target.value)}
                     placeholder="Nome da nova sala"
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-400"
+                    className="pl-input"
+                    style={{ marginTop: 8 }}
                   />
                   <textarea
                     value={newRoomDescription}
                     onChange={(e) => setNewRoomDescription(e.target.value)}
                     placeholder="Descrição curta (opcional)"
                     rows={2}
-                    className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400"
+                    className="pl-input"
+                    style={{ marginTop: 8, resize: 'none' }}
                   />
                   <button
                     type="button"
                     disabled={adminBusyId === 'new-room'}
                     onClick={handleCreateAdminRoom}
-                    className="mt-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+                    className="pl-btn pl-btn-ai pl-btn-sm"
+                    style={{ marginTop: 12, borderRadius: 999, opacity: adminBusyId === 'new-room' ? 0.5 : 1 }}
                   >
                     Criar sala
                   </button>

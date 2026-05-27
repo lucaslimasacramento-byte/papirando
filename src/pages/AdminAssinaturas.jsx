@@ -9,25 +9,12 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import AdminPageHeader from '../components/AdminPageHeader';
 import { adminCreateManualSubscription, loadAllSubscriptions } from '../lib/subscriptionApi';
+import { showConfirm, showToast } from '../lib/dialogs';
 import { supabase as supabaseClient } from '../lib/supabase';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
-
-const STATUS_COLORS = {
-  active: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  trialing: 'border-blue-200 bg-blue-50 text-blue-700',
-  canceled: 'border-red-200 bg-red-50 text-red-700',
-  past_due: 'border-amber-200 bg-amber-50 text-amber-700',
-  unpaid: 'border-orange-200 bg-orange-50 text-orange-700',
-};
-
-const PLAN_COLORS = {
-  elite: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-  tatico: 'border-blue-200 bg-blue-50 text-blue-700',
-  gratuito: 'border-slate-200 bg-slate-50 text-slate-600',
-};
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -132,7 +119,7 @@ export default function AdminAssinaturas() {
         .eq('id', id);
       setRows((prev) => prev.map((r) => r.id === id ? { ...r, plan_name: newPlan } : r));
     } catch (e) {
-      alert(e?.message || 'Nao foi possivel atualizar.');
+      showToast(e?.message || 'Não foi possível atualizar.', 'error');
     }
   };
 
@@ -144,7 +131,7 @@ export default function AdminAssinaturas() {
         .eq('id', id);
       setRows((prev) => prev.map((r) => r.id === id ? { ...r, status: newStatus } : r));
     } catch (e) {
-      alert(e?.message || 'Nao foi possivel atualizar.');
+      showToast(e?.message || 'Não foi possível atualizar.', 'error');
     }
   };
 
@@ -164,41 +151,32 @@ export default function AdminAssinaturas() {
 
   return (
     <div className="pl-page">
-      <div className="flex flex-col gap-6">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Header */}
-        <PageHeadPremium
+        <AdminPageHeader
           icon={CreditCard}
-          titleAs="h1"
-          badge={<PageHeadPremiumBadge icon={ShieldCheck}>Admin · pagamentos</PageHeadPremiumBadge>}
+          badge="Admin · pagamentos"
           title="Assinaturas"
           subtitle={
             loading
               ? 'Carregando...'
               : `${activeCount} ativas · ${eliteCount} Elite · ${taticoCount} Tatico · ${rows.length} total`
           }
+          stats={[
+            { key: 'ativas', label: 'Ativas', value: loading ? '–' : String(activeCount), icon: ShieldCheck, accent: 'emerald' },
+            { key: 'elite', label: 'Elite', value: loading ? '–' : String(eliteCount), icon: ShieldCheck, accent: 'amber' },
+            { key: 'tatico', label: 'Tatico', value: loading ? '–' : String(taticoCount), icon: ShieldCheck, accent: 'blue' },
+            { key: 'total', label: 'Total', value: loading ? '–' : String(rows.length), icon: ShieldCheck, accent: 'indigo' },
+          ]}
         />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: 'Ativas', value: activeCount, cls: 'text-emerald-700' },
-            { label: 'Elite', value: eliteCount, cls: 'text-yellow-700' },
-            { label: 'Tatico', value: taticoCount, cls: 'text-blue-700' },
-            { label: 'Total', value: rows.length, cls: 'text-slate-700' },
-          ].map(({ label, value, cls }) => (
-            <div key={label} className="section-card flex flex-col gap-1 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-              <p className={`text-2xl font-bold ${cls}`}>{loading ? '–' : value}</p>
-            </div>
-          ))}
-        </div>
-
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
           <button
             type="button"
             onClick={() => setShowForm((v) => !v)}
-            className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold"
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <Plus size={14} />
             Assinatura manual
@@ -207,61 +185,63 @@ export default function AdminAssinaturas() {
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="btn-secondary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm disabled:opacity-50"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
             Atualizar
           </button>
-          <div className="relative ml-auto">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div style={{ position: 'relative', marginLeft: 'auto' }}>
+            <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-3)', pointerEvents: 'none' }} />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por e-mail..."
-              className="rounded-xl border border-slate-200 bg-white py-2.5 pl-8 pr-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 w-56"
+              className="pl-input"
+              style={{ paddingLeft: 36, width: 224 }}
             />
           </div>
         </div>
 
         {/* Form nova assinatura manual */}
         {showForm ? (
-          <div className="section-card space-y-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <div className="pl-card" style={{ padding: 20 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 16 }}>
               Nova assinatura manual
             </p>
-            <form onSubmit={handleCreate} className="flex flex-col gap-3">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">E-mail do usuário *</label>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>E-mail do usuário *</label>
                   <input
                     type="email"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
                     placeholder="usuario@email.com"
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="pl-input"
                     required
                     disabled={creating}
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Plano</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Plano</label>
                   <select
                     value={formPlan}
                     onChange={(e) => setFormPlan(e.target.value)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+                    className="pl-input"
                     disabled={creating}
                   >
                     <option value="tatico">Tatico</option>
                     <option value="elite">Elite</option>
                   </select>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-slate-600">Ciclo</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Ciclo</label>
                   <select
                     value={formBilling}
                     onChange={(e) => setFormBilling(e.target.value)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+                    className="pl-input"
                     disabled={creating}
                   >
                     <option value="monthly">Mensal</option>
@@ -269,12 +249,13 @@ export default function AdminAssinaturas() {
                   </select>
                 </div>
               </div>
-              {formError ? <p className="text-xs font-semibold text-red-600">{formError}</p> : null}
-              <div className="flex gap-3">
+              {formError ? <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{formError}</p> : null}
+              <div style={{ display: 'flex', gap: 12 }}>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold disabled:opacity-50"
+                  className="pl-btn pl-btn-primary pl-btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
                 >
                   {creating ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                   Criar
@@ -282,7 +263,7 @@ export default function AdminAssinaturas() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="btn-secondary rounded-xl px-4 py-2.5 text-sm"
+                  className="pl-btn pl-btn-ghost pl-btn-sm"
                 >
                   Cancelar
                 </button>
@@ -292,65 +273,67 @@ export default function AdminAssinaturas() {
         ) : null}
 
         {error ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          <div style={{ borderRadius: 10, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
             {error}
           </div>
         ) : null}
 
         {/* Tabela */}
-        <div className="section-card space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        <div className="pl-card" style={{ padding: 20 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 16 }}>
             Lista ({filteredRows.length}{search ? ` de ${rows.length}` : ''})
           </p>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-slate-500">
-              <Loader2 size={18} className="animate-spin text-blue-700" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '40px 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+              <Loader2 size={18} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
               Carregando...
             </div>
           ) : filteredRows.length === 0 ? (
-            <p className="py-8 text-center text-sm font-medium text-slate-500">
+            <p style={{ padding: '32px 0', textAlign: 'center', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
               {rows.length === 0 ? 'Nenhuma assinatura ainda.' : 'Nenhuma assinatura corresponde à busca.'}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', textAlign: 'left', fontSize: 13, borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="border-b border-slate-100">
+                  <tr style={{ borderBottom: '1px solid var(--pl-rule)' }}>
                     {['Usuário', 'Plano', 'Status', 'Provedor', 'Início', 'Fim', 'Ações'].map((h) => (
-                      <th key={h} className="pb-2 pr-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      <th key={h} className="pl-eyebrow" style={{ paddingBottom: 8, paddingRight: 16, fontWeight: 600 }}>
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody>
                   {filteredRows.map((row) => (
-                    <tr key={row.id} className="hover:bg-slate-50/60">
-                      <td className="py-3 pr-4">
-                        <span className="max-w-[200px] truncate block text-xs font-semibold text-slate-700">
+                    <tr key={row.id} style={{ borderTop: '1px solid var(--pl-rule)' }}>
+                      <td style={{ padding: '12px 16px 12px 0' }}>
+                        <span style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--pl-ink)' }}>
                           {emailMap[row.user_id] || row.user_id}
                         </span>
                         {row.stripe_customer_id ? (
-                          <span className="text-[10px] text-slate-400">{row.stripe_customer_id}</span>
+                          <span style={{ fontSize: 10, color: 'var(--pl-ink-3)' }}>{row.stripe_customer_id}</span>
                         ) : null}
                       </td>
-                      <td className="py-3 pr-4">
+                      <td style={{ padding: '12px 16px 12px 0' }}>
                         <select
                           value={row.plan_name}
                           onChange={(e) => handleChangePlan(row.id, e.target.value)}
-                          className={`rounded-lg border px-2 py-1 text-[11px] font-bold focus:outline-none ${PLAN_COLORS[row.plan_name] || PLAN_COLORS.gratuito}`}
+                          className="pl-input"
+                          style={{ padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
                         >
                           <option value="gratuito">Gratuito</option>
                           <option value="tatico">Tatico</option>
                           <option value="elite">Elite</option>
                         </select>
                       </td>
-                      <td className="py-3 pr-4">
+                      <td style={{ padding: '12px 16px 12px 0' }}>
                         <select
                           value={row.status}
                           onChange={(e) => handleChangeStatus(row.id, e.target.value)}
-                          className={`rounded-lg border px-2 py-1 text-[11px] font-bold focus:outline-none ${STATUS_COLORS[row.status] || 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                          className="pl-input"
+                          style={{ padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
                         >
                           <option value="active">Active</option>
                           <option value="trialing">Trialing</option>
@@ -359,17 +342,17 @@ export default function AdminAssinaturas() {
                           <option value="unpaid">Unpaid</option>
                         </select>
                       </td>
-                      <td className="py-3 pr-4 text-[11px] text-slate-500">{row.provider}</td>
-                      <td className="py-3 pr-4 text-[11px] text-slate-500">{formatDate(row.current_period_start)}</td>
-                      <td className="py-3 pr-4 text-[11px] text-slate-500">{formatDate(row.current_period_end)}</td>
-                      <td className="py-3">
+                      <td style={{ padding: '12px 16px 12px 0', fontSize: 11, color: 'var(--pl-ink-2)' }}>{row.provider}</td>
+                      <td style={{ padding: '12px 16px 12px 0', fontSize: 11, color: 'var(--pl-ink-2)' }}>{formatDate(row.current_period_start)}</td>
+                      <td style={{ padding: '12px 16px 12px 0', fontSize: 11, color: 'var(--pl-ink-2)' }}>{formatDate(row.current_period_end)}</td>
+                      <td style={{ padding: '12px 0' }}>
                         <button
                           type="button"
                           onClick={async () => {
-                            if (!window.confirm('Cancelar esta assinatura?')) return;
+                            if (!await showConfirm('Cancelar esta assinatura?', { confirmLabel: 'Cancelar', danger: true })) return;
                             await handleChangeStatus(row.id, 'canceled');
                           }}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 8, border: '1px solid var(--pl-danger)', padding: '4px 8px', fontSize: 11, fontWeight: 700, color: 'var(--pl-danger)', background: 'transparent', cursor: 'pointer' }}
                         >
                           <X size={11} />
                           Cancelar

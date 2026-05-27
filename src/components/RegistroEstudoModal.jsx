@@ -1,5 +1,6 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { X, CalendarDays, BookOpen, Clock3, CheckCircle2 } from 'lucide-react';
+import { showToast } from '../lib/dialogs';
 
 export default function RegistroEstudoModal({
   registroEstudoModalOpen,
@@ -64,12 +65,12 @@ export default function RegistroEstudoModal({
 
   const handleSalvar = async () => {
     if (!disciplinaSelecionada) {
-      alert('Selecione uma disciplina.');
+      showToast('Selecione uma disciplina.', 'error');
       return;
     }
 
     if (!topicoSelecionado) {
-      alert('Selecione um tópico cadastrado na disciplina.');
+      showToast('Selecione um topico cadastrado na disciplina.', 'error');
       return;
     }
 
@@ -85,7 +86,7 @@ export default function RegistroEstudoModal({
         disciplina: disciplinaSelecionada.nome,
         topicoId: topicoSelecionado.id,
         topico: topicoSelecionado.nome,
-        material: material.trim() || 'Sessão registrada',
+        material: material.trim() || 'Sessao registrada',
         tempo: tempoManual || (formatTimeStr ? formatTimeStr(timerValue) : '00:00'),
         acertos: Number(acertos),
         erros: Number(erros),
@@ -102,14 +103,77 @@ export default function RegistroEstudoModal({
     }
   };
 
+  const selectStyle = {
+    width: '100%',
+    borderBottom: '1px solid var(--pl-rule-2)',
+    background: 'transparent',
+    paddingTop: 8,
+    paddingBottom: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: 'var(--pl-ink)',
+    outline: 'none',
+  };
+
+  const inputStyle = {
+    width: '100%',
+    borderBottom: '1px solid var(--pl-rule-2)',
+    background: 'transparent',
+    paddingTop: 8,
+    paddingBottom: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: 'var(--pl-ink)',
+    outline: 'none',
+  };
+
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#1A365D]/60 p-4 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="flex max-h-[95vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-300">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-8 py-6">
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 300,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(15,23,42,0.55)',
+        backdropFilter: 'blur(4px)',
+        padding: 'clamp(8px, 2vw, 32px)',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '95vh',
+          width: '100%',
+          maxWidth: 'min(896px, 95vw)',
+          overflow: 'hidden',
+          borderRadius: 16,
+          background: 'var(--pl-surface)',
+          boxShadow: 'var(--pl-sh-high)',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid var(--pl-rule)',
+            background: 'var(--pl-surface)',
+            padding: 'clamp(12px, 2vw, 20px) clamp(12px, 3vw, 32px)',
+          }}
+        >
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Registro de estudo</h2>
-            <p className="mt-1 text-sm font-medium text-gray-500">
-              Fechado na disciplina e no tópico cadastrados para manter o histórico confiável.
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
+              Registro de estudo
+            </h2>
+            <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>
+              Fechado na disciplina e no topico cadastrados para manter o historico confiavel.
             </p>
           </div>
           <button
@@ -117,39 +181,52 @@ export default function RegistroEstudoModal({
               onResetDraft?.();
               setRegistroEstudoModalOpen(false);
             }}
-            className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+            style={{
+              borderRadius: 8,
+              padding: 8,
+              color: 'var(--pl-ink-3)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              lineHeight: 0,
+            }}
           >
             <X size={24} strokeWidth={2.5} />
           </button>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto p-8">
-          <div className="mb-8 flex items-center gap-4">
-            <CalendarDays size={20} className="text-gray-800" />
-            <button className="rounded-full bg-[#1e3a5f] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+        {/* Body */}
+        <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: 'clamp(12px, 2.5vw, 32px)' }}>
+          {/* Date strip */}
+          <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <CalendarDays size={20} style={{ color: 'var(--pl-ink)' }} />
+            <button
+              className="pl-btn pl-btn-primary pl-btn-sm"
+              style={{ borderRadius: 9999, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+            >
               Hoje
             </button>
           </div>
 
-          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-3">
+          {/* Row 1: Categoria / Disciplina / Tempo */}
+          <div
+            style={{
+              marginBottom: 32,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: 'clamp(12px, 2vw, 32px)',
+            }}
+          >
             <Field label="Categoria">
-              <select
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
-              >
+              <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={selectStyle}>
                 <option value="Teoria">Teoria</option>
-                <option value="Questões">Questões</option>
-                <option value="Revisão">Revisão</option>
+                <option value="Questoes">Questoes</option>
+                <option value="Revisao">Revisao</option>
               </select>
             </Field>
 
             <Field label="Disciplina">
-              <select
-                value={disciplinaId}
-                onChange={(e) => setDisciplinaId(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
-              >
+              <select value={disciplinaId} onChange={(e) => setDisciplinaId(e.target.value)} style={selectStyle}>
                 <option value="">Selecione...</option>
                 {bancoDisciplinas.map((disciplina) => (
                   <option key={disciplina.id} value={disciplina.id}>
@@ -165,35 +242,47 @@ export default function RegistroEstudoModal({
                 placeholder={formatTimeStr ? formatTimeStr(timerValue || 0) : '00:00'}
                 value={tempoManual}
                 onChange={(e) => setTempoManual(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
+                style={inputStyle}
               />
             </Field>
           </div>
 
-          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <Field label="Tópico">
-                <select
-                  value={topicoId}
-                  onChange={(e) => setTopicoId(e.target.value)}
-                  disabled={!disciplinaSelecionada || topicosDisponiveis.length === 0}
-                  className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f] disabled:cursor-not-allowed disabled:text-gray-400"
-                >
-                  <option value="">
-                    {!disciplinaSelecionada
-                      ? 'Selecione a disciplina primeiro'
-                      : topicosDisponiveis.length === 0
-                      ? 'Essa disciplina ainda não possui tópicos'
-                      : 'Selecione um tópico'}
+          {/* Row 2: Topico / Material */}
+          <div
+            style={{
+              marginBottom: 32,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: 'clamp(12px, 2vw, 32px)',
+            }}
+          >
+            <Field label="Topico">
+              <select
+                value={topicoId}
+                onChange={(e) => setTopicoId(e.target.value)}
+                disabled={!disciplinaSelecionada || topicosDisponiveis.length === 0}
+                style={{
+                  ...selectStyle,
+                  color: (!disciplinaSelecionada || topicosDisponiveis.length === 0)
+                    ? 'var(--pl-ink-4)'
+                    : 'var(--pl-ink)',
+                  cursor: (!disciplinaSelecionada || topicosDisponiveis.length === 0) ? 'not-allowed' : 'auto',
+                }}
+              >
+                <option value="">
+                  {!disciplinaSelecionada
+                    ? 'Selecione a disciplina primeiro'
+                    : topicosDisponiveis.length === 0
+                    ? 'Essa disciplina ainda nao possui topicos'
+                    : 'Selecione um topico'}
+                </option>
+                {topicosDisponiveis.map((topico) => (
+                  <option key={topico.id} value={topico.id}>
+                    {topico.nome}
                   </option>
-                  {topicosDisponiveis.map((topico) => (
-                    <option key={topico.id} value={topico.id}>
-                      {topico.nome}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
+                ))}
+              </select>
+            </Field>
 
             <Field label="Material">
               <input
@@ -201,48 +290,99 @@ export default function RegistroEstudoModal({
                 placeholder="Ex.: Aula 01"
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-[#1e3a5f] focus:border-[#1e3a5f]"
+                style={inputStyle}
               />
             </Field>
           </div>
 
-          <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <div className="rounded-[2rem] border border-blue-100 bg-blue-50/60 p-5">
-              <div className="mb-4 flex items-center gap-2 text-[#1A365D]">
+          {/* Validation + Questoes */}
+          <div
+            style={{
+              marginBottom: 32,
+              display: 'grid',
+              gridTemplateColumns: '1fr 280px',
+              gap: 24,
+            }}
+          >
+            {/* Validacao */}
+            <div
+              style={{
+                borderRadius: 16,
+                border: '1px solid var(--pl-accent-soft)',
+                background: 'var(--pl-accent-soft)',
+                padding: 20,
+              }}
+            >
+              <div
+                style={{
+                  marginBottom: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  color: 'var(--pl-accent)',
+                }}
+              >
                 <BookOpen size={18} />
-                <h3 className="text-sm font-black uppercase tracking-[0.18em]">Validação do registro</h3>
+                <h3 className="pl-eyebrow" style={{ margin: 0 }}>Validacao do registro</h3>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 <InfoPill
                   label="Curso"
-                  value={cursoSelecionado?.nome || disciplinaSelecionada?.plano || 'Aguardando seleção'}
+                  value={cursoSelecionado?.nome || disciplinaSelecionada?.plano || 'Aguardando selecao'}
                 />
                 <InfoPill
                   label="Disciplina"
                   value={disciplinaSelecionada?.nome || 'Selecione a disciplina'}
                 />
                 <InfoPill
-                  label="Tópico"
-                  value={topicoSelecionado?.nome || 'Selecione um tópico'}
+                  label="Topico"
+                  value={topicoSelecionado?.nome || 'Selecione um topico'}
                 />
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex items-center gap-2 text-gray-700">
+            {/* Questoes */}
+            <div
+              style={{
+                borderRadius: 16,
+                border: '1px solid var(--pl-rule-2)',
+                background: 'var(--pl-surface)',
+                padding: 20,
+                boxShadow: 'var(--pl-sh-low)',
+              }}
+            >
+              <div
+                style={{
+                  marginBottom: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  color: 'var(--pl-ink-2)',
+                }}
+              >
                 <Clock3 size={18} />
-                <h3 className="text-sm font-black uppercase tracking-[0.18em]">Questões</h3>
+                <h3 className="pl-eyebrow" style={{ margin: 0 }}>Questoes</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <Field label="Acertos">
                   <input
                     type="number"
                     min="0"
                     value={acertos}
                     onChange={(e) => setAcertos(e.target.value)}
-                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#1e3a5f]"
+                    style={{
+                      width: '100%',
+                      borderBottom: '1px solid var(--pl-rule-2)',
+                      background: 'transparent',
+                      textAlign: 'center',
+                      fontWeight: 700,
+                      color: 'var(--pl-ink)',
+                      outline: 'none',
+                      fontSize: 14,
+                      padding: '4px 0',
+                    }}
                   />
                 </Field>
 
@@ -252,35 +392,70 @@ export default function RegistroEstudoModal({
                     min="0"
                     value={erros}
                     onChange={(e) => setErros(e.target.value)}
-                    className="w-full border-b border-gray-200 text-center font-black text-gray-700 outline-none focus:border-[#1e3a5f]"
+                    style={{
+                      width: '100%',
+                      borderBottom: '1px solid var(--pl-rule-2)',
+                      background: 'transparent',
+                      textAlign: 'center',
+                      fontWeight: 700,
+                      color: 'var(--pl-ink)',
+                      outline: 'none',
+                      fontSize: 14,
+                      padding: '4px 0',
+                    }}
                   />
                 </Field>
               </div>
             </div>
           </div>
 
+          {/* Warning: no topicos */}
           {disciplinaSelecionada && topicosDisponiveis.length === 0 && (
-            <div className="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-700">
-              Essa disciplina ainda não tem tópicos cadastrados. Cadastre os tópicos em
+            <div
+              style={{
+                borderRadius: 12,
+                border: '1px solid var(--pl-warn-soft)',
+                background: 'var(--pl-warn-soft)',
+                padding: '12px 16px',
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--pl-warn)',
+              }}
+            >
+              Essa disciplina ainda nao tem topicos cadastrados. Cadastre os topicos em
               disciplinas antes de registrar o estudo.
             </div>
           )}
         </div>
 
-        <div className="sticky bottom-0 z-10 flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-8 py-5">
+        {/* Footer */}
+        <div
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 10,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 12,
+            borderTop: '1px solid var(--pl-rule)',
+            background: 'var(--pl-bg-soft)',
+            padding: 'clamp(12px, 2vw, 20px) clamp(12px, 3vw, 32px)',
+          }}
+        >
           <button
             onClick={() => {
               onResetDraft?.();
               setRegistroEstudoModalOpen(false);
             }}
-            className="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-bold text-gray-600 shadow-sm transition-colors hover:bg-gray-50"
+            className="pl-btn pl-btn-ghost"
           >
             Cancelar
           </button>
           <button
             onClick={handleSalvar}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f] disabled:cursor-not-allowed disabled:opacity-70"
+            className="pl-btn pl-btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, opacity: isSaving ? 0.7 : 1 }}
           >
             <CheckCircle2 size={16} />
             {isSaving ? 'Salvando...' : 'Salvar estudo'}
@@ -294,7 +469,10 @@ export default function RegistroEstudoModal({
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+      <label
+        className="pl-eyebrow"
+        style={{ display: 'block', marginBottom: 4, fontSize: 10 }}
+      >
         {label}
       </label>
       {children}
@@ -304,9 +482,23 @@ function Field({ label, children }) {
 
 function InfoPill({ label, value }) {
   return (
-    <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-1 text-sm font-bold text-[#1A365D]">{value}</p>
+    <div
+      style={{
+        borderRadius: 12,
+        background: 'var(--pl-surface)',
+        padding: '12px 16px',
+        boxShadow: 'var(--pl-sh-low)',
+      }}
+    >
+      <p
+        className="pl-eyebrow"
+        style={{ margin: 0, marginBottom: 4, fontSize: 10 }}
+      >
+        {label}
+      </p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-accent)' }}>
+        {value}
+      </p>
     </div>
   );
 }

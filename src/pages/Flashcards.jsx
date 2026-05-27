@@ -34,19 +34,19 @@ import { generateFlashcards } from '../lib/aiClient';
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-const COLOR_CLASSES = {
-  blue:    { bg: 'bg-blue-50',    ring: 'ring-blue-200',    dot: 'bg-blue-500',    text: 'text-blue-700'    },
-  emerald: { bg: 'bg-emerald-50', ring: 'ring-emerald-200', dot: 'bg-emerald-500', text: 'text-emerald-700' },
-  violet:  { bg: 'bg-violet-50',  ring: 'ring-violet-200',  dot: 'bg-violet-500',  text: 'text-violet-700'  },
-  orange:  { bg: 'bg-orange-50',  ring: 'ring-orange-200',  dot: 'bg-orange-500',  text: 'text-orange-700'  },
-  rose:    { bg: 'bg-rose-50',    ring: 'ring-rose-200',    dot: 'bg-rose-500',    text: 'text-rose-700'    },
-  amber:   { bg: 'bg-amber-50',   ring: 'ring-amber-200',   dot: 'bg-amber-500',   text: 'text-amber-700'   },
+const COLOR_STYLES = {
+  blue:    { bg: 'var(--pl-accent-soft)',   dot: 'var(--pl-accent)',   text: 'var(--pl-accent)'   },
+  emerald: { bg: 'var(--pl-success-soft)',  dot: 'var(--pl-success)',  text: 'var(--pl-success)'  },
+  violet:  { bg: '#f3f0ff',                 dot: '#7c3aed',            text: '#6d28d9'             },
+  orange:  { bg: 'var(--pl-warn-soft)',     dot: 'var(--pl-warn)',     text: 'var(--pl-warn)'     },
+  rose:    { bg: 'var(--pl-danger-soft)',   dot: 'var(--pl-danger)',   text: 'var(--pl-danger)'   },
+  amber:   { bg: 'var(--pl-warn-soft)',     dot: 'var(--pl-warn)',     text: 'var(--pl-warn)'     },
 };
 
-const COLOR_OPTIONS = Object.keys(COLOR_CLASSES);
+const COLOR_OPTIONS = Object.keys(COLOR_STYLES);
 
 function getColor(color) {
-  return COLOR_CLASSES[color] || COLOR_CLASSES.blue;
+  return COLOR_STYLES[color] || COLOR_STYLES.blue;
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sub-components Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -54,8 +54,8 @@ function getColor(color) {
 function ErrBanner({ msg }) {
   if (!msg) return null;
   return (
-    <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-      <X size={14} className="shrink-0" />
+    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', padding: '10px 16px', fontSize: 14, fontWeight: 600, color: 'var(--pl-danger)', flexShrink: 0 }}>
+      <X size={14} style={{ flexShrink: 0 }} />
       {msg}
     </div>
   );
@@ -480,15 +480,15 @@ function FlashcardsAiModal({
       title="Gerar flashcards com IA"
       onClose={onClose}
       footer={
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button type="button" onClick={onClose} className="pl-btn pl-btn-ghost">
             Cancelar
           </button>
           <button
             type="button"
             onClick={onGenerate}
             disabled={aiLoading}
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="pl-btn pl-btn-ai"
           >
             {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
             Gerar cards
@@ -496,9 +496,9 @@ function FlashcardsAiModal({
         </div>
       }
     >
-      <div className="space-y-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <ErrBanner msg={aiErr} />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, 1fr)' }}>
           <CField label="Curso">
             <select
               className={inputCls()}
@@ -572,8 +572,8 @@ function FlashcardsAiModal({
 
 function CField({ label, children }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</label>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label className="pl-eyebrow">{label}</label>
       {children}
     </div>
   );
@@ -581,23 +581,23 @@ function CField({ label, children }) {
 
 function CModal({ title, onClose, children, footer }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h3 className="text-base font-bold text-slate-800">{title}</h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)', padding: 16, backdropFilter: 'blur(4px)' }}>
+      <div style={{ width: '100%', maxWidth: 512, borderRadius: 16, background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)', border: '1px solid var(--pl-rule-2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{title}</h3>
+          <button onClick={onClose} style={{ borderRadius: 8, padding: 6, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <X size={16} />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-4">{children}</div>
-        {footer && <div className="border-t border-slate-100 px-6 py-4">{footer}</div>}
+        <div style={{ maxHeight: '70vh', overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>{children}</div>
+        {footer && <div style={{ borderTop: '1px solid var(--pl-rule)', padding: '16px 24px' }}>{footer}</div>}
       </div>
     </div>
   );
 }
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10';
+  return 'pl-input';
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Component Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -971,8 +971,8 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
   // Ã¢â€â‚¬Ã¢â€â‚¬ Render: no user Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
-        <p className="text-sm">Faça login para usar os flashcards.</p>
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}>
+        <p style={{ fontSize: 14 }}>Faca login para usar os flashcards.</p>
       </div>
     );
   }
@@ -983,41 +983,41 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
       const total = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
       const correct = sessionStats.good + sessionStats.easy;
       return (
-        <div className="flex h-full flex-col items-center justify-center gap-4 px-4 py-6 sm:px-6 sm:py-8">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-            <Check size={30} className="text-emerald-600" />
+        <div style={{ display: 'flex', height: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '24px 16px' }}>
+          <div style={{ display: 'flex', height: 64, width: 64, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-success-soft)' }}>
+            <Check size={30} style={{ color: 'var(--pl-success)' }} />
           </div>
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-slate-800 sm:text-2xl">Sessão concluída!</h2>
-            <p className="mt-1 text-sm text-slate-500">{total} cards revisados</p>
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Sessão concluída!</h2>
+            <p style={{ marginTop: 4, fontSize: 14, color: 'var(--pl-ink-2)' }}>{total} cards revisados</p>
           </div>
-          <div className="grid w-full max-w-sm grid-cols-4 gap-2.5">
+          <div style={{ display: 'grid', width: '100%', maxWidth: 360, gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
             {[
-              { key: 'again', label: 'Errei',   color: 'bg-red-100 text-red-700'     },
-              { key: 'hard',  label: 'Difícil', color: 'bg-orange-100 text-orange-700' },
-              { key: 'good',  label: 'Lembrei', color: 'bg-green-100 text-green-700'  },
-              { key: 'easy',  label: 'Fácil',   color: 'bg-blue-100 text-blue-700'    },
-            ].map(({ key, label, color }) => (
-              <div key={key} className={`flex flex-col items-center rounded-xl px-2.5 py-2.5 ${color}`}>
-                <span className="text-lg font-semibold">{sessionStats[key]}</span>
-                <span className="text-xs font-semibold mt-0.5">{label}</span>
+              { key: 'again', label: 'Errei',   bg: 'var(--pl-danger-soft)',  color: 'var(--pl-danger)'  },
+              { key: 'hard',  label: 'Difícil', bg: 'var(--pl-warn-soft)',    color: 'var(--pl-warn)'    },
+              { key: 'good',  label: 'Lembrei', bg: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+              { key: 'easy',  label: 'Fácil',   bg: 'var(--pl-accent-soft)',  color: 'var(--pl-accent)'  },
+            ].map(({ key, label, bg, color }) => (
+              <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: 12, padding: '10px 6px', background: bg }}>
+                <span style={{ fontSize: 18, fontWeight: 600, color }}>{sessionStats[key]}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, marginTop: 2, color }}>{label}</span>
               </div>
             ))}
           </div>
-          <p className="text-sm font-semibold text-slate-600">
-            Taxa de acerto: <span className="text-emerald-600 font-semibold">{total > 0 ? Math.round((correct / total) * 100) : 0}%</span>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+            Taxa de acerto: <span style={{ color: 'var(--pl-success)', fontWeight: 600 }}>{total > 0 ? Math.round((correct / total) * 100) : 0}%</span>
           </p>
-          <div className="flex flex-wrap justify-center gap-2.5">
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10 }}>
             <button
               onClick={() => { setStudyMode(false); setSessionDone(false); }}
-              className="flex items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 sm:text-sm"
+              className="pl-btn pl-btn-ghost"
             >
               <ArrowLeft size={14} />
               Voltar ao deck
             </button>
             <button
               onClick={startStudy}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
+              className="pl-btn pl-btn-primary"
             >
               <RotateCcw size={14} />
               Revisar novamente
@@ -1031,52 +1031,54 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     const progress = ((studyIndex) / studyQueue.length) * 100;
 
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div style={{ display: 'flex', height: '100%', minHeight: 0, flexDirection: 'column', overflow: 'hidden' }}>
         {/* Header */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-3.5 py-2.5 sm:px-4">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--pl-rule)', padding: '10px 14px' }}>
           <button
             onClick={() => setStudyMode(false)}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
           >
             <X size={16} />
           </button>
-          <div className="flex-1">
-            <p className="text-xs font-semibold text-slate-500">{activeDeck?.title}</p>
-            <p className="text-xs font-semibold text-slate-700 sm:text-sm">
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>{activeDeck?.title}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
               {studyIndex + 1} / {studyQueue.length}
             </p>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 bg-slate-100">
+        <div style={{ height: 6, background: 'var(--pl-bg-soft)' }}>
           <div
-            className="h-full bg-blue-500 transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            style={{ height: '100%', background: 'var(--pl-accent)', transition: 'width 500ms', width: `${progress}%` }}
           />
         </div>
 
         {/* Card area */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-5 sm:px-6 sm:py-6">
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '20px 16px' }}>
           {/* Flip card */}
           <div
             onClick={() => setFlipped((f) => !f)}
-            className="flex min-h-[170px] w-full max-w-xl cursor-pointer select-none flex-col items-center justify-center gap-3 rounded-2xl border-2 border-slate-200 bg-white p-5 text-center shadow-md ring-1 ring-slate-100 transition-all hover:shadow-lg sm:min-h-[190px] sm:p-6"
+            className="pl-card"
+            style={{ minHeight: 170, width: '100%', maxWidth: 576, cursor: 'pointer', userSelect: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center', boxShadow: 'var(--pl-sh-mid)', transition: 'box-shadow 0.2s' }}
           >
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <p className="pl-eyebrow">
               {flipped ? 'Verso' : 'Frente'}
             </p>
-            <p className="text-base font-semibold leading-relaxed text-slate-800 sm:text-lg">
-              {flipped ? currentCard?.back : currentCard?.front}
+            <p style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: 'var(--pl-ink)', margin: 0 }}>
+              {flipped
+                ? <span className="pl-gabarito-reveal" style={{ display: 'block' }}>{currentCard?.back}</span>
+                : currentCard?.front}
             </p>
             {!flipped && (
-              <p className="text-xs text-slate-400 mt-2">Clique para revelar</p>
+              <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginTop: 8 }}>Clique para revelar</p>
             )}
           </div>
 
           {/* Rating buttons */}
           {flipped ? (
-            <div className="grid w-full max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
+            <div style={{ display: 'grid', width: '100%', maxWidth: 640, gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
               {[1, 2, 3, 4].map((rating) => {
                 const info = RATING_LABELS[rating];
                 const preview = formatNextInterval(currentCard, rating);
@@ -1084,11 +1086,12 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
                   <button
                     key={rating}
                     onClick={() => rateCard(rating)}
-                    className={`flex flex-col items-center rounded-xl border-2 px-3 py-2.5 text-xs font-semibold transition-all hover:scale-[1.02] active:scale-95 sm:text-sm ${info.color}`}
+                    className={`flash-rating-btn ${info.color}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: 12, border: '2px solid', padding: '10px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'transform 0.1s' }}
                   >
-                    <span className="text-sm sm:text-base">{info.emoji}</span>
+                    <span style={{ fontSize: 14 }}>{info.emoji}</span>
                     <span>{info.label}</span>
-                    <span className="text-xs font-semibold opacity-70 mt-0.5">{preview}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.7, marginTop: 2 }}>{preview}</span>
                   </button>
                 );
               })}
@@ -1096,7 +1099,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
           ) : (
             <button
               onClick={() => setFlipped(true)}
-              className="rounded-xl bg-slate-800 px-6 py-2.5 text-xs font-semibold text-white hover:bg-slate-700 sm:text-sm"
+              className="pl-btn pl-btn-primary"
             >
               Mostrar resposta
             </button>
@@ -1113,37 +1116,38 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     const color    = getColor(activeDeck.color);
 
     return (
-      <div className="flex h-full flex-col">
+      <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
         {/* Header */}
-        <div className="flex items-center gap-2.5 border-b border-slate-100 px-4 py-3 sm:px-5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--pl-rule)', padding: '12px 16px' }}>
           <button
             onClick={() => { setActiveDeck(null); setCards([]); }}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
           >
             <ArrowLeft size={18} />
           </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-500 truncate">{activeDeck.disciplina || 'Flashcards'}</p>
-            <h2 className="truncate text-sm font-semibold text-slate-800 sm:text-base">{activeDeck.title}</h2>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{activeDeck.disciplina || 'Flashcards'}</p>
+            <h2 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{activeDeck.title}</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
               onClick={() => { setDeleteConfirm({ type: 'deck', id: activeDeck.id }); }}
-              className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500"
+              style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
               <Trash2 size={16} />
             </button>
             <button
               type="button"
               onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className="btn-ai hidden py-1.5 md:inline-flex"
+              className="pl-btn pl-btn-ai pl-btn-sm"
+              style={{ display: 'none' }}
             >
               <Sparkles size={14} aria-hidden />
               Gerar com IA
             </button>
             <button
               onClick={() => { setFormErr(''); setCardModal(true); }}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 sm:px-3.5 sm:py-2"
+              className="pl-btn pl-btn-primary pl-btn-sm"
             >
               <Plus size={14} />
               Card
@@ -1152,24 +1156,24 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
         </div>
 
         {/* Stats bar */}
-        <div className={`flex flex-wrap items-center gap-2.5 border-b border-slate-100 px-3.5 py-2 sm:px-4 ${color.bg}`}>
-          <div className="text-center">
-            <p className="text-base font-semibold text-slate-800">{cards.length}</p>
-            <p className="text-[11px] font-semibold text-slate-500">Total</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--pl-rule)', padding: '8px 14px', background: color.bg }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{cards.length}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Total</p>
           </div>
-          <div className="text-center">
-            <p className="text-base font-semibold text-slate-800">{dueCount}</p>
-            <p className="text-[11px] font-semibold text-slate-500">Vence hoje</p>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{dueCount}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Vence hoje</p>
           </div>
-          <div className="text-center">
-            <p className="text-base font-semibold text-slate-800">{dueNow}</p>
-            <p className="text-[11px] font-semibold text-slate-500">Para revisar</p>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{dueNow}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Para revisar</p>
           </div>
-          <div className="ml-auto">
+          <div style={{ marginLeft: 'auto' }}>
             <button
               onClick={startStudy}
               disabled={dueNow === 0}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3.5 sm:py-2"
+              className="pl-btn pl-btn-primary pl-btn-sm"
             >
               <BookOpen size={14} />
               {dueNow === 0 ? 'Em dia!' : 'Estudar agora'}
@@ -1178,52 +1182,53 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
         </div>
 
         {/* Card list */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-2.5 sm:px-4">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
           {cardsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-blue-500" />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 0' }}>
+              <Loader2 size={24} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
             </div>
           ) : cards.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-                <Layers3 size={28} className="text-slate-400" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '40px 0' }}>
+              <div style={{ display: 'flex', height: 64, width: 64, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-bg-soft)' }}>
+                <Layers3 size={28} style={{ color: 'var(--pl-ink-3)' }} />
               </div>
-              <p className="text-sm font-semibold text-slate-500">Nenhum card ainda.</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Nenhum card ainda.</p>
               <button
                 onClick={() => { setFormErr(''); setCardModal(true); }}
-                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 sm:text-sm"
+                className="pl-btn pl-btn-primary pl-btn-sm"
               >
                 <Plus size={16} />
                 Criar primeiro card
               </button>
             </div>
           ) : (
-            <div className="space-y-1.5">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {cards.map((card) => {
                 const stateLabel = ['Novo', 'Aprendendo', 'Revisão', 'Reaprendendo'][card.state] || 'Novo';
-                const stateColor = [
-                  'bg-slate-100 text-slate-600',
-                  'bg-amber-100 text-amber-700',
-                  'bg-emerald-100 text-emerald-700',
-                  'bg-rose-100 text-rose-700',
-                ][card.state] || 'bg-slate-100 text-slate-600';
+                const stateStyles = [
+                  { bg: 'var(--pl-bg-soft)',     color: 'var(--pl-ink-2)'   },
+                  { bg: 'var(--pl-warn-soft)',    color: 'var(--pl-warn)'    },
+                  { bg: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+                  { bg: 'var(--pl-danger-soft)',  color: 'var(--pl-danger)'  },
+                ][card.state] || { bg: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' };
 
                 return (
                   <div
                     key={card.id}
-                    className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2"
+                    className="pl-card"
+                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 12px' }}
                   >
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <p className="line-clamp-2 text-[13px] font-semibold text-slate-800">{card.front}</p>
-                      <p className="line-clamp-2 text-xs text-slate-500">{card.back}</p>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{card.front}</p>
+                      <p style={{ fontSize: 12, color: 'var(--pl-ink-2)', margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{card.back}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${stateColor}`}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+                      <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: 10, fontWeight: 700, background: stateStyles.bg, color: stateStyles.color }}>
                         {stateLabel}
                       </span>
                       <button
                         onClick={() => setDeleteConfirm({ type: 'card', id: card.id })}
-                        className="rounded p-1 text-slate-300 hover:text-red-400"
+                        style={{ borderRadius: 4, padding: 4, color: 'var(--pl-rule-strong)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -1241,14 +1246,14 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
             title="Novo Card"
             onClose={() => setCardModal(false)}
             footer={
-              <div className="flex justify-end gap-2">
-                <button onClick={() => setCardModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button onClick={() => setCardModal(false)} className="pl-btn pl-btn-ghost">
                   Cancelar
                 </button>
                 <button
                   onClick={handleCreateCard}
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="pl-btn pl-btn-primary"
                 >
                   {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   Criar
@@ -1284,20 +1289,21 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
             title="Excluir card?"
             onClose={() => setDeleteConfirm(null)}
             footer={
-              <div className="flex justify-end gap-2">
-                <button onClick={() => setDeleteConfirm(null)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button onClick={() => setDeleteConfirm(null)} className="pl-btn pl-btn-ghost">
                   Cancelar
                 </button>
                 <button
                   onClick={() => handleDeleteCard(deleteConfirm.id)}
-                  className="rounded-xl bg-red-600 px-5 py-2 text-sm font-bold text-white hover:bg-red-700"
+                  className="pl-btn"
+                  style={{ background: 'var(--pl-danger)', color: '#fff', border: 'none' }}
                 >
                   Excluir
                 </button>
               </div>
             }
           >
-            <p className="text-sm text-slate-600">Este card será excluído permanentemente. Esta ação não pode ser desfeita.</p>
+            <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', margin: 0 }}>Este card será excluído permanentemente. Esta ação não pode ser desfeita.</p>
           </CModal>
         )}
 
@@ -1307,15 +1313,15 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
             title="Gerar cards com IA"
             onClose={() => setAiGenModal(false)}
             footer={
-              <div className="flex justify-end gap-2">
-                <button onClick={() => setAiGenModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button onClick={() => setAiGenModal(false)} className="pl-btn pl-btn-ghost">
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAiGenerate()}
                   disabled={aiLoading}
-                  className="btn-ai gap-2 px-5 py-2.5 text-sm font-bold"
+                  className="pl-btn pl-btn-ai"
                 >
                   {aiLoading ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Sparkles size={14} aria-hidden />}
                   {aiLoading ? 'Gerando flashcards...' : 'Gerar flashcards'}
@@ -1508,20 +1514,21 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
           title="Excluir deck?"
           onClose={() => setDeleteConfirm(null)}
           footer={
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => setDeleteConfirm(null)} className="pl-btn pl-btn-ghost">
                 Cancelar
               </button>
               <button
                 onClick={() => handleDeleteDeck(deleteConfirm.id)}
-                className="rounded-xl bg-red-600 px-5 py-2 text-sm font-bold text-white hover:bg-red-700"
+                className="pl-btn"
+                style={{ background: 'var(--pl-danger)', color: '#fff', border: 'none' }}
               >
                 Excluir
               </button>
             </div>
           }
         >
-          <p className="text-sm text-slate-600">
+          <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', margin: 0 }}>
             O deck e todos os seus cards serão excluídos permanentemente. Esta ação não pode ser desfeita.
           </p>
         </CModal>

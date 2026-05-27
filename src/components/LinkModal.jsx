@@ -1,34 +1,57 @@
-﻿import React from 'react';
+import React from 'react';
 import { X, Trash2 } from 'lucide-react';
 
 export default function LinkModal({ linkModalOpen, setLinkModalOpen }) {
   if (!linkModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] bg-[#1A365D]/60 backdrop-blur-sm animate-in fade-in duration-300 flex items-center justify-center p-4">
-       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 md:p-8 relative animate-in zoom-in-95 duration-300">
-          <button onClick={() => setLinkModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50"><X size={20}/></button>
-          <h3 className="text-2xl font-bold text-gray-800 mb-8">Links</h3>
-          <div className="flex gap-4 items-end mb-8 border border-transparent hover:border-gray-100 p-2 -mx-2 rounded-xl transition-colors">
-             <div className="text-gray-400 font-bold text-sm mb-2">#1</div>
-             <div className="flex-1">
-                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Título</label>
-                <input type="text" className="w-full border-b-2 border-[#1e3a5f] outline-none py-1.5 text-gray-800 font-semibold focus:border-[#1e3a5f] transition-colors bg-transparent" placeholder="Ex: Aula de Constitucional" />
-             </div>
-             <div className="flex-1">
-                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Link</label>
-                <input type="text" className="w-full border-b-2 border-[#1e3a5f] outline-none py-1.5 text-gray-800 font-semibold focus:border-[#1e3a5f] transition-colors bg-transparent" placeholder="https://..." />
-             </div>
-             <button className="mb-2 text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"><Trash2 size={18}/></button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(26,54,93,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: 'var(--pl-surface)', borderRadius: 20, boxShadow: 'var(--pl-sh-high)', width: '100%', maxWidth: 520, padding: '28px 28px 24px', position: 'relative' }}>
+        <button
+          onClick={() => setLinkModalOpen(false)}
+          style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pl-ink-3)', borderRadius: 8, padding: 4 }}
+          aria-label="Fechar"
+        >
+          <X size={20} />
+        </button>
+
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 24 }}>Links</h3>
+
+        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 24, padding: '8px', borderRadius: 12, border: '1px solid var(--pl-rule)' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', marginBottom: 6 }}>#1</div>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', marginBottom: 4 }}>Título</label>
+            <input
+              type="text"
+              className="pl-input"
+              placeholder="Ex: Aula de Constitucional"
+              style={{ width: '100%' }}
+            />
           </div>
-          <div className="flex justify-between items-center mt-4">
-             <button className="text-[#1e3a5f] border border-[#1e3a5f] px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors">Novo Link</button>
-             <div className="flex gap-3">
-                <button onClick={() => setLinkModalOpen(false)} className="text-gray-500 border border-gray-200 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">Cancelar</button>
-                <button onClick={() => setLinkModalOpen(false)} className="bg-[#1e3a5f] text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-[#1e3a5f] transition-colors shadow-sm">Salvar</button>
-             </div>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', marginBottom: 4 }}>Link</label>
+            <input
+              type="text"
+              className="pl-input"
+              placeholder="https://..."
+              style={{ width: '100%' }}
+            />
           </div>
-       </div>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pl-danger)', padding: '6px', borderRadius: 8, marginBottom: 2 }}>
+            <Trash2 size={18} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+          <button className="pl-btn pl-btn-ghost" style={{ borderColor: 'var(--pl-accent)', color: 'var(--pl-accent)' }}>
+            Novo Link
+          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="pl-btn pl-btn-ghost" onClick={() => setLinkModalOpen(false)}>Cancelar</button>
+            <button className="pl-btn pl-btn-primary" onClick={() => setLinkModalOpen(false)}>Salvar</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

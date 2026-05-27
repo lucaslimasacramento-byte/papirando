@@ -23,7 +23,7 @@ export function isAdminTab(tabId) {
 /** Títulos amigáveis para o cabeçalho (área logada). */
 export const ADMIN_TAB_TITLES = {
   admin_dashboard: 'Dashboard',
-  admin_concursos: 'Concursos',
+  admin_concursos: 'Catálogo',
   admin_questoes: 'Questões',
   admin_questoes_import: 'Importar questões',
   admin_disciplinas: 'Disciplinas',

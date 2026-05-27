@@ -17,19 +17,20 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-          <div className="w-full max-w-md rounded-xl border border-slate-200/90 bg-white p-8 text-center shadow-sm">
-            <p className="text-3xl" aria-hidden>
-              —
-            </p>
-            <h2 className="mt-4 text-lg font-semibold tracking-tight text-slate-900">Algo saiu do esperado</h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-500">
+        <div style={{ display: 'flex', minHeight: '100dvh', alignItems: 'center', justifyContent: 'center', background: 'var(--pl-bg-soft)', padding: '0 16px' }}>
+          <div className="pl-card" style={{ width: '100%', maxWidth: 420, padding: 32, textAlign: 'center' }}>
+            <p style={{ fontSize: 28 }} aria-hidden>—</p>
+            <h2 style={{ marginTop: 16, fontSize: 17, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--pl-ink)' }}>
+              Algo saiu do esperado
+            </h2>
+            <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
               Recarregue a página para continuar. Se o problema persistir, tente novamente em instantes.
             </p>
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="btn-primary mt-6 w-full justify-center py-2.5"
+              className="pl-btn pl-btn-primary"
+              style={{ marginTop: 24, width: '100%', justifyContent: 'center' }}
             >
               Recarregar página
             </button>

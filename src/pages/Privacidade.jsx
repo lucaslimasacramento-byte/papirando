@@ -25,8 +25,8 @@ export default function Privacidade() {
 
         <Section title="1. Quem somos">
           <p>
-            O <strong>{COMPANY_NAME}</strong> é uma plataforma de estudos para concursos públicos, operada por
-            Lucas Lima Sacramento. Este documento explica quais dados pessoais coletamos, como os utilizamos e
+            O <strong>{COMPANY_NAME}</strong> é uma plataforma de estudos para estudantes que organizam a rotina
+            a partir dos próprios materiais, operada por Lucas Lima Sacramento. Este documento explica quais dados pessoais coletamos, como os utilizamos e
             quais são os seus direitos como titular de dados, nos termos da Lei Geral de Proteção de Dados
             Pessoais (LGPD — Lei nº 13.709/2018).
           </p>

@@ -10,10 +10,6 @@ const EIXO_OPTIONS = [
   { value: 'educacao', label: 'Educação' },
 ];
 
-function inputCls() {
-  return 'mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-blue-500';
-}
-
 /**
  * @param {{ id: string, eixo: string, banca: string, title: string, description: string }[]} props.draft
  * @param {(fn: (d: unknown[]) => unknown[]) => void} props.onDraftChange
@@ -22,9 +18,9 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
   const rows = Array.isArray(draft) ? draft : [];
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-gray-600">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
           Cada item vira um card no banco de temas (aba Redações). Use o botão &quot;Salvar banco, kit e audiolivros&quot; na página de configurações.
         </p>
         <button
@@ -32,39 +28,35 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
           onClick={() =>
             onDraftChange((prev) => [
               ...prev,
-              {
-                id: `t-${Date.now()}`,
-                eixo: 'sociedade',
-                banca: 'CESPE / CEBRASPE',
-                title: '',
-                description: '',
-              },
+              { id: `t-${Date.now()}`, eixo: 'sociedade', banca: 'CESPE / CEBRASPE', title: '', description: '' },
             ])
           }
-          className="inline-flex items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-900"
+          className="pl-btn pl-btn-ghost pl-btn-sm"
+          style={{ borderColor: 'var(--pl-accent)', color: 'var(--pl-accent)' }}
         >
-          <Plus size={14} />
+          <Plus size={13} />
           Novo tema
         </button>
       </div>
 
-      <div className="max-h-[min(70vh,520px)] space-y-3 overflow-y-auto pr-1">
+      <div style={{ maxHeight: 'min(70vh, 520px)', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {rows.map((row, index) => (
-          <div key={row.id || index} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Tema {index + 1}</span>
+          <div key={row.id || index} className="pl-card" style={{ padding: 16 }}>
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <span className="pl-eyebrow">Tema {index + 1}</span>
               <button
                 type="button"
                 onClick={() => onDraftChange((prev) => prev.filter((_, i) => i !== index))}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600"
+                style={{ width: 34, height: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', cursor: 'pointer' }}
                 aria-label="Remover tema"
               >
-                <Trash2 size={15} />
+                <Trash2 size={14} />
               </button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="sm:col-span-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">id</span>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <label style={{ gridColumn: '1' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>id</p>
                 <input
                   type="text"
                   value={row.id}
@@ -72,45 +64,47 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                     const v = e.target.value;
                     onDraftChange((prev) => prev.map((r, i) => (i === index ? { ...r, id: v } : r)));
                   }}
-                  className={`${inputCls()} font-mono text-xs`}
+                  className="pl-input"
+                  style={{ width: '100%', fontFamily: 'var(--pl-mono)', fontSize: 11 }}
                 />
               </label>
+
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Eixo</span>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Eixo</p>
                 <select
                   value={row.eixo || ''}
                   onChange={(e) => {
                     const v = e.target.value;
                     onDraftChange((prev) => prev.map((r, i) => (i === index ? { ...r, eixo: v } : r)));
                   }}
-                  className={inputCls()}
+                  className="pl-input"
+                  style={{ width: '100%' }}
                 >
                   {EIXO_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
+                    <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Banca</span>
+
+              <label style={{ gridColumn: '1 / -1' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Banca</p>
                 <select
                   value={row.banca || ''}
                   onChange={(e) => {
                     const v = e.target.value;
                     onDraftChange((prev) => prev.map((r, i) => (i === index ? { ...r, banca: v } : r)));
                   }}
-                  className={inputCls()}
+                  className="pl-input"
+                  style={{ width: '100%' }}
                 >
                   {REDACAO_BANCA_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
+                    <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título da proposta</span>
+
+              <label style={{ gridColumn: '1 / -1' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Título da proposta</p>
                 <input
                   type="text"
                   value={row.title}
@@ -118,11 +112,13 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                     const v = e.target.value;
                     onDraftChange((prev) => prev.map((r, i) => (i === index ? { ...r, title: v } : r)));
                   }}
-                  className={inputCls()}
+                  className="pl-input"
+                  style={{ width: '100%' }}
                 />
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Descrição / comando</span>
+
+              <label style={{ gridColumn: '1 / -1' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Descrição / comando</p>
                 <textarea
                   rows={3}
                   value={row.description}
@@ -130,7 +126,8 @@ export function AdminRedacaoThemeBankEditor({ draft, onDraftChange }) {
                     const v = e.target.value;
                     onDraftChange((prev) => prev.map((r, i) => (i === index ? { ...r, description: v } : r)));
                   }}
-                  className={inputCls()}
+                  className="pl-input"
+                  style={{ width: '100%', resize: 'vertical' }}
                 />
               </label>
             </div>

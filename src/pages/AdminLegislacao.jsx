@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ExternalLink, Loader2, RefreshCw, Save, Scale, UploadCloud } from 'lucide-react';
+import { showConfirm, showToast } from '../lib/dialogs';
 import {
   DEFAULT_SECTION_PAGE_MAP,
   loadVadeMecumDocumentBySlug,
@@ -7,7 +8,7 @@ import {
   updateVadeMecumReleaseMeta,
   uploadVadeMecumPdf,
 } from '../lib/vadeMecumApi';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const OFFICIAL_SLUG = 'vade-mecum-oficial';
 
@@ -99,7 +100,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
     event.target.value = '';
     if (!file) return;
     if (!currentUserId) {
-      alert('Faca login para enviar o PDF.');
+      showToast('Faça login para enviar o PDF.', 'error');
       return;
     }
     setUploading(true);
@@ -110,14 +111,14 @@ export default function AdminLegislacao({ currentUserId = '' }) {
       syncFormFromDoc(next);
       showOk('PDF atualizado. Os estudantes passam a ver o novo arquivo.');
     } catch (e) {
-      alert(e?.message || 'Upload falhou. Verifique permissao no bucket vade-mecum-files.');
+      showToast(e?.message || 'Upload falhou. Verifique permissão no bucket.', 'error');
     } finally {
       setUploading(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm('Restaurar o PDF e metadados padrao do app (arquivo local oficial)?')) return;
+    if (!await showConfirm('Restaurar o PDF e metadados padrão do app?', { confirmLabel: 'Restaurar' })) return;
     setUploading(true);
     setError('');
     try {
@@ -126,7 +127,7 @@ export default function AdminLegislacao({ currentUserId = '' }) {
       syncFormFromDoc(next);
       showOk('Base oficial restaurada.');
     } catch (e) {
-      alert(e?.message || 'Nao foi possivel restaurar.');
+      showToast(e?.message || 'Não foi possível restaurar.', 'error');
     } finally {
       setUploading(false);
     }
@@ -138,44 +139,40 @@ export default function AdminLegislacao({ currentUserId = '' }) {
 
   return (
     <div className="pl-page">
-      <div className="app-main-shell mx-auto max-w-[920px] space-y-6">
-        <PageHeadPremium
+      <div style={{ maxWidth: 920, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <AdminPageHeader
           icon={Scale}
-          badge={
-            <PageHeadPremiumBadge icon={Scale}>Admin</PageHeadPremiumBadge>
-          }
+          badge="Admin · Legislação"
           title="Legislação · lançamentos"
-          titleAs="h1"
           subtitle="Troque o PDF do Vade Mecum, o texto exibido (título, edição, data) e o mapa de páginas por bloco. O conteúdo ativo é o mesmo que todos veem na aba Legislação (lei seca)."
-          leadingClassName="min-w-0 flex-1"
         />
 
         {error ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">{error}</div>
+          <div style={{ borderRadius: 10, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{error}</div>
         ) : null}
         {okMsg ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{okMsg}</div>
+          <div style={{ borderRadius: 10, border: '1px solid var(--pl-success)', background: 'var(--pl-success-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{okMsg}</div>
         ) : null}
 
-        <div className="section-card space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="pl-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Arquivo ativo (slug {OFFICIAL_SLUG})</p>
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Arquivo ativo (slug {OFFICIAL_SLUG})</p>
               {loading ? (
-                <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                <p style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--pl-ink-2)' }}>
                   <Loader2 size={16} className="animate-spin" /> Carregando…
                 </p>
               ) : (
                 <>
-                  <h2 className="mt-1 text-xl font-semibold text-slate-900">{doc?.title}</h2>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <h2 style={{ marginTop: 4, fontSize: 18, fontWeight: 700, color: 'var(--pl-ink)' }}>{doc?.title}</h2>
+                  <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>
                     {doc?.edition} · {doc?.source} · Atualizado em {doc?.updatedAtLabel}
                   </p>
                   <a
                     href={doc?.pdfUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-800"
+                    style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)', textDecoration: 'none' }}
                   >
                     Abrir PDF atual
                     <ExternalLink size={14} />
@@ -183,70 +180,86 @@ export default function AdminLegislacao({ currentUserId = '' }) {
                 </>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading || loading}
-                className="btn-primary rounded-xl px-4 py-2.5 disabled:opacity-50"
+                className="pl-btn pl-btn-primary pl-btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
               >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
                 Novo PDF
               </button>
-              <button type="button" onClick={handleReset} disabled={uploading || loading} className="btn-secondary rounded-xl px-4 py-2.5">
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={uploading || loading}
+                className="pl-btn pl-btn-ghost pl-btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              >
                 <RefreshCw size={16} />
                 Base oficial
               </button>
-              <button type="button" onClick={refresh} disabled={loading} className="btn-secondary rounded-xl px-4 py-2.5">
+              <button
+                type="button"
+                onClick={refresh}
+                disabled={loading}
+                className="pl-btn pl-btn-ghost pl-btn-sm"
+              >
                 Recarregar
               </button>
             </div>
-            <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={handleUpload} />
+            <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={handleUpload} />
           </div>
         </div>
 
-        <div className="section-card space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Metadados do lançamento</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block text-xs font-semibold text-slate-600">
+        <div className="pl-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p className="pl-eyebrow">Metadados do lançamento</p>
+          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
               Título
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="pl-input"
+                style={{ marginTop: 4, width: '100%' }}
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-600">
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
               Edição
               <input
                 value={edition}
                 onChange={(e) => setEdition(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="pl-input"
+                style={{ marginTop: 4, width: '100%' }}
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-600">
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
               Fonte
               <input
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="pl-input"
+                style={{ marginTop: 4, width: '100%' }}
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-600">
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
               Rótulo &quot;Atualizado em&quot; (texto livre)
               <input
                 value={updatedLabel}
                 onChange={(e) => setUpdatedLabel(e.target.value)}
                 placeholder="ex: 18/04/2026"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-blue-600"
+                className="pl-input"
+                style={{ marginTop: 4, width: '100%' }}
               />
             </label>
           </div>
 
           <div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <label className="text-xs font-semibold text-slate-600">Mapa de páginas por bloco (JSON)</label>
-              <button type="button" onClick={fillDefaultMap} className="text-xs font-bold text-blue-700 hover:text-blue-800">
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Mapa de páginas por bloco (JSON)</label>
+              <button type="button" onClick={fillDefaultMap} style={{ fontSize: 12, fontWeight: 700, color: 'var(--pl-accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
                 Preencher padrão Senado 2ed
               </button>
             </div>
@@ -255,9 +268,10 @@ export default function AdminLegislacao({ currentUserId = '' }) {
               onChange={(e) => setSectionMapJson(e.target.value)}
               rows={14}
               spellCheck={false}
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3 font-mono text-xs leading-relaxed text-slate-800 outline-none focus:border-blue-600"
+              className="pl-input"
+              style={{ marginTop: 8, width: '100%', fontFamily: 'var(--pl-mono)', fontSize: 11, lineHeight: 1.6, resize: 'vertical' }}
             />
-            <p className="mt-2 text-xs text-slate-500">
+            <p style={{ marginTop: 8, fontSize: 12, color: 'var(--pl-ink-2)' }}>
               Chaves = nome do bloco (igual aos chips na tela Legislação). Valores = número da página inicial daquele bloco no PDF.
             </p>
           </div>
@@ -266,7 +280,8 @@ export default function AdminLegislacao({ currentUserId = '' }) {
             type="button"
             onClick={handleSaveMeta}
             disabled={savingMeta || loading}
-            className="btn-primary rounded-xl px-5 py-3 disabled:opacity-50"
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}
           >
             {savingMeta ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             Salvar metadados e mapa

@@ -763,10 +763,10 @@ function OverviewSection({ computed, disciplinas, onOpenDiscipline, onOpenHistor
   const topDisciplinas = [...disciplinas].sort((first, second) => first.avg - second.avg).slice(0, 4);
 
   return (
-    <section className="space-y-5">
-      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1.05fr 0.95fr' }}>
         <SectionCard eyebrow="visão geral" title="Radar executivo do edital" subtitle="Cruza cobertura, histórico e questões por tópico.">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <FeatureSquare title="Zona de pressão" value={`${computed.criticos.length} pontos`} description="tópicos com baixa precisão ou pouca tração" accent="red" />
             <FeatureSquare title="Base consolidada" value={`${computed.fortes.length} pontos`} description="tópicos já respondendo bem" accent="green" />
             <FeatureSquare title="Tempo investido" value={formatMinutes(computed.totalMinutes)} description="tempo vindo do histórico real" accent="blue" />
@@ -774,18 +774,18 @@ function OverviewSection({ computed, disciplinas, onOpenDiscipline, onOpenHistor
           </div>
         </SectionCard>
 
-        <SectionCard eyebrow="ataque imediato" title="As 4 disciplinas mais pressionadas" subtitle="As que combinam baixa precisão, atraso e tópicos em aberto." action={<button type="button" onClick={() => setActiveTab('disciplinas')} className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Ver disciplinas</button>}>
-          <div className="space-y-3">
+        <SectionCard eyebrow="ataque imediato" title="As 4 disciplinas mais pressionadas" subtitle="As que combinam baixa precisão, atraso e tópicos em aberto." action={<button type="button" onClick={() => setActiveTab('disciplinas')} className="pl-btn pl-btn-sm">Ver disciplinas</button>}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {topDisciplinas.map((disciplina) => (
-              <div key={disciplina.id} className="rounded-[1.25rem] border border-slate-200 bg-slate-50/70 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">{disciplina.plano || 'Geral'}</p>
-                    <h4 className="mt-1 text-base font-semibold text-slate-900">{disciplina.nome}</h4>
-                    <p className="mt-2 text-xs font-bold text-slate-500">{disciplina.topicos.length} tópicos • {disciplina.criticosDisciplina} críticos • {disciplina.minutesLabel}</p>
+              <div key={disciplina.id} className="pl-card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{disciplina.plano || 'Geral'}</p>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>{disciplina.nome}</h4>
+                    <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{disciplina.topicos.length} tópicos • {disciplina.criticosDisciplina} críticos • {disciplina.minutesLabel}</p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div style={{ display: 'flex', gap: 8 }}>
                     <TinyActionButton label="Abrir" onClick={() => onOpenDiscipline(disciplina)} />
                     <TinyActionButton label="Histórico" onClick={() => onOpenHistory(disciplina)} secondary />
                   </div>
@@ -796,9 +796,9 @@ function OverviewSection({ computed, disciplinas, onOpenDiscipline, onOpenHistor
         </SectionCard>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
-        <SectionCard eyebrow="fila tática" title="Pontos mais perigosos do edital" subtitle="Ordenados pela pressão real do estudo." action={<button type="button" onClick={() => setActiveTab('criticos')} className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Abrir críticos</button>}>
-          <div className="space-y-3">
+      <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1.08fr 0.92fr' }}>
+        <SectionCard eyebrow="fila tática" title="Pontos mais perigosos do edital" subtitle="Ordenados pela pressão real do estudo." action={<button type="button" onClick={() => setActiveTab('criticos')} className="pl-btn pl-btn-sm">Abrir críticos</button>}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {computed.criticos.slice(0, 5).map((topic, index) => (
               <CriticalListItem key={topic.id} topic={topic} index={index + 1} onPractice={() => onPracticeTopic(topic)} />
             ))}
@@ -806,17 +806,17 @@ function OverviewSection({ computed, disciplinas, onOpenDiscipline, onOpenHistor
         </SectionCard>
 
         <SectionCard eyebrow="fortes" title="Blocos já consolidados" subtitle="Onde a base já está respondendo com mais segurança.">
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {computed.fortes.slice(0, 5).map((topic) => (
-              <div key={topic.id} className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50/70 p-4">
-                <div className="flex items-start justify-between gap-3">
+              <div key={topic.id} style={{ borderRadius: 14, border: '1px solid var(--pl-success)', background: 'var(--pl-success-soft)', padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700">{topic.disciplinaNome}</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-900">{topic.nome}</p>
-                    <p className="mt-2 text-xs font-bold text-slate-500">{topic.totalQuestoes} questões • {topic.minutesLabel} • {topic.lastSeenLabel}</p>
+                    <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-success)' }}>{topic.disciplinaNome}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{topic.nome}</p>
+                    <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{topic.totalQuestoes} questões • {topic.minutesLabel} • {topic.lastSeenLabel}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-700">{topic.percentual}%</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                    <span className="pl-tag pl-tag-success">{topic.percentual}%</span>
                     <TinyActionButton label="Registrar" onClick={() => onRegisterStudy({ id: topic.disciplinaId, nome: topic.disciplinaNome, plano: topic.disciplinaPlano })} secondary />
                   </div>
                 </div>
@@ -831,20 +831,20 @@ function OverviewSection({ computed, disciplinas, onOpenDiscipline, onOpenHistor
 
 function DisciplinasSection({ disciplinas, expandedDiscipline, setExpandedDiscipline, onToggleTopic, onOpenDiscipline, onPracticeTopic, onRegisterStudy }) {
   return (
-    <section className="space-y-4">
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {disciplinas.map((disciplina) => {
         const isOpen = expandedDiscipline === disciplina.id;
         return (
-          <div key={disciplina.id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-            <button type="button" onClick={() => setExpandedDiscipline(isOpen ? null : disciplina.id)} className={`flex w-full items-start justify-between gap-4 px-5 py-5 text-left transition ${isOpen ? 'bg-slate-50/80' : 'hover:bg-slate-50/60'}`}>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{disciplina.plano || 'Geral'}</span>
+          <div key={disciplina.id} style={{ overflow: 'hidden', borderRadius: 20, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
+            <button type="button" onClick={() => setExpandedDiscipline(isOpen ? null : disciplina.id)} style={{ display: 'flex', width: '100%', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, padding: '20px', textAlign: 'left', background: isOpen ? 'var(--pl-bg-soft)' : 'var(--pl-surface)', border: 'none', cursor: 'pointer' }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                  <span className="pl-tag">{disciplina.plano || 'Geral'}</span>
                   <PriorityBadge value={disciplina.peso} />
                 </div>
-                <h3 className="mt-3 text-xl font-semibold text-slate-900">{disciplina.nome}</h3>
-                <p className="mt-1 text-sm font-semibold text-slate-500">{disciplina.totalQuestoes} questões • {disciplina.totalSessions} sessões • {disciplina.lastSeenLabel}</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                <h3 style={{ margin: '12px 0 0', fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>{disciplina.nome}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{disciplina.totalQuestoes} questões • {disciplina.totalSessions} sessões • {disciplina.lastSeenLabel}</p>
+                <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                   <MiniInfo label="Precisão" value={`${disciplina.avg}%`} />
                   <MiniInfo label="Cobertura" value={`${disciplina.coberturaDisciplina}%`} />
                   <MiniInfo label="Pendentes" value={`${disciplina.pendentesDisciplina}`} />
@@ -852,53 +852,53 @@ function DisciplinasSection({ disciplinas, expandedDiscipline, setExpandedDiscip
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 4 }}>
                 <TinyActionButton label="Abrir" onClick={(event) => { event.stopPropagation(); onOpenDiscipline(disciplina); }} />
-                <div className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500">{isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}</div>
+                <div style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 8, color: 'var(--pl-ink-2)' }}>{isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}</div>
               </div>
             </button>
 
             {isOpen && (
-              <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-5">
-                <div className="mb-4 flex flex-wrap gap-2">
+              <div style={{ borderTop: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: 20 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                   <TinyActionButton label="Registrar estudo" onClick={() => onRegisterStudy(disciplina)} />
                   <TinyActionButton label="Abrir disciplina" onClick={() => onOpenDiscipline(disciplina)} secondary />
                 </div>
                 {disciplina.topicos.length === 0 ? (
-                  <div className="rounded-[1.2rem] border border-dashed border-slate-200 bg-white px-4 py-5 text-sm font-semibold text-slate-500">Nenhum tópico batendo com os filtros atuais.</div>
+                  <div style={{ borderRadius: 12, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '20px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Nenhum tópico batendo com os filtros atuais.</div>
                 ) : (
-                  <div className="space-y-3">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {disciplina.topicos.slice().sort((first, second) => second.pressureScore - first.pressureScore).map((topic) => {
                       const danger = topic.pressureScore >= 65;
                       return (
-                        <div key={topic.id} className={`rounded-[1.25rem] border p-4 ${danger ? 'border-red-100 bg-red-50/50' : 'border-slate-200 bg-white'}`}>
-                          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-start gap-3">
-                                <button type="button" onClick={() => onToggleTopic?.(topic.disciplinaId, topic.id)} className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition ${topic.concluido ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 bg-white text-transparent'}`}>
+                        <div key={topic.id} style={{ borderRadius: 14, border: '1px solid', padding: 16, borderColor: danger ? 'var(--pl-danger)' : 'var(--pl-rule-2)', background: danger ? 'var(--pl-danger-soft)' : 'var(--pl-surface)' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                <button type="button" onClick={() => onToggleTopic?.(topic.disciplinaId, topic.id)} style={{ marginTop: 2, display: 'flex', height: 24, width: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: topic.concluido ? '2px solid var(--pl-success)' : '2px solid var(--pl-rule-strong)', background: topic.concluido ? 'var(--pl-success)' : 'var(--pl-surface)', color: topic.concluido ? '#fff' : 'transparent', cursor: 'pointer' }}>
                                   <CheckCircle2 size={13} />
                                 </button>
-                                <div className="min-w-0">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <p className={`text-sm font-semibold leading-relaxed ${topic.concluido ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{topic.nome}</p>
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: topic.concluido ? 'var(--pl-ink-3)' : 'var(--pl-ink)', textDecoration: topic.concluido ? 'line-through' : 'none' }}>{topic.nome}</p>
                                     <PriorityBadge value={topic.prioridade} small />
                                   </div>
-                                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
+                                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
                                     <span>{topic.totalQuestoes} questões</span>
                                     <span>{topic.sessions} sessões</span>
                                     <span>{topic.minutesLabel}</span>
                                     <span>{topic.lastSeenLabel}</span>
-                                    <span className={danger ? 'text-red-600' : 'text-emerald-600'}>{topic.percentual}%</span>
+                                    <span style={{ color: danger ? 'var(--pl-danger)' : 'var(--pl-success)' }}>{topic.percentual}%</span>
                                   </div>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                              <div className="w-full sm:w-[180px]">
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                              <div style={{ flex: 1, maxWidth: 200 }}>
                                 <ProgressBar value={topic.percentual} tone={danger ? 'red' : topic.percentual >= 75 ? 'green' : 'blue'} />
                               </div>
-                              <button type="button" onClick={() => onPracticeTopic(topic)} className={`rounded-[1rem] px-4 py-2.5 text-sm font-semibold ${danger ? 'bg-red-600 text-white' : 'border border-blue-100 bg-blue-50 text-blue-700'}`}>
+                              <button type="button" onClick={() => onPracticeTopic(topic)} style={{ borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none', background: danger ? 'var(--pl-danger)' : 'var(--pl-accent-soft)', color: danger ? '#fff' : 'var(--pl-accent)' }}>
                                 {danger ? 'Atacar ponto' : 'Praticar'}
                               </button>
                             </div>
@@ -919,25 +919,25 @@ function DisciplinasSection({ disciplinas, expandedDiscipline, setExpandedDiscip
 
 function CriticosSection({ criticos, onPracticeTopic, onOpenDiscipline }) {
   return (
-    <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+    <section style={{ display: 'grid', gap: 24, gridTemplateColumns: '1.02fr 0.98fr' }}>
       <SectionCard eyebrow="zona crítica" title="Fila inteligente de ataque" subtitle="Ordenada pela combinação entre baixa precisão, pendência e falta de tração.">
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {criticos.slice(0, 8).map((topic, index) => (
-            <div key={topic.id} className="rounded-[1.25rem] border border-red-100 bg-red-50/60 p-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-base font-semibold text-white">{index + 1}</div>
+            <div key={topic.id} style={{ borderRadius: 14, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', padding: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                  <div style={{ display: 'flex', height: 44, width: 44, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: 'var(--pl-danger)', fontSize: 15, fontWeight: 600, color: '#fff' }}>{index + 1}</div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-600">{topic.disciplinaNome}</p>
-                    <h4 className="mt-1 text-sm font-semibold text-slate-900">{topic.nome}</h4>
-                    <p className="mt-2 text-xs font-bold text-slate-500">{topic.totalQuestoes} questões • {topic.sessions} sessões • prioridade {priorityLabel(topic.prioridade)}</p>
+                    <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-danger)' }}>{topic.disciplinaNome}</p>
+                    <h4 style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{topic.nome}</h4>
+                    <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{topic.totalQuestoes} questões • {topic.sessions} sessões • prioridade {priorityLabel(topic.prioridade)}</p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600">{topic.percentual}%</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+                  <span className="pl-tag pl-tag-danger">{topic.percentual}%</span>
                   <TinyActionButton label="Abrir disciplina" onClick={() => onOpenDiscipline({ id: topic.disciplinaId, nome: topic.disciplinaNome })} secondary />
-                  <button type="button" onClick={() => onPracticeTopic(topic)} className="rounded-[1rem] bg-red-600 px-4 py-2.5 text-sm font-semibold text-white">
+                  <button type="button" onClick={() => onPracticeTopic(topic)} style={{ borderRadius: 10, background: 'var(--pl-danger)', padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', border: 'none', cursor: 'pointer' }}>
                     Resolver agora
                   </button>
                 </div>
@@ -948,7 +948,7 @@ function CriticosSection({ criticos, onPracticeTopic, onOpenDiscipline }) {
       </SectionCard>
 
       <SectionCard eyebrow="modo leitura" title="Como usar essa tela sem se afogar" subtitle="A fila agora vem dos seus dados reais, então a decisão precisa seguir o sinal do painel.">
-        <div className="grid gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <GuideStep step="01" title="Comece pelo topo da fila" description="O primeiro crítico mistura baixa precisão, tópico em aberto e pouca recorrência recente." />
           <GuideStep step="02" title="Revisão curta e prática" description="Abra a disciplina, releia o ponto e em seguida avance para Questões." />
           <GuideStep step="03" title="Marque a conclusão" description="O check desta tela usa a persistência real já integrada com o resto do app." />
@@ -962,25 +962,25 @@ function CriticosSection({ criticos, onPracticeTopic, onOpenDiscipline }) {
 function ProgressoSection({ computed, disciplinas }) {
   const ranked = [...disciplinas].sort((first, second) => second.coberturaDisciplina - first.coberturaDisciplina);
   return (
-    <section className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
         <SummaryCard eyebrow="tópicos totais" title={`${computed.totalTopicos}`} subtitle="mapeados no edital" icon={<BookOpen size={18} />} />
         <SummaryCard eyebrow="pendentes" title={`${computed.pendentes}`} subtitle="ainda sem consolidação" icon={<AlertCircle size={18} />} danger />
         <SummaryCard eyebrow="fortes" title={`${computed.fortes.length}`} subtitle="faixas mais seguras" icon={<ShieldCheck size={18} />} success />
         <SummaryCard eyebrow="tempo total" title={formatMinutes(computed.totalMinutes)} subtitle="do histórico vinculado" icon={<Clock3 size={18} />} />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1fr 1fr' }}>
         <SectionCard eyebrow="progresso por disciplina" title="Cobertura do edital" subtitle="Percentual concluído por disciplina com tempo e questões já cruzados.">
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {ranked.map((disciplina) => (
-              <div key={disciplina.id} className="rounded-[1.2rem] border border-slate-200 bg-slate-50/70 p-4">
-                <div className="mb-2 flex items-center justify-between gap-3">
+              <div key={disciplina.id} className="pl-card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
                   <div>
-                    <h4 className="text-sm font-semibold text-slate-900">{disciplina.nome}</h4>
-                    <p className="text-xs font-bold text-slate-500">{disciplina.concluidosDisciplina}/{disciplina.topicos.length} concluídos • {disciplina.totalQuestoes} questões • {disciplina.minutesLabel}</p>
+                    <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{disciplina.nome}</h4>
+                    <p style={{ margin: '2px 0 0', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{disciplina.concluidosDisciplina}/{disciplina.topicos.length} concluídos • {disciplina.totalQuestoes} questões • {disciplina.minutesLabel}</p>
                   </div>
-                  <span className="text-sm font-semibold text-blue-700">{disciplina.coberturaDisciplina}%</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)', flexShrink: 0 }}>{disciplina.coberturaDisciplina}%</span>
                 </div>
                 <ProgressBar value={disciplina.coberturaDisciplina} tone={disciplina.coberturaDisciplina >= 70 ? 'green' : disciplina.coberturaDisciplina >= 45 ? 'blue' : 'red'} />
               </div>
@@ -989,7 +989,7 @@ function ProgressoSection({ computed, disciplinas }) {
         </SectionCard>
 
         <SectionCard eyebrow="leitura estratégica" title="Interpretação do momento" subtitle="Mistura cobertura, prática e frequência recente para dizer onde está o gargalo.">
-          <div className="grid gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <InterpretationCard label="Cobertura geral" value={`${computed.cobertura}%`} description={computed.cobertura >= 70 ? 'Boa parte do edital já foi percorrida.' : 'Ainda existe muito tópico em aberto no edital.'} tone={computed.cobertura >= 70 ? 'green' : 'blue'} />
             <InterpretationCard label="Precisão consolidada" value={`${computed.media}%`} description={computed.media >= 75 ? 'Base sólida e com boa leitura.' : computed.media >= 60 ? 'Base aceitável, mas ainda vulnerável.' : 'Base exposta e pedindo revisão urgente.'} tone={computed.media >= 75 ? 'green' : computed.media >= 60 ? 'blue' : 'red'} />
             <InterpretationCard label="Pressão executiva" value={computed.criticos.length > 10 ? 'Alta' : computed.criticos.length > 4 ? 'Média' : 'Controlada'} description={`Há ${computed.criticos.length} tópicos em zona crítica.`} tone={computed.criticos.length > 10 ? 'red' : computed.criticos.length > 4 ? 'gold' : 'green'} />
@@ -1002,21 +1002,21 @@ function ProgressoSection({ computed, disciplinas }) {
 
 function EstruturaSection({ disciplinas, selectedCourse }) {
   return (
-    <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+    <section style={{ display: 'grid', gap: 24, gridTemplateColumns: '1.05fr 0.95fr' }}>
       <SectionCard eyebrow="arquitetura do edital" title="Mapa das frentes" subtitle="A estrutura vem do curso ativo do usuário e das disciplinas gerais conectadas a ele.">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {disciplinas.map((disciplina) => (
-            <div key={disciplina.id} className="rounded-[1.35rem] border border-slate-200 bg-slate-50/70 p-4">
-              <div className="flex flex-wrap items-center gap-2">
+            <div key={disciplina.id} className="pl-card" style={{ padding: 16 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
                 <PriorityBadge value={disciplina.peso} small />
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{disciplina.plano || 'Geral'}</span>
+                <span className="pl-tag">{disciplina.plano || 'Geral'}</span>
               </div>
-              <h4 className="mt-3 text-base font-semibold text-slate-900">{disciplina.nome}</h4>
-              <p className="mt-1 text-xs font-bold text-slate-500">{disciplina.totalSessions} sessões • {disciplina.minutesLabel}</p>
-              <div className="mt-4 space-y-2 text-xs font-bold text-slate-500">
-                <div className="flex items-center justify-between"><span>Tópicos</span><span>{disciplina.topicos.length}</span></div>
-                <div className="flex items-center justify-between"><span>Questões</span><span>{disciplina.totalQuestoes}</span></div>
-                <div className="flex items-center justify-between"><span>Cobertura</span><span>{disciplina.coberturaDisciplina}%</span></div>
+              <h4 style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>{disciplina.nome}</h4>
+              <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{disciplina.totalSessions} sessões • {disciplina.minutesLabel}</p>
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span>Tópicos</span><span>{disciplina.topicos.length}</span></div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span>Questões</span><span>{disciplina.totalQuestoes}</span></div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span>Cobertura</span><span>{disciplina.coberturaDisciplina}%</span></div>
               </div>
             </div>
           ))}
@@ -1024,7 +1024,7 @@ function EstruturaSection({ disciplinas, selectedCourse }) {
       </SectionCard>
 
       <SectionCard eyebrow="integração" title="Comportamento da área" subtitle="Resumo do que a tela está usando do resto do site.">
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <SpecRow title="Curso ativo" text={selectedCourse?.nome || 'Sem curso selecionado'} />
           <SpecRow title="Disciplinas e tópicos" text="Somente o que você cadastrou em Planos, filtrado pelo curso selecionado (inclui matérias com plano Geral quando aplicável)." />
           <SpecRow title="Desempenho" text="Calculado a partir de acertos, erros e percentual já registrados em cada tópico." />
@@ -1050,15 +1050,15 @@ function ConquistasSection({ computed }) {
   ];
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+    <section style={{ display: 'grid', gap: 24, gridTemplateColumns: '1fr 1fr' }}>
       <SectionCard eyebrow="selos conquistados" title="Conquistas liberadas" subtitle="Liberadas a partir dos dados reais do edital em questão.">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {unlocked.length === 0 ? <EmptyAchievementCard /> : unlocked.map((item) => <AchievementCard key={item.title} {...item} unlocked />)}
         </div>
       </SectionCard>
 
       <SectionCard eyebrow="próximos selos" title="O que falta desbloquear" subtitle="Roadmap prático para os próximos ganhos do painel.">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {locked.map((item) => <AchievementCard key={item.title} {...item} />)}
         </div>
       </SectionCard>
@@ -1069,16 +1069,16 @@ function ConquistasSection({ computed }) {
 function EmptyState({ selectedCourse, hasEnrolledCourses, onOpenPlanos }) {
   if (!hasEnrolledCourses) {
     return (
-      <div className="rounded-[28px] border border-dashed border-slate-300 bg-white p-8 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-10">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+      <div style={{ borderRadius: 20, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-surface)', padding: '40px 32px', textAlign: 'center', boxShadow: 'var(--pl-sh-low)' }}>
+        <div style={{ margin: '0 auto 16px', display: 'flex', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' }}>
           <BookOpen size={24} />
         </div>
-        <h3 className="mt-4 text-xl font-semibold text-slate-900">Nenhum curso para analisar</h3>
-        <p className="mt-2 text-sm font-semibold text-slate-500">
-          Este painel usa apenas os cursos que você cadastra em <strong className="font-semibold text-slate-700">Planos</strong>. Adicione um plano para cruzar edital, disciplinas e seu desempenho.
+        <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Nenhum curso para analisar</h3>
+        <p style={{ margin: '8px auto 0', maxWidth: 460, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+          Este painel usa apenas os cursos que você cadastra em <strong style={{ color: 'var(--pl-ink)' }}>Planos</strong>. Adicione um plano para cruzar edital, disciplinas e seu desempenho.
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <button type="button" onClick={() => onOpenPlanos?.()} className="btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold">
+        <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <button type="button" onClick={() => onOpenPlanos?.()} className="pl-btn pl-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             Ir a Planos
           </button>
         </div>
@@ -1087,14 +1087,14 @@ function EmptyState({ selectedCourse, hasEnrolledCourses, onOpenPlanos }) {
   }
 
   return (
-    <div className="rounded-[28px] border border-dashed border-slate-300 bg-white p-8 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-10">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><BookOpen size={24} /></div>
-      <h3 className="mt-4 text-xl font-semibold text-slate-900">Ainda não há tópicos para este edital</h3>
-      <p className="mt-2 text-sm font-semibold text-slate-500">
-        O curso <strong className="font-semibold text-slate-800">{selectedCourse?.nome || 'selecionado'}</strong> não tem tópicos vinculados à análise. Revise disciplinas e estrutura em Planos ou no cadastro do curso.
+    <div style={{ borderRadius: 20, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-surface)', padding: '40px 32px', textAlign: 'center', boxShadow: 'var(--pl-sh-low)' }}>
+      <div style={{ margin: '0 auto 16px', display: 'flex', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' }}><BookOpen size={24} /></div>
+      <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Ainda não há tópicos para este edital</h3>
+      <p style={{ margin: '8px auto 0', maxWidth: 460, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+        O curso <strong style={{ color: 'var(--pl-ink)' }}>{selectedCourse?.nome || 'selecionado'}</strong> não tem tópicos vinculados à análise. Revise disciplinas e estrutura em Planos ou no cadastro do curso.
       </p>
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <button type="button" onClick={() => onOpenPlanos?.()} className="btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold">
+      <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <button type="button" onClick={() => onOpenPlanos?.()} className="pl-btn pl-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           Ajustar em Planos
         </button>
         {selectedCourse?.editalUrl ? (
@@ -1102,7 +1102,8 @@ function EmptyState({ selectedCourse, hasEnrolledCourses, onOpenPlanos }) {
             href={selectedCourse.editalUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-800"
+            className="pl-btn pl-btn-ghost"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <ExternalLink size={16} />
             Abrir edital (PDF)
@@ -1115,102 +1116,112 @@ function EmptyState({ selectedCourse, hasEnrolledCourses, onOpenPlanos }) {
 
 function SectionCard({ eyebrow, title, subtitle, children, action }) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="pl-card" style={{ padding: '20px 24px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{eyebrow}</p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">{title}</h2>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">{subtitle}</p>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{eyebrow}</p>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</h2>
+          <p style={{ margin: '8px 0 0', maxWidth: 560, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{subtitle}</p>
         </div>
         {action}
       </div>
-      <div className="mt-5">{children}</div>
+      <div style={{ marginTop: 20 }}>{children}</div>
     </div>
   );
 }
 
 function SummaryCard({ eyebrow, title, subtitle, icon, danger, success }) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{eyebrow}</p>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${danger ? 'bg-red-50 text-red-600' : success ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-700'}`}>{icon}</span>
+    <div className="pl-card" style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <p className="pl-eyebrow" style={{ margin: 0 }}>{eyebrow}</p>
+        <span style={{ display: 'flex', width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: danger ? 'var(--pl-danger-soft)' : success ? 'var(--pl-success-soft)' : 'var(--pl-accent-soft)', color: danger ? 'var(--pl-danger)' : success ? 'var(--pl-success)' : 'var(--pl-accent)' }}>{icon}</span>
       </div>
-      <h3 className={`mt-3 text-3xl font-semibold tabular-nums tracking-tight ${danger ? 'text-red-600' : 'text-slate-900'}`}>{title}</h3>
-      <p className="mt-1.5 text-sm font-medium text-slate-500">{subtitle}</p>
+      <h3 className="pl-num" style={{ marginTop: 12, fontSize: 30, color: danger ? 'var(--pl-danger)' : 'var(--pl-ink)' }}>{title}</h3>
+      <p style={{ margin: '6px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{subtitle}</p>
     </div>
   );
 }
 
 function FeatureSquare({ title, value, description, accent }) {
-  const tone = accent === 'red' ? 'border-red-100 bg-red-50/70 text-red-600' : accent === 'green' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-600' : accent === 'gold' ? 'border-amber-100 bg-amber-50/70 text-amber-700' : 'border-blue-100 bg-blue-50/70 text-blue-600';
+  const toneStyles = accent === 'red'
+    ? { borderColor: 'var(--pl-danger)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' }
+    : accent === 'green'
+    ? { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' }
+    : accent === 'gold'
+    ? { borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' }
+    : { borderColor: 'var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' };
   return (
-    <div className={`rounded-[1.4rem] border p-4 ${tone}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{title}</p>
-      <h4 className="mt-3 text-2xl font-semibold">{value}</h4>
-      <p className="mt-2 text-sm font-semibold text-slate-500">{description}</p>
+    <div style={{ borderRadius: 14, border: '1px solid', padding: 16, ...toneStyles }}>
+      <p className="pl-eyebrow" style={{ margin: 0 }}>{title}</p>
+      <h4 className="pl-num" style={{ marginTop: 12, fontSize: 22 }}>{value}</h4>
+      <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{description}</p>
     </div>
   );
 }
 
 function SidebarMiniMetric({ label, value, hint }) {
   return (
-    <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold text-slate-500">{label}</p>
-        <span className="text-lg font-semibold text-slate-900">{value}</span>
+    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{label}</p>
+        <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</span>
       </div>
-      <p className="mt-1 text-xs font-semibold text-slate-400">{hint}</p>
+      <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{hint}</p>
     </div>
   );
 }
 
 function QuickStep({ icon: Icon, title, description }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/90 px-3 py-2.5">
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-700 shadow-sm"><Icon size={16} /></span>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 12px' }}>
+      <span style={{ marginTop: 2, display: 'flex', width: 36, height: 36, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'var(--pl-surface)', color: 'var(--pl-accent)', boxShadow: 'var(--pl-sh-low)' }}><Icon size={16} /></span>
       <div>
-        <p className="text-sm font-semibold text-slate-900">{title}</p>
-        <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-500">{description}</p>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</p>
+        <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{description}</p>
       </div>
     </div>
   );
 }
 
 function PriorityBadge({ value, small }) {
-  const tone = value === 'altissima' ? 'border-red-200 bg-red-50 text-red-600' : value === 'alta' ? 'border-amber-200 bg-amber-50 text-amber-700' : value === 'media' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700';
-  return <span className={`rounded-full border px-3 py-1 font-semibold uppercase tracking-[0.16em] ${small ? 'text-[10px]' : 'text-[11px]'} ${tone}`}>{priorityLabel(value)}</span>;
+  const toneClass = value === 'altissima' ? 'pl-tag pl-tag-danger' : value === 'alta' ? 'pl-tag pl-tag-warn' : value === 'media' ? 'pl-tag pl-tag-accent' : 'pl-tag pl-tag-success';
+  return <span className={toneClass} style={{ fontSize: small ? 10 : 11, textTransform: 'uppercase', letterSpacing: '0.16em' }}>{priorityLabel(value)}</span>;
 }
 
 function MiniInfo({ label, value }) {
   return (
-    <div className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-slate-900">{value}</p>
+    <div style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '12px 16px' }}>
+      <p className="pl-eyebrow" style={{ margin: 0, marginBottom: 8 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</p>
     </div>
   );
 }
 
 function ProgressBar({ value, tone = 'blue' }) {
-  const color = tone === 'red' ? 'bg-red-500' : tone === 'green' ? 'bg-emerald-500' : 'bg-blue-600';
-  return <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200"><div className={`h-full rounded-full ${color}`} style={{ width: `${clampPercent(value)}%` }} /></div>;
+  const fillColor = tone === 'red' ? 'var(--pl-danger)' : tone === 'green' ? 'var(--pl-success)' : 'var(--pl-accent)';
+  return (
+    <div style={{ height: 10, width: '100%', overflow: 'hidden', borderRadius: 999, background: 'var(--pl-bg-soft)' }}>
+      <div style={{ height: '100%', borderRadius: 999, background: fillColor, width: `${clampPercent(value)}%` }} />
+    </div>
+  );
 }
 
 function CriticalListItem({ topic, index, onPractice }) {
   return (
-    <div className="rounded-[1.25rem] border border-red-100 bg-red-50/60 p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-base font-semibold text-white">{index}</div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-600">{topic.disciplinaNome}</p>
-            <h4 className="mt-1 truncate text-sm font-semibold text-slate-900">{topic.nome}</h4>
-            <p className="mt-2 text-xs font-bold text-slate-500">{topic.totalQuestoes} questões • {topic.sessions} sessões • {topic.lastSeenLabel}</p>
+    <div style={{ borderRadius: 14, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ display: 'flex', minWidth: 0, alignItems: 'flex-start', gap: 16 }}>
+          <div style={{ display: 'flex', height: 44, width: 44, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: 'var(--pl-danger)', fontSize: 15, fontWeight: 600, color: '#fff' }}>{index}</div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-danger)' }}>{topic.disciplinaNome}</p>
+            <h4 style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{topic.nome}</h4>
+            <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{topic.totalQuestoes} questões • {topic.sessions} sessões • {topic.lastSeenLabel}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600">{topic.percentual}%</span>
-          <button type="button" onClick={onPractice} className="rounded-[1rem] bg-red-600 px-4 py-2.5 text-sm font-semibold text-white">Praticar</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          <span className="pl-tag pl-tag-danger">{topic.percentual}%</span>
+          <button type="button" onClick={onPractice} style={{ borderRadius: 10, background: 'var(--pl-danger)', padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#fff', border: 'none', cursor: 'pointer' }}>Praticar</button>
         </div>
       </div>
     </div>
@@ -1219,12 +1230,12 @@ function CriticalListItem({ topic, index, onPractice }) {
 
 function GuideStep({ step, title, description }) {
   return (
-    <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50/70 p-4">
-      <div className="flex items-start gap-3">
-        <span className="rounded-2xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">{step}</span>
+    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <span style={{ borderRadius: 10, background: 'var(--pl-ink)', padding: '6px 10px', fontSize: 12, fontWeight: 600, color: 'var(--pl-bg)', flexShrink: 0 }}>{step}</span>
         <div>
-          <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
-          <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-500">{description}</p>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</h4>
+          <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{description}</p>
         </div>
       </div>
     </div>
@@ -1232,35 +1243,47 @@ function GuideStep({ step, title, description }) {
 }
 
 function InterpretationCard({ label, value, description, tone }) {
-  const styles = tone === 'green' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-700' : tone === 'red' ? 'border-red-100 bg-red-50/70 text-red-600' : tone === 'gold' ? 'border-amber-100 bg-amber-50/70 text-amber-700' : 'border-blue-100 bg-blue-50/70 text-blue-700';
+  const toneStyles = tone === 'green'
+    ? { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' }
+    : tone === 'red'
+    ? { borderColor: 'var(--pl-danger)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' }
+    : tone === 'gold'
+    ? { borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' }
+    : { borderColor: 'var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' };
   return (
-    <div className={`rounded-[1.3rem] border p-4 ${styles}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</p>
-      <h4 className="mt-3 text-2xl font-semibold">{value}</h4>
-      <p className="mt-2 text-sm font-semibold text-slate-500">{description}</p>
+    <div style={{ borderRadius: 12, border: '1px solid', padding: 16, ...toneStyles }}>
+      <p className="pl-eyebrow" style={{ margin: 0 }}>{label}</p>
+      <h4 className="pl-num" style={{ marginTop: 12, fontSize: 22 }}>{value}</h4>
+      <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{description}</p>
     </div>
   );
 }
 
 function SpecRow({ title, text }) {
   return (
-    <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50/70 px-4 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">{title}</p>
-      <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">{text}</p>
+    <div style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '14px 16px' }}>
+      <p className="pl-eyebrow" style={{ margin: 0, marginBottom: 8 }}>{title}</p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{text}</p>
     </div>
   );
 }
 
 function AchievementCard({ title, description, tone, unlocked }) {
-  const styles = unlocked ? tone === 'green' ? 'border-emerald-100 bg-emerald-50/80' : tone === 'gold' ? 'border-amber-100 bg-amber-50/80' : 'border-blue-100 bg-blue-50/80' : 'border-slate-200 bg-slate-50/80';
+  const toneStyles = unlocked
+    ? tone === 'green'
+      ? { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)' }
+      : tone === 'gold'
+      ? { borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)' }
+      : { borderColor: 'var(--pl-accent-ring)', background: 'var(--pl-accent-soft)' }
+    : { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-bg-soft)' };
   return (
-    <div className={`rounded-[1.4rem] border p-4 ${styles}`}>
-      <div className="flex items-center justify-between gap-3">
+    <div style={{ borderRadius: 14, border: '1px solid', padding: 16, ...toneStyles }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <h4 className="text-base font-semibold text-slate-900">{title}</h4>
-          <p className="mt-2 text-sm font-semibold text-slate-500">{description}</p>
+          <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</h4>
+          <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{description}</p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${unlocked ? 'bg-white text-slate-900' : 'bg-slate-200 text-slate-500'}`}>{unlocked ? 'Liberado' : 'Em rota'}</span>
+        <span style={{ borderRadius: 999, padding: '4px 10px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: unlocked ? 'var(--pl-surface)' : 'var(--pl-rule-2)', color: unlocked ? 'var(--pl-ink)' : 'var(--pl-ink-3)', flexShrink: 0 }}>{unlocked ? 'Liberado' : 'Em rota'}</span>
       </div>
     </div>
   );
@@ -1268,9 +1291,9 @@ function AchievementCard({ title, description, tone, unlocked }) {
 
 function EmptyAchievementCard() {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-slate-200 bg-slate-50/80 p-4">
-      <h4 className="text-base font-semibold text-slate-900">Sem selos ainda</h4>
-      <p className="mt-2 text-sm font-semibold text-slate-500">As conquistas aparecem conforme o painel real vai ganhando tração.</p>
+    <div style={{ borderRadius: 14, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>Sem selos ainda</h4>
+      <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>As conquistas aparecem conforme o painel real vai ganhando tração.</p>
     </div>
   );
 }
@@ -1280,7 +1303,7 @@ function TinyActionButton({ label, onClick, secondary }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${secondary ? 'btn-secondary' : 'btn-primary'}`}
+      className={secondary ? 'pl-btn pl-btn-sm pl-btn-ghost' : 'pl-btn pl-btn-sm pl-btn-primary'}
     >
       {label}
     </button>

@@ -77,7 +77,7 @@ export default function Edital({
       return {
         ...targetContest,
         id: String(targetContest.id || 'target-contest'),
-        nome: targetContest.nome || targetContest.concurso || targetContest.title || 'Concurso-alvo',
+        nome: targetContest.nome || targetContest.concurso || targetContest.title || 'Objetivo-alvo',
         plano: targetContest.plano || targetContest.nome || targetContest.title || 'Geral',
         banca: targetContest.banca || targetContest.organizadora || targetContest.orgao || '',
         area: targetContest.area || targetContest.categoria || inferAreaFromText(targetContest.nome || targetContest.title),

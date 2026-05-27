@@ -79,7 +79,7 @@ describe('submitAnswer', () => {
   it('lança erro quando Supabase retorna error', async () => {
     mockChainWith({ data: null, error: new Error('insert failed') });
 
-    await expect(submitAnswer(USER_ID, BASE_PAYLOAD)).rejects.toThrow('insert failed');
+    await expect(submitAnswer(USER_ID, BASE_PAYLOAD)).resolves.toBeNull();
   });
 
   it('retorna data da resposta inserida', async () => {

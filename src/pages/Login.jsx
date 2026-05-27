@@ -148,6 +148,25 @@ export default function Login({
     }
   };
 
+  const handleGoogleAuth = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      setError(getReadableError(err));
+      setLoading(false);
+    }
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -203,7 +222,7 @@ export default function Login({
       .pl-login-card {
         width: min(100%, 560px);
         height: min(760px, calc(100vh - 48px));
-        background: rgba(255, 255, 255, 0.86);
+        background: var(--pl-surface);
         border: 1px solid rgba(20, 17, 13, 0.12);
         border-radius: 22px;
         box-shadow: 0 26px 70px rgba(20, 17, 13, 0.14), 0 3px 12px rgba(20, 17, 13, 0.08);
@@ -218,7 +237,7 @@ export default function Login({
       .pl-login-form .pl-input {
         height: 52px !important;
         border-radius: 12px;
-        background: rgba(255, 255, 255, 0.92);
+        background: var(--pl-surface);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
         font-size: 15px;
       }
@@ -463,7 +482,7 @@ export default function Login({
 
       {/* ── FORMULARIO (direita) ─────────────────────────────────── */}
       <div className="pl-login-form-shell" style={{
-        background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.92), var(--pl-bg) 58%)',
+        background: 'var(--pl-surface)',
         borderLeft: '1px solid var(--pl-rule-2)',
         padding: '32px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -709,14 +728,15 @@ export default function Login({
           </div>
 
           {/* Google */}
-          <button className="pl-login-google" type="button" style={{
+          <button className="pl-login-google" type="button" onClick={handleGoogleAuth} disabled={loading} style={{
             height: 52,
             background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-strong)',
             borderRadius: 12,
             fontFamily: 'var(--pl-sans)', fontSize: 13.5, fontWeight: 600,
-            color: 'var(--pl-ink)', cursor: 'pointer',
+            color: 'var(--pl-ink)', cursor: loading ? 'not-allowed' : 'pointer',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             transition: 'background .12s, border-color .12s',
+            opacity: loading ? 0.72 : 1,
           }}>
             <svg viewBox="0 0 48 48" style={{ width: 18, height: 18 }}>
               <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.5 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z" />

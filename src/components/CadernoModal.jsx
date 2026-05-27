@@ -7,8 +7,8 @@ export default function CadernoModal({ isCadernoModalOpen, setIsCadernoModalOpen
   if (!isCadernoModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-[#14110d]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-      <div className="simulados-modal-shell simulados-caderno-modal" role="dialog" aria-modal="true">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(20,17,13,0.70)', backdropFilter: 'blur(4px)', padding: 'clamp(8px, 2vw, 24px)' }}>
+      <div className="simulados-modal-shell simulados-caderno-modal" role="dialog" aria-modal="true" style={{ maxWidth: 'min(680px, 95vw)', width: '100%' }}>
         <header className="simulados-modal-head">
           <div>
             <div className="pl-overline">Montar prova</div>

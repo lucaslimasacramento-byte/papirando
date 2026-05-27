@@ -7,10 +7,6 @@ const ACCENTS = [
   { value: 'emerald', label: 'Esmeralda' },
 ];
 
-function inputCls() {
-  return 'mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-violet-500';
-}
-
 function getBookMeta(book, index) {
   const tracks = Array.isArray(book?.tracks) ? book.tracks : [];
   return {
@@ -78,39 +74,40 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="rounded-[1.8rem] border border-violet-100 bg-violet-50/40 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-violet-100 pb-4">
+    <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '320px minmax(0,1fr)' }}>
+      <aside style={{ borderRadius: 20, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule-2)', paddingBottom: 16 }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-500">Biblioteca</p>
-            <h3 className="mt-2 text-xl font-semibold text-slate-900">Obras salvas</h3>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Biblioteca</p>
+            <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Obras salvas</h3>
           </div>
           <button
             type="button"
             onClick={addBook}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-bold text-violet-900"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             <Plus size={14} />
             Nova obra
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Obras</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{books.length}</p>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="pl-card" style={{ padding: '12px 16px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Obras</p>
+            <p className="pl-num" style={{ fontSize: 22, color: 'var(--pl-ink)' }}>{books.length}</p>
           </div>
-          <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Faixas</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{totalTracks}</p>
+          <div className="pl-card" style={{ padding: '12px 16px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Faixas</p>
+            <p className="pl-num" style={{ fontSize: 22, color: 'var(--pl-ink)' }}>{totalTracks}</p>
           </div>
         </div>
 
-        <p className="mt-4 text-sm font-medium leading-relaxed text-gray-600">
+        <p style={{ marginTop: 16, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
           Cadastre uma obra por vez. A lista lateral vira o índice do catálogo já salvo no rascunho atual.
         </p>
 
-        <div className="mt-4 max-h-[min(62vh,680px)] space-y-3 overflow-y-auto pr-1">
+        <div style={{ marginTop: 16, maxHeight: 'min(62vh,680px)', overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {books.map((book, index) => {
             const meta = getBookMeta(book, index);
             const isActive = index === selectedIndex;
@@ -119,81 +116,85 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                 key={book.id || index}
                 type="button"
                 onClick={() => setSelectedIndex(index)}
-                className={`w-full rounded-[1.4rem] border px-4 py-4 text-left transition ${
-                  isActive
-                    ? 'border-violet-300 bg-white shadow-sm'
-                    : 'border-white/80 bg-white/75 hover:border-violet-200 hover:bg-white'
-                }`}
+                style={{
+                  width: '100%', borderRadius: 14, padding: '14px 16px', textAlign: 'left',
+                  border: isActive ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+                  background: isActive ? 'var(--pl-surface)' : 'var(--pl-bg-soft)',
+                  boxShadow: isActive ? 'var(--pl-sh-low)' : 'none',
+                  cursor: 'pointer', transition: 'all .12s',
+                }}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">{meta.title}</p>
-                    <p className="mt-1 text-xs font-medium text-gray-500">{meta.category}</p>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta.title}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{meta.category}</p>
                   </div>
-                  <div className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <span className="pl-tag" style={{ flexShrink: 0, fontSize: 10 }}>
                     {meta.trackCount} faixas
-                  </div>
+                  </span>
                 </div>
               </button>
             );
           })}
 
           {books.length === 0 && (
-            <div className="rounded-[1.4rem] border border-dashed border-violet-200 bg-white/70 px-4 py-8 text-center">
-              <BookMarked className="mx-auto text-violet-400" size={20} />
-              <p className="mt-3 text-sm font-semibold text-slate-800">Nenhuma obra cadastrada</p>
-              <p className="mt-1 text-xs font-medium text-gray-500">Crie a primeira obra para começar o catálogo.</p>
+            <div style={{ borderRadius: 14, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-bg-soft)', padding: '32px 16px', textAlign: 'center' }}>
+              <BookMarked style={{ margin: '0 auto', color: 'var(--pl-accent)' }} size={20} />
+              <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>Nenhuma obra cadastrada</p>
+              <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>Crie a primeira obra para começar o catálogo.</p>
             </div>
           )}
         </div>
       </aside>
 
-      <section className="rounded-[1.8rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="pl-card" style={{ padding: 24, boxShadow: 'var(--pl-sh-low)' }}>
         {selectedBook ? (
           <>
-            <div className="mb-6 flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-4">
+            <div style={{ marginBottom: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule)', paddingBottom: 16 }}>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Editor da obra</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">{selectedBook.title || 'Nova obra'}</h3>
-                <p className="mt-2 text-sm font-medium text-gray-500">
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Editor da obra</p>
+                <h3 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>{selectedBook.title || 'Nova obra'}</h3>
+                <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
                   Ajuste os dados principais e depois organize as faixas de áudio da obra selecionada.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={removeSelectedBook}
-                className="inline-flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700"
+                className="pl-btn pl-btn-ghost pl-btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--pl-danger)', borderColor: 'var(--pl-danger-soft)' }}
               >
                 <Trash2 size={15} />
                 Remover obra
               </button>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">ID</span>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>ID</span>
                 <input
                   type="text"
                   value={selectedBook.id}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, id: e.target.value }))}
-                  className={`${inputCls()} font-mono text-xs`}
+                  className="pl-input"
+                  style={{ fontFamily: 'var(--pl-mono)', fontSize: 12 }}
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Categoria</span>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Categoria</span>
                 <input
                   type="text"
                   value={selectedBook.category || ''}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, category: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Cor da interface</span>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Cor da interface</span>
                 <select
                   value={selectedBook.accent || 'blue'}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, accent: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                 >
                   {ACCENTS.map((accent) => (
                     <option key={accent.value} value={accent.value}>
@@ -202,59 +203,59 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                   ))}
                 </select>
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título</span>
+              <label style={{ gridColumn: '1 / -1' }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Título</span>
                 <input
                   type="text"
                   value={selectedBook.title}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, title: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                 />
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Subtítulo</span>
+              <label style={{ gridColumn: '1 / -1' }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Subtítulo</span>
                 <input
                   type="text"
                   value={selectedBook.subtitle || ''}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, subtitle: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                 />
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Disciplina vinculada</span>
+              <label style={{ gridColumn: '1 / -1' }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Disciplina vinculada</span>
                 <input
                   type="text"
                   value={selectedBook.disciplineName || ''}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, disciplineName: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                   placeholder="Ex.: Direito Constitucional"
                 />
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Rótulo do material</span>
+              <label style={{ gridColumn: '1 / -1' }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Rótulo do material</span>
                 <input
                   type="text"
                   value={selectedBook.materialLabel || ''}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, materialLabel: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                 />
               </label>
-              <label className="sm:col-span-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Descrição</span>
+              <label style={{ gridColumn: '1 / -1' }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Descrição</span>
                 <textarea
                   rows={3}
                   value={selectedBook.description || ''}
                   onChange={(e) => updateSelectedBook((book) => ({ ...book, description: e.target.value }))}
-                  className={inputCls()}
+                  className="pl-input"
                 />
               </label>
             </div>
 
-            <div className="mt-6 border-t border-gray-100 pt-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
+            <div style={{ marginTop: 24, borderTop: '1px solid var(--pl-rule)', paddingTop: 20 }}>
+              <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Faixas</p>
-                  <h4 className="mt-1 text-lg font-semibold text-slate-900">
+                  <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Faixas</p>
+                  <h4 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>
                     {(selectedBook.tracks || []).length} {(selectedBook.tracks || []).length === 1 ? 'faixa' : 'faixas'}
                   </h4>
                 </div>
@@ -274,18 +275,19 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                       ],
                     }))
                   }
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-900"
+                  className="pl-btn pl-btn-ghost pl-btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
                   <Plus size={14} />
                   Nova faixa
                 </button>
               </div>
 
-              <ul className="space-y-3">
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, listStyle: 'none', margin: 0, padding: 0 }}>
                 {(selectedBook.tracks || []).map((track, trackIndex) => (
-                  <li key={track.id || trackIndex} className="rounded-[1.4rem] border border-gray-100 bg-gray-50/80 p-4">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-slate-900">{track.title || `Faixa ${trackIndex + 1}`}</p>
+                  <li key={track.id || trackIndex} className="pl-card" style={{ padding: 16, background: 'var(--pl-bg-soft)' }}>
+                    <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{track.title || `Faixa ${trackIndex + 1}`}</p>
                       <button
                         type="button"
                         onClick={() =>
@@ -294,15 +296,15 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                             tracks: (book.tracks || []).filter((_, index) => index !== trackIndex),
                           }))
                         }
-                        className="text-xs font-semibold text-red-600 hover:underline"
+                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)', background: 'none', border: 0, cursor: 'pointer', textDecoration: 'underline' }}
                       >
                         Remover faixa
                       </button>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <label className="sm:col-span-2">
-                        <span className="text-[10px] font-semibold text-gray-400">URL do áudio</span>
+                    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
+                      <label style={{ gridColumn: '1 / -1' }}>
+                        <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>URL do áudio</span>
                         <input
                           type="text"
                           value={track.audioUrl || ''}
@@ -314,12 +316,12 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                               ),
                             }))
                           }
-                          className={inputCls()}
+                          className="pl-input"
                           placeholder="https://..."
                         />
                       </label>
                       <label>
-                        <span className="text-[10px] font-semibold text-gray-400">ID da faixa</span>
+                        <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>ID da faixa</span>
                         <input
                           type="text"
                           value={track.id}
@@ -331,11 +333,12 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                               ),
                             }))
                           }
-                          className={`${inputCls()} font-mono text-xs`}
+                          className="pl-input"
+                          style={{ fontFamily: 'var(--pl-mono)', fontSize: 12 }}
                         />
                       </label>
                       <label>
-                        <span className="text-[10px] font-semibold text-gray-400">Duração</span>
+                        <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Duração</span>
                         <input
                           type="text"
                           value={track.durationLabel || ''}
@@ -347,12 +350,12 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                               ),
                             }))
                           }
-                          className={inputCls()}
+                          className="pl-input"
                           placeholder="8 min"
                         />
                       </label>
-                      <label className="sm:col-span-2">
-                        <span className="text-[10px] font-semibold text-gray-400">Título da faixa</span>
+                      <label style={{ gridColumn: '1 / -1' }}>
+                        <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Título da faixa</span>
                         <input
                           type="text"
                           value={track.title}
@@ -364,7 +367,7 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
                               ),
                             }))
                           }
-                          className={inputCls()}
+                          className="pl-input"
                         />
                       </label>
                     </div>
@@ -374,11 +377,11 @@ export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
             </div>
           </>
         ) : (
-          <div className="flex min-h-[420px] items-center justify-center rounded-[1.6rem] border border-dashed border-gray-200 bg-gray-50/60 px-6 text-center">
+          <div style={{ display: 'flex', minHeight: 420, alignItems: 'center', justifyContent: 'center', borderRadius: 16, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 24, textAlign: 'center' }}>
             <div>
-              <BookMarked className="mx-auto text-violet-400" size={24} />
-              <h3 className="mt-4 text-xl font-semibold text-slate-900">Selecione uma obra</h3>
-              <p className="mt-2 text-sm font-medium text-gray-500">Escolha um item na biblioteca lateral ou crie uma nova obra.</p>
+              <BookMarked style={{ margin: '0 auto', color: 'var(--pl-accent)' }} size={24} />
+              <h3 style={{ marginTop: 16, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Selecione uma obra</h3>
+              <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>Escolha um item na biblioteca lateral ou crie uma nova obra.</p>
             </div>
           </div>
         )}

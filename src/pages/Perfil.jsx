@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BadgeCheck,
   BookOpen,
@@ -23,23 +23,16 @@ import {
   User2,
   Users,
 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import { supabase } from '../lib/supabase';
 import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
 
-/** Paleta alinhada ao app (--accent #1e3a5f, superfícies frias). */
-const HERO_BAR =
-  'bg-gradient-to-br from-slate-900 via-[#0f172a] to-blue-900 ring-1 ring-blue-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
-const ACCENT_BTN = 'bg-blue-700 hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500/40';
-const PAGE_BG = 'bg-[var(--bg-canvas)]';
-
 const navItems = [
-  { id: 'overview', label: 'Visão geral', icon: User2 },
+  { id: 'overview', label: 'Visao geral', icon: User2 },
   { id: 'achievements', label: 'Conquistas', icon: Trophy },
-  { id: 'security', label: 'Segurança', icon: ShieldCheck },
+  { id: 'security', label: 'Seguranca', icon: ShieldCheck },
 ];
 
-/** Planos alinhados à página Assinatura (preços exibidos; contratação na área dedicada). */
+/** Planos alinhados a pagina Assinatura (precos exibidos; contratacao na area dedicada). */
 const PERFIL_PLANOS = [
   {
     id: 'gratuito',
@@ -50,16 +43,16 @@ const PERFIL_PLANOS = [
     Icon: Circle,
     destaque: false,
     features: [
-      'Cronômetro e registro de sessões',
-      'Edital verticalizado básico',
+      'Cronometro e registro de sessoes',
+      'Edital verticalizado basico',
       '1 ciclo de estudo ativo',
-      'Histórico resumido e limite diário de questões',
+      'Historico resumido e limite diario de questoes',
     ],
   },
   {
     id: 'tatico',
-    nome: 'Tático',
-    descricao: 'Para quem leva a aprovação a sério.',
+    nome: 'Tatico',
+    descricao: 'Para quem leva a aprovacao a serio.',
     precoMensal: '49,90',
     precoAnual: '29,90',
     Icon: Star,
@@ -67,91 +60,28 @@ const PERFIL_PLANOS = [
     features: [
       'Tudo do Gratuito',
       'Ciclos de estudo ilimitados',
-      'Banco de questões sem limite diário',
-      'Estatísticas e dashboards avançados',
-      'IA em recursos selecionados (conforme política do plano)',
+      'Banco de questoes sem limite diario',
+      'Estatisticas e dashboards avancados',
+      'IA em recursos selecionados (conforme politica do plano)',
     ],
   },
   {
     id: 'elite',
     nome: 'Elite',
-    descricao: 'Pacote completo com destaque em IA e experiência premium.',
+    descricao: 'Pacote completo com destaque em IA e experiencia premium.',
     precoMensal: '89,90',
     precoAnual: '59,90',
     Icon: Sparkles,
     destaque: false,
     premium: true,
     features: [
-      'Tudo do Tático',
-      'Redações e flashcards com IA',
+      'Tudo do Tatico',
+      'Redacoes e flashcards com IA',
       'Prioridade em novidades e selos premium',
-      'Melhor custo-benefício para uso intensivo',
+      'Melhor custo-beneficio para uso intensivo',
     ],
   },
 ];
-
-function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
-function Card({ children, className = '' }) {
-  return (
-    <div
-      className={cn(
-        'rounded-[30px] border border-slate-200/80 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]',
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Badge({ children, tone = 'neutral' }) {
-  const tones = {
-    neutral: 'border-slate-200 bg-slate-100 text-slate-700',
-    blue: 'border-blue-200 bg-blue-50 text-blue-700',
-    green: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    gold: 'border-amber-200 bg-amber-50 text-amber-700',
-    red: 'border-red-200 bg-red-50 text-red-700',
-    dark: 'border-white/15 bg-white/10 text-white',
-  };
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em]',
-        tones[tone]
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-function SectionHeader({ eyebrow, title, subtitle, action }) {
-  return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-slate-500">{eyebrow}</p>
-        <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-slate-600">{subtitle}</p> : null}
-      </div>
-      {action}
-    </div>
-  );
-}
-
-function ToneIconWrap({ tone = 'blue', children }) {
-  const cls =
-    tone === 'gold'
-      ? 'bg-amber-100 text-amber-700'
-      : tone === 'green'
-        ? 'bg-emerald-100 text-emerald-700'
-        : tone === 'red'
-          ? 'bg-red-100 text-red-700'
-          : 'bg-blue-100 text-blue-700';
-  return <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl', cls)}>{children}</div>;
-}
 
 function formatCpf(value) {
   const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
@@ -171,7 +101,7 @@ function formatPhone(value) {
 function formatPlanLabel(plan) {
   const normalized = String(plan || 'gratuito').toLowerCase();
   if (normalized === 'elite') return 'Elite';
-  if (normalized === 'tatico') return 'Tático';
+  if (normalized === 'tatico') return 'Tatico';
   return 'Gratuito';
 }
 
@@ -181,7 +111,7 @@ function formatSubscriptionStatus(status) {
   if (normalized === 'trial') return 'Trial';
   if (normalized === 'past_due') return 'Pendente';
   if (normalized === 'canceled') return 'Cancelada';
-  return normalized || 'Não informado';
+  return normalized || 'Nao informado';
 }
 
 function formatHours(minutes) {
@@ -211,15 +141,67 @@ function getInitials(name, email) {
 
 function getBadgeTone(unlocked, color) {
   if (!unlocked) return 'neutral';
-  if (color === 'orange' || color === 'yellow' || color === 'amber') return 'gold';
-  if (color === 'emerald' || color === 'green') return 'green';
-  return 'blue';
+  if (color === 'orange' || color === 'yellow' || color === 'amber') return 'warn';
+  if (color === 'emerald' || color === 'green') return 'success';
+  return 'accent';
+}
+
+/** Small badge/pill helper mapping tone to pl-tag class */
+function TagBadge({ children, tone = 'neutral' }) {
+  const cls =
+    tone === 'warn' ? 'pl-tag pl-tag-warn'
+    : tone === 'success' ? 'pl-tag pl-tag-success'
+    : tone === 'accent' ? 'pl-tag pl-tag-accent'
+    : tone === 'danger' ? 'pl-tag pl-tag-danger'
+    : 'pl-tag';
+  return <span className={cls}>{children}</span>;
+}
+
+function SectionHeader({ eyebrow, title, subtitle, action }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <p className="pl-eyebrow" style={{ marginBottom: 6 }}>{eyebrow}</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{title}</h2>
+          {subtitle ? <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{subtitle}</p> : null}
+        </div>
+        {action}
+      </div>
+    </div>
+  );
+}
+
+function ToneIconWrap({ tone = 'accent', children }) {
+  let bg, color;
+  if (tone === 'warn' || tone === 'gold') {
+    bg = 'var(--pl-warn-soft)';
+    color = 'var(--pl-warn)';
+  } else if (tone === 'success' || tone === 'green') {
+    bg = 'var(--pl-success-soft)';
+    color = 'var(--pl-success)';
+  } else if (tone === 'danger' || tone === 'red') {
+    bg = 'var(--pl-danger-soft)';
+    color = 'var(--pl-danger)';
+  } else {
+    bg = 'var(--pl-accent-soft)';
+    color = 'var(--pl-accent)';
+  }
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      width: 44, height: 44, borderRadius: 12,
+      background: bg, color: color, flexShrink: 0,
+    }}>
+      {children}
+    </div>
+  );
 }
 
 function Field({ label, value, onChange, placeholder, disabled = false, type = 'text', autoComplete }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">{label}</span>
+    <label style={{ display: 'block' }}>
+      <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>{label}</span>
       <input
         type={type}
         value={value}
@@ -227,7 +209,8 @@ function Field({ label, value, onChange, placeholder, disabled = false, type = '
         placeholder={placeholder}
         disabled={disabled}
         autoComplete={autoComplete}
-        className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15 disabled:cursor-not-allowed disabled:bg-slate-50"
+        className="pl-input"
+        style={{ width: '100%' }}
       />
     </label>
   );
@@ -238,12 +221,17 @@ function ToggleChip({ active, onClick, children }) {
     <button
       type="button"
       onClick={onClick}
-      className={cn(
-        'rounded-2xl border px-4 py-2.5 text-sm font-semibold transition',
-        active
-          ? 'border-blue-700 bg-blue-700 text-white shadow-sm'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:text-blue-700'
-      )}
+      style={{
+        borderRadius: 20,
+        border: active ? '1.5px solid var(--pl-accent)' : '1.5px solid var(--pl-rule-2)',
+        background: active ? 'var(--pl-accent)' : 'var(--pl-surface)',
+        color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+        padding: '8px 16px',
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+      }}
     >
       {children}
     </button>
@@ -253,15 +241,24 @@ function ToggleChip({ active, onClick, children }) {
 function InfoTile({ label, value, helper, icon }) {
   const IconComponent = icon;
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
-      <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-          {IconComponent ? <IconComponent className="h-4 w-4 text-slate-900" /> : null}
+    <div style={{
+      borderRadius: 16,
+      border: '1px solid var(--pl-rule-2)',
+      background: 'var(--pl-bg-soft)',
+      padding: 16,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 40, height: 40, borderRadius: 12,
+          background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', flexShrink: 0,
+        }}>
+          {IconComponent ? <IconComponent style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} /> : null}
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-950">{label}</p>
-          <p className="mt-1 text-sm text-slate-700">{value}</p>
-          <p className="mt-1 text-sm text-slate-500">{helper}</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{label}</p>
+          <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{value}</p>
+          <p style={{ marginTop: 4, fontSize: 12, color: 'var(--pl-ink-3)' }}>{helper}</p>
         </div>
       </div>
     </div>
@@ -271,40 +268,61 @@ function InfoTile({ label, value, helper, icon }) {
 function SecurityRow({ icon, label, value, helper }) {
   const IconComponent = icon;
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-          {IconComponent ? <IconComponent className="h-4 w-4 text-slate-900" /> : null}
+    <div style={{
+      borderRadius: 16,
+      border: '1px solid var(--pl-rule-2)',
+      background: 'var(--pl-bg-soft)',
+      padding: 16,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 40, height: 40, borderRadius: 12,
+          background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', flexShrink: 0,
+        }}>
+          {IconComponent ? <IconComponent style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} /> : null}
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-slate-950">{label}</p>
-          <p className="mt-1 break-all text-sm text-slate-700">{value}</p>
-          <p className="mt-1 text-sm text-slate-500">{helper}</p>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{label}</p>
+          <p style={{ marginTop: 4, wordBreak: 'break-all', fontSize: 13, color: 'var(--pl-ink-2)' }}>{value}</p>
+          <p style={{ marginTop: 4, fontSize: 12, color: 'var(--pl-ink-3)' }}>{helper}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function LgpdButton({ icon, label, description, tone = 'slate', onClick }) {
+function LgpdButton({ icon, label, description, tone = 'neutral', onClick }) {
   const IconComponent = icon;
-  const toneClasses = {
-    blue: 'border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700',
-    slate: 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700',
-    red: 'border-red-200 bg-red-50 hover:bg-red-100 text-red-700',
-  };
+  let bg, border, color, hoverBg;
+  if (tone === 'blue' || tone === 'accent') {
+    bg = 'var(--pl-accent-soft)'; border = 'var(--pl-accent)'; color = 'var(--pl-accent)'; hoverBg = 'var(--pl-accent-soft)';
+  } else if (tone === 'red' || tone === 'danger') {
+    bg = 'var(--pl-danger-soft)'; border = 'var(--pl-danger)'; color = 'var(--pl-danger)'; hoverBg = 'var(--pl-danger-soft)';
+  } else {
+    bg = 'var(--pl-bg-soft)'; border = 'var(--pl-rule-2)'; color = 'var(--pl-ink-2)'; hoverBg = 'var(--pl-bg-soft)';
+  }
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition ${toneClasses[tone] || toneClasses.slate}`}
+      style={{
+        display: 'flex', width: '100%', alignItems: 'center', gap: 12,
+        borderRadius: 14, border: `1px solid ${border}`,
+        background: bg, color: color,
+        padding: 14, textAlign: 'left', cursor: 'pointer', transition: 'opacity 0.15s',
+      }}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200">
-        {IconComponent && <IconComponent className="h-4 w-4" />}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+        background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+      }}>
+        {IconComponent && <IconComponent style={{ width: 16, height: 16 }} />}
       </div>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold">{label}</p>
-        <p className="mt-0.5 text-xs opacity-70">{description}</p>
+      <div style={{ minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 600 }}>{label}</p>
+        <p style={{ marginTop: 2, fontSize: 12, opacity: 0.7 }}>{description}</p>
       </div>
     </button>
   );
@@ -317,14 +335,23 @@ function ActionTile({ icon, title, desc, actionLabel, onClick, disabled = false 
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+      style={{
+        borderRadius: 18, border: '1px solid var(--pl-rule-2)',
+        background: 'var(--pl-bg-soft)', padding: 20, textAlign: 'left',
+        cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.6 : 1,
+        transition: 'all 0.15s', width: '100%',
+      }}
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
-        {IconComponent ? <IconComponent className="h-4 w-4 text-slate-900" /> : null}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 40, height: 40, borderRadius: 12,
+        background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+      }}>
+        {IconComponent ? <IconComponent style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} /> : null}
       </div>
-      <p className="mt-4 text-sm font-bold text-slate-950">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{desc}</p>
-      <p className="mt-4 text-sm font-semibold text-blue-700">{actionLabel}</p>
+      <p style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{title}</p>
+      <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{desc}</p>
+      <p style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)' }}>{actionLabel}</p>
     </button>
   );
 }
@@ -409,16 +436,12 @@ export default function Perfil(props) {
       return;
     }
 
-    // Try/catch externo evita que uma rejeição inesperada (timeout do fetch,
-    // erro do client antes do response, falha de RLS recursiva) deixe o
-    // componente em estado inconsistente e cause crash ao abrir a aba de
-    // Segurança/Conquistas que dependem de profileData.
     try {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
 
       if (error) {
         if (error.code !== 'PGRST116') {
-          console.warn('Não foi possível carregar o perfil remoto:', error.message);
+          console.warn('Nao foi possivel carregar o perfil remoto:', error.message);
         }
         setRemoteProfile({ email: currentUserEmail || '' });
         return;
@@ -463,7 +486,7 @@ export default function Perfil(props) {
     if (form.rankingDisplayMode === 'codename' && String(form.rankingCodename || '').trim()) {
       return String(form.rankingCodename).trim();
     }
-    return String(form.username || profileData?.username || profileData?.nome || profileData?.name || currentUserEmail || 'usuário').trim();
+    return String(form.username || profileData?.username || profileData?.nome || profileData?.name || currentUserEmail || 'usuario').trim();
   }, [form.rankingDisplayMode, form.rankingCodename, form.username, profileData, currentUserEmail]);
 
   const completionPercent = useMemo(() => {
@@ -486,52 +509,52 @@ export default function Perfil(props) {
   ];
 
   const kpis = [
-    { label: 'Horas focadas', value: formatHours(xpSummary.totalMinutes), helper: 'Histórico real salvo' },
-    { label: 'Questões', value: formatNumber(xpSummary.totalQuestions), helper: 'Acertos + erros' },
-    { label: 'Ofensiva', value: `${formatNumber(xpSummary.streakDays)} dias`, helper: 'Melhor sequência' },
+    { label: 'Horas focadas', value: formatHours(xpSummary.totalMinutes), helper: 'Historico real salvo' },
+    { label: 'Questoes', value: formatNumber(xpSummary.totalQuestions), helper: 'Acertos + erros' },
+    { label: 'Ofensiva', value: `${formatNumber(xpSummary.streakDays)} dias`, helper: 'Melhor sequencia' },
     { label: 'XP total', value: formatNumber(xpSummary.xpTotal), helper: `Progresso ${formatNumber(xpSummary.progressPercent)}%` },
     {
-      label: 'Redações',
+      label: 'Redacoes',
       value: formatNumber(essaySummary.corrected || 0),
-      helper: essaySummary.averageScore ? `Média ${String(essaySummary.averageScore).replace('.', ',')}` : 'Sem correção ainda',
+      helper: essaySummary.averageScore ? `Media ${String(essaySummary.averageScore).replace('.', ',')}` : 'Sem correcao ainda',
     },
   ];
 
   const linkageCards = [
     {
-      title: 'Esquadrões',
-      text: memberships.length > 0 ? `${formatNumber(memberships.length)} vínculo(s) ativo(s) na comunidade.` : 'Sem esquadrões vinculados no momento.',
-      tone: memberships.length > 0 ? 'blue' : 'red',
+      title: 'Esquadroes',
+      text: memberships.length > 0 ? `${formatNumber(memberships.length)} vinculo(s) ativo(s) na comunidade.` : 'Sem esquadroes vinculados no momento.',
+      tone: memberships.length > 0 ? 'accent' : 'danger',
       icon: Users,
     },
     {
       title: 'Selos',
       text: unlockedBadges.length > 0 ? `${formatNumber(unlockedBadges.length)} selo(s) desbloqueado(s).` : 'Nenhum selo desbloqueado ainda.',
-      tone: unlockedBadges.length > 0 ? 'gold' : 'red',
+      tone: unlockedBadges.length > 0 ? 'warn' : 'danger',
       icon: Medal,
     },
     {
       title: 'XP acumulado',
       text: `${formatNumber(xpSummary.xpTotal)} XP acumulado na plataforma.`,
-      tone: xpSummary.xpTotal > 0 ? 'blue' : 'green',
+      tone: xpSummary.xpTotal > 0 ? 'accent' : 'success',
       icon: Crown,
     },
     {
       title: 'Audiolivros',
       text:
         audiobookSummary.totalBooks > 0
-          ? `${formatNumber(audiobookSummary.favoriteCount || 0)} favorito(s), ${formatNumber(audiobookSummary.inProgress || 0)} em andamento e ${formatAudiobookHours(audiobookSummary.totalListenedSeconds || 0)} de reprodução.`
+          ? `${formatNumber(audiobookSummary.favoriteCount || 0)} favorito(s), ${formatNumber(audiobookSummary.inProgress || 0)} em andamento e ${formatAudiobookHours(audiobookSummary.totalListenedSeconds || 0)} de reproducao.`
           : 'Nenhum audiolivro iniciado ainda.',
-      tone: (audiobookSummary.inProgress || 0) > 0 ? 'blue' : 'red',
+      tone: (audiobookSummary.inProgress || 0) > 0 ? 'accent' : 'danger',
       icon: Trophy,
     },
     {
-      title: 'Redações',
+      title: 'Redacoes',
       text:
         essaySummary.corrected > 0
-          ? `${formatNumber(essaySummary.corrected)} correção(ões) com média ${String(essaySummary.averageScore || 0).replace('.', ',')}.`
-          : 'Nenhuma redação corrigida ainda.',
-      tone: essaySummary.corrected > 0 ? 'blue' : 'red',
+          ? `${formatNumber(essaySummary.corrected)} correcao(oes) com media ${String(essaySummary.averageScore || 0).replace('.', ',')}.`
+          : 'Nenhuma redacao corrigida ainda.',
+      tone: essaySummary.corrected > 0 ? 'accent' : 'danger',
       icon: CheckCircle2,
     },
   ];
@@ -544,12 +567,12 @@ export default function Perfil(props) {
   const handleSave = async () => {
     if (typeof onSaveProfile !== 'function') return;
     if (!currentUserId) {
-      setSaveState({ type: 'error', message: 'Sessão indisponível. Entre novamente para salvar o perfil.' });
+      setSaveState({ type: 'error', message: 'Sessao indisponivel. Entre novamente para salvar o perfil.' });
       return;
     }
     const normalizedCpf = normalizeCpf(form.cpf);
     if (normalizedCpf && !isValidCpf(normalizedCpf)) {
-      setSaveState({ type: 'error', message: 'CPF inválido. Revise os números antes de salvar.' });
+      setSaveState({ type: 'error', message: 'CPF invalido. Revise os numeros antes de salvar.' });
       return;
     }
     setSaving(true);
@@ -567,19 +590,19 @@ export default function Perfil(props) {
         setSaveState({
           type: result.partial ? 'warning' : 'success',
           message: result.partial
-            ? 'Perfil salvo localmente. A sincronização remota falhou.'
+            ? 'Perfil salvo localmente. A sincronizacao remota falhou.'
             : 'Dados do perfil salvos com sucesso.',
         });
         await loadRemoteProfile();
       } else {
         setSaveState({
           type: 'error',
-          message: result?.message || 'Não foi possível salvar o perfil. Corrija os campos indicados.',
+          message: result?.message || 'Nao foi possivel salvar o perfil. Corrija os campos indicados.',
         });
       }
     } catch (error) {
       console.error(error);
-      setSaveState({ type: 'error', message: 'Não foi possível salvar o perfil agora.' });
+      setSaveState({ type: 'error', message: 'Nao foi possivel salvar o perfil agora.' });
     } finally {
       setSaving(false);
     }
@@ -591,23 +614,23 @@ export default function Perfil(props) {
     if (!file || typeof onChangeAvatar !== 'function') return;
     const isImage = String(file.type || '').startsWith('image/');
     if (!isImage) {
-      setSaveState({ type: 'error', message: 'Formato inválido. Envie uma imagem.' });
+      setSaveState({ type: 'error', message: 'Formato invalido. Envie uma imagem.' });
       return;
     }
     const maxBytes = 5 * 1024 * 1024;
     if (file.size > maxBytes) {
-      setSaveState({ type: 'error', message: 'Imagem muito grande. O limite é 5 MB.' });
+      setSaveState({ type: 'error', message: 'Imagem muito grande. O limite e 5 MB.' });
       return;
     }
     setAvatarBusy(true);
     setSaveState({ type: '', message: '' });
     try {
       await onChangeAvatar(file);
-      setSaveState({ type: 'success', message: 'Foto atualizada com persistência real.' });
+      setSaveState({ type: 'success', message: 'Foto atualizada com persistencia real.' });
       await loadRemoteProfile();
     } catch (error) {
       console.error(error);
-      setSaveState({ type: 'error', message: 'Não foi possível atualizar a foto.' });
+      setSaveState({ type: 'error', message: 'Nao foi possivel atualizar a foto.' });
     } finally {
       setAvatarBusy(false);
     }
@@ -616,7 +639,7 @@ export default function Perfil(props) {
   const handlePasswordReset = async () => {
     const accountEmail = String(profileData?.email || currentUserEmail || '').trim();
     if (!accountEmail) {
-      setSaveState({ type: 'error', message: 'E-mail da conta não encontrado para enviar a redefinição.' });
+      setSaveState({ type: 'error', message: 'E-mail da conta nao encontrado para enviar a redefinicao.' });
       return;
     }
     setPasswordBusy(true);
@@ -628,11 +651,11 @@ export default function Perfil(props) {
       if (error) throw error;
       setSaveState({
         type: 'success',
-        message: `E-mail de redefinição enviado para ${accountEmail}. Verifique a caixa de entrada e o spam.`,
+        message: `E-mail de redefinicao enviado para ${accountEmail}. Verifique a caixa de entrada e o spam.`,
       });
     } catch (error) {
       console.error(error);
-      setSaveState({ type: 'error', message: error?.message || 'Não foi possível enviar o link agora.' });
+      setSaveState({ type: 'error', message: error?.message || 'Nao foi possivel enviar o link agora.' });
     } finally {
       setPasswordBusy(false);
     }
@@ -645,11 +668,11 @@ export default function Perfil(props) {
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setSaveState({ type: 'error', message: 'Formato de e-mail inválido.' });
+      setSaveState({ type: 'error', message: 'Formato de e-mail invalido.' });
       return;
     }
     if (email === String(currentUserEmail || '').toLowerCase()) {
-      setSaveState({ type: 'error', message: 'Este já é o e-mail da sua conta.' });
+      setSaveState({ type: 'error', message: 'Este ja e o e-mail da sua conta.' });
       return;
     }
     if (!currentUserId) return;
@@ -662,14 +685,14 @@ export default function Perfil(props) {
 
       const { error: profileError } = await supabase.from('profiles').update({ email }).eq('id', currentUserId);
       if (profileError) {
-        console.warn('Perfil: e-mail na tabela profiles não atualizado:', profileError.message);
+        console.warn('Perfil: e-mail na tabela profiles nao atualizado:', profileError.message);
       }
 
       setNewEmail('');
       setSaveState({
         type: 'success',
         message:
-          'Solicitação de troca de e-mail enviada. Se o projeto exigir confirmação, abra o link no novo endereço; depois disso o login usará o e-mail novo.',
+          'Solicitacao de troca de e-mail enviada. Se o projeto exigir confirmacao, abra o link no novo endereco; depois disso o login usara o e-mail novo.',
       });
       await onSessionRefresh?.();
       await loadRemoteProfile();
@@ -677,7 +700,7 @@ export default function Perfil(props) {
       console.error(error);
       setSaveState({
         type: 'error',
-        message: error?.message || 'Não foi possível alterar o e-mail. Tente novamente ou use outro endereço.',
+        message: error?.message || 'Nao foi possivel alterar o e-mail. Tente novamente ou use outro endereco.',
       });
     } finally {
       setEmailBusy(false);
@@ -686,7 +709,7 @@ export default function Perfil(props) {
 
   const handlePasswordChangeDirect = async () => {
     if (!currentPassword) {
-      setSaveState({ type: 'error', message: 'Digite a senha atual para confirmar a alteração.' });
+      setSaveState({ type: 'error', message: 'Digite a senha atual para confirmar a alteracao.' });
       return;
     }
     if (newPassword.length < 6) {
@@ -694,15 +717,13 @@ export default function Perfil(props) {
       return;
     }
     if (newPassword !== confirmPassword) {
-      setSaveState({ type: 'error', message: 'A confirmação da senha não confere.' });
+      setSaveState({ type: 'error', message: 'A confirmacao da senha nao confere.' });
       return;
     }
 
     setPasswordChangeBusy(true);
     setSaveState({ type: '', message: '' });
     try {
-      // B-016: Verifica senha atual antes de permitir a troca, evitando que
-      // qualquer pessoa com a sessão aberta altere a senha sem saber a atual.
       const { error: reAuthError } = await supabase.auth.signInWithPassword({
         email: currentUserEmail,
         password: currentPassword,
@@ -719,155 +740,183 @@ export default function Perfil(props) {
       setConfirmPassword('');
       setSaveState({
         type: 'success',
-        message: 'Senha atualizada. Nas próximas vezes use a nova senha para entrar.',
+        message: 'Senha atualizada. Nas proximas vezes use a nova senha para entrar.',
       });
     } catch (error) {
       console.error(error);
       setSaveState({
         type: 'error',
-        message: error?.message || 'Não foi possível alterar a senha.',
+        message: error?.message || 'Nao foi possivel alterar a senha.',
       });
     } finally {
       setPasswordChangeBusy(false);
     }
   };
 
-  const saveTone =
-    saveState.type === 'success' ? 'green' : saveState.type === 'error' ? 'red' : saveState.type === 'warning' ? 'gold' : 'blue';
+  const saveToneCls =
+    saveState.type === 'success' ? 'success'
+    : saveState.type === 'error' ? 'danger'
+    : saveState.type === 'warning' ? 'warn'
+    : 'accent';
 
   return (
-    <div className="pl-page">
-      <div className="mx-auto max-w-[1540px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-        <div className="grid gap-6 xl:grid-cols-[285px_minmax(0,1fr)]">
-          <aside className="space-y-5">
-            <Card className="overflow-hidden">
-              <div className={cn('relative px-6 py-6 text-white', HERO_BAR)}>
-                <div className="relative">
-                  <Badge tone="dark">Área privada</Badge>
-                  <h1 className="mt-4 text-3xl font-extrabold tracking-tight">Meu perfil</h1>
-                  <p className="mt-2 text-sm leading-6 text-blue-100">
-                    Dados da conta, ranking, progresso e vínculos reais da sua jornada.
-                  </p>
-                </div>
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      <div style={{ maxWidth: 1540, margin: '0 auto' }}>
+        {/* Hero editorial */}
+        <div style={{ marginBottom: 32 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Conta</p>
+          <h1 className="pl-display" style={{ marginBottom: 12 }}>Meu perfil.</h1>
+          <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', maxWidth: 520 }}>
+            Dados da conta, ranking, progresso e vinculos reais da sua jornada.
+          </p>
+        </div>
+
+        {/* KPI strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
+          {heroStats.map((k) => (
+            <div key={k.label} className="pl-card" style={{ padding: '12px 16px' }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{k.label}</p>
+              <p className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{k.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '280px minmax(0,1fr)' }}>
+          {/* Sidebar */}
+          <aside style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Avatar card */}
+            <div className="pl-card" style={{ overflow: 'hidden' }}>
+              <div style={{
+                position: 'relative', height: 180, overflow: 'hidden',
+                borderRadius: '6px 6px 0 0',
+                background: 'linear-gradient(135deg, var(--pl-ink) 0%, var(--pl-accent) 100%)',
+              }}>
+                {profileData?.avatar_url ? (
+                  <img
+                    src={profileData.avatar_url}
+                    alt={profileData?.nome || profileData?.name || 'Avatar'}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 48, fontWeight: 700, color: 'var(--pl-bg)',
+                    fontFamily: 'var(--pl-serif)', fontStyle: 'italic',
+                  }}>
+                    {avatarInitials}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarBusy}
+                  style={{
+                    position: 'absolute', bottom: 12, right: 12,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 38, height: 38, borderRadius: 12,
+                    border: '1px solid rgba(255,255,255,0.6)',
+                    background: 'rgba(255,255,255,0.92)',
+                    boxShadow: 'var(--pl-sh-mid)',
+                    cursor: avatarBusy ? 'not-allowed' : 'pointer',
+                    opacity: avatarBusy ? 0.6 : 1,
+                  }}
+                  aria-label="Alterar foto do perfil"
+                >
+                  <Camera style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} />
+                </button>
               </div>
 
-              <div className="p-4">
-                <div className="relative h-44 overflow-hidden rounded-[26px] border border-slate-200 bg-slate-100 shadow-sm sm:h-52 lg:h-48">
-                  {profileData?.avatar_url ? (
-                    <img
-                      src={profileData.avatar_url}
-                      alt={profileData?.nome || profileData?.name || 'Avatar'}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-900 to-indigo-700 text-5xl font-bold text-white">
-                      {avatarInitials}
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={avatarBusy}
-                    className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/80 bg-white/95 shadow-lg backdrop-blur disabled:opacity-60"
-                    aria-label="Alterar foto do perfil"
-                  >
-                    <Camera className="h-4 w-4 text-slate-900" />
-                  </button>
-                </div>
-
-                <nav className="mt-4 space-y-2">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const active = activeTab === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setActiveTabState(item.id)}
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-[22px] px-4 py-3.5 text-left transition-all',
-                          active
-                            ? 'bg-blue-700 text-white shadow-sm'
-                            : 'border border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-blue-200 hover:text-slate-950 hover:shadow-sm'
-                        )}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className={cn('flex h-10 w-10 items-center justify-center rounded-2xl', active ? 'bg-white/10' : 'bg-slate-100')}>
-                            <Icon className="h-4 w-4" />
-                          </span>
-                          <span className="text-sm font-semibold">{item.label}</span>
+              <nav style={{ padding: '12px 12px 16px' }}>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveTabState(item.id)}
+                      style={{
+                        display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
+                        borderRadius: 14, padding: '10px 14px', textAlign: 'left',
+                        marginBottom: 6,
+                        background: active ? 'var(--pl-accent)' : 'transparent',
+                        border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+                        color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 36, height: 36, borderRadius: 10,
+                          background: active ? 'rgba(255,255,255,0.15)' : 'var(--pl-bg-soft)',
+                        }}>
+                          <Icon style={{ width: 16, height: 16 }} />
                         </span>
-                        <ChevronRight className={cn('h-4 w-4', active ? 'text-white/70' : 'text-slate-400')} />
-                      </button>
-                    );
-                  })}
-                </nav>
+                        <span style={{ fontSize: 13, fontWeight: 600 }}>{item.label}</span>
+                      </span>
+                      <ChevronRight style={{ width: 16, height: 16, opacity: active ? 0.7 : 0.4 }} />
+                    </button>
+                  );
+                })}
+              </nav>
 
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarInput} />
-              </div>
-            </Card>
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarInput} />
+            </div>
 
-            <Card className="p-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Snapshot</p>
-              <h3 className="mt-3 text-xl font-bold text-slate-950">Leitura rápida</h3>
-              <div className="mt-4 space-y-3">
+            {/* Snapshot card */}
+            <div className="pl-card" style={{ padding: 20 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Snapshot</p>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 14 }}>Leitura rapida</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
                   ['Ranking atual', rankingPreview],
-                  ['Esquadrões', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vinculo'],
+                  ['Esquadroes', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vinculo'],
                   ['Proxima meta', `${formatNumber(xpSummary.nextLevelXp || 0)} XP`],
                 ].map(([label, value]) => (
-                  <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                    <span className="text-sm text-slate-600">{label}</span>
-                    <span className="block min-w-0 truncate text-right text-sm font-bold text-slate-950" title={String(value || '')}>
+                  <div key={label} style={{
+                    display: 'grid', gridTemplateColumns: '1fr 1.35fr',
+                    alignItems: 'center', gap: 12,
+                    borderRadius: 12, background: 'var(--pl-bg-soft)',
+                    padding: '10px 14px',
+                  }}>
+                    <span style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>{label}</span>
+                    <span style={{
+                      display: 'block', minWidth: 0, overflow: 'hidden',
+                      textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      textAlign: 'right', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)',
+                    }} title={String(value || '')}>
                       {value}
                     </span>
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
           </aside>
 
-          <main className="space-y-6">
-            <Card className="overflow-hidden p-0">
-              <PageHeadPremium
-                className="!rounded-none lg:!flex-row lg:!items-center lg:!justify-between"
-                icon={User2}
-                badge={
-                  <PageHeadPremiumBadge icon={ShieldCheck}>Perfil conectado</PageHeadPremiumBadge>
-                }
-                title="Controle real da sua conta e da sua presença na plataforma"
-                titleAs="h2"
-                subtitle="Username, codinome, CPF, XP, selos e esquadrões alimentados pelos dados reais do app."
-                statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
-                stats={[
-                  { key: 'p', label: 'Perfil', value: heroStats[0].value, icon: User2, accent: 'blue' },
-                  { key: 'sl', label: 'Selos', value: heroStats[1].value, icon: Medal, accent: 'amber' },
-                  { key: 'lv', label: 'Level', value: heroStats[2].value, icon: Sparkles, accent: 'violet' },
-                  { key: 'ab', label: 'Audiolivros', value: heroStats[3].value, icon: BookOpen, accent: 'emerald' },
-                ]}
-                leadingClassName="min-w-0 flex-1 items-center lg:max-w-[calc(100%-34rem)] xl:max-w-[46rem]"
-                trailingWrapClassName="lg:ml-auto lg:w-auto lg:max-w-[33rem] lg:self-center"
-              />
-            </Card>
-
+          {/* Main content */}
+          <main style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Save state banner */}
             {saveState.message ? (
-              <Card className="p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <ToneIconWrap tone={saveTone}>
-                      <CheckCircle2 className="h-5 w-5" />
+              <div className="pl-card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <ToneIconWrap tone={saveToneCls}>
+                      <CheckCircle2 style={{ width: 20, height: 20 }} />
                     </ToneIconWrap>
-                    <p className="text-sm font-semibold text-slate-700">{saveState.message}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{saveState.message}</p>
                   </div>
-                  <button type="button" onClick={() => setSaveState({ type: '', message: '' })} className="text-sm font-semibold text-slate-500 hover:text-slate-900">
+                  <button type="button" onClick={() => setSaveState({ type: '', message: '' })} style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
                     Fechar
                   </button>
                 </div>
-              </Card>
+              </div>
             ) : null}
 
+            {/* Overview tab */}
             {activeTab === 'overview' && (
-              <div className="space-y-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <SectionHeader
                   eyebrow="Dados da conta"
                   title="Informacoes editaveis do perfil"
@@ -877,19 +926,18 @@ export default function Perfil(props) {
                       type="button"
                       onClick={handleSave}
                       disabled={saving}
-                      className={cn(
-                        'inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:opacity-60',
-                        ACCENT_BTN
-                      )}
+                      className="pl-btn pl-btn-primary"
+                      style={{ opacity: saving ? 0.6 : 1 }}
                     >
                       {saving ? 'Salvando...' : 'Salvar perfil'}
                     </button>
                   }
                 />
 
-                <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-                  <Card className="p-6">
-                    <div className="grid gap-4 sm:grid-cols-2">
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1.2fr 0.8fr' }}>
+                  {/* Profile fields */}
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr 1fr' }}>
                       <Field
                         label="Nome completo"
                         value={form.nome}
@@ -901,7 +949,7 @@ export default function Perfil(props) {
                         label="Username"
                         value={form.username}
                         onChange={(value) => handleFieldChange('username', value.toLowerCase().replace(/\s+/g, ''))}
-                        placeholder="apenas letras minúsculas, números, . e _"
+                        placeholder="apenas letras minusculas, numeros, . e _"
                         autoComplete="username"
                       />
                       <Field
@@ -911,7 +959,7 @@ export default function Perfil(props) {
                         placeholder="(75) 99999-9999"
                         autoComplete="tel"
                       />
-                      <div className="sm:col-span-2">
+                      <div style={{ gridColumn: 'span 2' }}>
                         <Field
                           label="CPF"
                           value={form.cpf}
@@ -919,39 +967,41 @@ export default function Perfil(props) {
                           placeholder="000.000.000-00"
                           autoComplete="off"
                         />
-                        <p
-                          className={cn(
-                            'mt-2 text-xs font-semibold',
-                            cpfDigitsPreview.length === 0
-                              ? 'text-slate-500'
-                              : cpfDigitsPreview.length < 11
-                                ? 'text-slate-500'
-                                : cpfLooksValid
-                                  ? 'text-emerald-600'
-                                  : 'text-red-600'
-                          )}
-                        >
-                          {cpfDigitsPreview.length === 0
-                            ? 'CPF obrigatório para validar a conta e usar recursos vinculados.'
+                        <p style={{
+                          marginTop: 8, fontSize: 12, fontWeight: 600,
+                          color: cpfDigitsPreview.length === 0
+                            ? 'var(--pl-ink-3)'
                             : cpfDigitsPreview.length < 11
-                              ? 'Digite os 11 dígitos.'
+                              ? 'var(--pl-ink-3)'
                               : cpfLooksValid
-                                ? 'CPF válido. Clique em Salvar perfil para persistir.'
-                                : 'CPF inválido — confira os números ou os dígitos verificadores.'}
+                                ? 'var(--pl-success)'
+                                : 'var(--pl-danger)',
+                        }}>
+                          {cpfDigitsPreview.length === 0
+                            ? 'CPF obrigatorio para validar a conta e usar recursos vinculados.'
+                            : cpfDigitsPreview.length < 11
+                              ? 'Digite os 11 digitos.'
+                              : cpfLooksValid
+                                ? 'CPF valido. Clique em Salvar perfil para persistir.'
+                                : 'CPF invalido — confira os numeros ou os digitos verificadores.'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-5 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
+                    {/* Ranking preference */}
+                    <div style={{
+                      marginTop: 20, borderRadius: 18, border: '1px solid var(--pl-rule-2)',
+                      background: 'var(--pl-bg-soft)', padding: 16,
+                    }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Preferencia de ranking</p>
-                          <p className="mt-2 text-sm text-slate-600">Escolha como seu nome aparece nos rankings e areas sociais.</p>
+                          <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Preferencia de ranking</p>
+                          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>Escolha como seu nome aparece nos rankings e areas sociais.</p>
                         </div>
-                        <Badge tone="blue">{rankingPreview}</Badge>
+                        <TagBadge tone="accent">{rankingPreview}</TagBadge>
                       </div>
 
-                      <div className="mt-4 flex flex-wrap gap-3">
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
                         <ToggleChip active={form.rankingDisplayMode === 'username'} onClick={() => handleFieldChange('rankingDisplayMode', 'username')}>
                           Mostrar username
                         </ToggleChip>
@@ -960,21 +1010,20 @@ export default function Perfil(props) {
                         </ToggleChip>
                       </div>
 
-                      <div className="mt-4">
-                        <Field
-                          label="Codinome"
-                          value={form.rankingCodename}
-                          onChange={(value) => handleFieldChange('rankingCodename', value)}
-                          placeholder="Ex.: Aguia Azul"
-                          disabled={form.rankingDisplayMode !== 'codename'}
-                        />
-                      </div>
+                      <Field
+                        label="Codinome"
+                        value={form.rankingCodename}
+                        onChange={(value) => handleFieldChange('rankingCodename', value)}
+                        placeholder="Ex.: Aguia Azul"
+                        disabled={form.rankingDisplayMode !== 'codename'}
+                      />
                     </div>
 
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {/* Info tiles */}
+                    <div style={{ marginTop: 20, display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
                       <InfoTile
                         label="Email da conta"
-                        value={profileData?.email || currentUserEmail || 'Não informado'}
+                        value={profileData?.email || currentUserEmail || 'Nao informado'}
                         helper={
                           profileData?.created_at
                             ? `Cadastro em ${new Date(profileData.created_at).toLocaleDateString('pt-BR')}`
@@ -985,237 +1034,276 @@ export default function Perfil(props) {
                       <InfoTile
                         label="Status do CPF"
                         value={profileHasValidCpf ? 'Valido' : 'Pendente'}
-                        helper={profileHasValidCpf ? 'Documento apto para vínculos' : 'Revise o CPF e salve'}
+                        helper={profileHasValidCpf ? 'Documento apto para vinculos' : 'Revise o CPF e salve'}
                         icon={BadgeCheck}
                       />
                     </div>
-                  </Card>
+                  </div>
 
-                  <div className="grid gap-5">
-                    <Card className="p-6">
-                      <SectionHeader eyebrow="KPIs" title="Métricas reais" subtitle="Calculadas a partir do histórico salvo e do motor de XP." />
-
-                      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {/* Right column */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    {/* KPIs card */}
+                    <div className="pl-card" style={{ padding: 24 }}>
+                      <SectionHeader eyebrow="KPIs" title="Metricas reais" subtitle="Calculadas a partir do historico salvo e do motor de XP." />
+                      <div style={{ marginTop: 20, display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
                         {kpis.map((item) => (
-                          <div key={item.label} className="rounded-[22px] border border-slate-200 bg-slate-50 p-5">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">{item.label}</p>
-                            <p className="mt-3 text-3xl font-extrabold text-slate-950">{item.value}</p>
-                            <p className="mt-2 text-sm text-slate-600">{item.helper}</p>
+                          <div key={item.label} style={{
+                            borderRadius: 14, border: '1px solid var(--pl-rule-2)',
+                            background: 'var(--pl-bg-soft)', padding: 18,
+                          }}>
+                            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{item.label}</p>
+                            <p className="pl-num" style={{ fontSize: 28, color: 'var(--pl-ink)' }}>{item.value}</p>
+                            <p style={{ marginTop: 8, fontSize: 12, color: 'var(--pl-ink-2)' }}>{item.helper}</p>
                           </div>
                         ))}
                       </div>
-                    </Card>
+                    </div>
 
-                    <Card className="overflow-hidden">
-                      <div className={cn('p-6 text-white', HERO_BAR)}>
-                        <Badge tone="dark">XP atual</Badge>
-                        <h3 className="mt-4 text-2xl font-bold">Nivel {formatNumber(xpSummary.level || 1)}</h3>
-                        <p className="mt-2 text-sm leading-6 text-blue-100">
+                    {/* XP card */}
+                    <div className="pl-card" style={{ overflow: 'hidden' }}>
+                      <div style={{
+                        padding: 24,
+                        background: 'linear-gradient(135deg, var(--pl-ink) 0%, var(--pl-accent) 100%)',
+                        color: 'var(--pl-bg)',
+                      }}>
+                        <TagBadge tone="neutral">XP atual</TagBadge>
+                        <h3 style={{ marginTop: 14, fontSize: 20, fontWeight: 700 }}>Nivel {formatNumber(xpSummary.level || 1)}</h3>
+                        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, opacity: 0.85 }}>
                           {formatNumber(xpSummary.xpTotal || 0)} XP acumulado. Faltam{' '}
-                          {formatNumber(Math.max(0, Number(xpSummary.nextLevelXp || 0) - Number(xpSummary.xpTotal || 0)))} XP para o próximo nível.
+                          {formatNumber(Math.max(0, Number(xpSummary.nextLevelXp || 0) - Number(xpSummary.xpTotal || 0)))} XP para o proximo nivel.
                         </p>
                       </div>
-                      <div className="p-6">
-                        <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                      <div style={{ padding: 20 }}>
+                        <div className="pl-progress">
                           <div
-                            className="h-full rounded-full bg-[linear-gradient(90deg,#1e3a8a,#1e3a5f)]"
+                            className="pl-progress-bar"
                             style={{ width: `${Math.max(0, Math.min(100, Number(xpSummary.progressPercent || 0)))}%` }}
                           />
                         </div>
-                        <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+                        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: 'var(--pl-ink-2)' }}>
                           <span>XP atual</span>
-                          <span className="font-semibold">{formatNumber(xpSummary.progressPercent || 0)}%</span>
+                          <span style={{ fontWeight: 600 }}>{formatNumber(xpSummary.progressPercent || 0)}%</span>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   </div>
                 </div>
 
-                <Card className="p-6">
+                {/* Linkage cards */}
+                <div className="pl-card" style={{ padding: 24 }}>
                   <SectionHeader
                     eyebrow="Vinculos"
-                    title="Esquadrões, selos e XP"
+                    title="Esquadroes, selos e XP"
                     subtitle="Resumo funcional do que a conta ja possui dentro da plataforma."
                   />
-
-                  <div className="mt-5 grid gap-5 xl:grid-cols-3">
+                  <div style={{ marginTop: 20, display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                     {linkageCards.map((item) => {
                       const Icon = item.icon;
                       return (
-                        <Card key={item.title} className="p-6 shadow-none">
+                        <div key={item.title} className="pl-card" style={{ padding: 24, boxShadow: 'none' }}>
                           <ToneIconWrap tone={item.tone}>
-                            <Icon className="h-5 w-5" />
+                            <Icon style={{ width: 20, height: 20 }} />
                           </ToneIconWrap>
-                          <h3 className="mt-5 text-lg font-bold text-slate-950">{item.title}</h3>
-                          <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
-                        </Card>
+                          <h3 style={{ marginTop: 18, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.title}</h3>
+                          <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{item.text}</p>
+                        </div>
                       );
                     })}
                   </div>
-                </Card>
+                </div>
               </div>
             )}
+
+            {/* Achievements tab */}
             {activeTab === 'achievements' && (
-              <div className="space-y-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <SectionHeader
                   eyebrow="Conquistas"
-                  title="Selos e vínculos desbloqueados"
-                  subtitle="Tudo alimentado por XP, histórico real e memberships atuais."
+                  title="Selos e vinculos desbloqueados"
+                  subtitle="Tudo alimentado por XP, historico real e memberships atuais."
                 />
 
-                <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                   {badges.length > 0 ? (
                     badges.map((badge) => (
-                      <Card key={badge.id} className="p-6">
-                        <div className="flex items-start justify-between gap-3">
+                      <div key={badge.id} className="pl-card" style={{ padding: 24 }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                           <ToneIconWrap tone={getBadgeTone(badge.unlocked, badge.color)}>
-                            <Medal className="h-5 w-5" />
+                            <Medal style={{ width: 20, height: 20 }} />
                           </ToneIconWrap>
-                          <Badge tone={getBadgeTone(badge.unlocked, badge.color)}>
+                          <TagBadge tone={getBadgeTone(badge.unlocked, badge.color)}>
                             {badge.unlocked ? 'Desbloqueado' : `${formatNumber(badge.progressPercent)}%`}
-                          </Badge>
+                          </TagBadge>
                         </div>
-                        <h3 className="mt-5 text-lg font-bold text-slate-950">{badge.nome}</h3>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{badge.descricao}</p>
-                        <p className="mt-4 text-sm font-semibold text-slate-700">
+                        <h3 style={{ marginTop: 18, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>{badge.nome}</h3>
+                        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{badge.descricao}</p>
+                        <p style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                           Progresso: {formatNumber(badge.current)} / {formatNumber(badge.target)}
                         </p>
-                      </Card>
+                      </div>
                     ))
                   ) : (
-                    <Card className="p-6 md:col-span-2 2xl:col-span-3">
-                      <p className="text-sm font-semibold text-slate-600">Ainda não existem selos configurados para esta conta.</p>
-                    </Card>
+                    <div className="pl-card" style={{ padding: 24, gridColumn: 'span 3' }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Ainda nao existem selos configurados para esta conta.</p>
+                    </div>
                   )}
                 </div>
 
-                <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-                  <Card className="p-6">
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  {/* Summary */}
+                  <div className="pl-card" style={{ padding: 24 }}>
                     <SectionHeader eyebrow="Resumo" title="Leitura das conquistas" subtitle="Selos ativos, squads vinculados e nivel atual." />
-                    <div className="mt-5 grid gap-4 md:grid-cols-3">
+                    <div style={{ marginTop: 20, display: 'grid', gap: 14, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                       {[
                         ['Selos ativos', formatNumber(badgeSummary.unlockedCount || 0)],
-                        ['Esquadrões', formatNumber(memberships.length)],
+                        ['Esquadroes', formatNumber(memberships.length)],
                         ['Nivel atual', formatNumber(xpSummary.level || 1)],
                       ].map(([label, value]) => (
-                          <div key={label} className="rounded-2xl bg-slate-50 p-5">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">{label}</p>
-                          <p className="mt-3 text-3xl font-extrabold text-slate-950">{value}</p>
+                        <div key={label} style={{
+                          borderRadius: 12, background: 'var(--pl-bg-soft)', padding: 18,
+                        }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{label}</p>
+                          <p className="pl-num" style={{ fontSize: 28, color: 'var(--pl-ink)' }}>{value}</p>
                         </div>
                       ))}
                     </div>
-                  </Card>
+                  </div>
 
-                  <Card className="p-6">
-                    <SectionHeader eyebrow="Esquadrões" title="Memberships atuais" subtitle="Atalhos para abrir o esquadrao conectado a este perfil." />
-                    <div className="mt-5 space-y-4">
+                  {/* Memberships */}
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <SectionHeader eyebrow="Esquadroes" title="Memberships atuais" subtitle="Atalhos para abrir o esquadrao conectado a este perfil." />
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
                       {memberships.length > 0 ? (
                         memberships.map((membership) => (
                           <div
                             key={membership.id}
-                            className="flex flex-col gap-4 rounded-[22px] border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between"
+                            style={{
+                              display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14,
+                              borderRadius: 14, border: '1px solid var(--pl-rule-2)',
+                              background: 'var(--pl-bg-soft)', padding: 14,
+                            }}
                           >
                             <div>
-                              <p className="text-sm font-bold text-slate-950">{membership.name || membership.id}</p>
-                              <p className="mt-1 text-sm text-slate-600">Papel: {membership.role || 'Membro'} · Status: {membership.status || 'Ativo'}</p>
+                              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{membership.name || membership.id}</p>
+                              <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>Papel: {membership.role || 'Membro'} · Status: {membership.status || 'Ativo'}</p>
                             </div>
                             <button
                               type="button"
                               onClick={() => onOpenSquad?.(membership.id)}
-                              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                              className="pl-btn pl-btn-ghost"
+                              style={{ fontSize: 13 }}
                             >
                               Abrir esquadrao
                             </button>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm font-semibold text-slate-600">Nenhum esquadrao vinculado a esta conta.</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Nenhum esquadrao vinculado a esta conta.</p>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 </div>
               </div>
             )}
 
-            {false && activeTab === 'assinatura' && (
-              <div className="space-y-6">
+            {activeTab === 'assinatura' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <SectionHeader
                   eyebrow="Planos Papirando"
-                  title="Assinatura e benefícios"
-                  subtitle="Compare os níveis, veja o seu plano atual e abra a área de pagamento quando quiser mudar ou renovar."
+                  title="Assinatura e beneficios"
+                  subtitle="Compare os niveis, veja o seu plano atual e abra a area de pagamento quando quiser mudar ou renovar."
                   action={
                     <button
                       type="button"
                       onClick={() => setActiveTab?.('assinatura')}
-                      className={cn(
-                        'inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5',
-                        ACCENT_BTN
-                      )}
+                      className="pl-btn pl-btn-primary"
                     >
-                      Pagamentos e contratação
-                      <ChevronRight className="h-4 w-4" />
+                      Pagamentos e contratacao
+                      <ChevronRight style={{ width: 16, height: 16 }} />
                     </button>
                   }
                 />
 
-                <Card className={cn('overflow-hidden text-white', HERO_BAR)}>
-                  <div className="px-6 py-6 sm:px-8 sm:py-7">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-100/90">Sua assinatura</p>
-                        <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
-                          Plano {planLabel} · {subscriptionStatus}
-                        </h2>
-                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-blue-100/95">
-                          O plano ativo vale para recursos premium, limites de IA e ranking. Alterações de cobrança ficam na página
-                          dedicada de assinatura.
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <span className="inline-flex items-center rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.28em] text-white">
-                          {currentPlanId === 'elite' ? 'Nível máximo' : currentPlanId === 'tatico' ? 'Plano intermediário' : 'Nível inicial'}
-                        </span>
-                        {currentPlanId !== 'elite' ? (
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab?.('assinatura')}
-                            className="rounded-2xl border border-white/30 bg-white/15 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/25"
-                          >
-                            Fazer upgrade
-                          </button>
-                        ) : null}
-                      </div>
+                {/* Current plan banner */}
+                <div className="pl-card" style={{
+                  overflow: 'hidden',
+                  background: 'linear-gradient(135deg, var(--pl-ink) 0%, var(--pl-accent) 100%)',
+                  color: 'var(--pl-bg)',
+                  padding: '24px 28px',
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                    <div>
+                      <p className="pl-eyebrow" style={{ marginBottom: 8, color: 'rgba(255,255,255,0.7)' }}>Sua assinatura</p>
+                      <h2 style={{ fontSize: 22, fontWeight: 700 }}>
+                        Plano {planLabel} · {subscriptionStatus}
+                      </h2>
+                      <p style={{ marginTop: 8, maxWidth: 480, fontSize: 13, lineHeight: 1.6, opacity: 0.88 }}>
+                        O plano ativo vale para recursos premium, limites de IA e ranking. Alteracoes de cobranca ficam na pagina dedicada de assinatura.
+                      </p>
                     </div>
-                  </div>
-                </Card>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-200 bg-white px-4 py-3 sm:px-5">
-                  <p className="text-sm font-semibold text-slate-700">Preços exibidos por mês (referência)</p>
-                  <div className="flex rounded-2xl border border-slate-200 bg-slate-50 p-1">
-                    <button
-                      type="button"
-                      onClick={() => setPlanoPrecoAnual(false)}
-                      className={cn(
-                        'rounded-xl px-3 py-2 text-xs font-bold transition',
-                        !planoPrecoAnual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
-                      )}
-                    >
-                      Mensal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPlanoPrecoAnual(true)}
-                      className={cn(
-                        'rounded-xl px-3 py-2 text-xs font-bold transition',
-                        planoPrecoAnual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
-                      )}
-                    >
-                      Anual
-                    </button>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center',
+                        borderRadius: 20, border: '1px solid rgba(255,255,255,0.25)',
+                        background: 'rgba(255,255,255,0.12)',
+                        padding: '6px 12px', fontSize: 10, fontWeight: 700,
+                        textTransform: 'uppercase', letterSpacing: '0.28em',
+                      }}>
+                        {currentPlanId === 'elite' ? 'Nivel maximo' : currentPlanId === 'tatico' ? 'Plano intermediario' : 'Nivel inicial'}
+                      </span>
+                      {currentPlanId !== 'elite' ? (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab?.('assinatura')}
+                          style={{
+                            borderRadius: 14, border: '1px solid rgba(255,255,255,0.3)',
+                            background: 'rgba(255,255,255,0.12)', color: 'var(--pl-bg)',
+                            padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                            backdropFilter: 'blur(8px)', transition: 'background 0.15s',
+                          }}
+                        >
+                          Fazer upgrade
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid gap-5 lg:grid-cols-3">
+                {/* Price toggle */}
+                <div style={{
+                  display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  borderRadius: 14, border: '1px solid var(--pl-rule-2)',
+                  background: 'var(--pl-surface)', padding: '12px 18px',
+                }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Precos exibidos por mes (referencia)</p>
+                  <div style={{
+                    display: 'flex', borderRadius: 14, border: '1px solid var(--pl-rule-2)',
+                    background: 'var(--pl-bg-soft)', padding: 4,
+                  }}>
+                    {[
+                      { label: 'Mensal', val: false },
+                      { label: 'Anual', val: true },
+                    ].map(({ label, val }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setPlanoPrecoAnual(val)}
+                        style={{
+                          borderRadius: 10, padding: '6px 14px',
+                          fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                          background: planoPrecoAnual === val ? 'var(--pl-surface)' : 'transparent',
+                          color: planoPrecoAnual === val ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
+                          boxShadow: planoPrecoAnual === val ? 'var(--pl-sh-low)' : 'none',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Plan cards */}
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                   {PERFIL_PLANOS.map((plano) => {
                     const isCurrent = currentPlanId === plano.id;
                     const Icon = plano.Icon;
@@ -1225,61 +1313,69 @@ export default function Perfil(props) {
                       plano.id === 'gratuito' ? 'R$ 0' : planoPrecoAnual ? `R$ ${plano.precoAnual}` : `R$ ${plano.precoMensal}`;
 
                     return (
-                      <Card
+                      <div
                         key={plano.id}
-                        className={cn(
-                          'relative flex flex-col p-6 transition',
-                          isElite &&
-                            'border-amber-300/80 bg-gradient-to-b from-amber-50/90 via-white to-white shadow-[0_20px_50px_rgba(180,83,9,0.18)] ring-2 ring-amber-400/50 lg:scale-[1.03] lg:z-10',
-                          isTatico &&
-                            !isElite &&
-                            'border-blue-400/50 bg-gradient-to-b from-blue-700 to-blue-900 text-white shadow-[0_16px_40px_rgba(30,58,138,0.35)] ring-1 ring-blue-400/40',
-                          !isTatico && !isElite && 'border-slate-200/90',
-                          isCurrent && 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-white'
-                        )}
+                        className="pl-card"
+                        style={{
+                          position: 'relative', display: 'flex', flexDirection: 'column', padding: 24,
+                          ...(isElite && {
+                            border: '2px solid var(--pl-warn)',
+                            background: 'linear-gradient(160deg, var(--pl-warn-soft) 0%, var(--pl-surface) 60%)',
+                            boxShadow: 'var(--pl-sh-mid)',
+                          }),
+                          ...(isTatico && !isElite && {
+                            border: '1.5px solid var(--pl-accent)',
+                            background: 'linear-gradient(160deg, var(--pl-accent) 0%, color-mix(in srgb, var(--pl-accent) 80%, black) 100%)',
+                            color: 'var(--pl-bg)',
+                          }),
+                          ...(isCurrent && { outline: '2px solid var(--pl-success)', outlineOffset: 2 }),
+                        }}
                       >
                         {isCurrent ? (
-                          <span className="absolute right-4 top-4 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+                          <span className="pl-tag pl-tag-success" style={{ position: 'absolute', right: 14, top: 14 }}>
                             Seu plano
                           </span>
                         ) : null}
                         {plano.destaque && !isCurrent ? (
-                          <span
-                            className={cn(
-                              'absolute right-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider',
-                              isTatico ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
-                            )}
-                          >
+                          <span className={isTatico ? 'pl-tag' : 'pl-tag pl-tag-accent'} style={{
+                            position: 'absolute', right: 14, top: 14,
+                            ...(isTatico && { background: 'rgba(255,255,255,0.2)', color: 'var(--pl-bg)', border: '1px solid rgba(255,255,255,0.3)' }),
+                          }}>
                             Popular
                           </span>
                         ) : null}
                         {plano.premium ? (
-                          <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full border border-amber-400/60 bg-amber-100/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
-                            <Sparkles className="h-3 w-3" />
+                          <span className="pl-tag pl-tag-warn" style={{ position: 'absolute', left: 14, top: 14, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <Sparkles style={{ width: 12, height: 12 }} />
                             Premium
                           </span>
                         ) : null}
 
-                        <div className={cn('mt-8 flex h-12 w-12 items-center justify-center rounded-2xl', isTatico ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-700', isElite && 'bg-amber-500/20 text-amber-900')}>
-                          <Icon className="h-6 w-6" strokeWidth={2} />
+                        <div style={{
+                          marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 44, height: 44, borderRadius: 12,
+                          background: isTatico ? 'rgba(255,255,255,0.15)' : isElite ? 'var(--pl-warn-soft)' : 'var(--pl-bg-soft)',
+                          color: isTatico ? 'var(--pl-bg)' : isElite ? 'var(--pl-warn)' : 'var(--pl-ink-2)',
+                        }}>
+                          <Icon style={{ width: 22, height: 22 }} strokeWidth={2} />
                         </div>
-                        <h3 className={cn('mt-5 text-xl font-extrabold', isTatico ? 'text-white' : 'text-slate-950')}>{plano.nome}</h3>
-                        <p className={cn('mt-2 text-sm leading-relaxed', isTatico ? 'text-blue-100' : 'text-slate-600')}>{plano.descricao}</p>
-                        <p className={cn('mt-5 text-3xl font-black tracking-tight', isTatico ? 'text-white' : 'text-slate-950')}>
+                        <h3 style={{ marginTop: 18, fontSize: 18, fontWeight: 800, color: isTatico ? 'var(--pl-bg)' : 'var(--pl-ink)' }}>{plano.nome}</h3>
+                        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: isTatico ? 'rgba(255,255,255,0.8)' : 'var(--pl-ink-2)' }}>{plano.descricao}</p>
+                        <p style={{ marginTop: 18, fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em', color: isTatico ? 'var(--pl-bg)' : 'var(--pl-ink)' }}>
                           {precoValor}
                           {plano.id !== 'gratuito' ? (
-                            <span className={cn('text-sm font-semibold', isTatico ? 'text-blue-200' : 'text-slate-500')}>/mês</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>/mes</span>
                           ) : null}
                         </p>
                         {plano.id !== 'gratuito' && planoPrecoAnual ? (
-                          <p className={cn('text-xs font-medium', isTatico ? 'text-blue-200/90' : 'text-slate-500')}>Valores na cobrança anual (referência da página de assinatura).</p>
+                          <p style={{ fontSize: 12, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>Valores na cobranca anual (referencia da pagina de assinatura).</p>
                         ) : null}
 
-                        <ul className="mt-6 flex-1 space-y-3">
+                        <ul style={{ marginTop: 20, flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {plano.features.map((line) => (
-                            <li key={line} className="flex gap-2.5 text-sm">
-                              <Check className={cn('mt-0.5 h-4 w-4 shrink-0', isTatico ? 'text-emerald-300' : 'text-emerald-600')} strokeWidth={2.5} />
-                              <span className={cn('leading-snug', isTatico ? 'text-blue-50' : 'text-slate-700')}>{line}</span>
+                            <li key={line} style={{ display: 'flex', gap: 10, fontSize: 13 }}>
+                              <Check style={{ marginTop: 2, width: 16, height: 16, flexShrink: 0, color: isTatico ? 'var(--pl-success)' : 'var(--pl-success)' }} strokeWidth={2.5} />
+                              <span style={{ lineHeight: 1.5, color: isTatico ? 'rgba(255,255,255,0.9)' : 'var(--pl-ink-2)' }}>{line}</span>
                             </li>
                           ))}
                         </ul>
@@ -1287,73 +1383,73 @@ export default function Perfil(props) {
                         <button
                           type="button"
                           onClick={() => setActiveTab?.('assinatura')}
-                          className={cn(
-                            'mt-8 w-full rounded-2xl py-3.5 text-sm font-bold transition',
-                            isCurrent
-                              ? 'border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                              : isTatico
-                                ? 'bg-white text-blue-900 shadow-md hover:bg-blue-50'
-                                : isElite
-                                  ? cn(ACCENT_BTN, 'text-white shadow-md')
-                                  : cn(ACCENT_BTN, 'text-white')
-                          )}
+                          className={isCurrent ? 'pl-btn pl-btn-ghost' : isTatico ? 'pl-btn' : 'pl-btn pl-btn-primary'}
+                          style={{
+                            marginTop: 24, width: '100%', justifyContent: 'center',
+                            ...(isTatico && !isCurrent && {
+                              background: 'var(--pl-surface)', color: 'var(--pl-accent)',
+                              border: 'none', fontWeight: 700,
+                            }),
+                          }}
                         >
-                          {isCurrent ? 'Gerenciar na página de assinatura' : plano.id === 'gratuito' ? 'Detalhes e limites' : `Quero o ${plano.nome}`}
+                          {isCurrent ? 'Gerenciar na pagina de assinatura' : plano.id === 'gratuito' ? 'Detalhes e limites' : `Quero o ${plano.nome}`}
                         </button>
-                      </Card>
+                      </div>
                     );
                   })}
                 </div>
 
-                <Card className="p-6">
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    Dúvidas sobre cobrança, nota fiscal ou troca de cartão use a página <strong className="font-semibold text-slate-800">Assinatura</strong> do app
-                    (mesmo menu onde você acessa este perfil). Os preços finais podem incluir promoções ativas no checkout.
+                <div className="pl-card" style={{ padding: 24 }}>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
+                    Duvidas sobre cobranca, nota fiscal ou troca de cartao use a pagina <strong style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>Assinatura</strong> do app
+                    (mesmo menu onde voce acessa este perfil). Os precos finais podem incluir promocoes ativas no checkout.
                   </p>
-                </Card>
+                </div>
               </div>
             )}
 
+            {/* Security tab */}
             {activeTab === 'security' && (
-              <div className="space-y-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <SectionHeader
-                  eyebrow="Segurança"
+                  eyebrow="Seguranca"
                   title="Dados sensiveis e acessos"
-                  subtitle="Sem botões mortos: tudo abaixo executa alguma ação real ou mostra o estado atual da conta."
+                  subtitle="Sem botoes mortos: tudo abaixo executa alguma acao real ou mostra o estado atual da conta."
                 />
 
-                <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-                  <Card className="p-6">
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  <div className="pl-card" style={{ padding: 24 }}>
                     <SectionHeader eyebrow="Conta" title="Dados principais" subtitle="Origem real do profile autenticado." />
-                    <div className="mt-5 space-y-4">
-                      <SecurityRow icon={Mail} label="Email autenticado" value={profileData?.email || currentUserEmail || 'Não informado'} helper="Usado para login e recuperação" />
-                      <SecurityRow icon={ShieldCheck} label="CPF" value={form.cpf || 'Não informado'} helper={profileHasValidCpf ? 'Documento valido no perfil' : 'Revise e salve para validar'} />
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <SecurityRow icon={Mail} label="Email autenticado" value={profileData?.email || currentUserEmail || 'Nao informado'} helper="Usado para login e recuperacao" />
+                      <SecurityRow icon={ShieldCheck} label="CPF" value={form.cpf || 'Nao informado'} helper={profileHasValidCpf ? 'Documento valido no perfil' : 'Revise e salve para validar'} />
                       <SecurityRow icon={User2} label="Identificacao no ranking" value={rankingPreview} helper={form.rankingDisplayMode === 'codename' ? 'Modo codinome ativo' : 'Modo username ativo'} />
                     </div>
-                  </Card>
+                  </div>
 
-                  <Card className="p-6">
-                    <SectionHeader eyebrow="Conta" title="Status e indicações" subtitle="Resumo operacional da conta no app." />
-                    <div className="mt-5 space-y-4">
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <SectionHeader eyebrow="Conta" title="Status e indicacoes" subtitle="Resumo operacional da conta no app." />
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
                       <SecurityRow icon={RefreshCw} label="XP total" value={formatNumber(xpSummary.xpTotal)} helper={`Level ${formatNumber(xpSummary.level || 1)}`} />
                       <SecurityRow
                         icon={BadgeCheck}
                         label="Referral code"
-                        value={profileData?.referral_code || 'Não gerado'}
+                        value={profileData?.referral_code || 'Nao gerado'}
                         helper={profileData?.referred_by_code ? `Indicado por ${profileData.referred_by_code}` : 'Conta sem indicacao vinculada'}
                       />
                     </div>
-                  </Card>
+                  </div>
                 </div>
 
-                <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-                  <Card className="p-6">
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  {/* Change email */}
+                  <div className="pl-card" style={{ padding: 24 }}>
                     <SectionHeader
                       eyebrow="E-mail"
                       title="Trocar e-mail"
-                      subtitle="O login passará a usar o novo endereço após a confirmação exigida pelo provedor (verifique inbox e spam)."
+                      subtitle="O login passara a usar o novo endereco apos a confirmacao exigida pelo provedor (verifique inbox e spam)."
                     />
-                    <div className="mt-5 space-y-4">
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
                       <Field
                         label="Novo e-mail"
                         type="email"
@@ -1362,31 +1458,30 @@ export default function Perfil(props) {
                         placeholder="voce@exemplo.com"
                         autoComplete="email"
                       />
-                      <p className="text-xs text-slate-600">
+                      <p style={{ fontSize: 12, color: 'var(--pl-ink-2)' }}>
                         E-mail atual:{' '}
-                        <span className="font-semibold text-slate-800">{profileData?.email || currentUserEmail || '—'}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{profileData?.email || currentUserEmail || '—'}</span>
                       </p>
                       <button
                         type="button"
                         onClick={handleEmailChange}
                         disabled={emailBusy || !currentUserId}
-                        className={cn(
-                          'w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-60 sm:w-auto',
-                          ACCENT_BTN
-                        )}
+                        className="pl-btn pl-btn-primary"
+                        style={{ opacity: (emailBusy || !currentUserId) ? 0.6 : 1 }}
                       >
                         {emailBusy ? 'Atualizando...' : 'Solicitar troca de e-mail'}
                       </button>
                     </div>
-                  </Card>
+                  </div>
 
-                  <Card className="p-6">
+                  {/* Change password */}
+                  <div className="pl-card" style={{ padding: 24 }}>
                     <SectionHeader
                       eyebrow="Senha"
                       title="Nova senha (logado)"
-                      subtitle="Atualização imediata enquanto a sessão está ativa. Mínimo de 6 caracteres."
+                      subtitle="Atualizacao imediata enquanto a sessao esta ativa. Minimo de 6 caracteres."
                     />
-                    <div className="mt-5 grid gap-4">
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
                       <Field
                         label="Senha atual"
                         type="password"
@@ -1415,21 +1510,20 @@ export default function Perfil(props) {
                         type="button"
                         onClick={handlePasswordChangeDirect}
                         disabled={passwordChangeBusy}
-                        className={cn(
-                          'w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-60 sm:w-auto',
-                          ACCENT_BTN
-                        )}
+                        className="pl-btn pl-btn-primary"
+                        style={{ opacity: passwordChangeBusy ? 0.6 : 1 }}
                       >
                         {passwordChangeBusy ? 'Salvando...' : 'Salvar nova senha'}
                       </button>
                     </div>
-                  </Card>
+                  </div>
                 </div>
 
-                <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-                  <Card className="p-6">
-                    <SectionHeader eyebrow="Ações reais" title="Recuperação e sessão" subtitle="Fluxos funcionais ligados ao Supabase e ao app." />
-                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  {/* Recovery actions */}
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <SectionHeader eyebrow="Acoes reais" title="Recuperacao e sessao" subtitle="Fluxos funcionais ligados ao Supabase e ao app." />
+                    <div style={{ marginTop: 20, display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
                       <ActionTile
                         icon={KeyRound}
                         title="Redefinir senha"
@@ -1438,49 +1532,57 @@ export default function Perfil(props) {
                         onClick={handlePasswordReset}
                         disabled={passwordBusy || !currentUserEmail}
                       />
-                      <ActionTile icon={LogOut} title="Encerrar sessão" desc="Sai da conta atual e retorna ao fluxo de login." actionLabel="Sair da conta" onClick={() => onLogout?.()} />
+                      <ActionTile icon={LogOut} title="Encerrar sessao" desc="Sai da conta atual e retorna ao fluxo de login." actionLabel="Sair da conta" onClick={() => onLogout?.()} />
                     </div>
-                  </Card>
+                  </div>
 
-                  <Card className="overflow-hidden">
-                    <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Base da conta</p>
-                      <h3 className="mt-2 text-xl font-bold text-slate-950">Sinais de integracao</h3>
+                  {/* Integration signals */}
+                  <div className="pl-card" style={{ overflow: 'hidden' }}>
+                    <div style={{
+                      borderBottom: '1px solid var(--pl-rule-2)',
+                      background: 'var(--pl-bg-soft)',
+                      padding: '18px 24px',
+                    }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Base da conta</p>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)' }}>Sinais de integracao</h3>
                     </div>
-                    <div className="space-y-4 p-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 24 }}>
                       {[
-                        { label: 'Foto do perfil', value: profileData?.avatar_url ? 'Persistida' : 'Sem foto', tone: profileData?.avatar_url ? 'green' : 'red' },
-                        { label: 'Username', value: profileData?.username || 'Não informado', tone: profileData?.username ? 'blue' : 'red' },
-                        { label: 'Referral code', value: profileData?.referral_code || 'Não gerado', tone: profileData?.referral_code ? 'green' : 'red' },
+                        { label: 'Foto do perfil', value: profileData?.avatar_url ? 'Persistida' : 'Sem foto', tone: profileData?.avatar_url ? 'success' : 'danger' },
+                        { label: 'Username', value: profileData?.username || 'Nao informado', tone: profileData?.username ? 'accent' : 'danger' },
+                        { label: 'Referral code', value: profileData?.referral_code || 'Nao gerado', tone: profileData?.referral_code ? 'success' : 'danger' },
                       ].map((item) => (
-                        <div key={item.label} className="rounded-[22px] border border-slate-200 bg-white p-4">
-                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div key={item.label} style={{
+                          borderRadius: 14, border: '1px solid var(--pl-rule-2)',
+                          background: 'var(--pl-surface)', padding: 14,
+                        }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                             <div>
-                              <p className="text-sm font-bold text-slate-950">{item.label}</p>
-                              <p className="mt-1 text-sm text-slate-600">{item.value}</p>
+                              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.label}</p>
+                              <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{item.value}</p>
                             </div>
-                            <Badge tone={item.tone}>{item.value}</Badge>
+                            <TagBadge tone={item.tone}>{item.value}</TagBadge>
                           </div>
                         </div>
                       ))}
                     </div>
-                  </Card>
+                  </div>
                 </div>
 
-                {/* LGPD — Seus dados */}
-                <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-                  <Card className="p-6">
+                {/* LGPD */}
+                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  <div className="pl-card" style={{ padding: 24 }}>
                     <SectionHeader
                       eyebrow="LGPD"
                       title="Seus dados"
-                      subtitle="Exporte uma cópia completa dos seus dados ou leia nossa política de privacidade."
+                      subtitle="Exporte uma copia completa dos seus dados ou leia nossa politica de privacidade."
                     />
-                    <div className="mt-5 space-y-3">
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
                       <LgpdButton
                         icon={Download}
                         label="Exportar meus dados"
-                        description="Baixa um JSON com todo o seu histórico"
-                        tone="blue"
+                        description="Baixa um JSON com todo o seu historico"
+                        tone="accent"
                         onClick={async () => {
                           try {
                             const { data, error } = await supabase.rpc('export_my_data');
@@ -1499,49 +1601,49 @@ export default function Perfil(props) {
                       />
                       <LgpdButton
                         icon={FileText}
-                        label="Política de Privacidade"
+                        label="Politica de Privacidade"
                         description="Veja como tratamos seus dados"
-                        tone="slate"
+                        tone="neutral"
                         onClick={() => setActiveTab('privacidade')}
                       />
                       <LgpdButton
                         icon={FileText}
                         label="Termos de Uso"
-                        description="Regras e condições da plataforma"
-                        tone="slate"
+                        description="Regras e condicoes da plataforma"
+                        tone="neutral"
                         onClick={() => setActiveTab('termos')}
                       />
                     </div>
-                  </Card>
+                  </div>
 
-                  <Card className="p-6 border border-red-100">
+                  <div className="pl-card" style={{ padding: 24, border: '1px solid var(--pl-danger-soft)' }}>
                     <SectionHeader
                       eyebrow="Zona de perigo"
                       title="Excluir conta"
-                      subtitle="A exclusão é irreversível. Seus dados serão removidos em até 30 dias."
+                      subtitle="A exclusao e irreversivel. Seus dados serao removidos em ate 30 dias."
                     />
-                    <div className="mt-5">
+                    <div style={{ marginTop: 20 }}>
                       <LgpdButton
                         icon={Trash2}
-                        label="Solicitar exclusão de conta"
-                        description="Inicia o processo de remoção permanente"
-                        tone="red"
+                        label="Solicitar exclusao de conta"
+                        description="Inicia o processo de remocao permanente"
+                        tone="danger"
                         onClick={async () => {
                           const confirmed = window.confirm(
-                            'Tem certeza? Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.'
+                            'Tem certeza? Sua conta e todos os dados serao excluidos permanentemente em ate 30 dias. Esta acao nao pode ser desfeita.'
                           );
                           if (!confirmed) return;
                           try {
                             const { data, error } = await supabase.rpc('request_account_deletion');
                             if (error) throw error;
-                            alert(data?.message || 'Solicitação registrada. Entraremos em contato.');
+                            alert(data?.message || 'Solicitacao registrada. Entraremos em contato.');
                           } catch {
-                            alert('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com');
+                            alert('Erro ao registrar solicitacao. Entre em contato: privacidade@papirando.com');
                           }
                         }}
                       />
                     </div>
-                  </Card>
+                  </div>
                 </div>
               </div>
             )}

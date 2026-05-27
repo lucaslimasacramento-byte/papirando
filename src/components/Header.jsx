@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Bell, Lightbulb, LogOut, Menu, Search, ShieldAlert, Sparkles, UserCircle2 } from 'lucide-react';
+import { Bell, Lightbulb, LogOut, Menu, Moon, Search, ShieldAlert, Sparkles, Sun, UserCircle2 } from 'lucide-react';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
 
@@ -76,6 +76,8 @@ export default function Header({
   isAdmin = false,
   onNavigate,
   onOpenOnboarding,
+  darkMode = false,
+  onToggleDarkMode,
 }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -125,8 +127,8 @@ export default function Header({
   return (
     <header style={{
       height: 52, flex: '0 0 52px',
-      display: 'flex', alignItems: 'center', gap: 14,
-      padding: '0 20px',
+      display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.5vw, 14px)',
+      padding: '0 clamp(10px, 2.5vw, 20px)',
       borderBottom: '1px solid var(--pl-rule-2)',
       background: 'var(--pl-surface)',
       position: 'sticky', top: 0, zIndex: 30,
@@ -272,7 +274,7 @@ export default function Header({
         <button
           type="button"
           title="Em breve: assistente IA da plataforma para orientar estudos, materiais e próximos passos."
-          onClick={() => window.alert('Em breve: o assistente IA da plataforma vai ajudar a estruturar estudos, materiais e próximos passos.')}
+          onClick={() => {}}
           style={{
             display: 'none',
             alignItems: 'center', gap: 5,
@@ -288,6 +290,27 @@ export default function Header({
           <Sparkles size={11} strokeWidth={1.75} style={{ color: 'var(--pl-accent)' }} />
           <span className="hidden lg:inline">Assistente</span>
         </button>
+
+        {/* Dark mode toggle */}
+        {typeof onToggleDarkMode === 'function' && (
+          <button
+            type="button"
+            onClick={onToggleDarkMode}
+            title={darkMode ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+            style={{
+              width: 32, height: 32, border: '1px solid var(--pl-rule-strong)',
+              borderRadius: 6, background: 'var(--pl-surface)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--pl-ink-2)',
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            aria-label={darkMode ? 'Modo claro' : 'Modo escuro'}
+          >
+            {darkMode
+              ? <Sun size={15} strokeWidth={1.75} />
+              : <Moon size={15} strokeWidth={1.75} />}
+          </button>
+        )}
 
         {/* Notifications */}
         <button

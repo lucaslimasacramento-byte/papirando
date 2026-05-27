@@ -1,4 +1,6 @@
-export { PLAN_PRICES, getMonthlyPrice } from './planConfig.js';
+import { PLAN_PRICES, getMonthlyPrice } from './planConfig.js';
+
+export { PLAN_PRICES, getMonthlyPrice };
 
 export function formatCurrency(value = 0) {
   return Number(value || 0).toLocaleString('pt-BR', {

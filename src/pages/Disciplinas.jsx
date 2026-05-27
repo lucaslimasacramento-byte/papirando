@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { showConfirm, showToast } from '../lib/dialogs';
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
 import {
   BookOpen,
@@ -158,8 +159,9 @@ export default function Disciplinas({
 
   const handleDeleteDiscipline = async (disciplina) => {
     const totalTopicosDisciplina = disciplina.topicos?.length || 0;
-    const confirmar = window.confirm(
-      `Excluir a disciplina "${disciplina.nome}"? Você perderá ${totalTopicosDisciplina} tópicos e o progresso associado a ela.`
+    const confirmar = await showConfirm(
+      `Você perderá ${totalTopicosDisciplina} tópico(s) e todo o progresso associado.`,
+      { title: `Excluir "${disciplina.nome}"?`, confirmLabel: 'Excluir', danger: true }
     );
     if (!confirmar) return;
 
@@ -179,7 +181,7 @@ export default function Disciplinas({
       }
     } catch (error) {
       console.error('Erro ao excluir disciplina:', error);
-      alert('Não foi possível excluir a disciplina.');
+      showToast('Não foi possível excluir a disciplina.', 'error');
     }
   };
 
@@ -541,14 +543,14 @@ function SuggestionRow({ disciplina, index }) {
 function DisciplinasEmptyState({ onNovaDisciplina, onAbrirBiblioteca, onRegistrarEstudo }) {
   return (
     <section className="pl-card-paper" style={{ padding: 28 }}>
-      <div className="pl-overline">Primeiro mapa do edital</div>
+      <div className="pl-overline">Primeiro mapa de estudo</div>
       <h2 className="pl-section-title" style={{ marginTop: 10 }}>Monte suas disciplinas em três passos.</h2>
       <p className="pl-body" style={{ marginTop: 8, maxWidth: 720 }}>
-        Sem disciplinas cadastradas ainda. Comece pela estrutura do edital, conecte ao concurso e registre a primeira sessão para ativar os diagnósticos.
+        Sem disciplinas cadastradas ainda. Comece pela estrutura do seu objetivo, conecte materiais ou um edital e registre a primeira sessão para ativar os diagnósticos.
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, marginTop: 22 }}>
         <EmptyAction number="1" title="Criar disciplina" text="Cadastre a matéria e seus tópicos principais." action="Nova disciplina" onClick={onNovaDisciplina} />
-        <EmptyAction number="2" title="Abrir biblioteca" text="Use o concurso-alvo como referência de organização." action="Ver concursos" onClick={onAbrirBiblioteca} />
+        <EmptyAction number="2" title="Abrir objetivos" text="Use concurso, faculdade ou curso livre como referência de organização." action="Ver cursos" onClick={onAbrirBiblioteca} />
         <EmptyAction number="3" title="Registrar estudo" text="Alimente o histórico para a IA sugerir prioridades." action="Registrar" onClick={onRegistrarEstudo} />
       </div>
     </section>

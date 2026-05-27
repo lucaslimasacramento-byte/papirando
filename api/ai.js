@@ -8,7 +8,9 @@ import {
   explainQuestion,
   generateDailyNote,
   generateFlashcards,
+  generateInstagramCaption,
   generateMindMap,
+  generateStudySchedule,
   getPublicHealth,
   handleOptions,
   enforceAiRateLimit,
@@ -64,12 +66,20 @@ export default async function handler(req, res) {
       return sendJson(res, 200, await generateDailyNote(body));
     }
 
+    if (route === 'instagram-caption') {
+      return sendJson(res, 200, await generateInstagramCaption(body));
+    }
+
     if (route === 'study-stats-insight') {
       return sendJson(res, 200, await analyzeStudyStats(body));
     }
 
     if (route === 'generate-mind-map') {
       return sendJson(res, 200, await generateMindMap(body));
+    }
+
+    if (route === 'generate-schedule') {
+      return sendJson(res, 200, await generateStudySchedule(body));
     }
 
     if (route === 'contest-compatibility') {

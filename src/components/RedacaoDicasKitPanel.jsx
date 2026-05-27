@@ -5,40 +5,132 @@ import { getDefaultRedacaoKitBundle } from '../lib/redacaoKitMerge';
 function KitDetails({ title, badge, children, defaultOpen = false }) {
   return (
     <details
-      className="group w-full rounded-2xl border border-slate-200/80 bg-white shadow-sm transition open:border-indigo-200/70 open:shadow-md"
+      style={{
+        width: '100%',
+        borderRadius: 16,
+        border: '1px solid var(--pl-rule-2)',
+        background: 'var(--pl-surface)',
+        boxShadow: 'var(--pl-sh-low)',
+        transition: 'box-shadow 0.15s',
+      }}
       open={defaultOpen}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 marker:content-none [&::-webkit-details-marker]:hidden sm:px-5">
-        <div className="min-w-0">
-          <p className="text-[15px] font-semibold leading-snug text-slate-900">{title}</p>
+      <summary
+        style={{
+          display: 'flex',
+          cursor: 'pointer',
+          listStyle: 'none',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          padding: '16px 20px',
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3, color: 'var(--pl-ink)' }}>{title}</p>
           {badge ? (
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{badge}</p>
+            <p
+              style={{
+                marginTop: 4,
+                fontSize: 10,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: 'var(--pl-ink-3)',
+              }}
+            >
+              {badge}
+            </p>
           ) : null}
         </div>
-        <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-500 group-open:border-indigo-100 group-open:bg-indigo-50 group-open:text-indigo-800">
-          <span className="group-open:hidden">Abrir</span>
-          <span className="hidden group-open:inline">Recolher</span>
+        <span
+          className="kit-details-toggle"
+          style={{
+            flexShrink: 0,
+            borderRadius: 999,
+            border: '1px solid var(--pl-rule-2)',
+            background: 'var(--pl-bg-soft)',
+            padding: '4px 10px',
+            fontSize: 10,
+            fontWeight: 700,
+            color: 'var(--pl-ink-2)',
+          }}
+        >
+          {/* JS-free open/close label handled by CSS :is(details[open]) or kept static */}
+          Abrir / Recolher
         </span>
       </summary>
-      <div className="border-t border-slate-100 px-4 pb-5 pt-2 sm:px-5">{children}</div>
+      <div style={{ borderTop: '1px solid var(--pl-rule)', padding: '8px 20px 20px' }}>{children}</div>
     </details>
   );
 }
 
 function SectionHeading({ step, icon: Icon, title, description, headingId }) {
   return (
-    <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-      <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2">
-        <span className="font-mono text-[11px] font-bold tabular-nums text-indigo-500">{step}</span>
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 to-white text-slate-700 shadow-sm">
+    <header
+      style={{
+        marginBottom: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span
+          style={{
+            fontFamily: 'var(--pl-mono)',
+            fontSize: 11,
+            fontWeight: 700,
+            fontVariantNumeric: 'tabular-nums',
+            color: 'var(--pl-accent)',
+          }}
+        >
+          {step}
+        </span>
+        <div
+          style={{
+            display: 'flex',
+            width: 44,
+            height: 44,
+            flexShrink: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 16,
+            border: '1px solid var(--pl-rule-2)',
+            background: 'var(--pl-surface)',
+            color: 'var(--pl-ink-2)',
+            boxShadow: 'var(--pl-sh-low)',
+          }}
+        >
           <Icon size={22} strokeWidth={2} />
         </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <h3 id={headingId} className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <h3
+          id={headingId}
+          style={{
+            fontSize: 20,
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            color: 'var(--pl-ink)',
+          }}
+        >
           {title}
         </h3>
-        {description ? <p className="mt-1.5 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">{description}</p> : null}
+        {description ? (
+          <p
+            style={{
+              marginTop: 6,
+              maxWidth: 672,
+              fontSize: 14,
+              fontWeight: 500,
+              lineHeight: 1.6,
+              color: 'var(--pl-ink-2)',
+            }}
+          >
+            {description}
+          </p>
+        ) : null}
       </div>
     </header>
   );
@@ -58,22 +150,47 @@ export function RedacaoDicasKitPanel({ bundle: bundleProp, expertTips = [], onOp
   const tips = Array.isArray(expertTips) ? expertTips.filter((t) => t?.title) : [];
 
   return (
-    <article className="mx-auto w-full max-w-3xl space-y-16 pb-2">
-      <section className="scroll-mt-6" aria-labelledby="dicas-conectivos">
+    <article style={{ marginLeft: 'auto', marginRight: 'auto', width: '100%', maxWidth: 768, paddingBottom: 8 }}>
+      {/* Conectivos */}
+      <section style={{ scrollMarginTop: 24 }} aria-labelledby="dicas-conectivos">
         <SectionHeading
           step="01"
           icon={Link2}
           title="Conectivos"
           headingId="dicas-conectivos"
-          description="Organizados por função na prova. Abra só o grupo que for usar naquele parágrafo — o conteúdo desce inteiro na página, sem caixa rolante."
+          description="Organizados por funcao na prova. Abra so o grupo que for usar naquele paragrafo — o conteudo desce inteiro na pagina, sem caixa rolante."
         />
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {conectivos.map((bloco, i) => (
             <KitDetails key={bloco.id} title={`${bloco.emoji} ${bloco.titulo}`} defaultOpen={i === 0}>
-              <ol className="mt-1 space-y-2 pl-0.5 text-[14px] font-medium leading-relaxed text-slate-700">
+              <ol
+                style={{
+                  marginTop: 4,
+                  paddingLeft: 2,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  lineHeight: 1.6,
+                  color: 'var(--pl-ink)',
+                  listStyle: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
                 {bloco.itens.map((linha, idx) => (
-                  <li key={linha} className="flex gap-3">
-                    <span className="w-6 shrink-0 text-right font-bold tabular-nums text-slate-400">{idx + 1}.</span>
+                  <li key={linha} style={{ display: 'flex', gap: 12 }}>
+                    <span
+                      style={{
+                        width: 24,
+                        flexShrink: 0,
+                        textAlign: 'right',
+                        fontWeight: 700,
+                        fontVariantNumeric: 'tabular-nums',
+                        color: 'var(--pl-ink-3)',
+                      }}
+                    >
+                      {idx + 1}.
+                    </span>
                     <span>{linha}</span>
                   </li>
                 ))}
@@ -83,21 +200,49 @@ export function RedacaoDicasKitPanel({ bundle: bundleProp, expertTips = [], onOp
         </div>
       </section>
 
-      <section className="scroll-mt-6 border-t border-slate-200/80 pt-16" aria-labelledby="dicas-frases">
+      {/* Frases prontas */}
+      <section
+        style={{ scrollMarginTop: 24, borderTop: '1px solid var(--pl-rule-2)', paddingTop: 64, marginTop: 64 }}
+        aria-labelledby="dicas-frases"
+      >
         <SectionHeading
           step="02"
           icon={Quote}
           title="Frases prontas"
           headingId="dicas-frases"
-          description="Substitua [TEMA] e complete os colchetes com segurança. Treine encaixando no seu tempo — tudo visível ao expandir o cartão."
+          description="Substitua [TEMA] e complete os colchetes com seguranca. Treine encaixando no seu tempo — tudo visivel ao expandir o cartao."
         />
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {frases.map((bloco, i) => (
             <KitDetails key={bloco.id} title={`${bloco.emoji} ${bloco.titulo}`} defaultOpen={i === 0}>
-              <ol className="mt-1 space-y-2.5 pl-0.5 text-[14px] font-medium leading-relaxed text-slate-700">
+              <ol
+                style={{
+                  marginTop: 4,
+                  paddingLeft: 2,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  lineHeight: 1.6,
+                  color: 'var(--pl-ink)',
+                  listStyle: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}
+              >
                 {bloco.itens.map((linha, idx) => (
-                  <li key={linha} className="flex gap-3">
-                    <span className="w-6 shrink-0 text-right font-bold tabular-nums text-slate-400">{idx + 1}.</span>
+                  <li key={linha} style={{ display: 'flex', gap: 12 }}>
+                    <span
+                      style={{
+                        width: 24,
+                        flexShrink: 0,
+                        textAlign: 'right',
+                        fontWeight: 700,
+                        fontVariantNumeric: 'tabular-nums',
+                        color: 'var(--pl-ink-3)',
+                      }}
+                    >
+                      {idx + 1}.
+                    </span>
                     <span>{linha}</span>
                   </li>
                 ))}
@@ -107,18 +252,37 @@ export function RedacaoDicasKitPanel({ bundle: bundleProp, expertTips = [], onOp
         </div>
       </section>
 
-      <section className="scroll-mt-6 border-t border-slate-200/80 pt-16" aria-labelledby="dicas-modelos">
+      {/* Modelos decoraveis */}
+      <section
+        style={{ scrollMarginTop: 24, borderTop: '1px solid var(--pl-rule-2)', paddingTop: 64, marginTop: 64 }}
+        aria-labelledby="dicas-modelos"
+      >
         <SectionHeading
           step="03"
           icon={LayoutTemplate}
-          title="Modelos decoráveis"
+          title="Modelos decoraveis"
           headingId="dicas-modelos"
-          description="Troque os colchetes, leia em voz alta e adapte ao tema. O texto do modelo aparece completo abaixo — role a página do app, não um bloco interno."
+          description="Troque os colchetes, leia em voz alta e adapte ao tema. O texto do modelo aparece completo abaixo — role a pagina do app, nao um bloco interno."
         />
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {modelos.map((m, i) => (
             <KitDetails key={m.id} title={m.titulo} badge={m.badge} defaultOpen={i === 0}>
-              <pre className="mt-1 whitespace-pre-wrap break-words rounded-2xl border border-slate-100 bg-slate-50/95 p-4 font-sans text-[13px] font-medium leading-[1.65] text-slate-700 sm:p-5 sm:text-[14px]">
+              <pre
+                style={{
+                  marginTop: 4,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  borderRadius: 16,
+                  border: '1px solid var(--pl-rule)',
+                  background: 'var(--pl-bg-soft)',
+                  padding: 16,
+                  fontFamily: 'var(--pl-sans)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  lineHeight: 1.65,
+                  color: 'var(--pl-ink)',
+                }}
+              >
                 {m.corpo}
               </pre>
             </KitDetails>
@@ -126,7 +290,11 @@ export function RedacaoDicasKitPanel({ bundle: bundleProp, expertTips = [], onOp
         </div>
       </section>
 
-      <section className="scroll-mt-6 border-t border-slate-200/80 pt-16" aria-labelledby="dicas-extras">
+      {/* Dicas extras */}
+      <section
+        style={{ scrollMarginTop: 24, borderTop: '1px solid var(--pl-rule-2)', paddingTop: 64, marginTop: 64 }}
+        aria-labelledby="dicas-extras"
+      >
         <SectionHeading
           step="04"
           icon={Lightbulb}
@@ -134,30 +302,115 @@ export function RedacaoDicasKitPanel({ bundle: bundleProp, expertTips = [], onOp
           headingId="dicas-extras"
           description={
             tips.length
-              ? 'Publicadas em Admin → Configurações → Redações · dicas. Toque para ler o texto completo.'
-              : 'Cadastre em Admin → Configurações → Redações · dicas. O kit (conectivos, frases e modelos) edita-se em Redações · dados, em formulário estruturado.'
+              ? 'Publicadas em Admin → Configuracoes → Redacoes · dicas. Toque para ler o texto completo.'
+              : 'Cadastre em Admin → Configuracoes → Redacoes · dicas. O kit (conectivos, frases e modelos) edita-se em Redacoes · dados, em formulario estruturado.'
           }
         />
         {tips.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-5 py-8 text-center text-sm font-medium text-slate-500">
+          <p
+            style={{
+              borderRadius: 16,
+              border: '1px dashed var(--pl-rule-2)',
+              background: 'var(--pl-bg-soft)',
+              padding: '32px 20px',
+              textAlign: 'center',
+              fontSize: 14,
+              fontWeight: 500,
+              color: 'var(--pl-ink-2)',
+            }}
+          >
             Nenhuma dica extra no servidor ainda.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: 16,
+            }}
+          >
             {tips.map((tip) => (
               <button
                 key={tip.id}
                 type="button"
                 onClick={() => onOpenExpert?.(tip)}
-                className="group flex flex-col items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  borderRadius: 16,
+                  border: '1px solid var(--pl-rule-2)',
+                  background: 'var(--pl-surface)',
+                  padding: 20,
+                  textAlign: 'left',
+                  boxShadow: 'var(--pl-sh-low)',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--pl-accent)';
+                  e.currentTarget.style.boxShadow = 'var(--pl-sh-mid)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--pl-rule-2)';
+                  e.currentTarget.style.boxShadow = 'var(--pl-sh-low)';
+                }}
               >
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-800">
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    borderRadius: 999,
+                    border: '1px solid var(--pl-accent-soft)',
+                    background: 'var(--pl-accent-soft)',
+                    padding: '2px 10px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: 'var(--pl-accent)',
+                  }}
+                >
                   <Lightbulb size={12} strokeWidth={2.2} />
                   Especialista
                 </span>
-                <span className="text-[15px] font-semibold leading-snug text-slate-900 group-hover:text-indigo-950">{tip.title}</span>
-                <span className="line-clamp-3 text-sm font-medium leading-relaxed text-slate-500">{tip.body || 'Ver conteúdo'}</span>
-                <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700">
+                <span
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 600,
+                    lineHeight: 1.3,
+                    color: 'var(--pl-ink)',
+                  }}
+                >
+                  {tip.title}
+                </span>
+                <span
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    lineHeight: 1.6,
+                    color: 'var(--pl-ink-2)',
+                  }}
+                >
+                  {tip.body || 'Ver conteudo'}
+                </span>
+                <span
+                  style={{
+                    marginTop: 'auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: 'var(--pl-accent)',
+                  }}
+                >
                   <Eye size={16} strokeWidth={2.2} />
                   Abrir
                 </span>

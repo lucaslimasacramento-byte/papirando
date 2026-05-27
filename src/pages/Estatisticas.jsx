@@ -273,14 +273,14 @@ function Donut({ materias, totalTempo }) {
   const cy = size / 2;
   const rOuter = 88;
   const rInner = 62;
-  let cum = 0;
-  const segs = materias.map((item) => {
+  const { segs } = materias.reduce((acc, item) => {
     const f = totalTempo > 0 ? item.tempoMin / totalTempo : 0;
-    const start = cum * 360 - 90;
-    const end = (cum + f) * 360 - 90;
-    cum += f;
-    return { ...item, start, end };
-  });
+    const start = acc.cum * 360 - 90;
+    const end = (acc.cum + f) * 360 - 90;
+    acc.segs.push({ ...item, start, end });
+    acc.cum += f;
+    return acc;
+  }, { cum: 0, segs: [] });
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       {segs.map((seg) => (

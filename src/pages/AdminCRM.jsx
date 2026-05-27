@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react';
 import AdminPageHeader from '../components/AdminPageHeader';
+import { showConfirm } from '../lib/dialogs';
 import { buildCrmSnapshot, CRM_STAGE_OPTIONS, normalizeLead } from '../lib/adminCrm';
 import { formatCurrency } from '../lib/adminFinance';
 
@@ -118,7 +119,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
   };
 
   const handleDelete = async (lead) => {
-    const confirmed = window.confirm(`Excluir o lead "${lead.nome}"?`);
+    const confirmed = await showConfirm(`Excluir o lead "${lead.nome}"?`, { confirmLabel: 'Excluir', danger: true });
     if (!confirmed) return;
     setFeedback({ type: '', message: '' });
     try {
@@ -135,11 +136,15 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
       {feedback.message ? (
         <div
           role="status"
-          className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
-            feedback.type === 'success'
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-              : 'border-red-200 bg-red-50 text-red-800'
-          }`}
+          style={{
+            borderRadius: 10,
+            border: `1px solid ${feedback.type === 'success' ? 'var(--pl-success)' : 'var(--pl-danger)'}`,
+            background: feedback.type === 'success' ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)',
+            padding: '12px 16px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--pl-ink)',
+          }}
         >
           {feedback.message}
         </div>
@@ -151,99 +156,91 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
         badge="CRM admin"
         title="Leads e oportunidades"
         subtitle="Registre interessados, acompanhe o funil comercial e enxergue o potencial de receita que ainda não virou assinatura."
-        trailingClassName="xl:max-w-[16rem]"
-        trailing={
-          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
-            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
-          </div>
-        }
+        stats={[
+          { key: 'total', label: 'Leads', value: String(crm.total), icon: Users, accent: 'blue' },
+          { key: 'contato', label: 'Em contato', value: String(crm.emContato), icon: MessageCircle, accent: 'indigo' },
+          { key: 'prop', label: 'Propostas', value: String(crm.propostas), icon: Target, accent: 'violet' },
+          { key: 'fech', label: 'Fechados', value: String(crm.fechados), icon: BadgeCheck, accent: 'emerald' },
+          { key: 'pipe', label: 'Pipeline', value: formatCurrency(crm.pipelineMensal), icon: TrendingUp, accent: 'orange' },
+        ]}
       />
 
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
-        <div className="grid gap-4 md:grid-cols-5">
-          <SummaryCard icon={Users} label="Leads" value={crm.total} />
-          <SummaryCard icon={MessageCircle} label="Em contato" value={crm.emContato} />
-          <SummaryCard icon={Target} label="Propostas" value={crm.propostas} />
-          <SummaryCard icon={BadgeCheck} label="Fechados" value={crm.fechados} />
-          <SummaryCard icon={TrendingUp} label="Pipeline" value={formatCurrency(crm.pipelineMensal)} />
-        </div>
-      </section>
-
-      <div className="grid gap-8 xl:grid-cols-[0.8fr_1.2fr]">
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cadastro comercial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">{form.id ? 'Editar lead' : 'Novo lead'}</h3>
+      <div style={{ display: 'grid', gap: 32, gridTemplateColumns: '0.8fr 1.2fr' }}>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Cadastro comercial</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>{form.id ? 'Editar lead' : 'Novo lead'}</h3>
           </div>
 
-          <div className="grid gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Field label="Nome">
-              <input value={form.nome} onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))} className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.nome} onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))} className="pl-input" style={{ width: '100%' }} />
             </Field>
             <Field label="Contato">
-              <input value={form.contato} onChange={(e) => setForm((prev) => ({ ...prev, contato: e.target.value }))} placeholder="Telefone, e-mail ou @usuario" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.contato} onChange={(e) => setForm((prev) => ({ ...prev, contato: e.target.value }))} placeholder="Telefone, e-mail ou @usuario" className="pl-input" style={{ width: '100%' }} />
             </Field>
             <Field label="Canal">
-              <select value={form.canal} onChange={(e) => setForm((prev) => ({ ...prev, canal: e.target.value }))} className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500">
+              <select value={form.canal} onChange={(e) => setForm((prev) => ({ ...prev, canal: e.target.value }))} className="pl-input" style={{ width: '100%' }}>
                 {CHANNEL_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Interesse principal">
-              <input value={form.interesse} onChange={(e) => setForm((prev) => ({ ...prev, interesse: e.target.value }))} placeholder="Ex: PMAL, carreiras policiais, plano elite" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.interesse} onChange={(e) => setForm((prev) => ({ ...prev, interesse: e.target.value }))} placeholder="Ex: PMAL, carreiras policiais, plano elite" className="pl-input" style={{ width: '100%' }} />
             </Field>
             <Field label="Etapa do funil">
-              <select value={form.stage} onChange={(e) => setForm((prev) => ({ ...prev, stage: e.target.value }))} className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500">
+              <select value={form.stage} onChange={(e) => setForm((prev) => ({ ...prev, stage: e.target.value }))} className="pl-input" style={{ width: '100%' }}>
                 {CRM_STAGE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
             <Field label="Valor mensal potencial">
-              <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <input value={form.monthly_value} onChange={(e) => setForm((prev) => ({ ...prev, monthly_value: e.target.value }))} placeholder="59,90" className="pl-input" style={{ width: '100%' }} />
             </Field>
             <Field label="Observação">
-              <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="w-full rounded-[1.5rem] border border-gray-200 bg-gray-50/70 px-4 py-4 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
+              <textarea value={form.observacao} onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))} rows={4} className="pl-input" style={{ width: '100%', resize: 'vertical' }} />
             </Field>
           </div>
 
-          <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
             {form.id && (
-              <button type="button" onClick={() => setForm(EMPTY_LEAD)} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600">
+              <button type="button" onClick={() => setForm(EMPTY_LEAD)} className="pl-btn pl-btn-ghost pl-btn-sm">
                 Cancelar edição
               </button>
             )}
-            <button type="button" onClick={handleSave} disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70">
+            <button type="button" onClick={handleSave} disabled={saving} className="pl-btn pl-btn-primary pl-btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <Plus size={16} />
               {saving ? 'Salvando...' : form.id ? 'Atualizar lead' : 'Cadastrar lead'}
             </button>
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Funil comercial</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Leads cadastrados</h3>
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Funil comercial</p>
+              <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Leads cadastrados</h3>
             </div>
             <button
               type="button"
               onClick={() => exportLeadsCsv(filteredLeads)}
               disabled={filteredLeads.length === 0}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
             >
               <Download size={15} />
               Exportar CSV
             </button>
           </div>
 
-          <div className="mb-4 flex flex-wrap gap-3">
+          <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <select
               value={filterCanal}
               onChange={(e) => setFilterCanal(e.target.value)}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-600 outline-none focus:border-blue-400"
+              className="pl-input"
+              style={{ width: 'auto' }}
             >
               <option value="">Todos os canais</option>
               {CHANNEL_OPTIONS.map((c) => (
@@ -253,7 +250,8 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
             <select
               value={filterStage}
               onChange={(e) => setFilterStage(e.target.value)}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-600 outline-none focus:border-blue-400"
+              className="pl-input"
+              style={{ width: 'auto' }}
             >
               <option value="">Todas as etapas</option>
               {CRM_STAGE_OPTIONS.map((s) => (
@@ -264,37 +262,37 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
               <button
                 type="button"
                 onClick={() => { setFilterCanal(''); setFilterStage(''); }}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-50"
+                className="pl-btn pl-btn-ghost pl-btn-sm"
               >
                 Limpar filtros
               </button>
             )}
           </div>
 
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {filteredLeads.map((lead) => (
-              <div key={lead.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div key={lead.id} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-slate-900">{lead.nome}</p>
-                      <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                      <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{lead.nome}</p>
+                      <span className="pl-tag pl-tag-accent">
                         {CRM_STAGE_OPTIONS.find((option) => option.value === lead.stage)?.label || lead.stage}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">
+                    <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                       {lead.contato || 'Sem contato'} • {CHANNEL_OPTIONS.find((c) => c.value === lead.canal)?.label || lead.canal} • {lead.interesse || 'Sem interesse definido'}
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-emerald-700">{formatCurrency(lead.monthly_value || 0)} / mês</p>
-                    {lead.observacao && <p className="mt-2 text-sm font-medium text-gray-500">{lead.observacao}</p>}
+                    <p style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--pl-success)' }}>{formatCurrency(lead.monthly_value || 0)} / mês</p>
+                    {lead.observacao && <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{lead.observacao}</p>}
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => handleEdit(lead)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    <button type="button" onClick={() => handleEdit(lead)} className="pl-btn pl-btn-ghost pl-btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                       <Pencil size={15} />
                       Editar
                     </button>
-                    <button type="button" onClick={() => handleDelete(lead)} className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                    <button type="button" onClick={() => handleDelete(lead)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 8, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', padding: '6px 14px', fontSize: 13, fontWeight: 600, color: 'var(--pl-danger)', cursor: 'pointer' }}>
                       <Trash2 size={15} />
                       Excluir
                     </button>
@@ -304,7 +302,7 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
             ))}
 
             {filteredLeads.length === 0 && (
-              <div className="rounded-[1.5rem] border border-dashed border-gray-200 bg-white px-6 py-10 text-center text-sm font-semibold text-gray-500">
+              <div style={{ borderRadius: 10, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '40px 24px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                 {leads.length === 0
                   ? 'Nenhum lead cadastrado ainda. Comece registrando os interessados que chegarem por WhatsApp, Instagram ou indicação.'
                   : 'Nenhum lead corresponde aos filtros selecionados.'}
@@ -317,22 +315,10 @@ export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead
   );
 }
 
-function SummaryCard({ icon: Icon, label, value }) {
-  return (
-      <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
-        <Icon size={12} />
-        {label}
-      </div>
-      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
-    </div>
-  );
-}
-
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>{label}</label>
       {children}
     </div>
   );

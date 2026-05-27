@@ -2189,6 +2189,127 @@ async function analyzeContestForm({ text = '', formText = '' } = {}) {
   throw new Error(`Nao foi possivel analisar o formulario do concurso. Erros: ${errors.join(' | ')}`);
 }
 
+// ─── Study Schedule Generation ───────────────────────────────────────────────
+
+function buildSchedulePrompt(disciplinas, availability, meta) {
+  const discList = disciplinas
+    .slice(0, 20)
+    .map((d, i) => `${i + 1}. ${d.nome} — peso ${d.peso || 1}, progresso ${d.percentual || 0}%, topicos pendentes: ${d.topicosPendentes || 0}`)
+    .join('\n');
+
+  const availList = availability
+    .filter((d) => d.enabled)
+    .map((d) => {
+      const slots = (d.slots || []).filter((s) => s.enabled && s.minutes > 0)
+        .map((s) => `${s.id}(${s.minutes}min)`).join(', ');
+      return slots ? `${d.label}: ${slots}` : null;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return `Voce e um especialista em planejamento de estudos para concursos publicos brasileiros.
+
+Crie um cronograma semanal otimizado com base nas seguintes informacoes:
+
+OBJETIVO: ${meta || 'Maximizar aprovacao no concurso alvo'}
+
+DISCIPLINAS (em ordem de prioridade):
+${discList || 'Nenhuma disciplina informada — use exemplos genericos para concurso publico.'}
+
+DISPONIBILIDADE SEMANAL:
+${availList || 'Seg a Sex: noite(90min), Sab: manha(120min)'}
+
+REGRAS DE DISTRIBUICAO:
+- Priorize disciplinas com maior peso e menor progresso
+- Alterne entre Teoria, Questoes e Revisao para cada disciplina
+- Respeite os blocos de tempo disponivel
+- Nao repita a mesma disciplina em dias consecutivos (exceto revisao)
+- Inclua pelo menos 1 sessao de revisao por semana
+- Distribua as disciplinas de forma equilibrada ao longo da semana
+
+Responda SOMENTE com JSON no formato:
+{"semana":[{"dia":"seg","blocos":[{"horario":"noite","disciplina":"Nome da Disciplina","modo":"Teoria","duracao":60,"topico":"Nome do Topico ou subtema","justificativa":"Razao em 1 frase"}]}],"resumo":"Descricao do cronograma em 2-3 frases","prioridades":["Disciplina1","Disciplina2"],"horasTotais":12,"dica":"Conselho estrategico de 1 frase"}
+
+Valores validos para "modo": Teoria, Questoes, Revisao
+Valores validos para "horario": manha, tarde, noite, madrugada
+"duracao" deve ser um dos valores: 30, 45, 60, 90, 120 (em minutos)`;
+}
+
+async function generateScheduleWithGemini(disciplinas, availability, meta) {
+  if (!GOOGLE_API_KEY) throw new Error('Defina GOOGLE_API_KEY no .env para usar Gemini.');
+  const resolvedModel = await resolveGeminiModel();
+  const prompt = buildSchedulePrompt(disciplinas, availability, meta);
+
+  const payload = await fetchJson(
+    `https://generativelanguage.googleapis.com/v1beta/models/${resolvedModel}:generateContent?key=${GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.5, responseMimeType: 'application/json' },
+      }),
+    }
+  );
+
+  const contentText = (payload?.candidates?.[0]?.content?.parts || [])
+    .map((p) => p?.text || '').join('\n').trim();
+  if (!contentText) throw new Error('Gemini nao retornou conteudo para o cronograma.');
+
+  const parsed = extractJsonFromText(contentText);
+  if (!Array.isArray(parsed?.semana) || parsed.semana.length === 0)
+    throw new Error('Gemini nao gerou um cronograma valido.');
+
+  return { provider: 'gemini', model: resolvedModel, ...parsed };
+}
+
+async function generateScheduleWithOpenAI(disciplinas, availability, meta) {
+  if (!OPENAI_API_KEY) throw new Error('Defina OPENAI_API_KEY no .env para usar OpenAI.');
+  const prompt = buildSchedulePrompt(disciplinas, availability, meta);
+
+  const payload = await fetchJson('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.5,
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  const content = payload?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('OpenAI nao retornou conteudo para o cronograma.');
+  const parsed = JSON.parse(content);
+  if (!Array.isArray(parsed?.semana) || parsed.semana.length === 0)
+    throw new Error('OpenAI nao gerou um cronograma valido.');
+
+  return { provider: 'openai', model: payload.model || OPENAI_MODEL, ...parsed };
+}
+
+async function generateStudySchedule({ disciplinas = [], availability = [], meta = '' }) {
+  if (disciplinas.length === 0 && availability.length === 0) {
+    throw new Error('Envie pelo menos as disciplinas ou a disponibilidade semanal.');
+  }
+
+  const providers = AI_PROVIDER === 'gemini'
+    ? ['gemini', AI_FALLBACK_PROVIDER]
+    : AI_PROVIDER === 'openai'
+      ? ['openai', AI_FALLBACK_PROVIDER]
+      : [AI_PROVIDER, AI_FALLBACK_PROVIDER];
+
+  const errors = [];
+  for (const provider of [...new Set(providers)]) {
+    try {
+      if (provider === 'gemini') return await generateScheduleWithGemini(disciplinas, availability, meta);
+      if (provider === 'openai') return await generateScheduleWithOpenAI(disciplinas, availability, meta);
+    } catch (e) {
+      errors.push(`[${provider}] ${e.message}`);
+    }
+  }
+  throw new Error(`Falha ao gerar cronograma. Erros: ${errors.join(' | ')}`);
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     return jsonResponse(req, res, 204, {});
@@ -2357,6 +2478,16 @@ const server = http.createServer(async (req, res) => {
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, { error: error.message || 'Falha ao explicar a questao.' });
+    }
+  }
+
+  if (req.method === 'POST' && (req.url === '/api/generate-schedule' || req.url === '/api/ai/generate-schedule')) {
+    try {
+      const body = await readBody(req);
+      const result = await generateStudySchedule(body);
+      return jsonResponse(req, res, 200, result);
+    } catch (error) {
+      return jsonResponse(req, res, 500, { error: error.message || 'Falha ao gerar cronograma.' });
     }
   }
 

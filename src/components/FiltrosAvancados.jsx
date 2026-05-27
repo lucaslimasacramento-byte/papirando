@@ -5,86 +5,110 @@ export default function FiltrosAvancados({ isFilterPanelOpen, setIsFilterPanelOp
   if (!isFilterPanelOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[400] bg-[#1A365D]/40 backdrop-blur-sm animate-in fade-in duration-300 flex justify-end">
-        <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h2 className="text-xl font-extrabold text-gray-800 flex items-center gap-2"><Filter size={20} className="text-[#10B981]"/> Filtros Avançados</h2>
-                <button onClick={() => setIsFilterPanelOpen(false)} className="text-gray-400 hover:text-red-500 p-2 rounded-xl hover:bg-red-50 transition-colors"><X size={20}/></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                
-                {/* Período */}
-                <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Período</label>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-[9px] font-bold text-gray-400 uppercase mb-1">Início</label>
-                            <input type="date" className="w-full border-b-2 border-gray-200 hover:border-[#10B981] focus:border-[#10B981] bg-transparent py-1.5 text-sm font-semibold text-gray-700 outline-none transition-colors cursor-pointer" />
-                        </div>
-                        <div>
-                            <label className="block text-[9px] font-bold text-gray-400 uppercase mb-1">Fim</label>
-                            <input type="date" className="w-full border-b-2 border-gray-200 hover:border-[#10B981] focus:border-[#10B981] bg-transparent py-1.5 text-sm font-semibold text-gray-700 outline-none transition-colors cursor-pointer" />
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {['Hoje', '7 Dias', '30 Dias', 'Este Mês', 'Este Ano'].map(p => (
-                            <button key={p} className="px-3 py-1.5 text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 rounded-lg hover:border-[#10B981] hover:text-[#10B981] hover:bg-emerald-50 transition-colors">{p}</button>
-                        ))}
-                    </div>
-                </div>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(26,54,93,0.40)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ background: 'var(--pl-surface)', width: '100%', maxWidth: 420, height: '100%', boxShadow: 'var(--pl-sh-high)', display: 'flex', flexDirection: 'column' }}>
 
-                {/* Disciplina e Tópico */}
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Disciplina</label>
-                        <select className="w-full border-b-2 border-gray-200 hover:border-[#10B981] focus:border-[#10B981] bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors cursor-pointer">
-                            <option>Todas as disciplinas</option>
-                            {bancoDisciplinas.map(d=><option key={d.id}>{d.nome}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tópico</label>
-                        <select className="w-full border-b-2 border-gray-200 hover:border-[#10B981] focus:border-[#10B981] bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors cursor-pointer">
-                            <option>Todos os tópicos</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Categoria */}
-                <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Categoria</label>
-                    <div className="grid grid-cols-2 gap-3">
-                        {['Teoria', 'Revisão', 'Questões', 'Simulados', 'Redação', 'Leitura'].map(c => (
-                            <label key={c} className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 cursor-pointer hover:border-[#10B981] hover:bg-emerald-50 transition-colors group">
-                                <input type="checkbox" className="w-4 h-4 text-[#10B981] rounded border-gray-300 focus:ring-[#10B981]" />
-                                <span className="text-xs font-bold text-gray-600 group-hover:text-[#10B981]">{c}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Desempenho */}
-                <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Desempenho (%)</label>
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1 relative">
-                            <input type="number" placeholder="Min" min="0" max="100" className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-center text-sm font-bold text-gray-700 outline-none focus:border-[#10B981] focus:bg-white transition-colors" />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">%</span>
-                        </div>
-                        <span className="text-gray-400 font-bold">-</span>
-                        <div className="flex-1 relative">
-                            <input type="number" placeholder="Max" min="0" max="100" className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-center text-sm font-bold text-gray-700 outline-none focus:border-[#10B981] focus:bg-white transition-colors" />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">%</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-3">
-                <button onClick={() => setIsFilterPanelOpen(false)} className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm bg-white hover:bg-gray-50 transition-colors shadow-sm">Limpar Tudo</button>
-                <button onClick={() => setIsFilterPanelOpen(false)} className="flex-1 px-4 py-3 rounded-xl bg-[#10B981] text-white font-bold text-sm hover:bg-[#059669] transition-colors shadow-sm">Aplicar Filtros</button>
-            </div>
+        {/* Header */}
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--pl-ink)', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+            <Filter size={18} style={{ color: 'var(--pl-success)' }} />
+            Filtros Avançados
+          </h2>
+          <button
+            onClick={() => setIsFilterPanelOpen(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pl-ink-3)', padding: 6, borderRadius: 10 }}
+          >
+            <X size={20} />
+          </button>
         </div>
+
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+          {/* Período */}
+          <div>
+            <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Período</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', marginBottom: 4 }}>Início</label>
+                <input type="date" className="pl-input" style={{ width: '100%' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', marginBottom: 4 }}>Fim</label>
+                <input type="date" className="pl-input" style={{ width: '100%' }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['Hoje', '7 Dias', '30 Dias', 'Este Mês', 'Este Ano'].map(p => (
+                <button
+                  key={p}
+                  className="pl-tag"
+                  style={{ cursor: 'pointer', border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', fontSize: 10, fontWeight: 700 }}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Disciplina e Tópico */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Disciplina</p>
+              <select className="pl-input" style={{ width: '100%' }}>
+                <option>Todas as disciplinas</option>
+                {(bancoDisciplinas || []).map(d => <option key={d.id}>{d.nome}</option>)}
+              </select>
+            </div>
+            <div>
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Tópico</p>
+              <select className="pl-input" style={{ width: '100%' }}>
+                <option>Todos os tópicos</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Categoria */}
+          <div>
+            <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Categoria</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {['Teoria', 'Revisão', 'Questões', 'Simulados', 'Redação', 'Leitura'].map(c => (
+                <label
+                  key={c}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--pl-rule-2)', cursor: 'pointer', background: 'var(--pl-surface)' }}
+                >
+                  <input type="checkbox" style={{ width: 14, height: 14, accentColor: 'var(--pl-accent)', cursor: 'pointer' }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{c}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Desempenho */}
+          <div>
+            <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Desempenho (%)</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input type="number" placeholder="Min" min="0" max="100" className="pl-input" style={{ width: '100%', textAlign: 'center' }} />
+              </div>
+              <span style={{ fontWeight: 700, color: 'var(--pl-ink-3)' }}>—</span>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input type="number" placeholder="Max" min="0" max="100" className="pl-input" style={{ width: '100%', textAlign: 'center' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', display: 'flex', gap: 10 }}>
+          <button className="pl-btn pl-btn-ghost" style={{ flex: 1 }} onClick={() => setIsFilterPanelOpen(false)}>
+            Limpar Tudo
+          </button>
+          <button className="pl-btn pl-btn-primary" style={{ flex: 1 }} onClick={() => setIsFilterPanelOpen(false)}>
+            Aplicar Filtros
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

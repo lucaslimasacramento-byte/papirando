@@ -1,15 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Loader2, MessageSquare, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import { showConfirm, showToast } from '../lib/dialogs';
+import AdminPageHeader from '../components/AdminPageHeader';
 import { deleteBetaFeedbackItem, loadBetaFeedback } from '../lib/betaFeedbackApi';
 
 const TIPO_LABELS = { bug: 'Bug', sugestao: 'Sugestao', elogio: 'Elogio', geral: 'Outro' };
-const TIPO_COLORS = {
-  bug: 'border-red-200 bg-red-50 text-red-700',
-  sugestao: 'border-blue-200 bg-blue-50 text-blue-700',
-  elogio: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  geral: 'border-slate-200 bg-slate-50 text-slate-600',
-};
+
+function tipoTagStyle(tipo) {
+  switch (tipo) {
+    case 'bug': return { border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' };
+    case 'sugestao': return { border: '1px solid var(--pl-accent)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' };
+    case 'elogio': return { border: '1px solid var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' };
+    default: return { border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' };
+  }
+}
 
 function formatDate(iso) {
   if (!iso) return '';
@@ -41,13 +45,13 @@ export default function AdminBetaFeedback() {
   useEffect(() => { refresh(); }, [refresh]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Remover este feedback?')) return;
+    if (!await showConfirm('Remover este feedback?', { confirmLabel: 'Remover', danger: true })) return;
     setDeletingId(id);
     try {
       await deleteBetaFeedbackItem(id);
       setRows((prev) => prev.filter((r) => r.id !== id));
     } catch (e) {
-      alert(e?.message || 'Nao foi possivel remover.');
+      showToast(e?.message || 'Não foi possível remover.', 'error');
     } finally {
       setDeletingId('');
     }
@@ -60,15 +64,10 @@ export default function AdminBetaFeedback() {
 
   return (
     <div className="pl-page">
-      <div className="flex flex-col gap-6">
-        <PageHeadPremium
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <AdminPageHeader
           icon={MessageSquare}
-          titleAs="h1"
-          badge={
-            <PageHeadPremiumBadge icon={ShieldCheck}>
-              Admin · feedback
-            </PageHeadPremiumBadge>
-          }
+          badge="Admin · feedback"
           title="Feedback dos usuários"
           subtitle={
             loading
@@ -78,17 +77,24 @@ export default function AdminBetaFeedback() {
                 (countByTipo.sugestao ? ` · ${countByTipo.sugestao} sugestao${countByTipo.sugestao !== 1 ? 'es' : ''}` : '') +
                 (countByTipo.elogio ? ` · ${countByTipo.elogio} elogio${countByTipo.elogio !== 1 ? 's' : ''}` : '')
           }
+          stats={[
+            { key: 'total', label: 'Total', value: loading ? '…' : String(rows.length), icon: MessageSquare, accent: 'blue' },
+            { key: 'bugs', label: 'Bugs', value: loading ? '…' : String(countByTipo.bug || 0), icon: ShieldCheck, accent: 'orange' },
+            { key: 'sug', label: 'Sugestões', value: loading ? '…' : String(countByTipo.sugestao || 0), icon: MessageSquare, accent: 'indigo' },
+            { key: 'elogios', label: 'Elogios', value: loading ? '…' : String(countByTipo.elogio || 0), icon: MessageSquare, accent: 'emerald' },
+          ]}
         />
 
-        <div className="section-card flex items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">
+        <div className="pl-card" style={{ padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>
             Feedbacks enviados pelos usuarios via widget in-app.
           </p>
           <button
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="btn-secondary shrink-0 rounded-xl px-4 py-2.5 disabled:opacity-50"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
           >
             {loading ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
             Atualizar
@@ -96,62 +102,69 @@ export default function AdminBetaFeedback() {
         </div>
 
         {error ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          <div style={{ borderRadius: 10, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
             {error}
           </div>
         ) : null}
 
-        <div className="section-card space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        <div className="pl-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p className="pl-eyebrow">
             Respostas ({rows.length})
           </p>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm font-semibold text-slate-500">
-              <Loader2 size={18} className="animate-spin text-blue-700" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '40px 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+              <Loader2 size={18} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
               Carregando...
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-8 text-center text-sm font-medium text-slate-500">
+            <p style={{ padding: '32px 0', textAlign: 'center', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
               Nenhum feedback ainda. Compartilhe o app com os usuarios!
             </p>
           ) : (
-            <ul className="space-y-3">
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, listStyle: 'none', margin: 0, padding: 0 }}>
               {rows.map((row) => (
-                <li key={row.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`inline-block rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                            TIPO_COLORS[row.tipo] || TIPO_COLORS.geral
-                          }`}
-                        >
-                          {TIPO_LABELS[row.tipo] || row.tipo}
+                <li key={row.id} className="pl-card" style={{ padding: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          borderRadius: 6,
+                          padding: '2px 8px',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          ...tipoTagStyle(row.tipo),
+                        }}
+                      >
+                        {TIPO_LABELS[row.tipo] || row.tipo}
+                      </span>
+                      {row.page ? (
+                        <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
+                          /{row.page}
                         </span>
-                        {row.page ? (
-                          <span className="text-[10px] font-medium text-slate-400">
-                            /{row.page}
-                          </span>
-                        ) : null}
-                        <span className="text-[10px] text-slate-400">{formatDate(row.created_at)}</span>
-                      </div>
-                      <p className="whitespace-pre-wrap text-sm font-medium text-slate-800">
-                        {row.mensagem}
-                      </p>
-                      {row.email ? (
-                        <p className="text-xs text-slate-400">{row.email}</p>
                       ) : null}
+                      <span style={{ fontSize: 10, color: 'var(--pl-ink-3)' }}>{formatDate(row.created_at)}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(row.id)}
-                      disabled={deletingId === row.id}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-50"
-                    >
-                      <Trash2 size={13} />
-                      Remover
-                    </button>
+                    <p style={{ whiteSpace: 'pre-wrap', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink)' }}>
+                      {row.mensagem}
+                    </p>
+                    {row.email ? (
+                      <p style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>{row.email}</p>
+                    ) : null}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(row.id)}
+                        disabled={deletingId === row.id}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 8, border: '1px solid var(--pl-danger)', background: 'var(--pl-surface)', padding: '4px 12px', fontSize: 12, fontWeight: 700, color: 'var(--pl-danger)', cursor: 'pointer' }}
+                      >
+                        <Trash2 size={13} />
+                        Remover
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}

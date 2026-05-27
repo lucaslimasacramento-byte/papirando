@@ -4,10 +4,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
+  Loader2,
   Play,
   RefreshCw,
   RotateCcw,
   Settings2,
+  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
@@ -15,6 +17,7 @@ import { buildWeeklyStudyPlan, WEEKDAY_BLUEPRINT } from '../lib/weeklyPlanner';
 import { mergeDisciplinesByCanonical } from '../lib/studyRecommendation';
 import { supabase } from '../lib/supabase';
 import { getSubjectColor } from '../lib/subjectPalette';
+import { generateScheduleWithAI, DIA_LABELS, MODO_COLORS } from '../lib/scheduleAiClient';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -142,19 +145,19 @@ class PlanningErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="pl-page">
-          <div className="section-card max-w-[980px] border-amber-200/80 bg-amber-50/30 p-8">
-          <div className="neutral-badge border-amber-200 bg-amber-50 text-amber-900">
+        <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+          <div className="pl-card" style={{ maxWidth: 980, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: 32 }}>
+          <span className="pl-tag pl-tag-warn">
             Planejamento em recuperacao
-          </div>
-          <h2 className="compact-title mt-4 text-2xl sm:text-3xl">
+          </span>
+          <h2 className="pl-display" style={{ marginTop: 16, fontSize: 24 }}>
             Essa aba encontrou um dado antigo e foi protegida para não derrubar o site.
           </h2>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-gray-500">
+          <p style={{ marginTop: 12, maxWidth: '42rem', fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
             Reabra a configuração do planejamento ou recarregue a página. A tela principal continua preservada e o app não cai mais inteiro.
           </p>
           {this.state.errorMessage ? (
-            <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+            <div style={{ marginTop: 20, borderRadius: 12, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>
               Erro identificado: {this.state.errorMessage}
             </div>
           ) : null}
@@ -306,6 +309,9 @@ function PlanejamentoContent({
   const [kanbanMenuOpen, setKanbanMenuOpen] = useState('');
   const [draggedTaskId, setDraggedTaskId] = useState('');
   const [dragOverColumn, setDragOverColumn] = useState('');
+  const [aiSchedule, setAiSchedule] = useState(null);
+  const [aiScheduleLoading, setAiScheduleLoading] = useState(false);
+  const [aiScheduleError, setAiScheduleError] = useState('');
   const [remotePlanningLoaded, setRemotePlanningLoaded] = useState(false);
   const calViewMode = sharedCalendarViewMode || localCalViewMode;
   const setCalViewMode = setSharedCalendarViewMode || setLocalCalViewMode;
@@ -775,6 +781,38 @@ function PlanejamentoContent({
     setDragOverColumn('');
   }
 
+  async function handleGenerateAiSchedule() {
+    if (aiScheduleLoading) return;
+
+    setAiScheduleLoading(true);
+    setAiScheduleError('');
+
+    try {
+      const disciplinas = buildAiScheduleDisciplines({
+        targetDisciplines: safeTargetDisciplines,
+        cycleDisciplines: cycleCanonicalDisciplines,
+        wizardSubjects: wizardSubjectPool,
+        subjectConfig: safePlanningSubjectConfig,
+      });
+      const meta = [
+        targetContest?.nome || targetContest?.titulo || targetContest?.concurso,
+        targetContest?.cargo,
+      ].filter(Boolean).join(' - ');
+
+      const result = await generateScheduleWithAI({
+        disciplinas,
+        availability: safeAvailability,
+        meta,
+      });
+
+      setAiSchedule(result);
+    } catch (error) {
+      setAiScheduleError(error?.message || 'Nao foi possivel gerar o cronograma com IA.');
+    } finally {
+      setAiScheduleLoading(false);
+    }
+  }
+
   return (
     <div className="pl-page">
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -782,7 +820,22 @@ function PlanejamentoContent({
           mode={planejamentoMode}
           setMode={(nextMode) => setStudyMode?.(nextMode === 'fixo' ? 'fixo' : 'ciclo')}
           onConfigurar={openWizard}
+          onGenerateAiSchedule={handleGenerateAiSchedule}
+          aiScheduleLoading={aiScheduleLoading}
         />
+
+        {(aiSchedule || aiScheduleLoading || aiScheduleError) ? (
+          <PlSchedulePanel
+            schedule={aiSchedule}
+            loading={aiScheduleLoading}
+            error={aiScheduleError}
+            onRetry={handleGenerateAiSchedule}
+            onClose={() => {
+              setAiSchedule(null);
+              setAiScheduleError('');
+            }}
+          />
+        ) : null}
 
         {planejamentoMode === 'flexivel' ? (
           <CicloFlexivel
@@ -813,58 +866,58 @@ function PlanejamentoContent({
           />
         )}
       {wizardOpen ? (
-        <div className="fixed inset-0 z-[120]">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 120 }}>
           <div
-            className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
+            style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)' }}
             onClick={closeWizard}
             aria-hidden="true"
           />
-          <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div
-            className="relative z-10 flex max-h-[86vh] w-full max-w-[880px] flex-col overflow-hidden rounded-[1.5rem] border border-gray-200 bg-white shadow-2xl"
+            style={{ position: 'relative', zIndex: 10, display: 'flex', maxHeight: '86vh', width: '100%', maxWidth: 880, flexDirection: 'column', overflow: 'hidden', borderRadius: 20, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+            <div style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px', position: 'relative' }}>
               <button
                 type="button"
                 onClick={closeWizard}
-                className="absolute right-4 top-4 rounded-lg p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                style={{ position: 'absolute', right: 16, top: 16, borderRadius: 8, padding: 4, color: 'var(--pl-ink-2)', background: 'none', border: 'none', cursor: 'pointer' }}
                 aria-label="Fechar configuração do planejamento"
               >
                 <X size={22} />
               </button>
-              <h3 className="text-2xl font-extrabold text-gray-700">Editar Planejamento</h3>
+              <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--pl-ink)', margin: 0 }}>Editar Planejamento</h3>
               <WizardStepper step={wizardStep} />
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
             {wizardStep === 1 ? (
               <div>
-                <p className="text-center text-base leading-7 text-gray-600 sm:text-lg">
+                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
                   Para iniciar o seu planejamento, escolha a melhor forma de visualização para você:
                 </p>
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div style={{ marginTop: 20, display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                   <WizardModeCard
                     active={wizardModeDraft === 'ciclo'}
-                    icon={<RotateCcw size={62} className="text-[#1e3a5f]" />}
+                    icon={<RotateCcw size={62} style={{ color: 'var(--pl-accent)' }} />}
                     title="Ciclo de Estudos"
                     text="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina."
                     onClick={() => setWizardModeDraft('ciclo')}
                   />
                   <WizardModeCard
                     active={wizardModeDraft === 'fixo'}
-                    icon={<CalendarDays size={62} className="text-[#1e3a5f]" />}
+                    icon={<CalendarDays size={62} style={{ color: 'var(--pl-accent)' }} />}
                     title="Planejamento Semanal"
                     text="Defina dias certos para cada frente de estudo e acompanhe tudo em calendário e kanban."
                     onClick={() => setWizardModeDraft('fixo')}
                   />
                 </div>
 
-                <div className="mt-5 rounded-[1.25rem] border border-gray-200 bg-gray-50 p-4">
-                  <p className="text-center text-sm font-medium text-gray-600 sm:text-base">
+                <div style={{ marginTop: 20, borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+                  <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
                     Escolha quais cursos entram no escopo desse planejamento:
                   </p>
-                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div style={{ marginTop: 16, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                     {safeCourseOptions.map((course) => (
                       <button
                         type="button"
@@ -876,16 +929,20 @@ function PlanejamentoContent({
                               : [...prev, course.plano]
                           )
                         }
-                        className={`rounded-xl border px-4 py-3 text-left transition ${
-                          wizardCoursePlans.includes(course.plano)
-                            ? 'border-[#1e3a5f] bg-blue-50'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
+                        style={{
+                          borderRadius: 12,
+                          border: wizardCoursePlans.includes(course.plano) ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+                          background: wizardCoursePlans.includes(course.plano) ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                          padding: '12px 16px',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'border-color .15s',
+                        }}
                       >
-                        <div className="flex items-center justify-between gap-3">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                           <div>
-                            <p className="text-base font-bold text-gray-800">{course.nome}</p>
-                            <p className="mt-1 text-sm text-gray-500">{course.concurso || course.plano}</p>
+                            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{course.nome}</p>
+                            <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{course.concurso || course.plano}</p>
                           </div>
                           {course.isTarget ? <TagPill label="Alvo" color="#1e3a5f" soft /> : null}
                         </div>
@@ -898,11 +955,11 @@ function PlanejamentoContent({
 
             {wizardStep === 2 ? (
               <div>
-                <p className="text-center text-base leading-7 text-gray-600 sm:text-lg">
+                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
                   Selecione quais das suas <strong>disciplinas</strong> você deseja colocar no seu <strong>planejamento</strong>.
                 </p>
-                <div className="mt-5 max-h-[300px] overflow-y-auto custom-scrollbar rounded-[1.25rem] border border-gray-200 bg-gray-50 p-4">
-                  <div className="grid gap-3 md:grid-cols-3">
+                <div style={{ marginTop: 20, maxHeight: 300, overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+                  <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
                     {wizardSubjectPool.map((discipline) => {
                       const selected = wizardSubjectState[discipline.nome]?.selected !== false;
                       return (
@@ -920,9 +977,18 @@ function PlanejamentoContent({
                               },
                             }))
                           }
-                          className={`rounded-xl border px-4 py-3 text-center text-sm font-semibold transition sm:text-base ${
-                            selected ? 'border-[#1e3a5f] bg-blue-50 text-slate-900' : 'border-gray-200 bg-white text-gray-500'
-                          }`}
+                          style={{
+                            borderRadius: 12,
+                            border: selected ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+                            background: selected ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                            padding: '12px 16px',
+                            textAlign: 'center',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: selected ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
+                            cursor: 'pointer',
+                            transition: 'border-color .15s',
+                          }}
                         >
                           {discipline.nome}
                         </button>
@@ -935,20 +1001,20 @@ function PlanejamentoContent({
 
             {wizardStep === 3 ? (
               <div>
-                <p className="text-center text-base leading-7 text-gray-600 sm:text-lg">
+                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
                   Para cada disciplina, selecione a <strong>importância</strong> para a prova e o seu <strong>grau de conhecimento</strong>.
                 </p>
-                <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                  <div className="max-h-[300px] overflow-y-auto custom-scrollbar rounded-[1.25rem] border border-gray-200 bg-gray-50 p-4">
-                    <div className="grid gap-3 md:grid-cols-2">
+                <div style={{ marginTop: 20, display: 'grid', gap: 16, gridTemplateColumns: '1.15fr 0.85fr' }}>
+                  <div style={{ maxHeight: 300, overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+                    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                       {selectedWizardSubjects.map((discipline) => {
                         const config = wizardSubjectState[discipline.nome] || { importance: 3, knowledge: 3 };
                         return (
-                          <div key={discipline.nome} className="rounded-2xl bg-white p-4 shadow-sm">
-                            <p className="text-base font-semibold text-gray-700 text-center">{discipline.nome}</p>
-                            <div className="mt-4">
-                              <label className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gray-400">Importância</label>
-                              <div className="mt-2 flex items-center gap-3">
+                          <div key={discipline.nome} className="pl-card" style={{ padding: 16 }}>
+                            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', textAlign: 'center', margin: 0 }}>{discipline.nome}</p>
+                            <div style={{ marginTop: 16 }}>
+                              <label className="pl-eyebrow">Importância</label>
+                              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <input
                                   type="range"
                                   min="1"
@@ -964,14 +1030,14 @@ function PlanejamentoContent({
                                       },
                                     }))
                                   }
-                                  className="w-full accent-[#1e3a5f]"
+                                  style={{ width: '100%', accentColor: 'var(--pl-accent)' }}
                                 />
-                                <span className="w-6 text-right font-bold text-gray-700">{config.importance}</span>
+                                <span style={{ width: 24, textAlign: 'right', fontWeight: 700, color: 'var(--pl-ink)' }}>{config.importance}</span>
                               </div>
                             </div>
-                            <div className="mt-4">
-                              <label className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gray-400">Conhecimento</label>
-                              <div className="mt-2 flex items-center gap-3">
+                            <div style={{ marginTop: 16 }}>
+                              <label className="pl-eyebrow">Conhecimento</label>
+                              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <input
                                   type="range"
                                   min="1"
@@ -987,9 +1053,9 @@ function PlanejamentoContent({
                                       },
                                     }))
                                   }
-                                  className="w-full accent-[#1e3a5f]"
+                                  style={{ width: '100%', accentColor: 'var(--pl-accent)' }}
                                 />
-                                <span className="w-6 text-right font-bold text-gray-700">{config.knowledge}</span>
+                                <span style={{ width: 24, textAlign: 'right', fontWeight: 700, color: 'var(--pl-ink)' }}>{config.knowledge}</span>
                               </div>
                             </div>
                           </div>
@@ -998,15 +1064,14 @@ function PlanejamentoContent({
                     </div>
                   </div>
 
-                  <div className="max-h-[300px] overflow-y-auto custom-scrollbar rounded-[1.25rem] border border-gray-200 bg-gray-50 p-4 space-y-3">
+                  <div style={{ maxHeight: 300, overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {subjectPriorityPreview.map((discipline) => (
                       <div
                         key={discipline.nome}
-                        className="rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 sm:text-base"
-                        style={{ backgroundColor: `${discipline.color}35`, borderLeft: `4px solid ${discipline.color}` }}
+                        style={{ borderRadius: 12, padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', backgroundColor: `${discipline.color}35`, borderLeft: `4px solid ${discipline.color}` }}
                       >
-                        <div className="flex items-center gap-4">
-                          <span className="min-w-[36px] text-base font-bold">{discipline.score}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                          <span style={{ minWidth: 36, fontSize: 14, fontWeight: 700 }}>{discipline.score}</span>
                           <span>{discipline.nome}</span>
                         </div>
                       </div>
@@ -1018,15 +1083,15 @@ function PlanejamentoContent({
 
             {wizardStep === 4 ? (
               <div>
-                <p className="text-center text-base leading-7 text-gray-600 sm:text-lg">
+                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
                   Quais dias e quantas horas pretende estudar?
                 </p>
-                <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                <div style={{ marginTop: 20, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                   {WEEKDAY_ORDER.map((dayId) => {
                     const dayBlueprint = WEEKDAY_BLUEPRINT.find((day) => day.id === dayId);
                     const current = wizardHoursByDay[dayId] || { enabled: false, minutes: 0 };
                     return (
-                      <div key={dayId} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+                      <div key={dayId} style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 12, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '8px 12px' }}>
                         <input
                           type="checkbox"
                           checked={current.enabled}
@@ -1036,9 +1101,9 @@ function PlanejamentoContent({
                               [dayId]: { ...current, enabled: !current.enabled },
                             }))
                           }
-                          className="w-4 h-4"
+                          style={{ width: 16, height: 16 }}
                         />
-                        <span className="w-[56px] rounded-lg bg-gray-400 px-3 py-1.5 text-center text-base font-semibold text-white">
+                        <span style={{ width: 56, borderRadius: 8, background: 'var(--pl-ink-3)', padding: '6px 12px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--pl-surface)' }}>
                           {String(dayBlueprint?.shortLabel || '').toUpperCase()}
                         </span>
                         <select
@@ -1052,7 +1117,8 @@ function PlanejamentoContent({
                               },
                             }))
                           }
-                          className="w-[92px] rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                          className="pl-input"
+                          style={{ width: 92, padding: '6px 8px', fontSize: 13 }}
                         >
                           {TIME_PICKER_OPTIONS.map((minutes) => (
                             <option key={minutes} value={minutes}>
@@ -1060,48 +1126,57 @@ function PlanejamentoContent({
                             </option>
                           ))}
                         </select>
-                        <span className="text-sm text-gray-600">horas diárias</span>
+                        <span style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>horas diárias</span>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="mt-5 rounded-2xl bg-blue-50 px-5 py-3 text-right text-lg font-semibold text-slate-900 sm:text-xl">
+                <div style={{ marginTop: 20, borderRadius: 12, background: 'var(--pl-accent-soft)', padding: '12px 20px', textAlign: 'right', fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>
                   Total na Semana: {formatMinutes(totalWizardMinutes)}
                 </div>
 
-                <div className="mt-6">
-                  <p className="text-base text-gray-600 sm:text-lg">
+                <div style={{ marginTop: 24 }}>
+                  <p style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>
                     Quantas matérias deseja encaixar por dia?
                   </p>
-                  <div className="mt-3 inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
+                  <div style={{ marginTop: 12, display: 'inline-flex', borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 4 }}>
                     {[1, 2, 3].map((count) => (
                       <button
                         key={count}
                         type="button"
                         onClick={() => setWizardSubjectsPerDay(count)}
-                        className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                          wizardSubjectsPerDay === count ? 'bg-[#1e3a5f] text-white shadow-sm' : 'text-gray-600 hover:bg-white'
-                        }`}
+                        style={{
+                          borderRadius: 8,
+                          padding: '8px 16px',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          border: 'none',
+                          background: wizardSubjectsPerDay === count ? 'var(--pl-ink)' : 'transparent',
+                          color: wizardSubjectsPerDay === count ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+                          transition: 'background .15s',
+                        }}
                       >
                         {count} matéria{count > 1 ? 's' : ''}
                       </button>
                     ))}
                   </div>
-                  <p className="mt-3 text-sm font-medium leading-6 text-gray-500">
+                  <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)' }}>
                     O app usa esse número para distribuir blocos de teoria e aproveitar o tempo que sobrar com revisão ou questões.
                   </p>
                 </div>
 
-                <div className="mt-6">
-                  <p className="text-base text-gray-600 sm:text-lg">
+                <div style={{ marginTop: 24 }}>
+                  <p style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>
                     Qual mínimo e máximo de tempo você deseja estudar uma mesma disciplina?
                   </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-4">
+                  <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
                     <select
                       value={wizardMinDuration}
                       onChange={(event) => setWizardMinDuration(Number(event.target.value))}
-                      className="min-w-[120px] border-b-2 border-[#1e3a5f] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
+                      className="pl-input"
+                      style={{ minWidth: 120, borderBottom: '2px solid var(--pl-accent)', background: 'transparent', padding: '8px', fontSize: 16, color: 'var(--pl-ink)' }}
                     >
                       {DURATION_OPTIONS.map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1109,11 +1184,12 @@ function PlanejamentoContent({
                         </option>
                       ))}
                     </select>
-                    <span className="text-lg text-gray-500">a</span>
+                    <span style={{ fontSize: 16, color: 'var(--pl-ink-3)' }}>a</span>
                     <select
                       value={wizardMaxDuration}
                       onChange={(event) => setWizardMaxDuration(Number(event.target.value))}
-                      className="min-w-[120px] border-b-2 border-[#1e3a5f] bg-transparent px-2 py-2 text-lg text-gray-700 outline-none"
+                      className="pl-input"
+                      style={{ minWidth: 120, borderBottom: '2px solid var(--pl-accent)', background: 'transparent', padding: '8px', fontSize: 16, color: 'var(--pl-ink)' }}
                     >
                       {DURATION_OPTIONS.filter((minutes) => minutes >= wizardMinDuration).map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1122,7 +1198,7 @@ function PlanejamentoContent({
                       ))}
                     </select>
                   </div>
-                  <p className="mt-3 text-sm font-medium leading-6 text-gray-500">
+                  <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)' }}>
                     Se o dia não fechar exatamente com a duração mínima, o restante vira bloco complementar de revisão ou questões.
                   </p>
                 </div>
@@ -1131,16 +1207,16 @@ function PlanejamentoContent({
 
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 py-4 sm:px-6">
-              <button type="button" onClick={closeWizard} className="btn-secondary text-sm">
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
+              <button type="button" onClick={closeWizard} className="pl-btn pl-btn-ghost pl-btn-sm">
                 {wizardStep === 1 ? 'Agora não' : 'Cancelar'}
               </button>
-              <div className="flex flex-wrap items-center justify-end gap-3">
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
                 {wizardStep > 1 ? (
                   <button
                     type="button"
                     onClick={goToPreviousWizardStep}
-                    className="rounded-xl border-2 border-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-[#1e3a5f]"
+                    className="pl-btn pl-btn-ghost"
                   >
                     Voltar
                   </button>
@@ -1154,7 +1230,7 @@ function PlanejamentoContent({
                       (wizardStep === 1 && wizardCoursePlans.length === 0) ||
                       (wizardStep === 2 && selectedWizardSubjects.length === 0)
                     }
-                    className="rounded-xl bg-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="pl-btn pl-btn-primary"
                   >
                     Próximo
                   </button>
@@ -1163,7 +1239,7 @@ function PlanejamentoContent({
                     type="button"
                     onClick={saveWizardConfig}
                     disabled={wizardCoursePlans.length === 0}
-                    className="rounded-xl bg-[#1e3a5f] px-5 py-2.5 text-sm font-semibold text-white disabled:pointer-events-none disabled:opacity-50"
+                    className="pl-btn pl-btn-primary"
                   >
                     Concluir
                   </button>
@@ -1179,7 +1255,7 @@ function PlanejamentoContent({
   );
 }
 
-function PlanejamentoHeader({ mode, setMode, onConfigurar }) {
+function PlanejamentoHeader({ mode, setMode, onConfigurar, onGenerateAiSchedule, aiScheduleLoading }) {
   return (
     <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
@@ -1206,8 +1282,102 @@ function PlanejamentoHeader({ mode, setMode, onConfigurar }) {
             <Settings2 size={14} />
             Configurar
           </button>
+          <button type="button" className="pl-btn pl-btn-ai" onClick={onGenerateAiSchedule} disabled={aiScheduleLoading}>
+            {aiScheduleLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            {aiScheduleLoading ? 'Gerando' : 'Gerar com IA'}
+          </button>
         </div>
     </header>
+  );
+}
+
+function PlSchedulePanel({ schedule, loading, error, onRetry, onClose }) {
+  const semana = Array.isArray(schedule?.semana) ? schedule.semana : [];
+
+  return (
+    <section className="pl-card-ai" style={{ padding: 22, border: '1px solid var(--pl-accent-soft)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
+        <div>
+          <span className="pl-tag pl-tag-accent">Cronograma inteligente</span>
+          <h2 className="pl-section-title" style={{ marginTop: 10 }}>Sugestao semanal da IA</h2>
+          <p className="pl-muted" style={{ margin: '8px 0 0', maxWidth: 760, lineHeight: 1.6 }}>
+            {loading
+              ? 'Analisando suas disciplinas, disponibilidade e concurso alvo para montar uma semana equilibrada.'
+              : schedule?.resumo || 'Gere uma proposta automatica e use como referencia para ajustar seu planejamento.'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button type="button" className="pl-btn pl-btn-sm" onClick={onRetry} disabled={loading}>
+            {loading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+            Regerar
+          </button>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={onClose}>
+            <X size={13} />
+            Fechar
+          </button>
+        </div>
+      </div>
+
+      {error ? (
+        <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', padding: 14, color: 'var(--pl-danger)', fontSize: 13, fontWeight: 700 }}>
+          {error}
+        </div>
+      ) : null}
+
+      {loading ? (
+        <div style={{ marginTop: 18, display: 'grid', gap: 10 }}>
+          {[0, 1, 2].map((item) => (
+            <div key={item} style={{ height: 54, borderRadius: 14, background: 'rgba(30, 58, 95, 0.08)' }} />
+          ))}
+        </div>
+      ) : null}
+
+      {!loading && semana.length > 0 ? (
+        <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+          {semana.map((day) => (
+            <article key={day.dia} style={{ borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 16 }}>
+              <div className="pl-overline">{DIA_LABELS[day.dia] || day.dia}</div>
+              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+                {(Array.isArray(day.blocos) ? day.blocos : []).map((block, index) => {
+                  const tone = MODO_COLORS[block.modo] || MODO_COLORS.Teoria;
+                  return (
+                    <div key={`${day.dia}-${block.disciplina}-${index}`} style={{ borderLeft: `4px solid ${tone.border}`, borderRadius: 12, background: tone.bg, padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
+                        <strong style={{ color: 'var(--pl-ink)', fontSize: 13 }}>{block.disciplina}</strong>
+                        <span style={{ color: tone.color, fontSize: 11, fontWeight: 800 }}>{block.duracao}min</span>
+                      </div>
+                      <p style={{ margin: '6px 0 0', color: 'var(--pl-ink-2)', fontSize: 12, fontWeight: 700 }}>
+                        {block.horario} · {block.modo}
+                      </p>
+                      {block.topico ? (
+                        <p style={{ margin: '6px 0 0', color: 'var(--pl-ink-2)', fontSize: 12, lineHeight: 1.45 }}>
+                          {block.topico}
+                        </p>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {!loading && schedule?.prioridades?.length ? (
+        <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {schedule.prioridades.map((item) => (
+            <span key={item} className="pl-tag pl-tag-highlight">{item}</span>
+          ))}
+          {schedule.horasTotais ? <span className="pl-tag">{schedule.horasTotais}h totais</span> : null}
+        </div>
+      ) : null}
+
+      {!loading && schedule?.dica ? (
+        <p style={{ margin: '14px 0 0', color: 'var(--pl-ink-2)', fontSize: 13, fontWeight: 600 }}>
+          {schedule.dica}
+        </p>
+      ) : null}
+    </section>
   );
 }
 
@@ -1405,16 +1575,15 @@ function Donut({ disciplinas, totalMin }) {
   const cx = size / 2;
   const cy = size / 2;
   const total = disciplinas.reduce((acc, item) => acc + item.previstaMin, 0);
-  let cum = 0;
-
-  const segs = disciplinas.map((disciplina) => {
+  const { segs } = disciplinas.reduce((acc, disciplina) => {
     const f = total > 0 ? disciplina.previstaMin / total : 0;
-    const start = cum * 360 - 90;
-    const end = (cum + f) * 360 - 90;
-    cum += f;
+    const start = acc.cum * 360 - 90;
+    const end = (acc.cum + f) * 360 - 90;
     const doneF = disciplina.previstaMin > 0 ? Math.min(1, disciplina.feitaMin / disciplina.previstaMin) : 0;
-    return { ...disciplina, start, end, doneEnd: start + (end - start) * doneF };
-  });
+    acc.segs.push({ ...disciplina, start, end, doneEnd: start + (end - start) * doneF });
+    acc.cum += f;
+    return acc;
+  }, { cum: 0, segs: [] });
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Distribuição do ciclo">
@@ -1574,21 +1743,21 @@ function arcPath(cx, cy, rOuter, start, end, rInner) {
 
 function FilterLine({ checked, onChange, color, label }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer group">
-      <input type="checkbox" checked={checked} onChange={onChange} className="w-4 h-4 rounded border-gray-300 cursor-pointer" />
-      <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: color }} />
-      <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
+    <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+      <input type="checkbox" checked={checked} onChange={onChange} style={{ width: 16, height: 16, cursor: 'pointer' }} />
+      <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: color }} />
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{label}</span>
     </label>
   );
 }
 
 function InfoCard({ title, items, children }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-[1.5rem] p-6 shadow-sm">
-      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">{title}</h4>
-      <div className="space-y-2">
+    <div className="pl-card" style={{ padding: 24, boxShadow: 'var(--pl-sh-low)' }}>
+      <h4 className="pl-eyebrow" style={{ marginBottom: 16, borderBottom: '1px solid var(--pl-rule)', paddingBottom: 8 }}>{title}</h4>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {items.map((item) => (
-          <p key={item} className="text-sm font-semibold text-gray-600">{item}</p>
+          <p key={item} style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>{item}</p>
         ))}
       </div>
       {children}
@@ -1598,9 +1767,9 @@ function InfoCard({ title, items, children }) {
 
 function CycleInfoCard({ title, text }) {
   return (
-    <div className="rounded-[1.5rem] border border-gray-100 bg-[#F8FAFC] p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{title}</p>
-      <p className="mt-3 text-sm font-semibold leading-6 text-gray-600">{text}</p>
+    <div className="pl-card" style={{ padding: 20 }}>
+      <p className="pl-eyebrow">{title}</p>
+      <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{text}</p>
     </div>
   );
 }
@@ -1608,8 +1777,15 @@ function CycleInfoCard({ title, text }) {
 function TagPill({ label, color, soft = false }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
       style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        borderRadius: 999,
+        padding: '4px 12px',
+        fontSize: 10,
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.16em',
         backgroundColor: soft ? `${color}15` : color,
         color: soft ? color : '#FFFFFF',
         border: soft ? `1px solid ${color}30` : 'none',
@@ -1624,7 +1800,7 @@ function WizardStepper({ step }) {
   const steps = ['Organizacao', 'Disciplinas', 'Relevancia', 'Horarios'];
 
   return (
-    <div className="mt-5 flex items-center justify-center gap-2 md:gap-4">
+    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
       {steps.map((label, index) => {
         const number = index + 1;
         const active = step === number;
@@ -1632,17 +1808,27 @@ function WizardStepper({ step }) {
 
         return (
           <React.Fragment key={label}>
-            <div className="flex flex-col items-center gap-2">
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-lg font-bold ${
-                  active || done ? 'border-[#1e3a5f] bg-[#1e3a5f] text-white' : 'border-gray-400 text-gray-400'
-                }`}
+                style={{
+                  display: 'flex',
+                  width: 40,
+                  height: 40,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  border: active || done ? '2px solid var(--pl-accent)' : '2px solid var(--pl-ink-3)',
+                  background: active || done ? 'var(--pl-accent)' : 'transparent',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: active || done ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
+                }}
               >
                 {String(number).padStart(2, '0')}
               </div>
-              <span className={`text-xs sm:text-sm ${active ? 'font-bold text-gray-700' : 'text-gray-500'}`}>{label}</span>
+              <span style={{ fontSize: 12, fontWeight: active ? 700 : 400, color: active ? 'var(--pl-ink)' : 'var(--pl-ink-3)' }}>{label}</span>
             </div>
-            {number < steps.length ? <div className="hidden md:block h-[2px] w-16 bg-gray-300" /> : null}
+            {number < steps.length ? <div style={{ height: 2, width: 48, background: 'var(--pl-rule-2)' }} /> : null}
           </React.Fragment>
         );
       })}
@@ -1655,17 +1841,56 @@ function WizardModeCard({ active, icon, title, text, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-[1.2rem] border text-left overflow-hidden transition ${
-        active ? 'border-[#1e3a5f] shadow-[0_0_0_1px_#1e3a5f_inset]' : 'border-gray-300'
-      }`}
+      style={{
+        borderRadius: 16,
+        border: active ? '2px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+        textAlign: 'left',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        background: 'none',
+        transition: 'border-color .15s',
+        boxShadow: active ? 'inset 0 0 0 1px var(--pl-accent)' : 'none',
+      }}
     >
-      <div className="flex h-36 items-center justify-center bg-white">{icon}</div>
-      <div className={`p-5 ${active ? 'bg-blue-50' : 'bg-white'}`}>
-        <p className="text-xl font-semibold text-gray-700">{title}</p>
-        <p className="mt-2 text-sm leading-7 text-gray-600">{text}</p>
+      <div style={{ display: 'flex', height: 144, alignItems: 'center', justifyContent: 'center', background: 'var(--pl-surface)' }}>{icon}</div>
+      <div style={{ padding: 20, background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)' }}>
+        <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{title}</p>
+        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>{text}</p>
       </div>
     </button>
   );
+}
+
+function buildAiScheduleDisciplines({ targetDisciplines = [], cycleDisciplines = [], wizardSubjects = [], subjectConfig = {} }) {
+  const source =
+    Array.isArray(targetDisciplines) && targetDisciplines.length > 0
+      ? targetDisciplines
+      : Array.isArray(cycleDisciplines) && cycleDisciplines.length > 0
+        ? cycleDisciplines
+        : Array.isArray(wizardSubjects)
+          ? wizardSubjects
+          : [];
+
+  return source
+    .filter(Boolean)
+    .map((discipline, index) => {
+      const nome = String(discipline.nome || discipline.disciplina || discipline.title || `Disciplina ${index + 1}`).trim();
+      const config = subjectConfig[nome] || {};
+      const topicos = Array.isArray(discipline.topicos) ? discipline.topicos : [];
+
+      return {
+        nome,
+        peso: Number(config.importance || discipline.peso || discipline.importance || discipline.manualImportance || 1),
+        percentual: Number(discipline.percentual || discipline.progress || 0),
+        topicosPendentes: Number(
+          discipline.pendingTopics ||
+            discipline.topicosPendentes ||
+            topicos.filter((topic) => !topic?.concluido).length ||
+            0
+        ),
+      };
+    })
+    .filter((discipline) => discipline.nome);
 }
 
 function getCurrentWeekMondayIso() {

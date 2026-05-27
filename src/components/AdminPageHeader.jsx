@@ -1,11 +1,4 @@
 import React from 'react';
-import {
-  PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS,
-  PageHeadPremiumBadge,
-  PageHeadPremiumIconTile,
-  PageHeadPremiumShell,
-  PageHeadPremiumStatCompact,
-} from './PageHeadPremium';
 
 export default function AdminPageHeader({
   icon: Icon,
@@ -22,46 +15,63 @@ export default function AdminPageHeader({
   const hasStats = Array.isArray(stats) && stats.length > 0;
 
   return (
-    <PageHeadPremiumShell className={`!px-0 !py-0 ${className}`.trim()}>
-      <div className="flex flex-col">
-        <div className="flex flex-col gap-4 px-4 py-3.5 sm:px-5 sm:py-4 xl:flex-row xl:items-center xl:justify-between xl:gap-5">
-          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-3.5">
-            <PageHeadPremiumIconTile>
-              <Icon className={`${PAGE_HEAD_PREMIUM_ICON_GLYPH_CLASS} block shrink-0`} strokeWidth={2} aria-hidden />
-            </PageHeadPremiumIconTile>
-            <div className="min-w-0 flex-1">
-              <PageHeadPremiumBadge icon={badgeIcon || Icon}>{badge}</PageHeadPremiumBadge>
-              <h2 className="m-0 text-[1.4rem] font-extrabold leading-[1.02] tracking-tight text-white sm:text-[1.72rem]">
-                {title}
-              </h2>
-              {subtitle ? (
-                <p className="mt-1 text-[13px] font-medium leading-relaxed text-slate-300/90 sm:text-[14px]">{subtitle}</p>
-              ) : null}
+    <div
+      className={className}
+      style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--pl-sh-low)' }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1, justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
+              {Icon && (
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--pl-accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-accent)', flexShrink: 0 }}>
+                  <Icon size={22} strokeWidth={2} />
+                </div>
+              )}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                {badge && (
+                  <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>
+                    {badge}
+                  </p>
+                )}
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.02em', color: 'var(--pl-ink)' }}>
+                  {title}
+                </h2>
+                {subtitle && (
+                  <p style={{ marginTop: 4, fontSize: 13, fontWeight: 500, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{subtitle}</p>
+                )}
+              </div>
             </div>
-          </div>
 
-          {trailing ? (
-            <div className={`w-full xl:w-auto xl:max-w-[21rem] ${trailingClassName}`.trim()}>
-              {trailing}
-            </div>
-          ) : null}
+            {trailing && (
+              <div className={trailingClassName} style={{ flexShrink: 0 }}>
+                {trailing}
+              </div>
+            )}
+          </div>
         </div>
 
-        {hasStats ? (
-          <div className="border-t border-white/10 px-4 py-2.5 sm:px-5">
-            <div className={`grid grid-cols-2 gap-2 sm:grid-cols-4 xl:auto-rows-fr ${stats.length >= 5 ? 'xl:grid-cols-5' : ''} ${statsClassName}`.trim()}>
+        {hasStats && (
+          <div style={{ borderTop: '1px solid var(--pl-rule)', padding: '12px 20px' }}>
+            <div
+              className={statsClassName}
+              style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)`, gap: 8 }}
+            >
               {stats.map((item, index) => (
-                <PageHeadPremiumStatCompact
+                <div
                   key={item.key ?? index}
-                  {...item}
-                  className={`min-h-[6rem] justify-center px-2.5 py-2.5 ${item.className || ''}`.trim()}
-                  valueClassName={`!truncate !text-[0.98rem] sm:!text-[1.08rem] ${item.valueClassName || ''}`.trim()}
-                />
+                  style={{ background: 'var(--pl-bg-soft)', borderRadius: 10, padding: '10px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+                >
+                  {item.label && (
+                    <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{item.label}</p>
+                  )}
+                  <p className="pl-num" style={{ fontSize: 18, color: 'var(--pl-ink)' }}>{item.value}</p>
+                </div>
               ))}
             </div>
           </div>
-        ) : null}
+        )}
       </div>
-    </PageHeadPremiumShell>
+    </div>
   );
 }

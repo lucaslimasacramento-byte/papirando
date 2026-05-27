@@ -12,7 +12,6 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 export default function DisciplinaDetalhe({
   viewingDiscipline,
@@ -24,10 +23,8 @@ export default function DisciplinaDetalhe({
 }) {
   useEffect(() => {
     if (!highlightedTopicId) return;
-
     const element = document.getElementById(`disciplina-topico-${highlightedTopicId}`);
     if (!element) return;
-
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [highlightedTopicId, viewingDiscipline]);
 
@@ -39,8 +36,7 @@ export default function DisciplinaDetalhe({
   const topicosConcluidos = topicos.filter((topic) => topic?.concluido).length;
   const totalDeTopicos = topicos.length > 0 ? topicos.length : Number(viewingDiscipline.topicosTot || 0);
   const topicosPendentes = Math.max(0, totalDeTopicos - topicosConcluidos);
-  const progressoPercentual =
-    totalDeTopicos > 0 ? Math.round((topicosConcluidos / totalDeTopicos) * 100) : 0;
+  const progressoPercentual = totalDeTopicos > 0 ? Math.round((topicosConcluidos / totalDeTopicos) * 100) : 0;
   const desempenhoPercentual = Number(viewingDiscipline.percentual || 0);
   const potencial = Math.max(0, 100 - progressoPercentual);
   const proximoTopico = topicos.find((topic) => !topic?.concluido) || null;
@@ -61,168 +57,194 @@ export default function DisciplinaDetalhe({
     ? `Ataque primeiro "${proximoTopico.nome}" para continuar a fila sem perder ritmo.`
     : 'Hora de transformar essa base em consistência com revisão e treino direcionado.';
 
-  return (
-    <div className="pl-page">
-      <PageHeadPremium
-        icon={BookOpen}
-        badge={
-          <PageHeadPremiumBadge icon={Sparkles}>Visão estratégica</PageHeadPremiumBadge>
-        }
-        title={viewingDiscipline.nome}
-        subtitle={`Plano: ${viewingDiscipline.plano || 'Geral'}`}
-        titleAs="h2"
-        leadingClassName="min-w-0 flex-1"
-        leadingExtra={(
-          <div className="mt-2 max-w-xl">
-            <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-              <span>Progresso</span>
-              <span className="text-emerald-300">{progressoPercentual}%</span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-white/10">
-              <div className="h-full rounded-full bg-emerald-400" style={{ width: `${progressoPercentual}%` }} />
-            </div>
-          </div>
-        )}
-        statGridClassName="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 [&>*]:min-w-0"
-        stats={[
-          { key: 'tmp', label: 'Tempo', value: String(tempoFormatado), icon: Clock3, accent: 'blue' },
-          { key: 'd', label: 'Desempenho', value: `${desempenhoPercentual}%`, icon: TrendingUp, accent: 'emerald' },
-          { key: 'c', label: 'Concluídos', value: String(topicosConcluidos), icon: CheckCircle2, accent: 'indigo' },
-          { key: 'p', label: 'Pendentes', value: String(topicosPendentes), icon: CircleDashed, accent: 'orange' },
-        ]}
-        trailingClassName="w-full min-w-0 sm:max-w-[11rem] xl:shrink-0"
-        trailing={(
-          <div className="flex w-full min-w-0 flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => setEditingDiscipline?.(viewingDiscipline)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-400"
-            >
-              <Plus size={16} />
-              Adicionar tópico
-            </button>
-            <button
-              type="button"
-              onClick={() => setLinkModalOpen?.(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-100 transition hover:bg-white/10"
-            >
-              <Calculator size={16} />
-              Relacionar
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewingDiscipline(null)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-100 transition hover:bg-white/10"
-            >
-              <X size={16} />
-              Fechar
-            </button>
-          </div>
-        )}
-      />
+  const kpis = [
+    { label: 'Tempo', value: tempoFormatado, icon: Clock3 },
+    { label: 'Desempenho', value: `${desempenhoPercentual}%`, icon: TrendingUp },
+    { label: 'Concluídos', value: String(topicosConcluidos), icon: CheckCircle2 },
+    { label: 'Pendentes', value: String(topicosPendentes), icon: CircleDashed },
+  ];
 
-      <div className="rounded-[2.5rem] bg-gradient-to-br from-[#1E3A5F] to-[#1A2F4D] p-6 text-white shadow-lg">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest">
-          <Sparkles size={12} />
-          Leitura da IA
+  return (
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* ── Hero editorial ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 24, alignItems: 'start' }}>
+        <div>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>
+            <BookOpen size={11} style={{ display: 'inline', marginRight: 5 }} />
+            Visão estratégica
+          </p>
+          <h1 className="pl-display" style={{ marginBottom: 10 }}>{viewingDiscipline.nome}<span style={{ color: 'var(--pl-accent)' }}>.</span></h1>
+          <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', marginBottom: 14, fontWeight: 500 }}>
+            Plano: <strong style={{ color: 'var(--pl-ink)' }}>{viewingDiscipline.plano || 'Geral'}</strong>
+          </p>
+          {/* Progress bar */}
+          <div style={{ maxWidth: 460 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-ink-3)' }}>
+              <span>Progresso</span>
+              <span style={{ color: 'var(--pl-success)' }}>{progressoPercentual}%</span>
+            </div>
+            <div style={{ height: 8, borderRadius: 99, background: 'var(--pl-rule-2)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 99, background: 'var(--pl-success)', width: `${progressoPercentual}%`, transition: 'width 0.5s' }} />
+            </div>
+          </div>
         </div>
 
-        <h3 className="mb-2 text-2xl font-semibold">Diagnóstico da disciplina</h3>
+        {/* Action buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 160 }}>
+          <button
+            type="button"
+            onClick={() => setEditingDiscipline?.(viewingDiscipline)}
+            className="pl-btn pl-btn-primary"
+            style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Plus size={15} /> Adicionar tópico
+          </button>
+          <button
+            type="button"
+            onClick={() => setLinkModalOpen?.(true)}
+            className="pl-btn pl-btn-ghost"
+            style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Calculator size={15} /> Relacionar
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewingDiscipline(null)}
+            className="pl-btn pl-btn-ghost"
+            style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <X size={15} /> Fechar
+          </button>
+        </div>
+      </div>
 
-        <p className="mb-5 max-w-xl text-sm text-white/80">
+      {/* ── KPI Strip ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {kpis.map(({ label, value, icon: Icon }) => (
+          <div key={label} className="pl-card" style={{ padding: '12px 16px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Icon size={11} /> {label}
+            </p>
+            <p className="pl-num" style={{ fontSize: 22, color: 'var(--pl-ink)' }}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── AI Insight card ── */}
+      <div className="pl-card-ai" style={{ padding: 24, borderRadius: 20 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999, border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '4px 14px', marginBottom: 16 }}>
+          <Sparkles size={12} style={{ color: 'var(--pl-accent)' }} />
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-accent)' }}>Leitura da IA</span>
+        </div>
+
+        <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', marginBottom: 10 }}>Diagnóstico da disciplina</h3>
+        <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', lineHeight: 1.6, marginBottom: 16, maxWidth: 580 }}>
           Você já tem uma visão clara da disciplina. Agora a ideia é usar esse painel para decidir
           onde acelerar, onde revisar e qual tópico puxar em seguida.
         </p>
 
-        <div className="space-y-3">
-          <Insight title="O que está forte" text={insightForte} />
-          <Insight title="O que pede pressão" text={insightPressao} />
-          <Insight title="Próxima jogada" text={insightNext} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <InsightRow title="O que está forte" text={insightForte} />
+          <InsightRow title="O que pede pressão" text={insightPressao} />
+          <InsightRow title="Próxima jogada" text={insightNext} />
         </div>
 
-        <div className="mt-5 flex justify-between rounded-xl bg-white/10 px-4 py-3">
-          <span className="text-xs font-semibold uppercase text-white/70">Potencial</span>
-          <span className="flex items-center gap-1 text-lg font-semibold">
+        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 16px' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--pl-ink-3)' }}>Potencial de crescimento</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 18, fontWeight: 700, color: 'var(--pl-accent)' }}>
             +{potencial}%
             <ArrowUpRight size={14} />
           </span>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-6 py-4">
+      {/* ── Topics list ── */}
+      <div className="pl-card" style={{ overflow: 'hidden', padding: 0 }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '16px 24px' }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-400">Mapa da disciplina</p>
-            <h4 className="mt-1 text-lg font-semibold text-slate-900">Tópicos cadastrados</h4>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Mapa da disciplina</p>
+            <h4 style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Tópicos cadastrados</h4>
           </div>
-          <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+          <span style={{ borderRadius: 999, border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '4px 14px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-accent)' }}>
             {totalDeTopicos} tópicos
-          </div>
+          </span>
         </div>
 
         {topicos.length > 0 ? (
-          topicos.map((topico, index) => (
-            <div
-              key={topico?.id || index}
-              id={topico?.id ? `disciplina-topico-${topico.id}` : undefined}
-              className={`border-b border-gray-100 px-6 py-4 transition-all duration-300 hover:bg-gray-50/80 ${
-                String(topico?.id || '') === String(highlightedTopicId || '')
-                  ? 'bg-blue-50/80 ring-1 ring-inset ring-blue-200'
-                  : ''
-              }`}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex min-w-0 flex-1 items-start gap-3">
-                  <button
-                    type="button"
-                    onClick={() => toggleEditalTopico?.(viewingDiscipline.id, topico.id)}
-                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${
-                      topico?.concluido
-                        ? 'border-emerald-500 bg-emerald-500 text-white'
-                        : 'border-gray-300 bg-white text-transparent hover:border-emerald-400'
-                    }`}
-                    aria-label={topico?.concluido ? 'Desmarcar tópico como concluído' : 'Marcar tópico como concluído'}
-                  >
-                    <Check size={14} strokeWidth={4} />
-                  </button>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                        #{index + 1}
-                      </span>
-                      {topico?.concluido ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
-                          <CheckCircle2 size={11} />
-                          Concluído
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-600">
-                          <CircleDashed size={11} />
-                          Pendente
-                        </span>
-                      )}
-                    </div>
-
-                    <span
-                      className={`text-sm font-bold leading-relaxed ${
-                        topico?.concluido ? 'text-gray-400 line-through' : 'text-gray-800'
-                      }`}
+          topicos.map((topico, index) => {
+            const isHighlighted = String(topico?.id || '') === String(highlightedTopicId || '');
+            return (
+              <div
+                key={topico?.id || index}
+                id={topico?.id ? `disciplina-topico-${topico.id}` : undefined}
+                style={{
+                  borderBottom: '1px solid var(--pl-rule)',
+                  padding: '14px 24px',
+                  background: isHighlighted ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                  transition: 'background 0.2s',
+                  outline: isHighlighted ? '1px solid var(--pl-accent)' : 'none',
+                  outlineOffset: -1,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0, flex: 1 }}>
+                    {/* Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => toggleEditalTopico?.(viewingDiscipline.id, topico.id)}
+                      aria-label={topico?.concluido ? 'Desmarcar tópico como concluído' : 'Marcar tópico como concluído'}
+                      style={{
+                        marginTop: 2,
+                        flexShrink: 0,
+                        width: 22,
+                        height: 22,
+                        borderRadius: 6,
+                        border: `2px solid ${topico?.concluido ? 'var(--pl-success)' : 'var(--pl-rule-strong)'}`,
+                        background: topico?.concluido ? 'var(--pl-success)' : 'var(--pl-surface)',
+                        color: topico?.concluido ? 'white' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
                     >
-                      {topico?.nome || 'Tópico sem nome'}
-                    </span>
+                      <Check size={13} strokeWidth={3} />
+                    </button>
+
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{ borderRadius: 999, background: 'var(--pl-bg-soft)', padding: '2px 8px', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)' }}>
+                          #{index + 1}
+                        </span>
+                        {topico?.concluido ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 999, background: 'var(--pl-success-soft)', padding: '2px 8px', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-success)' }}>
+                            <CheckCircle2 size={10} /> Concluído
+                          </span>
+                        ) : (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 999, background: 'var(--pl-warn-soft)', padding: '2px 8px', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-warn)' }}>
+                            <CircleDashed size={10} /> Pendente
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4, color: topico?.concluido ? 'var(--pl-ink-3)' : 'var(--pl-ink)', textDecoration: topico?.concluido ? 'line-through' : 'none' }}>
+                        {topico?.nome || 'Tópico sem nome'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <div className="px-6 py-14 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
-              <Plus size={18} />
+          <div style={{ padding: '56px 24px', textAlign: 'center' }}>
+            <div style={{ margin: '0 auto 16px', width: 48, height: 48, borderRadius: 16, background: 'var(--pl-bg-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}>
+              <Plus size={20} />
             </div>
-            <h4 className="mt-4 text-base font-semibold text-slate-900">Nenhum tópico cadastrado ainda</h4>
-            <p className="mt-2 text-sm font-medium text-gray-500">
+            <h4 style={{ fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)', marginBottom: 8 }}>Nenhum tópico cadastrado ainda</h4>
+            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
               Use o botão acima para começar a estruturar essa disciplina.
             </p>
           </div>
@@ -232,11 +254,11 @@ export default function DisciplinaDetalhe({
   );
 }
 
-function Insight({ title, text }) {
+function InsightRow({ title, text }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="mb-1 text-[10px] font-semibold uppercase text-blue-200">{title}</div>
-      <p className="text-sm text-white/90">{text}</p>
+    <div style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>
+      <p className="pl-eyebrow" style={{ marginBottom: 6, color: 'var(--pl-accent)' }}>{title}</p>
+      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)', lineHeight: 1.55, margin: 0 }}>{text}</p>
     </div>
   );
 }

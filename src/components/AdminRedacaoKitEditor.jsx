@@ -2,11 +2,11 @@ import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
 /**
- * Editor estruturado do `kit_json` (visão, conectivos, frases, modelos).
- * O controle fica no pai; este componente só emite alterações imutáveis.
+ * Editor estruturado do `kit_json` (visao, conectivos, frases, modelos).
+ * O controle fica no pai; este componente so emite alteracoes imutaveis.
  *
  * @param {{ visaoFinal: object, conectivos: object[], frasesProntas: object[], modelos: object[] }} props.draft
- * @param {(fn: (d: object) => object) => void} props.onDraftChange — mesmo padrão do setState do React.
+ * @param {(fn: (d: object) => object) => void} props.onDraftChange — mesmo padrao do setState do React.
  */
 export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
   const vf = draft?.visaoFinal || { titulo: '', subtitulo: '', checklist: [] };
@@ -15,14 +15,14 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
   const modelos = Array.isArray(draft?.modelos) ? draft.modelos : [];
 
   return (
-    <div className="space-y-10">
-      <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-700">Visão do kit (metadados)</p>
-        <p className="mt-1 text-xs font-medium text-slate-600">
-          Esse bloco não aparece mais na aba Dicas do aluno; serve para organizar o material e exportação. Checklist pode virar referência interna ou futura landing.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+      <div className="pl-card" style={{ padding: 20, border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)' }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Visao do kit (metadados)</p>
+        <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
+          Esse bloco nao aparece mais na aba Dicas do aluno; serve para organizar o material e exportacao. Checklist pode virar referencia interna ou futura landing.
         </p>
-        <label className="mt-4 block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título</span>
+        <label style={{ display: 'block', marginTop: 16 }}>
+          <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Titulo</span>
           <input
             type="text"
             value={vf.titulo}
@@ -32,11 +32,11 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, titulo: e.target.value },
               }))
             }
-            className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+            className="pl-input"
           />
         </label>
-        <label className="mt-3 block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Subtítulo</span>
+        <label style={{ display: 'block', marginTop: 12 }}>
+          <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Subtitulo</span>
           <textarea
             rows={3}
             value={vf.subtitulo}
@@ -46,14 +46,14 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, subtitulo: e.target.value },
               }))
             }
-            className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium leading-relaxed text-gray-700 outline-none focus:border-blue-600"
+            className="pl-input"
           />
         </label>
-        <div className="mt-4">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Checklist</span>
-          <ul className="mt-2 space-y-2">
+        <div style={{ marginTop: 16 }}>
+          <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>Checklist</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {(vf.checklist || []).map((line, i) => (
-              <li key={`chk-${i}`} className="flex gap-2">
+              <div key={`chk-${i}`} style={{ display: 'flex', gap: 8 }}>
                 <input
                   type="text"
                   value={line}
@@ -67,7 +67,8 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       },
                     }));
                   }}
-                  className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 outline-none focus:border-blue-600"
+                  className="pl-input"
+                  style={{ flex: 1, minWidth: 0 }}
                 />
                 <button
                   type="button"
@@ -80,14 +81,15 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       },
                     }))
                   }
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600"
+                  className="pl-btn pl-btn-ghost pl-btn-sm"
+                  style={{ flexShrink: 0, width: 40, height: 40, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-danger)', borderColor: 'var(--pl-danger-soft)' }}
                   aria-label="Remover linha"
                 >
                   <Trash2 size={16} />
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
           <button
             type="button"
             onClick={() =>
@@ -96,7 +98,8 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 visaoFinal: { ...d.visaoFinal, checklist: [...(d.visaoFinal.checklist || []), ''] },
               }))
             }
-            className="mt-3 inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white px-4 py-2 text-xs font-bold text-sky-900"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <Plus size={14} />
             Linha no checklist
@@ -106,7 +109,7 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
 
       <BlocoListEditor
         title="Conectivos"
-        hint="Um cartão por função. Itens: uma frase por linha (como aparece na aba Dicas)."
+        hint="Um cartao por funcao. Itens: uma frase por linha (como aparece na aba Dicas)."
         list={conectivos}
         onDraftChange={onDraftChange}
         field="conectivos"
@@ -121,13 +124,13 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
       />
 
       <div>
-        <h4 className="text-sm font-bold text-slate-900">Modelos decoráveis</h4>
-        <p className="mt-1 text-xs font-medium text-gray-500">Texto completo do modelo (faixas 4+7+7+4 etc.).</p>
-        <div className="mt-4 space-y-4">
+        <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Modelos decoraveis</h4>
+        <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>Texto completo do modelo (faixas 4+7+7+4 etc.).</p>
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {modelos.map((m, i) => (
-            <div key={m.id || i} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Modelo {i + 1}</span>
+            <div key={m.id || i} className="pl-card" style={{ padding: 16, background: 'var(--pl-bg-soft)' }}>
+              <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span className="pl-eyebrow">Modelo {i + 1}</span>
                 <button
                   type="button"
                   onClick={() =>
@@ -136,15 +139,16 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       modelos: d.modelos.filter((_, j) => j !== i),
                     }))
                   }
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600"
+                  className="pl-btn pl-btn-ghost pl-btn-sm"
+                  style={{ width: 36, height: 36, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-danger)', borderColor: 'var(--pl-danger-soft)' }}
                   aria-label="Remover modelo"
                 >
                   <Trash2 size={15} />
                 </button>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <label className="sm:col-span-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">id</span>
+              <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 2fr' }}>
+                <label>
+                  <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>id</span>
                   <input
                     type="text"
                     value={m.id}
@@ -155,11 +159,12 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                         modelos: d.modelos.map((x, j) => (j === i ? { ...x, id: v } : x)),
                       }));
                     }}
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-gray-800 outline-none focus:border-blue-600"
+                    className="pl-input"
+                    style={{ fontFamily: 'var(--pl-mono)', fontSize: 12 }}
                   />
                 </label>
-                <label className="sm:col-span-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título</span>
+                <label>
+                  <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Titulo</span>
                   <input
                     type="text"
                     value={m.titulo}
@@ -170,12 +175,12 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                         modelos: d.modelos.map((x, j) => (j === i ? { ...x, titulo: v } : x)),
                       }));
                     }}
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+                    className="pl-input"
                   />
                 </label>
               </div>
-              <label className="mt-3 block">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Badge (opcional)</span>
+              <label style={{ display: 'block', marginTop: 12 }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Badge (opcional)</span>
                 <input
                   type="text"
                   value={m.badge || ''}
@@ -186,11 +191,11 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                       modelos: d.modelos.map((x, j) => (j === i ? { ...x, badge: v || undefined } : x)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 outline-none focus:border-blue-600"
+                  className="pl-input"
                 />
               </label>
-              <label className="mt-3 block">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Corpo</span>
+              <label style={{ display: 'block', marginTop: 12 }}>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Corpo</span>
                 <textarea
                   rows={14}
                   value={m.corpo}
@@ -202,7 +207,8 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                     }));
                   }}
                   spellCheck={false}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-gray-800 outline-none focus:border-blue-600"
+                  className="pl-input"
+                  style={{ fontFamily: 'var(--pl-mono)', fontSize: 12 }}
                 />
               </label>
             </div>
@@ -223,7 +229,8 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
                 ],
               }))
             }
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <Plus size={14} />
             Adicionar modelo
@@ -237,13 +244,13 @@ export function AdminRedacaoKitEditor({ draft, onDraftChange }) {
 function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
   return (
     <div>
-      <h4 className="text-sm font-bold text-slate-900">{title}</h4>
-      <p className="mt-1 text-xs font-medium text-gray-500">{hint}</p>
-      <div className="mt-4 space-y-4">
+      <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{title}</h4>
+      <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{hint}</p>
+      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {list.map((bloco, i) => (
-          <div key={bloco.id || `${field}-${i}`} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <div key={bloco.id || `${field}-${i}`} className="pl-card" style={{ padding: 16, background: 'var(--pl-bg-soft)' }}>
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <span className="pl-eyebrow">
                 {title} · {i + 1}
               </span>
               <button
@@ -254,15 +261,16 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                     [field]: d[field].filter((_, j) => j !== i),
                   }))
                 }
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600"
+                className="pl-btn pl-btn-ghost pl-btn-sm"
+                style={{ width: 36, height: 36, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-danger)', borderColor: 'var(--pl-danger-soft)' }}
                 aria-label="Remover grupo"
               >
                 <Trash2 size={15} />
               </button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">id</span>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>id</span>
                 <input
                   type="text"
                   value={bloco.id}
@@ -273,11 +281,12 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                       [field]: d[field].map((b, j) => (j === i ? { ...b, id: v } : b)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-semibold text-gray-800 outline-none focus:border-blue-600"
+                  className="pl-input"
+                  style={{ fontFamily: 'var(--pl-mono)', fontSize: 12 }}
                 />
               </label>
               <label>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Emoji</span>
+                <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Emoji</span>
                 <input
                   type="text"
                   value={bloco.emoji || ''}
@@ -288,12 +297,12 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                       [field]: d[field].map((b, j) => (j === i ? { ...b, emoji: v || '📌' } : b)),
                     }));
                   }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
+                  className="pl-input"
                 />
               </label>
             </div>
-            <label className="mt-3 block">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Título do grupo</span>
+            <label style={{ display: 'block', marginTop: 12 }}>
+              <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Titulo do grupo</span>
               <input
                 type="text"
                 value={bloco.titulo}
@@ -304,11 +313,11 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                     [field]: d[field].map((b, j) => (j === i ? { ...b, titulo: v } : b)),
                   }));
                 }}
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+                className="pl-input"
               />
             </label>
-            <label className="mt-3 block">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Itens (um por linha)</span>
+            <label style={{ display: 'block', marginTop: 12 }}>
+              <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Itens (um por linha)</span>
               <textarea
                 rows={8}
                 value={(bloco.itens || []).join('\n')}
@@ -323,7 +332,8 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
                   }));
                 }}
                 spellCheck={false}
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs font-medium leading-relaxed text-gray-800 outline-none focus:border-blue-600"
+                className="pl-input"
+                style={{ fontFamily: 'var(--pl-mono)', fontSize: 12 }}
               />
             </label>
           </div>
@@ -339,7 +349,8 @@ function BlocoListEditor({ title, hint, list, onDraftChange, field }) {
               ],
             }))
           }
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-800"
+          className="pl-btn pl-btn-ghost pl-btn-sm"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
           <Plus size={14} />
           Adicionar grupo em {title}

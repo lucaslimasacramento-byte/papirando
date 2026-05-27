@@ -501,9 +501,9 @@ function ConcursoAlvoCard({ target, onDefinir, onAbrirEdital }) {
   if (!target?.nome) {
     return (
       <section className="pl-card-paper revisoes-target-empty">
-        <div className="pl-overline">Concurso-alvo</div>
+        <div className="pl-overline">Objetivo-alvo</div>
         <h3>Sem alvo definido.</h3>
-        <p>As prioridades ficam genéricas enquanto você não escolhe uma prova.</p>
+        <p>As prioridades ficam genéricas enquanto você não escolhe um objetivo.</p>
         <button type="button" className="pl-btn pl-btn-sm" onClick={onDefinir}>Definir alvo <ArrowRight size={11} /></button>
       </section>
     );
@@ -511,7 +511,7 @@ function ConcursoAlvoCard({ target, onDefinir, onAbrirEdital }) {
   return (
     <section className="pl-card revisoes-target-card">
       <div className="revisoes-target-top">
-        <span className="pl-overline">Concurso-alvo</span>
+        <span className="pl-overline">Objetivo-alvo</span>
         <strong>{target.diasRestantes == null ? '--' : target.diasRestantes} dias</strong>
       </div>
       <h3>{target.nome}</h3>
@@ -571,11 +571,11 @@ function RevisoesEmptyState({ onRegistrar, onFlashcards, onDefinirAlvo }) {
     <section className="pl-card-paper revisoes-empty-state">
       <div className="revisoes-empty-live"><span /> Sua fila está pronta</div>
       <h2>Sem histórico suficiente ainda.</h2>
-      <p>Registre estudo, rode flashcards e defina um concurso-alvo para o motor entender o que merece reforço.</p>
+      <p>Registre estudo, rode flashcards e defina um objetivo-alvo para a IA entender o que merece reforço.</p>
       <div className="revisoes-empty-grid">
         <EmptyAction n="01" title="Registrar uma sessão" detail="Alimente o histórico real para calibrar a fila." cta="Registrar estudo" onClick={onRegistrar} />
         <EmptyAction n="02" title="Estudar flashcards" detail="Use FSRS para criar revisões automáticas." cta="Abrir flashcards" onClick={onFlashcards} />
-        <EmptyAction n="03" title="Definir concurso-alvo" detail="Priorize o edital que realmente importa agora." cta="Escolher alvo" onClick={onDefinirAlvo} />
+        <EmptyAction n="03" title="Definir objetivo-alvo" detail="Priorize o estudo que realmente importa agora." cta="Escolher alvo" onClick={onDefinirAlvo} />
       </div>
     </section>
   );

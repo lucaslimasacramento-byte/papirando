@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,7 +16,6 @@ import {
   Plus,
   Users,
 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 import {
   buildContestForRole,
   CONTEST_STATUS_LABELS,
@@ -80,13 +79,6 @@ export default function ConcursoDetalhe({
   }, [rawContest, activeRole]);
   const normalizedStatus = normalizeContestStatus(contest?.status_concurso);
   const areaTheme = useMemo(() => getContestAreaTheme(contest?.area || 'Geral'), [contest?.area]);
-  const headStyle = useMemo(() => ({
-    '--page-head-accent-start': areaTheme.accentStart,
-    '--page-head-accent-end': areaTheme.accentEnd,
-    '--page-head-accent-shadow': areaTheme.accentShadow,
-    '--page-head-dark': areaTheme.dark,
-    '--page-head-dark-soft': areaTheme.darkSoft,
-  }), [areaTheme]);
   const relatedContests = useMemo(
     () => findRelatedContests(concursoCatalog, rawContest || {}),
     [concursoCatalog, rawContest]
@@ -301,13 +293,13 @@ export default function ConcursoDetalhe({
 
   if (!contest) {
     return (
-      <div className="pl-page" style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '100%' }}>
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">Concurso</p>
-        <h2 className="text-3xl font-semibold text-slate-900">Nenhum concurso selecionado</h2>
+      <div className="pl-paper-bg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '100%', flexDirection: 'column', gap: 16 }}>
+        <p className="pl-eyebrow">Concurso</p>
+        <h2 style={{ fontSize: 28, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Nenhum concurso selecionado</h2>
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#162a45]"
+          className="pl-btn pl-btn-primary"
         >
           <ArrowLeft size={16} />
           Voltar para concursos
@@ -317,12 +309,14 @@ export default function ConcursoDetalhe({
   }
 
   return (
-    <div className="pl-page">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '20px 20px 40px' }}>
+      {/* Back + admin row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-700"
+          className="pl-btn pl-btn-ghost"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
           <ArrowLeft size={16} />
           Voltar
@@ -331,96 +325,74 @@ export default function ConcursoDetalhe({
           <button
             type="button"
             onClick={() => onEditContest?.(rawContest || contest)}
-            className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100"
+            className="pl-btn pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', color: 'var(--pl-warn)' }}
           >
             <Pencil size={14} />
             Admin: editar
           </button>
         ) : null}
       </div>
-      <PageHeadPremium
-        className="!min-h-[150px] !overflow-hidden !px-5 !py-5 sm:!min-h-[165px] sm:!px-6 sm:!py-6"
-        style={headStyle}
-        icon={LibraryBig}
-        iconTileClassName={logoSrc ? '!h-24 !w-24 !rounded-none !border-transparent !bg-none !bg-transparent !p-0 !shadow-none !ring-0 sm:!h-32 sm:!w-32 lg:!h-36 lg:!w-36' : '!h-16 !w-16 sm:!h-[4.5rem] sm:!w-[4.5rem]'}
-        iconSlot={logoSrc ? (
-          <img
-            src={logoSrc}
-            alt=""
-            onError={() => setImageError(true)}
-            className="h-full w-full object-contain drop-shadow-[0_14px_22px_rgba(0,0,0,0.28)]"
-            aria-hidden
-          />
-        ) : null}
-        badge={
-          <PageHeadPremiumBadge icon={Compass}>Concurso</PageHeadPremiumBadge>
-        }
-        title={contest.nome}
-        titleAs="h1"
-        subtitle={`${contest.cargo || contest.concurso} · ${contest.banca || 'Banca a definir'}`}
-        leadingClassName="min-w-0 flex-1 xl:flex-[1.15]"
-        leadingExtra={(
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-              {contest.area || 'Geral'}
-            </span>
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-              {STATUS_LABELS[normalizedStatus] || 'Previsto'}
-            </span>
+
+      {/* Hero editorial */}
+      <div className="pl-card" style={{ padding: '24px 28px', background: `linear-gradient(135deg, ${areaTheme.accentStart || 'var(--pl-ink)'} 0%, ${areaTheme.accentEnd || 'var(--pl-ink)'} 100%)`, border: 'none', color: '#f3efe5' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 20 }}>
+          {logoSrc ? (
+            <img
+              src={logoSrc}
+              alt=""
+              onError={() => setImageError(true)}
+              style={{ width: 80, height: 80, objectFit: 'contain', flexShrink: 0, borderRadius: 10, background: 'rgba(255,255,255,0.12)' }}
+              aria-hidden
+            />
+          ) : (
+            <div style={{ width: 64, height: 64, borderRadius: 12, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <LibraryBig size={30} />
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', opacity: 0.65 }}>Concurso</p>
+            <h1 style={{ margin: '6px 0 0', fontSize: 28, fontWeight: 600, lineHeight: 1.1, color: '#f3efe5' }}>{contest.nome}</h1>
+            <p style={{ margin: '6px 0 0', fontSize: 14, fontWeight: 500, opacity: 0.8 }}>{contest.cargo || contest.concurso} · {contest.banca || 'Banca a definir'}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              <span style={{ borderRadius: 999, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.1)', padding: '3px 12px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                {contest.area || 'Geral'}
+              </span>
+              <span style={{ borderRadius: 999, border: '1px solid rgba(80,220,150,0.35)', background: 'rgba(80,220,150,0.15)', padding: '3px 12px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#b7f5d4' }}>
+                {STATUS_LABELS[normalizedStatus] || 'Previsto'}
+              </span>
+            </div>
           </div>
-        )}
-        statGridClassName="hidden"
-        stats={[
-          { key: 'pr', label: 'Prova', value: formatDateBR(contest.prova_data), icon: CalendarDays, accent: 'blue', valueClassName: '!text-sm sm:!text-base' },
-          { key: 'sl', label: 'Salário', value: formatCurrencyBR(contest.salario), icon: DollarSign, accent: 'emerald' },
-          { key: 'di', label: 'Disciplinas', value: String(contest.disciplinas?.length || 0), icon: Layers3, accent: 'indigo' },
-          { key: 'tp', label: 'Tópicos', value: String(topicosCount), icon: BadgeCheck, accent: 'violet' },
-        ]}
-        trailingClassName="max-w-full"
-        trailingWrapClassName="xl:max-w-[42rem]"
-        trailing={(
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             <button
               type="button"
               onClick={() => onToggleFavorite?.(contest.id)}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
-                isFavorite
-                  ? 'border-rose-300/50 bg-rose-500/20 text-rose-100'
-                  : 'border-white/20 bg-white/5 text-slate-100'
-              }`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: isFavorite ? '1px solid rgba(250,100,100,0.4)' : '1px solid rgba(255,255,255,0.2)', background: isFavorite ? 'rgba(250,100,100,0.2)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: isFavorite ? '#ffb3b3' : '#f3efe5', cursor: 'pointer' }}
             >
-              <Heart size={14} className={isFavorite ? 'fill-current' : ''} />
+              <Heart size={14} style={{ fill: isFavorite ? 'currentColor' : 'none' }} />
               {isFavorite ? 'Favoritado' : 'Favoritar'}
             </button>
             <button
               type="button"
               onClick={() => onToggleInterested?.(contest.id)}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
-                isInterested
-                  ? 'border-amber-300/50 bg-amber-500/20 text-amber-100'
-                  : 'border-white/20 bg-white/5 text-slate-100'
-              }`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: isInterested ? '1px solid rgba(250,180,60,0.4)' : '1px solid rgba(255,255,255,0.2)', background: isInterested ? 'rgba(250,180,60,0.2)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: isInterested ? '#ffd97d' : '#f3efe5', cursor: 'pointer' }}
             >
-              <Bookmark size={14} className={isInterested ? 'fill-current' : ''} />
+              <Bookmark size={14} style={{ fill: isInterested ? 'currentColor' : 'none' }} />
               {isInterested ? 'Quero estudar' : 'Interesse'}
             </button>
             <button
               type="button"
               onClick={() => onSetTargetContest?.(contest.id)}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold sm:text-sm ${
-                isTargetContest
-                  ? 'border-yellow-300/50 bg-yellow-500/20 text-yellow-100'
-                  : 'border-white/20 bg-white/5 text-slate-100'
-              }`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: isTargetContest ? '1px solid rgba(250,220,60,0.4)' : '1px solid rgba(255,255,255,0.2)', background: isTargetContest ? 'rgba(250,220,60,0.2)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: isTargetContest ? '#fff3a3' : '#f3efe5', cursor: 'pointer' }}
             >
-              <BadgeCheck size={14} className={isTargetContest ? 'fill-current' : ''} />
+              <BadgeCheck size={14} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} />
               {isTargetContest ? 'Alvo' : 'Como alvo'}
             </button>
             <button
               type="button"
               onClick={() => setImportConfirmOpen(true)}
               disabled={importingId === contest.id || limiteAtingido}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#1e3a5f] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-950/20 hover:bg-[#162a45] disabled:opacity-60 sm:px-4 sm:text-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, background: 'rgba(255,255,255,0.95)', color: 'var(--pl-ink)', padding: '6px 14px', fontSize: 13, fontWeight: 700, border: 'none', cursor: importingId === contest.id || limiteAtingido ? 'not-allowed' : 'pointer', opacity: importingId === contest.id || limiteAtingido ? 0.6 : 1 }}
             >
               {limiteAtingido ? 'Limite' : importingId === contest.id ? '...' : 'Adicionar aos estudos'}
               <ArrowRight size={14} />
@@ -429,15 +401,15 @@ export default function ConcursoDetalhe({
               <button
                 type="button"
                 onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-bold text-slate-100 sm:text-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#f3efe5', cursor: 'pointer' }}
               >
                 Edital
                 <ExternalLink size={14} />
               </button>
             ) : null}
           </div>
-        )}
-      />
+        </div>
+      </div>
 
       {importConfirmOpen ? (
         <ImportContestModal
@@ -453,22 +425,21 @@ export default function ConcursoDetalhe({
       ) : null}
 
       {roles.length > 1 && (
-        <section className="relative z-10 overflow-visible rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
-          <div className="absolute inset-x-0 top-0 h-1 rounded-t-[1.5rem] bg-gradient-to-r from-blue-500/30 via-blue-500/10 to-transparent" />
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="pl-card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Cargos do concurso</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Escolha o cargo para ver o edital correto</h2>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-gray-500">
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Cargos do concurso</p>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Escolha o cargo para ver o edital correto</h2>
+              <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 600 }}>
                 Disciplinas, vagas, salário e lotação acompanham a opção selecionada.
               </p>
             </div>
-            <span className="w-fit shrink-0 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
+            <span className="pl-tag pl-tag-accent">
               {roles.length} cargos cadastrados
             </span>
           </div>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {roles.map((role) => {
               const selected = activeRole?.id === role.id;
               return (
@@ -476,17 +447,22 @@ export default function ConcursoDetalhe({
                   key={role.id}
                   type="button"
                   onClick={() => setSelectedRoleId(role.id)}
-                  className={`min-h-[155px] rounded-[1.25rem] border p-4 text-left transition-all ${
-                    selected
-                      ? 'border-blue-300 bg-blue-50 shadow-[0_16px_34px_rgba(37,99,235,0.14)]'
-                      : 'border-slate-200 bg-slate-50/60 hover:border-blue-200 hover:bg-white'
-                  }`}
+                  style={{
+                    minHeight: 155,
+                    borderRadius: 16,
+                    border: selected ? '1.5px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+                    background: selected ? 'var(--pl-accent-soft)' : 'var(--pl-bg-soft)',
+                    padding: 16,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    boxShadow: selected ? '0 8px 24px rgba(29,78,216,0.12)' : 'none',
+                  }}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-base font-bold leading-snug text-slate-950">{role.nome}</p>
-                    <span className={`mt-0.5 h-3 w-3 rounded-full ${selected ? 'bg-blue-600' : 'bg-slate-300'}`} />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', lineHeight: 1.3 }}>{role.nome}</p>
+                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: selected ? 'var(--pl-accent)' : 'var(--pl-rule-strong)', flexShrink: 0, marginTop: 3 }} />
                   </div>
-                  <div className="mt-4 grid gap-2 text-[11px] font-bold sm:grid-cols-2">
+                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                     {role.salario && <CargoInfo label="Salário" value={role.salario} tone="green" />}
                     {role.vagas && <CargoInfo label="Vagas" value={role.vagas} />}
                     {role.escolaridade && <CargoInfo label="Nível" value={role.escolaridade} tone="blue" />}
@@ -496,59 +472,59 @@ export default function ConcursoDetalhe({
               );
             })}
           </div>
-        </section>
+        </div>
       )}
 
       {relatedContests.length > 0 && (
-        <section className="relative z-10 rounded-[1.5rem] border border-blue-100 bg-blue-50/50 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Concursos relacionados</p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Outros editais da mesma instituição</h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
+        <div className="pl-card" style={{ padding: 20, background: 'var(--pl-accent-soft)', border: '1px solid rgba(29,78,216,0.12)' }}>
+          <div style={{ marginBottom: 16 }}>
+            <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)', marginBottom: 6 }}>Concursos relacionados</p>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Outros editais da mesma instituição</h2>
+            <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
               Assim Oficial, Praça, PM e Bombeiros ficam vinculados, mas sem virar cargo um do outro.
             </p>
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
             {relatedContests.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => onOpenRelatedContest?.(item)}
-                className="rounded-2xl border border-blue-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                className="pl-card"
+                style={{ padding: 16, textAlign: 'left', cursor: 'pointer', border: '1px solid var(--pl-rule-2)' }}
               >
-                <p className="line-clamp-2 text-sm font-bold text-slate-950">{item.nome}</p>
-                <p className="mt-2 text-xs font-semibold text-slate-500">{item.cargo || item.banca || 'Concurso relacionado'}</p>
-                <span className="mt-3 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.nome}</p>
+                <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{item.cargo || item.banca || 'Concurso relacionado'}</p>
+                <span className="pl-tag pl-tag-accent" style={{ marginTop: 12, display: 'inline-block', fontSize: 9 }}>
                   {STATUS_LABELS[normalizeContestStatus(item.status_concurso)] || 'Previsto'}
                 </span>
               </button>
             ))}
           </div>
-        </section>
+        </div>
       )}
 
-      <section className="section-card overflow-hidden p-0">
-        <div className="grid gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="border-b border-gray-100 bg-gray-50 xl:border-b-0 xl:border-r">
+      <div className="pl-card" style={{ overflow: 'hidden', padding: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '360px minmax(0, 1fr)' }}>
+          <div style={{ borderRight: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)' }}>
             {contest.imagem_url && !imageError ? (
               <img
                 src={contest.imagem_url}
                 alt={contest.nome}
                 onError={() => setImageError(true)}
-                className="h-full min-h-[260px] w-full object-contain bg-white p-6"
+                style={{ height: '100%', minHeight: 260, width: '100%', objectFit: 'contain', background: 'var(--pl-surface)', padding: 24 }}
               />
             ) : (
               <div
-                className="flex min-h-[260px] w-full items-center justify-center text-white"
-                style={{ background: `linear-gradient(135deg, ${contest.cor || '#1e3a5f'} 0%, #1e3a8a 100%)` }}
+                style={{ display: 'flex', minHeight: 260, width: '100%', alignItems: 'center', justifyContent: 'center', color: '#fff', background: `linear-gradient(135deg, ${contest.cor || '#1e3a5f'} 0%, #1e3a8a 100%)` }}
               >
                 <LibraryBig size={56} />
               </div>
             )}
           </div>
 
-          <div className="p-6 lg:p-8">
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div style={{ padding: '24px 32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               <StatBox label="Inscrição" value={formatCurrencyBR(contest.inscricao_valor)} icon={DollarSign} />
               <StatBox label="Nível" value={contest.escolaridade || 'A definir'} icon={GraduationCap} />
               <StatBox label="Vagas" value={contest.vagas || 'A definir'} icon={Users} />
@@ -556,13 +532,13 @@ export default function ConcursoDetalhe({
             </div>
 
             {contest.descricao && (
-              <div className="mt-6 rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Resumo</p>
-                <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">{contest.descricao}</p>
+              <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20 }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Resumo</p>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
               </div>
             )}
 
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               <StatusPanel
                 label="Já importado"
                 value={courseMatches.length > 0 ? `${courseMatches.length} curso(s)` : 'Ainda não'}
@@ -581,19 +557,20 @@ export default function ConcursoDetalhe({
             </div>
 
             {contestMoment && (
-              <div className={`mt-6 rounded-[1.5rem] border p-5 ${momentToneClasses[contestMoment.tone] || momentToneClasses.blue}`}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-70">Momento do concurso</p>
-                <p className="mt-3 text-lg font-semibold">{contestMoment.title}</p>
-                <p className="mt-2 text-sm font-medium leading-relaxed">{contestMoment.text}</p>
+              <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid', padding: 20, ...momentToneStyles[contestMoment.tone] }}>
+                <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7 }}>Momento do concurso</p>
+                <p style={{ margin: '10px 0 0', fontSize: 17, fontWeight: 600 }}>{contestMoment.title}</p>
+                <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.6 }}>{contestMoment.text}</p>
               </div>
             )}
 
             {courseMatches.length > 0 && (
-              <div className="mt-4">
+              <div style={{ marginTop: 16 }}>
                 <button
                   type="button"
                   onClick={() => onOpenDisciplinas?.(contest)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
+                  className="pl-btn pl-btn-ghost"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
                 >
                   Abrir disciplinas desse concurso
                   <ArrowRight size={15} />
@@ -602,29 +579,29 @@ export default function ConcursoDetalhe({
             )}
           </div>
         </div>
-      </section>
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="section-card p-6">
-          <div className="mb-5 flex items-center justify-between gap-4">
+      <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1.05fr 0.95fr' }}>
+        <div className="pl-card" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Estrutura do edital</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900">Disciplinas e tópicos</h2>
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Estrutura do edital</p>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Disciplinas e tópicos</h2>
             </div>
-            <span className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-bold text-gray-500">
+            <span className="pl-tag">
               {contest.disciplinas?.length || 0} disciplinas
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {(contest.disciplinas || []).map((disciplina) => {
               const isExpanded = Boolean(expandedSubjects[disciplina.nome]);
               return (
-                <div key={disciplina.nome} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                  <div className="flex items-center justify-between gap-3">
+                <div key={disciplina.nome} className="pl-card" style={{ borderRadius: 12, padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                     <div>
-                      <p className="font-semibold text-slate-900">{disciplina.nome}</p>
-                      <p className="mt-1 text-xs font-semibold text-gray-500">
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>{disciplina.nome}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                         {disciplina.topicos?.length || 0} tópicos mapeados
                       </p>
                     </div>
@@ -637,25 +614,25 @@ export default function ConcursoDetalhe({
                           [disciplina.nome]: !prev[disciplina.nome],
                         }))
                       }
-                      className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600"
+                      style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 8, color: 'var(--pl-ink-2)', cursor: 'pointer' }}
                     >
-                      <Plus size={16} className={`transition-transform ${isExpanded ? 'rotate-45' : ''}`} />
+                      <Plus size={16} style={{ transform: isExpanded ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
                     </button>
                   </div>
 
                   {isExpanded && (
-                    <div className="mt-4 space-y-2 border-t border-gray-200 pt-4">
+                    <div style={{ marginTop: 16, borderTop: '1px solid var(--pl-rule)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {(disciplina.topicos || []).length > 0 ? (
                         (disciplina.topicos || []).map((topico) => (
                           <div
                             key={topico.id || topico.nome}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600"
+                            style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '8px 12px', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}
                           >
                             {topico.nome}
                           </div>
                         ))
                       ) : (
-                        <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-500">
+                        <div style={{ borderRadius: 10, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '8px 12px', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
                           Nenhum tópico detalhado ainda.
                         </div>
                       )}
@@ -665,15 +642,15 @@ export default function ConcursoDetalhe({
               );
             })}
           </div>
-        </section>
+        </div>
 
-        <section className="section-card p-6">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas e contexto</p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Leitura rápida</h2>
+        <div className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 20 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Etapas e contexto</p>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Leitura rápida</h2>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <InfoCard label="Banca" value={contest.banca || 'A definir'} />
             <InfoCard label="Concurso" value={contest.concurso || contest.nome} />
             <InfoCard label="Cargo" value={contest.cargo || 'A definir'} />
@@ -681,67 +658,71 @@ export default function ConcursoDetalhe({
           </div>
 
           {contestAlerts.length > 0 && (
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Alertas do concurso</p>
-              <div className="mt-4 space-y-3">
+            <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 16 }}>Alertas do concurso</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {contestAlerts.map((alert) => (
                   <div
                     key={alert.title}
-                    className={`rounded-[1.1rem] border px-4 py-4 ${momentToneClasses[alert.tone] || momentToneClasses.blue}`}
+                    style={{ borderRadius: 10, border: '1px solid', padding: '16px', ...momentToneStyles[alert.tone] }}
                   >
-                    <p className="text-sm font-semibold">{alert.title}</p>
-                    <p className="mt-1 text-sm font-medium leading-relaxed">{alert.text}</p>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{alert.title}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{alert.text}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Agenda essencial</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 20 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 16 }}>Agenda essencial</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {agendaItems.map((item) => (
-                <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.label}</p>
-                  <p className="mt-2 text-sm font-bold text-slate-900">{item.value}</p>
+                <div key={item.label} style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+                  <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>{item.label}</p>
+                  <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.value}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 20 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Próximos passos</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">Checklist de acompanhamento</p>
+                <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Próximos passos</p>
+                <p style={{ margin: 0, fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>Checklist de acompanhamento</p>
               </div>
-              <span className="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+              <span className="pl-tag pl-tag-accent">
                 {checklistDoneCount}/{actionChecklist.length} concluído(s)
               </span>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {actionChecklist.map((item) => (
                 <button
                   key={item.key}
                   type="button"
                   onClick={() => onToggleContestTask?.(contest.id, item.key)}
-                  className={`flex w-full items-start justify-between gap-4 rounded-xl border px-4 py-4 text-left transition-all ${
-                    item.done
-                      ? 'border-emerald-100 bg-emerald-50'
-                      : 'border-slate-200 bg-slate-50/70 hover:border-blue-200 hover:bg-blue-50/60'
-                  }`}
+                  style={{
+                    display: 'flex', width: '100%', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
+                    borderRadius: 10, border: '1px solid', padding: 16, textAlign: 'left', cursor: 'pointer',
+                    ...(item.done
+                      ? { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' }
+                      : { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)' })
+                  }}
                 >
                   <div>
-                    <p className={`text-sm font-semibold ${item.done ? 'text-emerald-700' : 'text-slate-900'}`}>{item.label}</p>
-                    <p className="mt-1 text-sm font-medium text-gray-500">{item.hint}</p>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{item.label}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{item.hint}</p>
                   </div>
                   <span
-                    className={`mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full border px-2 text-xs font-semibold ${
-                      item.done
-                        ? 'border-emerald-200 bg-white text-emerald-700'
-                        : 'border-gray-200 bg-white text-gray-400'
-                    }`}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 24, height: 24,
+                      borderRadius: 999, border: '1px solid', padding: '0 8px', fontSize: 11, fontWeight: 600, flexShrink: 0,
+                      ...(item.done
+                        ? { borderColor: 'var(--pl-success)', background: 'var(--pl-surface)', color: 'var(--pl-success)' }
+                        : { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)' })
+                    }}
                   >
                     {item.done ? 'OK' : ''}
                   </span>
@@ -751,19 +732,16 @@ export default function ConcursoDetalhe({
           </div>
 
           {(contest.etapas || contest.etapas_tags?.length > 0) && (
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Etapas</p>
-              <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">
+            <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Etapas</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
                 {contest.etapas || 'Etapas não detalhadas.'}
               </p>
 
               {contest.etapas_tags?.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {contest.etapas_tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700"
-                    >
+                    <span key={tag} className="pl-tag pl-tag-accent">
                       {STAGE_LABELS[tag] || tag}
                     </span>
                   ))}
@@ -771,14 +749,11 @@ export default function ConcursoDetalhe({
               )}
 
               {contest.taf_itens?.length > 0 && (
-                <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Itens do TAF</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                <div style={{ marginTop: 16, borderRadius: 10, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', padding: 16 }}>
+                  <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-accent)' }}>Itens do TAF</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {contest.taf_itens.map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-700"
-                      >
+                      <span key={item} className="pl-tag">
                         {item}
                       </span>
                     ))}
@@ -787,58 +762,59 @@ export default function ConcursoDetalhe({
               )}
             </div>
           )}
-        </section>
+        </div>
       </div>
     </div>
   );
 }
 
 function CargoInfo({ label, value, tone = 'slate' }) {
-  const toneClasses = {
-    green: 'bg-emerald-50 text-emerald-700',
-    blue: 'bg-blue-50 text-blue-700',
-    slate: 'bg-white text-slate-700',
+  const toneStyles = {
+    green: { background: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+    blue: { background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' },
+    slate: { background: 'var(--pl-surface)', color: 'var(--pl-ink-2)' },
   };
 
   return (
-    <div className={`rounded-xl px-3 py-2 ${toneClasses[tone] || toneClasses.slate}`}>
-      <p className="text-[9px] font-black uppercase tracking-[0.16em] opacity-60">{label}</p>
-      <p className="mt-1 break-words text-xs font-black leading-snug">{value}</p>
+    <div style={{ borderRadius: 10, padding: '8px 12px', ...toneStyles[tone] }}>
+      <p style={{ margin: 0, fontSize: 9, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.6 }}>{label}</p>
+      <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 800, lineHeight: 1.3, wordBreak: 'break-word' }}>{value}</p>
     </div>
   );
 }
 
 function ImportContestModal({ contest, isLoading, limiteAtingido, onCancel, onConfirm }) {
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-2xl">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-6 text-white">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-blue-200">Adicionar aos estudos</p>
-          <h3 className="mt-2 text-2xl font-bold leading-tight">{contest?.nome || 'Concurso selecionado'}</h3>
-          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)', padding: '24px 16px', backdropFilter: 'blur(4px)' }}>
+      <div style={{ width: '100%', maxWidth: 520, overflow: 'hidden', borderRadius: 24, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}>
+        <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%)', padding: '24px 28px', color: '#f3efe5' }}>
+          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#93b4ff' }}>Adicionar aos estudos</p>
+          <h3 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 700, lineHeight: 1.2 }}>{contest?.nome || 'Concurso selecionado'}</h3>
+          <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'rgba(243,239,229,0.7)' }}>
             Isso cria um curso na sua área de estudos com as disciplinas, tópicos e dados do edital.
           </p>
         </div>
-        <div className="space-y-4 px-6 py-5">
+        <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {limiteAtingido ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            <div style={{ borderRadius: 12, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
               Seu limite de cursos foi atingido. Remova algum curso ou ajuste seu plano antes de adicionar este concurso.
             </div>
           ) : (
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
+            <div style={{ borderRadius: 12, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)' }}>
               Depois de adicionar, você encontra esse concurso em Meus cursos e pode estudar pelo edital verticalizado.
             </div>
           )}
-          <div className="grid gap-3 text-sm font-semibold text-slate-600 sm:grid-cols-2">
-            <span className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">Banca: {contest?.banca || 'A definir'}</span>
-            <span className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">Área: {contest?.area || 'Geral'}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+            <span style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>Banca: {contest?.banca || 'A definir'}</span>
+            <span style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>Área: {contest?.area || 'Geral'}</span>
           </div>
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
             <button
               type="button"
               onClick={onCancel}
               disabled={isLoading}
-              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+              className="pl-btn pl-btn-ghost"
+              style={{ minHeight: 44 }}
             >
               Cancelar
             </button>
@@ -846,7 +822,8 @@ function ImportContestModal({ contest, isLoading, limiteAtingido, onCancel, onCo
               type="button"
               onClick={onConfirm}
               disabled={isLoading || limiteAtingido}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-900/20 transition hover:bg-blue-700 disabled:opacity-70"
+              className="pl-btn pl-btn-primary"
+              style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 8 }}
             >
               {isLoading ? 'Adicionando...' : 'Adicionar agora'}
               <ArrowRight size={16} />
@@ -860,45 +837,45 @@ function ImportContestModal({ contest, isLoading, limiteAtingido, onCancel, onCo
 
 function StatBox({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
-      <div className="flex items-center gap-2 text-gray-400">
+    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--pl-ink-3)' }}>
         <Icon size={14} />
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</p>
+        <p className="pl-eyebrow" style={{ margin: 0 }}>{label}</p>
       </div>
-      <p className="mt-3 text-lg font-semibold text-[#162a45]">{value}</p>
+      <p style={{ margin: '12px 0 0', fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</p>
     </div>
   );
 }
 
 function InfoCard({ label, value }) {
   return (
-    <div className="rounded-[1.2rem] border border-gray-200 bg-gray-50/70 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-2 text-sm font-bold text-[#162a45]">{value}</p>
+    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+      <p className="pl-eyebrow" style={{ margin: 0, marginBottom: 8 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{value}</p>
     </div>
   );
 }
 
 function StatusPanel({ label, value, tone = 'gray' }) {
-  const toneClasses = {
-    gray: 'border-gray-200 bg-gray-50 text-gray-700',
-    blue: 'border-blue-100 bg-blue-50 text-blue-700',
-    green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-    amber: 'border-amber-100 bg-amber-50 text-amber-700',
+  const toneStyles = {
+    gray: { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' },
+    blue: { borderColor: 'var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' },
+    green: { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+    amber: { borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' },
   };
 
   return (
-    <div className={`rounded-[1.2rem] border p-4 ${toneClasses[tone] || toneClasses.gray}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">{label}</p>
-      <p className="mt-2 text-sm font-semibold">{value}</p>
+    <div style={{ borderRadius: 12, border: '1px solid', padding: 16, ...toneStyles[tone] }}>
+      <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.7 }}>{label}</p>
+      <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600 }}>{value}</p>
     </div>
   );
 }
 
-const momentToneClasses = {
-  blue: 'border-blue-100 bg-blue-50 text-blue-700',
-  amber: 'border-amber-100 bg-amber-50 text-amber-700',
-  red: 'border-red-100 bg-red-50 text-red-700',
-  green: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-  gray: 'border-gray-200 bg-gray-50 text-gray-700',
+const momentToneStyles = {
+  blue: { borderColor: 'var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' },
+  amber: { borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' },
+  red: { borderColor: 'var(--pl-danger)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' },
+  green: { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+  gray: { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' },
 };

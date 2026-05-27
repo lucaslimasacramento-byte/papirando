@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   BadgeCheck,
@@ -224,14 +224,14 @@ export default function AdminDashboard({
         ]}
       />
 
-      <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Painel de ação</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Acessos rápidos do admin</h3>
+      <div style={{ display: 'grid', gap: 32, gridTemplateColumns: '1.05fr 0.95fr' }}>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Painel de ação</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Acessos rápidos do admin</h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr 1fr' }}>
             <ActionCard icon={ShieldCheck} title="Biblioteca de concursos" text="Editar concurso, PDF, imagem, data e publicação." actionLabel="Abrir biblioteca" onClick={() => setActiveTab?.('admin_concursos')} />
             <ActionCard icon={Layers3} title="Banco de disciplinas" text="Manter disciplina padrão, nomes canônicos e estrutura base." actionLabel="Abrir disciplinas" onClick={() => setActiveTab?.('admin_disciplinas')} />
             <ActionCard icon={Users} title="Usuários e assinaturas" text="Revisar planos, limites e status da base ativa." actionLabel="Abrir usuários" onClick={() => setActiveTab?.('admin_usuarios')} />
@@ -262,24 +262,24 @@ export default function AdminDashboard({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Adoção e demanda</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Mais importados e áreas fortes</h3>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Adoção e demanda</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Mais importados e áreas fortes</h3>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-[1fr_0.9fr]">
-            <div className="space-y-3">
+          <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1fr 0.9fr' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {topImported.map((contest) => (
-                <div key={contest.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                  <div className="flex items-center justify-between gap-4">
+                <div key={contest.id} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                     <div>
-                      <p className="font-semibold text-slate-900">{contest.nome}</p>
-                      <p className="mt-1 text-sm font-semibold text-gray-500">{contest.area || 'Geral'} · {contest.cargo || contest.concurso}</p>
+                      <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{contest.nome}</p>
+                      <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{contest.area || 'Geral'} · {contest.cargo || contest.concurso}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-semibold text-slate-900">{contest.imports}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Importações</p>
+                    <div style={{ textAlign: 'right' }}>
+                      <p className="pl-num" style={{ fontSize: 22, color: 'var(--pl-ink)' }}>{contest.imports}</p>
+                      <p className="pl-eyebrow" style={{ marginTop: 2 }}>Importações</p>
                     </div>
                   </div>
                 </div>
@@ -287,15 +287,15 @@ export default function AdminDashboard({
               {topImported.length === 0 && <EmptyState text="Ainda não há importações suficientes para montar esse ranking." />}
             </div>
 
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {areas.map(([area, count]) => (
-                <div key={area} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                  <div className="mb-2 flex items-center justify-between gap-4">
-                    <p className="font-semibold text-slate-900">{area}</p>
-                    <span className="text-lg font-semibold text-slate-900">{count}</span>
+                <div key={area} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                  <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                    <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{area}</p>
+                    <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>{count}</span>
                   </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-white">
-                    <div className="h-full rounded-full bg-blue-600" style={{ width: `${Math.min(100, Math.round((count / Math.max(contestLibrary.length, 1)) * 100))}%` }} />
+                  <div className="pl-progress">
+                    <div className="pl-progress-bar" style={{ width: `${Math.min(100, Math.round((count / Math.max(contestLibrary.length, 1)) * 100))}%` }} />
                   </div>
                 </div>
               ))}
@@ -305,23 +305,23 @@ export default function AdminDashboard({
         </section>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-[1fr_0.95fr]">
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Backlog editorial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Concursos que pedem ação rápida</h3>
+      <div style={{ display: 'grid', gap: 32, gridTemplateColumns: '1fr 0.95fr' }}>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Backlog editorial</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Concursos que pedem ação rápida</h3>
           </div>
 
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {editorialBacklog.map((contest) => (
-              <div key={contest.id} className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div key={contest.id} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
-                    <p className="font-semibold text-slate-900">{contest.nome}</p>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">{contest.area || 'Geral'} · {contest.cargo || contest.concurso}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{contest.nome}</p>
+                    <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{contest.area || 'Geral'} · {contest.cargo || contest.concurso}</p>
+                    <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {contest.pendencias.map((item) => (
-                        <span key={item} className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                        <span key={item} className="pl-tag pl-tag-warn">
                           {item}
                         </span>
                       ))}
@@ -330,7 +330,8 @@ export default function AdminDashboard({
                   <button
                     type="button"
                     onClick={() => setActiveTab?.('admin_concursos')}
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600"
+                    className="pl-btn pl-btn-ghost pl-btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
                   >
                     Resolver no editor
                     <ArrowRight size={16} />
@@ -342,30 +343,30 @@ export default function AdminDashboard({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Resumo executivo</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Produto, receita e aquisição</h3>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Resumo executivo</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Produto, receita e aquisição</h3>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr 1fr' }}>
             <OpsCard icon={BookOpen} label="Cursos por IA" value={metrics.importadosIA} />
             <OpsCard icon={FolderKanban} label="Cursos de catálogo" value={metrics.importadosCatalogo} />
             <OpsCard icon={WalletCards} label="Receita recorrente" value={formatCurrency(finance.receitaRecorrente)} />
             <OpsCard icon={Users} label="Leads abertos" value={crm.emContato} />
           </div>
 
-          <div className="mt-6 space-y-3">
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {recentCatalog.map((contest) => (
-              <div key={contest.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <div className="flex items-center justify-between gap-4">
+              <div key={contest.id} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                   <div>
-                    <p className="font-semibold text-slate-900">{contest.nome}</p>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">
+                    <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{contest.nome}</p>
+                    <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                       {STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto'} · {contest.prova_data || 'Sem data'}
                     </p>
                   </div>
-                  <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-bold text-gray-500">
+                  <span className="pl-tag">
                     {contest.area || 'Geral'}
                   </span>
                 </div>
@@ -384,14 +385,15 @@ function ActionCard({ icon: Icon, title, text, actionLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-[1.6rem] border border-gray-200 bg-gray-50/70 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/50"
+      className="pl-card pl-card-paper"
+      style={{ padding: 20, textAlign: 'left', cursor: 'pointer', transition: 'box-shadow 0.15s, border-color 0.15s', width: '100%' }}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--pl-accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-accent)' }}>
         <Icon size={20} />
       </div>
-      <p className="mt-4 text-lg font-semibold text-slate-900">{title}</p>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-gray-500">{text}</p>
-      <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
+      <p style={{ marginTop: 16, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>{title}</p>
+      <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{text}</p>
+      <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: 'var(--pl-accent)' }}>
         {actionLabel}
         <ArrowRight size={15} />
       </div>
@@ -401,14 +403,14 @@ function ActionCard({ icon: Icon, title, text, actionLabel, onClick }) {
 
 function OpsCard({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+    <div className="pl-card pl-card-paper" style={{ padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 10, background: 'var(--pl-accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-accent)', flexShrink: 0 }}>
           <Icon size={18} />
         </div>
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-          <p className="mt-1 text-xl font-semibold text-slate-900">{value}</p>
+        <div style={{ minWidth: 0 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
+          <p className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{value}</p>
         </div>
       </div>
     </div>
@@ -417,10 +419,8 @@ function OpsCard({ icon: Icon, label, value }) {
 
 function EmptyState({ text }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-gray-200 bg-gray-50/70 px-4 py-5 text-sm font-semibold text-gray-500">
+    <div style={{ borderRadius: 10, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
       {text}
     </div>
   );
 }
-
-

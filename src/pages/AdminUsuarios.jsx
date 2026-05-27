@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BadgeCheck, Crown, Search, ShieldCheck, UserRound, WalletCards, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
@@ -84,15 +84,38 @@ export default function AdminUsuarios({
         subtitle="Controle administrativo dos perfis, plano do usuário, papel administrativo e limite de cursos disponíveis."
         trailingClassName="xl:max-w-[16rem]"
         trailing={
-          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Gerindo como</p>
-            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
+          <div
+            style={{
+              borderRadius: 24,
+              border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.10)',
+              padding: '12px 16px',
+              textAlign: 'left',
+              boxShadow: 'var(--pl-sh-low)',
+            }}
+          >
+            <p className="pl-eyebrow" style={{ color: 'rgba(255,255,255,0.6)' }}>Gerindo como</p>
+            <p
+              style={{
+                marginTop: 6,
+                minWidth: 0,
+                wordBreak: 'break-all',
+                fontWeight: 600,
+                color: '#fff',
+                fontSize: 14,
+              }}
+            >
+              {currentUserEmail}
+            </p>
           </div>
         }
       />
 
-      <section className="rounded-[2.4rem] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8">
-        <div className="grid gap-4 md:grid-cols-4">
+      <section
+        className="pl-card"
+        style={{ padding: '24px 32px', boxShadow: 'var(--pl-sh-low)' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
           <SummaryCard icon={UserRound} label="Usuários" value={summary.total} />
           <SummaryCard icon={ShieldCheck} label="Admins" value={summary.admins} />
           <SummaryCard icon={Crown} label="Plano elite" value={summary.elite} />
@@ -101,62 +124,102 @@ export default function AdminUsuarios({
       </section>
 
       {saveError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert">
+        <div
+          className="pl-tag-danger"
+          role="alert"
+          style={{
+            padding: '12px 16px',
+            borderRadius: 12,
+            fontSize: 14,
+            fontWeight: 600,
+            border: '1px solid var(--pl-danger-soft)',
+            background: 'var(--pl-danger-soft)',
+            color: 'var(--pl-danger)',
+          }}
+        >
           {saveError}
         </div>
       ) : null}
 
-      <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <section className="pl-card" style={{ padding: 24, boxShadow: 'var(--pl-sh-low)' }}>
+        <div
+          style={{
+            marginBottom: 24,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 16,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Base de perfis</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Usuários cadastrados</h3>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Base de perfis</p>
+            <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
+              Usuários cadastrados
+            </h3>
           </div>
 
-          <div className="relative max-w-md flex-1">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div style={{ position: 'relative', flex: 1, maxWidth: 420 }}>
+            <Search
+              size={18}
+              style={{
+                position: 'absolute',
+                left: 14,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--pl-ink-3)',
+                pointerEvents: 'none',
+              }}
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por nome, email, plano ou papel..."
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 py-3 pl-11 pr-4 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              className="pl-input"
+              style={{ paddingLeft: 40, width: '100%' }}
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-[1080px] w-full">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ minWidth: 1080, width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-gray-100 text-left">
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Usuário</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Papel</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Plano</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Status</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Limite de cursos</th>
-                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Acesso</th>
+              <tr style={{ borderBottom: '1px solid var(--pl-rule)', textAlign: 'left' }}>
+                {['Usuário', 'Papel', 'Plano', 'Status', 'Limite de cursos', 'Acesso'].map((col) => (
+                  <th key={col} style={{ padding: '10px 16px' }}>
+                    <span className="pl-eyebrow">{col}</span>
+                  </th>
+                ))}
               </tr>
             </thead>
 
             <tbody>
               {isLoading &&
                 Array.from({ length: 4 }).map((_, index) => (
-                  <tr key={`loading-${index}`} className="border-b border-gray-100 align-top">
-                    <td colSpan={6} className="px-4 py-4">
-                      <div className="h-12 animate-pulse rounded-2xl bg-gray-100" />
+                  <tr key={`loading-${index}`} style={{ borderBottom: '1px solid var(--pl-rule)', verticalAlign: 'top' }}>
+                    <td colSpan={6} style={{ padding: '16px' }}>
+                      <div
+                        className="animate-pulse"
+                        style={{ height: 48, borderRadius: 12, background: 'var(--pl-bg-soft)' }}
+                      />
                     </td>
                   </tr>
                 ))}
 
               {filteredProfiles.map((profile) => (
-                <tr key={profile.id} className="border-b border-gray-100 align-top">
-                  <td className="px-4 py-4">
+                <tr key={profile.id} style={{ borderBottom: '1px solid var(--pl-rule)', verticalAlign: 'top' }}>
+                  <td style={{ padding: '14px 16px' }}>
                     <div>
-                      <p className="font-semibold text-slate-900">{profile.nome || 'Sem nome'}</p>
-                      <p className="mt-1 text-sm font-semibold text-gray-500">{profile.email || 'Sem email'}</p>
+                      <p style={{ fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
+                        {profile.nome || 'Sem nome'}
+                      </p>
+                      <p style={{ marginTop: 4, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
+                        {profile.email || 'Sem email'}
+                      </p>
                     </div>
                   </td>
 
-                  <td className="px-4 py-4">
+                  <td style={{ padding: '14px 16px' }}>
                     <SelectCell
                       value={profile.role || 'student'}
                       options={ROLE_OPTIONS}
@@ -165,7 +228,7 @@ export default function AdminUsuarios({
                     />
                   </td>
 
-                  <td className="px-4 py-4">
+                  <td style={{ padding: '14px 16px' }}>
                     <SelectCell
                       value={profile.subscription_plan || 'gratuito'}
                       options={PLAN_OPTIONS}
@@ -174,7 +237,7 @@ export default function AdminUsuarios({
                     />
                   </td>
 
-                  <td className="px-4 py-4">
+                  <td style={{ padding: '14px 16px' }}>
                     <SelectCell
                       value={profile.subscription_status || 'trial'}
                       options={STATUS_OPTIONS}
@@ -183,20 +246,24 @@ export default function AdminUsuarios({
                     />
                   </td>
 
-                  <td className="px-4 py-4">
+                  <td style={{ padding: '14px 16px' }}>
                     <input
                       type="number"
                       min="1"
                       value={profile.max_courses ?? 3}
                       disabled={savingId === profile.id}
                       onChange={(e) => handleFieldChange(profile, 'max_courses', Number(e.target.value || 0))}
-                      className="w-28 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                      className="pl-input"
+                      style={{ width: 112 }}
                     />
                   </td>
 
-                  <td className="px-4 py-4">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
-                      <WalletCards size={13} className="text-blue-600" />
+                  <td style={{ padding: '14px 16px' }}>
+                    <div
+                      className="pl-tag"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <WalletCards size={13} style={{ color: 'var(--pl-accent)' }} />
                       {savingId === profile.id ? 'Salvando...' : 'Configurável'}
                     </div>
                   </td>
@@ -205,7 +272,16 @@ export default function AdminUsuarios({
 
               {!isLoading && filteredProfiles.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm font-semibold text-gray-500">
+                  <td
+                    colSpan={6}
+                    style={{
+                      padding: '40px 16px',
+                      textAlign: 'center',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: 'var(--pl-ink-3)',
+                    }}
+                  >
                     Nenhum usuário encontrado.
                   </td>
                 </tr>
@@ -220,12 +296,18 @@ export default function AdminUsuarios({
 
 function SummaryCard({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-[1.5rem] border border-gray-200 bg-gray-50/70 p-4">
-      <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+    <div
+      className="pl-card"
+      style={{ padding: 16, background: 'var(--pl-bg-soft)' }}
+    >
+      <div
+        className="pl-tag-accent"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12 }}
+      >
         <Icon size={12} />
         {label}
       </div>
-      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
+      <p className="pl-num" style={{ fontSize: 28, color: 'var(--pl-ink)', margin: 0 }}>{value}</p>
     </div>
   );
 }
@@ -236,7 +318,7 @@ function SelectCell({ value, options, onChange, disabled }) {
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+      className="pl-input"
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>
@@ -246,5 +328,3 @@ function SelectCell({ value, options, onChange, disabled }) {
     </select>
   );
 }
-
-

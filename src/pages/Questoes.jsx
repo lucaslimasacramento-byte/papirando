@@ -1,18 +1,24 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Loader2,
   AlertTriangle,
   BarChart2,
   Bookmark,
+  BookOpen,
   Check,
   CheckCircle2,
   ChevronRight,
+  ClipboardList,
   Edit3,
   Flag,
+  Layers3,
   MessageSquare,
   Play,
+  Plus,
   Search,
   SlidersHorizontal,
+  Target,
+  Trash2,
   X,
 } from 'lucide-react';
 import { buildCanonicalHistory, buildStudyHistoryOverview } from '../lib/studyAnalytics';
@@ -77,6 +83,16 @@ const QUESTION_BANK = [
   },
 ];
 
+function readNotebookStorage(key) {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(key) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function Questoes({
   currentUserId = '',
   isEditingMeta,
@@ -88,6 +104,9 @@ export default function Questoes({
   subjectCatalog = [],
   studyRecommendation = null,
   onStartRecommendedSession,
+  bancoDisciplinas = [],
+  selectedCoursePlan = 'Todos',
+  planningCourseOptions = [],
 }) {
   const [query, setQuery] = useState('');
   const [dbQuestions, setDbQuestions] = useState([]);
@@ -99,6 +118,16 @@ export default function Questoes({
   const [filterDif, setFilterDif]     = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [examBoards, setExamBoards] = useState([]);
+  const [cadernoBuilderOpen, setCadernoBuilderOpen] = useState(false);
+  const [activeCadernoId, setActiveCadernoId] = useState('');
+  const storageKey = useMemo(
+    () => `papirando_question_notebooks_${currentUserId || 'anon'}`,
+    [currentUserId]
+  );
+  const skipNextNotebookPersistRef = useRef(false);
+  const [cadernos, setCadernos] = useState(() => {
+    return readNotebookStorage(storageKey);
+  });
 
   const catalogDisciplineNames = useMemo(() => {
     const list = Array.isArray(subjectCatalog) ? subjectCatalog : [];
@@ -107,6 +136,48 @@ export default function Questoes({
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b, 'pt-BR'));
   }, [subjectCatalog]);
+
+  const courseOptions = useMemo(() => {
+    const fromDisciplines = (Array.isArray(bancoDisciplinas) ? bancoDisciplinas : [])
+      .map((disciplina) => String(disciplina?.plano || '').trim())
+      .filter(Boolean);
+    const fromPlanning = (Array.isArray(planningCourseOptions) ? planningCourseOptions : [])
+      .map((plan) => String(plan?.plano || plan?.nome || '').trim())
+      .filter(Boolean);
+    return [...new Set([...fromPlanning, ...fromDisciplines])]
+      .filter((name) => name && name !== 'Geral')
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [bancoDisciplinas, planningCourseOptions]);
+
+  const disciplineOptions = useMemo(() => {
+    const disciplines = Array.isArray(bancoDisciplinas) ? bancoDisciplinas : [];
+    if (disciplines.length > 0) {
+      return disciplines
+        .map((disciplina) => ({
+          id: String(disciplina?.id || disciplina?.nome || ''),
+          nome: String(disciplina?.nome || '').trim(),
+          plano: String(disciplina?.plano || '').trim(),
+          topicos: Array.isArray(disciplina?.topicos) ? disciplina.topicos : [],
+        }))
+        .filter((disciplina) => disciplina.nome)
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    }
+    return catalogDisciplineNames.map((nome) => ({ id: nome, nome, plano: '', topicos: [] }));
+  }, [bancoDisciplinas, catalogDisciplineNames]);
+
+  useEffect(() => {
+    skipNextNotebookPersistRef.current = true;
+    setCadernos(readNotebookStorage(storageKey));
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (skipNextNotebookPersistRef.current) {
+      skipNextNotebookPersistRef.current = false;
+      return;
+    }
+    window.localStorage.setItem(storageKey, JSON.stringify(cadernos));
+  }, [cadernos, storageKey]);
 
   // Load questions from Supabase
   const loadQuestions = useCallback(async () => {
@@ -202,18 +273,26 @@ export default function Questoes({
   const questionsRecommendation = studyRecommendation?.ranked?.find((item) => item?.studyMode === 'questoes') || null;
   // Use Supabase data when available, fall back to QUESTION_BANK only while loading
   const allQuestions = dbQuestions.length > 0 ? dbQuestions : (dbLoading ? [] : QUESTION_BANK);
-  const filteredQuestions = allQuestions.filter((item) => {
-    if (filterDisc && item.disciplina !== filterDisc) return false;
-    if (filterBanca && item.banca !== filterBanca) return false;
-    if (filterDif && item.dificuldade && item.dificuldade !== filterDif) return false;
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      item.disciplina.toLowerCase().includes(q) ||
-      item.topico.toLowerCase().includes(q) ||
-      item.statement.toLowerCase().includes(q)
-    );
-  });
+  const activeCaderno = cadernos.find((caderno) => caderno.id === activeCadernoId) || null;
+  const activeCadernoQuestionIds = useMemo(
+    () => new Set((activeCaderno?.questionIds || []).map((id) => String(id))),
+    [activeCaderno]
+  );
+  const filteredQuestions = useMemo(() => {
+    return allQuestions.filter((item) => {
+      if (activeCaderno && !activeCadernoQuestionIds.has(String(item.id))) return false;
+      if (filterDisc && item.disciplina !== filterDisc) return false;
+      if (filterBanca && item.banca !== filterBanca) return false;
+      if (filterDif && item.dificuldade && item.dificuldade !== filterDif) return false;
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+      return (
+        item.disciplina.toLowerCase().includes(q) ||
+        item.topico.toLowerCase().includes(q) ||
+        item.statement.toLowerCase().includes(q)
+      );
+    });
+  }, [activeCaderno, activeCadernoQuestionIds, allQuestions, filterBanca, filterDif, filterDisc, query]);
   const activeFiltersCount = [filterDisc, filterBanca, filterDif].filter((value) => String(value || '').trim().length > 0).length;
   const hasFiveOptionQuestion = useMemo(
     () => filteredQuestions.some((question) => Array.isArray(question?.options) && question.options.length >= 5),
@@ -246,7 +325,7 @@ export default function Questoes({
             Banco de questões<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
           <p style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 580, lineHeight: 1.5 }}>
-            Filtre por disciplina, banca ou nível. Meta do dia ajustável ao lado.
+            Monte cadernos por matéria, tópico e quantidade, ou resolva questões soltas no modo livre.
           </p>
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>Meta do dia</span>
@@ -309,6 +388,14 @@ export default function Questoes({
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <button
               type="button"
+              onClick={() => setCadernoBuilderOpen(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+            >
+              <ClipboardList size={14} />
+              Montar caderno
+            </button>
+            <button
+              type="button"
               onClick={() => setFiltersOpen(true)}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
             >
@@ -323,6 +410,7 @@ export default function Questoes({
             <button
               type="button"
               onClick={() => {
+                setActiveCadernoId('');
                 if (questionsRecommendation) {
                   onStartRecommendedSession?.(questionsRecommendation);
                   return;
@@ -334,10 +422,10 @@ export default function Questoes({
               Iniciar modo livre
               <Play size={13} />
             </button>
-            {activeFiltersCount > 0 && (
+            {(activeFiltersCount > 0 || activeCaderno) && (
               <button
                 type="button"
-                onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterDif(''); }}
+                onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterDif(''); setActiveCadernoId(''); }}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
               >
                 <X size={13} />
@@ -346,31 +434,44 @@ export default function Questoes({
             )}
           </div>
         </div>
+        <QuestionNotebookShelf
+          cadernos={cadernos}
+          activeCadernoId={activeCadernoId}
+          onSelect={(id) => {
+            setActiveCadernoId(id);
+            setCurrentQuestionIndex(0);
+          }}
+          onCreate={() => setCadernoBuilderOpen(true)}
+          onDelete={(id) => {
+            setCadernos((prev) => prev.filter((item) => item.id !== id));
+            if (activeCadernoId === id) setActiveCadernoId('');
+          }}
+        />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col pr-0.5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minHeight: 0, flex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, flex: 1 }}>
           {dbLoading && (
-            <div className="flex flex-1 items-center justify-center gap-2 py-4">
-              <Loader2 size={18} className="animate-spin text-blue-500" />
-              <span className="text-xs font-semibold text-slate-500">Carregando questões...</span>
+            <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, padding: '16px 0' }}>
+              <Loader2 size={18} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>Carregando questoes...</span>
             </div>
           )}
           {!dbLoading && filteredQuestions.length === 0 && (
-            <div className="flex flex-1 flex-col items-center justify-center py-6 text-center">
-              <p className="mb-2 text-2xl">📚</p>
-              <h3 className="text-sm font-semibold text-slate-900 sm:text-base">
-                {dbQuestions.length === 0 ? 'Nenhuma questão disponível' : 'Nenhuma questão encontrada'}
-              </h3>
-              <p className="mt-1 max-w-sm px-2 text-xs text-gray-500">
-                {dbQuestions.length === 0
-                  ? 'O banco online será populado pelo administrador; até lá você vê questões de demonstração.'
-                  : 'Tente limpar filtros ou ampliar a busca.'}
+            <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--pl-ink-3)' }}>
+              <BookOpen size={32} style={{ marginBottom: 12, opacity: 0.35, color: 'var(--pl-ink-3)' }} />
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>
+                {filteredQuestions.length === 0 && dbQuestions.length > 0 ? 'Sem resultados' : 'Banco vazio'}
+              </p>
+              <p style={{ fontSize: 13, maxWidth: 320, margin: '0 auto' }}>
+                {filteredQuestions.length === 0 && dbQuestions.length > 0
+                  ? 'Nenhuma questao corresponde aos filtros atuais. Tente ajustar a busca.'
+                  : 'Nenhuma questao disponivel. Importe questoes para comecar a praticar.'}
               </p>
             </div>
           )}
           {!dbLoading && currentQuestion ? (
-            <div className="flex min-h-0 flex-1 flex-col">
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
               <InteractiveQuestionCard
                 key={currentQuestion.id}
                 question={currentQuestion}
@@ -382,8 +483,8 @@ export default function Questoes({
                 }}
               />
               {!hasFiveOptionQuestion ? (
-                <p className="mt-1 shrink-0 text-[10px] font-semibold text-slate-500 sm:text-xs">
-                  Dica: não há questão A–E neste resultado; ajuste filtros se quiser esse formato.
+                <p style={{ marginTop: 4, flexShrink: 0, fontSize: 10, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+                  Dica: nao ha questao A-E neste resultado; ajuste filtros se quiser esse formato.
                 </p>
               ) : null}
             </div>
@@ -392,9 +493,9 @@ export default function Questoes({
       </div>
 
       {filtersOpen ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,17,13,0.55)', padding: '0 16px', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 16, padding: '20px 24px', width: '100%', maxWidth: 680 }}>
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)', margin: 0 }}>Filtro de questões</p>
                 <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '4px 0 0', fontFamily: 'var(--pl-sans)' }}>Refinar banco de questões</h3>
@@ -414,8 +515,8 @@ export default function Questoes({
               bancas). Listas vazias somem após o administrador incluir registros.
             </p>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <div className="flex flex-col gap-1.5">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-disciplina">
                   Disciplina
                 </label>
@@ -439,7 +540,7 @@ export default function Questoes({
                   )}
                 </select>
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-banca">
                   Banca
                 </label>
@@ -463,7 +564,7 @@ export default function Questoes({
                   )}
                 </select>
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-nivel">
                   Nível
                 </label>
@@ -481,7 +582,7 @@ export default function Questoes({
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
+            <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
               <button
                 type="button"
                 onClick={() => {
@@ -489,20 +590,37 @@ export default function Questoes({
                   setFilterBanca('');
                   setFilterDif('');
                 }}
-                className={buttonClass('secondary', 'px-4 py-2.5 text-xs sm:text-sm')}
+                className="pl-btn pl-btn-ghost"
               >
                 Limpar
               </button>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
-                className={buttonClass('primary', 'px-4 py-2.5 text-xs sm:text-sm')}
+                className="pl-btn pl-btn-primary"
               >
                 Aplicar filtros
               </button>
             </div>
           </div>
         </div>
+      ) : null}
+
+      {cadernoBuilderOpen ? (
+        <QuestionNotebookBuilder
+          allQuestions={allQuestions}
+          courseOptions={courseOptions}
+          disciplineOptions={disciplineOptions}
+          examBoards={examBoards}
+          selectedCoursePlan={selectedCoursePlan}
+          onClose={() => setCadernoBuilderOpen(false)}
+          onCreate={(caderno) => {
+            setCadernos((prev) => [caderno, ...prev].slice(0, 12));
+            setActiveCadernoId(caderno.id);
+            setCurrentQuestionIndex(0);
+            setCadernoBuilderOpen(false);
+          }}
+        />
       ) : null}
     </div>
   );
@@ -524,41 +642,71 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
 
   return (
     <div
-      className={`relative flex h-full min-h-0 max-h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-shadow duration-300 sm:rounded-2xl ${submitted ? (wasCorrect ? 'border border-emerald-200 shadow-md' : 'border border-rose-200 shadow-md') : 'border border-gray-100 hover:shadow-lg'}`}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        height: '100%',
+        minHeight: 0,
+        maxHeight: '100%',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        borderRadius: 16,
+        background: 'var(--pl-surface)',
+        boxShadow: submitted ? 'var(--pl-sh-mid)' : 'var(--pl-sh-low)',
+        border: `1px solid ${submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-rule)'}`,
+        transition: 'box-shadow 0.3s',
+      }}
     >
       {submitted ? (
-        <div className={`absolute right-0 top-0 z-10 flex items-center gap-1 rounded-bl-lg px-3 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white shadow-sm sm:rounded-bl-xl sm:px-4 sm:py-1 sm:text-[10px] ${wasCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+        <div style={{
+          position: 'absolute', right: 0, top: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', gap: 4,
+          borderBottomLeftRadius: 10, padding: '2px 12px',
+          fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em',
+          color: 'white',
+          boxShadow: 'var(--pl-sh-low)',
+          background: wasCorrect ? 'var(--pl-success)' : 'var(--pl-danger)',
+        }}>
           {wasCorrect ? <CheckCircle2 size={12} /> : <X size={12} />}
           {wasCorrect ? 'Correta' : 'Incorreta'}
         </div>
       ) : null}
 
-      <div className={`shrink-0 border-b px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') : 'border-gray-100 bg-gray-50/50'}`}>
-        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs ${submitted ? (wasCorrect ? 'bg-emerald-100 text-slate-900' : 'bg-rose-100 text-slate-900') : 'bg-blue-100 text-slate-900'}`}>
+      <div style={{
+        flexShrink: 0, borderBottom: `1px solid ${submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-rule)'}`,
+        padding: '8px 16px',
+        background: submitted ? (wasCorrect ? 'rgba(var(--pl-success-soft-rgb, 209,250,229),0.3)' : 'rgba(var(--pl-danger-soft-rgb, 254,226,226),0.3)') : 'var(--pl-bg-soft)',
+      }}>
+        <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+            <span style={{
+              flexShrink: 0, borderRadius: 6, padding: '2px 8px',
+              fontSize: 11, fontWeight: 600, fontFamily: 'var(--pl-sans)',
+              background: submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-accent-soft)',
+              color: 'var(--pl-ink)',
+            }}>
               {question.id}
             </span>
-            <span className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
+            <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
               {question.disciplina}
             </span>
-            <ChevronRight size={12} className="hidden shrink-0 text-gray-300 sm:inline sm:size-[14px]" />
-            <span className="hidden max-w-[140px] truncate text-[10px] font-bold text-gray-500 sm:inline md:max-w-[220px]">{question.topico}</span>
+            <ChevronRight size={12} style={{ flexShrink: 0, color: 'var(--pl-rule-strong)' }} />
+            <span style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{question.topico}</span>
           </div>
 
-          <div className="flex shrink-0 gap-1.5">
-            <span className="max-w-[100px] truncate rounded border border-gray-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-400 sm:max-w-none sm:px-2 sm:text-[10px]">
+          <div style={{ display: 'flex', flexShrink: 0, gap: 6 }}>
+            <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderRadius: 4, border: '1px solid var(--pl-rule-2)', padding: '2px 6px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
               {question.banca}
             </span>
-            <span className="rounded border border-gray-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-400 sm:px-2 sm:text-[10px]">{question.ano}</span>
+            <span style={{ borderRadius: 4, border: '1px solid var(--pl-rule-2)', padding: '2px 6px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{question.ano}</span>
           </div>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 sm:px-4 sm:py-3">
-        <p className="mb-3 text-sm font-medium leading-snug text-gray-700 sm:text-base sm:leading-relaxed">{question.statement}</p>
+      <div style={{ minHeight: 0, flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '8px 16px 12px' }}>
+        <p style={{ marginBottom: 12, fontSize: 14, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>{question.statement}</p>
 
-        <div className="flex flex-col gap-2 sm:gap-2.5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {question.options.map((option) => (
             <AnswerOption
               key={option.id}
@@ -577,31 +725,39 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         </div>
 
         {submitted ? (
-          <div className={`mt-3 rounded-lg border p-2.5 sm:rounded-xl sm:p-3 ${wasCorrect ? 'border-emerald-100 bg-emerald-50' : 'border-rose-100 bg-rose-50'}`}>
-            <p className={`text-[9px] font-semibold uppercase tracking-widest sm:text-[10px] ${wasCorrect ? 'text-emerald-600' : 'text-rose-600'}`}>
-              Comentário
+          <div className="pl-gabarito-reveal" style={{
+            marginTop: 12, borderRadius: 8, padding: 12,
+            border: `1px solid ${wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)'}`,
+            background: wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)',
+          }}>
+            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: wasCorrect ? 'var(--pl-success)' : 'var(--pl-danger)', fontFamily: 'var(--pl-sans)' }}>
+              Comentario
             </p>
-            <p className="mt-1 text-xs font-medium leading-relaxed text-slate-700 sm:text-sm">{question.explanation}</p>
+            <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>{question.explanation}</p>
           </div>
         ) : null}
       </div>
 
-      <div className={`shrink-0 border-t px-3 py-2 sm:px-4 sm:py-2.5 ${submitted ? (wasCorrect ? 'border-emerald-100 bg-emerald-50/50' : 'border-rose-100 bg-rose-50/50') : 'border-gray-100 bg-gray-50/50'}`}>
-        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-          <InlineAction Icon={Bookmark} text="Salvar" />
-          <InlineAction Icon={MessageSquare} text="Comentários" />
-          <InlineAction Icon={BarChart2} text="Estatísticas" />
-          <InlineReport />
-        </div>
+      <div style={{
+        flexShrink: 0,
+        borderTop: `1px solid ${submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-rule)'}`,
+        padding: '8px 16px',
+        background: submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-bg-soft)',
+      }}>
+        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
+            <InlineAction Icon={Bookmark} text="Salvar" />
+            <InlineAction Icon={MessageSquare} text="Comentarios" />
+            <InlineAction Icon={BarChart2} text="Estatisticas" />
+            <InlineReport />
+          </div>
 
-        <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2 sm:mt-0 sm:flex-nowrap sm:justify-between">
+          <div style={{ display: 'flex', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
           {submitted ? (
-            <button type="button" onClick={resetQuestion} className={buttonClass('secondary', 'order-2 w-full px-4 py-2 text-xs sm:order-1 sm:w-auto sm:py-2.5')}>
+            <button type="button" onClick={resetQuestion} className="pl-btn pl-btn-ghost pl-btn-sm">
               Tentar novamente
             </button>
-          ) : (
-            <span className="order-2 hidden sm:inline sm:flex-1" />
-          )}
+          ) : null}
 
           <button
             type="button"
@@ -627,13 +783,12 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
               onNextQuestion?.();
             }}
             disabled={!submitted && !selectedOptionId}
-            className={buttonClass(
-              'primary',
-              'order-1 w-full px-4 py-2 text-xs disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:hover:border-slate-200 disabled:hover:bg-slate-100 disabled:hover:shadow-sm sm:order-2 sm:w-auto sm:py-2.5 sm:text-sm'
-            )}
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            style={(!submitted && !selectedOptionId) ? { opacity: 0.4, cursor: 'not-allowed' } : {}}
           >
-            {submitted ? 'Próxima questão' : 'Responder'}
+            {submitted ? 'Proxima questao' : 'Responder'}
           </button>
+          </div>
         </div>
       </div>
     </div>
@@ -642,9 +797,9 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
 
 function FilterField({ label, options }) {
   return (
-    <div className="flex flex-col">
-      <label className="mb-2 ml-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</label>
-      <select className="w-full cursor-pointer appearance-none rounded-xl border-2 border-transparent bg-gray-50 p-3.5 font-bold text-gray-700 outline-none transition-colors hover:border-gray-200 focus:border-blue-600">
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <label style={{ marginBottom: 8, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{label}</label>
+      <select style={{ width: '100%', cursor: 'pointer', borderRadius: 10, border: '2px solid transparent', background: 'var(--pl-bg-soft)', padding: '10px 14px', fontWeight: 700, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', transition: 'border-color 0.15s' }}>
         {options.map((option) => (
           <option key={option}>{option}</option>
         ))}
@@ -654,38 +809,42 @@ function FilterField({ label, options }) {
 }
 
 function AnswerOption({ label, text, selected = false, submitted = false, isCorrect = false, isWrongSelection = false, onClick }) {
-  let tone = 'border-[rgba(20,17,13,0.10)] hover:border-[rgba(20,17,13,0.20)] hover:bg-[#ece8dd]';
-  let markerTone = 'border-[rgba(20,17,13,0.20)] text-[#8a8178]';
-  let textTone = 'text-[#3a3530]';
+  let containerStyle;
+  let markerStyle;
+  let textColor;
 
   if (submitted && isCorrect) {
-    tone = 'border-emerald-500 bg-emerald-50';
-    markerTone = 'border-emerald-500 bg-emerald-500 text-white';
-    textTone = 'text-emerald-900';
+    containerStyle = { border: '2px solid var(--pl-success)', background: 'var(--pl-success-soft)' };
+    markerStyle = { border: '2px solid var(--pl-success)', background: 'var(--pl-success)', color: 'white' };
+    textColor = 'var(--pl-success)';
   } else if (submitted && isWrongSelection) {
-    tone = 'border-rose-500 bg-rose-50';
-    markerTone = 'border-rose-500 bg-rose-500 text-white';
-    textTone = 'text-rose-900';
+    containerStyle = { border: '2px solid var(--pl-danger)', background: 'var(--pl-danger-soft)' };
+    markerStyle = { border: '2px solid var(--pl-danger)', background: 'var(--pl-danger)', color: 'white' };
+    textColor = 'var(--pl-danger)';
   } else if (selected) {
-    tone = 'border-[#1e3a5f] bg-[rgba(30,58,95,0.05)]';
-    markerTone = 'border-[#1e3a5f] bg-[#1e3a5f] text-white';
-    textTone = 'text-[#14110d]';
+    containerStyle = { border: '2px solid var(--pl-accent)', background: 'var(--pl-accent-soft)' };
+    markerStyle = { border: '2px solid var(--pl-accent)', background: 'var(--pl-accent)', color: 'white' };
+    textColor = 'var(--pl-ink)';
+  } else {
+    containerStyle = { border: '2px solid var(--pl-rule-2)', background: 'transparent' };
+    markerStyle = { border: '2px solid var(--pl-rule-strong)', background: 'transparent', color: 'var(--pl-ink-3)' };
+    textColor = 'var(--pl-ink-2)';
   }
 
   return (
-    <button type="button" onClick={onClick} className={`group/option flex w-full items-center gap-2 rounded-lg border-2 p-2.5 text-left transition-all sm:gap-3 sm:rounded-xl sm:p-3 ${tone}`}>
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold sm:h-8 sm:w-8 sm:text-sm ${markerTone}`}>
+    <button type="button" onClick={onClick} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, borderRadius: 10, padding: '8px 10px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--pl-sans)', ...containerStyle }}>
+      <div style={{ display: 'flex', height: 28, width: 28, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', fontSize: 12, fontWeight: 600, ...markerStyle }}>
         {submitted && isCorrect ? <Check size={14} strokeWidth={3} /> : submitted && isWrongSelection ? <X size={14} strokeWidth={3} /> : label}
       </div>
-      <span className={`min-w-0 text-xs font-semibold leading-snug sm:text-sm ${textTone}`}>{text}</span>
+      <span style={{ minWidth: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: textColor }}>{text}</span>
     </button>
   );
 }
 
 function InlineAction({ Icon, text }) {
   return (
-    <button type="button" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-gray-500 transition-colors hover:bg-slate-100 hover:text-blue-700">
-      {React.createElement(Icon, { size: 16 })}
+    <button type="button" style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 8, padding: '6px 10px', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--pl-sans)', transition: 'background 0.15s, color 0.15s' }}>
+      {React.createElement(Icon, { size: 15 })}
       {text}
     </button>
   );
@@ -693,8 +852,8 @@ function InlineAction({ Icon, text }) {
 
 function InlineReport() {
   return (
-    <button type="button" className="ml-1 flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-gray-500 transition-colors hover:bg-red-50 hover:text-red-500">
-      <Flag size={14} />
+    <button type="button" style={{ display: 'flex', alignItems: 'center', gap: 4, borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--pl-sans)', transition: 'background 0.15s, color 0.15s' }}>
+      <Flag size={13} />
       Reportar
     </button>
   );
@@ -702,29 +861,29 @@ function InlineReport() {
 
 function SidebarFolder({ Icon, iconWrap, title, subtitle }) {
   return (
-    <div className="group flex cursor-pointer items-center justify-between rounded-xl border border-transparent p-3 transition-all hover:border-blue-100 hover:bg-blue-50">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg shadow-sm group-hover:bg-white ${iconWrap}`}>
+    <div style={{ display: 'flex', cursor: 'pointer', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, border: '1px solid transparent', padding: 12, transition: 'all 0.15s' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8, boxShadow: 'var(--pl-sh-low)' }}>
           {React.createElement(Icon, { size: 18 })}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-700 group-hover:text-blue-900">{title}</p>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{subtitle}</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0, fontFamily: 'var(--pl-sans)' }}>{title}</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', margin: 0, fontFamily: 'var(--pl-sans)' }}>{subtitle}</p>
         </div>
       </div>
-      <ChevronRight size={18} className="text-gray-300 transition-colors group-hover:text-blue-500" />
+      <ChevronRight size={18} style={{ color: 'var(--pl-rule-strong)' }} />
     </div>
   );
 }
 
 function InsightCard({ title, text }) {
   return (
-    <div className="section-card !p-4">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
+    <div className="pl-card" style={{ padding: 16 }}>
+      <div style={{ marginBottom: 12, display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' }}>
         <AlertTriangle size={18} />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm font-medium leading-snug text-slate-500">{text}</p>
+      <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, fontFamily: 'var(--pl-sans)' }}>{title}</h3>
+      <p style={{ marginTop: 8, fontSize: 14, fontWeight: 500, lineHeight: 1.45, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{text}</p>
     </div>
   );
 }
@@ -740,13 +899,316 @@ function QStatTile({ label, value }) {
   );
 }
 
-function buttonClass(tone = 'primary', extra = '') {
-  const base = 'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all duration-200';
-  const tones = {
-    primary: 'border border-[#1e3a5f] bg-[#1e3a5f] text-white hover:opacity-90',
-    secondary: 'border border-[rgba(20,17,13,0.16)] bg-[#ece8dd] text-[#14110d] hover:bg-[#f3efe5]',
+function QuestionNotebookShelf({ cadernos, activeCadernoId, onSelect, onCreate, onDelete }) {
+  if (!Array.isArray(cadernos) || cadernos.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderRadius: 8, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-bg-soft)', padding: '8px 12px' }}>
+        <div style={{ display: 'flex', minWidth: 0, alignItems: 'center', gap: 8 }}>
+          <BookOpen size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>
+            Nenhum caderno criado ainda. Monte um bloco por disciplina, topico e quantidade.
+          </span>
+        </div>
+        <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={onCreate}>
+          <Plus size={13} />
+          Novo caderno
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', minWidth: 0, gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+      {cadernos.map((caderno) => {
+        const isActive = caderno.id === activeCadernoId;
+        return (
+          <div
+            key={caderno.id}
+            style={{
+              display: 'flex', minWidth: 220, alignItems: 'center', justifyContent: 'space-between', gap: 8,
+              borderRadius: 8, padding: '8px',
+              border: isActive ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+              background: isActive ? 'var(--pl-accent-soft)' : 'var(--pl-bg-soft)',
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => onSelect?.(isActive ? '' : caderno.id)}
+              style={{ minWidth: 0, flex: 1, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink)', fontFamily: 'var(--pl-sans)' }}>{caderno.title}</span>
+              <span style={{ display: 'block', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+                {caderno.questionIds?.length || 0} questoes · {caderno.plano || 'Plano livre'}
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-label={`Excluir caderno ${caderno.title}`}
+              onClick={() => onDelete?.(caderno.id)}
+              style={{ display: 'inline-flex', height: 28, width: 28, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pl-ink-3)', transition: 'color 0.15s, background 0.15s' }}
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        );
+      })}
+      <button type="button" className="pl-btn pl-btn-ghost" style={{ minWidth: 150, fontSize: 12 }} onClick={onCreate}>
+        <Plus size={13} />
+        Criar outro
+      </button>
+    </div>
+  );
+}
+
+function QuestionNotebookBuilder({
+  allQuestions,
+  courseOptions,
+  disciplineOptions,
+  examBoards,
+  selectedCoursePlan,
+  onClose,
+  onCreate,
+}) {
+  const defaultPlan = selectedCoursePlan && selectedCoursePlan !== 'Todos' ? selectedCoursePlan : courseOptions[0] || '';
+  const [title, setTitle] = useState('');
+  const [plano, setPlano] = useState(defaultPlan);
+  const [banca, setBanca] = useState('');
+  const [difficulty, setDifficulty] = useState('');
+  const [rules, setRules] = useState(() => [
+    { id: `rule-${Date.now()}`, disciplina: '', topico: '', quantidade: 10 },
+  ]);
+
+  const scopedDisciplines = useMemo(() => {
+    if (!plano) return disciplineOptions;
+    const scoped = disciplineOptions.filter((disciplina) => !disciplina.plano || disciplina.plano === plano);
+    return scoped.length > 0 ? scoped : disciplineOptions;
+  }, [disciplineOptions, plano]);
+
+  const estimatedQuestions = useMemo(
+    () => buildNotebookQuestions(allQuestions, { rules, banca, difficulty }).length,
+    [allQuestions, rules, banca, difficulty]
+  );
+
+  const totalRequested = rules.reduce((acc, rule) => acc + Math.max(0, Number(rule.quantidade || 0)), 0);
+
+  const updateRule = (id, patch) => {
+    setRules((prev) =>
+      prev.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule))
+    );
   };
-  return `${base} ${tones[tone] || tones.primary} ${extra}`.trim();
+
+  const removeRule = (id) => {
+    setRules((prev) => (prev.length > 1 ? prev.filter((rule) => rule.id !== id) : prev));
+  };
+
+  const addRule = () => {
+    setRules((prev) => [
+      ...prev,
+      { id: `rule-${Date.now()}-${prev.length}`, disciplina: '', topico: '', quantidade: 10 },
+    ]);
+  };
+
+  const handleCreate = () => {
+    const questionIds = buildNotebookQuestions(allQuestions, { rules, banca, difficulty }).map((question) => question.id);
+    if (questionIds.length === 0) return;
+    const normalizedTitle = title.trim() || `Caderno ${new Date().toLocaleDateString('pt-BR')}`;
+    onCreate?.({
+      id: `caderno-${Date.now()}`,
+      title: normalizedTitle,
+      plano,
+      banca,
+      difficulty,
+      rules: rules.map((rule) => ({
+        disciplina: rule.disciplina,
+        topico: rule.topico,
+        quantidade: Math.max(1, Number(rule.quantidade || 1)),
+      })),
+      questionIds,
+      createdAt: new Date().toISOString(),
+    });
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(20,17,13,0.70)', padding: 0, backdropFilter: 'blur(4px)' }}>
+      <div style={{ maxHeight: '92vh', width: '100%', maxWidth: 960, overflow: 'hidden', borderRadius: '16px 16px 0 0', border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', boxShadow: 'var(--pl-sh-high)' }} role="dialog" aria-modal="true">
+        <header style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
+          <div>
+            <p className="pl-eyebrow" style={{ margin: 0 }}>Caderno de questoes</p>
+            <h2 className="pl-display" style={{ marginTop: 4, fontSize: 28, color: 'var(--pl-ink)' }}>Montar treino personalizado.</h2>
+            <p style={{ marginTop: 8, maxWidth: 560, fontSize: 14, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>
+              De um titulo, vincule ao plano e distribua a quantidade de questoes por disciplina e topico.
+            </p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" style={{ display: 'inline-flex', height: 36, width: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)', cursor: 'pointer', flexShrink: 0 }}>
+            <X size={16} />
+          </button>
+        </header>
+
+        <div style={{ maxHeight: 'calc(92vh - 150px)', overflowY: 'auto', padding: '16px 24px' }}>
+          <section style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.9fr 0.8fr 0.7fr', gap: 12 }}>
+            <NotebookField label="Titulo do caderno">
+              <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Ex: Portugues + Constitucional" />
+            </NotebookField>
+            <NotebookField label="Plano de estudos">
+              <select value={plano} onChange={(event) => setPlano(event.target.value)}>
+                <option value="">Plano livre</option>
+                {courseOptions.map((name) => <option key={name} value={name}>{name}</option>)}
+              </select>
+            </NotebookField>
+            <NotebookField label="Banca">
+              <select value={banca} onChange={(event) => setBanca(event.target.value)}>
+                <option value="">Todas</option>
+                {examBoards.map((board) => <option key={board.id} value={board.nome}>{board.nome}</option>)}
+              </select>
+            </NotebookField>
+            <NotebookField label="Nivel">
+              <select value={difficulty} onChange={(event) => setDifficulty(event.target.value)}>
+                <option value="">Todos</option>
+                <option value="Facil">Facil</option>
+                <option value="Media">Media</option>
+                <option value="Dificil">Dificil</option>
+              </select>
+            </NotebookField>
+          </section>
+
+          <section style={{ marginTop: 16, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 12 }}>
+            <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <div>
+                <p className="pl-eyebrow" style={{ margin: 0 }}>Blocos do caderno</p>
+                <h3 style={{ marginTop: 4, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', fontFamily: 'var(--pl-sans)' }}>Quantidade por disciplina e topico</h3>
+              </div>
+              <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={addRule}>
+                <Plus size={13} />
+                Adicionar bloco
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {rules.map((rule, index) => {
+                const selectedDiscipline = disciplineOptions.find((disciplina) => disciplina.nome === rule.disciplina);
+                const topicOptions = (selectedDiscipline?.topicos || [])
+                  .map((topic) => String(topic?.nome || topic?.title || topic || '').trim())
+                  .filter(Boolean);
+                return (
+                  <div key={rule.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 110px 36px', gap: 8, borderRadius: 8, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: 8 }}>
+                    <NotebookField label={`Disciplina ${index + 1}`}>
+                      <select value={rule.disciplina} onChange={(event) => updateRule(rule.id, { disciplina: event.target.value, topico: '' })}>
+                        <option value="">Todas as disciplinas</option>
+                        {scopedDisciplines.map((disciplina) => (
+                          <option key={`${disciplina.plano}-${disciplina.id}-${disciplina.nome}`} value={disciplina.nome}>
+                            {disciplina.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </NotebookField>
+                    <NotebookField label="Topico">
+                      <select value={rule.topico} onChange={(event) => updateRule(rule.id, { topico: event.target.value })}>
+                        <option value="">Todos os topicos</option>
+                        {topicOptions.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
+                      </select>
+                    </NotebookField>
+                    <NotebookField label="Qtd.">
+                      <input type="number" min={1} max={100} value={rule.quantidade} onChange={(event) => updateRule(rule.id, { quantidade: Number(event.target.value) || 1 })} />
+                    </NotebookField>
+                    <button type="button" aria-label="Remover bloco" onClick={() => removeRule(rule.id)} style={{ marginTop: 20, display: 'inline-flex', height: 36, width: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-rule)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)', cursor: 'pointer', transition: 'color 0.15s' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <NotebookSummaryTile Icon={Target} label="Solicitadas" value={String(totalRequested)} />
+            <NotebookSummaryTile Icon={Layers3} label="Encontradas" value={String(estimatedQuestions)} />
+            <NotebookSummaryTile Icon={BookOpen} label="Blocos" value={String(rules.length)} />
+          </section>
+        </div>
+
+        <footer style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+            O caderno fica salvo neste navegador. Quando houver tabela Supabase, ele podera acompanhar o aluno em qualquer dispositivo.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button type="button" className="pl-btn pl-btn-ghost" onClick={onClose}>Cancelar</button>
+            <button
+              type="button"
+              className="pl-btn pl-btn-primary"
+              disabled={estimatedQuestions === 0}
+              style={estimatedQuestions === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+              onClick={handleCreate}
+            >
+              <Play size={13} />
+              Gerar e iniciar
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function NotebookField({ label, children }) {
+  return (
+    <label style={{ display: 'flex', minWidth: 0, flexDirection: 'column', gap: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+      {label}
+      {React.cloneElement(children, {
+        style: {
+          ...(children.props.style || {}),
+          width: '100%', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)',
+          padding: '8px 12px', fontSize: 13, fontWeight: 600, letterSpacing: 'normal', textTransform: 'none',
+          color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', transition: 'border-color 0.15s',
+          boxSizing: 'border-box',
+        },
+      })}
+    </label>
+  );
+}
+
+function NotebookSummaryTile({ Icon, label, value }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 12 }}>
+      <div style={{ display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' }}>
+        <Icon size={17} />
+      </div>
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{label}</div>
+        <div className="pl-num" style={{ fontSize: 24, color: 'var(--pl-ink)' }}>{value}<span style={{ color: 'var(--pl-accent)' }}>.</span></div>
+      </div>
+    </div>
+  );
+}
+
+function buildNotebookQuestions(allQuestions, { rules, banca, difficulty }) {
+  const selected = [];
+  const usedIds = new Set();
+  const questions = Array.isArray(allQuestions) ? allQuestions : [];
+
+  for (const rule of rules) {
+    const quantity = Math.max(1, Number(rule.quantidade || 1));
+    const matches = questions.filter((question) => {
+      if (usedIds.has(String(question.id))) return false;
+      if (rule.disciplina && question.disciplina !== rule.disciplina) return false;
+      if (rule.topico && question.topico !== rule.topico) return false;
+      if (banca && question.banca !== banca) return false;
+      if (difficulty && question.dificuldade && question.dificuldade !== difficulty) return false;
+      return true;
+    });
+
+    for (const question of matches.slice(0, quantity)) {
+      usedIds.add(String(question.id));
+      selected.push(question);
+    }
+  }
+
+  return selected;
+}
+
+function buttonClass(tone = 'primary', extra = '') {
+  const base = tone === 'primary' ? 'pl-btn pl-btn-primary' : 'pl-btn pl-btn-ghost';
+  return `${base} ${extra}`.trim();
 }
 
 

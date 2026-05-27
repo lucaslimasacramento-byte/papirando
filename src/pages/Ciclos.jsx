@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   CalendarDays,
   Clock,
@@ -10,7 +10,6 @@ import {
   RefreshCw,
   RotateCcw,
 } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
 
 const CYCLE_PASTEL_COLORS = Array.from(
   new Set([
@@ -208,7 +207,7 @@ export default function Ciclos({
       if (!groups.has(matterKey)) {
         groups.set(matterKey, {
           key: matterKey,
-          materia: item?.materia || item?.nome || `Matéria ${index + 1}`,
+          materia: item?.materia || item?.nome || `Materia ${index + 1}`,
           cor: subjectColorMap.get(matterKey) || buildDistinctPastelColor(groups.size, source.length || 1),
           minutos: 0,
           blocos: [],
@@ -237,44 +236,45 @@ export default function Ciclos({
 
   if (planWizardStep > 0) {
     return (
-      <div className={`${embedded ? 'flex min-h-0 flex-col gap-6' : 'mx-auto flex max-w-[1400px] min-h-0 flex-col gap-6'} animate-in fade-in duration-500`}>
-        <div className="rounded-[2rem] border border-gray-200 bg-white p-8 shadow-sm md:p-10">
-          <div className="relative mx-auto mb-12 flex max-w-2xl items-center justify-between">
-            <div className="absolute left-0 right-0 top-1/2 -z-10 h-1 -translate-y-1/2 rounded-full bg-gray-100" />
-            <div className="absolute left-0 top-1/2 -z-10 h-1 -translate-y-1/2 rounded-full bg-[#1e3a5f] transition-all duration-500" style={{ width: `${((planWizardStep - 1) / 3) * 100}%` }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minHeight: 0 }}>
+        <div className="pl-card" style={{ padding: 'clamp(16px, 3vw, 32px) clamp(14px, 4vw, 40px)' }}>
+          {/* Step indicator */}
+          <div style={{ position: 'relative', display: 'flex', maxWidth: 560, margin: '0 auto 48px', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', zIndex: 0, height: 4, transform: 'translateY(-50%)', borderRadius: 999, background: 'var(--pl-bg-soft)' }} />
+            <div style={{ position: 'absolute', left: 0, top: '50%', zIndex: 0, height: 4, transform: 'translateY(-50%)', borderRadius: 999, background: 'var(--pl-accent)', transition: 'width 0.5s', width: `${((planWizardStep - 1) / 3) * 100}%` }} />
             {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex flex-col items-center">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full border-4 border-white text-sm font-black transition-colors ${planWizardStep >= step ? 'bg-[#1e3a5f] text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}>
+              <div key={step} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '4px solid var(--pl-surface)', fontSize: 13, fontWeight: 900, transition: 'background 0.2s', background: planWizardStep >= step ? 'var(--pl-accent)' : 'var(--pl-bg-soft)', color: planWizardStep >= step ? '#fff' : 'var(--pl-ink-3)' }}>
                   {String(step).padStart(2, '0')}
                 </div>
-                <span className={`mt-2 text-[10px] font-bold uppercase tracking-widest ${planWizardStep >= step ? 'text-[#1e3a5f]' : 'text-gray-400'}`}>
-                  {step === 1 ? 'Organização' : step === 2 ? 'Disciplinas' : step === 3 ? 'Relevância' : 'Horários'}
+                <span style={{ marginTop: 8, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: planWizardStep >= step ? 'var(--pl-accent)' : 'var(--pl-ink-3)' }}>
+                  {step === 1 ? 'Organizacao' : step === 2 ? 'Disciplinas' : step === 3 ? 'Relevancia' : 'Horarios'}
                 </span>
               </div>
             ))}
           </div>
 
           {planWizardStep === 1 ? (
-            <div className="mx-auto max-w-3xl">
-              <div className="mb-8 text-center">
-                <p className="font-semibold text-gray-500">Para iniciar o seu planejamento, escolha a melhor forma de visualização para você:</p>
+            <div style={{ maxWidth: 640, margin: '0 auto' }}>
+              <div style={{ marginBottom: 32, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Para iniciar o seu planejamento, escolha a melhor forma de visualizacao para voce:</p>
               </div>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                 <WizardModeCard title="Ciclo de Estudos" description="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina." icon={RefreshCw} selected={safeWizData.tipo === 'ciclo'} onClick={() => { setWizData((prev) => ({ ...prev, tipo: 'ciclo' })); setPlanWizardStep(2); }} />
-                <WizardModeCard title="Planejamento Semanal" description="Define quais matérias estudar em cada dia da semana. Ótimo para quem prefere uma rotina fixa e estruturada." icon={CalendarDays} selected={safeWizData.tipo === 'semanal'} onClick={() => { setWizData((prev) => ({ ...prev, tipo: 'semanal' })); setPlanWizardStep(2); }} />
+                <WizardModeCard title="Planejamento Semanal" description="Define quais materias estudar em cada dia da semana. Otimo para quem prefere uma rotina fixa e estruturada." icon={CalendarDays} selected={safeWizData.tipo === 'semanal'} onClick={() => { setWizData((prev) => ({ ...prev, tipo: 'semanal' })); setPlanWizardStep(2); }} />
               </div>
             </div>
           ) : null}
 
           {planWizardStep === 2 ? (
-            <div className="mx-auto max-w-4xl">
-              <div className="mb-8 text-center">
-                <p className="font-semibold text-gray-500">Selecione quais das <strong className="text-gray-800">suas disciplinas</strong> deseja colocar no seu <strong className="text-gray-800">planejamento</strong>.</p>
+            <div style={{ maxWidth: 760, margin: '0 auto' }}>
+              <div style={{ marginBottom: 32, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Selecione quais das <strong style={{ color: 'var(--pl-ink)' }}>suas disciplinas</strong> deseja colocar no seu <strong style={{ color: 'var(--pl-ink)' }}>planejamento</strong>.</p>
               </div>
-              <div className="mb-10 rounded-[2rem] border border-gray-200 bg-gray-50 p-6 md:p-8">
-                <div className="grid max-h-[320px] grid-cols-2 gap-4 overflow-y-auto pr-2 custom-scrollbar md:grid-cols-3">
+              <div style={{ marginBottom: 40, borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '24px 28px' }}>
+                <div style={{ display: 'grid', maxHeight: 320, gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 16, overflowY: 'auto', paddingRight: 8 }} className="custom-scrollbar">
                   {safeDisciplines.map((discipline) => (
-                    <button key={getWeightKey(discipline)} type="button" onClick={() => toggleWizMateria(discipline)} className={`truncate rounded-xl border-2 px-4 py-3.5 text-center text-sm font-bold shadow-sm transition-all hover:-translate-y-0.5 ${isSelected(discipline) ? 'border-[#1e3a5f] bg-[#1e3a5f]/10 text-[#1e3a5f]' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}>
+                    <button key={getWeightKey(discipline)} type="button" onClick={() => toggleWizMateria(discipline)} style={{ overflow: 'hidden', borderRadius: 10, border: isSelected(discipline) ? '2px solid var(--pl-accent)' : '2px solid var(--pl-rule-2)', padding: '14px 16px', textAlign: 'center', fontSize: 13, fontWeight: 700, background: isSelected(discipline) ? 'var(--pl-accent-soft)' : 'var(--pl-surface)', color: isSelected(discipline) ? 'var(--pl-accent)' : 'var(--pl-ink-2)', cursor: 'pointer', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                       {discipline.nome}
                     </button>
                   ))}
@@ -285,20 +285,20 @@ export default function Ciclos({
           ) : null}
 
           {planWizardStep === 3 ? (
-            <div className="mx-auto max-w-5xl">
-              <div className="mb-8 text-center">
-                <p className="font-semibold text-gray-500">Para cada disciplina, selecione a <strong className="text-gray-800">importância</strong> e o seu <strong className="text-gray-800">grau de conhecimento</strong>.</p>
+            <div style={{ maxWidth: 900, margin: '0 auto' }}>
+              <div style={{ marginBottom: 32, textAlign: 'center' }}>
+                <p style={{ margin: 0, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Para cada disciplina, selecione a <strong style={{ color: 'var(--pl-ink)' }}>importancia</strong> e o seu <strong style={{ color: 'var(--pl-ink)' }}>grau de conhecimento</strong>.</p>
               </div>
-              <div className="mb-10 flex flex-col gap-8 lg:flex-row">
-                <div className="grid max-h-[450px] flex-1 grid-cols-1 gap-6 overflow-y-auto pr-2 custom-scrollbar md:grid-cols-2">
+              <div style={{ marginBottom: 40, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32 }}>
+                <div style={{ display: 'grid', maxHeight: 450, flex: 1, gridTemplateColumns: '1fr 1fr', gap: 24, overflowY: 'auto', paddingRight: 8 }} className="custom-scrollbar">
                   {selectedSubjects.map((discipline) => {
                     const key = getWeightKey(discipline);
                     const currentPeso = safeWizData.pesos?.[key] || { imp: 5, con: 1.5 };
                     return (
-                      <div key={key} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-[#1e3a5f]/30">
-                        <h4 className="mb-6 text-center font-bold text-gray-800">{discipline.nome}</h4>
-                        <div className="space-y-6">
-                          <SliderRow label="Importância" value={Number(currentPeso.imp || 5)} max={5} step={1} onChange={(value) => handlePesoChange(discipline, 'imp', value)} />
+                      <div key={key} className="pl-card" style={{ padding: 24 }}>
+                        <h4 style={{ margin: '0 0 24px', textAlign: 'center', fontWeight: 700, color: 'var(--pl-ink)' }}>{discipline.nome}</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                          <SliderRow label="Importancia" value={Number(currentPeso.imp || 5)} max={5} step={1} onChange={(value) => handlePesoChange(discipline, 'imp', value)} />
                           <SliderRow label="Conhecimento" value={Number(currentPeso.con || 1.5)} max={5} step={0.5} onChange={(value) => handlePesoChange(discipline, 'con', value)} />
                         </div>
                       </div>
@@ -306,20 +306,20 @@ export default function Ciclos({
                   })}
                 </div>
 
-                <div className="w-full shrink-0 rounded-2xl border border-gray-200 bg-gray-50 p-6 lg:w-72">
-                  <h4 className="mb-4 border-b border-gray-200 pb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Pré-visualização do ciclo</h4>
-                  <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar">
+                <div style={{ minWidth: 0, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 24 }}>
+                  <h4 className="pl-eyebrow" style={{ margin: '0 0 16px', paddingBottom: 8, borderBottom: '1px solid var(--pl-rule-2)' }}>Pre-visualizacao do ciclo</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 4 }} className="custom-scrollbar">
                     {selectedSubjects.map((discipline, index) => {
                       const key = getWeightKey(discipline);
                       const currentPeso = safeWizData.pesos?.[key] || { imp: 5, con: 1.5 };
                       const weight = Number(currentPeso.imp || 5) * (6 - Number(currentPeso.con || 1.5));
                       const pct = previewWeightTotal > 0 ? Math.round((weight / previewWeightTotal) * 100) : 0;
                       return (
-                        <div key={key} className="flex h-12 items-stretch overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-                          <div className="flex w-14 shrink-0 items-center justify-center font-black text-gray-800" style={{ backgroundColor: discipline.cor || buildDistinctPastelColor(index, selectedSubjects.length || 1) }}>
+                        <div key={key} style={{ display: 'flex', height: 48, alignItems: 'stretch', overflow: 'hidden', borderRadius: 10, border: '1px solid var(--pl-rule)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
+                          <div style={{ display: 'flex', width: 56, flexShrink: 0, alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#1e293b', fontSize: 12, backgroundColor: discipline.cor || buildDistinctPastelColor(index, selectedSubjects.length || 1) }}>
                             {pct}%
                           </div>
-                          <div className="flex flex-1 items-center truncate px-3 text-xs font-bold text-gray-700">{discipline.nome}</div>
+                          <div style={{ display: 'flex', flex: 1, alignItems: 'center', padding: '0 12px', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{discipline.nome}</div>
                         </div>
                       );
                     })}
@@ -331,34 +331,34 @@ export default function Ciclos({
           ) : null}
 
           {planWizardStep === 4 ? (
-            <div className="mx-auto max-w-3xl">
-              <div className="mb-10 space-y-10">
+            <div style={{ maxWidth: 640, margin: '0 auto' }}>
+              <div style={{ marginBottom: 40, display: 'flex', flexDirection: 'column', gap: 40 }}>
                 <div>
-                  <label className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                    Quantas horas, em média, pretende estudar <strong className="text-gray-800">por semana</strong>?
-                    <HelpCircle size={14} className="text-gray-400" />
+                  <label style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                    Quantas horas, em media, pretende estudar <strong style={{ color: 'var(--pl-ink)' }}>por semana</strong>?
+                    <HelpCircle size={14} style={{ color: 'var(--pl-ink-3)' }} />
                   </label>
-                  <input type="number" value={Number(safeWizData.horasSemana || 18)} onChange={(event) => setWizData((prev) => ({ ...prev, horasSemana: Number(event.target.value || 0) }))} className="w-32 border-b-2 border-[#1e3a5f] pb-1 text-2xl font-black text-gray-800 outline-none" />
+                  <input type="number" value={Number(safeWizData.horasSemana || 18)} onChange={(event) => setWizData((prev) => ({ ...prev, horasSemana: Number(event.target.value || 0) }))} style={{ width: 128, paddingBottom: 4, fontSize: 24, fontWeight: 900, color: 'var(--pl-ink)', background: 'transparent', outline: 'none', border: 'none', borderBottom: '2px solid var(--pl-accent)' }} />
                 </div>
                 <div>
-                  <label className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                    Qual duração <strong className="text-gray-800">mínima</strong> e <strong className="text-gray-800">máxima</strong> pretende para uma sessão?
-                    <HelpCircle size={14} className="text-gray-400" />
+                  <label style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                    Qual duracao <strong style={{ color: 'var(--pl-ink)' }}>minima</strong> e <strong style={{ color: 'var(--pl-ink)' }}>maxima</strong> pretende para uma sessao?
+                    <HelpCircle size={14} style={{ color: 'var(--pl-ink-3)' }} />
                   </label>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <select value={safeWizData.minSessao || '1h 30m'} onChange={(event) => setWizData((prev) => ({ ...prev, minSessao: event.target.value }))} className="border-b-2 border-[#1e3a5f] bg-transparent pb-1 text-lg font-bold text-gray-800 outline-none">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                    <select value={safeWizData.minSessao || '1h 30m'} onChange={(event) => setWizData((prev) => ({ ...prev, minSessao: event.target.value }))} style={{ background: 'transparent', paddingBottom: 4, fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)', outline: 'none', border: 'none', borderBottom: '2px solid var(--pl-accent)', cursor: 'pointer' }}>
                       {['45m', '1h', '1h 30m', '2h'].map((option) => <option key={`min-${option}`} value={option}>{option}</option>)}
                     </select>
-                    <span className="font-bold text-gray-400">a</span>
-                    <select value={safeWizData.maxSessao || '2h 00m'} onChange={(event) => setWizData((prev) => ({ ...prev, maxSessao: event.target.value }))} className="border-b-2 border-[#1e3a5f] bg-transparent pb-1 text-lg font-bold text-gray-800 outline-none">
+                    <span style={{ fontWeight: 700, color: 'var(--pl-ink-3)' }}>a</span>
+                    <select value={safeWizData.maxSessao || '2h 00m'} onChange={(event) => setWizData((prev) => ({ ...prev, maxSessao: event.target.value }))} style={{ background: 'transparent', paddingBottom: 4, fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)', outline: 'none', border: 'none', borderBottom: '2px solid var(--pl-accent)', cursor: 'pointer' }}>
                       {['2h', '2h 30m', '3h', '4h'].map((option) => <option key={`max-${option}`} value={option}>{option}</option>)}
                     </select>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-4 border-t border-gray-100 pt-6">
-                <button type="button" onClick={() => setPlanWizardStep(3)} className="rounded-xl border-2 border-gray-200 px-8 py-3.5 font-bold text-gray-500 transition-colors hover:bg-gray-50">Voltar</button>
-                <button type="button" onClick={onFinalizeCycle} className="rounded-xl bg-[#1e3a5f] px-10 py-3.5 font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-colors hover:bg-[#1e3a5f]">Concluir</button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, borderTop: '1px solid var(--pl-rule)', paddingTop: 24 }}>
+                <button type="button" onClick={() => setPlanWizardStep(3)} className="pl-btn pl-btn-ghost" style={{ padding: '10px 24px' }}>Voltar</button>
+                <button type="button" onClick={onFinalizeCycle} className="pl-btn pl-btn-primary" style={{ padding: '10px 32px' }}>Concluir</button>
               </div>
             </div>
           ) : null}
@@ -368,52 +368,59 @@ export default function Ciclos({
   }
 
   return (
-    <div className="pl-page">
-      <PageHeadPremium
-        icon={ListOrdered}
-        badge={<PageHeadPremiumBadge icon={ListOrdered}>Estudo cíclico</PageHeadPremiumBadge>}
-        title="Ciclos de estudo"
-        subtitle="Sequencie blocos, acompanhe o progresso e ajuste o edital com ritmo claro."
-        className="!rounded-2xl"
-      />
-      <div className="grid min-h-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:items-stretch">
-        <div className="flex min-h-0 flex-col gap-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-            <div className="col-span-1 flex flex-col items-center justify-center rounded-[1.35rem] border border-[#1e3a5f]/15 bg-white p-3 shadow-sm">
-              <span className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Ciclos completos</span>
-              <div className="flex h-[66px] w-[66px] items-center justify-center rounded-full border-[4px] border-[#1e3a5f] text-[1.85rem] font-black text-[#1e3a5f]">{completedCycles}</div>
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+      <header style={{ marginBottom: 18, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+        <div>
+          <span className="pl-tag pl-tag-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <ListOrdered size={13} />
+            Estudo ciclico
+          </span>
+          <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 44, color: 'var(--pl-ink)' }}>
+            Ciclos de estudo<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p style={{ margin: '10px 0 0', maxWidth: 680, color: 'var(--pl-ink-2)', fontSize: 14, fontWeight: 600, lineHeight: 1.55 }}>
+            Sequencie blocos, acompanhe o progresso e ajuste o edital com ritmo claro.
+          </p>
+        </div>
+      </header>
+      <div style={{ display: 'grid', minHeight: 0, gap: 12, gridTemplateColumns: '1fr', alignItems: 'stretch' }} className="ciclos-layout-grid">
+        <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 12 }}>
+            <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 12 }}>
+              <span className="pl-eyebrow" style={{ marginBottom: 8 }}>Ciclos completos</span>
+              <div style={{ display: 'flex', height: 66, width: 66, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '4px solid var(--pl-accent)', fontSize: '1.85rem', fontWeight: 900, color: 'var(--pl-accent)' }}>{completedCycles}</div>
             </div>
-            <div className="col-span-1 rounded-[1.35rem] border border-gray-200 bg-white p-4 shadow-sm md:col-span-3">
-              <div className="mb-1.5 flex items-end justify-between gap-3">
+            <div className="pl-card" style={{ gridColumn: 'span 3', padding: 16 }}>
+              <div style={{ marginBottom: 6, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                 <div>
-                  <h3 className="mb-1 text-[10px] font-black uppercase tracking-widest text-gray-400">Progresso do ciclo atual</h3>
-                  <p className="text-sm font-semibold text-gray-500">{formatMinutes(minConcluidosCiclo)} / {formatMinutes(totMinutosCiclo)}</p>
+                  <h3 className="pl-eyebrow" style={{ marginBottom: 4 }}>Progresso do ciclo atual</h3>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{formatMinutes(minConcluidosCiclo)} / {formatMinutes(totMinutosCiclo)}</p>
                 </div>
-                <div className="flex items-baseline">
-                  <span className="text-[2rem] font-black leading-none text-[#1e3a5f]">{progressoCiclo}</span>
-                  <span className="ml-0.5 text-base font-bold text-[#1e3a5f]">%</span>
+                <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                  <span className="pl-num" style={{ fontSize: '2rem', lineHeight: 1, color: 'var(--pl-accent)' }}>{progressoCiclo}</span>
+                  <span style={{ marginLeft: 2, fontSize: 16, fontWeight: 700, color: 'var(--pl-accent)' }}>%</span>
                 </div>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
-                <div className="h-full rounded-full bg-[#1e3a5f] transition-all duration-1000 ease-out" style={{ width: `${progressoCiclo}%` }} />
+              <div className="pl-progress" style={{ height: 10 }}>
+                <div className="pl-progress-bar" style={{ width: `${progressoCiclo}%`, background: 'var(--pl-accent)' }} />
               </div>
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-100 px-3.5 py-3">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-500">Sequência dos Estudos</h3>
+          <div className="pl-card" style={{ display: 'flex', minHeight: 0, flex: 1, flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', padding: '12px 14px' }}>
+              <h3 className="pl-eyebrow">Sequencia dos Estudos</h3>
               {!isEditingCycle ? (
-                <label className="group flex cursor-pointer items-center gap-2">
-                  <input type="checkbox" checked={!showFinishedSessions} onChange={() => setShowFinishedSessions(!showFinishedSessions)} className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-colors group-hover:text-gray-600">Ocultar Finalizados</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={!showFinishedSessions} onChange={() => setShowFinishedSessions(!showFinishedSessions)} style={{ height: 16, width: 16, borderRadius: 4, borderColor: 'var(--pl-rule-2)', accentColor: 'var(--pl-accent)' }} />
+                  <span className="pl-eyebrow" style={{ fontSize: 10 }}>Ocultar Finalizados</span>
                 </label>
               ) : (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Ações</span>
+                <span className="pl-eyebrow" style={{ fontSize: 10 }}>Acoes</span>
               )}
             </div>
 
-            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-2.5 custom-scrollbar lg:max-h-[calc(100vh-21rem)]">
+            <div style={{ minHeight: 0, flex: 1, overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 'calc(100vh - 21rem)' }} className="custom-scrollbar">
               {!isEditingCycle
                 ? filteredCycle.map((item) => (
                     <CycleRow key={item.id} item={item} onToggle={() => toggleSessionConcluida(item.id)} onStart={openTimerSetup} onRegister={() => setRegistroEstudoModalOpen(true)} timeLabel={formatTimeStr ? formatTimeStr(item.minutos) : formatMinutes(item.minutos)} />
@@ -422,33 +429,33 @@ export default function Ciclos({
             </div>
 
             {!isEditingCycle ? (
-              <div className="flex items-center justify-end border-t border-gray-100 px-3.5 py-2.5">
-                <button type="button" onClick={() => setIsEditingCycle(true)} className="flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-5 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f]">Editar Ciclo</button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderTop: '1px solid var(--pl-rule)', padding: '10px 14px' }}>
+                <button type="button" onClick={() => setIsEditingCycle(true)} className="pl-btn pl-btn-primary pl-btn-sm">Editar Ciclo</button>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/50 px-6 py-4 md:flex-row">
-                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#1e3a5f] bg-white px-6 py-3 text-sm font-bold text-[#1e3a5f] transition-colors hover:bg-blue-50 md:w-auto"><Plus size={16} /> Adicionar Disciplina</button>
-                <div className="flex items-center gap-3">
-                  <button type="button" onClick={onResetCycle} className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-500 transition-colors hover:text-red-500">Reiniciar</button>
-                  <button type="button" onClick={() => setIsEditingCycle(false)} className="rounded-xl bg-[#1e3a5f] px-8 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f]">Salvar Alterações</button>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', gap: 16, borderTop: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '16px 24px' }}>
+                <button type="button" className="pl-btn pl-btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'center', borderColor: 'var(--pl-accent)', color: 'var(--pl-accent)' }}><Plus size={16} /> Adicionar Disciplina</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button type="button" onClick={onResetCycle} className="pl-btn pl-btn-ghost" style={{ color: 'var(--pl-danger)' }}>Reiniciar</button>
+                  <button type="button" onClick={() => setIsEditingCycle(false)} className="pl-btn pl-btn-primary">Salvar Alteracoes</button>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="min-h-0">
-          <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[1.45rem] border border-gray-200 bg-white px-2 py-2.5 shadow-sm">
-            <h3 className="mb-1.5 px-1 text-left text-[11px] font-black uppercase tracking-[0.24em] text-gray-500">Ciclo</h3>
-            <div className="flex min-h-0 flex-1 items-center justify-center">
-              <div className="relative aspect-square w-full max-w-[640px]">
-                <svg viewBox="0 0 120 120" className="h-full w-full overflow-visible drop-shadow-md">
+        <div style={{ minHeight: 0 }}>
+          <div className="pl-card" style={{ position: 'relative', display: 'flex', height: '100%', minHeight: 0, flexDirection: 'column', overflow: 'hidden', padding: '10px 8px' }}>
+            <h3 className="pl-eyebrow" style={{ marginBottom: 6, paddingLeft: 4, textAlign: 'left' }}>Ciclo</h3>
+            <div style={{ display: 'flex', minHeight: 0, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'relative', aspectRatio: '1 / 1', width: '100%', maxWidth: 640 }}>
+                <svg viewBox="0 0 120 120" style={{ height: '100%', width: '100%', overflow: 'visible', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.07))' }}>
                   {outerSegments.map((segment, index) => (
                     <path
                       key={`outer-${segment.id || segment.materia || 'segment'}-${index}`}
                       d={segment.path}
                       fill={segment.cor}
-                      className="cursor-pointer transition-all duration-300"
+                      style={{ cursor: 'pointer', transition: 'all 0.3s' }}
                       onMouseEnter={(event) => {
                         event.currentTarget.style.opacity = '0.9';
                         setChartTooltip({ materia: segment.materia, minutos: segment.minutos, cor: segment.cor, x: event.clientX, y: event.clientY });
@@ -466,7 +473,7 @@ export default function Ciclos({
                       key={`inner-${segment.materia || 'subject'}-${index}`}
                       d={segment.path}
                       fill={segment.cor}
-                      className="cursor-pointer transition-all duration-300"
+                      style={{ cursor: 'pointer', transition: 'all 0.3s' }}
                       onMouseEnter={(event) => {
                         event.currentTarget.style.opacity = '0.92';
                         setChartTooltip({ materia: segment.materia, minutos: segment.minutos, cor: segment.cor, x: event.clientX, y: event.clientY });
@@ -479,35 +486,43 @@ export default function Ciclos({
                     />
                   ))}
                 </svg>
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-[2.7rem] font-black leading-none text-[#6E7685]">{formatTimeStr(totMinutosCiclo)}</span>
+                <div style={{ pointerEvents: 'none', position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="pl-num" style={{ fontSize: '2.7rem', lineHeight: 1, color: 'var(--pl-ink-3)' }}>{formatTimeStr(totMinutosCiclo)}</span>
                 </div>
               </div>
             </div>
 
             {!isEditingCycle ? (
-              <div className="mt-2 overflow-hidden rounded-full border border-[#EEF2F7] bg-[#F7F9FC] shadow-inner">
-                <div className="flex h-4 w-full overflow-hidden">
+              <div style={{ marginTop: 8, overflow: 'hidden', borderRadius: 999, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)' }}>
+                <div style={{ display: 'flex', height: 16, width: '100%', overflow: 'hidden' }}>
                   {groupedSubjects.map((item, index) => (
                     <button
                       key={`${item.key || item.materia || 'legend'}-${index}`}
                       type="button"
-                      className="h-full min-w-[20px] transition-transform hover:scale-y-110"
                       style={{
+                        height: '100%',
+                        minWidth: 20,
                         flexGrow: Math.max(Number(item.minutos || 0), 1),
                         flexBasis: 0,
                         backgroundColor: item.cor,
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'transform 0.15s',
                       }}
-                      onMouseEnter={(event) =>
+                      onMouseEnter={(event) => {
+                        event.currentTarget.style.transform = 'scaleY(1.1)';
                         setChartTooltip({
                           materia: item.materia,
                           minutos: item.minutos,
                           cor: item.cor,
                           x: event.clientX,
                           y: event.clientY,
-                        })
-                      }
-                      onMouseLeave={() => setChartTooltip(null)}
+                        });
+                      }}
+                      onMouseLeave={(event) => {
+                        event.currentTarget.style.transform = 'scaleY(1)';
+                        setChartTooltip(null);
+                      }}
                       onMouseMove={(event) =>
                         setChartTooltip((prev) =>
                           prev
@@ -534,21 +549,33 @@ export default function Ciclos({
 
 function WizardModeCard({ title, description, icon: Icon, selected, onClick }) {
   return (
-    <div onClick={onClick} className={`cursor-pointer rounded-[2rem] border-2 p-8 text-center transition-all ${selected ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 shadow-md' : 'border-gray-200 hover:border-[#1e3a5f]/50'}`}>
-      <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${selected ? 'bg-[#1e3a5f] text-white' : 'bg-gray-100 text-[#1e3a5f]'}`}>
+    <div
+      onClick={onClick}
+      style={{
+        cursor: 'pointer',
+        borderRadius: 32,
+        border: selected ? '2px solid var(--pl-accent)' : '2px solid var(--pl-rule-2)',
+        padding: 32,
+        textAlign: 'center',
+        transition: 'all 0.2s',
+        background: selected ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+        boxShadow: selected ? 'var(--pl-sh-low)' : 'none',
+      }}
+    >
+      <div style={{ margin: '0 auto 24px', display: 'flex', height: 80, width: 80, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: selected ? 'var(--pl-accent)' : 'var(--pl-bg-soft)', color: selected ? '#fff' : 'var(--pl-accent)' }}>
         <Icon size={36} strokeWidth={2.5} />
       </div>
-      <h4 className="mb-2 text-xl font-bold text-gray-800">{title}</h4>
-      <p className="text-sm font-medium text-gray-500">{description}</p>
+      <h4 style={{ marginBottom: 8, fontSize: 20, fontWeight: 700, color: 'var(--pl-ink)' }}>{title}</h4>
+      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{description}</p>
     </div>
   );
 }
 
 function WizardFooter({ onBack, onNext, nextDisabled = false }) {
   return (
-    <div className="flex items-center justify-end gap-4 border-t border-gray-100 pt-6">
-      <button type="button" onClick={onBack} className="rounded-xl border-2 border-gray-200 px-8 py-3.5 font-bold text-gray-500 transition-colors hover:bg-gray-50">Voltar</button>
-      <button type="button" onClick={onNext} disabled={nextDisabled} className="rounded-xl bg-[#1e3a5f] px-10 py-3.5 font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-colors hover:bg-[#1e3a5f] disabled:opacity-50">Próximo</button>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, borderTop: '1px solid var(--pl-rule)', paddingTop: 24 }}>
+      <button type="button" onClick={onBack} className="pl-btn pl-btn-ghost" style={{ padding: '10px 32px', fontWeight: 700 }}>Voltar</button>
+      <button type="button" onClick={onNext} disabled={nextDisabled} className="pl-btn pl-btn-primary" style={{ padding: '10px 40px', fontWeight: 700, boxShadow: '0 4px 14px rgba(37,99,235,0.3)', opacity: nextDisabled ? 0.5 : 1 }}>Proximo</button>
     </div>
   );
 }
@@ -556,11 +583,11 @@ function WizardFooter({ onBack, onNext, nextDisabled = false }) {
 function SliderRow({ label, value, max, step, onChange }) {
   return (
     <div>
-      <div className="mb-2 flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
+      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--pl-ink-3)' }}>
         <span>{label}</span>
-        <span className="text-[#1e3a5f]">{value}</span>
+        <span style={{ color: 'var(--pl-accent)' }}>{value}</span>
       </div>
-      <input type="range" min="1" max={String(max)} step={String(step)} value={value} onChange={(event) => onChange(event.target.value)} className="w-full cursor-pointer accent-[#1e3a5f]" />
+      <input type="range" min="1" max={String(max)} step={String(step)} value={value} onChange={(event) => onChange(event.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--pl-accent)' }} />
     </div>
   );
 }
@@ -570,31 +597,50 @@ function CycleRow({ item, onStart, onRegister, onHistory = () => {}, timeLabel }
   const progressWidth = Math.max(0, Math.min(rawProgress, 100));
 
   return (
-    <div className={`group relative rounded-[1.3rem] border border-[#EEF2F7] bg-[#FAFBFD] px-4 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${item.concluido ? 'opacity-60' : 'hover:border-[#DCE6F4] hover:shadow-sm'}`}>
+    <div
+      className="group"
+      style={{
+        position: 'relative',
+        borderRadius: 20,
+        border: '1px solid var(--pl-rule)',
+        background: 'var(--pl-bg-soft)',
+        padding: '12px 16px',
+        transition: 'all 0.5s cubic-bezier(0.22,1,0.36,1)',
+        opacity: item.concluido ? 0.6 : 1,
+      }}
+    >
       <div
-        className={`absolute left-4 top-3 w-1.5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${item.concluido ? 'h-[2.9rem]' : 'h-[2.9rem] group-hover:h-[calc(100%-0.9rem)]'}`}
-        style={{ backgroundColor: item.cor }}
+        style={{
+          position: 'absolute',
+          left: 16,
+          top: 12,
+          width: 6,
+          height: '2.9rem',
+          borderRadius: 999,
+          backgroundColor: item.cor,
+          transition: 'all 0.5s cubic-bezier(0.22,1,0.36,1)',
+        }}
       />
-      <div className="pl-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-3">
-              <h4 className={`truncate text-[0.94rem] font-bold ${item.concluido ? 'text-gray-500 line-through' : 'text-[#243A5A]'}`}>{item.materia}</h4>
-              <span className="flex shrink-0 items-center gap-1 text-[0.8rem] font-medium text-[#50607A]"><Clock size={13} /> {item.concluido ? 'Finalizado' : timeLabel}</span>
+      <div style={{ paddingLeft: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <h4 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.94rem', fontWeight: 700, color: item.concluido ? 'var(--pl-ink-3)' : 'var(--pl-ink)', textDecoration: item.concluido ? 'line-through' : 'none' }}>{item.materia}</h4>
+              <span style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 4, fontSize: '0.8rem', fontWeight: 500, color: 'var(--pl-ink-2)' }}><Clock size={13} /> {item.concluido ? 'Finalizado' : timeLabel}</span>
             </div>
-            <div className="mt-2 h-[0.34rem] w-full overflow-hidden rounded-full bg-[#E9EEF5]">
-              <div className="h-full rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ width: `${progressWidth}%`, backgroundColor: item.cor }} />
+            <div style={{ marginTop: 8, height: '0.34rem', width: '100%', overflow: 'hidden', borderRadius: 999, background: 'var(--pl-rule-2)' }}>
+              <div style={{ height: '100%', borderRadius: 999, transition: 'all 0.5s cubic-bezier(0.22,1,0.36,1)', width: `${progressWidth}%`, backgroundColor: item.cor }} />
             </div>
           </div>
         </div>
 
         {!item.concluido ? (
-          <div className="max-h-0 translate-y-1 overflow-hidden opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:max-h-24 group-hover:translate-y-0 group-hover:opacity-100">
-            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[#EEF2F7] pt-3 text-[0.82rem] font-medium text-[#304A70]">
-              <button type="button" onClick={onStart} className="flex items-center gap-1.5 transition-colors hover:text-[#1e3a5f]"><Play size={15} fill="currentColor" className="text-[#1e3a5f]" /> Iniciar estudo</button>
-              <button type="button" onClick={onRegister} className="flex items-center gap-1.5 transition-colors hover:text-[#1e3a5f]"><PlusCircle size={15} className="text-[#304A70]" /> Adicionar estudo manualmente</button>
-              <button type="button" onClick={onHistory} className="flex items-center gap-1.5 transition-colors hover:text-[#1e3a5f]"><RotateCcw size={15} /> Ver últimos estudos</button>
-              <span className="text-[0.76rem] font-semibold text-[#7B879C]">{rawProgress}%</span>
+          <div style={{ maxHeight: 0, overflow: 'hidden', opacity: 0, transform: 'translateY(4px)', transition: 'all 0.5s cubic-bezier(0.22,1,0.36,1)' }} className="cycle-row-actions">
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 20px', borderTop: '1px solid var(--pl-rule)', paddingTop: 12, fontSize: '0.82rem', fontWeight: 500, color: 'var(--pl-ink-2)' }}>
+              <button type="button" onClick={onStart} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', transition: 'color 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--pl-accent)'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--pl-ink-2)'; }}><Play size={15} fill="currentColor" style={{ color: 'var(--pl-accent)' }} /> Iniciar estudo</button>
+              <button type="button" onClick={onRegister} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', transition: 'color 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--pl-accent)'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--pl-ink-2)'; }}><PlusCircle size={15} style={{ color: 'var(--pl-ink-2)' }} /> Adicionar estudo manualmente</button>
+              <button type="button" onClick={onHistory} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', transition: 'color 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--pl-accent)'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--pl-ink-2)'; }}><RotateCcw size={15} /> Ver ultimos estudos</button>
+              <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--pl-ink-3)' }}>{rawProgress}%</span>
             </div>
           </div>
         ) : null}
@@ -605,22 +651,22 @@ function CycleRow({ item, onStart, onRegister, onHistory = () => {}, timeLabel }
 
 function EditableCycleRow({ item }) {
   return (
-    <div className="flex flex-col justify-between gap-6 rounded-2xl border border-gray-200 bg-gray-50/50 p-5 shadow-sm md:flex-row md:items-center">
-      <div className="flex w-full flex-1 items-center gap-4">
-        <div className="h-16 w-1.5 rounded-full" style={{ backgroundColor: item.cor }} />
-        <div className="flex-1">
-          <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-gray-400">Disciplina</label>
-          <div className="border-b-2 border-gray-300 pb-1.5 text-sm font-bold text-gray-800">{item.materia}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 24, borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20, boxShadow: 'var(--pl-sh-low)' }}>
+      <div style={{ display: 'flex', width: '100%', flex: 1, alignItems: 'center', gap: 16 }}>
+        <div style={{ height: 64, width: 6, borderRadius: 999, backgroundColor: item.cor, flexShrink: 0 }} />
+        <div style={{ flex: 1 }}>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Disciplina</label>
+          <div style={{ borderBottom: '2px solid var(--pl-rule-2)', paddingBottom: 6, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.materia}</div>
         </div>
       </div>
-      <div className="flex w-full items-center justify-between gap-6 md:w-auto md:border-l md:border-gray-200 md:pl-6">
-        <div className="w-24">
-          <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-gray-400">Minutos</label>
-          <div className="border-b-2 border-gray-300 pb-1.5 text-center text-sm font-bold text-gray-800">{item.minutos}</div>
+      <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+        <div style={{ width: 96 }}>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 4 }}>Minutos</label>
+          <div style={{ borderBottom: '2px solid var(--pl-rule-2)', paddingBottom: 6, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.minutos}</div>
         </div>
-        <div className="flex flex-col gap-2">
-          <button type="button" className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[10px] font-bold text-gray-500 shadow-sm transition-colors hover:text-gray-800">Duplicar</button>
-          <button type="button" className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[10px] font-bold text-gray-500 shadow-sm transition-colors hover:text-red-500">Remover</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" style={{ width: '100%' }}>Duplicar</button>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" style={{ width: '100%', color: 'var(--pl-danger)' }}>Remover</button>
         </div>
       </div>
     </div>
@@ -739,4 +785,3 @@ function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
     y: centerY + radius * Math.sin(angleInRadians),
   };
 }
-

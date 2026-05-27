@@ -1307,7 +1307,7 @@ export default function Conciliador({
 
                 {activePanel === 'visao' && (
                   <>
-                    <section className="grid gap-6 2xl:grid-cols-[minmax(0,1.15fr)_380px]">
+                    <section style={{ display: 'grid', gap: 24, gridTemplateColumns: 'minmax(0, 1.15fr) 380px' }}>
                       <ComparisonTable
                         baseContest={selectedBase}
                         targetOneContest={selectedTargetOne}
@@ -1365,7 +1365,7 @@ export default function Conciliador({
                 )}
 
                 {activePanel === 'comparacao' && (
-                  <section className="grid gap-6 2xl:grid-cols-[minmax(0,1.15fr)_380px]">
+                  <section style={{ display: 'grid', gap: 24, gridTemplateColumns: 'minmax(0, 1.15fr) 380px' }}>
                     <ComparisonTable
                       baseContest={selectedBase}
                       targetOneContest={selectedTargetOne}
@@ -1373,7 +1373,7 @@ export default function Conciliador({
                       rows={comparisonRows}
                     />
 
-                    <div className="space-y-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                       <InfoCard
                         icon={DollarSign}
                         eyebrow="Leitura salarial"
@@ -1395,11 +1395,11 @@ export default function Conciliador({
                 )}
 
                 {activePanel === 'conteudo' && selectedBase && selectedTargetOne && !duplicateSelection && (
-                  <section className="space-y-6">
-                    <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura integral</p>
-                      <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">Conteúdo declarado nos editais</h3>
-                      <p className="mt-2 text-sm font-medium text-slate-500">
+                  <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <div className="pl-card" style={{ padding: 24 }}>
+                      <p className="pl-eyebrow">Leitura integral</p>
+                      <h3 style={{ marginTop: 8, fontSize: 18, fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>Conteúdo declarado nos editais</h3>
+                      <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
                         Etapas, resumo do catálogo e grade com contagem de tópicos — o mesmo bloco disponível antes da análise, aqui integrado ao fluxo após o parecer.
                       </p>
                     </div>
@@ -1413,7 +1413,7 @@ export default function Conciliador({
 
                 {activePanel === 'materias' && (
                   <>
-                    <section className={`grid gap-6 ${courseCount === 3 ? '2xl:grid-cols-2' : 'xl:grid-cols-3'}`}>
+                    <section style={{ display: 'grid', gap: 24, gridTemplateColumns: courseCount === 3 ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))' }}>
                       <AnalysisCard
                         theme="blue"
                         icon={CheckCircle2}
@@ -1460,7 +1460,7 @@ export default function Conciliador({
                       />
                     </section>
 
-                    <section className="grid gap-6 xl:grid-cols-2">
+                    <section style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                       <AnalysisCard
                         theme="amber"
                         icon={Zap}
@@ -1488,10 +1488,10 @@ export default function Conciliador({
                 )}
 
                 {activePanel === 'parecer' && (
-                  <section className="grid gap-6 2xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+                  <section style={{ display: 'grid', gap: 24, gridTemplateColumns: 'minmax(0, 1.1fr) minmax(320px, 0.9fr)' }}>
                     <VerdictCard verdict={displayedVerdict} loading={aiCompatibilityLoading} />
 
-                    <div className="grid gap-6">
+                    <div style={{ display: 'grid', gap: 24 }}>
                       <InfoCard
                         icon={Trophy}
                         eyebrow="Decisão estratégica"
@@ -1513,13 +1513,13 @@ export default function Conciliador({
                 )}
               </>
             ) : activePanel === 'conteudo' && selectedBase && selectedTargetOne && !duplicateSelection ? (
-              <section className="space-y-6">
-                <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura integral</p>
-                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">Conteúdo declarado nos editais</h3>
-                  <p className="mt-2 text-sm font-medium text-slate-500">
+              <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div className="pl-card" style={{ padding: 24 }}>
+                  <p className="pl-eyebrow">Leitura integral</p>
+                  <h3 style={{ marginTop: 8, fontSize: 18, fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>Conteúdo declarado nos editais</h3>
+                  <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
                     Compare etapas, resumo do catálogo e grade (disciplinas + tópicos) antes de gerar o parecer. Use{' '}
-                    <span className="font-semibold text-slate-700">Gerar análise</span> no topo para ver estatísticas e veredito.
+                    <span style={{ fontWeight: 700, color: 'var(--pl-ink)' }}>Gerar análise</span> no topo para ver estatísticas e veredito.
                   </p>
                 </div>
                 <EditalSideBySide
@@ -1529,14 +1529,14 @@ export default function Conciliador({
                 />
               </section>
             ) : (
-              <section className="rounded-[1.9rem] border border-dashed border-slate-300 bg-white/80 p-8 text-center shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)]">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#dbeafe_0%,#eef2ff_100%)] text-blue-700 shadow-sm">
+              <section style={{ borderRadius: 24, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-surface)', padding: 32, textAlign: 'center', boxShadow: '0 20px 50px -30px rgba(15,23,42,0.2)' }}>
+                <div style={{ margin: '0 auto', display: 'flex', width: 64, height: 64, alignItems: 'center', justifyContent: 'center', borderRadius: 20, background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' }}>
                   <Wand2 size={24} />
                 </div>
-                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">Painel interativo</p>
-                <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Agora a lateral troca o conteúdo de verdade.</h3>
-                <p className="mx-auto mt-3 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
-                  Use <span className="font-semibold text-slate-700">Gerar análise</span> no cabeçalho. Depois, as abas Visão geral, Comparação, Conteúdo, Disciplinas e Parecer mostram o detalhe.
+                <p className="pl-eyebrow" style={{ marginTop: 20 }}>Painel interativo</p>
+                <h3 style={{ marginTop: 8, fontSize: 22, fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>Agora a lateral troca o conteúdo de verdade.</h3>
+                <p style={{ margin: '12px auto 0', maxWidth: '42rem', fontSize: 13, fontWeight: 500, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
+                  Use <span style={{ fontWeight: 700, color: 'var(--pl-ink)' }}>Gerar análise</span> no cabeçalho. Depois, as abas Visão geral, Comparação, Conteúdo, Disciplinas e Parecer mostram o detalhe.
                 </p>
               </section>
             )}
@@ -1589,34 +1589,31 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
   };
 
   const col = (contest, tone) => {
-    const border =
-      tone === 'blue'
-        ? 'border-blue-100 bg-gradient-to-b from-blue-50/40 to-white'
-        : 'border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white';
+    const accentColor = tone === 'blue' ? 'var(--pl-accent-soft)' : '#eef2ff';
     const rows = disciplineRows(contest);
 
     return (
-      <div className={`flex min-w-0 flex-col overflow-hidden rounded-[1.75rem] border shadow-sm ${border}`}>
-        <div className="border-b border-slate-100 bg-white/90 px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{tone === 'blue' ? 'Edital base' : 'Edital comparado'}</p>
-          <h4 className="mt-1 text-lg font-semibold leading-snug text-slate-900">{contest?.nome || '—'}</h4>
-          <p className="mt-1 text-xs font-semibold text-slate-500">
+      <div className="pl-card" style={{ display: 'flex', minWidth: 0, flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
+        <div style={{ borderBottom: '1px solid var(--pl-rule)', background: accentColor, padding: '16px 20px' }}>
+          <p className="pl-eyebrow">{tone === 'blue' ? 'Edital base' : 'Edital comparado'}</p>
+          <h4 style={{ marginTop: 4, fontSize: 16, fontWeight: 600, lineHeight: 1.3, color: 'var(--pl-ink)' }}>{contest?.nome || '—'}</h4>
+          <p style={{ marginTop: 4, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
             {[contest?.banca, contest?.escolaridade].filter(Boolean).join(' · ') || 'Metadados limitados no catálogo'}
           </p>
           {contest?.description ? (
-            <p className="mt-3 line-clamp-4 text-sm font-medium leading-relaxed text-slate-600">{String(contest.description)}</p>
+            <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{String(contest.description)}</p>
           ) : contest?.content ? (
-            <p className="mt-3 line-clamp-4 text-sm font-medium leading-relaxed text-slate-600">{String(contest.content)}</p>
+            <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{String(contest.content)}</p>
           ) : null}
         </div>
 
-        <div className="border-b border-slate-100 px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Etapas / exigências</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+        <div style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 20px' }}>
+          <p className="pl-eyebrow">Etapas / exigências</p>
+          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {stages(contest).map((tag) => (
               <span
                 key={`${contest?.id}-${tag}`}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-600"
+                className="pl-tag"
               >
                 {formatStageLabel(tag)}
               </span>
@@ -1624,21 +1621,21 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-3" style={{ maxHeight: 'min(52vh, 28rem)' }}>
-          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Disciplinas e tópicos</p>
+        <div style={{ minHeight: 0, flex: 1, overflowY: 'auto', padding: '12px 8px', maxHeight: 'min(52vh, 28rem)' }}>
+          <p className="pl-eyebrow" style={{ padding: '0 12px 8px' }}>Disciplinas e tópicos</p>
           {rows.length === 0 ? (
-            <div className="mx-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <div style={{ margin: '0 12px', borderRadius: 12, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '24px 16px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
               Este edital ainda não tem disciplinas estruturadas no catálogo. Abra o detalhe do concurso para importar o programa.
             </div>
           ) : (
-            <ul className="space-y-1.5 px-2 pb-4">
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 8px 16px' }}>
               {rows.map((row) => (
                 <li
                   key={row.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 10, border: '1px solid var(--pl-rule)', background: 'var(--pl-surface)', padding: '10px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}
                 >
-                  <span className="min-w-0 truncate">{row.nome}</span>
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.nome}</span>
+                  <span style={{ flexShrink: 0, borderRadius: 999, background: 'var(--pl-bg-soft)', padding: '2px 8px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--pl-ink-3)' }}>
                     {row.topicos} tópicos
                   </span>
                 </li>
@@ -1651,7 +1648,7 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
       {col(baseContest, 'blue')}
       {col(targetContest, 'indigo')}
     </div>
@@ -1659,39 +1656,39 @@ function EditalSideBySide({ baseContest, targetContest, subjectCatalog }) {
 }
 
 function SelectStripField({ micro, icon: Icon, value, onChange, options, excludeIds = [], accent = 'blue', trailing = null }) {
-  const accents = {
-    blue: { wrap: 'border-blue-200/80 bg-white', bar: 'bg-blue-600 text-white' },
-    indigo: { wrap: 'border-indigo-200/80 bg-white', bar: 'bg-indigo-600 text-white' },
-    pink: { wrap: 'border-pink-200/80 bg-white', bar: 'bg-pink-600 text-white' },
+  const barColors = {
+    blue: '#2563eb',
+    indigo: '#4f46e5',
+    pink: '#db2777',
   };
-  const palette = accents[accent] || accents.blue;
+  const barColor = barColors[accent] || barColors.blue;
   const skip = new Set((excludeIds || []).map((id) => String(id)));
   const filtered = options.filter((option) => !skip.has(String(option.id)));
   const selectedOption = filtered.find((option) => option.id === value) || null;
   const selectedImage = selectedOption?.contest?.imagem_url || '';
 
   return (
-    <div className={`flex min-h-[40px] min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border ${palette.wrap}`}>
+    <div style={{ display: 'flex', minHeight: 40, minWidth: 0, flex: 1, alignItems: 'stretch', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
       <div
-        className={`flex w-[50px] shrink-0 flex-col items-center justify-center gap-0.5 border-r border-slate-200/80 px-0.5 py-1 sm:w-[52px] ${palette.bar}`}
+        style={{ display: 'flex', width: 52, flexShrink: 0, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, borderRight: '1px solid rgba(148,163,184,0.3)', padding: '4px 2px', background: barColor }}
       >
-        <Icon size={15} strokeWidth={2.2} className="text-white" />
-        <span className="max-w-full truncate px-0.5 text-center text-[7px] font-bold uppercase leading-none tracking-wide text-white/90">
+        <Icon size={15} strokeWidth={2.2} style={{ color: '#fff' }} />
+        <span style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', padding: '0 2px', textAlign: 'center', fontSize: 7, fontWeight: 700, textTransform: 'uppercase', lineHeight: 1, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)' }}>
           {micro}
         </span>
       </div>
-      <div className="flex min-w-0 flex-1 items-center bg-slate-50/40">
-        <div className="ml-2 flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white">
+      <div style={{ display: 'flex', minWidth: 0, flex: 1, alignItems: 'center', background: 'var(--pl-bg-soft)' }}>
+        <div style={{ marginLeft: 8, display: 'flex', height: 36, width: 48, flexShrink: 0, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: 6, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
           {selectedImage ? (
-            <img src={selectedImage} alt={selectedOption?.contest?.nome || selectedOption?.label || micro} className="h-full w-full object-cover" />
+            <img src={selectedImage} alt={selectedOption?.contest?.nome || selectedOption?.label || micro} style={{ height: '100%', width: '100%', objectFit: 'cover' }} />
           ) : (
-            <Icon size={16} className="text-slate-300" />
+            <Icon size={16} style={{ color: 'var(--pl-ink-4)' }} />
           )}
         </div>
         <select
           value={filtered.some((o) => o.id === value) ? value : ''}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-[40px] w-full min-w-0 cursor-pointer border-0 bg-transparent px-2 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:ring-0 sm:text-[13px]"
+          style={{ minHeight: 40, width: '100%', minWidth: 0, cursor: 'pointer', border: 'none', background: 'transparent', padding: '6px 8px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none' }}
         >
           {filtered.length === 0 ? <option value="">—</option> : null}
           {filtered.map((option) => (
@@ -1701,7 +1698,7 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
           ))}
         </select>
       </div>
-      {trailing ? <div className="flex shrink-0 items-center border-l border-slate-200/80 bg-white/80 px-0.5">{trailing}</div> : null}
+      {trailing ? <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', borderLeft: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '0 2px' }}>{trailing}</div> : null}
     </div>
   );
 }
@@ -1709,20 +1706,20 @@ function SelectStripField({ micro, icon: Icon, value, onChange, options, exclude
 function StripQuickContestLinks({ label, contest, onOpenContestDetail, onSetTargetContest }) {
   if (!contest) return null;
   return (
-    <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-0.5">
-      <span className="shrink-0 font-bold uppercase tracking-wider text-[9px] text-slate-400">{label}</span>
-      <span className="max-w-[11rem] truncate font-semibold text-slate-800 sm:max-w-[14rem]">{contest.nome}</span>
+    <span style={{ display: 'inline-flex', minWidth: 0, maxWidth: '100%', flexWrap: 'wrap', alignItems: 'center', gap: '4px 8px' }}>
+      <span style={{ flexShrink: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: 9, color: 'var(--pl-ink-3)' }}>{label}</span>
+      <span style={{ maxWidth: '11rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--pl-ink)' }}>{contest.nome}</span>
       <button
         type="button"
         onClick={() => onOpenContestDetail?.(contest.id)}
-        className="shrink-0 font-semibold text-indigo-600 hover:underline"
+        style={{ flexShrink: 0, fontWeight: 600, color: 'var(--pl-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
       >
         Ver
       </button>
       <button
         type="button"
         onClick={() => onSetTargetContest?.(contest.id)}
-        className="shrink-0 font-semibold text-indigo-600 hover:underline"
+        style={{ flexShrink: 0, fontWeight: 600, color: 'var(--pl-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
       >
         Foco
       </button>
@@ -1731,39 +1728,47 @@ function StripQuickContestLinks({ label, contest, onOpenContestDetail, onSetTarg
 }
 
 function InfoCard({ icon: Icon, eyebrow, title, text, tone = 'blue', tall = false }) {
-  const tones = {
-    blue: 'border-blue-100 bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] text-blue-950',
-    indigo: 'border-indigo-100 bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] text-indigo-950',
-    amber: 'border-amber-100 bg-[linear-gradient(135deg,#fff7ed_0%,#fffbeb_100%)] text-amber-950',
-    gold: 'border-amber-200 bg-[linear-gradient(135deg,#fff8db_0%,#fffdf3_100%)] text-amber-950',
-    slate: 'border-slate-200 bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] text-slate-950',
+  const toneStyles = {
+    blue: { border: '#bfdbfe', background: 'var(--pl-accent-soft)', color: '#1e3a5f' },
+    indigo: { border: '#c7d2fe', background: 'linear-gradient(135deg,#eef2ff 0%,#f8faff 100%)', color: '#312e81' },
+    amber: { border: '#fde68a', background: 'linear-gradient(135deg,#fff7ed 0%,#fffbeb 100%)', color: '#78350f' },
+    gold: { border: '#fcd34d', background: 'linear-gradient(135deg,#fff8db 0%,#fffdf3 100%)', color: '#78350f' },
+    slate: { border: 'var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink)' },
   };
+  const ts = toneStyles[tone] || toneStyles.blue;
 
   return (
     <div
-      className={`rounded-[1.7rem] border p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.18)] ${tones[tone] || tones.blue} ${
-        tall ? 'min-h-[220px]' : ''
-      }`}
+      style={{
+        borderRadius: 24,
+        border: `1px solid ${ts.border}`,
+        padding: 20,
+        background: ts.background,
+        color: ts.color,
+        boxShadow: '0 18px 45px -28px rgba(15,23,42,0.18)',
+        minHeight: tall ? 220 : undefined,
+      }}
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80 shadow-sm ring-1 ring-black/5">
+      <div style={{ display: 'flex', height: 44, width: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
         <Icon size={18} />
       </div>
-      <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] opacity-60">{eyebrow}</p>
-      <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em]">{title}</h3>
-      <p className="mt-3 text-sm font-medium leading-relaxed opacity-75">{text}</p>
+      <p style={{ marginTop: 16, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.24em', opacity: 0.6 }}>{eyebrow}</p>
+      <h3 style={{ marginTop: 8, fontSize: 18, fontWeight: 600, letterSpacing: '-0.03em' }}>{title}</h3>
+      <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, opacity: 0.75 }}>{text}</p>
     </div>
   );
 }
 
 function StatusBadge({ tone = 'neutral', text }) {
-  const tones = {
-    positive: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    neutral: 'border-slate-200 bg-white text-slate-600',
-    alert: 'border-rose-200 bg-rose-50 text-rose-700',
+  const toneMap = {
+    positive: { border: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+    neutral: { border: 'var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-2)' },
+    alert: { border: 'var(--pl-danger)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' },
   };
+  const ts = toneMap[tone] || toneMap.neutral;
 
   return (
-    <span className={`inline-flex items-center rounded-full border px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] ${tones[tone] || tones.neutral}`}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: `1px solid ${ts.border}`, padding: '8px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.22em', background: ts.background, color: ts.color }}>
       {text}
     </span>
   );
@@ -1775,9 +1780,9 @@ function CompatibilityGauge({ value }) {
   const dashOffset = circumference - (circumference * value) / 100;
 
   return (
-    <div className="mx-auto flex w-full max-w-[290px] flex-col items-center rounded-[2rem] border border-white/10 bg-white/10 p-6 text-center shadow-xl backdrop-blur-sm">
-      <div className="relative flex h-[190px] w-[190px] items-center justify-center">
-        <svg className="h-full w-full -rotate-90" viewBox="0 0 200 200">
+    <div style={{ margin: '0 auto', display: 'flex', width: '100%', maxWidth: 290, flexDirection: 'column', alignItems: 'center', borderRadius: 32, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.1)', padding: 24, textAlign: 'center', boxShadow: 'var(--pl-sh-high)', backdropFilter: 'blur(8px)' }}>
+      <div style={{ position: 'relative', display: 'flex', height: 190, width: 190, alignItems: 'center', justifyContent: 'center' }}>
+        <svg style={{ height: '100%', width: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 200 200">
           <circle cx="100" cy="100" r={radius} stroke="rgba(255,255,255,0.10)" strokeWidth="14" fill="none" />
           <circle
             cx="100"
@@ -1798,100 +1803,104 @@ function CompatibilityGauge({ value }) {
             </linearGradient>
           </defs>
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-300">Compatibilidade</p>
-          <p className="mt-2 text-5xl font-semibold tracking-[-0.05em] text-white">{value}%</p>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#94a3b8' }}>Compatibilidade</p>
+          <p style={{ marginTop: 8, fontSize: 48, fontWeight: 600, letterSpacing: '-0.05em', color: '#fff' }}>{value}%</p>
         </div>
       </div>
 
-      <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-300">Núcleo comum aproveitável</p>
+      <p style={{ marginTop: 8, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#6ee7b7' }}>Núcleo comum aproveitável</p>
     </div>
   );
 }
 
 function DarkMetric({ label, value, helper, compact = false }) {
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
-      <p className={`mt-2 font-semibold tracking-[-0.04em] text-white ${compact ? 'text-xl' : 'text-3xl'}`}>{value}</p>
-      <p className="mt-1 text-xs font-semibold text-slate-400">{helper}</p>
+    <div style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: 16, backdropFilter: 'blur(8px)' }}>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#94a3b8' }}>{label}</p>
+      <p style={{ marginTop: 8, fontWeight: 600, letterSpacing: '-0.04em', color: '#fff', fontSize: compact ? 18 : 28 }}>{value}</p>
+      <p style={{ marginTop: 4, fontSize: 12, fontWeight: 600, color: '#94a3b8' }}>{helper}</p>
     </div>
   );
 }
 
 function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = false, muted = false }) {
-  const themes = {
+  const themeMap = {
     blue: {
-      wrapper: 'border-blue-100',
-      header: 'bg-[linear-gradient(135deg,#eff6ff_0%,#f8fbff_100%)] border-blue-100',
-      iconBox: 'bg-blue-600 text-white',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
-      dot: 'bg-blue-500',
-      bar: 'bg-blue-500',
-      badge: 'bg-blue-50 text-blue-700 border-blue-100',
-      itemBorder: 'border-slate-100',
+      wrapperBorder: '#bfdbfe',
+      headerBg: 'var(--pl-accent-soft)',
+      iconBg: '#2563eb',
+      iconColor: '#fff',
+      dotColor: '#3b82f6',
+      barColor: '#3b82f6',
+      badgeBg: '#eff6ff',
+      badgeColor: '#1d4ed8',
+      badgeBorder: '#bfdbfe',
+      itemBorder: 'var(--pl-rule)',
     },
     amber: {
-      wrapper: 'border-amber-100',
-      header: 'bg-[linear-gradient(135deg,#fff7ed_0%,#fffaf0_100%)] border-amber-100',
-      iconBox: 'bg-amber-500 text-white',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
-      dot: 'bg-amber-500',
-      bar: 'bg-amber-500',
-      badge: 'bg-amber-50 text-amber-700 border-amber-100',
-      itemBorder: 'border-amber-100',
+      wrapperBorder: '#fde68a',
+      headerBg: 'linear-gradient(135deg,#fff7ed 0%,#fffaf0 100%)',
+      iconBg: '#f59e0b',
+      iconColor: '#fff',
+      dotColor: '#f59e0b',
+      barColor: '#f59e0b',
+      badgeBg: '#fffbeb',
+      badgeColor: '#92400e',
+      badgeBorder: '#fde68a',
+      itemBorder: '#fde68a',
     },
     indigo: {
-      wrapper: 'border-indigo-100',
-      header: 'bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] border-indigo-100',
-      iconBox: 'bg-indigo-600 text-white',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
-      dot: 'bg-indigo-500',
-      bar: 'bg-indigo-500',
-      badge: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-      itemBorder: 'border-indigo-100',
+      wrapperBorder: '#c7d2fe',
+      headerBg: 'linear-gradient(135deg,#eef2ff 0%,#f8faff 100%)',
+      iconBg: '#4f46e5',
+      iconColor: '#fff',
+      dotColor: '#6366f1',
+      barColor: '#6366f1',
+      badgeBg: '#eef2ff',
+      badgeColor: '#3730a3',
+      badgeBorder: '#c7d2fe',
+      itemBorder: '#c7d2fe',
     },
     slate: {
-      wrapper: 'border-slate-200',
-      header: 'bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_100%)] border-slate-200',
-      iconBox: 'bg-slate-200 text-slate-700',
-      title: 'text-slate-950',
-      subtitle: 'text-slate-500',
-      dot: 'bg-slate-400',
-      bar: 'bg-slate-300',
-      badge: 'bg-slate-100 text-slate-700 border-slate-200',
-      itemBorder: 'border-slate-100',
+      wrapperBorder: 'var(--pl-rule-2)',
+      headerBg: 'var(--pl-surface)',
+      iconBg: '#e2e8f0',
+      iconColor: '#475569',
+      dotColor: '#94a3b8',
+      barColor: '#cbd5e1',
+      badgeBg: '#f1f5f9',
+      badgeColor: '#475569',
+      badgeBorder: 'var(--pl-rule-2)',
+      itemBorder: 'var(--pl-rule)',
     },
   };
 
-  const colors = themes[theme] || themes.slate;
+  const c = themeMap[theme] || themeMap.slate;
 
   return (
-    <div className={`overflow-hidden rounded-[1.8rem] border bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.16)] ${colors.wrapper}`}>
-      <div className={`border-b px-6 py-5 ${colors.header}`}>
-        <div className="flex items-start gap-3">
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-sm ${colors.iconBox}`}>
+    <div style={{ overflow: 'hidden', borderRadius: 28, border: `1px solid ${c.wrapperBorder}`, background: 'var(--pl-surface)', boxShadow: '0 18px 45px -25px rgba(15,23,42,0.16)' }}>
+      <div style={{ borderBottom: `1px solid ${c.wrapperBorder}`, padding: '20px 24px', background: c.headerBg }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ display: 'flex', height: 48, width: 48, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: c.iconBg, color: c.iconColor, boxShadow: 'var(--pl-sh-low)' }}>
             <Icon size={20} />
           </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Bloco analítico</p>
-            <h3 className={`mt-1 text-xl font-semibold tracking-[-0.03em] ${colors.title}`}>{title}</h3>
-            <p className={`mt-1 text-sm font-semibold ${colors.subtitle}`}>{subtitle}</p>
+          <div style={{ minWidth: 0 }}>
+            <p className="pl-eyebrow">Bloco analítico</p>
+            <h3 style={{ marginTop: 4, fontSize: 18, fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>{title}</h3>
+            <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{subtitle}</p>
           </div>
         </div>
-        {topBar && <div className={`mt-4 h-1.5 w-20 rounded-full ${colors.bar}`} />}
+        {topBar && <div style={{ marginTop: 16, height: 6, width: 80, borderRadius: 999, background: c.barColor }} />}
       </div>
 
-      <div className="p-6">
+      <div style={{ padding: 24 }}>
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">
+          <div style={{ borderRadius: 12, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
             Nada crítico detectado aqui.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {items.map((item, index) => {
               const text = typeof item === 'string' ? item : item?.text;
               const badge = typeof item === 'string' ? '' : item?.badge || '';
@@ -1899,14 +1908,14 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
               return (
                 <div
                   key={`${title}-${index}-${String(text).slice(0, 48)}`}
-                  className={`flex flex-col gap-3 rounded-2xl border bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between ${muted ? 'opacity-85' : ''} ${colors.itemBorder}`}
+                  style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 12, border: `1px solid ${c.itemBorder}`, background: 'var(--pl-surface)', padding: '16px', opacity: muted ? 0.85 : 1 }}
                 >
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${colors.dot}`} />
-                    <span className="text-sm font-bold leading-relaxed text-slate-700">{text}</span>
+                  <div style={{ display: 'flex', minWidth: 0, alignItems: 'flex-start', gap: 12 }}>
+                    <span style={{ marginTop: 4, height: 10, width: 10, flexShrink: 0, borderRadius: '50%', background: c.dotColor }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.6, color: 'var(--pl-ink)' }}>{text}</span>
                   </div>
                   {badge && (
-                    <span className={`inline-flex w-fit rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${colors.badge}`}>
+                    <span style={{ display: 'inline-flex', width: 'fit-content', flexShrink: 0, borderRadius: 999, border: `1px solid ${c.badgeBorder}`, padding: '6px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', background: c.badgeBg, color: c.badgeColor }}>
                       {badge}
                     </span>
                   )}
@@ -1921,47 +1930,56 @@ function AnalysisCard({ theme, icon: Icon, title, subtitle, items, topBar = fals
 }
 
 function VerdictCard({ verdict, loading = false }) {
-  const toneClasses = {
+  const toneMap = {
     emerald: {
-      wrap: 'border-emerald-100 bg-[linear-gradient(180deg,#ecfdf5_0%,#ffffff_100%)]',
-      pill: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-      accent: 'bg-emerald-500',
+      border: '#a7f3d0',
+      background: 'var(--pl-success-soft)',
+      pillBg: '#d1fae5',
+      pillColor: '#065f46',
+      pillBorder: '#a7f3d0',
+      accentColor: '#10b981',
     },
     amber: {
-      wrap: 'border-amber-100 bg-[linear-gradient(180deg,#fffbeb_0%,#ffffff_100%)]',
-      pill: 'bg-amber-50 text-amber-700 border-amber-100',
-      accent: 'bg-amber-500',
+      border: '#fde68a',
+      background: 'linear-gradient(180deg,#fffbeb 0%,#ffffff 100%)',
+      pillBg: '#fef9c3',
+      pillColor: '#92400e',
+      pillBorder: '#fde68a',
+      accentColor: '#f59e0b',
     },
     rose: {
-      wrap: 'border-rose-100 bg-[linear-gradient(180deg,#fff1f2_0%,#ffffff_100%)]',
-      pill: 'bg-rose-50 text-rose-700 border-rose-100',
-      accent: 'bg-rose-500',
+      border: '#fecdd3',
+      background: 'linear-gradient(180deg,#fff1f2 0%,#ffffff 100%)',
+      pillBg: '#ffe4e6',
+      pillColor: '#9f1239',
+      pillBorder: '#fecdd3',
+      accentColor: '#f43f5e',
     },
   };
 
-  const style = toneClasses[verdict.tone] || toneClasses.amber;
+  const ts = toneMap[verdict.tone] || toneMap.amber;
 
   return (
-    <div className={`rounded-[1.8rem] border p-6 shadow-[0_18px_45px_-25px_rgba(15,23,42,0.16)] ${style.wrap}`}>
-      <div className="flex items-start justify-between gap-4">
+    <div style={{ borderRadius: 28, border: `1px solid ${ts.border}`, padding: 24, background: ts.background, boxShadow: '0 18px 45px -25px rgba(15,23,42,0.16)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <span className={`inline-flex rounded-full border px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] ${style.pill}`}>
+          <span style={{ display: 'inline-flex', borderRadius: 999, border: `1px solid ${ts.pillBorder}`, padding: '8px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.22em', background: ts.pillBg, color: ts.pillColor }}>
             {loading ? 'IA analisando' : verdict.sourceLabel || 'Parecer final'}
           </span>
-          <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950">{verdict.title}</h3>
+          <h3 style={{ marginTop: 16, fontSize: 28, fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--pl-ink)' }}>{verdict.title}</h3>
         </div>
-        <span className={`mt-2 hidden h-3 w-16 rounded-full ${style.accent} md:block`} />
+        <span style={{ marginTop: 8, height: 12, width: 64, borderRadius: 999, background: ts.accentColor, flexShrink: 0 }} />
       </div>
 
-      <p className="mt-4 text-sm font-medium leading-relaxed text-slate-600">{verdict.text}</p>
+      <p style={{ marginTop: 16, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{verdict.text}</p>
 
-      <div className="mt-5 rounded-[1.4rem] border border-slate-200 bg-white/90 p-5 shadow-sm">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Recomendação prática</p>
-        <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-700">{verdict.recommendation}</p>
+      <div style={{ marginTop: 20, borderRadius: 20, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 20, boxShadow: 'var(--pl-sh-low)' }}>
+        <p className="pl-eyebrow">Recomendação prática</p>
+        <p style={{ marginTop: 8, fontSize: 13, fontWeight: 600, lineHeight: 1.6, color: 'var(--pl-ink)' }}>{verdict.recommendation}</p>
       </div>
 
       {(verdict.aiAdvantages?.length || verdict.aiRisks?.length) ? (
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div style={{ marginTop: 16, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
           <MiniVerdictList title="Aproveitar" items={verdict.aiAdvantages} />
           <MiniVerdictList title="Cuidar" items={verdict.aiRisks} />
         </div>
@@ -1974,9 +1992,9 @@ function MiniVerdictList({ title, items = [] }) {
   const list = Array.isArray(items) ? items.slice(0, 4) : [];
   if (list.length === 0) return null;
   return (
-    <div className="rounded-[1.2rem] border border-slate-200 bg-white/80 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">{title}</p>
-      <ul className="mt-2 space-y-1.5 text-sm font-medium leading-relaxed text-slate-700">
+    <div style={{ borderRadius: 18, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 16 }}>
+      <p className="pl-eyebrow">{title}</p>
+      <ul style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink)' }}>
         {list.map((item) => (
           <li key={item}>• {item}</li>
         ))}
@@ -1987,13 +2005,13 @@ function MiniVerdictList({ title, items = [] }) {
 
 function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows }) {
   return (
-    <div className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.16)]">
-      <div className="border-b border-slate-100 px-6 py-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div style={{ overflow: 'hidden', borderRadius: 28, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: '0 18px 45px -25px rgba(15,23,42,0.16)' }}>
+      <div style={{ borderBottom: '1px solid var(--pl-rule)', padding: '20px 24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura comparativa</p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">Tabela executiva</h3>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="pl-eyebrow">Leitura comparativa</p>
+            <h3 style={{ marginTop: 8, fontSize: 22, fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--pl-ink)' }}>Tabela executiva</h3>
+            <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
               Um resumo limpo para confrontar carreira, salário, estrutura e peso do edital sem sair da área.
             </p>
           </div>
@@ -2001,10 +2019,10 @@ function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse">
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ minWidth: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr className="bg-slate-50/80">
+            <tr style={{ background: 'var(--pl-bg-soft)' }}>
               <TableHead>Item</TableHead>
               <TableHead>{baseContest?.nome || 'Base'}</TableHead>
               <TableHead>{targetOneContest?.nome || 'Alvo 1'}</TableHead>
@@ -2013,12 +2031,12 @@ function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.label} className="align-top transition-colors hover:bg-slate-50/60">
-                <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-900">{row.label}</td>
-                <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">{formatCompareCell(row.base)}</td>
-                <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">{formatCompareCell(row.targetOne)}</td>
+              <tr key={row.label} style={{ verticalAlign: 'top' }}>
+                <td style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 20px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{row.label}</td>
+                <td style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 20px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{formatCompareCell(row.base)}</td>
+                <td style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 20px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{formatCompareCell(row.targetOne)}</td>
                 {targetTwoContest ? (
-                  <td className="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">{formatCompareCell(row.targetTwo)}</td>
+                  <td style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 20px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{formatCompareCell(row.targetTwo)}</td>
                 ) : null}
               </tr>
             ))}
@@ -2031,7 +2049,7 @@ function ComparisonTable({ baseContest, targetOneContest, targetTwoContest, rows
 
 function TableHead({ children }) {
   return (
-    <th className="border-b border-slate-200 px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+    <th style={{ borderBottom: '1px solid var(--pl-rule-2)', padding: '12px 20px', textAlign: 'left', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--pl-ink-3)' }}>
       {children}
     </th>
   );

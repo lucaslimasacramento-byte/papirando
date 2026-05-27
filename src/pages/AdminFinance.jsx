@@ -1,4 +1,5 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { showConfirm, showToast } from '../lib/dialogs';
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -89,12 +90,12 @@ export default function AdminFinance({
     });
 
     if (!payload.descricao) {
-      alert('Digite a descrição da despesa.');
+      showToast('Digite a descrição da despesa.', 'error');
       return;
     }
 
     if (!payload.valor || payload.valor <= 0) {
-      alert('Informe um valor maior que zero.');
+      showToast('Informe um valor maior que zero.', 'error');
       return;
     }
 
@@ -103,7 +104,7 @@ export default function AdminFinance({
       await onSaveExpense?.(payload);
       setForm(EMPTY_EXPENSE);
     } catch (error) {
-      alert(error.message || 'Não foi possível salvar a despesa.');
+      showToast(error.message || 'Não foi possível salvar a despesa.', 'error');
     } finally {
       setSaving(false);
     }
@@ -122,7 +123,7 @@ export default function AdminFinance({
   };
 
   const handleDelete = async (expense) => {
-    const confirmed = window.confirm(`Excluir a despesa "${expense.descricao}"?`);
+    const confirmed = await showConfirm(`Excluir a despesa "${expense.descricao}"?`, { confirmLabel: 'Excluir', danger: true });
     if (!confirmed) return;
 
     try {
@@ -131,7 +132,7 @@ export default function AdminFinance({
         setForm(EMPTY_EXPENSE);
       }
     } catch (error) {
-      alert(error.message || 'Não foi possível excluir a despesa.');
+      showToast(error.message || 'Não foi possível excluir a despesa.', 'error');
     }
   };
 
@@ -147,30 +148,25 @@ export default function AdminFinance({
           { key: 'mrr', label: 'MRR estimado', value: formatCurrency(finance.receitaRecorrente), icon: TrendingUp, accent: 'emerald' },
           { key: 'des', label: 'Despesas pagas', value: formatCurrency(finance.despesasPagasMes), icon: TrendingDown, accent: 'orange' },
           { key: 'sal', label: 'Saldo do mês', value: formatCurrency(finance.saldoEstimado), icon: DollarSign, accent: 'blue' },
-          { key: 'pot', label: 'Receita potencial', value: formatCurrency(finance.receitaPotencial), icon: ArrowUpRight, accent: 'cyan' },
-          { key: 'sub', label: 'Assinaturas ativas', value: String(finance.activeSubscribers), icon: BadgeCheck, accent: 'indigo' },
+          { key: 'pot', label: 'Receita potencial', value: formatCurrency(finance.receitaPotencial), icon: ArrowUpRight, accent: 'indigo' },
+          { key: 'sub', label: 'Assinaturas ativas', value: String(finance.activeSubscribers), icon: BadgeCheck, accent: 'violet' },
         ]}
-        trailingClassName="xl:max-w-[16rem]"
-        trailing={
-          <div className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-left text-sm shadow-sm sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Operando como</p>
-            <p className="mt-1.5 min-w-0 break-all font-semibold text-white">{currentUserEmail}</p>
-          </div>
-        }
       />
-      <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Lançamentos</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">{form.id ? 'Editar despesa' : 'Nova despesa'}</h3>
+
+      <div style={{ display: 'grid', gap: 32, gridTemplateColumns: '0.9fr 1.1fr' }}>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Lançamentos</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>{form.id ? 'Editar despesa' : 'Nova despesa'}</h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr 1fr' }}>
             <Field label="Descrição">
               <input
                 value={form.descricao}
                 onChange={(e) => setForm((prev) => ({ ...prev, descricao: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="pl-input"
+                style={{ width: '100%' }}
                 placeholder="Ex: Supabase, domínio, anúncios"
               />
             </Field>
@@ -179,7 +175,8 @@ export default function AdminFinance({
               <select
                 value={form.categoria}
                 onChange={(e) => setForm((prev) => ({ ...prev, categoria: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                className="pl-input"
+                style={{ width: '100%' }}
               >
                 {CATEGORY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -193,7 +190,8 @@ export default function AdminFinance({
               <input
                 value={form.valor}
                 onChange={(e) => setForm((prev) => ({ ...prev, valor: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="pl-input"
+                style={{ width: '100%' }}
                 placeholder="0,00"
               />
             </Field>
@@ -203,7 +201,8 @@ export default function AdminFinance({
                 type="month"
                 value={form.competencia}
                 onChange={(e) => setForm((prev) => ({ ...prev, competencia: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="pl-input"
+                style={{ width: '100%' }}
               />
             </Field>
 
@@ -211,7 +210,8 @@ export default function AdminFinance({
               <select
                 value={form.status}
                 onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500"
+                className="pl-input"
+                style={{ width: '100%' }}
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -225,18 +225,19 @@ export default function AdminFinance({
               <input
                 value={form.observacao}
                 onChange={(e) => setForm((prev) => ({ ...prev, observacao: e.target.value }))}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="pl-input"
+                style={{ width: '100%' }}
                 placeholder="Opcional"
               />
             </Field>
           </div>
 
-          <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
             {form.id && (
               <button
                 type="button"
                 onClick={() => setForm(EMPTY_EXPENSE)}
-                className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-600"
+                className="pl-btn pl-btn-ghost pl-btn-sm"
               >
                 Cancelar edição
               </button>
@@ -245,7 +246,8 @@ export default function AdminFinance({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-70"
+              className="pl-btn pl-btn-primary pl-btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
             >
               <Plus size={16} />
               {saving ? 'Salvando...' : form.id ? 'Atualizar despesa' : 'Cadastrar despesa'}
@@ -253,33 +255,43 @@ export default function AdminFinance({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Assinaturas e resultado</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Plano comercial e comportamento mensal</h3>
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ marginBottom: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Assinaturas e resultado</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Plano comercial e comportamento mensal</h3>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {planMix.map((item) => (
-              <div key={item.plan} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{item.plan}</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">{item.count}</p>
-                <p className="mt-1 text-sm font-semibold text-gray-500">{item.price > 0 ? `${formatCurrency(item.price)}/mês` : 'Plano sem cobrança'}</p>
+              <div key={item.plan} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{item.plan}</p>
+                <p className="pl-num" style={{ fontSize: 22, color: 'var(--pl-ink)' }}>{item.count}</p>
+                <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{item.price > 0 ? `${formatCurrency(item.price)}/mês` : 'Plano sem cobrança'}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 space-y-3">
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {monthlySeries.map((item) => (
-              <div key={item.key} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+              <div key={item.key} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <div>
-                    <p className="font-semibold text-slate-900">{item.label}</p>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">
+                    <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{item.label}</p>
+                    <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                       Receita {formatCurrency(item.receita)} • Despesas {formatCurrency(item.despesas)}
                     </p>
                   </div>
-                  <div className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold ${item.saldo >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    borderRadius: 999,
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    background: item.saldo >= 0 ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)',
+                    color: item.saldo >= 0 ? 'var(--pl-success)' : 'var(--pl-danger)',
+                  }}>
                     <ArrowUpRight size={13} />
                     Saldo {formatCurrency(item.saldo)}
                   </div>
@@ -290,41 +302,44 @@ export default function AdminFinance({
         </section>
       </div>
 
-      <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <section className="pl-card" style={{ padding: 24 }}>
+        <div style={{ marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Histórico financeiro</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Despesas cadastradas</h3>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Histórico financeiro</p>
+            <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pl-ink)' }}>Despesas cadastradas</h3>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-600">
-            <CalendarDays size={13} className="text-blue-600" />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '8px 16px', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+            <CalendarDays size={13} style={{ color: 'var(--pl-accent)' }} />
             Competência atual {finance.currentMonth}
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {recentExpenses.map((expense) => (
-            <div key={expense.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div key={expense.id} className="pl-card pl-card-paper" style={{ padding: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-slate-900">{expense.descricao}</p>
-                    <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${expense.status === 'paga' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                    <p style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{expense.descricao}</p>
+                    <span
+                      className={expense.status === 'paga' ? 'pl-tag pl-tag-success' : 'pl-tag pl-tag-warn'}
+                    >
                       {expense.status}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-gray-500">
+                  <p style={{ marginTop: 4, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                     {expense.categoria} • {expense.competencia} • {formatCurrency(expense.valor)}
                   </p>
-                  {expense.observacao && <p className="mt-2 text-sm font-medium text-gray-500">{expense.observacao}</p>}
+                  {expense.observacao && <p style={{ marginTop: 8, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{expense.observacao}</p>}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   <button
                     type="button"
                     onClick={() => handleEdit(expense)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600"
+                    className="pl-btn pl-btn-ghost pl-btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
                   >
                     <Pencil size={15} />
                     Editar
@@ -332,7 +347,7 @@ export default function AdminFinance({
                   <button
                     type="button"
                     onClick={() => handleDelete(expense)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 8, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', padding: '6px 14px', fontSize: 13, fontWeight: 600, color: 'var(--pl-danger)', cursor: 'pointer' }}
                   >
                     <Trash2 size={15} />
                     Excluir
@@ -343,7 +358,7 @@ export default function AdminFinance({
           ))}
 
           {recentExpenses.length === 0 && (
-            <div className="rounded-[1.5rem] border border-dashed border-gray-200 bg-white px-6 py-10 text-center text-sm font-semibold text-gray-500">
+            <div style={{ borderRadius: 10, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '40px 24px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
               Nenhuma despesa cadastrada ainda. Comece pelos custos mensais do site para montar seu saldo real.
             </div>
           )}
@@ -356,20 +371,8 @@ export default function AdminFinance({
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">{label}</label>
+      <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>{label}</label>
       {children}
     </div>
   );
 }
-
-function FinanceInsight({ title, value, text }) {
-  return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">{title}</p>
-      <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
-      <p className="mt-2 text-sm font-medium text-white/70">{text}</p>
-    </div>
-  );
-}
-
-

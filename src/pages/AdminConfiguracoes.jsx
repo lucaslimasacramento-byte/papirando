@@ -3,10 +3,12 @@ import {
   ChevronDown,
   ChevronUp,
   FileSignature,
+  GraduationCap,
   Headphones,
   LayoutGrid,
   Lightbulb,
   Music4,
+  Bell,
   PanelLeft,
   Plus,
   Save,
@@ -35,7 +37,8 @@ import { AdminAudiobookCatalogEditor } from '../components/AdminAudiobookCatalog
 import { sanitizeAudiobooksForSave } from '../lib/audiobookCatalogAdmin';
 import { AdminSidebarLabelsEditor } from '../components/AdminSidebarLabelsEditor';
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../components/PageHeadPremium';
+import { NOTIFICATION_SETTING_OPTIONS, normalizeNotificationSettings } from '../lib/notificationSettings';
+import { normalizeCourseTemplates } from '../lib/courseTemplates';
 
 function normalizeThemeBanca(banca) {
   const b = String(banca || '').trim();
@@ -85,8 +88,13 @@ export default function AdminConfiguracoes({
   onSaveRedacaoSiteContent,
   sidebarLabelsOverride = null,
   onSaveSidebarLabels,
+  notificationSettings = null,
+  onSaveNotificationSettings,
+  courseTemplates = [],
+  onSaveCourseTemplates,
+  initialSection = 'conteudo',
 }) {
-  const [activeSection, setActiveSection] = useState('conteudo');
+  const [activeSection, setActiveSection] = useState(initialSection || 'conteudo');
   const [xpDraft, setXpDraft] = useState(progressConfig?.xp || buildDefaultXpConfig());
   const [badgeDraft, setBadgeDraft] = useState(progressConfig?.badges || buildDefaultBadgeConfig());
   const [wellnessDraft, setWellnessDraft] = useState(normalizeWellnessLibrary(wellnessLibrary));
@@ -105,6 +113,10 @@ export default function AdminConfiguracoes({
   const [themeBankDraft, setThemeBankDraft] = useState(() => []);
   const [kitDraft, setKitDraft] = useState(() => mergeRedacaoKitBundle(null));
   const [audiobookCatalogDraft, setAudiobookCatalogDraft] = useState(() => []);
+  const [notificationDraft, setNotificationDraft] = useState(() => normalizeNotificationSettings(notificationSettings));
+  const [courseTemplatesDraft, setCourseTemplatesDraft] = useState(() => normalizeCourseTemplates(courseTemplates));
+  const [notificationSaving, setNotificationSaving] = useState(false);
+  const [courseTemplatesSaving, setCourseTemplatesSaving] = useState(false);
   const [redacaoSiteSaving, setRedacaoSiteSaving] = useState(false);
   const [aiStatus, setAiStatus] = useState({ provider: 'offline', status: 'offline', model: '' });
   const [aiLoading, setAiLoading] = useState(false);
@@ -144,8 +156,20 @@ export default function AdminConfiguracoes({
   }, [activeSection, redacaoThemeBankEffective, redacaoKitOverride, audiobookCatalogOverride]);
 
   useEffect(() => {
+    setNotificationDraft(normalizeNotificationSettings(notificationSettings));
+  }, [notificationSettings]);
+
+  useEffect(() => {
+    setCourseTemplatesDraft(normalizeCourseTemplates(courseTemplates));
+  }, [courseTemplates]);
+
+  useEffect(() => {
     refreshAiHealth();
   }, []);
+
+  useEffect(() => {
+    setActiveSection(initialSection || 'conteudo');
+  }, [initialSection]);
 
   const refreshAiHealth = async () => {
     setAiLoading(true);
@@ -221,32 +245,34 @@ export default function AdminConfiguracoes({
   const showGlobalSave = activeSection === 'xp' || activeSection === 'badges' || activeSection === 'wellness';
 
   return (
-    <div className="pl-page">
-      <PageHeadPremium
-        icon={Settings}
-        badge={
-          <PageHeadPremiumBadge icon={LayoutGrid}>Admin do produto</PageHeadPremiumBadge>
-        }
-        title="Configurações estruturais"
-        subtitle="Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados."
-      />
-
-      {showGlobalSave ? (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => void saveSection()}
-            disabled={sectionIsSaving}
-            className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-50"
-          >
-            <Save size={16} />
-            {sectionIsSaving ? 'Salvando…' : (sectionSaveLabel[activeSection] || 'Salvar')}
-          </button>
+    <div className="pl-paper-bg" style={{ minHeight: '100vh', padding: '28px 28px 48px' }}>
+      {/* Hero */}
+      <div style={{ marginBottom: 24 }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Admin do produto</p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <h1 className="pl-display" style={{ marginBottom: 8 }}>Configurações estruturais.</h1>
+            <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', maxWidth: 620 }}>
+              Central para alimentar o app sem código: a aba Conteúdo do app reúne atalhos; redações (dicas, temas, kit e audiolivros), bem-estar, XP e selos ficam em formulários estruturados.
+            </p>
+          </div>
+          {showGlobalSave ? (
+            <button
+              type="button"
+              onClick={() => void saveSection()}
+              disabled={sectionIsSaving}
+              className="pl-btn pl-btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
+            >
+              <Save size={16} />
+              {sectionIsSaving ? 'Salvando…' : (sectionSaveLabel[activeSection] || 'Salvar')}
+            </button>
+          ) : null}
         </div>
-      ) : null}
+      </div>
 
-      <section className="rounded-[2.2rem] border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
+      <div className="pl-card" style={{ padding: 20, marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, borderRadius: 12, background: 'var(--pl-bg-soft)', padding: 6 }}>
           <ConfigTab
             active={activeSection === 'conteudo'}
             onClick={() => setActiveSection('conteudo')}
@@ -257,6 +283,11 @@ export default function AdminConfiguracoes({
             onClick={() => setActiveSection('sidebar-menu')}
             label="Menu lateral"
           />
+          <ConfigTab
+            active={activeSection === 'notifications'}
+            onClick={() => setActiveSection('notifications')}
+            label="Notificações"
+          />
           <ConfigTab active={activeSection === 'xp'} onClick={() => setActiveSection('xp')} label="XP e níveis" />
           <ConfigTab active={activeSection === 'badges'} onClick={() => setActiveSection('badges')} label="Selos" />
           <ConfigTab active={activeSection === 'wellness'} onClick={() => setActiveSection('wellness')} label="Bem-estar" />
@@ -265,136 +296,157 @@ export default function AdminConfiguracoes({
         </div>
 
         {saveFeedback ? (
-          <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+          <div style={{ marginTop: 16, borderRadius: 8, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--pl-success)' }}>
             {saveFeedback}
           </div>
         ) : null}
-      </section>
+      </div>
 
-      <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Inteligência Artificial</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Status do motor de IA</h3>
-            <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
-            </p>
-            <p className="mt-1 max-w-3xl text-sm font-medium leading-relaxed text-gray-500">
-              Configure AI_PROVIDER, AI_FALLBACK_PROVIDER e as chaves dos provedores nas variáveis de ambiente da Vercel.
-            </p>
+      <div className="pl-card" style={{ padding: 24, marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Inteligência Artificial</p>
+              <h3 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Status do motor de IA</h3>
+              <p style={{ margin: '0 0 4px', maxWidth: 600, fontSize: 13, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
+                A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
+              </p>
+              <p style={{ margin: 0, maxWidth: 600, fontSize: 13, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
+                Configure AI_PROVIDER, AI_FALLBACK_PROVIDER e as chaves dos provedores nas variáveis de ambiente da Vercel.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={refreshAiHealth}
+              className="pl-btn pl-btn-ghost"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
+            >
+              <Wand2 size={15} />
+              {aiLoading ? 'Testando...' : 'Testar conexão'}
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={refreshAiHealth}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
-          >
-            <Wand2 size={15} />
-            {aiLoading ? 'Testando...' : 'Testar conexão'}
-          </button>
+          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <AiStatusCard label="Provider ativo" value={formatProviderLabel(aiStatus?.provider)} />
+            <AiStatusCard label="Modelo em uso" value={aiStatus?.model || 'Não informado'} />
+            <AiStatusCard
+              label="Status"
+              value={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'Online' : 'Offline'}
+              dotColor={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'var(--pl-success)' : 'var(--pl-ink-4)'}
+            />
+            <AiStatusCard
+              label="Gateway"
+              value="/api/ai"
+            />
+          </div>
         </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <AiStatusCard label="Provider ativo" value={formatProviderLabel(aiStatus?.provider)} />
-          <AiStatusCard label="Modelo em uso" value={aiStatus?.model || 'Não informado'} />
-          <AiStatusCard
-            label="Status"
-            value={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'Online' : 'Offline'}
-            dotTone={aiStatus?.provider && aiStatus.provider !== 'offline' ? 'bg-emerald-500' : 'bg-slate-400'}
-          />
-          <AiStatusCard
-            label="Gateway"
-            value="/api/ai"
-          />
-        </div>
-      </section>
+      </div>
 
       {activeSection === 'conteudo' ? (
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
+        <div className="pl-card" style={{ padding: 24, marginBottom: 20 }}>
+          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, flexShrink: 0, borderRadius: 12, background: 'var(--pl-ink)', color: 'var(--pl-bg)' }}>
               <LayoutGrid size={22} strokeWidth={1.75} />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Navegação rápida</p>
-              <h3 className="mt-1 text-2xl font-semibold text-slate-900">Onde editar cada coisa</h3>
-              <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Navegação rápida</p>
+              <h3 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Onde editar cada coisa</h3>
+              <p style={{ margin: 0, maxWidth: 600, fontSize: 13, color: 'var(--pl-ink-2)' }}>
                 Abra a seção correspondente, altere os campos e use o botão de salvar que aparece no topo daquela seção.
               </p>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
             <button
               type="button"
               onClick={() => setActiveSection('sidebar-menu')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-5 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', textAlign: 'left' }}
             >
-              <PanelLeft className="text-indigo-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Menu lateral</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">
+              <PanelLeft size={22} style={{ color: 'var(--pl-accent)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Menu lateral</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                 Nomes das páginas exibidos no menu (Início, Disciplinas, Audiolivros, etc.).
               </span>
             </button>
             <button
               type="button"
-              onClick={() => setActiveSection('redacoes-tips')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-rose-100 bg-rose-50/60 p-5 text-left transition hover:border-rose-200 hover:bg-rose-50"
+              onClick={() => setActiveSection('notifications')}
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', textAlign: 'left' }}
             >
-              <Lightbulb className="text-rose-600" size={22} />
-              <span className="text-sm font-bold text-slate-900">Redações · dicas</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Textos de apoio e esqueletos que aparecem na aba Dicas.</span>
+              <Bell size={22} style={{ color: 'var(--pl-accent)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Notificações</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
+                Tipos de alerta exibidos no sino e quais podem ser enviados para todos os usuários.
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('redacoes-tips')}
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', textAlign: 'left' }}
+            >
+              <Lightbulb size={22} style={{ color: 'var(--pl-danger)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Redações · dicas</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>Textos de apoio e esqueletos que aparecem na aba Dicas.</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSection('redacoes-dados')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-sky-100 bg-sky-50/60 p-5 text-left transition hover:border-sky-200 hover:bg-sky-50"
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', textAlign: 'left' }}
             >
-              <FileSignature className="text-sky-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Redações · banco</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">
+              <FileSignature size={22} style={{ color: 'var(--pl-accent)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Redações · banco</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                 Temas do banco, kit (conectivos e modelos) e catálogo de audiolivros — tudo em formulário, sem JSON.
               </span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSection('wellness')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5 text-left transition hover:border-emerald-200 hover:bg-emerald-50"
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', textAlign: 'left' }}
             >
-              <Music4 className="text-emerald-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Bem-estar</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Áudios e vídeos da biblioteca de bem-estar.</span>
+              <Music4 size={22} style={{ color: 'var(--pl-success)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Bem-estar</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>Áudios e vídeos da biblioteca de bem-estar.</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSection('xp')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-amber-100 bg-amber-50/60 p-5 text-left transition hover:border-amber-200 hover:bg-amber-50"
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', textAlign: 'left' }}
             >
-              <Sparkles className="text-amber-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">XP e níveis</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Pontos por ação e curva de progressão.</span>
+              <Sparkles size={22} style={{ color: 'var(--pl-warn)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>XP e níveis</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>Pontos por ação e curva de progressão.</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSection('badges')}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-violet-100 bg-violet-50/60 p-5 text-left transition hover:border-violet-200 hover:bg-violet-50"
+              className="pl-card"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 20, cursor: 'pointer', border: '1px solid var(--pl-highlight-soft)', background: 'var(--pl-highlight-soft)', textAlign: 'left' }}
             >
-              <Trophy className="text-violet-700" size={22} />
-              <span className="text-sm font-bold text-slate-900">Selos</span>
-              <span className="text-xs font-medium leading-relaxed text-gray-600">Conquistas e metas por métrica.</span>
+              <Trophy size={22} style={{ color: 'var(--pl-highlight-ink)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Selos</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>Conquistas e metas por métrica.</span>
             </button>
           </div>
-        </section>
+        </div>
       ) : null}
 
       {activeSection === 'sidebar-menu' ? (
-        <section className="rounded-[2rem] border border-indigo-100 bg-white p-6 shadow-sm">
-          <div className="mb-5">
-            <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
+        <div className="pl-card" style={{ padding: 24, marginBottom: 20, border: '1px solid var(--pl-accent-soft)' }}>
+          <div style={{ marginBottom: 20 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 4, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <PanelLeft size={14} />
               Navegação
             </p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Nomes no menu lateral</h3>
-            <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
+            <h3 style={{ margin: '8px 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Nomes no menu lateral</h3>
+            <p style={{ margin: 0, maxWidth: 600, fontSize: 13, color: 'var(--pl-ink-2)' }}>
               Cada linha corresponde a um item do menu. O id interno não muda (é o que o app usa para abrir a página); só o
               texto exibido ao usuário é personalizável.
             </p>
@@ -403,15 +455,92 @@ export default function AdminConfiguracoes({
             sidebarLabelsOverride={sidebarLabelsOverride}
             onSave={onSaveSidebarLabels}
           />
+        </div>
+      ) : null}
+
+      {activeSection === 'notifications' ? (
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+            <div>
+              <p className="pl-eyebrow">Alertas do app</p>
+              <h3 style={{ margin: '6px 0 0', fontSize: 26, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
+                O que pode aparecer no sino
+              </h3>
+              <p style={{ margin: '8px 0 0', maxWidth: 760, color: 'var(--pl-ink-2)', fontSize: 13.5, lineHeight: 1.55 }}>
+                Hoje o sino mostra alertas internos do app. Ative ou desative cada origem; marque "enviar para todos" quando o alerta não deve depender de curso importado, favorito ou acompanhado pelo aluno.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="pl-btn pl-btn-primary"
+              disabled={notificationSaving || !onSaveNotificationSettings}
+              onClick={async () => {
+                if (!onSaveNotificationSettings) return;
+                setNotificationSaving(true);
+                try {
+                  const result = await onSaveNotificationSettings(notificationDraft);
+                  setSaveFeedback(result?.ok ? 'Configurações de notificação salvas.' : `Erro: ${result?.error || 'falha'}`);
+                  window.setTimeout(() => setSaveFeedback(''), 3200);
+                } finally {
+                  setNotificationSaving(false);
+                }
+              }}
+            >
+              <Save size={14} />
+              {notificationSaving ? 'Salvando...' : 'Salvar notificações'}
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
+            {NOTIFICATION_SETTING_OPTIONS.map((option) => {
+              const current = notificationDraft[option.id] || { enabled: true, broadcastToAll: false };
+              return (
+                <div
+                  key={option.id}
+                  className="pl-card-paper"
+                  style={{ padding: 16, display: 'grid', gap: 14, gridTemplateColumns: 'minmax(0, 1fr) auto' }}
+                >
+                  <div>
+                    <p style={{ margin: 0, color: 'var(--pl-ink)', fontSize: 14, fontWeight: 750 }}>{option.label}</p>
+                    <p style={{ margin: '4px 0 0', color: 'var(--pl-ink-2)', fontSize: 12.5, lineHeight: 1.45 }}>
+                      {option.description}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    <ToggleChip
+                      label="Ativo"
+                      checked={current.enabled}
+                      onChange={(checked) =>
+                        setNotificationDraft((prev) => ({
+                          ...prev,
+                          [option.id]: { ...(prev[option.id] || {}), enabled: checked },
+                        }))
+                      }
+                    />
+                    <ToggleChip
+                      label="Enviar para todos"
+                      checked={current.broadcastToAll}
+                      onChange={(checked) =>
+                        setNotificationDraft((prev) => ({
+                          ...prev,
+                          [option.id]: { ...(prev[option.id] || {}), broadcastToAll: checked },
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
       ) : null}
 
       {activeSection === 'xp' ? (
-        <div className="grid gap-8 xl:grid-cols-[0.92fr_1.08fr]">
-          <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Motor base</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">XP e progressão</h3>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '0.92fr 1.08fr' }}>
+          <div className="pl-card" style={{ padding: 24 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Motor base</p>
+            <h3 style={{ margin: '0 0 20px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>XP e progressão</h3>
+            <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr 1fr' }}>
               <NumberField label="XP por minuto" value={xpDraft.perMinute || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, perMinute: value }))} />
               <NumberField label="XP por questão" value={xpDraft.perQuestion || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, perQuestion: value }))} />
               <NumberField label="XP por registro" value={xpDraft.perSession || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, perSession: value }))} />
@@ -421,13 +550,13 @@ export default function AdminConfiguracoes({
               <NumberField label="XP base para subir" value={xpDraft.baseLevelStep || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, baseLevelStep: value }))} />
               <NumberField label="Crescimento por nível" value={xpDraft.stepGrowth || 0} onChange={(value) => setXpDraft((prev) => ({ ...prev, stepGrowth: value }))} />
             </div>
-          </section>
+          </div>
 
-          <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="pl-card" style={{ padding: 24 }}>
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">XP extra</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Regras por escopo</h3>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>XP extra</p>
+                <h3 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Regras por escopo</h3>
               </div>
               <button
                 type="button"
@@ -442,14 +571,15 @@ export default function AdminConfiguracoes({
                   }));
                   setOpenXpRules((prev) => [...prev, id]);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+                className="pl-btn pl-btn-ghost"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
               >
                 <Plus size={15} />
                 Nova regra
               </button>
             </div>
 
-            <div className="custom-scrollbar max-h-[640px] space-y-3 overflow-y-auto pr-2">
+            <div className="custom-scrollbar" style={{ maxHeight: 640, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 8 }}>
               {(Array.isArray(xpDraft.customRules) ? xpDraft.customRules : []).map((rule, index) => {
                 const isOpen = openXpRules.includes(rule.id);
                 return (
@@ -470,24 +600,24 @@ export default function AdminConfiguracoes({
                           }));
                           setOpenXpRules((prev) => prev.filter((item) => item !== rule.id));
                         }}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600"
+                        style={{ display: 'inline-flex', width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', cursor: 'pointer' }}
                       >
                         <Trash2 size={15} />
                       </button>
                     }
                   >
-                    <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_120px]">
+                    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1.2fr) minmax(0,0.8fr) 120px' }}>
                       <input
                         type="text"
                         value={rule.name || ''}
                         onChange={(event) => updateXpRule(rule.id, { name: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="pl-input"
                         placeholder="Nome da regra"
                       />
                       <select
                         value={rule.metric || 'minutes'}
                         onChange={(event) => updateXpRule(rule.id, { metric: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="pl-input"
                       >
                         {PROGRESS_METRIC_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>{option.label}</option>
@@ -499,16 +629,16 @@ export default function AdminConfiguracoes({
                         step="1"
                         value={rule.multiplier ?? 1}
                         onChange={(event) => updateXpRule(rule.id, { multiplier: Number(event.target.value || 0) }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="pl-input"
                         placeholder="XP"
                       />
                     </div>
 
-                    <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr 1fr' }}>
                       <select
                         value={rule.plan || ''}
                         onChange={(event) => updateXpRule(rule.id, { plan: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="pl-input"
                       >
                         <option value="">Todos os concursos</option>
                         {planOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
@@ -516,7 +646,7 @@ export default function AdminConfiguracoes({
                       <select
                         value={rule.subject || ''}
                         onChange={(event) => updateXpRule(rule.id, { subject: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="pl-input"
                       >
                         <option value="">Todas as disciplinas</option>
                         {subjectOptions.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
@@ -525,7 +655,7 @@ export default function AdminConfiguracoes({
                         type="text"
                         value={rule.topic || ''}
                         onChange={(event) => updateXpRule(rule.id, { topic: event.target.value }, setXpDraft)}
-                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                        className="pl-input"
                         placeholder="Tópico contém..."
                       />
                     </div>
@@ -537,17 +667,17 @@ export default function AdminConfiguracoes({
                 <EmptyState text="Nenhuma regra extra cadastrada. Crie bônus por concurso, disciplina, tópico ou tipo de ação." />
               ) : null}
             </div>
-          </section>
+          </div>
         </div>
       ) : null}
 
       {activeSection === 'badges' ? (
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="pl-card" style={{ padding: 24, marginBottom: 20 }}>
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Selos</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Selos personalizados</h3>
-              <p className="mt-2 text-sm font-medium text-gray-500">
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Selos</p>
+              <h3 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Selos personalizados</h3>
+              <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)' }}>
                 A regra pode abranger a plataforma inteira, um concurso, uma disciplina, um tópico ou, no futuro, um esquadrão.
               </p>
             </div>
@@ -561,14 +691,15 @@ export default function AdminConfiguracoes({
                 ]);
                 setOpenBadges((prev) => [...prev, id]);
               }}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+              className="pl-btn pl-btn-ghost"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
             >
               <Plus size={15} />
               Novo selo
             </button>
           </div>
 
-          <div className="custom-scrollbar max-h-[720px] space-y-3 overflow-y-auto pr-2">
+          <div className="custom-scrollbar" style={{ maxHeight: 720, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 8 }}>
             {(Array.isArray(badgeDraft) ? badgeDraft : []).map((badge, index) => {
               const isOpen = openBadges.includes(badge.id);
               return (
@@ -586,24 +717,24 @@ export default function AdminConfiguracoes({
                         setBadgeDraft((prev) => prev.filter((item) => item.id !== badge.id));
                         setOpenBadges((prev) => prev.filter((item) => item !== badge.id));
                       }}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600"
+                      style={{ display: 'inline-flex', width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', cursor: 'pointer' }}
                     >
                       <Trash2 size={15} />
                     </button>
                   }
                 >
-                  <div className="grid gap-3 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.7fr)_120px]">
+                  <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1.05fr) minmax(0,0.7fr) 120px' }}>
                     <input
                       type="text"
                       value={badge.nome || ''}
                       onChange={(event) => updateBadge(badge.id, { nome: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Nome do selo"
                     />
                     <select
                       value={badge.metric || 'sessions'}
                       onChange={(event) => updateBadge(badge.id, { metric: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                     >
                       {PROGRESS_METRIC_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>{option.label}</option>
@@ -615,21 +746,21 @@ export default function AdminConfiguracoes({
                       step="1"
                       value={badge.target ?? 1}
                       onChange={(event) => updateBadge(badge.id, { target: Number(event.target.value || 1) }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                     />
                   </div>
                   <textarea
                     rows="2"
                     value={badge.descricao || ''}
                     onChange={(event) => updateBadge(badge.id, { descricao: event.target.value }, setBadgeDraft)}
-                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 outline-none focus:border-blue-600"
+                    className="pl-input" style={{ marginTop: 12, width: '100%' }}
                     placeholder="Descrição do selo"
                   />
-                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
                     <select
                       value={badge.plan || ''}
                       onChange={(event) => updateBadge(badge.id, { plan: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                     >
                       <option value="">Todos os concursos</option>
                       {planOptions.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
@@ -637,7 +768,7 @@ export default function AdminConfiguracoes({
                     <select
                       value={badge.subject || ''}
                       onChange={(event) => updateBadge(badge.id, { subject: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                     >
                       <option value="">Todas as disciplinas</option>
                       {subjectOptions.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
@@ -646,14 +777,14 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={badge.topic || ''}
                       onChange={(event) => updateBadge(badge.id, { topic: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Tópico contém..."
                     />
                     <input
                       type="text"
                       value={badge.color || ''}
                       onChange={(event) => updateBadge(badge.id, { color: event.target.value }, setBadgeDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Cor"
                     />
                   </div>
@@ -661,12 +792,12 @@ export default function AdminConfiguracoes({
               );
             })}
           </div>
-        </section>
+        </div>
       ) : null}
 
       {activeSection === 'wellness' ? (
-        <section className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex flex-wrap gap-2 rounded-2xl bg-gray-100 p-1.5">
+        <div className="pl-card" style={{ padding: 24, marginBottom: 20 }}>
+          <div style={{ marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 8, borderRadius: 12, background: 'var(--pl-bg-soft)', padding: 6 }}>
             <ConfigTab active={wellnessInnerTab === 'audio'} onClick={() => setWellnessInnerTab('audio')} label="Meditações" />
             <ConfigTab active={wellnessInnerTab === 'video'} onClick={() => setWellnessInnerTab('video')} label="Pausas rápidas" />
             <ConfigTab active={wellnessInnerTab === 'page'} onClick={() => setWellnessInnerTab('page')} label="Página Bem-estar" />
@@ -674,27 +805,27 @@ export default function AdminConfiguracoes({
 
           {wellnessInnerTab === 'page' ? (
             <>
-              <div className="mb-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Conteúdo editorial</p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Textos e blocos da aba Bem-estar</h3>
-                <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
+              <div style={{ marginBottom: 20 }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Conteúdo editorial</p>
+                <h3 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Textos e blocos da aba Bem-estar</h3>
+                <p style={{ margin: 0, maxWidth: 600, fontSize: 13, color: 'var(--pl-ink-2)' }}>
                   Hero, métricas, CVV, visão geral, respirações e rótulos exibidos na página. A biblioteca de áudio/vídeo continua nas abas
                   Meditações e Pausas rápidas.
                 </p>
               </div>
-              <div className="custom-scrollbar max-h-[720px] overflow-y-auto pr-2">
+              <div className="custom-scrollbar" style={{ maxHeight: 720, overflowY: 'auto', paddingRight: 8 }}>
                 <AdminWellnessPageConfigEditor config={wellnessPageDraft} setConfig={setWellnessPageDraft} />
               </div>
             </>
           ) : (
             <>
-              <div className="mb-5 flex items-center justify-between gap-3">
+              <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Biblioteca de bem-estar</p>
-                  <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+                  <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Biblioteca de bem-estar</p>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>
                     {wellnessInnerTab === 'video' ? 'Biblioteca de pausas rápidas' : 'Biblioteca de meditações'}
                   </h3>
-                  <p className="mt-2 text-sm font-medium text-gray-500">
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-2)' }}>
                     {wellnessInnerTab === 'video'
                       ? 'Cadastre vídeos curtos de descanso, pausa ativa, alongamento e reset cognitivo.'
                       : 'Cadastre áudios e trilhas de meditação com capa, créditos e duração.'}
@@ -723,14 +854,15 @@ export default function AdminConfiguracoes({
                     ]);
                     setOpenTracks((prev) => [...prev, id]);
                   }}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+                  className="pl-btn pl-btn-ghost"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
                 >
                   <Plus size={15} />
                   {wellnessInnerTab === 'video' ? 'Adicionar pausa rápida' : 'Adicionar meditação'}
                 </button>
               </div>
 
-              <div className="custom-scrollbar max-h-[720px] space-y-3 overflow-y-auto pr-2">
+              <div className="custom-scrollbar" style={{ maxHeight: 720, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 8 }}>
                 {filteredWellnessDraft.map((track, index) => {
               const isOpen = openTracks.includes(track.id);
               return (
@@ -748,24 +880,24 @@ export default function AdminConfiguracoes({
                         setWellnessDraft((prev) => prev.filter((item) => item.id !== track.id));
                         setOpenTracks((prev) => prev.filter((item) => item !== track.id));
                       }}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600"
+                      style={{ display: 'inline-flex', width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', cursor: 'pointer' }}
                     >
                       <Trash2 size={15} />
                     </button>
                   }
                 >
-                  <div className="grid gap-3 md:grid-cols-3">
+                  <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr 1fr' }}>
                     <input
                       type="text"
                       value={track.title || ''}
                       onChange={(event) => updateTrack(track.id, { title: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Título"
                     />
                     <select
                       value={track.mediaType || 'audio'}
                       onChange={(event) => updateTrack(track.id, { mediaType: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                     >
                       <option value="audio">Audio</option>
                       <option value="video">Video</option>
@@ -774,7 +906,7 @@ export default function AdminConfiguracoes({
                       type="text"
                       value={track.category || ''}
                       onChange={(event) => updateTrack(track.id, { category: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Categoria"
                     />
                   </div>
@@ -782,15 +914,15 @@ export default function AdminConfiguracoes({
                     rows="2"
                     value={track.description || ''}
                     onChange={(event) => updateTrack(track.id, { description: event.target.value }, setWellnessDraft)}
-                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 outline-none focus:border-blue-600"
+                    className="pl-input" style={{ marginTop: 12, width: '100%' }}
                     placeholder="Descrição"
                   />
-                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
                     <input
                       type="text"
                       value={track.durationLabel || ''}
                       onChange={(event) => updateTrack(track.id, { durationLabel: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Duração"
                     />
                     <input
@@ -805,31 +937,31 @@ export default function AdminConfiguracoes({
                           setWellnessDraft
                         )
                       }
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder={track.mediaType === 'video' ? 'https://.../video.mp4 ou embed' : '/assets/wellness/arquivo.mp3'}
                     />
                     <input
                       type="text"
                       value={track.coverUrl || ''}
                       onChange={(event) => updateTrack(track.id, { coverUrl: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="/assets/wellness/capa.jpg"
                     />
                     <input
                       type="text"
                       value={track.credits || ''}
                       onChange={(event) => updateTrack(track.id, { credits: event.target.value }, setWellnessDraft)}
-                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                      className="pl-input"
                       placeholder="Créditos"
                     />
                   </div>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <label className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600">
+                  <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
+                    <label style={{ borderRadius: 8, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)', cursor: 'pointer', display: 'block' }}>
                       {track.mediaType === 'video' ? 'Upload do vídeo' : 'Upload da meditação'}
                       <input
                         type="file"
                         accept={track.mediaType === 'video' ? 'video/*' : 'audio/*'}
-                        className="mt-2 block w-full text-xs font-medium text-gray-500"
+                        style={{ marginTop: 8, display: 'block', width: '100%', fontSize: 11, color: 'var(--pl-ink-3)' }}
                         onChange={async (event) => {
                           const file = event.target.files?.[0];
                           if (!file) return;
@@ -842,12 +974,12 @@ export default function AdminConfiguracoes({
                         }}
                       />
                     </label>
-                    <label className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600">
+                    <label style={{ borderRadius: 8, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)', cursor: 'pointer', display: 'block' }}>
                       Upload da capa
                       <input
                         type="file"
                         accept="image/*"
-                        className="mt-2 block w-full text-xs font-medium text-gray-500"
+                        style={{ marginTop: 8, display: 'block', width: '100%', fontSize: 11, color: 'var(--pl-ink-3)' }}
                         onChange={async (event) => {
                           const file = event.target.files?.[0];
                           if (!file) return;
@@ -857,7 +989,7 @@ export default function AdminConfiguracoes({
                       />
                     </label>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-3">
+                  <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                     <ToggleChip label="Destaque" checked={track.isFeatured !== false} onChange={(checked) => updateTrack(track.id, { isFeatured: checked }, setWellnessDraft)} />
                     <ToggleChip label="Pública" checked={track.isPublic !== false} onChange={(checked) => updateTrack(track.id, { isPublic: checked }, setWellnessDraft)} />
                   </div>
@@ -871,22 +1003,23 @@ export default function AdminConfiguracoes({
               </div>
             </>
           )}
-        </section>
+        </div>
       ) : null}
 
       {activeSection === 'redacoes-tips' ? (
-        <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="pl-card" style={{ padding: 24, marginBottom: 20, border: '1px solid var(--pl-danger-soft)' }}>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-500">
+              <p className="pl-eyebrow" style={{ marginBottom: 4, display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--pl-danger)' }}>
                 <FileSignature size={14} />
                 Conteúdo operacional
               </p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Dicas e esqueletos de redação</h3>
-              <p className="mt-2 max-w-2xl text-sm font-medium text-gray-500">
-                Cadastre padrões (CESPE, FCC, etc.). Os alunos veem na aba &quot;Dicas de especialista&quot; em Redações. Os dados ficam na tabela{' '}
-                <code className="rounded bg-slate-100 px-1 text-xs">redacao_expert_tips</code> no Supabase (rode o SQL em{' '}
-                <code className="rounded bg-slate-100 px-1 text-xs">supabase/redacao_expert_tips.sql</code>).
+              <h3 style={{ margin: '8px 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Dicas e esqueletos de redação</h3>
+              <p style={{ margin: 0, maxWidth: 520, fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                Cadastre padrões (CESPE, FCC, etc.). Os alunos veem na aba "Dicas de especialista" em Redações. Os dados ficam na tabela{' '}
+                <code style={{ borderRadius: 4, background: 'var(--pl-bg-soft)', padding: '0 4px', fontSize: 11 }}>redacao_expert_tips</code> no Supabase (rode o SQL em{' '}
+                <code style={{ borderRadius: 4, background: 'var(--pl-bg-soft)', padding: '0 4px', fontSize: 11 }}>supabase/redacao_expert_tips.sql</code>).
               </p>
             </div>
             <button
@@ -895,22 +1028,24 @@ export default function AdminConfiguracoes({
                 const id = normalizeRedacaoExpertTip({ title: 'Novo esqueleto', body: '' }).id;
                 setRedacaoTipsDraft((prev) => [...prev, { id, title: 'Novo esqueleto', body: '', sort_order: prev.length }]);
               }}
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700"
+              className="pl-btn pl-btn-ghost"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}
             >
               <Plus size={15} />
               Adicionar
             </button>
           </div>
 
-          <div className="custom-scrollbar max-h-[min(70vh,640px)] space-y-3 overflow-y-auto pr-2">
+          </div>
+          <div className="custom-scrollbar" style={{ maxHeight: 'min(70vh,640px)', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 8 }}>
             {redacaoTipsDraft.map((tip, index) => (
-              <div key={tip.id} className="rounded-[1.4rem] border border-gray-200 bg-gray-50/70 p-4">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Item {index + 1}</span>
+              <div key={tip.id} className="pl-card-paper" style={{ padding: 16 }}>
+                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <span className="pl-eyebrow">Item {index + 1}</span>
                   <button
                     type="button"
                     onClick={() => setRedacaoTipsDraft((prev) => prev.filter((t) => t.id !== tip.id))}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600"
+                    style={{ display: 'inline-flex', width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', cursor: 'pointer' }}
                     aria-label="Remover"
                   >
                     <Trash2 size={15} />
@@ -923,7 +1058,8 @@ export default function AdminConfiguracoes({
                     const v = e.target.value;
                     setRedacaoTipsDraft((prev) => prev.map((t) => (t.id === tip.id ? { ...t, title: v } : t)));
                   }}
-                  className="mb-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-blue-600"
+                  className="pl-input"
+                  style={{ marginBottom: 8, width: '100%' }}
                   placeholder="Título ex.: Padrão CESPE — dissertação"
                 />
                 <textarea
@@ -933,7 +1069,8 @@ export default function AdminConfiguracoes({
                     const v = e.target.value;
                     setRedacaoTipsDraft((prev) => prev.map((t) => (t.id === tip.id ? { ...t, body: v } : t)));
                   }}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium leading-relaxed text-gray-700 outline-none focus:border-blue-600"
+                  className="pl-input"
+                  style={{ width: '100%', lineHeight: 1.55 }}
                   placeholder="Texto completo: estrutura de parágrafos, conectivos, avisos da banca..."
                 />
               </div>
@@ -943,7 +1080,7 @@ export default function AdminConfiguracoes({
             ) : null}
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <button
               type="button"
               disabled={redacaoTipsSaving || !onSaveRedacaoExpertTips}
@@ -960,46 +1097,45 @@ export default function AdminConfiguracoes({
                   setRedacaoTipsSaving(false);
                 }
               }}
-              className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-bold text-rose-800 disabled:opacity-50"
+              className="pl-btn"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', border: '1px solid var(--pl-danger-soft)' }}
             >
               <Save size={16} />
               {redacaoTipsSaving ? 'Salvando dicas…' : 'Salvar só dicas de redação'}
             </button>
           </div>
-        </section>
+        </div>
       ) : null}
 
       {activeSection === 'redacoes-dados' ? (
-        <section className="rounded-[2rem] border border-sky-100 bg-white p-6 shadow-sm">
-          <div className="mb-5">
-            <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-600">
+        <div className="pl-card" style={{ padding: 24, marginBottom: 20, border: '1px solid var(--pl-accent-soft)' }}>
+          <div style={{ marginBottom: 20 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 4, display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--pl-accent)' }}>
               <FileSignature size={14} />
               Redações · dados vivos
             </p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">Banco de temas e kit (conectivos / modelos)</h3>
-            <p className="mt-2 max-w-3xl text-sm font-medium text-gray-500">
-              Salve no Supabase (tabela <code className="rounded bg-gray-100 px-1 text-xs">redacao_site_content</code>
-              — rode <code className="rounded bg-gray-100 px-1 text-xs">supabase/redacao_site_content.sql</code>
+            <h3 style={{ margin: '8px 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Banco de temas e kit (conectivos / modelos)</h3>
+            <p style={{ margin: 0, maxWidth: 600, fontSize: 13, color: 'var(--pl-ink-2)' }}>
+              Salve no Supabase (tabela <code style={{ borderRadius: 4, background: 'var(--pl-bg-soft)', padding: '0 4px', fontSize: 11 }}>redacao_site_content</code>
+              — rode <code style={{ borderRadius: 4, background: 'var(--pl-bg-soft)', padding: '0 4px', fontSize: 11 }}>supabase/redacao_site_content.sql</code>
               {'; para a coluna de catálogo de audiolivros, rode '}
-              <code className="rounded bg-gray-100 px-1 text-xs">supabase/redacao_site_content_audiobooks.sql</code>).{' '}
+              <code style={{ borderRadius: 4, background: 'var(--pl-bg-soft)', padding: '0 4px', fontSize: 11 }}>supabase/redacao_site_content_audiobooks.sql</code>).{' '}
               Temas, kit e audiolivros são editados nos blocos abaixo; nada de JSON manual.
             </p>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-            <div className="min-w-0 rounded-2xl border border-sky-100 bg-sky-50/40 p-4 sm:p-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-sky-700">Banco de temas</p>
-              <div className="mt-3">
-                <AdminRedacaoThemeBankEditor draft={themeBankDraft} onDraftChange={setThemeBankDraft} />
-              </div>
+          <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.15fr)' }}>
+            <div className="pl-card-paper" style={{ minWidth: 0, padding: 20 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 12, color: 'var(--pl-accent)' }}>Banco de temas</p>
+              <AdminRedacaoThemeBankEditor draft={themeBankDraft} onDraftChange={setThemeBankDraft} />
             </div>
-            <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Kit (aba Dicas)</span>
+            <div className="pl-card" style={{ minWidth: 0, padding: 20 }}>
+              <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span className="pl-eyebrow">Kit (aba Dicas)</span>
                 <button
                   type="button"
                   onClick={() => setKitDraft(mergeRedacaoKitBundle(redacaoKitOverride))}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 transition hover:border-slate-300"
+                  className="pl-btn pl-btn-ghost pl-btn-sm"
                 >
                   Descartar edição local
                 </button>
@@ -1008,26 +1144,26 @@ export default function AdminConfiguracoes({
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-violet-100 bg-violet-50/50 p-4 sm:p-5">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Headphones className="text-violet-700" size={18} />
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-700">Catálogo de audiolivros</p>
+          <div className="pl-card" style={{ marginTop: 24, padding: 20, border: '1px solid var(--pl-highlight-soft)', background: 'var(--pl-highlight-soft)' }}>
+            <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+              <Headphones size={18} style={{ color: 'var(--pl-highlight-ink)' }} />
+              <p className="pl-eyebrow" style={{ color: 'var(--pl-highlight-ink)' }}>Catálogo de audiolivros</p>
             </div>
-            <p className="text-xs font-medium leading-relaxed text-gray-600">
+            <p style={{ fontSize: 12, lineHeight: 1.55, color: 'var(--pl-ink-2)', margin: '0 0 8px' }}>
               Se você ainda não gravou nada no Supabase, o app mostra o catálogo de demonstração embutido no código (
-              <code className="text-xs">buildDefaultAudiobookCatalog</code> em <code className="text-xs">src/lib/audiobooks.js</code>
+              <code style={{ fontSize: 11 }}>buildDefaultAudiobookCatalog</code> em <code style={{ fontSize: 11 }}>src/lib/audiobooks.js</code>
               ) — o mesmo que aparece aqui ao abrir esta aba. Depois de salvar obras válidas, passa a valer o que está no banco.
             </p>
-            <p className="mt-2 text-xs font-medium leading-relaxed text-gray-600">
-              URLs de áudio públicas (<code className="text-xs">https://</code>) ou arquivos estáticos (<code className="text-xs">/assets/...</code>). Se nenhuma obra
+            <p style={{ fontSize: 12, lineHeight: 1.55, color: 'var(--pl-ink-2)', margin: 0 }}>
+              URLs de áudio públicas (<code style={{ fontSize: 11 }}>https://</code>) ou arquivos estáticos (<code style={{ fontSize: 11 }}>/assets/...</code>). Se nenhuma obra
               válida restar após salvar, o app volta ao catálogo embutido. Para editar só audiolivros, use também o menu Admin → Audiolivros.
             </p>
-            <div className="mt-4">
+            <div style={{ marginTop: 16 }}>
               <AdminAudiobookCatalogEditor draft={audiobookCatalogDraft} onDraftChange={setAudiobookCatalogDraft} />
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <button
               type="button"
               disabled={redacaoSiteSaving || !onSaveRedacaoSiteContent}
@@ -1058,13 +1194,14 @@ export default function AdminConfiguracoes({
                   setRedacaoSiteSaving(false);
                 }
               }}
-              className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-5 py-2.5 text-sm font-bold text-sky-900 disabled:opacity-50"
+              className="pl-btn"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)', border: '1px solid var(--pl-accent-soft)', fontWeight: 700 }}
             >
               <Save size={16} />
               {redacaoSiteSaving ? 'Salvando…' : 'Salvar banco, kit e audiolivros'}
             </button>
           </div>
-        </section>
+        </div>
       ) : null}
     </div>
   );
@@ -1119,12 +1256,166 @@ function toggleDisclosure(id, setter) {
   setter((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
 }
 
+function CourseTemplatesEditor({ templates, setTemplates, isSaving, onSave }) {
+  const safeTemplates = normalizeCourseTemplates(templates);
+  const addTemplate = () => {
+    const id = `curso-${Date.now()}`;
+    setTemplates((prev) => [
+      ...normalizeCourseTemplates(prev),
+      {
+        id,
+        nome: 'Novo curso',
+        area: 'Geral',
+        intent: 'faculdade',
+        subjects: [{ nome: 'Disciplina inicial', topicos: ['Leituras principais', 'Exercicios', 'Revisao'] }],
+      },
+    ]);
+  };
+  const updateTemplate = (id, patch) => {
+    setTemplates((prev) => normalizeCourseTemplates(prev).map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  };
+  const removeTemplate = (id) => {
+    setTemplates((prev) => normalizeCourseTemplates(prev).filter((item) => item.id !== id));
+  };
+
+  return (
+    <section className="pl-card" style={{ padding: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+        <div>
+          <p className="pl-eyebrow">Cursos e matérias</p>
+          <h3 style={{ margin: '6px 0 0', fontSize: 26, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
+            Templates para faculdade
+          </h3>
+          <p style={{ margin: '8px 0 0', maxWidth: 760, color: 'var(--pl-ink-2)', fontSize: 13.5, lineHeight: 1.55 }}>
+            Essa lista alimenta o modal "Cursos de faculdade" em Meus cursos. Cada template cria o curso, as disciplinas e os tópicos iniciais para o aluno editar depois.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="pl-btn" onClick={addTemplate}>
+            <Plus size={14} /> Novo curso
+          </button>
+          <button type="button" className="pl-btn pl-btn-primary" disabled={isSaving} onClick={onSave}>
+            <Save size={14} /> {isSaving ? 'Salvando...' : 'Salvar cursos'}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gap: 14, marginTop: 20 }}>
+        {safeTemplates.map((template) => (
+          <div key={template.id} className="pl-card-paper" style={{ padding: 18 }}>
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1.1fr) minmax(160px,0.55fr) 130px auto', alignItems: 'end' }}>
+              <AdminTextInput label="Nome do curso" value={template.nome} onChange={(value) => updateTemplate(template.id, { nome: value })} />
+              <AdminTextInput label="Área" value={template.area} onChange={(value) => updateTemplate(template.id, { area: value })} />
+              <label>
+                <span style={{ display: 'block', marginBottom: 6, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-ink-3)' }}>Tipo</span>
+                <select
+                  value={template.intent || 'faculdade'}
+                  onChange={(event) => updateTemplate(template.id, { intent: event.target.value })}
+                  className="pl-input"
+                  style={{ width: '100%' }}
+                >
+                  <option value="faculdade">Faculdade</option>
+                  <option value="vestibular">Vestibular</option>
+                  <option value="livre">Livre</option>
+                </select>
+              </label>
+              <button type="button" className="pl-btn pl-btn-sm" onClick={() => removeTemplate(template.id)} title="Excluir curso">
+                <Trash2 size={13} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
+              {template.subjects.map((subject, index) => (
+                <div key={`${template.id}-${index}`} style={{ display: 'grid', gap: 10, gridTemplateColumns: 'minmax(180px,0.7fr) minmax(0,1.3fr) auto', alignItems: 'start' }}>
+                  <AdminTextInput
+                    label={`Disciplina ${index + 1}`}
+                    value={subject.nome}
+                    onChange={(value) => {
+                      const subjects = [...template.subjects];
+                      subjects[index] = { ...subjects[index], nome: value };
+                      updateTemplate(template.id, { subjects });
+                    }}
+                  />
+                  <label>
+                    <span style={{ display: 'block', marginBottom: 6, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-ink-3)' }}>Tópicos, um por linha</span>
+                    <textarea
+                      rows={3}
+                      value={(subject.topicos || []).join('\n')}
+                      onChange={(event) => {
+                        const subjects = [...template.subjects];
+                        subjects[index] = {
+                          ...subjects[index],
+                          topicos: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean),
+                        };
+                        updateTemplate(template.id, { subjects });
+                      }}
+                      className="pl-input"
+                      style={{ width: '100%' }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="pl-btn pl-btn-sm"
+                    onClick={() => updateTemplate(template.id, { subjects: template.subjects.filter((_, itemIndex) => itemIndex !== index) })}
+                    title="Excluir disciplina"
+                    style={{ marginTop: 24 }}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="pl-btn pl-btn-sm"
+              style={{ marginTop: 12 }}
+              onClick={() =>
+                updateTemplate(template.id, {
+                  subjects: [...template.subjects, { nome: 'Nova disciplina', topicos: ['Leituras principais', 'Exercicios', 'Revisao'] }],
+                })
+              }
+            >
+              <Plus size={13} /> Adicionar disciplina
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AdminTextInput({ label, value, onChange }) {
+  return (
+    <label>
+      <span style={{ display: 'block', marginBottom: 6, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-ink-3)' }}>{label}</span>
+      <input
+        value={value || ''}
+        onChange={(event) => onChange(event.target.value)}
+        className="pl-input"
+        style={{ width: '100%' }}
+      />
+    </label>
+  );
+}
+
 function ConfigTab({ active, onClick, label }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${active ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500'}`}
+      style={{
+        borderRadius: 12,
+        padding: '8px 20px',
+        fontSize: 13,
+        fontWeight: 600,
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        background: active ? 'var(--pl-surface)' : 'transparent',
+        color: active ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+        boxShadow: active ? 'var(--pl-sh-low)' : 'none',
+      }}
     >
       {label}
     </button>
@@ -1141,13 +1432,13 @@ function formatProviderLabel(provider) {
   return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Offline';
 }
 
-function AiStatusCard({ label, value, dotTone = '' }) {
+function AiStatusCard({ label, value, dotColor = '' }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <div className="mt-2 flex items-center gap-2">
-        {dotTone ? <span className={`h-2.5 w-2.5 rounded-full ${dotTone}`} /> : null}
-        <p className="text-sm font-semibold text-slate-900">{value}</p>
+    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '14px 16px' }}>
+      <p style={{ margin: 0, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-ink-3)' }}>{label}</p>
+      <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+        {dotColor ? <span style={{ width: 10, height: 10, borderRadius: '50%', background: dotColor, flexShrink: 0 }} /> : null}
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</p>
       </div>
     </div>
   );
@@ -1155,15 +1446,16 @@ function AiStatusCard({ label, value, dotTone = '' }) {
 
 function NumberField({ label, value, onChange }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</span>
+    <label style={{ display: 'block' }}>
+      <span style={{ display: 'block', marginBottom: 6, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-ink-3)' }}>{label}</span>
       <input
         type="number"
         min="0"
         step="1"
         value={value}
         onChange={(event) => onChange(Number(event.target.value || 0))}
-        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+        className="pl-input"
+        style={{ width: '100%' }}
       />
     </label>
   );
@@ -1171,28 +1463,32 @@ function NumberField({ label, value, onChange }) {
 
 function CollapsibleCard({ isOpen, onToggle, title, subtitle, actions, children }) {
   return (
-    <div className="overflow-hidden rounded-[1.4rem] border border-gray-200 bg-gray-50/70">
-      <button type="button" onClick={onToggle} className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
-          <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">{subtitle}</p>
+    <div style={{ overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer' }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</p>
+          <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 8 }}>
           {actions}
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500">
+          <span style={{ display: 'inline-flex', width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)' }}>
             {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </span>
         </div>
       </button>
-      {isOpen ? <div className="border-t border-gray-200 px-4 py-4">{children}</div> : null}
+      {isOpen ? <div style={{ borderTop: '1px solid var(--pl-rule-2)', padding: '14px 16px' }}>{children}</div> : null}
     </div>
   );
 }
 
 function ToggleChip({ label, checked, onChange }) {
   return (
-    <label className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600">
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 rounded border-gray-300" />
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '6px 14px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)', cursor: 'pointer' }}>
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} style={{ width: 15, height: 15, borderRadius: 4 }} />
       {label}
     </label>
   );
@@ -1200,7 +1496,7 @@ function ToggleChip({ label, checked, onChange }) {
 
 function EmptyState({ text }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-gray-200 bg-gray-50/70 px-5 py-6 text-sm font-semibold text-gray-500">
+    <div style={{ borderRadius: 16, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 20px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
       {text}
     </div>
   );

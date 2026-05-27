@@ -140,8 +140,20 @@ export default function RegistroSimuladoModal({
   if (!registroSimuladoModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-[#14110d]/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-      <div className="simulados-modal-shell simulados-registro-modal">
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(15,23,42,0.55)',
+        backdropFilter: 'blur(4px)',
+        padding: 'clamp(8px, 2vw, 24px)',
+      }}
+    >
+      <div className="simulados-modal-shell simulados-registro-modal" style={{ maxWidth: 'min(860px, 95vw)', width: '100%' }}>
         <div className="simulados-modal-head">
           <div>
             <div className="pl-overline">Registrar prova</div>

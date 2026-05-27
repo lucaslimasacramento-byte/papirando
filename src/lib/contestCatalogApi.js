@@ -85,6 +85,7 @@ export function normalizeContestTemplate(template, index = 0) {
     origem: template.origem || 'catalogo',
     cor: template.cor || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
     descricao: template.descricao || '',
+    tipo: template.tipo || 'concurso',
     is_public: template.is_public !== false,
     storage: template.created_at ? 'supabase' : 'local',
     disciplinas,

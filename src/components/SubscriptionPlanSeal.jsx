@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Sparkles, Circle } from 'lucide-react';
+import { Crown, Sparkles, Circle, ShieldCheck } from 'lucide-react';
 
 /**
  * Selo de assinatura alinhado a `profiles.subscription_plan` (gratuito | tatico | elite).
@@ -11,27 +11,66 @@ const PLAN_CONFIG = {
     title: 'Plano gratuito — toque para ver planos',
     icon: Circle,
     iconSize: 12,
-    wrapper:
-      'border-slate-200/90 bg-slate-50 text-slate-600 shadow-sm seal-plan-gratuito hover:border-slate-300 hover:bg-slate-100 py-1 pl-2 pr-2.5 gap-1 text-[10px] font-semibold',
-    iconClass: 'text-slate-400',
+    animClass: 'seal-plan-gratuito',
+    style: {
+      border: '1px solid var(--pl-rule-strong)',
+      background: 'var(--pl-bg-soft)',
+      color: 'var(--pl-ink-2)',
+      padding: '4px 10px',
+      gap: 4,
+      fontSize: 10,
+      fontWeight: 600,
+    },
   },
   tatico: {
     label: 'Tático',
     title: 'Plano Tático — toque para gerenciar assinatura',
     icon: Sparkles,
     iconSize: 14,
-    wrapper:
-      'border-blue-400/60 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 text-white shadow-md shadow-blue-900/25 ring-2 ring-blue-400/35 seal-plan-tatico hover:brightness-[1.06] hover:shadow-lg py-1.5 pl-2.5 pr-3 gap-1.5 text-xs font-bold',
-    iconClass: 'text-blue-100',
+    animClass: 'seal-plan-tatico',
+    style: {
+      border: '1px solid rgba(96,165,250,0.6)',
+      background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8, #2563eb)',
+      color: '#fff',
+      padding: '6px 12px',
+      gap: 6,
+      fontSize: 12,
+      fontWeight: 700,
+    },
   },
   elite: {
     label: 'Elite',
     title: 'Plano Elite — toque para gerenciar assinatura',
     icon: Crown,
     iconSize: 16,
-    wrapper:
-      'border-amber-300/90 bg-gradient-to-r from-amber-800 via-amber-500 to-yellow-300 text-amber-950 shadow-lg shadow-amber-900/30 ring-2 ring-amber-400/60 seal-plan-elite hover:brightness-[1.05] hover:shadow-xl scale-[1.02] py-2 pl-3 pr-3.5 gap-2 text-xs font-extrabold tracking-wide',
-    iconClass: 'text-amber-950',
+    animClass: 'seal-plan-elite',
+    style: {
+      border: '1px solid rgba(251,191,36,0.9)',
+      background: 'linear-gradient(135deg, #92400e, #d97706, #fbbf24)',
+      color: '#451a03',
+      padding: '7px 14px',
+      gap: 8,
+      fontSize: 12,
+      fontWeight: 800,
+      letterSpacing: '0.04em',
+    },
+  },
+  master: {
+    label: 'Master',
+    title: 'Plano Master — acesso administrativo',
+    icon: ShieldCheck,
+    iconSize: 15,
+    animClass: 'seal-plan-elite',
+    style: {
+      border: '1px solid var(--pl-warn-soft)',
+      background: 'var(--pl-warn-soft)',
+      color: 'var(--pl-warn)',
+      padding: '6px 12px',
+      gap: 6,
+      fontSize: 12,
+      fontWeight: 800,
+      letterSpacing: '0.04em',
+    },
   },
 };
 
@@ -46,10 +85,23 @@ export default function SubscriptionPlanSeal({ planId, onClick }) {
       type="button"
       onClick={onClick}
       title={cfg.title}
-      className={`relative inline-flex max-w-full items-center overflow-hidden rounded-lg border text-left uppercase transition ${cfg.wrapper}`}
+      className={cfg.animClass}
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        maxWidth: '100%',
+        alignItems: 'center',
+        overflow: 'hidden',
+        borderRadius: 8,
+        textAlign: 'left',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        transition: 'filter 0.15s, box-shadow 0.15s',
+        ...cfg.style,
+      }}
     >
-      <Icon size={iconSize} strokeWidth={key === 'gratuito' ? 2.5 : 2} className={`relative z-[1] shrink-0 ${cfg.iconClass}`} />
-      <span className="relative z-[1] truncate">{cfg.label}</span>
+      <Icon size={iconSize} strokeWidth={key === 'gratuito' ? 2.5 : 2} style={{ position: 'relative', zIndex: 1, flexShrink: 0 }} />
+      <span style={{ position: 'relative', zIndex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cfg.label}</span>
     </button>
   );
 }

@@ -16,7 +16,6 @@ export default function CheckoutResultBanner({ onSuccess }) {
     const result = params.get('checkout');
     if (!result) return;
 
-    // Remove o parâmetro da URL sem recarregar a página
     params.delete('checkout');
     params.delete('plan');
     const newSearch = params.toString();
@@ -25,7 +24,6 @@ export default function CheckoutResultBanner({ onSuccess }) {
 
     if (result === 'success') {
       setState('loading');
-      // Aguarda 2s para o webhook processar antes de recarregar
       const timer = setTimeout(() => {
         onSuccess?.();
         setState('success');
@@ -40,7 +38,6 @@ export default function CheckoutResultBanner({ onSuccess }) {
 
   useEffect(() => {
     if (state !== 'success' && state !== 'cancel') return;
-    // Auto-dismiss após 6s
     const timer = setTimeout(() => setState(null), 6000);
     return () => clearTimeout(timer);
   }, [state]);
@@ -49,23 +46,26 @@ export default function CheckoutResultBanner({ onSuccess }) {
 
   const configs = {
     loading: {
-      icon: <Loader2 size={18} className="animate-spin text-blue-600" />,
-      bg: 'border-blue-200 bg-blue-50',
-      text: 'text-blue-700',
+      icon: <Loader2 size={18} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />,
+      bg: 'var(--pl-accent-soft)',
+      border: 'var(--pl-accent)',
+      textColor: 'var(--pl-accent)',
       title: 'Processando seu pagamento…',
       body: 'Isso leva só alguns segundos. Sua assinatura será ativada em instantes!',
     },
     success: {
-      icon: <CheckCircle2 size={18} className="text-emerald-600" />,
-      bg: 'border-emerald-200 bg-emerald-50',
-      text: 'text-emerald-700',
+      icon: <CheckCircle2 size={18} style={{ color: 'var(--pl-success)' }} />,
+      bg: 'var(--pl-success-soft)',
+      border: 'var(--pl-success)',
+      textColor: 'var(--pl-success)',
       title: 'Assinatura ativada com sucesso!',
       body: 'Bem-vindo ao plano premium. Todos os recursos estão liberados. 🎉',
     },
     cancel: {
-      icon: <AlertTriangle size={18} className="text-amber-500" />,
-      bg: 'border-amber-200 bg-amber-50',
-      text: 'text-amber-700',
+      icon: <AlertTriangle size={18} style={{ color: 'var(--pl-warn)' }} />,
+      bg: 'var(--pl-warn-soft)',
+      border: 'var(--pl-warn)',
+      textColor: 'var(--pl-warn)',
       title: 'Pagamento cancelado',
       body: 'Nenhuma cobrança foi feita. Você pode tentar novamente quando quiser.',
     },
@@ -76,21 +76,21 @@ export default function CheckoutResultBanner({ onSuccess }) {
 
   return (
     <div
-      className={`mb-4 flex items-start gap-3 rounded-2xl border px-5 py-4 shadow-sm ${c.bg}`}
       role="status"
       aria-live="polite"
+      style={{ marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 14, border: `1px solid ${c.border}`, background: c.bg, padding: '14px 20px', boxShadow: 'var(--pl-sh-low)' }}
     >
-      <div className="mt-0.5 shrink-0">{c.icon}</div>
-      <div className="min-w-0 flex-1">
-        <p className={`text-sm font-bold ${c.text}`}>{c.title}</p>
-        <p className={`mt-0.5 text-xs font-medium ${c.text} opacity-80`}>{c.body}</p>
+      <div style={{ marginTop: 1, flexShrink: 0 }}>{c.icon}</div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: c.textColor }}>{c.title}</p>
+        <p style={{ marginTop: 2, fontSize: 12, fontWeight: 500, color: c.textColor, opacity: 0.8 }}>{c.body}</p>
       </div>
       {state !== 'loading' && (
         <button
           type="button"
           onClick={() => setState(null)}
-          className={`mt-0.5 shrink-0 rounded-lg p-1 opacity-60 hover:opacity-100 ${c.text}`}
           aria-label="Fechar"
+          style={{ marginTop: 2, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: c.textColor, opacity: 0.6, borderRadius: 6, padding: 3 }}
         >
           <X size={14} />
         </button>

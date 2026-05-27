@@ -1004,7 +1004,7 @@ export default function Redacoes({
                     <div style={{
                       marginTop: 20,
                       border: '1px solid transparent', borderRadius: 6,
-                      backgroundImage: 'linear-gradient(var(--pl-surface), var(--pl-surface)), linear-gradient(135deg, #1e3a5f 0%, #6366f1 50%, #1e3a5f 100%)',
+                      backgroundImage: 'linear-gradient(var(--pl-surface), var(--pl-surface)), linear-gradient(135deg, var(--pl-accent) 0%, #6366f1 50%, var(--pl-accent) 100%)',
                       backgroundOrigin: 'border-box', backgroundClip: 'padding-box, border-box',
                       overflow: 'hidden',
                     }}>
@@ -1019,7 +1019,7 @@ export default function Redacoes({
                             fontSize: 22, letterSpacing: '-0.025em', color: 'var(--pl-ink)',
                             display: 'inline-flex', alignItems: 'center', gap: 8,
                           }}>
-                            <BrainCircuit size={18} style={{ color: '#4338ca' }} />
+                            <BrainCircuit size={18} style={{ color: 'var(--pl-accent)' }} />
                             Análise do tutor IA
                           </h4>
                           <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
@@ -1100,20 +1100,16 @@ export default function Redacoes({
               </div>
 
               {temasFiltrados.length === 0 ? (
-                <div style={{
-                  padding: '40px 24px', textAlign: 'center',
-                  background: 'var(--pl-bg-soft)', border: '1px dashed var(--pl-rule-strong)', borderRadius: 6,
-                }}>
-                  <List style={{ width: 36, height: 36, stroke: 'var(--pl-ink-4)', strokeWidth: 1.5, margin: '0 auto 10px' }} />
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>Nenhum tema com esses filtros</p>
-                  <p style={{ margin: '6px auto 0', maxWidth: 360, fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                    Limpe a busca ou escolha outro eixo para ver sugestões do banco.
+                <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+                  <List size={28} style={{ marginBottom: 12, opacity: 0.35, color: 'var(--pl-ink-3)' }} />
+                  <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Sem resultados</p>
+                  <p style={{ fontSize: 13, color: 'var(--pl-ink-3)', marginBottom: 16, maxWidth: 280, margin: '0 auto 16px' }}>
+                    Nenhum tema corresponde aos filtros atuais.
                   </p>
                   <button
                     type="button"
+                    className="pl-btn pl-btn-ghost pl-btn-sm"
                     onClick={() => { setTemaBankQuery(''); setTemaBankEixo(''); }}
-                    className="pl-btn pl-btn-sm"
-                    style={{ marginTop: 14 }}
                   >
                     Limpar filtros
                   </button>

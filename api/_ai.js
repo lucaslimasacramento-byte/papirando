@@ -549,6 +549,52 @@ JSON esperado:
   };
 }
 
+export async function generateInstagramCaption({ produto = '', product = '', tom = '', tone = '', objetivo = '', goal = '', contexto = '', context = '' } = {}) {
+  const payload = {
+    produto: String(produto || product || 'Papirando').trim(),
+    tom: String(tom || tone || 'confiante, acolhedor e direto').trim(),
+    objetivo: String(objetivo || goal || 'atrair estudantes de concursos').trim(),
+    contexto: String(contexto || context || '').trim(),
+  };
+
+  const prompt = `Crie legendas otimizadas para Instagram do Papirando, uma plataforma de estudos para concursos publicos.
+
+Contexto:
+${JSON.stringify(payload)}
+
+Regras:
+- Escreva em portugues do Brasil.
+- Tom premium, humano e sem promessas enganosas de aprovacao.
+- Inclua CTA claro e natural.
+- Hashtags devem ser relevantes para concursos, estudo e rotina.
+- Evite juridiquês excessivo e frases genericas.
+
+JSON esperado:
+{"captions":[{"caption":"legenda completa","hook":"primeira linha","hashtags":["#tag"],"cta":"chamada"}],"bestCaption":"legenda recomendada completa"}`;
+
+  const result = await runJson(prompt, { schemaName: 'instagram_caption', preferFast: true });
+  const rawCaptions = Array.isArray(result.json?.captions) ? result.json.captions : [];
+  const captions = rawCaptions
+    .map((item) => ({
+      caption: String(item?.caption || '').trim(),
+      hook: String(item?.hook || '').trim(),
+      hashtags: clampList(item?.hashtags, 18),
+      cta: String(item?.cta || '').trim(),
+    }))
+    .filter((item) => item.caption)
+    .slice(0, 4);
+  const bestCaption = String(result.json?.bestCaption || captions[0]?.caption || '').trim();
+
+  if (!bestCaption) throw new Error('A IA nao gerou uma legenda valida.');
+
+  return {
+    provider: result.provider,
+    model: result.model,
+    captions,
+    bestCaption,
+  };
+}
+
 export async function analyzeStudyStats({
   stats = {},
   bestDiscipline = null,
@@ -575,6 +621,95 @@ JSON esperado:
     attack: String(result.json?.attack || '').trim(),
     nextMove: String(result.json?.nextMove || '').trim(),
     potential: String(result.json?.potential || '').trim(),
+  };
+}
+
+export async function generateStudySchedule({ disciplinas = [], availability = [], meta = '' } = {}) {
+  const safeDisciplines = (Array.isArray(disciplinas) ? disciplinas : [])
+    .filter(Boolean)
+    .slice(0, 20)
+    .map((discipline, index) => ({
+      nome: String(discipline?.nome || discipline?.disciplina || `Disciplina ${index + 1}`).trim(),
+      peso: Number(discipline?.peso || discipline?.importance || 1),
+      percentual: Number(discipline?.percentual || discipline?.progress || 0),
+      topicosPendentes: Number(discipline?.topicosPendentes || discipline?.pendingTopics || 0),
+    }))
+    .filter((discipline) => discipline.nome);
+
+  const safeAvailability = (Array.isArray(availability) ? availability : [])
+    .filter(Boolean)
+    .slice(0, 7)
+    .map((day) => ({
+      id: String(day?.id || '').trim(),
+      label: String(day?.label || day?.id || '').trim(),
+      enabled: Boolean(day?.enabled),
+      slots: (Array.isArray(day?.slots) ? day.slots : [])
+        .filter((slot) => slot?.enabled && Number(slot?.minutes || 0) > 0)
+        .map((slot) => ({
+          id: String(slot?.id || '').trim(),
+          minutes: Number(slot?.minutes || 0),
+        })),
+    }))
+    .filter((day) => day.enabled && day.slots.length > 0);
+
+  if (safeDisciplines.length === 0 && safeAvailability.length === 0) {
+    throw new Error('Envie disciplinas ou disponibilidade semanal para gerar o cronograma.');
+  }
+
+  const prompt = `Voce e um especialista em planejamento de estudos para concursos publicos brasileiros.
+
+Crie um cronograma semanal otimizado com base nestes dados:
+
+OBJETIVO:
+${String(meta || 'Maximizar aprovacao no concurso alvo').slice(0, 500)}
+
+DISCIPLINAS:
+${JSON.stringify(safeDisciplines).slice(0, 6000)}
+
+DISPONIBILIDADE:
+${JSON.stringify(safeAvailability).slice(0, 4000)}
+
+Regras:
+- Priorize maior peso, mais topicos pendentes e menor progresso.
+- Respeite os blocos de disponibilidade.
+- Alterne Teoria, Questoes e Revisao.
+- Inclua pelo menos uma revisao na semana quando houver tempo.
+- Evite repetir a mesma disciplina em dias consecutivos, salvo revisao curta.
+- Use dias no formato: dom, seg, ter, qua, qui, sex, sab.
+- Use horario no formato: manha, tarde, noite ou madrugada.
+
+JSON esperado:
+{"semana":[{"dia":"seg","blocos":[{"horario":"noite","disciplina":"Nome","modo":"Teoria","duracao":60,"topico":"Tema","justificativa":"Razao em uma frase"}]}],"resumo":"2 frases","prioridades":["Disciplina"],"horasTotais":12,"dica":"1 conselho pratico"}`;
+
+  const result = await runJson(prompt, { schemaName: 'study_schedule' });
+  const semana = (Array.isArray(result.json?.semana) ? result.json.semana : [])
+    .map((day) => ({
+      dia: String(day?.dia || '').trim().toLowerCase(),
+      blocos: (Array.isArray(day?.blocos) ? day.blocos : [])
+        .map((block) => ({
+          horario: String(block?.horario || '').trim().toLowerCase(),
+          disciplina: String(block?.disciplina || '').trim(),
+          modo: String(block?.modo || 'Teoria').trim(),
+          duracao: Number(block?.duracao || 0),
+          topico: String(block?.topico || '').trim(),
+          justificativa: String(block?.justificativa || '').trim(),
+        }))
+        .filter((block) => block.disciplina && block.duracao > 0)
+        .slice(0, 5),
+    }))
+    .filter((day) => day.dia && day.blocos.length > 0)
+    .slice(0, 7);
+
+  if (semana.length === 0) throw new Error('A IA nao retornou um cronograma valido.');
+
+  return {
+    provider: result.provider,
+    model: result.model,
+    semana,
+    resumo: String(result.json?.resumo || '').trim(),
+    prioridades: clampList(result.json?.prioridades, 8),
+    horasTotais: Number(result.json?.horasTotais || 0),
+    dica: String(result.json?.dica || '').trim(),
   };
 }
 

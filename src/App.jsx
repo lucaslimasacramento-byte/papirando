@@ -17,6 +17,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import { ToastProvider } from './lib/toast';
+import { showConfirm, showAlert, showToast } from './lib/dialogs';
 import CheckoutResultBanner from './components/CheckoutResultBanner';
 import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
@@ -38,6 +39,9 @@ import {
   mergeAudiobookCatalogFromRemote,
   normalizeAudiobookState,
 } from './lib/audiobooks';
+
+const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
+const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'esquadroes', 'conciliar', 'instagram', 'aplicativos']);
 import { loadAudiobookProgress, saveAudiobookProgress } from './lib/audiobookProgressApi';
 import {
   buildBadgeSummary,
@@ -136,6 +140,7 @@ const DisciplinaDetalhe = lazy(() => import('./pages/DisciplinaDetalhe'));
 const Questoes = lazy(() => import('./pages/Questoes'));
 const Planos = lazy(() => import('./pages/Planos'));
 const ConcursosDisponiveis = lazy(() => import('./pages/ConcursosDisponiveis'));
+const Objetivos = lazy(() => import('./pages/Objetivos'));
 const ConcursoDetalhe = lazy(() => import('./pages/ConcursoDetalhe'));
 const LembretesCalendario = lazy(() => import('./pages/LembretesCalendario'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -728,7 +733,18 @@ export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showOnboardingPreview, setShowOnboardingPreview] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('pl-dark') === '1');
   const theme = { primary: '#1e3a5f', sidebarBg: '#14110d', bg: '#f3efe5' };
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('pl-theme-dark', darkMode);
+    localStorage.setItem('pl-dark', darkMode ? '1' : '0');
+  }, [darkMode]);
+
+  useEffect(() => {
+    if (!LAUNCH_MVP_MODE || !LAUNCH_HIDDEN_TABS.has(activeTab)) return;
+    setActiveTab('home');
+  }, [activeTab]);
 
   useEffect(() => {
     const referralFromLocation = normalizeReferralCode(extractReferralCodeFromLocation());
@@ -813,7 +829,7 @@ export default function App() {
   const [audiobookCatalogOverride, setAudiobookCatalogOverride] = useState(null);
   const [sidebarLabelsOverride, setSidebarLabelsOverride] = useState(null);
   const [notificationSettings, setNotificationSettings] = useState(() => normalizeNotificationSettings(null));
-  const [courseTemplates, setCourseTemplates] = useState(() => normalizeCourseTemplates(null));
+  const [courseTemplates, setCourseTemplates] = useState(null); // null = ainda carregando do Supabase
 
   useEffect(() => {
     let cancelled = false;
@@ -844,8 +860,15 @@ export default function App() {
       if (r.notificationSettings) {
         setNotificationSettings(normalizeNotificationSettings(r.notificationSettings));
       }
-      if (r.courseTemplates) {
-        setCourseTemplates(normalizeCourseTemplates(r.courseTemplates));
+      // r.courseTemplates === null → coluna não existe ou SELECT falhou → usar DEFAULT como ponto de partida
+      // r.courseTemplates === []   → usuário apagou tudo intencionalmente → respeitar []
+      // r.courseTemplates === [...] → dados salvos → normalizar e usar
+      if (r.courseTemplates !== null) {
+        // Preserva [] como array vazio real (não normaliza para DEFAULT)
+        setCourseTemplates(r.courseTemplates.length ? normalizeCourseTemplates(r.courseTemplates) : []);
+      } else {
+        // Coluna ausente ou falha no SELECT: normalizeCourseTemplates(null) retorna DEFAULT
+        setCourseTemplates(normalizeCourseTemplates(null));
       }
     })();
     return () => {
@@ -2238,14 +2261,12 @@ export default function App() {
     );
   };
 
-  const removeActiveCycle = () => {
-    if (typeof window !== 'undefined') {
-      const confirmed = window.confirm(
-        'Tem certeza que deseja remover este ciclo? Essa ação limpa a configuração atual do ciclo.'
-      );
-
-      if (!confirmed) return;
-    }
+  const removeActiveCycle = async () => {
+    const confirmed = await showConfirm(
+      'Essa ação limpa a configuração atual do ciclo e não pode ser desfeita.',
+      { title: 'Remover ciclo ativo?', confirmLabel: 'Remover', danger: true }
+    );
+    if (!confirmed) return;
 
     setIsEditingCycle(false);
     setShowFinishedSessions(true);
@@ -2828,7 +2849,7 @@ export default function App() {
   const handleAvatarChange = async (file) => {
     if (!file) return;
     if (!String(file.type || '').startsWith('image/')) {
-      alert('Selecione um arquivo de imagem válido.');
+      showToast('Selecione um arquivo de imagem válido.', 'error');
       return;
     }
 
@@ -2875,7 +2896,7 @@ export default function App() {
       }
     } catch (error) {
       console.error(error);
-      alert('Não foi possível atualizar a foto agora.');
+      showToast('Não foi possível atualizar a foto agora.', 'error');
       throw error;
     }
   };
@@ -2998,66 +3019,66 @@ export default function App() {
     );
 
     if (!nome) {
-      alert('Digite o seu nome completo.');
+      showToast('Digite o seu nome completo.', 'error');
       return { ok: false };
     }
 
     if (!username) {
-      alert('Digite um username para a sua conta.');
+      showToast('Digite um username para a sua conta.', 'error');
       return { ok: false };
     }
 
     if (username.length < 3) {
-      alert('O username precisa ter pelo menos 3 caracteres.');
+      showToast('O username precisa ter pelo menos 3 caracteres.', 'error');
       return { ok: false };
     }
 
     if (!/^[a-z0-9._]+$/.test(username)) {
-      alert('O username pode conter apenas letras minusculas, numeros, ponto e underscore.');
+      showToast('O username pode conter apenas letras minúsculas, números, ponto e underscore.', 'error');
       return { ok: false };
     }
 
     const usernameAvailable = await checkUsernameAvailability(username);
     if (!usernameAvailable) {
-      alert('Esse username ja esta em uso na plataforma. Escolha outro.');
+      showToast('Esse username já está em uso. Escolha outro.', 'error');
       return { ok: false };
     }
 
     if (!cpfDigits) {
-      alert('O CPF é obrigatório para vincular a conta.');
+      showToast('O CPF é obrigatório para vincular a conta.', 'error');
       return { ok: false };
     }
 
     if (!isValidCpf(cpfDigits)) {
-      alert('Digite um CPF válido.');
+      showToast('Digite um CPF válido.', 'error');
       return { ok: false };
     }
 
     const cpfAvailable = await checkCpfAvailability(cpfDigits);
     if (!cpfAvailable) {
-      alert('Esse CPF já está vinculado a outra conta.');
+      showToast('Esse CPF já está vinculado a outra conta.', 'error');
       return { ok: false };
     }
 
     if (rankingDisplayMode === 'codename') {
       if (!rankingCodename) {
-        alert('Digite um codinome para aparecer nos rankings.');
+        showToast('Digite um codinome para aparecer nos rankings.', 'error');
         return { ok: false };
       }
 
       if (rankingCodename.length < 3) {
-        alert('O codinome precisa ter pelo menos 3 caracteres.');
+        showToast('O codinome precisa ter pelo menos 3 caracteres.', 'error');
         return { ok: false };
       }
 
       if (containsBlockedCodenameWord(rankingCodename)) {
-        alert('Esse codinome não pode ser usado. Escolha um nome sem palavras ofensivas.');
+        showToast('Esse codinome não pode ser usado. Escolha um nome sem palavras ofensivas.', 'error');
         return { ok: false };
       }
 
       const codenameAvailable = await checkRankingCodenameAvailability(rankingCodename);
       if (!codenameAvailable) {
-        alert('Esse codinome já está em uso na plataforma. Escolha outro.');
+        showToast('Esse codinome já está em uso na plataforma. Escolha outro.', 'error');
         return { ok: false };
       }
     }
@@ -3290,10 +3311,10 @@ export default function App() {
   };
 
   const handleSaveCourseTemplates = async (templates) => {
-    const normalized = normalizeCourseTemplates(templates);
     try {
+      const normalized = normalizeCourseTemplates(templates);
       const { courseTemplates: savedTemplates } = await upsertCourseTemplates(normalized);
-      setCourseTemplates(normalizeCourseTemplates(savedTemplates));
+      setCourseTemplates(normalizeCourseTemplates(savedTemplates ?? normalized));
       return { ok: true };
     } catch (error) {
       console.error('Erro ao salvar cursos de faculdade:', error);
@@ -3681,7 +3702,7 @@ export default function App() {
 
     const title = String(reminderDraft?.title || '').trim();
     if (!title) {
-      alert('Digite o título do lembrete.');
+      showToast('Digite o título do lembrete.', 'error');
       return;
     }
 
@@ -5315,10 +5336,10 @@ export default function App() {
       0
     );
 
-    const confirmar = window.confirm(
-      `Excluir o curso "${curso.nome}"? Você perderá ${disciplinasRelacionadas.length} disciplinas, ${totalTopicos} tópicos e o progresso associado a esse curso.`
+    const confirmar = await showConfirm(
+      `Você perderá ${disciplinasRelacionadas.length} disciplina(s), ${totalTopicos} tópicos e todo o progresso desse objetivo. Essa ação não pode ser desfeita.`,
+      { title: `Excluir "${curso.nome}"?`, confirmLabel: 'Excluir', danger: true }
     );
-
     if (!confirmar) return;
 
     try {
@@ -5372,7 +5393,7 @@ export default function App() {
       if (courseKeys.has(String(targetContestSummary?.plano || '').trim())) {
         setTargetContestId('');
       }
-      alert('O curso foi removido localmente, mas houve falha ao limpar parte dos dados remotos.');
+      showToast('Objetivo removido, mas houve falha ao limpar parte dos dados remotos.', 'warn');
     }
   };
 
@@ -6487,6 +6508,8 @@ export default function App() {
           }}
           onOpenTimer={() => openTimerSetup?.()}
           onOpenOnboarding={isAdmin ? () => setShowOnboardingPreview(true) : undefined}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode((v) => !v)}
         />
 
         <div
@@ -6622,26 +6645,28 @@ export default function App() {
               currentCourseCount={currentCourseCount}
               remainingCourseSlots={remainingCourseSlots}
               isAdmin={isAdmin}
-              courseTemplates={courseTemplates}
+              courseTemplates={courseTemplates ?? []}
             />
           )}
 
           {activeTab === 'concursos' && (
-            <ConcursosDisponiveis
+            <Objetivos
               concursoCatalog={contestLibrary}
+              courseTemplates={courseTemplates ?? []}
+              cursos={cursos}
               onImportCatalogCourse={createCourseFromCatalog}
-              setActiveTab={setActiveTab}
               onOpenContestDetail={(contest) => {
                 setSelectedContestDetailId(contest?.id || null);
                 setActiveTab('concurso_detalhe');
               }}
               currentCourseLimit={currentCourseLimit}
-              currentCourseCount={currentCourseCount}
               remainingCourseSlots={remainingCourseSlots}
               isAdmin={isAdmin}
-              favoriteContestIds={favoriteContestIds}
-              interestedContestIds={interestedContestIds}
-              cursos={cursos}
+              setActiveTab={setActiveTab}
+              onRemoveCourse={(cursoId) => {
+                const curso = cursos.find((c) => c.id === cursoId);
+                if (curso) deleteCourse(curso);
+              }}
             />
           )}
 
@@ -7280,6 +7305,7 @@ export default function App() {
               currentUserId={currentUserId}
               setTargetContestId={setTargetContestId}
               onComplete={() => setShowOnboardingPreview(false)}
+              isPreview={true}
             />
           </div>
         </div>

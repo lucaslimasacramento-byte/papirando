@@ -64,7 +64,7 @@ function fmtHours(minutes) {
 }
 
 function inputCls() {
-  return 'w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition-all focus:border-[#1e3a5f] focus:bg-white focus:ring-4 focus:ring-[#1e3a5f]/15';
+  return 'pl-input';
 }
 
 /** Alinha com Planejamento: alguns bancos usam semana_inicio/horas_meta, outros week_start/meta_horas. */
@@ -369,8 +369,8 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
 
   if (!currentUserId) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400">
-        <p className="text-sm">Faça login para ver suas metas.</p>
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}>
+        <p style={{ fontSize: 14 }}>Faça login para ver suas metas.</p>
       </div>
     );
   }
@@ -418,7 +418,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
               <strong style={{ color: 'var(--pl-ink)' }}>{totalActualQuestoes} / {totalGoalQuestoes} ({totalQuestoesPct}%)</strong>
             </div>
             <div className="pl-progress-track" style={{ marginTop: 12 }}>
-              <div className="pl-progress-fill" style={{ width: `${totalQuestoesPct}%`, background: questoesMetaDone ? 'var(--pl-success)' : '#4338ca' }} />
+              <div className="pl-progress-fill" style={{ width: `${totalQuestoesPct}%`, background: questoesMetaDone ? 'var(--pl-success)' : 'var(--pl-accent)' }} />
             </div>
             {allMetasDone && goals.length > 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 12, color: 'var(--pl-success)', fontWeight: 800 }}>
@@ -432,27 +432,27 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
 
       {/* Edit/Add modal */}
       {editModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-800">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.45)', padding: 16, backdropFilter: 'blur(4px)' }}>
+          <div style={{ width: '100%', maxWidth: 400, borderRadius: 20, background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', boxShadow: 'var(--pl-sh-high)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
                 {editGoal ? 'Editar meta' : 'Nova meta'}
               </h3>
-              <button onClick={() => setEditModal(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <button onClick={() => setEditModal(false)} style={{ borderRadius: 8, padding: 6, color: 'var(--pl-ink-3)', background: 'transparent', border: 0, cursor: 'pointer' }}>
                 <X size={16} />
               </button>
             </div>
-            <div className="px-6 py-5 space-y-4">
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {formErr && (
-                <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', padding: '10px 14px', fontSize: 13, fontWeight: 600, color: 'var(--pl-danger)' }}>
                   <X size={13} />
                   {formErr}
                 </div>
               )}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Disciplina *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="pl-eyebrow">Disciplina *</label>
                 {editGoal ? (
-                  <p className="rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
+                  <p style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
                     {editGoal.disciplina}
                   </p>
                 ) : (
@@ -473,8 +473,8 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   </datalist>
                 )}
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">Meta semanal (horas) *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="pl-eyebrow">Meta semanal (horas) *</label>
                 <input
                   type="number"
                   min={0.5}
@@ -484,12 +484,10 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   value={editForm.meta_horas}
                   onChange={(e) => setEditForm((f) => ({ ...f, meta_horas: e.target.value }))}
                 />
-                <p className="text-xs text-slate-400">Ex: 2.5 = 2 horas e 30 minutos por semana</p>
+                <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', margin: 0 }}>Ex: 2.5 = 2 horas e 30 minutos por semana</p>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Meta de questões (opcional)
-                </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="pl-eyebrow">Meta de questões (opcional)</label>
                 <input
                   type="number"
                   min={0}
@@ -500,7 +498,7 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                   value={editForm.questoes_meta}
                   onChange={(e) => setEditForm((f) => ({ ...f, questoes_meta: e.target.value }))}
                 />
-                <p className="text-xs text-slate-400">
+                <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', margin: 0 }}>
                   Em branco:{' '}
                   {Math.max(
                     0,
@@ -512,15 +510,16 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
                 </p>
               </div>
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
-              <button onClick={() => setEditModal(false)} className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid var(--pl-rule)', padding: '14px 24px' }}>
+              <button onClick={() => setEditModal(false)} className="pl-btn pl-btn-ghost">
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={handleSaveGoal}
                 disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f] disabled:opacity-50"
+                className="pl-btn pl-btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 Salvar
@@ -660,7 +659,7 @@ function MetaRow({ meta, onEditar, onExcluir, onPapirar }) {
         {showQuestions ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
             <div className="pl-progress-track" style={{ flex: 1, height: 3 }}>
-              <div className="pl-progress-fill" style={{ width: `${meta.questoesPct}%`, background: '#4338ca' }} />
+              <div className="pl-progress-fill" style={{ width: `${meta.questoesPct}%`, background: 'var(--pl-accent)' }} />
             </div>
             <span className="planning-time-label">{meta.questoesFeitas} / {meta.questoesAlvo} questões</span>
           </div>

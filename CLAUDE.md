@@ -1,5 +1,16 @@
 # Papirando — Guia de Contexto para o Claude
 
+## ⚠️ LEIA ANTES DE QUALQUER COISA — Worklog ativo
+
+O arquivo [`docs/WORKLOG.md`](docs/WORKLOG.md) contém:
+- O status atual de cada frente de trabalho
+- O plano detalhado das próximas tarefas (dark mode, mobile, animações, estados vazios, tipografia)
+- O registro do que foi feito em sessões anteriores
+
+**Toda vez que concluir uma tarefa, atualize o WORKLOG.md** — registre o que foi feito e marque o próximo passo.
+
+---
+
 ## O que é esse projeto
 
 **Papirando** é um app de estudos pessoal com IA — para qualquer estudante (universitário, autodidata, vestibulando, concurseiro). O posicionamento é: *"O estúdio onde o seu material vira estudo de verdade."* Stack: **React + Vite + Tailwind CSS + Supabase**. Interface web SPA com autenticação, dashboard de estudo, simulados, lembretes, comunidade, IA (Gemini) integrada e muito mais.

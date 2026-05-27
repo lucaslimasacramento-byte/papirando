@@ -12,26 +12,26 @@ function WellnessMiniPlayer({ track, isPlaying, onTogglePlay, onClose }) {
   if (!track) return null;
 
   return (
-    <div className="pointer-events-auto fixed bottom-6 left-1/2 z-[180] flex w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 items-center gap-3 rounded-[1.4rem] border border-gray-200 bg-white/95 px-4 py-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-md">
+    <div style={{ pointerEvents: 'auto', position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 180, width: 'min(560px, calc(100vw - 2rem))', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 22, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '10px 14px', boxShadow: 'var(--pl-sh-high)', backdropFilter: 'blur(12px)' }}>
       <button
         type="button"
         onClick={onTogglePlay}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#1e3a5f] text-white"
+        style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 14, background: 'var(--pl-accent)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-bg)' }}
       >
-        {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+        {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
       </button>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-black text-[#1A365D]">{track.title}</p>
-        <p className="mt-1 truncate text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 800, color: 'var(--pl-ink)' }}>{track.title}</p>
+        <p style={{ marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-ink-3)' }}>
           {track.category || 'Faixa'} · {track.durationLabel || 'Duracao livre'}
         </p>
       </div>
       <button
         type="button"
         onClick={onClose}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500"
+        style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)' }}
       >
-        <X size={16} />
+        <X size={15} />
       </button>
     </div>
   );

@@ -33,9 +33,10 @@ export default function Termos() {
 
         <Section title="2. O serviço">
           <p>
-            O {COMPANY_NAME} é uma plataforma de estudos para concursos públicos que oferece: ciclos de estudo,
-            simulados, flashcards, materiais, mapas mentais, comunidade, esquadrões de estudo e ferramentas de
-            planejamento. Alguns recursos exigem assinatura paga (Plano Pro).
+            O {COMPANY_NAME} é uma plataforma de estudos para estudantes que trazem o próprio material e querem
+            organizar a rotina com IA. A plataforma oferece: ciclos de estudo, simulados, flashcards, materiais,
+            mapas mentais, comunidade, esquadrões de estudo e ferramentas de
+            planejamento. Alguns recursos exigem assinatura paga.
           </p>
         </Section>
 

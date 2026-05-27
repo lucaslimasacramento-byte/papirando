@@ -35,58 +35,52 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
   };
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm font-medium leading-relaxed text-gray-600">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
         Os textos padrão vêm do código; aqui você grava só o que quiser substituir. Deixe igual ao padrão ou
         vazio para voltar ao texto original daquele item. É necessário ter rodado no Supabase o script{' '}
-        <code className="rounded bg-gray-100 px-1 text-xs">redacao_site_content_sidebar_labels.sql</code>.
+        <code style={{ borderRadius: 4, background: 'var(--pl-bg-soft)', padding: '1px 5px', fontSize: 11, fontFamily: 'var(--pl-mono)' }}>redacao_site_content_sidebar_labels.sql</code>.
       </p>
 
       {message ? (
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
+        <div style={{ borderRadius: 12, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: '8px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-success)' }}>
           {message}
         </div>
       ) : null}
 
-      <div className="max-h-[min(70vh,560px)] overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <table className="w-full min-w-[520px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-[1] bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+      <div style={{ maxHeight: 'min(70vh, 560px)', overflowY: 'auto', borderRadius: 14, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
+        <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse', fontSize: 13, textAlign: 'left' }}>
+          <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--pl-bg-soft)' }}>
             <tr>
-              <th className="border-b border-gray-200 px-3 py-2.5">Seção</th>
-              <th className="border-b border-gray-200 px-3 py-2.5">Id (interno)</th>
-              <th className="border-b border-gray-200 px-3 py-2.5">Padrão</th>
-              <th className="border-b border-gray-200 px-3 py-2.5">Nome no menu</th>
-              <th className="border-b border-gray-200 px-2 py-2.5 text-center"> </th>
+              {['Seção', 'Id (interno)', 'Padrão', 'Nome no menu', ''].map((h) => (
+                <th key={h} style={{ borderBottom: '1px solid var(--pl-rule-2)', padding: '8px 12px', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)' }}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {schema.map((row) => (
-              <tr key={row.id} className="border-b border-gray-100 last:border-0">
-                <td className="px-3 py-2 text-xs font-semibold text-slate-600">{row.sectionTitle}</td>
-                <td className="px-3 py-2 font-mono text-[11px] text-slate-500">{row.id}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{row.defaultLabel}</td>
-                <td className="px-3 py-2">
+              <tr key={row.id} style={{ borderBottom: '1px solid var(--pl-rule)' }}>
+                <td style={{ padding: '8px 12px', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{row.sectionTitle}</td>
+                <td style={{ padding: '8px 12px', fontFamily: 'var(--pl-mono)', fontSize: 11, color: 'var(--pl-ink-3)' }}>{row.id}</td>
+                <td style={{ padding: '8px 12px', fontSize: 12, color: 'var(--pl-ink-3)' }}>{row.defaultLabel}</td>
+                <td style={{ padding: '8px 12px' }}>
                   <input
                     type="text"
                     value={draftById[row.id] ?? ''}
                     onChange={(e) => setDraftById((prev) => ({ ...prev, [row.id]: e.target.value }))}
-                    className="w-full min-w-[140px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-800 outline-none focus:border-blue-500"
+                    className="pl-input"
+                    style={{ width: '100%', minWidth: 140 }}
                     aria-label={`Nome no menu para ${row.id}`}
                   />
                 </td>
-                <td className="px-2 py-2 text-center">
+                <td style={{ padding: '6px 8px', textAlign: 'center' }}>
                   <button
                     type="button"
                     title="Restaurar padrão"
-                    onClick={() =>
-                      setDraftById((prev) => ({
-                        ...prev,
-                        [row.id]: row.defaultLabel,
-                      }))
-                    }
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-slate-500 transition hover:bg-gray-50"
+                    onClick={() => setDraftById((prev) => ({ ...prev, [row.id]: row.defaultLabel }))}
+                    style={{ width: 34, height: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)', cursor: 'pointer' }}
                   >
-                    <RotateCcw size={15} />
+                    <RotateCcw size={14} />
                   </button>
                 </td>
               </tr>
@@ -95,7 +89,7 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
         </table>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <button
           type="button"
           disabled={saving || !onSave}
@@ -114,9 +108,10 @@ export function AdminSidebarLabelsEditor({ sidebarLabelsOverride, onSave }) {
               setSaving(false);
             }
           }}
-          className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2.5 text-sm font-bold text-indigo-900 disabled:opacity-50"
+          className="pl-btn pl-btn-ghost"
+          style={{ borderColor: 'var(--pl-accent)', color: 'var(--pl-accent)', opacity: saving || !onSave ? 0.5 : 1 }}
         >
-          <Save size={16} />
+          <Save size={15} />
           {saving ? 'Salvando…' : 'Salvar rótulos do menu'}
         </button>
       </div>

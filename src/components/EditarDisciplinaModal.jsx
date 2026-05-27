@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
   ChevronDown,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
+import { showConfirm, showToast } from '../lib/dialogs';
 
 const COLOR_OPTIONS = ['#1e3a5f', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
@@ -183,7 +184,7 @@ export default function EditarDisciplinaModal({
     const nomeTopico = topicForm.nome.trim();
 
     if (!nomeTopico) {
-      alert('Digite o nome do tópico.');
+      showToast('Digite o nome do tópico.', 'error');
       return;
     }
 
@@ -229,11 +230,11 @@ export default function EditarDisciplinaModal({
     });
   };
 
-  const handleDeleteTopic = (topicId) => {
+  const handleDeleteTopic = async (topicId) => {
     const topico = topicos.find((item) => item.id === topicId);
     if (!topico) return;
 
-    const confirmar = window.confirm(`Excluir o tópico "${topico.nome}"?`);
+    const confirmar = await showConfirm(`Excluir o tópico "${topico.nome}"?`, { confirmLabel: 'Excluir', danger: true });
     if (!confirmar) return;
 
     if (typeof topicId === 'number') {
@@ -272,7 +273,7 @@ export default function EditarDisciplinaModal({
     const subjectCatalogId = resolveSubjectCatalogEntry(nomeTratado, subjectCatalog)?.id || null;
 
     if (!nomeTratado) {
-      alert('Digite o nome da disciplina.');
+      showToast('Digite o nome da disciplina.', 'error');
       return;
     }
 
@@ -414,42 +415,122 @@ export default function EditarDisciplinaModal({
       setEditingDiscipline(null);
     } catch (error) {
       console.error('Erro ao salvar disciplina:', error);
-      alert(error.message || 'Não foi possível salvar a disciplina.');
+      showToast(error.message || 'Não foi possível salvar a disciplina.', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A365D]/60 p-4 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-300">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-8 py-6">
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 200,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(15,23,42,0.55)',
+        backdropFilter: 'blur(4px)',
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          maxHeight: '92vh',
+          width: '100%',
+          maxWidth: 1024,
+          flexDirection: 'column',
+          overflow: 'hidden',
+          borderRadius: 24,
+          background: 'var(--pl-surface)',
+          boxShadow: 'var(--pl-sh-high)',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid var(--pl-rule)',
+            background: 'var(--pl-bg-soft)',
+            padding: '20px 32px',
+          }}
+        >
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                color: 'var(--pl-ink)',
+                fontFamily: 'var(--pl-sans)',
+              }}
+            >
               {isNewDiscipline ? 'Nova disciplina' : nome || 'Editar disciplina'}
             </h2>
-            <p className="mt-1 text-sm font-medium text-gray-500">
+            <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>
               Monte a disciplina, organize os tópicos e deixe o edital pronto para execução.
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+            style={{
+              borderRadius: 10,
+              padding: 8,
+              color: 'var(--pl-ink-3)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--pl-danger-soft)';
+              e.currentTarget.style.color = 'var(--pl-danger)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--pl-ink-3)';
+            }}
           >
             <X size={24} strokeWidth={2.5} />
           </button>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto p-8">
-          <div className="mb-10 grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_310px]">
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        {/* Body */}
+        <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: 32 }}>
+          {/* Top grid: fields + summary */}
+          <div
+            style={{
+              marginBottom: 40,
+              display: 'grid',
+              gap: 32,
+              gridTemplateColumns: 'minmax(0,1.35fr) 310px',
+            }}
+          >
+            {/* Fields */}
+            <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1fr 1fr' }}>
+              {/* Nome — spans 2 cols */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
                   Nome
                 </label>
-                <div className="relative">
-                  <div className="flex items-center gap-3 rounded-[1.35rem] border border-blue-100 bg-white px-4 py-3 shadow-sm transition-colors focus-within:border-[#1e3a5f] focus-within:ring-4 focus-within:ring-blue-50">
-                    <Search size={16} className="text-blue-500" />
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      borderRadius: 20,
+                      border: '1px solid var(--pl-rule-2)',
+                      background: 'var(--pl-surface)',
+                      padding: '10px 16px',
+                      boxShadow: 'var(--pl-sh-low)',
+                    }}
+                  >
+                    <Search size={16} style={{ color: 'var(--pl-accent)', flexShrink: 0 }} />
                     <input
                       type="text"
                       value={nome}
@@ -462,16 +543,45 @@ export default function EditarDisciplinaModal({
                         setIsSuggestionOpen(true);
                       }}
                       placeholder="Ex.: Direito Constitucional"
-                      className="w-full bg-transparent text-lg font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+                      style={{
+                        width: '100%',
+                        background: 'transparent',
+                        fontSize: 17,
+                        fontWeight: 600,
+                        color: 'var(--pl-ink)',
+                        outline: 'none',
+                        border: 'none',
+                        fontFamily: 'var(--pl-sans)',
+                      }}
                     />
                   </div>
 
                   {isSuggestionOpen && filteredSubjectSuggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-20 overflow-hidden rounded-[1.2rem] border border-gray-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
-                      <p className="px-3 pb-2 pt-1 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                        Sugestões do catálogo
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: 'calc(100% + 10px)',
+                        zIndex: 20,
+                        overflow: 'hidden',
+                        borderRadius: 18,
+                        border: '1px solid var(--pl-rule-2)',
+                        background: 'var(--pl-surface)',
+                        padding: 8,
+                        boxShadow: 'var(--pl-sh-high)',
+                      }}
+                    >
+                      <p
+                        className="pl-eyebrow"
+                        style={{ padding: '4px 12px 8px', display: 'block' }}
+                      >
+                        Sugestoes do catalogo
                       </p>
-                      <div className="max-h-64 space-y-1 overflow-y-auto custom-scrollbar pr-1">
+                      <div
+                        className="custom-scrollbar"
+                        style={{ maxHeight: 256, overflowY: 'auto', paddingRight: 4 }}
+                      >
                         {filteredSubjectSuggestions.map((item) => {
                           const isActive = item === matchedSubject?.nome;
                           return (
@@ -483,16 +593,31 @@ export default function EditarDisciplinaModal({
                                 setNome(item);
                                 setIsSuggestionOpen(false);
                               }}
-                              className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
-                                isActive
-                                  ? 'bg-blue-50 text-[#1e3a5f]'
-                                  : 'text-gray-700 hover:bg-gray-50'
-                              }`}
+                              style={{
+                                display: 'flex',
+                                width: '100%',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                borderRadius: 10,
+                                padding: '10px 12px',
+                                textAlign: 'left',
+                                fontSize: 13,
+                                fontWeight: 600,
+                                border: 'none',
+                                cursor: 'pointer',
+                                background: isActive ? 'var(--pl-accent-soft)' : 'transparent',
+                                color: isActive ? 'var(--pl-accent)' : 'var(--pl-ink)',
+                              }}
                             >
-                              <span className="truncate">{item}</span>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {item}
+                              </span>
                               {isActive && (
-                                <span className="rounded-full border border-blue-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-blue-700">
-                                  Padrão
+                                <span
+                                  className="pl-tag pl-tag-accent"
+                                  style={{ flexShrink: 0, marginLeft: 8 }}
+                                >
+                                  Padrao
                                 </span>
                               )}
                             </button>
@@ -502,21 +627,23 @@ export default function EditarDisciplinaModal({
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-xs font-semibold text-gray-500">
+                <p style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                   {matchedSubject
-                    ? `Padrão encontrado: ${matchedSubject.nome}`
-                    : 'Se precisar, cadastre o nome padrão em Admin > Banco de disciplinas.'}
+                    ? `Padrao encontrado: ${matchedSubject.nome}`
+                    : 'Se precisar, cadastre o nome padrao em Admin > Banco de disciplinas.'}
                 </p>
               </div>
 
+              {/* Curso / plano */}
               <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
                   Curso / plano
                 </label>
                 <select
                   value={plano}
                   onChange={(e) => setPlano(e.target.value)}
-                  className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-semibold text-gray-700 outline-none transition-colors focus:border-[#1e3a5f]"
+                  className="pl-input"
+                  style={{ width: '100%' }}
                 >
                   {courseOptions.map((option) => (
                     <option key={option} value={option}>
@@ -526,11 +653,12 @@ export default function EditarDisciplinaModal({
                 </select>
               </div>
 
+              {/* Cor */}
               <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
                   Cor
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {COLOR_OPTIONS.map((option) => {
                     const isSelected = cor === option;
                     return (
@@ -538,10 +666,19 @@ export default function EditarDisciplinaModal({
                         key={option}
                         type="button"
                         onClick={() => setCor(option)}
-                        className={`h-10 w-10 rounded-2xl border-2 transition-all ${
-                          isSelected ? 'scale-105 border-gray-900 shadow-md' : 'border-transparent'
-                        }`}
-                        style={{ backgroundColor: option }}
+                        style={{
+                          height: 40,
+                          width: 40,
+                          borderRadius: 14,
+                          border: isSelected
+                            ? '2px solid var(--pl-ink)'
+                            : '2px solid transparent',
+                          backgroundColor: option,
+                          transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                          boxShadow: isSelected ? 'var(--pl-sh-low)' : 'none',
+                          cursor: 'pointer',
+                          transition: 'transform 0.15s, box-shadow 0.15s',
+                        }}
                         title={`Selecionar cor ${option}`}
                       />
                     );
@@ -550,52 +687,94 @@ export default function EditarDisciplinaModal({
               </div>
             </div>
 
-            <div className="rounded-[1.8rem] border border-blue-100 bg-blue-50/60 p-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-700">
+            {/* Summary card */}
+            <div
+              style={{
+                borderRadius: 24,
+                border: '1px solid var(--pl-rule-2)',
+                background: 'var(--pl-accent-soft)',
+                padding: 20,
+              }}
+            >
+              <p
+                className="pl-eyebrow"
+                style={{ color: 'var(--pl-accent)' }}
+              >
                 Resumo da disciplina
               </p>
-              <div className="mt-4 space-y-3">
-                <SummaryLine label="Tópicos" value={String(topicos.length)} />
-                <SummaryLine label="Concluídos" value={String(topicosConcluidos)} />
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <SummaryLine label="Topicos" value={String(topicos.length)} />
+                <SummaryLine label="Concluidos" value={String(topicosConcluidos)} />
                 <SummaryLine label="Pendentes" value={String(topicosPendentes)} />
                 <SummaryLine label="Aproveitamento" value={`${aproveitamento}%`} />
               </div>
             </div>
           </div>
 
-          <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
-            <div className="rounded-[2rem] border border-gray-100 bg-gray-50/60 p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
+          {/* Bottom grid: topic form + topic list */}
+          <div
+            style={{
+              display: 'grid',
+              gap: 32,
+              gridTemplateColumns: '360px minmax(0,1fr)',
+            }}
+          >
+            {/* Topic form */}
+            <div
+              style={{
+                borderRadius: 24,
+                border: '1px solid var(--pl-rule)',
+                background: 'var(--pl-bg-soft)',
+                padding: 20,
+              }}
+            >
+              <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div
+                  style={{
+                    borderRadius: 10,
+                    background: 'var(--pl-accent-soft)',
+                    padding: 8,
+                    color: 'var(--pl-accent)',
+                    display: 'flex',
+                  }}
+                >
                   {editingTopicId ? <Edit3 size={16} /> : <Plus size={16} />}
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-[#1A365D]">
-                    {editingTopicId ? 'Editar tópico' : 'Novo tópico'}
+                  <h3
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: 'var(--pl-ink)',
+                      fontFamily: 'var(--pl-sans)',
+                    }}
+                  >
+                    {editingTopicId ? 'Editar topico' : 'Novo topico'}
                   </h3>
-                  <p className="text-sm font-medium text-gray-500">
-                    Cadastre o assunto e já deixe o desempenho inicial configurado.
+                  <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                    Cadastre o assunto e ja deixe o desempenho inicial configurado.
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                    Nome do tópico
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
+                    Nome do topico
                   </label>
                   <textarea
                     value={topicForm.nome}
                     onChange={(e) => handleTopicFieldChange('nome', e.target.value)}
                     rows={4}
                     placeholder="Ex.: Controle de constitucionalidade"
-                    className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                    className="pl-input"
+                    style={{ width: '100%', resize: 'vertical' }}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div>
-                    <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
                       Acertos
                     </label>
                     <input
@@ -603,12 +782,13 @@ export default function EditarDisciplinaModal({
                       min="0"
                       value={topicForm.acertos}
                       onChange={(e) => handleTopicFieldChange('acertos', e.target.value)}
-                      className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="pl-input"
+                      style={{ width: '100%' }}
                     />
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
                       Erros
                     </label>
                     <input
@@ -616,36 +796,51 @@ export default function EditarDisciplinaModal({
                       min="0"
                       value={topicForm.erros}
                       onChange={(e) => handleTopicFieldChange('erros', e.target.value)}
-                      className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                      className="pl-input"
+                      style={{ width: '100%' }}
                     />
                   </div>
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                <label
+                  style={{
+                    display: 'flex',
+                    cursor: 'pointer',
+                    alignItems: 'center',
+                    gap: 12,
+                    borderRadius: 12,
+                    border: '1px solid var(--pl-rule-2)',
+                    background: 'var(--pl-surface)',
+                    padding: '10px 16px',
+                  }}
+                >
                   <input
                     type="checkbox"
                     checked={topicForm.concluido}
                     onChange={(e) => handleTopicFieldChange('concluido', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                    style={{ height: 16, width: 16, accentColor: 'var(--pl-accent)' }}
                   />
-                  <span className="text-sm font-semibold text-gray-700">Marcar como concluído</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
+                    Marcar como concluido
+                  </span>
                 </label>
 
-                <div className="flex gap-3">
+                <div style={{ display: 'flex', gap: 12 }}>
                   <button
                     type="button"
                     onClick={handleAddOrUpdateTopic}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#1e3a5f] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1e3a5f]"
+                    className="pl-btn pl-btn-primary"
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                   >
                     {editingTopicId ? <Edit3 size={15} /> : <Plus size={15} />}
-                    {editingTopicId ? 'Atualizar tópico' : 'Adicionar tópico'}
+                    {editingTopicId ? 'Atualizar topico' : 'Adicionar topico'}
                   </button>
 
                   {editingTopicId && (
                     <button
                       type="button"
                       onClick={resetTopicForm}
-                      className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
+                      className="pl-btn pl-btn-ghost"
                     >
                       Cancelar
                     </button>
@@ -654,129 +849,253 @@ export default function EditarDisciplinaModal({
               </div>
             </div>
 
+            {/* Topic list */}
             <div>
-              <div className="mb-4 flex items-end justify-between border-b border-[#1e3a5f] pb-2">
+              <div
+                style={{
+                  marginBottom: 16,
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'space-between',
+                  paddingBottom: 8,
+                  borderBottom: '1px solid var(--pl-accent)',
+                }}
+              >
                 <div>
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                    Tópicos
-                  </h3>
-                  <p className="mt-1 text-sm font-medium text-gray-500">
-                    Reordene, edite e remova os tópicos da disciplina.
+                  <h3 className="pl-eyebrow">Topicos</h3>
+                  <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                    Reordene, edite e remova os topicos da disciplina.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1e3a5f]">
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.14em',
+                    color: 'var(--pl-accent)',
+                  }}
+                >
                   <Columns size={12} />
-                  Organização manual
+                  Organizacao manual
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                <div className="custom-scrollbar max-h-[430px] overflow-y-auto">
-                  <div className="divide-y divide-gray-100">
-                    {topicos.map((topico, index) => (
+              <div
+                style={{
+                  overflow: 'hidden',
+                  borderRadius: 16,
+                  border: '1px solid var(--pl-rule-2)',
+                  background: 'var(--pl-surface)',
+                }}
+              >
+                <div className="custom-scrollbar" style={{ maxHeight: 430, overflowY: 'auto' }}>
+                  {topicos.map((topico, index) => (
+                    <div
+                      key={topico.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 16,
+                        padding: 16,
+                        borderTop: index === 0 ? 'none' : '1px solid var(--pl-rule)',
+                        background: index % 2 === 0 ? 'var(--pl-surface)' : 'var(--pl-bg-soft)',
+                      }}
+                    >
+                      {/* Move buttons */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveTopic(topico.id, 'up')}
+                          disabled={index === 0}
+                          style={{
+                            borderRadius: 8,
+                            border: '1px solid var(--pl-rule-2)',
+                            background: 'var(--pl-surface)',
+                            padding: 6,
+                            color: 'var(--pl-ink-2)',
+                            cursor: index === 0 ? 'not-allowed' : 'pointer',
+                            opacity: index === 0 ? 0.4 : 1,
+                            display: 'flex',
+                          }}
+                          title="Mover para cima"
+                        >
+                          <ChevronUp size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveTopic(topico.id, 'down')}
+                          disabled={index === topicos.length - 1}
+                          style={{
+                            borderRadius: 8,
+                            border: '1px solid var(--pl-rule-2)',
+                            background: 'var(--pl-surface)',
+                            padding: 6,
+                            color: 'var(--pl-ink-2)',
+                            cursor: index === topicos.length - 1 ? 'not-allowed' : 'pointer',
+                            opacity: index === topicos.length - 1 ? 0.4 : 1,
+                            display: 'flex',
+                          }}
+                          title="Mover para baixo"
+                        >
+                          <ChevronDown size={14} />
+                        </button>
+                      </div>
+
+                      {/* Content */}
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                          <span
+                            className="pl-tag"
+                            style={{ fontSize: 10, fontWeight: 800 }}
+                          >
+                            #{index + 1}
+                          </span>
+                          {topico.concluido && (
+                            <span
+                              className="pl-tag pl-tag-success"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                            >
+                              <CheckCircle2 size={11} />
+                              Concluido
+                            </span>
+                          )}
+                        </div>
+
+                        <p
+                          style={{
+                            marginTop: 12,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            lineHeight: 1.5,
+                            color: 'var(--pl-ink)',
+                          }}
+                        >
+                          {topico.nome}
+                        </p>
+
+                        <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          <span className="pl-tag pl-tag-success" style={{ fontSize: 12 }}>
+                            Acertos: {toNumber(topico.acertos)}
+                          </span>
+                          <span className="pl-tag pl-tag-danger" style={{ fontSize: 12 }}>
+                            Erros: {toNumber(topico.erros)}
+                          </span>
+                          <span className="pl-tag pl-tag-accent" style={{ fontSize: 12 }}>
+                            %: {getPercentualByQuestions(topico.acertos, topico.erros)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleEditTopic(topico)}
+                          style={{
+                            borderRadius: 10,
+                            border: '1px solid var(--pl-rule-2)',
+                            background: 'var(--pl-surface)',
+                            padding: 10,
+                            color: 'var(--pl-ink-2)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            transition: 'background 0.15s, color 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--pl-accent-soft)';
+                            e.currentTarget.style.color = 'var(--pl-accent)';
+                            e.currentTarget.style.borderColor = 'var(--pl-accent)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'var(--pl-surface)';
+                            e.currentTarget.style.color = 'var(--pl-ink-2)';
+                            e.currentTarget.style.borderColor = 'var(--pl-rule-2)';
+                          }}
+                          title="Editar topico"
+                        >
+                          <Edit3 size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTopic(topico.id)}
+                          style={{
+                            borderRadius: 10,
+                            border: '1px solid var(--pl-rule-2)',
+                            background: 'var(--pl-surface)',
+                            padding: 10,
+                            color: 'var(--pl-ink-2)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            transition: 'background 0.15s, color 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--pl-danger-soft)';
+                            e.currentTarget.style.color = 'var(--pl-danger)';
+                            e.currentTarget.style.borderColor = 'var(--pl-danger)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'var(--pl-surface)';
+                            e.currentTarget.style.color = 'var(--pl-ink-2)';
+                            e.currentTarget.style.borderColor = 'var(--pl-rule-2)';
+                          }}
+                          title="Excluir topico"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {topicos.length === 0 && (
+                    <div style={{ padding: 40, textAlign: 'center' }}>
                       <div
-                        key={topico.id}
-                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-blue-50/30 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'
-                        }`}
+                        style={{
+                          margin: '0 auto',
+                          display: 'flex',
+                          height: 48,
+                          width: 48,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 16,
+                          background: 'var(--pl-bg-soft)',
+                          color: 'var(--pl-ink-3)',
+                        }}
                       >
-                        <div className="flex flex-col gap-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={() => handleMoveTopic(topico.id, 'up')}
-                            disabled={index === 0}
-                            className="rounded-lg border border-gray-200 bg-white p-1.5 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            title="Mover para cima"
-                          >
-                            <ChevronUp size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleMoveTopic(topico.id, 'down')}
-                            disabled={index === topicos.length - 1}
-                            className="rounded-lg border border-gray-200 bg-white p-1.5 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            title="Mover para baixo"
-                          >
-                            <ChevronDown size={14} />
-                          </button>
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                              #{index + 1}
-                            </span>
-                            {topico.concluido && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-600">
-                                <CheckCircle2 size={11} />
-                                Concluído
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="mt-3 text-sm font-bold leading-relaxed text-gray-800">
-                            {topico.nome}
-                          </p>
-
-                          <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
-                            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-600">
-                              Acertos: {toNumber(topico.acertos)}
-                            </span>
-                            <span className="rounded-full bg-red-50 px-2.5 py-1 text-red-500">
-                              Erros: {toNumber(topico.erros)}
-                            </span>
-                            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-600">
-                              %: {getPercentualByQuestions(topico.acertos, topico.erros)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditTopic(topico)}
-                            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-[#1e3a5f]"
-                            title="Editar tópico"
-                          >
-                            <Edit3 size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteTopic(topico.id)}
-                            className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-500 transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-                            title="Excluir tópico"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+                        <Plus size={18} />
                       </div>
-                    ))}
-
-                    {topicos.length === 0 && (
-                      <div className="p-10 text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
-                          <Plus size={18} />
-                        </div>
-                        <p className="mt-4 text-sm font-bold text-gray-500">
-                          Nenhum tópico adicionado ainda.
-                        </p>
-                        <p className="mt-1 text-sm font-medium text-gray-400">
-                          Use o formulário ao lado para começar a estruturar essa disciplina.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                      <p style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
+                        Nenhum topico adicionado ainda.
+                      </p>
+                      <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-3)' }}>
+                        Use o formulario ao lado para comecar a estruturar essa disciplina.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 px-8 py-5">
+        {/* Footer */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderTop: '1px solid var(--pl-rule)',
+            background: 'var(--pl-bg-soft)',
+            padding: '16px 32px',
+          }}
+        >
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
+            className="pl-btn pl-btn-ghost"
           >
             Fechar
           </button>
@@ -785,7 +1104,16 @@ export default function EditarDisciplinaModal({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl bg-[#1e3a5f] px-10 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a5f] disabled:cursor-not-allowed disabled:opacity-70"
+            className="pl-btn pl-btn-primary"
+            style={{
+              minWidth: 140,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              opacity: isSaving ? 0.7 : 1,
+              cursor: isSaving ? 'not-allowed' : 'pointer',
+            }}
           >
             {isSaving ? (
               <>
@@ -804,9 +1132,28 @@ export default function EditarDisciplinaModal({
 
 function SummaryLine({ label, value }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{label}</span>
-      <span className="text-lg font-black text-[#1A365D]">{value}</span>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 12,
+        background: 'var(--pl-surface)',
+        padding: '10px 16px',
+      }}
+    >
+      <span
+        className="pl-eyebrow"
+        style={{ color: 'var(--pl-ink-3)' }}
+      >
+        {label}
+      </span>
+      <span
+        className="pl-num"
+        style={{ fontSize: 18, color: 'var(--pl-ink)' }}
+      >
+        {value}
+      </span>
     </div>
   );
 }

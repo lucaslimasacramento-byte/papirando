@@ -288,6 +288,8 @@ export default function AppTabContent(props) {
     handleSaveAudiobookState,
     sidebarLabelsOverride,
     handleSaveSidebarLabels,
+    notificationSettings,
+    handleSaveNotificationSettings,
     selectedCoursePlan,
     openStudyRegisterForDiscipline,
     communityRankings,
@@ -307,6 +309,8 @@ export default function AppTabContent(props) {
     communityPersistence,
     selectedCommunitySquadId,
     onOpenAdminLegislacao,
+    courseTemplates,
+    handleSaveCourseTemplates,
   } = props;
   const normalizeName = (value = '') => {
     const text = String(value || '').trim();
@@ -409,6 +413,7 @@ export default function AppTabContent(props) {
         setActiveTab={setActiveTab}
         currentUserId={currentUserId}
         currentProfile={effectiveProfile}
+        isAdmin={isAdmin}
         onProfileUpdate={(patch) => handleSaveProfile({ ...(effectiveProfile || {}), ...(patch || {}) })}
       />
     );
@@ -471,6 +476,7 @@ export default function AppTabContent(props) {
     return (
       <ConcursosDisponiveis
         concursoCatalog={contestLibrary}
+        courseTemplates={courseTemplates}
         onImportCatalogCourse={createCourseFromCatalog}
         setActiveTab={setActiveTab}
         onOpenContestDetail={(contest) => {
@@ -605,6 +611,8 @@ export default function AppTabContent(props) {
         onUploadEdital={uploadContestEdital}
         onRemoveImage={removeContestImage}
         onRemoveEdital={removeContestEdital}
+        courseTemplates={courseTemplates}
+        onSaveCourseTemplates={handleSaveCourseTemplates}
       />
     );
   }
@@ -712,6 +720,8 @@ export default function AppTabContent(props) {
         onSaveRedacaoSiteContent={handleSaveRedacaoSiteContent}
         sidebarLabelsOverride={sidebarLabelsOverride}
         onSaveSidebarLabels={handleSaveSidebarLabels}
+        notificationSettings={notificationSettings}
+        onSaveNotificationSettings={handleSaveNotificationSettings}
       />
     );
   }
@@ -923,6 +933,9 @@ export default function AppTabContent(props) {
         subjectCatalog={subjectCatalog}
         studyRecommendation={smartStudyPlan}
         onStartRecommendedSession={startRecommendedStudySession}
+        bancoDisciplinas={bancoDisciplinas}
+        selectedCoursePlan={selectedCoursePlan}
+        planningCourseOptions={planningCourseOptions}
         isAdmin={isAdmin}
         setActiveTab={setActiveTab}
       />
@@ -1024,7 +1037,7 @@ export default function AppTabContent(props) {
 
   if (activeTab === 'comunidades') {
     return (
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div style={{ display: 'flex', minHeight: 0, minWidth: 0, flex: 1, flexDirection: 'column' }}>
         <Comunidades
         currentUserId={currentUserId}
         currentUsername={effectiveProfile?.username || ''}
@@ -1107,12 +1120,12 @@ export default function AppTabContent(props) {
 
   if (!KNOWN_TABS.includes(activeTab)) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-gray-400 p-10">
-        <Target size={40} className="text-[#1e3a5f] mb-6" />
-        <h2 className="text-3xl font-black text-gray-800 mb-2">Construção em Progresso!</h2>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-ink-3)', padding: 40 }}>
+        <Target size={40} style={{ color: 'var(--pl-accent)', marginBottom: 24 }} />
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: 'var(--pl-ink)', marginBottom: 8 }}>Construção em Progresso!</h2>
         <button
           onClick={() => setActiveTab('home')}
-          className="bg-[#1e3a5f] text-white px-6 py-2.5 rounded-xl font-bold"
+          className="pl-btn pl-btn-primary"
         >
           Voltar ao Inicio
         </button>

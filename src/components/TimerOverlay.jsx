@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Timer, Clock, Play, CheckCircle2, Pause, Square } from 'lucide-react';
 
 export default function TimerOverlay({
@@ -20,63 +20,130 @@ export default function TimerOverlay({
 }) {
   if (!isTimerModalOpen) return null;
 
+  const modeActive = {
+    background: 'rgba(30,58,95,0.25)',
+    border: '2px solid rgba(147,180,255,0.5)',
+    color: '#fff',
+  };
+  const modeIdle = {
+    background: 'rgba(255,255,255,0.06)',
+    border: '2px solid rgba(255,255,255,0.10)',
+    color: 'rgba(200,210,230,0.85)',
+  };
+
   return (
-    <div className="fixed inset-0 z-[150] flex flex-col overflow-y-auto bg-[#0F172A] animate-in fade-in duration-300">
-       <div className="sticky top-0 z-10 flex justify-end bg-gradient-to-b from-[#0F172A] to-transparent px-4 py-4 sm:px-6">
-         <button onClick={() => setIsTimerModalOpen(false)} className="flex items-center gap-2 rounded-full bg-white/8 px-4 py-2 text-sm font-semibold text-gray-300 transition-colors hover:text-white">Fechar</button>
-       </div>
-       <div className="relative flex min-h-[calc(100dvh-68px)] flex-1 flex-col items-center justify-center px-4 pb-6 pt-2 sm:px-6 sm:pb-8">
-         {showTimerSetup ? (
-           <div className="w-full max-w-md rounded-[2rem] border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 sm:p-7 md:p-8">
-             <div className="mb-6 text-center">
-               <div className="w-16 h-16 bg-[#1e3a5f] rounded-2xl flex items-center justify-center mx-auto mb-4 text-white"><Timer size={32}/></div>
-               <h2 className="text-2xl font-black text-white mb-2">Configurar Sessão</h2>
-               <p className="text-blue-200 text-sm font-medium">Escolha o seu método de estudo e foque no objetivo.</p>
-             </div>
-             <div className="mb-6 space-y-3">
-               <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(25*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 25*60 ? 'border-[#1e3a5f] bg-[#1e3a5f]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
-                 <div className="flex items-center gap-3"><Clock size={20}/><span className="font-bold">Pomodoro (25 min)</span></div>
-                 {timerMode === 'pomodoro' && timerMax === 25*60 && <CheckCircle2 size={20} className="text-[#1e3a5f]"/>}
-               </button>
-               <button onClick={() => {setTimerMode('pomodoro'); setTimerMax(50*60);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'pomodoro' && timerMax === 50*60 ? 'border-[#1e3a5f] bg-[#1e3a5f]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
-                 <div className="flex items-center gap-3"><Clock size={20}/><span className="font-bold">Sessão Longa (50 min)</span></div>
-                 {timerMode === 'pomodoro' && timerMax === 50*60 && <CheckCircle2 size={20} className="text-[#1e3a5f]"/>}
-               </button>
-               <button onClick={() => {setTimerMode('cronometro'); setTimerMax(0);}} className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${timerMode === 'cronometro' ? 'border-[#1e3a5f] bg-[#1e3a5f]/20 text-white' : 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'}`}>
-                 <div className="flex items-center gap-3"><Play size={20}/><span className="font-bold">Livre (Cronómetro)</span></div>
-                 {timerMode === 'cronometro' && <CheckCircle2 size={20} className="text-[#1e3a5f]"/>}
-               </button>
-             </div>
-             <div className="mb-6 flex items-center gap-3 px-2">
-               <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" checked={saveAsFavorite} onChange={() => setSaveAsFavorite(!saveAsFavorite)} className="w-4 h-4 rounded text-[#1e3a5f] focus:ring-[#1e3a5f] border-gray-400 cursor-pointer" />
-                  <span className="text-sm font-medium text-gray-300">Salvar como meu método padrão</span>
-               </label>
-             </div>
-             <button onClick={startActualTimer} className="w-full bg-[#1e3a5f] text-white py-4 rounded-xl font-bold text-lg shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:bg-[#1e3a5f] transition-all flex items-center justify-center gap-2">
-               <Play fill="currentColor" size={20}/> Começar a Estudar
-             </button>
-           </div>
-         ) : (
-           <div className="flex flex-col items-center animate-in fade-in duration-300">
-             <div className="text-[14px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-               Sessão em andamento: {timerMode === 'pomodoro' ? 'Pomodoro' : 'Modo Livre'}
-             </div>
-             <div className="text-[7rem] sm:text-[10rem] md:text-[12rem] font-bold text-white leading-none font-mono tracking-tighter drop-shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-               {formatHHMMSS(timerValue)}
-             </div>
-             <div className="mt-16 flex items-center gap-6 relative">
-               <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="w-20 h-20 bg-white hover:bg-gray-200 text-[#0F172A] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-transform hover:scale-105">
-                 {isTimerRunning ? <Pause size={36} fill="currentColor"/> : <Play size={36} fill="currentColor" className="ml-2"/>}
-               </button>
-               <button onClick={handleStopTimer} className="w-20 h-20 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-transform hover:scale-105">
-                 <Square size={28} fill="currentColor"/>
-               </button>
-             </div>
-           </div>
-         )}
-       </div>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 150, display: 'flex', flexDirection: 'column', overflowY: 'auto', background: '#0F172A' }}>
+
+      {/* Top bar */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, display: 'flex', justifyContent: 'flex-end', background: 'linear-gradient(to bottom, #0F172A, transparent)', padding: '16px 24px' }}>
+        <button
+          onClick={() => setIsTimerModalOpen(false)}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 999, padding: '8px 18px', fontSize: 13, fontWeight: 600, color: 'rgba(200,210,230,0.85)', cursor: 'pointer' }}
+        >
+          Fechar
+        </button>
+      </div>
+
+      {/* Main area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px 16px 32px' }}>
+        {showTimerSetup ? (
+          <div style={{ width: '100%', maxWidth: 440, borderRadius: 28, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.09)', backdropFilter: 'blur(16px)', padding: '28px 28px 32px', boxShadow: '0 24px 64px rgba(0,0,0,0.4)' }}>
+
+            <div style={{ marginBottom: 24, textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, background: '#1e3a5f', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#fff' }}>
+                <Timer size={28} />
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', marginBottom: 6 }}>Configurar Sessão</h2>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'rgba(147,180,255,0.85)' }}>
+                Escolha o seu método de estudo e foque no objetivo.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              <button
+                onClick={() => { setTimerMode('pomodoro'); setTimerMax(25 * 60); }}
+                style={{ width: '100%', padding: '14px 16px', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.15s', ...(timerMode === 'pomodoro' && timerMax === 25 * 60 ? modeActive : modeIdle) }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Clock size={18} />
+                  <span style={{ fontWeight: 700 }}>Pomodoro (25 min)</span>
+                </div>
+                {timerMode === 'pomodoro' && timerMax === 25 * 60 && <CheckCircle2 size={18} style={{ color: 'rgba(147,180,255,0.9)' }} />}
+              </button>
+
+              <button
+                onClick={() => { setTimerMode('pomodoro'); setTimerMax(50 * 60); }}
+                style={{ width: '100%', padding: '14px 16px', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.15s', ...(timerMode === 'pomodoro' && timerMax === 50 * 60 ? modeActive : modeIdle) }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Clock size={18} />
+                  <span style={{ fontWeight: 700 }}>Sessão Longa (50 min)</span>
+                </div>
+                {timerMode === 'pomodoro' && timerMax === 50 * 60 && <CheckCircle2 size={18} style={{ color: 'rgba(147,180,255,0.9)' }} />}
+              </button>
+
+              <button
+                onClick={() => { setTimerMode('cronometro'); setTimerMax(0); }}
+                style={{ width: '100%', padding: '14px 16px', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.15s', ...(timerMode === 'cronometro' ? modeActive : modeIdle) }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Play size={18} />
+                  <span style={{ fontWeight: 700 }}>Livre (Cronómetro)</span>
+                </div>
+                {timerMode === 'cronometro' && <CheckCircle2 size={18} style={{ color: 'rgba(147,180,255,0.9)' }} />}
+              </button>
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={saveAsFavorite}
+                onChange={() => setSaveAsFavorite(!saveAsFavorite)}
+                style={{ width: 15, height: 15, accentColor: '#1e3a5f', cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(200,210,230,0.85)' }}>
+                Salvar como meu método padrão
+              </span>
+            </label>
+
+            <button
+              onClick={startActualTimer}
+              style={{ width: '100%', background: '#1e3a5f', color: '#fff', padding: '14px', borderRadius: 14, fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 20px rgba(37,99,235,0.4)' }}
+            >
+              <Play fill="currentColor" size={18} /> Começar a Estudar
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(200,210,230,0.6)' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              Sessão em andamento: {timerMode === 'pomodoro' ? 'Pomodoro' : 'Modo Livre'}
+            </div>
+
+            <div style={{ fontSize: 'clamp(72px, 18vw, 160px)', fontWeight: 700, color: '#fff', lineHeight: 1, fontFamily: 'var(--pl-mono)', letterSpacing: '-0.04em', textShadow: '0 0 40px rgba(37,99,235,0.2)' }}>
+              {formatHHMMSS(timerValue)}
+            </div>
+
+            <div style={{ marginTop: 56, display: 'flex', alignItems: 'center', gap: 24 }}>
+              <button
+                onClick={() => setIsTimerRunning(!isTimerRunning)}
+                style={{ width: 76, height: 76, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F172A', boxShadow: '0 0 28px rgba(255,255,255,0.12)', transition: 'transform 0.15s' }}
+              >
+                {isTimerRunning
+                  ? <Pause size={32} fill="currentColor" />
+                  : <Play size={32} fill="currentColor" style={{ marginLeft: 4 }} />
+                }
+              </button>
+              <button
+                onClick={handleStopTimer}
+                style={{ width: 76, height: 76, borderRadius: '50%', background: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 0 28px rgba(239,68,68,0.3)', transition: 'transform 0.15s' }}
+              >
+                <Square size={26} fill="currentColor" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

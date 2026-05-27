@@ -31,6 +31,15 @@ const COLORS = {
   violet: 'from-violet-500 to-purple-600 ring-violet-200',
 };
 
+// Node gradient colors by key (kept for canvas node rendering — intentional)
+const NODE_GRADIENTS = {
+  indigo: { bg: 'linear-gradient(135deg,#4f46e5,#7c3aed)', ring: '#a5b4fc' },
+  sky: { bg: 'linear-gradient(135deg,#0ea5e9,#2563eb)', ring: '#7dd3fc' },
+  emerald: { bg: 'linear-gradient(135deg,#10b981,#0d9488)', ring: '#6ee7b7' },
+  amber: { bg: 'linear-gradient(135deg,#f59e0b,#ea580c)', ring: '#fcd34d' },
+  violet: { bg: 'linear-gradient(135deg,#8b5cf6,#7c3aed)', ring: '#c4b5fd' },
+};
+
 function clamp(n, a, b) {
   return Math.max(a, Math.min(b, n));
 }
@@ -39,7 +48,7 @@ function clamp(n, a, b) {
  * @param {{ mindGraph?: object, titulo?: string }} props.map
  * @param {(next: import('../lib/mindMapGraph').MindGraph) => void} [props.onGraphChange]
  * @param {(title: string) => void} [props.onRootTitleChange]
- * @param {boolean} [props.readOnly] — só navegação (zoom/pan); sem editar grafo
+ * @param {boolean} [props.readOnly] — so navegacao (zoom/pan); sem editar grafo
  */
 export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, readOnly = false }) {
   const graph = useMemo(() => {
@@ -211,9 +220,33 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
   const parentForAdd = selected?.id && selected.id !== ROOT_ID ? selected.id : ROOT_ID;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/90 px-3 py-2.5">
-        <span className="mr-1 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Toolbar */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 8,
+          borderRadius: 16,
+          border: '1px solid var(--pl-rule-2)',
+          background: 'var(--pl-bg-soft)',
+          padding: '8px 12px',
+        }}
+      >
+        <span
+          style={{
+            marginRight: 4,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 10,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+            color: 'var(--pl-ink-3)',
+          }}
+        >
           <MousePointer2 size={12} />
           {readOnly ? 'Visualizacao' : 'Ferramentas'}
         </span>
@@ -226,7 +259,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
             />
             <ToolbarBtn
               icon={Trash2}
-              label="Remover nó"
+              label="Remover no"
               disabled={!selectedId || selectedId === ROOT_ID}
               danger
               onClick={() => {
@@ -235,7 +268,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                 setSelectedId(null);
               }}
             />
-            <span className="mx-1 hidden h-6 w-px bg-slate-200 sm:inline-block" />
+            <span style={{ margin: '0 4px', width: 1, height: 24, background: 'var(--pl-rule-2)', display: 'inline-block' }} />
           </>
         ) : null}
         <ToolbarBtn icon={ZoomIn} label="Mais zoom" onClick={() => setZoom((z) => clamp(z + 0.1, 0.35, 2.2))} />
@@ -249,19 +282,46 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
         ) : null}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 shadow-inner">
-        <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-          <Sparkles size={14} className="text-indigo-500" />
+      {/* Canvas wrapper */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: '1px solid var(--pl-rule-2)',
+          background: 'var(--pl-surface)',
+          padding: 12,
+          boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.04)',
+        }}
+      >
+        <div
+          style={{
+            marginBottom: 8,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: 12,
+            fontWeight: 500,
+            color: 'var(--pl-ink-2)',
+          }}
+        >
+          <Sparkles size={14} style={{ color: 'var(--pl-accent)' }} />
           {readOnly
             ? 'Mapa oficial (somente leitura). Use Copiar na biblioteca para editar o seu.'
-            : 'Arraste o fundo para mover a vista; arraste os cartões para reorganizar. Clique para selecionar. Duplo clique para renomear.'}
+            : 'Arraste o fundo para mover a vista; arraste os cartoes para reorganizar. Clique para selecionar. Duplo clique para renomear.'}
         </div>
 
         <div
           ref={viewportRef}
-          className="relative h-[min(72vh,640px)] min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white touch-none"
           style={{
-            backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+            touchAction: 'none',
+            position: 'relative',
+            height: 'min(72vh, 640px)',
+            minHeight: 420,
+            overflow: 'hidden',
+            borderRadius: 16,
+            border: '1px solid var(--pl-rule-2)',
+            background: 'var(--pl-surface)',
+            backgroundImage: 'radial-gradient(var(--pl-rule-strong) 1px, transparent 1px)',
             backgroundSize: '20px 20px',
             cursor: isPanning ? 'grabbing' : 'grab',
           }}
@@ -277,18 +337,28 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
             }
           }}
         >
-          <div data-canvas-bg="1" className="absolute inset-0" />
+          <div data-canvas-bg="1" style={{ position: 'absolute', inset: 0 }} />
 
           <div
-            className="absolute left-1/2 top-1/2 h-0 w-0"
             style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              height: 0,
+              width: 0,
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
               transformOrigin: '0 0',
             }}
           >
             <svg
-              className="pointer-events-none absolute"
-              style={{ left: -1600, top: -1200, width: 3200, height: 2400 }}
+              style={{
+                pointerEvents: 'none',
+                position: 'absolute',
+                left: -1600,
+                top: -1200,
+                width: 3200,
+                height: 2400,
+              }}
               viewBox="-1600 -1200 3200 2400"
             >
               {edges.map((edge) => (
@@ -298,7 +368,7 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke="#94a3b8"
+                  stroke="var(--pl-rule-strong)"
                   strokeWidth="3"
                   strokeLinecap="round"
                   opacity={0.88}
@@ -309,7 +379,8 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
             {displayNodes.map((node) => {
               const isRoot = node.id === ROOT_ID;
               const isSelected = selectedId === node.id;
-              const colorKey = COLORS[node.color] || COLORS.sky;
+              const colorKey = node.color && NODE_GRADIENTS[node.color] ? node.color : 'sky';
+              const gradient = NODE_GRADIENTS[colorKey];
               const isEditing = editingId === node.id;
 
               return (
@@ -317,8 +388,9 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                   key={node.id}
                   role="button"
                   tabIndex={0}
-                  className="absolute select-none"
                   style={{
+                    position: 'absolute',
+                    userSelect: 'none',
                     transform: `translate(${node.x}px, ${node.y}px) translate(-50%, -50%)`,
                   }}
                   onPointerDown={(e) => {
@@ -352,17 +424,55 @@ export default function MindMapStudio({ map, onGraphChange, onRootTitleChange, r
                       onKeyDown={(ev) => {
                         if (ev.key === 'Enter' || ev.key === 'Escape') ev.target.blur();
                       }}
-                      className="min-w-[140px] max-w-[260px] rounded-xl border-2 border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-lg outline-none"
+                      style={{
+                        minWidth: 140,
+                        maxWidth: 260,
+                        borderRadius: 12,
+                        border: '2px solid var(--pl-accent)',
+                        background: 'var(--pl-surface)',
+                        padding: '8px 12px',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: 'var(--pl-ink)',
+                        boxShadow: 'var(--pl-sh-mid)',
+                        outline: 'none',
+                      }}
                     />
                   ) : (
                     <div
-                      className={`max-w-[220px] rounded-2xl bg-gradient-to-br px-4 py-3 text-center shadow-lg ring-2 transition ${colorKey} ${
-                        isRoot ? 'py-4 text-base font-bold text-white' : 'text-sm font-semibold text-white'
-                      } ${isSelected ? 'ring-offset-2 ring-offset-white' : ''}`}
+                      style={{
+                        maxWidth: 220,
+                        borderRadius: 16,
+                        background: gradient.bg,
+                        padding: isRoot ? '16px 16px' : '12px 16px',
+                        textAlign: 'center',
+                        boxShadow: isSelected
+                          ? `0 0 0 3px ${gradient.ring}, var(--pl-sh-mid)`
+                          : 'var(--pl-sh-low)',
+                        transition: 'box-shadow 0.15s',
+                        color: '#fff',
+                        fontSize: isRoot ? 15 : 13,
+                        fontWeight: isRoot ? 700 : 600,
+                      }}
                     >
-                      <div className="line-clamp-4 leading-snug">{node.text}</div>
+                      <div style={{ WebkitLineClamp: 4, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.35 }}>
+                        {node.text}
+                      </div>
                       {node.topicId ? (
-                        <div className="mt-2 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white/80">
+                        <div
+                          style={{
+                            marginTop: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 4,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.12em',
+                            color: 'rgba(255,255,255,0.8)',
+                          }}
+                        >
                           <CircleDot size={10} />
                           Vinculado
                         </div>
@@ -386,14 +496,32 @@ function ToolbarBtn({ icon: Icon, label, onClick, disabled, danger }) {
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-bold transition ${
-        danger
-          ? 'border-rose-200 bg-white text-rose-700 hover:bg-rose-50 disabled:opacity-40'
-          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40'
-      }`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        borderRadius: 10,
+        border: danger ? '1px solid var(--pl-danger-soft)' : '1px solid var(--pl-rule-2)',
+        background: 'var(--pl-surface)',
+        color: danger ? 'var(--pl-danger)' : 'var(--pl-ink-2)',
+        padding: '6px 10px',
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: 'pointer',
+        transition: 'background 0.12s, color 0.12s',
+        opacity: disabled ? 0.4 : 1,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = danger ? 'var(--pl-danger-soft)' : 'var(--pl-bg-soft)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'var(--pl-surface)';
+      }}
     >
       <Icon size={14} />
-      <span className="hidden sm:inline">{label}</span>
+      <span style={{ display: 'none' }} className="sm-inline-shown">{label}</span>
     </button>
   );
 }

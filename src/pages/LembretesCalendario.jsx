@@ -902,66 +902,80 @@ function FullScreenCalendarModal({
   const currentMonthGrid = useMemo(() => buildMonthGrid(currentDate), [currentDate]);
 
   return (
-    <div className="fixed inset-0 z-[220] bg-slate-950/55 backdrop-blur-sm">
-      <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)]">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-200 bg-white px-4 py-2 shadow-sm md:px-6">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 220, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', width: '100%', overflow: 'hidden', background: 'var(--pl-bg)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '8px 24px', boxShadow: 'var(--pl-sh-low)' }}>
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-                <CalendarDays size={12} />
-                Calendário ampliado
-            </div>
-            <h3 className="mt-1.5 text-xl font-semibold text-slate-900 sm:text-[1.45rem]">
+            <span className="pl-tag pl-tag-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <CalendarDays size={12} />
+              Calendário ampliado
+            </span>
+            <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 600, color: 'var(--pl-ink)' }}>
               {viewMode === 'mes'
                 ? `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`
                 : `Semana de ${String(currentWeek[0].getDate()).padStart(2, '0')}/${String(currentWeek[0].getMonth() + 1).padStart(2, '0')}`}
             </h3>
-            <p className="mt-1 text-[12px] font-medium text-gray-500">
+            <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
               {studyPlanningMode === 'ciclo'
                   ? 'Mesmo calendário do planejamento, com o ciclo distribuído conforme sua disponibilidade.'
                   : 'Mesmo calendário do planejamento fixo, com sincronização total entre as abas.'}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 4, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 4 }}>
               <button
                 type="button"
                 onClick={() => setViewMode('mes')}
-                className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                  viewMode === 'mes' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                }`}
+                style={{
+                  borderRadius: 7,
+                  padding: '5px 14px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: viewMode === 'mes' ? 'var(--pl-accent-soft)' : 'transparent',
+                  color: viewMode === 'mes' ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                }}
               >
                 Mês
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('semana')}
-                className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                  viewMode === 'semana' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                }`}
+                style={{
+                  borderRadius: 7,
+                  padding: '5px 14px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: viewMode === 'semana' ? 'var(--pl-accent-soft)' : 'transparent',
+                  color: viewMode === 'semana' ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                }}
               >
                 Semana
               </button>
             </div>
 
-            <button type="button" onClick={onCreateReminder} className="btn-primary gap-2 px-3.5 py-1.5">
-              <Plus size={16} strokeWidth={2} />
+            <button type="button" onClick={onCreateReminder} className="pl-btn pl-btn-primary pl-btn-sm" style={{ gap: 6 }}>
+              <Plus size={15} strokeWidth={2} />
               Novo lembrete
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
             >
-              <X size={16} />
+              <X size={15} />
               Fechar
             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-1.5 md:px-6">
-          <div className="flex flex-wrap gap-2">
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '6px 24px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             <TagPill label={`${events.length} blocos`} color={STUDY_EVENT_COLORS.Concurso} soft />
             <TagPill label={`${contestEventCount} concursos`} color={STUDY_EVENT_COLORS.Concurso} soft />
             <TagPill label={`${manualEventCount} lembretes`} color={STUDY_EVENT_COLORS.Lembrete} soft />
@@ -969,32 +983,32 @@ function FullScreenCalendarModal({
             <TagPill label={`${studyEventCount} estudos`} color={STUDY_EVENT_COLORS.Sessao} soft />
           </div>
 
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               onClick={() => shiftCalendarDate(setCurrentDate, currentDate, viewMode, -1)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-gray-600 shadow-sm transition hover:bg-gray-50"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               type="button"
               onClick={() => setCurrentDate(new Date())}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-1.5 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-600 hover:text-blue-700"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
             >
               Hoje
             </button>
             <button
               type="button"
               onClick={() => shiftCalendarDate(setCurrentDate, currentDate, viewMode, 1)}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-gray-600 shadow-sm transition hover:bg-gray-50"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
             >
               <ChevronRight size={16} />
             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-1.5 md:px-6">
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '6px 24px' }}>
           <CalendarToggle
             label="Concursos"
             checked={calendarLayers.concursos}
@@ -1022,8 +1036,8 @@ function FullScreenCalendarModal({
           />
         </div>
 
-        <div className="min-h-0 flex-1 p-1.5">
-          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div style={{ minHeight: 0, flex: 1, padding: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
             {viewMode === 'mes' ? (
               <MonthCalendarView
                 currentDate={currentDate}
@@ -1053,41 +1067,42 @@ function FullScreenCalendarModal({
 
 function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], editing = false }) {
   return (
-    <div className="fixed inset-0 z-[230] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 230, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 640, overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', padding: '20px 24px' }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Lembrete manual</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Lembrete manual</p>
+            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--pl-ink)' }}>
               {editing ? 'Editar lembrete' : 'Novo lembrete'}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500"
+            className="pl-btn pl-btn-ghost"
+            style={{ padding: 8 }}
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="grid gap-5 p-6">
-          <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Título">
+        <div style={{ display: 'grid', gap: 20, padding: 24 }}>
+          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+            <Field label="Título">
               <input
                 type="text"
                 value={form.title}
                 onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="pl-input"
               />
             </Field>
             <Field label="Tipo">
               <select
                 value={form.type}
                 onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="pl-input"
               >
-            <option value="task">Pendência</option>
+                <option value="task">Pendência</option>
                 <option value="prova">Prova</option>
                 <option value="inscricao">Inscrição</option>
                 <option value="resultado">Resultado</option>
@@ -1100,7 +1115,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
                 type="date"
                 value={form.date}
                 onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="pl-input"
               />
             </Field>
             <Field label="Hora">
@@ -1108,7 +1123,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
                 type="time"
                 value={form.time}
                 onChange={(event) => setForm((prev) => ({ ...prev, time: event.target.value }))}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+                className="pl-input"
               />
             </Field>
           </div>
@@ -1118,7 +1133,8 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
               rows="3"
               value={form.description}
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-              className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 outline-none focus:border-blue-600"
+              className="pl-input"
+              style={{ resize: 'none' }}
             />
           </Field>
 
@@ -1126,7 +1142,7 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
             <select
               value={form.contestId}
               onChange={(event) => setForm((prev) => ({ ...prev, contestId: event.target.value }))}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-blue-600"
+              className="pl-input"
             >
               <option value="">Sem vínculo específico</option>
               {contestOptions.map((contest) => (
@@ -1137,22 +1153,22 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
             </select>
           </Field>
 
-          <label className="inline-flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4 text-sm font-semibold text-gray-700">
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 12, borderRadius: 10, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '12px 16px', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={form.showOnCalendar}
               onChange={() => setForm((prev) => ({ ...prev, showOnCalendar: !prev.showOnCalendar }))}
-              className="h-4 w-4 rounded border-gray-300"
+              style={{ width: 16, height: 16 }}
             />
             Exibir este lembrete no calendário compartilhado
           </label>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
-          <button type="button" onClick={onClose} className="btn-secondary px-5 py-2.5">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, borderTop: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '16px 24px' }}>
+          <button type="button" onClick={onClose} className="pl-btn pl-btn-ghost">
             Cancelar
           </button>
-          <button type="button" onClick={onSave} className="btn-primary px-5 py-2.5">
+          <button type="button" onClick={onSave} className="pl-btn pl-btn-primary">
             Salvar lembrete
           </button>
         </div>
@@ -1163,18 +1179,18 @@ function ReminderModal({ form, setForm, onClose, onSave, contestOptions = [], ed
 
 function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDiscipline }) {
   return (
-    <div className="fixed inset-0 z-[231] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 231, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', padding: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '82vh', width: '100%', maxWidth: 720, overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', padding: '20px 24px' }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Agenda diária</p>
-            <h3 className="mt-2 text-2xl font-semibold text-slate-900">{formatDateBR(date)}</h3>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Agenda diária</p>
+            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--pl-ink)' }}>{formatDateBR(date)}</h3>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white p-2 text-gray-500">
+          <button type="button" onClick={onClose} className="pl-btn pl-btn-ghost" style={{ padding: 8 }}>
             <X size={18} />
           </button>
         </div>
-        <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto p-6">
+        <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {events.length === 0 ? (
             <EmptyState text="Nenhum compromisso encontrado nesse dia." />
           ) : (
@@ -1183,16 +1199,16 @@ function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDis
                 key={event.id}
                 type="button"
                 onClick={() => openCalendarEvent(event, onOpenContest, onOpenDiscipline)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/70 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/60"
+                style={{ width: '100%', borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16, textAlign: 'left', cursor: 'pointer' }}
               >
-                <div className="flex flex-wrap items-center gap-2">
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
                   <TagPill label={formatCalendarTypeLabel(event.tipo)} color={event.cor} soft />
-                  <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                  <span className="pl-tag" style={{ textTransform: 'uppercase', letterSpacing: '0.16em', fontSize: 10 }}>
                     {event.hora}
                   </span>
                 </div>
-                <p className="mt-3 text-base font-semibold text-slate-900">{event.titulo}</p>
-                {event.detail ? <p className="mt-1 text-sm font-medium text-gray-500">{event.detail}</p> : null}
+                <p style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>{event.titulo}</p>
+                {event.detail ? <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{event.detail}</p> : null}
               </button>
             ))
           )}
@@ -1204,12 +1220,12 @@ function DailyAgendaModal({ date, events = [], onClose, onOpenContest, onOpenDis
 
 function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateReminder, onOpenDailyAgenda }) {
   return (
-    <div className="flex h-full flex-col bg-gray-50">
-      <div className="grid grid-cols-7 border-b border-gray-200 bg-white shadow-sm">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--pl-bg-soft)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
         {WEEKDAY_LABELS.map((label) => (
           <div
             key={label}
-            className="border-r border-gray-100 p-2 text-center text-[10px] font-semibold uppercase tracking-widest text-gray-500 last:border-r-0"
+            style={{ borderRight: '1px solid var(--pl-rule)', padding: 8, textAlign: 'center', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-3)' }}
           >
             {label}
           </div>
@@ -1217,8 +1233,7 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
       </div>
 
       <div
-        className="grid flex-1 grid-cols-7 gap-[1px] bg-gray-200"
-        style={{ gridTemplateRows: `repeat(${Math.ceil(currentMonthGrid.length / 7)}, minmax(0, 1fr))` }}
+        style={{ display: 'grid', flex: 1, gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, background: 'var(--pl-rule-2)', gridTemplateRows: `repeat(${Math.ceil(currentMonthGrid.length / 7)}, minmax(0, 1fr))` }}
       >
         {currentMonthGrid.map((day, index) => {
           const isValid = day !== null;
@@ -1230,24 +1245,34 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
           return (
             <div
               key={`${dateKey || 'blank'}-${index}`}
-              className={`group flex min-h-0 flex-col overflow-hidden bg-white p-[3px] transition-colors ${isValid ? 'hover:bg-blue-50/30' : 'bg-gray-50/60'}`}
+              className="group"
+              style={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', background: isValid ? 'var(--pl-surface)' : 'var(--pl-bg-soft)', padding: 3 }}
             >
               {isValid ? (
                 <>
-                  <div className="mb-1 flex items-start justify-between gap-1">
+                  <div style={{ marginBottom: 4, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
                     <span
-                      className={`flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-semibold ${
-                        isToday ? 'bg-blue-700 text-white shadow-md' : 'text-gray-600'
-                      }`}
+                      style={{
+                        display: 'flex',
+                        width: 20,
+                        height: 20,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        background: isToday ? 'var(--pl-accent)' : 'transparent',
+                        color: isToday ? '#fff' : 'var(--pl-ink-2)',
+                      }}
                     >
                       {day}
                     </span>
-                    <div className="flex items-center gap-1">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       {dayEvents.length > 0 ? (
                         <button
                           type="button"
                           onClick={() => onOpenDailyAgenda?.(dateKey)}
-                          className="flex h-4.5 w-4.5 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 opacity-0 transition group-hover:opacity-100 hover:text-blue-700"
+                          className="cal-day-action-btn"
                           title="Abrir agenda do dia"
                         >
                           <Eye size={10} />
@@ -1256,7 +1281,7 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
                       <button
                         type="button"
                         onClick={() => onCreateReminder?.(dateKey)}
-                        className="flex h-4.5 w-4.5 items-center justify-center rounded-md border border-blue-100 bg-blue-50 text-blue-700 opacity-0 transition group-hover:opacity-100 hover:bg-blue-100"
+                        className="cal-day-action-btn cal-day-action-btn--add"
                         title="Adicionar lembrete ou evento"
                       >
                         <Plus size={11} />
@@ -1264,9 +1289,9 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
                     </div>
                   </div>
 
-                  <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, gap: 4, overflow: 'hidden' }}>
                     {dayEvents.length > 0 ? (
-                      <div className="rounded-md border border-blue-100 bg-blue-50/70 px-1 py-1 text-center text-[8px] font-semibold uppercase tracking-[0.16em] text-blue-700">
+                      <div style={{ borderRadius: 5, border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '3px 4px', textAlign: 'center', fontSize: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-accent)' }}>
                         {dayEvents.length} atividade{dayEvents.length > 1 ? 's' : ''}
                       </div>
                     ) : null}
@@ -1283,28 +1308,37 @@ function MonthCalendarView({ currentDate, currentMonthGrid, events, onCreateRemi
 
 function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline, onCreateReminder, onOpenDailyAgenda }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-gray-50">
-      <div className="grid grid-cols-7 border-b border-gray-200 bg-white shadow-sm">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--pl-bg-soft)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}>
         {currentWeek.map((date) => {
           const dateKey = toDateKey(date);
           const isToday = dateKey === toDateKey(new Date());
           return (
-            <div key={dateKey} className="group border-r border-gray-100 p-2 text-center last:border-r-0">
-              <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+            <div key={dateKey} className="group" style={{ borderRight: '1px solid var(--pl-rule)', padding: 8, textAlign: 'center' }}>
+              <div style={{ marginBottom: 4, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-3)' }}>
                 {WEEKDAY_LABELS[date.getDay()]}
               </div>
-              <div className="flex items-center justify-center gap-2">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold ${
-                    isToday ? 'bg-blue-700 text-white shadow-md' : 'text-gray-800'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    width: 32,
+                    height: 32,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    fontSize: 17,
+                    fontWeight: 600,
+                    background: isToday ? 'var(--pl-accent)' : 'transparent',
+                    color: isToday ? '#fff' : 'var(--pl-ink)',
+                  }}
                 >
                   {date.getDate()}
                 </div>
                 <button
                   type="button"
                   onClick={() => onCreateReminder?.(dateKey)}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-blue-100 bg-blue-50 text-blue-700 opacity-0 transition hover:bg-blue-100 group-hover:opacity-100"
+                  className="cal-day-action-btn cal-day-action-btn--add"
                   title="Adicionar lembrete ou evento"
                 >
                   <Plus size={13} />
@@ -1315,19 +1349,19 @@ function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline
         })}
       </div>
 
-      <div className="grid flex-1 grid-cols-7 gap-[1px] bg-gray-200">
+      <div style={{ display: 'grid', flex: 1, gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, background: 'var(--pl-rule-2)' }}>
         {currentWeek.map((date) => {
           const dateKey = toDateKey(date);
           const dayEvents = events.filter((event) => event.data === dateKey);
 
           return (
-            <div key={dateKey} className="group flex flex-col bg-white p-2 transition-colors hover:bg-blue-50/20">
-              <div className="mb-2 flex justify-end gap-1">
+            <div key={dateKey} className="group" style={{ display: 'flex', flexDirection: 'column', background: 'var(--pl-surface)', padding: 8 }}>
+              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
                 {dayEvents.length > 0 ? (
                   <button
                     type="button"
                     onClick={() => onOpenDailyAgenda?.(dateKey)}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 opacity-0 transition group-hover:opacity-100 hover:text-blue-700"
+                    className="cal-day-action-btn"
                     title="Abrir agenda do dia"
                   >
                     <Eye size={13} />
@@ -1336,30 +1370,28 @@ function WeekCalendarView({ currentWeek, events, onOpenContest, onOpenDiscipline
                 <button
                   type="button"
                   onClick={() => onCreateReminder?.(dateKey)}
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-blue-100 bg-blue-50 text-blue-700 opacity-0 transition group-hover:opacity-100 hover:bg-blue-100"
+                  className="cal-day-action-btn cal-day-action-btn--add"
                   title="Adicionar lembrete ou evento"
                 >
                   <Plus size={13} />
                 </button>
               </div>
-              <div className="custom-scrollbar flex-1 space-y-2 overflow-y-auto">
+              <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {dayEvents.map((event) => (
                   <button
                     key={event.id}
                     type="button"
                     onClick={() => openCalendarEvent(event, onOpenContest, onOpenDiscipline)}
-                    className="w-full rounded-xl border border-gray-100 border-l-4 bg-white p-2.5 text-left shadow-sm transition-all hover:shadow-md"
-                    style={{ borderLeftColor: event.cor }}
+                    style={{ width: '100%', borderRadius: 10, border: '1px solid var(--pl-rule)', borderLeft: `4px solid ${event.cor}`, background: 'var(--pl-surface)', padding: 10, textAlign: 'left', boxShadow: 'var(--pl-sh-low)', cursor: 'pointer' }}
                   >
-                    <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold text-gray-500">
+                    <div style={{ marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
                       <Clock size={10} />
                       {event.hora}
                     </div>
-                    <div className="text-xs font-semibold leading-snug text-gray-800">{event.titulo}</div>
-                    <div className="mt-2 flex flex-wrap gap-1">
+                    <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, color: 'var(--pl-ink)' }}>{event.titulo}</div>
+                    <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       <span
-                        className="rounded border border-white/40 px-1.5 py-0.5 text-[8px] font-semibold uppercase text-blue-950"
-                        style={{ backgroundColor: event.cor }}
+                        style={{ borderRadius: 4, border: '1px solid rgba(255,255,255,0.4)', padding: '1px 6px', fontSize: 8, fontWeight: 600, textTransform: 'uppercase', color: 'var(--pl-ink)', backgroundColor: event.cor }}
                       >
                         {formatCalendarTypeLabel(event.tipo)}
                       </span>
@@ -1391,11 +1423,18 @@ function FilterPill({ active, onClick, children }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all ${
-        active
-          ? 'border-blue-200 bg-blue-50 text-blue-700'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-700'
-      }`}
+      style={{
+        borderRadius: 999,
+        border: `1px solid ${active ? 'var(--pl-accent-soft)' : 'var(--pl-rule-2)'}`,
+        padding: '5px 12px',
+        fontSize: 11,
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.14em',
+        background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+        color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+        cursor: 'pointer',
+      }}
     >
       {children}
     </button>
@@ -1404,8 +1443,8 @@ function FilterPill({ active, onClick, children }) {
 
 function CalendarToggle({ label, checked, onChange }) {
   return (
-    <label className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-600">
-      <input type="checkbox" checked={checked} onChange={onChange} className="h-4 w-4 rounded border-gray-300" />
+    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '6px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)', cursor: 'pointer' }}>
+      <input type="checkbox" checked={checked} onChange={onChange} style={{ width: 14, height: 14 }} />
       {label}
     </label>
   );
@@ -1418,14 +1457,14 @@ function MiniTone({ type }) {
     status: 'Status',
   };
 
-  const toneMap = {
-    prova: 'border-blue-100 bg-blue-50 text-blue-700',
-    task: 'border-amber-100 bg-amber-50 text-amber-700',
-    status: 'border-rose-100 bg-rose-50 text-rose-700',
+  const tagClassMap = {
+    prova: 'pl-tag pl-tag-accent',
+    task: 'pl-tag pl-tag-warn',
+    status: 'pl-tag pl-tag-danger',
   };
 
   return (
-    <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${toneMap[type] || toneMap.task}`}>
+    <span className={tagClassMap[type] || 'pl-tag pl-tag-warn'} style={{ textTransform: 'uppercase', letterSpacing: '0.18em', fontSize: 10 }}>
       {labelMap[type] || 'Lembrete'}
     </span>
   );
@@ -1433,7 +1472,7 @@ function MiniTone({ type }) {
 
 function MiniDate({ date }) {
   return (
-    <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+    <span className="pl-tag" style={{ textTransform: 'uppercase', letterSpacing: '0.18em', fontSize: 10 }}>
       {formatDateBR(date)}
     </span>
   );
@@ -1491,7 +1530,7 @@ function AgendaEmptyBlock({ title }) {
 
 function EmptyState({ text, compact = false }) {
   return (
-    <div className={`rounded-xl border border-dashed border-gray-200 bg-gray-50/70 text-sm font-semibold text-gray-500 ${compact ? 'px-4 py-4' : 'px-5 py-6'}`}>
+    <div style={{ borderRadius: 10, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)', padding: compact ? '16px' : '20px' }}>
       {text}
     </div>
   );
@@ -1500,10 +1539,17 @@ function EmptyState({ text, compact = false }) {
 function TagPill({ label, color, soft = false }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]"
       style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        borderRadius: 999,
+        padding: '2px 10px',
+        fontSize: 10,
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.16em',
         backgroundColor: soft ? `${color}22` : color,
-        color: soft ? '#0f172a' : '#FFFFFF',
+        color: soft ? 'var(--pl-ink)' : '#FFFFFF',
         border: soft ? `1px solid ${color}30` : 'none',
       }}
     >
@@ -1514,8 +1560,8 @@ function TagPill({ label, color, soft = false }) {
 
 function Field({ label, children }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{label}</span>
+    <label style={{ display: 'block' }}>
+      <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>{label}</span>
       {children}
     </label>
   );

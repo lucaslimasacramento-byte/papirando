@@ -117,6 +117,10 @@ const ADMIN_SECTION = {
   ],
 };
 
+const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
+const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'esquadroes', 'conciliar', 'instagram', 'aplicativos']);
+
+// eslint-disable-next-line react-refresh/only-export-components
 export function getSidebarNavLabelSchema() {
   return [...NAV_SECTIONS_BASE, ADMIN_SECTION].flatMap((section) =>
     section.items.map((item) => ({
@@ -189,7 +193,16 @@ export default function Sidebar({
   labelOverrides = null,
 }) {
   const navSections = useMemo(
-    () => (isAdmin ? [...NAV_SECTIONS_BASE, ADMIN_SECTION] : NAV_SECTIONS_BASE),
+    () => {
+      const sections = isAdmin ? [...NAV_SECTIONS_BASE, ADMIN_SECTION] : NAV_SECTIONS_BASE;
+      if (!LAUNCH_MVP_MODE) return sections;
+      return sections
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) => !LAUNCH_HIDDEN_TABS.has(item.id)),
+        }))
+        .filter((section) => section.items.length > 0);
+    },
     [isAdmin]
   );
   const overrides =

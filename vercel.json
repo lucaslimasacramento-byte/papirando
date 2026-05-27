@@ -33,5 +33,11 @@
     { "source": "/api/redacoes/analyze", "destination": "/api/ai?route=analyze-essay" },
     { "source": "/api/redacoes/transcribe", "destination": "/api/ai?route=transcribe-essay" },
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/instagram/publish-due",
+      "schedule": "*/10 * * * *"
+    }
   ]
 }

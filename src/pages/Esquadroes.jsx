@@ -79,18 +79,18 @@ function normalizeRoleLabel(role) {
   return 'Aluno';
 }
 
-function getRolePillClass(role) {
+function getRolePillStyle(role) {
   const normalized = normalizeRoleLabel(role);
   if (normalized === 'Diretor') {
-    return 'border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800';
+    return { border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' };
   }
   if (normalized === 'Coordenador') {
-    return 'border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 text-violet-700';
+    return { border: '1px solid var(--pl-accent)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' };
   }
   if (normalized === 'Professor') {
-    return 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700';
+    return { border: '1px solid var(--pl-accent)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' };
   }
-  return 'border-slate-200 bg-slate-100 text-slate-700';
+  return { border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' };
 }
 
 const EMPTY_ADMIN_FLOW = {
@@ -922,16 +922,17 @@ export default function Esquadroes({
   if (accessibleSquads.length === 0) {
     return (
       <div className="pl-page">
-        <div className="section-card min-h-[280px] flex flex-col items-center justify-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-slate-900">
+        <div className="pl-card" style={{ minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '32px 24px' }}>
+          <div style={{ marginBottom: 16, display: 'flex', height: 56, width: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-accent-soft)', color: 'var(--pl-ink)' }}>
             <ShieldCheck size={26} />
           </div>
-          <h3 className="text-2xl font-semibold text-slate-900">Nenhum esquadrão disponível ainda.</h3>
+          <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Nenhum esquadrão disponível ainda.</h3>
           {isElite ? (
             <button
               type="button"
               onClick={() => setShowCreateSquad(true)}
-              className="mt-5 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
+              className="pl-btn pl-btn-primary"
+              style={{ marginTop: 20 }}
             >
               Criar esquadrão
             </button>
@@ -2193,7 +2194,7 @@ export default function Esquadroes({
         </div>
       ) : null}
 
-      <div className="flex w-full flex-col gap-6">
+      <div style={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 24 }}>
           {!selectedSquad ? (
             <div className="pl-esq-empty">
               <div className="icon"><Shield size={26} /></div>
@@ -2263,29 +2264,29 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'forum' && (
-                <div className="animate-in fade-in space-y-6">
-                  <section className="rounded-[2rem] border border-slate-200 bg-gradient-to-r from-blue-50/90 via-white to-indigo-50/60 p-6 shadow-sm ring-1 ring-slate-100">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  <section className="pl-card" style={{ padding: 24, background: 'var(--pl-accent-soft)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Fórum interno Papirando</p>
-                        <h3 className="mt-1 text-2xl font-semibold text-slate-900">Discussões exclusivas da turma</h3>
-                        <p className="mt-2 max-w-2xl text-sm font-medium text-slate-600">
+                        <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Fórum interno Papirando</p>
+                        <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Discussões exclusivas da turma</h3>
+                        <p style={{ maxWidth: 600, fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
                           Busca, filtros, ordenação, destaque fixado, compositor e comentários em árvore — o mesmo padrão do fórum geral, isolado ao esquadrão.
                         </p>
                       </div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="rounded-2xl border border-white/90 bg-white px-4 py-3 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Tópicos</p>
-                          <p className="text-xl font-semibold text-slate-900">{scopedForumPosts.filter((p) => !p.hidden).length}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+                        <div className="pl-card" style={{ padding: '12px 16px' }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2 }}>Tópicos</p>
+                          <p className="pl-num" style={{ fontSize: 20 }}>{scopedForumPosts.filter((p) => !p.hidden).length}</p>
                         </div>
-                        <div className="rounded-2xl border border-white/90 bg-white px-4 py-3 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Fixados</p>
-                          <p className="text-xl font-semibold text-slate-900">{scopedForumPosts.filter((p) => p.pinned).length}</p>
+                        <div className="pl-card" style={{ padding: '12px 16px' }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2 }}>Fixados</p>
+                          <p className="pl-num" style={{ fontSize: 20 }}>{scopedForumPosts.filter((p) => p.pinned).length}</p>
                         </div>
                         <button
                           type="button"
                           onClick={focusForumComposer}
-                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-950"
+                          className="pl-btn pl-btn-primary"
                         >
                           <Plus size={15} />
                           Novo tópico
@@ -2295,16 +2296,17 @@ export default function Esquadroes({
                   </section>
 
                   {forumFocusedPost ? (
-                    <section className="rounded-[2rem] border border-indigo-100 bg-white p-5 shadow-sm">
-                      <div className="mb-4 flex items-center justify-between gap-3">
+                    <section className="pl-card" style={{ padding: 20 }}>
+                      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Tópico aberto</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Thread completa com comentários</h3>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2 }}>Tópico aberto</p>
+                          <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Thread completa com comentários</h3>
                         </div>
                         <button
                           type="button"
                           onClick={() => setForumFocusedPostId('')}
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:text-sm"
+                          className="pl-btn pl-btn-ghost"
+                          style={{ fontSize: 12 }}
                         >
                           <ArrowLeft size={14} />
                           Voltar ao início do fórum
@@ -2319,18 +2321,16 @@ export default function Esquadroes({
                   ) : null}
 
                   {!forumFocusedPost ? (
-                    <section className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
-                    <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Busca e filtros</p>
-                        <h3 className="mt-1 text-xl font-semibold text-slate-900">Encontre qualquer discussão</h3>
-                      </div>
+                    <section className="pl-card" style={{ padding: 20 }}>
+                    <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <p className="pl-eyebrow">Busca e filtros</p>
+                      <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Encontre qualquer discussão</h3>
                     </div>
 
-                    <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-                      <div className="space-y-4">
-                        <div className="relative">
-                          <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1.35fr 0.65fr' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ position: 'relative' }}>
+                          <Search size={16} style={{ pointerEvents: 'none', position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-3)' }} />
                           <input
                             type="text"
                             value={forumQuery}
@@ -2339,11 +2339,12 @@ export default function Esquadroes({
                               setForumPage(1);
                             }}
                             placeholder="Buscar por dúvida, autor, matéria, resumo, aviso..."
-                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-500 focus:bg-white"
+                            className="pl-input"
+                            style={{ paddingLeft: 44, width: '100%', boxSizing: 'border-box' }}
                           />
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                           {[
                             { id: 'todos', label: 'Todos' },
                             { id: 'fixados', label: 'Fixados' },
@@ -2359,11 +2360,7 @@ export default function Esquadroes({
                                 setForumFilter(item.id);
                                 setForumPage(1);
                               }}
-                              className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition ${
-                                forumFilter === item.id
-                                  ? 'bg-slate-900 text-white'
-                                  : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                              }`}
+                              className={forumFilter === item.id ? 'pl-btn pl-btn-primary pl-btn-sm' : 'pl-btn pl-btn-ghost pl-btn-sm'}
                             >
                               {item.label}
                             </button>
@@ -2371,11 +2368,11 @@ export default function Esquadroes({
                         </div>
                       </div>
 
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+                      <div style={{ display: 'grid', gap: 12 }}>
+                        <div className="pl-card-paper" style={{ padding: 16 }}>
+                          <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
                             <Filter size={12} />
-                            Ordenar
+                            <p className="pl-eyebrow" style={{ margin: 0 }}>Ordenar</p>
                           </div>
                           <select
                             value={forumSort}
@@ -2383,7 +2380,8 @@ export default function Esquadroes({
                               setForumSort(e.target.value);
                               setForumPage(1);
                             }}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-bold text-gray-700 outline-none transition focus:border-indigo-500"
+                            className="pl-input"
+                            style={{ width: '100%' }}
                           >
                             <option value="recentes">Mais recentes</option>
                             <option value="populares">Mais úteis</option>
@@ -2392,13 +2390,13 @@ export default function Esquadroes({
                           </select>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                          <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+                        <div className="pl-card-paper" style={{ padding: 16 }}>
+                          <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
                             <Bookmark size={12} />
-                            Resultado
+                            <p className="pl-eyebrow" style={{ margin: 0 }}>Resultado</p>
                           </div>
-                          <p className="text-2xl font-semibold text-slate-900">{filteredForumPosts.length}</p>
-                          <p className="mt-1 text-sm font-medium text-gray-500">tópicos encontrados</p>
+                          <p className="pl-num" style={{ fontSize: 22, color: 'var(--pl-ink)' }}>{filteredForumPosts.length}</p>
+                          <p style={{ marginTop: 4, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-3)' }}>tópicos encontrados</p>
                         </div>
                       </div>
                     </div>
@@ -2406,13 +2404,13 @@ export default function Esquadroes({
                   ) : null}
 
                   {!forumFocusedPost ? (
-                    <section className="group relative flex flex-col gap-4 overflow-hidden rounded-[2rem] border border-indigo-100 bg-white p-6 shadow-sm">
-                    <div className="absolute right-0 top-0 h-full w-2 bg-indigo-500" />
-                    <div className="flex items-start gap-4">
+                    <section className="pl-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 16, padding: 24, overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: 3, background: 'var(--pl-accent)' }} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
                       <img
                         src={profileAvatarUrl}
                         alt="Tu"
-                        className="h-12 w-12 rounded-full border-2 border-indigo-100 shadow-sm"
+                        style={{ height: 48, width: 48, borderRadius: '50%', border: '2px solid var(--pl-rule-2)', objectFit: 'cover', flexShrink: 0 }}
                       />
                       <textarea
                         ref={forumComposerRef}
@@ -2420,15 +2418,16 @@ export default function Esquadroes({
                         value={newForumPost}
                         onChange={(e) => setNewForumPost(e.target.value)}
                         placeholder="Abra um novo tópico do esquadrão sem precisar voltar para a home."
-                        className="w-full resize-none rounded-2xl border border-transparent bg-gray-50 p-4 text-sm font-medium text-gray-700 outline-none transition-all hover:border-gray-200 hover:bg-white focus:border-indigo-500 focus:bg-white"
+                        className="pl-input"
+                        style={{ width: '100%', resize: 'none' }}
                       />
                     </div>
-                    <div className="flex items-center justify-between pl-16">
-                      <p className="text-xs font-bold text-gray-400">O tópico publicado aparece no fórum interno e permanece salvo na comunidade.</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 64 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-4)' }}>O tópico publicado aparece no fórum interno e permanece salvo na comunidade.</p>
                       <button
                         type="button"
                         onClick={handlePublishForumPost}
-                        className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-indigo-700"
+                        className="pl-btn pl-btn-primary"
                       >
                         <Send size={16} /> Publicar
                       </button>
@@ -2437,15 +2436,13 @@ export default function Esquadroes({
                   ) : null}
 
                   {!forumFocusedPost && pinnedPost ? (
-                    <section className="rounded-[2rem] border border-yellow-200 bg-[linear-gradient(180deg,#fffdf4_0%,#ffffff_100%)] p-5 shadow-sm">
-                      <div className="mb-4 flex items-center justify-between gap-3">
+                    <section className="pl-card" style={{ padding: 20, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)' }}>
+                      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-yellow-700">Fixado</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Destaque do professor</h3>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2, color: 'var(--pl-warn)' }}>Fixado</p>
+                          <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Destaque do professor</h3>
                         </div>
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-yellow-800">
-                          Prioridade
-                        </span>
+                        <span className="pl-tag pl-tag-warn">Prioridade</span>
                       </div>
                       <ForumPostFull
                         post={pinnedPost}
@@ -2457,7 +2454,7 @@ export default function Esquadroes({
                   ) : null}
 
                   {!forumFocusedPost ? (
-                    <section className="space-y-4">
+                    <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {paginatedForumPosts
                       .filter((post) => post.id !== pinnedPost?.id)
                       .map((post) => (
@@ -2471,12 +2468,12 @@ export default function Esquadroes({
                       ))}
 
                     {filteredForumPosts.length === 0 ? (
-                      <div className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center shadow-sm">
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                      <div className="pl-card" style={{ padding: 40, textAlign: 'center', border: '1px dashed var(--pl-rule-2)' }}>
+                        <div style={{ margin: '0 auto 16px', display: 'flex', height: 56, width: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' }}>
                           <Search size={22} />
                         </div>
-                        <h4 className="mt-4 text-xl font-semibold text-slate-900">Nada encontrado</h4>
-                        <p className="mt-2 text-sm font-medium text-gray-500">
+                        <h4 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Nada encontrado</h4>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0 }}>
                           Ajusta a busca ou o filtro. O fórum não sumiu, só ficou mais criterioso.
                         </p>
                       </div>
@@ -2497,9 +2494,9 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'mural' && (
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {canPinNotices ? (
-                    <div className="flex justify-end">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <ActionChip label="Novo aviso" onClick={() => openAdminFlow('notice', 'mural')} />
                     </div>
                   ) : null}
@@ -2513,51 +2510,47 @@ export default function Esquadroes({
                     return (
                       <article
                         key={notice.id}
-                        className={`overflow-hidden rounded-[2rem] border bg-white shadow-sm transition hover:shadow-md ${
-                          notice.pinned ? 'border-amber-200 ring-1 ring-amber-100' : 'border-slate-200'
-                        }`}
+                        className="pl-card"
+                        style={{ overflow: 'hidden', boxShadow: 'var(--pl-sh-low)', border: notice.pinned ? '1px solid var(--pl-warn)' : '1px solid var(--pl-rule-2)' }}
                       >
-                        <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-3">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-white">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '12px 20px' }}>
+                          <div style={{ display: 'flex', minWidth: 0, alignItems: 'center', gap: 12 }}>
+                            <div style={{ height: 40, width: 40, flexShrink: 0, overflow: 'hidden', borderRadius: '50%', border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
                               {av ? (
-                                <img src={av} alt="" className="h-full w-full object-cover" />
+                                <img src={av} alt="" style={{ height: '100%', width: '100%', objectFit: 'cover' }} />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-indigo-100 text-xs font-bold text-indigo-700">
+                                <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', background: 'var(--pl-accent-soft)', fontSize: 12, fontWeight: 700, color: 'var(--pl-accent)' }}>
                                   {String(who).charAt(0)}
                                 </div>
                               )}
                             </div>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-900">{who}</p>
-                              <p className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-                                <Clock3 size={12} className="shrink-0 text-slate-400" />
+                            <div style={{ minWidth: 0 }}>
+                              <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>{who}</p>
+                              <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
+                                <Clock3 size={12} style={{ flexShrink: 0, color: 'var(--pl-ink-4)' }} />
                                 {when || '—'}
                               </p>
                             </div>
                           </div>
-                          <div className="flex shrink-0 items-center gap-2">
+                          <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 8 }}>
                             {notice.pinned ? (
-                              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-900">
-                                Fixado
-                              </span>
+                              <span className="pl-tag pl-tag-warn">Fixado</span>
                             ) : null}
-                            <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
-                              Mural
-                            </span>
+                            <span className="pl-tag pl-tag-accent">Mural</span>
                           </div>
                         </div>
-                        <div className="p-6">
-                          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                        <div style={{ padding: 24 }}>
+                          <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>
                             <Megaphone size={14} /> Aviso à turma
                           </div>
-                          <h4 className="text-lg font-semibold text-slate-900">{notice.title}</h4>
-                          <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">{notice.text}</p>
+                          <h4 style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{notice.title}</h4>
+                          <p style={{ marginTop: 12, fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{notice.text}</p>
                           {notice.attachmentName ? (
                             <a
                               href={notice.attachmentUrl || '#'}
                               download={notice.attachmentName}
-                              className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-blue-700"
+                              className="pl-tag pl-tag-accent"
+                              style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8 }}
                             >
                               <Bookmark size={12} />
                               {notice.attachmentName}
@@ -2568,7 +2561,7 @@ export default function Esquadroes({
                     );
                   })}
                   {!displayNotices.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="pl-card" style={{ padding: 32, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', border: '1px dashed var(--pl-rule-2)' }}>
                       Nenhum aviso publicado ainda.
                     </div>
                   ) : null}
@@ -2576,72 +2569,72 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'cronograma' && (
-                <div className="space-y-4">
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Cronograma interno</p>
-                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Planejamento da turma</h3>
-                    <p className="mt-2 text-sm font-medium text-gray-600">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Cronograma interno</p>
+                    <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Planejamento da turma</h3>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
                       Aqui o cursinho concentra calendario de atividades, simulados e marcos da turma no proprio esquadrao.
                     </p>
                   </div>
-                  <div className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-5 shadow-sm ring-1 ring-indigo-100">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Visão calendário</p>
-                      <span className="text-xs font-semibold text-slate-500">{cronogramaCards.length} evento(s)</span>
+                  <div className="pl-card" style={{ padding: 20, background: 'var(--pl-accent-soft)' }}>
+                    <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <p className="pl-eyebrow">Visão calendário</p>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{cronogramaCards.length} evento(s)</span>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                       {cronogramaCards.slice(0, 6).map((item) => (
                         <button
                           key={`calendar-${item.id}`}
                           type="button"
                           onClick={() => openCronogramaNavItem(item)}
-                          className="rounded-xl border border-indigo-100 bg-white px-3 py-3 text-left transition hover:border-indigo-200 hover:shadow-sm"
+                          className="pl-card"
+                          style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}
                         >
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">{item.label}</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-900">{item.title}</p>
-                          <p className="mt-1 text-xs font-medium text-slate-500">{item.when}</p>
+                          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{item.label}</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 4px' }}>{item.title}</p>
+                          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0 }}>{item.when}</p>
                         </button>
                       ))}
                     </div>
                   </div>
                   {cronogramaCards.length ? (
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
                       {cronogramaCards.map((item) => (
                         <button
                           key={item.id}
                           type="button"
                           onClick={() => openCronogramaNavItem(item)}
-                          className="rounded-[1.6rem] border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                          className="pl-card"
+                          style={{ padding: 20, textAlign: 'left', cursor: 'pointer' }}
                         >
-                          <div className="mb-3 flex items-center justify-between gap-2">
-                            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-700">
-                              {item.label}
-                            </span>
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{item.when}</span>
+                          <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <span className="pl-tag pl-tag-accent">{item.label}</span>
+                            <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-4)' }}>{item.when}</span>
                           </div>
-                          <h4 className="text-lg font-semibold text-slate-900">{item.title}</h4>
-                          <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">{item.details}</p>
+                          <h4 style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>{item.title}</h4>
+                          <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>{item.details}</p>
                           {item.publishedBy ? (
-                            <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
+                            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 12 }}>
                               {item.publishedByAvatar ? (
-                                <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" />
+                                <img src={item.publishedByAvatar} alt="" style={{ height: 32, width: 32, borderRadius: '50%', border: '1px solid var(--pl-rule-2)', objectFit: 'cover' }} />
                               ) : (
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600">
+                                <div style={{ display: 'flex', height: 32, width: 32, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-bg-soft)', fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
                                   {String(item.publishedBy).charAt(0)}
                                 </div>
                               )}
                               <div>
-                                <p className="text-[11px] font-semibold text-slate-700">Publicado por {item.publishedBy}</p>
-                                <p className="text-[10px] font-medium text-slate-400">{item.publishedAtLabel || ''}</p>
+                                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Publicado por {item.publishedBy}</p>
+                                <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--pl-ink-4)', margin: 0 }}>{item.publishedAtLabel || ''}</p>
                               </div>
-                              <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
+                              <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>Abrir →</span>
                             </div>
                           ) : null}
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="pl-card" style={{ padding: 32, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', border: '1px dashed var(--pl-rule-2)' }}>
                       Sem itens no cronograma ainda. Use Atividades e Simulados para preencher esta agenda.
                     </div>
                   )}
@@ -2649,9 +2642,9 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'praticas' && (
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {canPublishActivities ? (
-                    <div className="flex justify-end">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <ActionChip label="Nova atividade" onClick={() => openAdminFlow('activity', 'praticas', { status: 'Aberta' })} />
                     </div>
                   ) : null}
@@ -2670,36 +2663,33 @@ export default function Esquadroes({
                             openInternalActivity(activity);
                           }
                         }}
-                        className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
-                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-200'
-                        }`}
+                        className="pl-card"
+                        style={{ padding: 24, cursor: 'pointer', textAlign: 'left', boxShadow: 'var(--pl-sh-low)', outline: hl ? '2px solid var(--pl-accent)' : 'none', outlineOffset: 2 }}
                       >
-                        <div className="mb-4 flex items-center justify-between gap-3">
-                          <h4 className="text-lg font-semibold text-slate-900">{activity.title}</h4>
-                          <span className="rounded bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
-                            {activity.status}
-                          </span>
+                        <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{activity.title}</h4>
+                          <span className="pl-tag pl-tag-success">{activity.status}</span>
                         </div>
-                        <p className="text-sm font-medium leading-relaxed text-slate-600">{activity.helper}</p>
+                        <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>{activity.helper}</p>
                         {activity.dueDate || activity.dueTime ? (
-                          <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                          <p style={{ marginTop: 12, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>
                             Prazo {activity.dueDate || 'a definir'} {activity.dueTime ? `• ${activity.dueTime}` : ''}
                           </p>
                         ) : null}
                         {activity.publishedBy ? (
-                          <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-4">
+                          <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 16 }}>
                             {activity.publishedByAvatar ? (
-                              <img src={activity.publishedByAvatar} alt="" className="h-9 w-9 rounded-full border border-slate-200 object-cover" />
+                              <img src={activity.publishedByAvatar} alt="" style={{ height: 36, width: 36, borderRadius: '50%', border: '1px solid var(--pl-rule-2)', objectFit: 'cover' }} />
                             ) : (
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                              <div style={{ display: 'flex', height: 36, width: 36, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-bg-soft)', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
                                 {String(activity.publishedBy).charAt(0)}
                               </div>
                             )}
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-semibold text-slate-700">Lançado por {activity.publishedBy}</p>
-                              <p className="text-[11px] font-medium text-slate-400">{activity.publishedAtLabel || ''}</p>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Lançado por {activity.publishedBy}</p>
+                              <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-4)', margin: 0 }}>{activity.publishedAtLabel || ''}</p>
                             </div>
-                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
+                            <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>
                               {activity.questionPackId ? 'Ir à lista →' : 'Detalhes →'}
                             </span>
                           </div>
@@ -2708,7 +2698,8 @@ export default function Esquadroes({
                           <a
                             href={activity.attachmentUrl || '#'}
                             download={activity.attachmentName}
-                            className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-blue-700"
+                            className="pl-tag pl-tag-accent"
+                            style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8 }}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Bookmark size={12} />
@@ -2719,7 +2710,7 @@ export default function Esquadroes({
                     );
                   })}
                   {!displayActivities.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="pl-card" style={{ padding: 32, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', border: '1px dashed var(--pl-rule-2)' }}>
                       Sem atividades no momento.
                     </div>
                   ) : null}
@@ -2727,15 +2718,13 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'praticas' && (
-                <div className="space-y-4">
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <h4 className="text-lg font-semibold text-slate-900">Listas com maior engajamento</h4>
-                      <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-700">
-                        {questionPosts.length} posts
-                      </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                      <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Listas com maior engajamento</h4>
+                      <span className="pl-tag pl-tag-accent">{questionPosts.length} posts</span>
                     </div>
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, 1fr)' }}>
                       {questionPosts.map((item) => {
                         const hl = squadNavTarget.type === 'questao' && squadNavTarget.id === item.id;
                         return (
@@ -2747,30 +2736,29 @@ export default function Esquadroes({
                               setActiveSection('praticas');
                               setSquadNavTarget({ type: 'questao', id: item.id });
                             }}
-                            className={`rounded-xl border bg-slate-50 p-4 text-left transition hover:border-indigo-200 hover:bg-white hover:shadow-sm ${
-                              hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-100'
-                            }`}
+                            className="pl-card-paper"
+                            style={{ padding: 16, textAlign: 'left', cursor: 'pointer', outline: hl ? '2px solid var(--pl-accent)' : 'none', outlineOffset: 2 }}
                           >
-                            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">{item.tag}</p>
-                            <h5 className="mt-1 text-sm font-semibold text-slate-900">{item.title}</h5>
-                            <p className="mt-2 text-xs font-medium text-slate-500">{item.meta}</p>
+                            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{item.tag}</p>
+                            <h5 style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>{item.title}</h5>
+                            <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0 }}>{item.meta}</p>
                             {item.publishedBy ? (
-                              <div className="mt-3 flex items-center gap-2 border-t border-slate-200/80 pt-3">
+                              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 12 }}>
                                 {item.publishedByAvatar ? (
-                                  <img src={item.publishedByAvatar} alt="" className="h-8 w-8 rounded-full border border-slate-200 object-cover" />
+                                  <img src={item.publishedByAvatar} alt="" style={{ height: 32, width: 32, borderRadius: '50%', border: '1px solid var(--pl-rule-2)', objectFit: 'cover' }} />
                                 ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-slate-600">
+                                  <div style={{ display: 'flex', height: 32, width: 32, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-surface)', fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
                                     {String(item.publishedBy).charAt(0)}
                                   </div>
                                 )}
                                 <div>
-                                  <p className="text-[11px] font-semibold text-slate-700">Lista de {item.publishedBy}</p>
-                                  <p className="text-[10px] font-medium text-slate-400">
+                                  <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Lista de {item.publishedBy}</p>
+                                  <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--pl-ink-4)', margin: 0 }}>
                                     {item.publishedAtLabel || ''}
                                     {item.questionsCount ? ` · ${item.questionsCount} questões` : ''}
                                   </p>
                                 </div>
-                                <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Abrir →</span>
+                                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>Abrir →</span>
                               </div>
                             ) : null}
                           </button>
@@ -2782,51 +2770,50 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'simulados' && (
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {canPublishSimulados ? (
-                    <div className="flex justify-end">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <ActionChip label="Novo simulado" onClick={() => openAdminFlow('simulado', 'simulados')} />
                     </div>
                   ) : null}
                   {selectedSimulado ? (
-                    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <section className="pl-card" style={{ padding: 24 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Simulado selecionado</p>
-                          <h4 className="mt-1 text-xl font-semibold text-slate-900">{selectedSimulado.title}</h4>
-                          <p className="mt-2 text-sm font-medium text-slate-600">
+                          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Simulado selecionado</p>
+                          <h4 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>{selectedSimulado.title}</h4>
+                          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
                             {selectedSimulado.helper || 'Aplicação interna com resultado enviado ao professor responsável.'}
                           </p>
                         </div>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700">
-                          {simuladoAttempt ? 'Tentativa concluída' : '1 tentativa por aluno'}
-                        </span>
+                        <span className="pl-tag">{simuladoAttempt ? 'Tentativa concluída' : '1 tentativa por aluno'}</span>
                       </div>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Aluno</p>
+                      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                        <div className="pl-card-paper" style={{ padding: 16 }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Aluno</p>
                           {simuladoAttempt ? (
                             <>
-                              <p className="mt-1 text-lg font-semibold text-slate-900">Nota: {String(simuladoAttempt.score).replace('.', ',')}</p>
-                              <p className="mt-1 text-xs font-medium text-slate-500">Resultado enviado automaticamente para o professor.</p>
+                              <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 4px' }}>Nota: {String(simuladoAttempt.score).replace('.', ',')}</p>
+                              <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0 }}>Resultado enviado automaticamente para o professor.</p>
                             </>
                           ) : (
                             <>
-                              <p className="mt-1 text-sm font-semibold text-slate-700">Você ainda não realizou este simulado.</p>
+                              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', margin: '0 0 12px' }}>Você ainda não realizou este simulado.</p>
                               <button
                                 type="button"
                                 onClick={() => handleStartSimulado(selectedSimulado)}
                                 disabled={!canAttemptSelectedSimulado}
-                                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-950 disabled:cursor-not-allowed disabled:opacity-55"
+                                className="pl-btn pl-btn-primary"
+                                style={{ opacity: canAttemptSelectedSimulado ? 1 : 0.55, cursor: canAttemptSelectedSimulado ? 'pointer' : 'not-allowed' }}
                               >
                                 Iniciar simulado
                               </button>
                             </>
                           )}
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Gabarito · professor</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-700">
+                        <div className="pl-card-paper" style={{ padding: 16 }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Gabarito · professor</p>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', margin: '0 0 12px' }}>
                             {canReviewAsTeacher ? 'Professor pode marcar respostas corretas e comentar questão por questão.' : 'Disponível para professores e coordenação.'}
                           </p>
                           {canReviewAsTeacher ? (
@@ -2835,7 +2822,8 @@ export default function Esquadroes({
                               value={simuladoAttempt?.teacherComment || ''}
                               onChange={(e) => handleTeacherCommentOnAttempt(e.target.value)}
                               placeholder="Comentário pedagógico do professor sobre erros e pontos de atenção..."
-                              className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                              className="pl-input"
+                              style={{ width: '100%', marginTop: 8, resize: 'none' }}
                             />
                           ) : null}
                         </div>
@@ -2861,37 +2849,37 @@ export default function Esquadroes({
                             setSelectedSimuladoId(simulado.id);
                           }
                         }}
-                        className={`w-full cursor-pointer rounded-[2rem] border bg-white p-6 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-md ${
-                          hl ? 'border-indigo-300 ring-2 ring-indigo-200' : 'border-slate-200'
-                        }`}
+                        className="pl-card"
+                        style={{ padding: 24, cursor: 'pointer', textAlign: 'left', boxShadow: 'var(--pl-sh-low)', outline: hl ? '2px solid var(--pl-accent)' : 'none', outlineOffset: 2 }}
                       >
-                        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>
                           <Trophy size={14} /> Simulado programado
                         </div>
-                        <h4 className="text-lg font-semibold text-slate-900">{simulado.title}</h4>
-                        <p className="mt-2 text-sm font-semibold text-indigo-600">{simulado.dateLabel || simulado.date}</p>
-                        <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">{simulado.helper}</p>
+                        <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>{simulado.title}</h4>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-accent)', margin: '0 0 12px' }}>{simulado.dateLabel || simulado.date}</p>
+                        <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>{simulado.helper}</p>
                         {simulado.publishedBy ? (
-                          <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-4">
+                          <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 16 }}>
                             {simulado.publishedByAvatar ? (
-                              <img src={simulado.publishedByAvatar} alt="" className="h-9 w-9 rounded-full border border-slate-200 object-cover" />
+                              <img src={simulado.publishedByAvatar} alt="" style={{ height: 36, width: 36, borderRadius: '50%', border: '1px solid var(--pl-rule-2)', objectFit: 'cover' }} />
                             ) : (
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                              <div style={{ display: 'flex', height: 36, width: 36, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-bg-soft)', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
                                 {String(simulado.publishedBy).charAt(0)}
                               </div>
                             )}
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-semibold text-slate-700">Publicado por {simulado.publishedBy}</p>
-                              <p className="text-[11px] font-medium text-slate-400">{simulado.publishedAtLabel || ''}</p>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Publicado por {simulado.publishedBy}</p>
+                              <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-4)', margin: 0 }}>{simulado.publishedAtLabel || ''}</p>
                             </div>
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Ficha →</span>
+                            <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>Ficha →</span>
                           </div>
                         ) : null}
                         {simulado.attachmentName ? (
                           <a
                             href={simulado.attachmentUrl || '#'}
                             download={simulado.attachmentName}
-                            className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-blue-700"
+                            className="pl-tag pl-tag-accent"
+                            style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8 }}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Bookmark size={12} />
@@ -2902,7 +2890,7 @@ export default function Esquadroes({
                     );
                   })}
                   {!displaySimulados.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="pl-card" style={{ padding: 32, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', border: '1px dashed var(--pl-rule-2)' }}>
                       Nenhum simulado cadastrado ainda.
                     </div>
                   ) : null}
@@ -2910,23 +2898,23 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'configuracao' && (
-                <div className="space-y-6">
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Governança do esquadrão</p>
-                    <h3 className="mt-1 text-2xl font-semibold text-slate-900">Papéis, permissões e convite</h3>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Governança do esquadrão</p>
+                    <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Papéis, permissões e convite</h3>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
                       Cada papel tem escopo explícito. O dono controla selos de professor, matérias e moderação; alunos enxergam apenas o que a turma libera.
                     </p>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
                     {roleHierarchyDetail.map((item) => (
-                      <div key={item.role} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">{item.role}</p>
-                        <p className="mt-2 text-sm font-medium text-slate-700">{item.summary}</p>
-                        <ul className="mt-3 space-y-2 text-sm font-medium text-slate-600">
+                      <div key={item.role} className="pl-card" style={{ padding: 20 }}>
+                        <p className="pl-eyebrow" style={{ marginBottom: 8, color: 'var(--pl-accent)' }}>{item.role}</p>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: '0 0 12px' }}>{item.summary}</p>
+                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {item.can.map((line) => (
-                            <li key={line} className="flex gap-2">
-                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
+                            <li key={line} style={{ display: 'flex', gap: 8, fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
+                              <span style={{ marginTop: 6, height: 6, width: 6, flexShrink: 0, borderRadius: '50%', background: 'var(--pl-accent)', display: 'inline-block' }} />
                               <span>{line}</span>
                             </li>
                           ))}
@@ -2934,28 +2922,28 @@ export default function Esquadroes({
                       </div>
                     ))}
                   </div>
-                  <div className="rounded-[2rem] border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-white p-6 shadow-sm ring-1 ring-indigo-100">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="pl-card" style={{ padding: 24, background: 'var(--pl-accent-soft)', border: '1px solid var(--pl-accent-ring)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-600">Link de convite (ADM)</p>
-                        <h4 className="mt-1 text-lg font-semibold text-slate-900">Compartilhe com alunos e equipe</h4>
-                        <p className="mt-2 text-sm font-medium text-slate-600">
-                          Código atual: <span className="font-semibold text-indigo-700">{selectedSquad.inviteCode || '—'}</span>
+                        <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Link de convite (ADM)</p>
+                        <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Compartilhe com alunos e equipe</h4>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: '0 0 4px' }}>
+                          Código atual: <span style={{ fontWeight: 700, color: 'var(--pl-accent)' }}>{selectedSquad.inviteCode || '—'}</span>
                         </p>
-                        <p className="mt-1 text-xs font-medium text-slate-500">
+                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: '0 0 4px' }}>
                           Fluxo: o aluno se cadastra na plataforma, entra com este convite e acessa apenas o esquadrão autorizado.
                         </p>
-                        <p className="mt-1 break-all text-xs font-medium text-slate-500">
+                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0, wordBreak: 'break-all' }}>
                           {typeof window !== 'undefined'
                             ? `${window.location.origin}${window.location.pathname || '/'}?convite=${encodeURIComponent(selectedSquad.inviteCode || '')}`
                             : ''}
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         <button
                           type="button"
                           onClick={copySquadInviteLink}
-                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                          className="pl-btn pl-btn-primary"
                         >
                           <Copy size={16} />
                           {inviteCopied ? 'Copiado!' : 'Copiar link'}
@@ -2963,7 +2951,7 @@ export default function Esquadroes({
                         <button
                           type="button"
                           onClick={copySquadInviteLink}
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          className="pl-btn pl-btn-ghost"
                         >
                           <Link2 size={16} />
                           Convite
@@ -2971,40 +2959,37 @@ export default function Esquadroes({
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500">Estrutura acadêmica</p>
-                    <h4 className="mt-1 text-lg font-semibold text-slate-900">Funções do cursinho e turmas</h4>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
+                  <div className="pl-card" style={{ padding: 24 }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Estrutura acadêmica</p>
+                    <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Funções do cursinho e turmas</h4>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
                       O ADM define os papéis oficiais (Diretor, Coordenador, Professor e Aluno) e segmenta conteúdos por turma.
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {['Diretor', 'Coordenador', 'Professor', 'Aluno'].map((role) => (
-                        <span key={role} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                          {role}
-                        </span>
+                        <span key={role} className="pl-tag">{role}</span>
                       ))}
                     </div>
-                    <div className="mt-5">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Turmas cadastradas</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                    <div style={{ marginTop: 20 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Turmas cadastradas</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {(Array.isArray(selectedSquad?.turmas) && selectedSquad.turmas.length ? selectedSquad.turmas : ['Turma única']).map((turma) => (
-                          <span key={turma} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
-                            {turma}
-                          </span>
+                          <span key={turma} className="pl-tag pl-tag-accent">{turma}</span>
                         ))}
                       </div>
                       {canManageSquad ? (
-                        <div className="mt-3 flex gap-2">
+                        <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
                           <input
                             value={newTurmaName}
                             onChange={(e) => setNewTurmaName(e.target.value)}
                             placeholder="Nova turma (ex.: Turma Noite A)"
-                            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                            className="pl-input"
+                            style={{ flex: 1 }}
                           />
                           <button
                             type="button"
                             onClick={handleAddTurma}
-                            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-950"
+                            className="pl-btn pl-btn-primary"
                           >
                             Adicionar
                           </button>
@@ -3016,9 +3001,9 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'configuracao' && (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }}>
                   {canManageTeachers ? (
-                    <div className="flex justify-end md:col-span-2">
+                    <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
                       <ActionChip label="Adicionar professor" onClick={() => openAdminFlow('add-teacher', 'configuracao')} />
                     </div>
                   ) : null}
@@ -3026,29 +3011,29 @@ export default function Esquadroes({
                     <TeacherCard key={teacher.id} teacher={teacher} />
                   ))}
 
-                  <div className="rounded-[2rem] border border-dashed border-gray-200 bg-gray-50 p-6 text-sm font-medium leading-relaxed text-gray-600 md:col-span-2">
+                  <div className="pl-card-paper" style={{ gridColumn: '1 / -1', padding: 24, fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', border: '1px dashed var(--pl-rule-2)' }}>
                     O dono do esquadrão define aqui os professores responsáveis, as matérias da equipa e a trilha do cursinho.
                   </div>
                 </div>
               )}
 
               {activeSection === 'membros' && (
-                <div className="space-y-6">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                   <MembersHero squad={selectedSquad} canManageSquad={canManageSquad} />
 
-                  <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                      <div className="mb-5 flex items-center justify-between">
+                  <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1.1fr 0.9fr' }}>
+                    <div className="pl-card" style={{ padding: 24 }}>
+                      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Membros internos</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Pessoas do esquadrão</h3>
+                          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Membros internos</p>
+                          <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Pessoas do esquadrão</h3>
                         </div>
 
                         {canManageSquad ? (
                           <button
                             type="button"
                             onClick={() => openAdminFlow('invite-student', 'membros')}
-                            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                            className="pl-btn pl-btn-primary"
                           >
                             <UserPlus size={14} />
                             Convidar
@@ -3056,7 +3041,7 @@ export default function Esquadroes({
                         ) : null}
                       </div>
 
-                      <div className="space-y-3">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                         {adminMembers.map((member) => (
                           <MemberManagementRow
                             key={member.id}
@@ -3077,14 +3062,14 @@ export default function Esquadroes({
                       </div>
                     </div>
 
-                    <div className="space-y-6">
-                      <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-5">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Permissões visuais</p>
-                          <h3 className="mt-1 text-xl font-semibold text-slate-900">Quem pode fazer o quê</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                      <div className="pl-card" style={{ padding: 24 }}>
+                        <div style={{ marginBottom: 20 }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Permissões visuais</p>
+                          <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Quem pode fazer o quê</h3>
                         </div>
 
-                        <div className="space-y-3">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                           <PermissionItem label="Distribuir selo de professor" value={canManageSquad ? 'Ativo' : 'Restrito'} />
                           <PermissionItem label="Publicar simulados" value="Professor / Dono" />
                           <PermissionItem label="Publicar atividades" value="Professor / Dono" />
@@ -3098,14 +3083,14 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'ranking' && (
-                <div className="space-y-4">
-                  <div className="rounded-[2rem] border border-amber-100 bg-gradient-to-br from-amber-50/90 via-white to-indigo-50/40 p-6 shadow-sm ring-1 ring-amber-100/80">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-800">Como funciona a pontuação</p>
-                    <h3 className="mt-1 text-xl font-semibold text-slate-900">Regras de XP</h3>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="pl-card" style={{ padding: 24, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)' }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-warn)' }}>Como funciona a pontuação</p>
+                    <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>Regras de XP</h3>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
                       A turma acumula XP por engajamento nas listas internas, simulados e redação. Valores abaixo são exemplos para o cursinho calibrar.
                     </p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div style={{ marginTop: 16, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                       {[
                         { label: 'Questão objetiva certa (lista)', value: '+50 XP', hint: 'por item concluído na lista do esquadrão' },
                         { label: 'Questão certa em simulado interno', value: '+100 XP', hint: 'peso maior por prova completa' },
@@ -3114,10 +3099,10 @@ export default function Esquadroes({
                         { label: 'Redação nota 8', value: '+250 XP', hint: 'proporcional entre 6 e 10' },
                         { label: 'Streak semanal (7 dias)', value: '+120 XP', hint: 'bônus por constância registrada' },
                       ].map((row) => (
-                        <div key={row.label} className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-sm">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">{row.label}</p>
-                          <p className="mt-1 text-lg font-semibold text-slate-900">{row.value}</p>
-                          <p className="mt-1 text-xs font-medium text-slate-500">{row.hint}</p>
+                        <div key={row.label} className="pl-card" style={{ padding: 16 }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{row.label}</p>
+                          <p className="pl-num" style={{ fontSize: 18, marginBottom: 4 }}>{row.value}</p>
+                          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0 }}>{row.hint}</p>
                         </div>
                       ))}
                     </div>
@@ -3126,7 +3111,7 @@ export default function Esquadroes({
                     <RankingRow key={item.id} item={item} />
                   ))}
                   {!displayRanking.length ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-gray-200 bg-white p-8 text-center text-sm font-medium text-gray-500">
+                    <div className="pl-card" style={{ padding: 32, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', border: '1px dashed var(--pl-rule-2)' }}>
                       O ranking interno aparece quando a turma comeca a responder atividades e simulados.
                     </div>
                   ) : null}
@@ -3134,78 +3119,83 @@ export default function Esquadroes({
               )}
 
               {activeSection === 'admin' && canManageSquad && (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
-                  <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Dados do esquadrão</p>
-                    <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Configurações gerais</h3>
-                    <div className="mt-5 grid gap-4 md:grid-cols-2">
-                      <label className="text-sm font-semibold text-slate-700">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  <section className="pl-card" style={{ padding: 24 }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Dados do esquadrão</p>
+                    <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 20px' }}>Configurações gerais</h3>
+                    <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                      <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                         Nome
                         <input
                           value={adminEdit.name}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, name: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="pl-input"
+                          style={{ marginTop: 4, width: '100%', boxSizing: 'border-box', display: 'block' }}
                         />
                       </label>
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                         Foco
                         <input
                           value={adminEdit.focus}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, focus: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="pl-input"
+                          style={{ marginTop: 4, width: '100%', boxSizing: 'border-box', display: 'block' }}
                         />
                       </label>
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                         Código de entrada
                         <input
                           value={adminEdit.inviteCode}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, inviteCode: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="pl-input"
+                          style={{ marginTop: 4, width: '100%', boxSizing: 'border-box', display: 'block' }}
                         />
                       </label>
-                      <label className="text-sm font-semibold text-slate-700">
+                      <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                         Visibilidade
                         <select
                           value={adminEdit.visibility}
                           onChange={(e) => setAdminEdit((prev) => ({ ...prev, visibility: e.target.value }))}
-                          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                          className="pl-input"
+                          style={{ marginTop: 4, width: '100%', boxSizing: 'border-box', display: 'block' }}
                         >
                           <option value="Privado">Privado</option>
                           <option value="Público">Público</option>
                         </select>
                       </label>
                     </div>
-                    <label className="mt-4 block text-sm font-semibold text-slate-700">
+                    <label style={{ marginTop: 16, display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                       Descrição
                       <textarea
                         rows={3}
                         value={adminEdit.description}
                         onChange={(e) => setAdminEdit((prev) => ({ ...prev, description: e.target.value }))}
-                        className="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500"
+                        className="pl-input"
+                        style={{ marginTop: 4, width: '100%', boxSizing: 'border-box', display: 'block', resize: 'none' }}
                       />
                     </label>
-                    <div className="mt-4 flex justify-end">
+                    <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
                       <button
                         type="button"
                         onClick={handleSaveSquadSettings}
-                        className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                        className="pl-btn pl-btn-primary"
                       >
                         Salvar configurações
                       </button>
                     </div>
                   </section>
 
-                  <section className="rounded-[2rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] p-5 shadow-sm">
-                    <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                  <section className="pl-card" style={{ padding: 20, border: '1px solid var(--pl-accent-ring)' }}>
+                    <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Administração do esquadrão</p>
-                        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Controle central do ambiente</h3>
-                        <p className="mt-1 max-w-2xl text-sm font-medium text-gray-500">
+                        <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Administração do esquadrão</p>
+                        <h3 style={{ fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 4px' }}>Controle central do ambiente</h3>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0, maxWidth: '42rem' }}>
                           Organize pessoas, publique conteúdo e ajuste permissões sem sair do fluxo atual.
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                         <AdminMetricTone label="Pessoas" value={String(adminMembers.length)} tone="blue" />
                         <AdminMetricTone label="Professores" value={String(selectedSquad.teachers?.length || 0)} tone="gold" />
                         <AdminMetricTone label="Atividades" value={String(displayActivities.length)} tone="emerald" />
@@ -3213,7 +3203,7 @@ export default function Esquadroes({
                       </div>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4">
+                    <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(4, 1fr)' }}>
                       <AdminCommandCard
                         icon={<Users size={18} />}
                         title="Gerir membros"
@@ -3245,20 +3235,20 @@ export default function Esquadroes({
                     </div>
                   </section>
 
-                  <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
-                    <div className="space-y-6">
+                  <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1.2fr 0.8fr' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                       <AdminPanel
-                        icon={<UserPlus size={18} className="text-indigo-600" />}
+                        icon={<UserPlus size={18} style={{ color: 'var(--pl-accent)' }} />}
                         title="Pessoas do esquadrão"
                         subtitle="Visual limpo para bater o olho e entender quem é dono, professor ou membro."
                       >
-                        <div className="mb-4 flex flex-wrap gap-3">
+                        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                           <ActionChip label="Convidar aluno" onClick={() => openAdminFlow('invite-student', 'admin')} />
                           <ActionChip label="Adicionar professor" onClick={() => openAdminFlow('add-teacher', 'admin')} />
                           <ActionChip label="Gerir permissões" onClick={() => openAdminFlow('permissions', 'admin')} />
                         </div>
 
-                        <div className="space-y-3">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                           {adminMembers.map((member) => (
                             <AdminMemberRow
                               key={member.id}
@@ -3276,11 +3266,11 @@ export default function Esquadroes({
                       </AdminPanel>
 
                       <AdminPanel
-                        icon={<ClipboardList size={18} className="text-indigo-600" />}
+                        icon={<ClipboardList size={18} style={{ color: 'var(--pl-accent)' }} />}
                         title="Atalhos de publicação"
                         subtitle="As ações principais ficam visíveis e organizadas, sem parecer um monte de botão jogado."
                       >
-                        <div className="grid gap-4 md:grid-cols-2">
+                        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
                           <AdminActionCard
                             title="Publicar atividade"
                             helper="Criar lista, checklist ou tarefa com prazo."
@@ -3309,13 +3299,13 @@ export default function Esquadroes({
                       </AdminPanel>
                     </div>
 
-                    <div className="space-y-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                       <AdminPanel
-                        icon={<Shield size={18} className="text-indigo-600" />}
+                        icon={<Shield size={18} style={{ color: 'var(--pl-accent)' }} />}
                         title="Estado das permissões"
                         subtitle="Leitura rápida do que está ativo hoje dentro do esquadrão."
                       >
-                        <div className="space-y-3">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                           <PermissionItem label="Gerir professores" value={selectedSquad?.permissions?.manageTeachers === false ? 'Restrito' : 'Ativo'} />
                           <PermissionItem label="Aprovar membros" value={selectedSquad?.permissions?.approveMembers === false ? 'Restrito' : 'Ativo'} />
                           <PermissionItem label="Publicar simulados" value={selectedSquad?.permissions?.publishSimulados === false ? 'Restrito' : 'Ativo'} />
@@ -3323,15 +3313,16 @@ export default function Esquadroes({
                           <PermissionItem label="Fixar mural" value={selectedSquad?.permissions?.pinNotices === false ? 'Restrito' : 'Ativo'} />
                         </div>
 
-                        <div className="mt-4 rounded-[1.4rem] border border-dashed border-indigo-200 bg-indigo-50/60 p-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-500">Ajuste rápido</p>
-                          <p className="mt-2 text-sm font-medium leading-relaxed text-gray-600">
+                        <div className="pl-card-paper" style={{ marginTop: 16, padding: 16, border: '1px dashed var(--pl-accent-ring)' }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 8, color: 'var(--pl-accent)' }}>Ajuste rápido</p>
+                          <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>
                             Precisa trocar um membro para professor ou mexer em escopo? Abre o fluxo de permissões e resolve sem gambiarra.
                           </p>
                           <button
                             type="button"
                             onClick={() => openAdminFlow('permissions', 'admin')}
-                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+                            className="pl-btn pl-btn-primary"
+                            style={{ marginTop: 16 }}
                           >
                             Ajustar permissões
                           </button>
@@ -3339,11 +3330,11 @@ export default function Esquadroes({
                       </AdminPanel>
 
                       <AdminPanel
-                        icon={<Sparkles size={18} className="text-indigo-600" />}
+                        icon={<Sparkles size={18} style={{ color: 'var(--pl-accent)' }} />}
                         title="Resumo operacional"
                         subtitle="Panorama curto para saber se o esquadrão está redondo ou pedindo socorro."
                       >
-                        <div className="grid gap-3">
+                        <div style={{ display: 'grid', gap: 12 }}>
                           <AdminMetric label="Professores com selo" value={String(selectedSquad.teachers?.length || 0)} />
                           <AdminMetric label="Membros totais" value={String(selectedSquad.members || 0)} />
                           <AdminMetric label="Avisos publicados" value={String(displayNotices.length)} />
@@ -3352,38 +3343,40 @@ export default function Esquadroes({
                       </AdminPanel>
 
                       <AdminPanel
-                        icon={<MessageCircle size={18} className="text-indigo-600" />}
+                        icon={<MessageCircle size={18} style={{ color: 'var(--pl-accent)' }} />}
                         title="Moderação do fórum"
                         subtitle="Aba exclusiva para o ADM controlar conteúdo, fixar, ocultar e apagar posts."
                       >
-                        <div className="space-y-3">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                           {scopedForumPosts.slice(0, 10).map((post) => (
-                            <div key={post.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-slate-900">{post.title}</p>
-                                <p className="text-xs font-medium text-slate-500">
+                            <div key={post.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 8, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '12px' }}>
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{post.title}</p>
+                                <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', margin: 0 }}>
                                   {post.author} • {post.category} {post.hidden ? '• oculto' : ''}
                                 </p>
                               </div>
-                              <div className="flex flex-wrap gap-2">
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                                 <button
                                   type="button"
                                   onClick={() => handleModerateForumPost(post.id, 'pin')}
-                                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                  className="pl-btn pl-btn-ghost pl-btn-sm"
                                 >
                                   {post.pinned ? 'Desfixar' : 'Fixar'}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleModerateForumPost(post.id, 'hide')}
-                                  className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                                  className="pl-btn pl-btn-sm"
+                                  style={{ border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' }}
                                 >
                                   {post.hidden ? 'Mostrar' : 'Ocultar'}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleModerateForumPost(post.id, 'delete')}
-                                  className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                                  className="pl-btn pl-btn-sm"
+                                  style={{ border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' }}
                                 >
                                   Apagar
                                 </button>
@@ -3430,89 +3423,79 @@ export default function Esquadroes({
 }
 
 function MiniHeroStat({ label, value, accent = 'slate' }) {
-  const surface =
+  const surfaceStyle =
     accent === 'amber'
-      ? 'border-[rgba(212,175,55,0.22)] bg-[linear-gradient(165deg,rgba(255,251,235,0.07)_0%,rgba(120,90,40,0.06)_100%)]'
+      ? { border: '1px solid rgba(212,175,55,0.22)', background: 'rgba(255,251,235,0.07)', backdropFilter: 'blur(8px)' }
       : accent === 'indigo'
-        ? 'border-[rgba(129,140,248,0.18)] bg-[linear-gradient(165deg,rgba(99,102,241,0.1)_0%,rgba(15,23,42,0.35)_100%)]'
-        : 'border-white/[0.09] bg-[linear-gradient(165deg,rgba(248,250,252,0.06)_0%,rgba(15,23,42,0.28)_100%)]';
-  const labelTone =
-    accent === 'amber'
-      ? 'text-[#e8d5b0]'
-      : accent === 'indigo'
-        ? 'text-[#b4b9fc]'
-        : 'text-[#94a3b8]';
+        ? { border: '1px solid rgba(129,140,248,0.18)', background: 'rgba(99,102,241,0.10)', backdropFilter: 'blur(8px)' }
+        : { border: '1px solid rgba(255,255,255,0.09)', background: 'rgba(248,250,252,0.06)', backdropFilter: 'blur(8px)' };
+  const labelColor =
+    accent === 'amber' ? '#e8d5b0' : accent === 'indigo' ? '#b4b9fc' : '#94a3b8';
   return (
     <div
-      className={`min-w-[7.5rem] max-w-[14rem] rounded-xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_8px_24px_rgba(0,0,0,0.2)] ring-1 ring-black/20 backdrop-blur-md ${surface}`}
+      style={{ minWidth: '7.5rem', maxWidth: '14rem', borderRadius: 12, padding: '12px 16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', ...surfaceStyle }}
     >
-      <p className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${labelTone}`}>{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold leading-snug tracking-tight text-[#f4f6fa]">{value}</p>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: labelColor, margin: '0 0 4px' }}>{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.3, color: '#f4f6fa', wordBreak: 'break-words', margin: 0 }}>{value}</p>
     </div>
   );
 }
 
 function QuickStatCard({ icon, label, value }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+    <div className="pl-card-paper" style={{ padding: 16 }}>
+      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-3)' }}>
         {icon}
         {label}
       </div>
-      <p className="text-2xl font-semibold text-slate-900">{value}</p>
+      <p className="pl-num" style={{ fontSize: 22 }}>{value}</p>
     </div>
   );
 }
 
 function ForumBadge({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-100">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+    <div style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.1)', padding: '12px 16px', backdropFilter: 'blur(4px)' }}>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(199,210,254,0.9)', margin: '0 0 4px' }}>{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', margin: 0 }}>{value}</p>
     </div>
   );
 }
 
 function ForumPostFeatured({ post }) {
   return (
-    <div className="rounded-[1.6rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#eef4ff_100%)] p-5 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-12 w-12 rounded-full object-cover" />
-          <div className="min-w-0">
-            <h5 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
-              <span className="truncate">{post.author}</span>
-              {post.badge ? <Shield size={12} className="shrink-0 text-blue-500" fill="currentColor" /> : null}
+    <div className="pl-card" style={{ padding: 20, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)' }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', minWidth: 0, alignItems: 'center', gap: 12 }}>
+          <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} style={{ height: 48, width: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
+            <h5 style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.author}</span>
+              {post.badge ? <Shield size={12} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} fill="currentColor" /> : null}
             </h5>
-            <p className="text-[10px] font-bold text-gray-400">
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)', margin: 0 }}>
               {post.createdAt} • {post.section}
             </p>
           </div>
         </div>
 
-        <span className="rounded-full bg-yellow-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-yellow-700">
-          Fixado
-        </span>
+        <span className="pl-tag pl-tag-warn">Fixado</span>
       </div>
 
-      <div className="mb-3 flex flex-wrap gap-2">
-        <span className="rounded bg-amber-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700">
-          {post.category}
-        </span>
-        <span className="rounded bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
-          {post.subject}
-        </span>
+      <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <span className="pl-tag pl-tag-warn">{post.category}</span>
+        <span className="pl-tag">{post.subject}</span>
       </div>
 
-      <h4 className="text-xl font-semibold text-slate-900">{post.title}</h4>
-      <p className="mt-3 text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
+      <h4 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{post.title}</h4>
+      <p style={{ marginTop: 12, fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: '12px 0 0' }}>{post.message}</p>
 
-      <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-indigo-100 pt-4">
-        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+      <div style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20, borderTop: '1px solid var(--pl-rule)', paddingTop: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
           <ThumbsUp size={14} />
           {post.helpful}
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
           <MessageCircle size={14} />
           {post.replies} respostas
         </div>
@@ -3523,19 +3506,17 @@ function ForumPostFeatured({ post }) {
 
 function ForumPostCompact({ post }) {
   return (
-    <div className="w-full rounded-[1.4rem] border border-gray-100 bg-gray-50 p-4 text-left transition hover:bg-white hover:shadow-sm">
-      <div className="flex items-start gap-3">
-        <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-10 w-10 rounded-full object-cover" />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-gray-800">{post.author}</p>
-            <span className="rounded bg-gray-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
-              {post.subject}
-            </span>
+    <div className="pl-card-paper" style={{ width: '100%', padding: 16, textAlign: 'left' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} style={{ height: 40, width: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{post.author}</p>
+            <span className="pl-tag">{post.subject}</span>
           </div>
-          <h5 className="mt-2 truncate text-base font-semibold text-slate-900">{post.title}</h5>
-          <p className="mt-1 line-clamp-2 text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
-          <div className="mt-3 flex items-center gap-4 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+          <h5 style={{ marginTop: 8, fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '8px 0 4px' }}>{post.title}</h5>
+          <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.message}</p>
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 16, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-4)' }}>
             <span>{post.createdAt}</span>
             <span>{post.replies} respostas</span>
           </div>
@@ -3546,135 +3527,122 @@ function ForumPostCompact({ post }) {
 }
 
 function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
+  const getCategoryTag = (category) => {
+    const cat = String(category).toLowerCase();
+    if (cat.includes('dúvida') || cat.includes('duvida')) return 'pl-tag pl-tag-danger';
+    if (cat === 'aviso') return 'pl-tag pl-tag-warn';
+    if (cat === 'resumo') return 'pl-tag pl-tag-success';
+    return 'pl-tag';
+  };
+
   return (
-    <article className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-11 w-11 rounded-full object-cover" />
-          <div className="min-w-0">
-            <h5 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
-              <span className="truncate">{post.author}</span>
-              {post.badge ? <Shield size={12} className="text-blue-500" fill="currentColor" /> : null}
+    <article className="pl-card" style={{ padding: 24, boxShadow: 'var(--pl-sh-low)' }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', minWidth: 0, alignItems: 'center', gap: 12 }}>
+          <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} style={{ height: 44, width: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
+            <h5 style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.author}</span>
+              {post.badge ? <Shield size={12} style={{ color: 'var(--pl-accent)' }} fill="currentColor" /> : null}
             </h5>
-            <p className="text-[10px] font-bold text-gray-400">
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)', margin: 0 }}>
               {post.createdAt} • {post.section}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {post.pinned ? (
-            <span className="rounded-full bg-yellow-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-yellow-700">
-              Fixado
-            </span>
-          ) : null}
-          {post.solved ? (
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-700">
-              Resolvido
-            </span>
-          ) : null}
-          <button className="text-gray-400 hover:text-gray-600">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {post.pinned ? <span className="pl-tag pl-tag-warn">Fixado</span> : null}
+          {post.solved ? <span className="pl-tag pl-tag-success">Resolvido</span> : null}
+          <button style={{ color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             <MoreHorizontal size={18} />
           </button>
         </div>
       </div>
 
-      <div className="mb-4">
-        <div className="mb-3 flex flex-wrap gap-2">
-          <span
-            className={`rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-widest ${
-              String(post.category).toLowerCase().includes('dúvida') || String(post.category).toLowerCase().includes('duvida')
-                ? 'bg-rose-50 text-rose-600'
-                : post.category === 'Aviso'
-                  ? 'bg-amber-50 text-amber-700'
-                  : post.category === 'Resumo'
-                    ? 'bg-emerald-50 text-emerald-600'
-                    : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {post.category}
-          </span>
-          <span className="rounded bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
-            {post.subject}
-          </span>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <span className={getCategoryTag(post.category)}>{post.category}</span>
+          <span className="pl-tag">{post.subject}</span>
         </div>
 
-        <h4 className="mb-2 text-xl font-semibold text-slate-900">{post.title}</h4>
-        <p className="text-sm font-medium leading-relaxed text-gray-600">{post.message}</p>
+        <h4 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', margin: '0 0 8px' }}>{post.title}</h4>
+        <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>{post.message}</p>
       </div>
 
-      <div className="mb-5 flex flex-wrap items-center gap-5 border-y border-gray-100 py-4">
-        <button className="group flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-blue-600">
-          <ThumbsUp size={16} className="transition-transform group-hover:-translate-y-1" /> {post.helpful}
+      <div style={{ marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20, borderTop: '1px solid var(--pl-rule)', borderBottom: '1px solid var(--pl-rule)', padding: '16px 0' }}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <ThumbsUp size={16} /> {post.helpful}
         </button>
-        <button className="flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-indigo-600">
+        <button style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <MessageCircle size={16} /> {post.replies} respostas
         </button>
         <button
           type="button"
           onClick={onOpenThread}
-          className="flex items-center gap-2 text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-800"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           Abrir tópico
         </button>
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
           <Eye size={16} /> {post.views} visualizações
         </div>
-        <button className="ml-auto flex items-center gap-2 text-xs font-bold text-gray-500 transition-colors hover:text-gray-800">
+        <button style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <Share2 size={16} /> Partilhar
         </button>
       </div>
 
-      <div className="space-y-4">
-        <div className="rounded-[1.4rem] border border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4">
-          <div className="mb-3 flex items-center gap-3">
-            <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} className="h-9 w-9 rounded-full object-cover" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-800">{post.author}</p>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Responder no tópico</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="pl-card-paper" style={{ padding: 16, border: '1px solid var(--pl-accent-ring)' }}>
+          <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} style={{ height: 36, width: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{post.author}</p>
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-4)', margin: 0 }}>Responder no tópico</p>
             </div>
           </div>
 
           <textarea
             rows="3"
             placeholder="Escreve uma resposta, complementa a explicação ou salva um colega do desespero..."
-            className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-500"
+            className="pl-input"
+            style={{ width: '100%', resize: 'none', boxSizing: 'border-box' }}
           />
 
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex gap-2">
-              <button className="rounded-lg p-2 text-gray-400 transition hover:text-indigo-600">
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Camera size={16} />
               </button>
-              <button className="rounded-lg p-2 text-gray-400 transition hover:text-indigo-600">
+              <button style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Target size={16} />
               </button>
             </div>
 
-            <button className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+            <button className="pl-btn pl-btn-primary">
               <Send size={14} />
               Responder
             </button>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Comentários</p>
-            <h5 className="mt-1 text-lg font-semibold text-slate-900">{post.comments?.length || 0} respostas principais</h5>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Comentários</p>
+            <h5 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{post.comments?.length || 0} respostas principais</h5>
           </div>
 
           <button
             type="button"
             onClick={onToggleReplies}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            className="pl-btn pl-btn-ghost"
           >
             {expanded ? 'Ocultar respostas' : 'Ver comentários'}
           </button>
         </div>
 
         {expanded ? (
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {(post.comments || []).map((comment) => (
               <CommentThread key={comment.id} comment={comment} />
             ))}
@@ -3689,38 +3657,38 @@ function CommentThread({ comment, level = 0 }) {
   const [showChildren, setShowChildren] = useState(true);
 
   return (
-    <div className={`${level > 0 ? 'ml-6 border-l border-indigo-100 pl-4' : ''}`}>
-      <div className="rounded-[1.4rem] border border-gray-100 bg-gray-50 p-4">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <img src={comment.avatar || 'https://i.pravatar.cc/150?img=1'} alt={comment.author} className="h-9 w-9 rounded-full object-cover" />
-            <div className="min-w-0">
-              <h6 className="flex items-center gap-1 text-sm font-semibold text-gray-800">
-                <span className="truncate">{comment.author}</span>
-                {comment.badge ? <Shield size={11} className="text-blue-500" fill="currentColor" /> : null}
+    <div style={level > 0 ? { marginLeft: 24, borderLeft: '1px solid var(--pl-accent-ring)', paddingLeft: 16 } : {}}>
+      <div className="pl-card-paper" style={{ padding: 16 }}>
+        <div style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', minWidth: 0, alignItems: 'center', gap: 12 }}>
+            <img src={comment.avatar || 'https://i.pravatar.cc/150?img=1'} alt={comment.author} style={{ height: 36, width: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <h6 style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{comment.author}</span>
+                {comment.badge ? <Shield size={11} style={{ color: 'var(--pl-accent)' }} fill="currentColor" /> : null}
               </h6>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{comment.createdAt}</p>
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-4)', margin: 0 }}>{comment.createdAt}</p>
             </div>
           </div>
 
-          <button className="text-gray-400 transition hover:text-gray-600">
+          <button style={{ color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             <MoreHorizontal size={16} />
           </button>
         </div>
 
-        <p className="text-sm font-medium leading-relaxed text-gray-600">{comment.content}</p>
+        <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>{comment.content}</p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-gray-500">
-          <button className="inline-flex items-center gap-2 transition hover:text-blue-600">
+        <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
+          <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
             <ThumbsUp size={14} />
             {comment.likes || 0}
           </button>
-          <button className="transition hover:text-indigo-600">Responder</button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>Responder</button>
           {(comment.children || []).length ? (
             <button
               type="button"
               onClick={() => setShowChildren((prev) => !prev)}
-              className="transition hover:text-indigo-600"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-accent)' }}
             >
               {showChildren ? 'Ocultar aninhadas' : `Ver aninhadas (${comment.children.length})`}
             </button>
@@ -3729,7 +3697,7 @@ function CommentThread({ comment, level = 0 }) {
       </div>
 
       {showChildren && (comment.children || []).length ? (
-        <div className="mt-3 space-y-3">
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {comment.children.map((child) => (
             <CommentThread key={child.id} comment={child} level={level + 1} />
           ))}
@@ -3741,43 +3709,38 @@ function CommentThread({ comment, level = 0 }) {
 
 function TeacherCard({ teacher }) {
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm transition-all hover:shadow-lg">
-      <div className="relative h-20 bg-gradient-to-r from-slate-100 via-white to-blue-50">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_34%)]" />
-        <div className="absolute -bottom-10 left-6 h-20 w-20 rounded-2xl border-4 border-white bg-white p-1 shadow-md">
+    <div className="pl-card" style={{ overflow: 'hidden', boxShadow: 'var(--pl-sh-low)' }}>
+      <div style={{ position: 'relative', height: 80, background: 'linear-gradient(to right, var(--pl-bg-soft), var(--pl-surface), var(--pl-accent-soft))' }}>
+        <div style={{ position: 'absolute', bottom: -40, left: 24, height: 80, width: 80, borderRadius: 16, border: '4px solid var(--pl-surface)', background: 'var(--pl-surface)', padding: 4, boxShadow: 'var(--pl-sh-mid)' }}>
           {teacher.avatar ? (
-            <img src={teacher.avatar} alt={teacher.name} className="h-full w-full rounded-xl object-cover" />
+            <img src={teacher.avatar} alt={teacher.name} style={{ height: '100%', width: '100%', borderRadius: 12, objectFit: 'cover' }} />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-xl bg-blue-100 font-semibold text-blue-700">
+            <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: 'var(--pl-accent-soft)', fontWeight: 600, color: 'var(--pl-accent)' }}>
               {String(teacher.name || 'P').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
       </div>
 
-      <div className="p-6 pt-14">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="break-words text-xl font-semibold leading-tight text-slate-900">{teacher.name}</h3>
-            <p className="mt-1 break-words text-sm font-medium leading-relaxed text-gray-500">{teacher.subject}</p>
+      <div style={{ padding: 24, paddingTop: 56 }}>
+        <div style={{ marginBottom: 16, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.2, color: 'var(--pl-ink)', margin: '0 0 4px', wordBreak: 'break-words' }}>{teacher.name}</h3>
+            <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)', margin: 0, wordBreak: 'break-words' }}>{teacher.subject}</p>
           </div>
-          <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-blue-600">
-            Selo Papirando
-          </span>
+          <span className="pl-tag pl-tag-accent" style={{ flexShrink: 0 }}>Selo Papirando</span>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-100 bg-slate-50 px-4 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Selo · matéria</p>
-            <p className="mt-2 break-words text-sm font-semibold leading-snug text-slate-700">{teacher.subject}</p>
-            {teacher.bio ? <p className="mt-2 text-xs font-medium leading-relaxed text-slate-600">{teacher.bio}</p> : null}
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+          <div className="pl-card-paper" style={{ padding: 16 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Selo · matéria</p>
+            <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.3, color: 'var(--pl-ink-2)', margin: '0 0 8px', wordBreak: 'break-words' }}>{teacher.subject}</p>
+            {teacher.bio ? <p style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)', margin: 0 }}>{teacher.bio}</p> : null}
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-slate-50 px-4 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Ambiente</p>
-            <span className="mt-2 inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700">
-              Esquadrão Papirando
-            </span>
+          <div className="pl-card-paper" style={{ padding: 16 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Ambiente</p>
+            <span className="pl-tag pl-tag-warn">Esquadrão Papirando</span>
           </div>
         </div>
       </div>
@@ -3787,19 +3750,19 @@ function TeacherCard({ teacher }) {
 
 function TeacherMiniCard({ teacher }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 transition-colors hover:bg-white">
-      <div className="h-12 w-12 rounded-full bg-white p-1 shadow-sm">
+    <div className="pl-card-paper" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 12 }}>
+      <div style={{ height: 48, width: 48, borderRadius: '50%', background: 'var(--pl-surface)', padding: 4, boxShadow: 'var(--pl-sh-low)', flexShrink: 0 }}>
         {teacher.avatar ? (
-          <img src={teacher.avatar} alt={teacher.name} className="h-full w-full rounded-full object-cover" />
+          <img src={teacher.avatar} alt={teacher.name} style={{ height: '100%', width: '100%', borderRadius: '50%', objectFit: 'cover' }} />
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+          <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-accent-soft)', fontSize: 14, fontWeight: 600, color: 'var(--pl-accent)' }}>
             {String(teacher.name || 'P').charAt(0).toUpperCase()}
           </div>
         )}
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-gray-800">{teacher.name}</p>
-        <p className="break-words text-[10px] font-bold text-gray-400">{teacher.subject}</p>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{teacher.name}</p>
+        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)', margin: 0, wordBreak: 'break-words' }}>{teacher.subject}</p>
       </div>
     </div>
   );
@@ -3807,41 +3770,43 @@ function TeacherMiniCard({ teacher }) {
 
 function SummaryInfo({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-gray-800">{value}</p>
+    <div className="pl-card-paper" style={{ padding: '12px 16px' }}>
+      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, wordBreak: 'break-words' }}>{value}</p>
     </div>
   );
 }
 
 function RankingRow({ item }) {
+  const isFirst = item.rank === 1;
+  const isSecond = item.rank === 2;
   return (
-    <div className={`flex items-center gap-4 rounded-2xl p-4 transition-colors ${item.rank === 1 ? 'relative overflow-hidden border border-yellow-200 bg-gradient-to-r from-yellow-50 to-white shadow-sm' : 'border border-gray-100 bg-white hover:bg-gray-50'}`}>
-      {item.rank === 1 ? <div className="absolute bottom-0 left-0 top-0 w-1 bg-yellow-400" /> : null}
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, padding: 16, borderRadius: 12, border: isFirst ? '1px solid var(--pl-warn)' : '1px solid var(--pl-rule)', background: isFirst ? 'var(--pl-warn-soft)' : 'var(--pl-surface)', overflow: 'hidden' }}>
+      {isFirst ? <div style={{ position: 'absolute', bottom: 0, left: 0, top: 0, width: 4, background: 'var(--pl-warn)' }} /> : null}
 
-      <div className="relative">
-        <div className={`rounded-full bg-white p-1 ${item.rank === 1 ? 'h-12 w-12 border-2 border-yellow-400' : item.rank === 2 ? 'h-10 w-10 border-2 border-gray-300' : 'h-10 w-10 border-2 border-orange-300'}`}>
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{ borderRadius: '50%', background: 'var(--pl-surface)', padding: 4, border: isFirst ? '2px solid var(--pl-warn)' : isSecond ? '2px solid var(--pl-ink-3)' : '2px solid var(--pl-warn-soft)', height: isFirst ? 48 : 40, width: isFirst ? 48 : 40, boxSizing: 'border-box' }}>
           {item.avatar ? (
-            <img src={item.avatar} alt={item.name} className="h-full w-full rounded-full object-cover" />
+            <img src={item.avatar} alt={item.name} style={{ height: '100%', width: '100%', borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+            <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-accent-soft)', fontSize: 12, fontWeight: 600, color: 'var(--pl-accent)' }}>
               {String(item.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
-        <div className={`absolute -bottom-2 -right-2 flex items-center justify-center rounded-full border-2 border-white text-white ${item.rank === 1 ? 'h-6 w-6 bg-yellow-500 text-xs font-semibold' : item.rank === 2 ? 'h-5 w-5 bg-gray-400 text-[10px] font-semibold' : 'h-5 w-5 bg-orange-400 text-[10px] font-semibold'}`}>
+        <div style={{ position: 'absolute', bottom: -8, right: -8, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '2px solid var(--pl-surface)', color: '#fff', background: isFirst ? 'var(--pl-warn)' : isSecond ? 'var(--pl-ink-3)' : 'var(--pl-warn)', width: isFirst ? 24 : 20, height: isFirst ? 24 : 20, fontSize: isFirst ? 12 : 10, fontWeight: 600 }}>
           {item.rank}
         </div>
       </div>
 
-      <div className="flex-1 min-w-0">
-        <p className={`truncate text-sm ${item.rank === 1 ? 'font-semibold text-gray-800' : 'font-bold text-gray-700'}`}>{item.name}</p>
-        <p className="text-[10px] font-bold text-gray-400">{item.tier}</p>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: isFirst ? 600 : 700, color: 'var(--pl-ink)', margin: 0 }}>{item.name}</p>
+        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)', margin: 0 }}>{item.tier}</p>
       </div>
 
-      <div className="text-right">
-        <p className={`text-sm font-semibold ${item.rank === 1 ? 'text-yellow-600' : 'text-gray-600'}`}>{item.metric}</p>
-        <p className={`text-[9px] font-bold uppercase tracking-widest ${item.rank === 1 ? 'text-yellow-500' : 'text-gray-400'}`}>XP</p>
+      <div style={{ textAlign: 'right' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: isFirst ? 'var(--pl-warn)' : 'var(--pl-ink-2)', margin: 0 }}>{item.metric}</p>
+        <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFirst ? 'var(--pl-warn)' : 'var(--pl-ink-4)', margin: 0 }}>XP</p>
       </div>
     </div>
   );
@@ -3849,21 +3814,21 @@ function RankingRow({ item }) {
 
 function MembersHero({ squad, canManageSquad }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-slate-900 to-indigo-900 p-6 text-white shadow-xl shadow-indigo-900/15">
-      <div className="pointer-events-none absolute -top-10 right-0 h-40 w-40 rounded-full bg-indigo-400/20 blur-3xl" />
-      <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 16, background: 'linear-gradient(to right, var(--pl-ink), #1e3a8a)', padding: 24, color: '#fff', boxShadow: 'var(--pl-sh-high)' }}>
+      <div style={{ pointerEvents: 'none', position: 'absolute', top: -40, right: 0, height: 160, width: 160, borderRadius: '50%', background: 'rgba(129,140,248,0.2)', filter: 'blur(48px)' }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-yellow-400 bg-yellow-500 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white shadow-sm">
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 8, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn)', padding: '6px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#fff', boxShadow: 'var(--pl-sh-low)' }}>
             <Users size={12} />
             Gestão de membros
           </div>
-          <h3 className="mt-4 text-3xl font-semibold tracking-tight">Membros do esquadrão</h3>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-indigo-200">
+          <h3 style={{ marginTop: 16, fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', color: '#fff', margin: '16px 0 8px' }}>Membros do esquadrão</h3>
+          <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'rgba(199,210,254,0.9)', maxWidth: '42rem', margin: 0 }}>
             Aqui o dono do cursinho organiza quem entra, quem recebe selo de professor e quem ganha acesso às ferramentas internas.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           <ForumBadge label="Total" value={String(squad?.members || 0)} />
           <ForumBadge label="Gestão" value={canManageSquad ? 'Ativa' : 'Restrita'} />
         </div>
@@ -3880,42 +3845,41 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
     String(member.role || '').toLowerCase().includes('diretor');
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-gray-50 p-4 lg:flex-row lg:items-center">
-      <div className="flex flex-1 items-center gap-4">
-        <div className="h-12 w-12 rounded-full bg-white p-1 shadow-sm">
+    <div className="pl-card-paper" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16 }}>
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: 16 }}>
+        <div style={{ height: 48, width: 48, borderRadius: '50%', background: 'var(--pl-surface)', padding: 4, boxShadow: 'var(--pl-sh-low)', flexShrink: 0 }}>
           {member.avatar ? (
-            <img src={member.avatar} alt={member.name} className="h-full w-full rounded-full object-cover" />
+            <img src={member.avatar} alt={member.name} style={{ height: '100%', width: '100%', borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+            <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-accent-soft)', fontSize: 14, fontWeight: 600, color: 'var(--pl-accent)' }}>
               {String(member.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
 
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{member.name}</p>
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">{member.role}</p>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{member.name}</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-4)', margin: '2px 0 0' }}>{member.role}</p>
           {member.subject ? (
-            <p className="mt-0.5 text-[11px] font-semibold text-indigo-600">Matéria: {member.subject}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-accent)', margin: '2px 0 0' }}>Matéria: {member.subject}</p>
           ) : null}
-          {member.email ? <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500">{member.email}</p> : null}
-          {member.joinedAt ? <p className="text-[10px] font-medium text-slate-400">Entrou: {member.joinedAt}</p> : null}
+          {member.email ? <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-3)', margin: '2px 0 0' }}>{member.email}</p> : null}
+          {member.joinedAt ? <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--pl-ink-4)', margin: '2px 0 0' }}>Entrou: {member.joinedAt}</p> : null}
           {member.streakDays != null ? (
-            <p className="text-[10px] font-semibold text-amber-700">Ofensiva: {member.streakDays} dias</p>
+            <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--pl-warn)', margin: '2px 0 0' }}>Ofensiva: {member.streakDays} dias</p>
           ) : null}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
         <span
-          className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${getRolePillClass(normalizedRole)}`}
+          className="pl-tag"
+          style={getRolePillStyle(normalizedRole)}
         >
           {normalizedRole}
         </span>
 
-        <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
-          {member.tag}
-        </span>
+        <span className="pl-tag pl-tag-success">{member.tag}</span>
 
         {canManageSquad ? (
           <>
@@ -3923,7 +3887,8 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
               <select
                 value={normalizedRole}
                 onChange={(e) => onSetRole?.(member, e.target.value)}
-                className="rounded-xl border border-indigo-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="pl-input"
+                style={{ fontSize: 12, padding: '6px 12px' }}
               >
                 {CURSINHO_ROLE_OPTIONS.map((role) => (
                   <option key={role} value={role}>
@@ -3935,7 +3900,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
               <button
                 type="button"
                 onClick={() => onToggleProfessor?.(member)}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                className="pl-btn pl-btn-ghost pl-btn-sm"
               >
                 {isProfessor ? 'Remover selo' : 'Dar selo'}
               </button>
@@ -3943,7 +3908,7 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
             <button
               type="button"
               onClick={() => onOpenPermissions?.()}
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
             >
               Permissões
             </button>
@@ -3956,22 +3921,22 @@ function MemberManagementRow({ member, canManageSquad, canAssignRoles, onToggleP
 
 function AdminHero({ squad }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-[#102347] via-[#17346a] to-indigo-900 p-6 text-white shadow-xl shadow-indigo-900/15">
-      <div className="pointer-events-none absolute -top-14 right-0 h-44 w-44 rounded-full bg-indigo-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-0 h-28 w-28 rounded-full bg-cyan-400/10 blur-2xl" />
-      <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 16, background: 'linear-gradient(to right, #102347, #17346a, #1e3a8a)', padding: 24, color: '#fff', boxShadow: 'var(--pl-sh-high)' }}>
+      <div style={{ pointerEvents: 'none', position: 'absolute', top: -56, right: 0, height: 176, width: 176, borderRadius: '50%', background: 'rgba(129,140,248,0.2)', filter: 'blur(48px)' }} />
+      <div style={{ pointerEvents: 'none', position: 'absolute', bottom: 0, left: 0, height: 112, width: 112, borderRadius: '50%', background: 'rgba(34,211,238,0.1)', filter: 'blur(32px)' }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-yellow-400 bg-yellow-500 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white shadow-sm">
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 8, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn)', padding: '6px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#fff', boxShadow: 'var(--pl-sh-low)' }}>
             <Wrench size={12} />
             Administração do esquadrão
           </div>
-          <h3 className="mt-4 text-3xl font-semibold tracking-tight">Painel de controle interno</h3>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-indigo-200">
+          <h3 style={{ marginTop: 16, fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', color: '#fff', margin: '16px 0 8px' }}>Painel de controle interno</h3>
+          <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'rgba(199,210,254,0.9)', maxWidth: '42rem', margin: 0 }}>
             Tudo que o dono precisa para organizar pessoas, controlar publicações e manter o esquadrão nos trilhos.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           <ForumBadge label="Professores" value={String(squad?.teachers?.length || 0)} />
           <ForumBadge label="Membros" value={String(squad?.members || 0)} />
         </div>
@@ -3982,19 +3947,19 @@ function AdminHero({ squad }) {
 
 function AdminPanel({ icon, title, subtitle, children }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
-      <div className="border-b border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+    <section className="pl-card" style={{ overflow: 'hidden' }}>
+      <div style={{ borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ marginTop: 2, display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)', flexShrink: 0 }}>
             {icon}
           </div>
           <div>
-            <h4 className="text-lg font-semibold text-slate-900">{title}</h4>
-            <p className="mt-1 text-sm font-medium text-gray-500">{subtitle}</p>
+            <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{title}</h4>
+            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-3)', margin: '4px 0 0' }}>{subtitle}</p>
           </div>
         </div>
       </div>
-      <div className="p-6">{children}</div>
+      <div style={{ padding: 24 }}>{children}</div>
     </section>
   );
 }
@@ -4003,31 +3968,23 @@ function AdminMemberRow({ member, onManagePermissions }) {
   const role = normalizeRoleLabel(member.role);
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 transition hover:shadow-sm lg:flex-row lg:items-center">
-      <div className="flex min-w-0 flex-1 items-center gap-4">
-        <div className="h-12 w-12 rounded-full bg-white p-1 shadow-sm">
+    <div className="pl-card-paper" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16 }}>
+      <div style={{ display: 'flex', minWidth: 0, flex: 1, alignItems: 'center', gap: 16 }}>
+        <div style={{ height: 48, width: 48, borderRadius: '50%', background: 'var(--pl-surface)', padding: 4, boxShadow: 'var(--pl-sh-low)', flexShrink: 0 }}>
           {member.avatar ? (
-            <img src={member.avatar} alt={member.name} className="h-full w-full rounded-full object-cover" />
+            <img src={member.avatar} alt={member.name} style={{ height: '100%', width: '100%', borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+            <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'var(--pl-accent-soft)', fontSize: 14, fontWeight: 600, color: 'var(--pl-accent)' }}>
               {String(member.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
 
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">{member.name}</p>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span
-              className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-widest ${getRolePillClass(role)}`}
-            >
-              {role}
-            </span>
-            {member.tag ? (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
-                {member.tag}
-              </span>
-            ) : null}
+        <div style={{ minWidth: 0 }}>
+          <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{member.name}</p>
+          <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+            <span className="pl-tag" style={getRolePillStyle(role)}>{role}</span>
+            {member.tag ? <span className="pl-tag pl-tag-success">{member.tag}</span> : null}
           </div>
         </div>
       </div>
@@ -4035,7 +3992,7 @@ function AdminMemberRow({ member, onManagePermissions }) {
       <button
         type="button"
         onClick={onManagePermissions}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-gray-700 transition hover:bg-gray-50"
+        className="pl-btn pl-btn-ghost pl-btn-sm"
       >
         Gerir permissões
       </button>
@@ -4048,7 +4005,7 @@ function ActionChip({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 transition hover:bg-gray-50"
+      className="pl-btn pl-btn-ghost pl-btn-sm"
     >
       {label}
     </button>
@@ -4057,18 +4014,17 @@ function ActionChip({ label, onClick }) {
 
 function AdminActionCard({ title, helper, badge, onClick }) {
   return (
-    <div className="flex min-h-[236px] flex-col rounded-[1.5rem] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h5 className="pr-2 text-lg font-semibold leading-tight text-slate-900">{title}</h5>
-        <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-600">
-          {badge}
-        </span>
+    <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', minHeight: 200, padding: 24 }}>
+      <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h5 style={{ paddingRight: 8, fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: 'var(--pl-ink)', margin: 0 }}>{title}</h5>
+        <span className="pl-tag pl-tag-accent">{badge}</span>
       </div>
-      <p className="mt-2 text-sm font-medium leading-7 text-gray-500">{helper}</p>
+      <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.75, color: 'var(--pl-ink-3)', margin: '8px 0 0' }}>{helper}</p>
       <button
         type="button"
         onClick={onClick}
-        className="mt-auto inline-flex items-center gap-2 self-start rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-950"
+        className="pl-btn pl-btn-primary"
+        style={{ alignSelf: 'flex-start', marginTop: 16 }}
       >
         Abrir fluxo
       </button>
@@ -4078,20 +4034,18 @@ function AdminActionCard({ title, helper, badge, onClick }) {
 
 function PermissionItem({ label, value }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-      <span className="text-sm font-bold text-gray-700">{label}</span>
-      <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
-        {value}
-      </span>
+    <div className="pl-card-paper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
+      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{label}</span>
+      <span className={value === 'Restrito' ? 'pl-tag pl-tag-warn' : 'pl-tag pl-tag-success'}>{value}</span>
     </div>
   );
 }
 
 function AdminMetric({ label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-4">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+    <div className="pl-card-paper" style={{ padding: 16 }}>
+      <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{label}</p>
+      <p className="pl-num" style={{ fontSize: 22 }}>{value}</p>
     </div>
   );
 }
@@ -4102,14 +4056,15 @@ function AdminCommandCard({ icon, title, description, actionLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[228px] h-full flex-col rounded-[1.6rem] border border-gray-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="pl-card"
+      style={{ minHeight: 228, display: 'flex', flexDirection: 'column', padding: 24, textAlign: 'left', cursor: 'pointer', boxShadow: 'var(--pl-sh-low)' }}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
+      <div style={{ display: 'flex', height: 48, width: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)', flexShrink: 0 }}>
         {icon}
       </div>
-      <h4 className="mt-5 text-lg font-semibold leading-tight tracking-tight text-slate-900">{title}</h4>
-      <p className="mt-3 text-sm font-medium leading-relaxed text-gray-500">{description}</p>
-      <span className="mt-auto inline-flex items-center gap-2 pt-4 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+      <h4 style={{ marginTop: 20, fontSize: 18, fontWeight: 600, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--pl-ink)', marginBottom: 0 }}>{title}</h4>
+      <p style={{ marginTop: 12, fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)', margin: '12px 0 0' }}>{description}</p>
+      <span style={{ marginTop: 'auto', paddingTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--pl-accent)' }}>
         {actionLabel}
         <ArrowRight size={13} />
       </span>
@@ -4118,44 +4073,46 @@ function AdminCommandCard({ icon, title, description, actionLabel, onClick }) {
 }
 
 function AdminMetricTone({ label, value, tone = 'blue' }) {
-  const toneMap = {
-    blue: 'border-indigo-100 bg-indigo-50 text-indigo-700',
-    gold: 'border-amber-100 bg-amber-50 text-amber-700',
-    emerald: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-    slate: 'border-slate-200 bg-slate-50 text-slate-700',
+  const toneStyleMap = {
+    blue: { border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' },
+    gold: { border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' },
+    emerald: { border: '1px solid var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
+    slate: { border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' },
   };
+  const s = toneStyleMap[tone] || toneStyleMap.blue;
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 ${toneMap[tone] || toneMap.blue}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">{label}</p>
-      <p className="mt-1 text-2xl font-semibold leading-none">{value}</p>
+    <div style={{ borderRadius: 16, padding: '12px 16px', ...s }}>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', opacity: 0.75, margin: 0 }}>{label}</p>
+      <p style={{ marginTop: 4, fontSize: 22, fontWeight: 600, lineHeight: 1, margin: '4px 0 0' }}>{value}</p>
     </div>
   );
 }
 
 function AdminDangerZone({ onDelete }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-red-200 bg-[linear-gradient(180deg,#fff8f8_0%,#ffffff_100%)] shadow-sm">
-      <div className="border-b border-red-100 px-6 py-5">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+    <section style={{ overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', boxShadow: 'var(--pl-sh-low)' }}>
+      <div style={{ borderBottom: '1px solid var(--pl-danger)', padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ marginTop: 2, display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)', flexShrink: 0 }}>
             <AlertCircle size={18} />
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-500">Danger zone</p>
-            <h4 className="mt-1 text-lg font-semibold text-slate-900">Excluir esquadrão</h4>
-            <p className="mt-1 text-sm font-medium text-gray-500">
+            <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-danger)', margin: 0 }}>Danger zone</p>
+            <h4 style={{ marginTop: 4, fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: '4px 0 4px' }}>Excluir esquadrão</h4>
+            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>
               Área separada para ação crítica. Nada de misturar isso com o resto e clicar errado num dia torto.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
+      <div style={{ padding: 24 }}>
         <button
           type="button"
           onClick={onDelete}
-          className="w-full rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(220,38,38,0.18)] transition hover:bg-red-700"
+          className="pl-btn"
+          style={{ width: '100%', background: 'var(--pl-danger)', color: '#fff', border: 'none', boxShadow: '0 12px 24px rgba(220,38,38,0.18)' }}
         >
           Excluir esquadrão
         </button>
@@ -4168,24 +4125,23 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <div className="rounded-[2rem] border border-gray-100 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="pl-card" style={{ padding: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Paginação</p>
-          <h4 className="mt-1 text-lg font-semibold text-slate-900">Página {page} de {totalPages}</h4>
+          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Paginação</p>
+          <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Página {page} de {totalPages}</h4>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <button
             type="button"
             onClick={onPrev}
             disabled={page <= 1}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition enabled:hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ opacity: page <= 1 ? 0.45 : 1, cursor: page <= 1 ? 'not-allowed' : 'pointer' }}
           >
-            <span className="inline-flex items-center gap-2">
-              <ArrowLeft size={14} />
-              Anterior
-            </span>
+            <ArrowLeft size={14} />
+            Anterior
           </button>
 
           {pages.map((item) => (
@@ -4193,9 +4149,8 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
               key={item}
               type="button"
               onClick={() => onPick(item)}
-              className={`h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition ${
-                item === page ? 'bg-slate-900 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-              }`}
+              className={item === page ? 'pl-btn pl-btn-primary pl-btn-sm' : 'pl-btn pl-btn-ghost pl-btn-sm'}
+              style={{ minWidth: 36 }}
             >
               {item}
             </button>
@@ -4205,12 +4160,11 @@ function PaginationBar({ page, totalPages, onPrev, onNext, onPick }) {
             type="button"
             onClick={onNext}
             disabled={page >= totalPages}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition enabled:hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+            className="pl-btn pl-btn-ghost pl-btn-sm"
+            style={{ opacity: page >= totalPages ? 0.45 : 1, cursor: page >= totalPages ? 'not-allowed' : 'pointer' }}
           >
-            <span className="inline-flex items-center gap-2">
-              Próxima
-              <ArrowRight size={14} />
-            </span>
+            Próxima
+            <ArrowRight size={14} />
           </button>
         </div>
       </div>
@@ -4232,36 +4186,37 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
     simulado: 'Publicar simulado',
     'invite-student': 'Convidar aluno',
     'add-teacher': 'Adicionar professor',
-    permissions: 'Gerir permissões',
+    permissions: 'Gerir permissoes',
   };
 
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-md">
-      <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
-        <div className="border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
-          <div className="flex items-center justify-between gap-4">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <div style={{ display: 'flex', width: '100%', maxWidth: 640, flexDirection: 'column', overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}>
+        <div style={{ borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">ADM do esquadrão</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{titleMap[flow.type] || 'Fluxo interno'}</h3>
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>ADM do esquadrao</p>
+              <h3 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--pl-ink)', margin: 0 }}>{titleMap[flow.type] || 'Fluxo interno'}</h3>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50"
+              className="pl-btn pl-btn-ghost"
+              style={{ padding: 8, flexShrink: 0 }}
             >
               <X size={18} />
             </button>
           </div>
         </div>
 
-        <div className="grid gap-4 p-6">
+        <div style={{ display: 'grid', gap: 16, padding: 24 }}>
           {(isNotice || isActivity || isSimulado) ? (
             <input
               type="text"
               value={flow.title}
               onChange={(event) => onChange((prev) => ({ ...prev, title: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              placeholder="Título principal"
+              className="pl-input"
+              placeholder="Titulo principal"
             />
           ) : null}
 
@@ -4269,7 +4224,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
             <select
               value={flow.status}
               onChange={(event) => onChange((prev) => ({ ...prev, status: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="pl-input"
             >
               <option>Aberta</option>
               <option>Programada</option>
@@ -4279,35 +4234,35 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
           ) : null}
 
           {isSimulado ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <input
                 type="date"
                 value={flow.date}
                 onChange={(event) => onChange((prev) => ({ ...prev, date: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
               />
               <input
                 type="time"
                 value={flow.time}
                 onChange={(event) => onChange((prev) => ({ ...prev, time: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
               />
             </div>
           ) : null}
 
           {isActivity ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <input
                 type="date"
                 value={flow.dueDate}
                 onChange={(event) => onChange((prev) => ({ ...prev, dueDate: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
               />
               <input
                 type="time"
                 value={flow.dueTime}
                 onChange={(event) => onChange((prev) => ({ ...prev, dueTime: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
               />
             </div>
           ) : null}
@@ -4317,8 +4272,8 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.helper}
               onChange={(event) => onChange((prev) => ({ ...prev, helper: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              placeholder="Descrição operacional"
+              className="pl-input"
+              placeholder="Descricao operacional"
             />
           ) : null}
 
@@ -4327,18 +4282,19 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               rows="4"
               value={flow.description}
               onChange={(event) => onChange((prev) => ({ ...prev, description: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              placeholder="Escreva o comunicado que será fixado no mural"
+              className="pl-input"
+              style={{ resize: 'none' }}
+              placeholder="Escreva o comunicado que sera fixado no mural"
             />
           ) : null}
 
           {(isNotice || isActivity || isSimulado) ? (
-            <label className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-600">
+            <label style={{ borderRadius: 8, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '16px', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', display: 'block' }}>
               Anexo opcional
               <input
                 type="file"
                 accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                className="mt-2 block w-full text-xs font-medium text-slate-500"
+                style={{ marginTop: 8, display: 'block', width: '100%', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}
                 onChange={async (event) => {
                   const file = event.target.files?.[0];
                   if (!file) return;
@@ -4351,7 +4307,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 }}
               />
               {flow.attachmentName ? (
-                <span className="mt-3 block text-xs font-semibold uppercase tracking-widest text-blue-700">
+                <span style={{ marginTop: 12, display: 'block', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-accent)' }}>
                   {flow.attachmentName}
                 </span>
               ) : null}
@@ -4363,7 +4319,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               type="text"
               value={flow.inviteName}
               onChange={(event) => onChange((prev) => ({ ...prev, inviteName: event.target.value }))}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="pl-input"
               placeholder="Nome do aluno convidado"
             />
           ) : null}
@@ -4374,15 +4330,15 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                 type="text"
                 value={flow.teacherName}
                 onChange={(event) => onChange((prev) => ({ ...prev, teacherName: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
                 placeholder="Nome do professor"
               />
               <input
                 type="text"
                 value={flow.teacherSubject}
                 onChange={(event) => onChange((prev) => ({ ...prev, teacherSubject: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                placeholder="Matéria ou responsabilidade"
+                className="pl-input"
+                placeholder="Materia ou responsabilidade"
               />
             </>
           ) : null}
@@ -4392,7 +4348,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               <select
                 value={flow.memberId}
                 onChange={(event) => onChange((prev) => ({ ...prev, memberId: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
               >
                 <option value="">Selecionar membro</option>
                 {members.map((member) => (
@@ -4404,7 +4360,7 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
               <select
                 value={flow.permissionScope}
                 onChange={(event) => onChange((prev) => ({ ...prev, permissionScope: event.target.value }))}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="pl-input"
               >
                 {PERMISSION_SCOPE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -4417,26 +4373,26 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
                   type="text"
                   value={flow.teacherSubject}
                   onChange={(event) => onChange((prev) => ({ ...prev, teacherSubject: event.target.value }))}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  placeholder="Matéria do professor, se for promover"
+                  className="pl-input"
+                  placeholder="Materia do professor, se for promover"
                 />
               ) : null}
             </>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-5">
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12, borderTop: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 24px' }}>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="pl-btn pl-btn-ghost"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#1e3a5f)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
+            className="pl-btn pl-btn-primary"
           >
             Salvar fluxo
           </button>
@@ -4448,37 +4404,38 @@ function AdminFlowModal({ flow, onChange, onClose, onSubmit, members = [] }) {
 
 function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = [] }) {
   return (
-    <div className="fixed inset-0 z-[240] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-md">
-      <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
-        <div className="border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
-          <div className="flex items-center justify-between gap-4">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <div style={{ display: 'flex', width: '100%', maxWidth: 720, flexDirection: 'column', overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}>
+        <div style={{ borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Professor e cursinho</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Novo esquadrão</h3>
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Professor e cursinho</p>
+              <h3 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--pl-ink)', margin: 0 }}>Novo esquadrao</h3>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50"
+              className="pl-btn pl-btn-ghost"
+              style={{ padding: 8, flexShrink: 0 }}
             >
               <X size={18} />
             </button>
           </div>
         </div>
 
-        <div className="grid gap-4 p-6 md:grid-cols-2">
+        <div style={{ display: 'grid', gap: 16, padding: 24, gridTemplateColumns: 'repeat(2, 1fr)' }}>
           <input
             type="text"
             value={form.name}
             onChange={(event) => onChange((prev) => ({ ...prev, name: event.target.value }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            placeholder="Nome do esquadrão"
+            className="pl-input"
+            placeholder="Nome do esquadrao"
           />
 
           <select
             value={form.focus}
             onChange={(event) => onChange((prev) => ({ ...prev, focus: event.target.value }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="pl-input"
           >
             <option value="">Selecionar concurso foco</option>
             {focusOptions.map((option) => (
@@ -4491,7 +4448,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           <select
             value={form.visibility}
             onChange={(event) => onChange((prev) => ({ ...prev, visibility: event.target.value }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="pl-input"
           >
             <option>Privado</option>
             <option>Por convite</option>
@@ -4502,7 +4459,7 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             type="text"
             value={form.inviteCode}
             onChange={(event) => onChange((prev) => ({ ...prev, inviteCode: event.target.value.toUpperCase() }))}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="pl-input"
             placeholder="Codigo de entrada do esquadrao"
           />
 
@@ -4510,16 +4467,17 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
             rows="4"
             value={form.description}
             onChange={(event) => onChange((prev) => ({ ...prev, description: event.target.value }))}
-            className="md:col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="pl-input"
+            style={{ gridColumn: '1 / -1', resize: 'none' }}
             placeholder="Descreva a proposta da turma, metodologia, rotina e objetivo do esquadrao"
           />
 
-          <label className="md:col-span-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-600">
+          <label style={{ gridColumn: '1 / -1', borderRadius: 8, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', display: 'block' }}>
             Upload da foto/capa
             <input
               type="file"
               accept="image/*"
-              className="mt-2 block w-full text-xs font-medium text-slate-500"
+              style={{ marginTop: 8, display: 'block', width: '100%', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}
               onChange={async (event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
@@ -4530,20 +4488,20 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
           </label>
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/70 px-6 py-5">
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12, borderTop: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '20px 24px' }}>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="pl-btn pl-btn-ghost"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-2xl bg-[linear-gradient(135deg,#1e3a8a,#1e3a5f)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.26)] transition hover:brightness-105"
+            className="pl-btn pl-btn-primary"
           >
-            Criar esquadrão
+            Criar esquadrao
           </button>
         </div>
       </div>
@@ -4553,25 +4511,26 @@ function CreateSquadModal({ form, onChange, onClose, onSubmit, focusOptions = []
 
 function ConfirmDeleteModal({ squadName, onClose, onConfirm }) {
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-md">
-      <div className="w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_30px_100px_rgba(2,6,23,0.24)]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-red-500">Confirmação</p>
-        <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">Excluir esquadrão?</h3>
-        <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">
-          Você está prestes a remover <span className="font-semibold text-slate-800">{squadName}</span>. Essa ação apaga o vínculo da equipe na sua área interna.
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <div style={{ width: '100%', maxWidth: 480, borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 24, boxShadow: 'var(--pl-sh-high)' }}>
+        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--pl-danger)', margin: 0 }}>Confirmacao</p>
+        <h3 style={{ marginTop: 12, fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--pl-ink)', marginBottom: 0 }}>Excluir esquadrao?</h3>
+        <p style={{ marginTop: 12, fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: '12px 0 0' }}>
+          Voce esta prestes a remover <span style={{ fontWeight: 700, color: 'var(--pl-ink)' }}>{squadName}</span>. Essa acao apaga o vinculo da equipe na sua area interna.
         </p>
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
+        <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="pl-btn pl-btn-ghost"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(220,38,38,0.22)] transition hover:bg-red-700"
+            className="pl-btn"
+            style={{ background: 'var(--pl-danger)', color: '#fff', border: 'none', boxShadow: '0 12px 24px rgba(220,38,38,0.22)' }}
           >
             Sim, excluir
           </button>

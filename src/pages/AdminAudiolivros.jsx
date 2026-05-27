@@ -49,16 +49,16 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
         ]}
       />
 
-      <section className="rounded-[2rem] border border-violet-100 bg-white p-6 shadow-sm">
+      <section className="pl-card" style={{ padding: 24 }}>
         {feedback ? (
-          <div className="mb-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
+          <div style={{ marginBottom: 16, borderRadius: 10, border: '1px solid var(--pl-success)', background: 'var(--pl-success-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>
             {feedback}
           </div>
         ) : null}
 
         <AdminAudiobookCatalogEditor draft={draft} onDraftChange={setDraft} />
 
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <button
             type="button"
             disabled={saving || !onSaveAudiolivrosContent}
@@ -82,7 +82,8 @@ export default function AdminAudiolivros({ audiobookCatalogOverride = null, onSa
                 setSaving(false);
               }
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-5 py-2.5 text-sm font-bold text-violet-900 disabled:opacity-50"
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <Save size={16} />
             {saving ? 'Salvando...' : 'Salvar catálogo de audiolivros'}

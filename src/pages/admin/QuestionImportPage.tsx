@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, Database, DownloadCloud, Loader2, Sparkles } from 'lucide-react';
-import PageHeadPremium, { PageHeadPremiumBadge } from '../../components/PageHeadPremium';
 import { getEnemExams, getOpenTriviaQuestions, normalizeOpenTriviaQuestion } from '../../services/questionsApi';
 import { importAllEnemYears, importEnemYear } from '../../services/importQuestions';
 
@@ -56,34 +55,44 @@ export default function QuestionImportPage() {
   }
 
   return (
-    <div className="pl-page">
-      <PageHeadPremium
-        icon={Database}
-        badge={<PageHeadPremiumBadge icon={Sparkles}>Admin · importação</PageHeadPremiumBadge>}
-        title="Importar questões por API"
-        subtitle="ENEM API como fonte principal e OpenTrivia apenas para testes/gamificação."
-        trailing={(
-          <button
-            type="button"
-            onClick={inspectApis}
-            disabled={checking || loading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/15 disabled:opacity-60"
-          >
-            {checking ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-            Verificar APIs
-          </button>
-        )}
-      />
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <label className="flex flex-1 flex-col gap-2 text-sm font-bold text-slate-700">
+      {/* Hero */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--pl-accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-accent)', flexShrink: 0 }}>
+            <Database size={22} />
+          </div>
+          <div>
+            <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Admin · importação</p>
+            <h1 className="pl-display" style={{ fontSize: 26, marginBottom: 4 }}>Importar questões por API<span style={{ color: 'var(--pl-accent)' }}>.</span></h1>
+            <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', fontWeight: 500 }}>
+              ENEM API como fonte principal e OpenTrivia apenas para testes/gamificação.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={inspectApis}
+          disabled={checking || loading}
+          className="pl-btn pl-btn-ghost"
+          style={{ opacity: checking || loading ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          {checking ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+          Verificar APIs
+        </button>
+      </div>
+
+      <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(300px,0.55fr)', gap: 16 }}>
+        {/* Import card */}
+        <div className="pl-card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <label style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>
               Ano do ENEM
               <select
                 value={year}
                 onChange={(event) => setYear(Number(event.target.value))}
-                className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="pl-input"
               >
                 {YEARS.map((item) => (
                   <option key={item} value={item}>ENEM {item}</option>
@@ -95,42 +104,44 @@ export default function QuestionImportPage() {
               type="button"
               onClick={() => runImport('year')}
               disabled={loading}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-900/15 transition hover:bg-blue-700 disabled:opacity-70"
+              className="pl-btn pl-btn-primary"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.7 : 1 }}
             >
-              {loading ? <Loader2 size={17} className="animate-spin" /> : <DownloadCloud size={17} />}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <DownloadCloud size={16} />}
               Importar questões
             </button>
           </div>
 
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Importação completa</p>
-            <p className="text-sm font-semibold leading-relaxed text-slate-600">
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+            <p className="pl-eyebrow">Importação completa</p>
+            <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
               Tenta todos os anos de 2009 até 2023, incluindo idiomas estrangeiros, e usa pausa entre chamadas para respeitar limite da API.
             </p>
             <button
               type="button"
               onClick={() => runImport('all')}
               disabled={loading}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-700 transition hover:bg-blue-100 disabled:opacity-70 sm:w-fit"
+              className="pl-btn pl-btn-ghost"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, opacity: loading ? 0.7 : 1, borderColor: 'var(--pl-accent)', color: 'var(--pl-accent)' }}
             >
-              {loading ? <Loader2 size={17} className="animate-spin" /> : <DownloadCloud size={17} />}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <DownloadCloud size={16} />}
               Importar todos os anos ENEM
             </button>
           </div>
 
           {imported !== null ? (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
+            <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-success)', background: 'var(--pl-success-soft)', padding: '10px 16px', fontSize: 13, fontWeight: 700, color: 'var(--pl-success)' }}>
               {imported} questões importadas/atualizadas.
             </div>
           ) : null}
 
           {totalErrors > 0 ? (
-            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-              <div className="mb-2 flex items-center gap-2 font-bold">
-                <AlertTriangle size={16} />
+            <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-danger)', background: 'var(--pl-danger-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-danger)' }}>
+              <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+                <AlertTriangle size={15} />
                 {totalErrors} erro(s) encontrados
               </div>
-              <ul className="space-y-1">
+              <ul style={{ paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {errors.map((error, index) => (
                   <li key={`${error}-${index}`}>{error}</li>
                 ))}
@@ -139,9 +150,10 @@ export default function QuestionImportPage() {
           ) : null}
         </div>
 
-        <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Fontes públicas</p>
-          <div className="mt-3 space-y-3 text-sm font-semibold leading-relaxed text-slate-600">
+        {/* Sidebar */}
+        <aside className="pl-card" style={{ padding: 20 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Fontes públicas</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
             <p>{apiSummary}</p>
             <p>
               A ENEM API separa por área/disciplina macro e idioma. Espanhol/Inglês entram com o idioma no campo de assunto.
@@ -156,13 +168,13 @@ export default function QuestionImportPage() {
           </div>
 
           {triviaPreview.length > 0 ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">OpenTrivia preview</p>
-              <div className="mt-2 space-y-2">
+            <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 12 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>OpenTrivia preview</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {triviaPreview.map((item) => (
-                  <div key={item.external_id} className="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-600">
-                    <span className="text-slate-400">{item.subject}</span>
-                    <p className="mt-1 line-clamp-2">{item.statement}</p>
+                  <div key={item.external_id} style={{ borderRadius: 10, background: 'var(--pl-surface)', padding: '8px 12px', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                    <span style={{ color: 'var(--pl-ink-3)' }}>{item.subject}</span>
+                    <p style={{ marginTop: 4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.statement}</p>
                   </div>
                 ))}
               </div>

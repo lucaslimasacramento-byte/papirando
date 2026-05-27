@@ -8,10 +8,10 @@ import {
 
 /* ── Paleta por tipo de registro ────────────────────────────────── */
 const TYPE_PALETTE = {
-  blue:    { stripe: '#2557a7', bg: 'rgba(30,58,95,0.06)',   border: 'rgba(30,58,95,0.14)',   text: '#1e3a5f' },
-  orange:  { stripe: '#c05621', bg: 'rgba(192,86,33,0.06)',  border: 'rgba(192,86,33,0.16)',  text: '#c05621' },
-  emerald: { stripe: '#305e22', bg: 'rgba(48,94,34,0.06)',   border: 'rgba(48,94,34,0.16)',   text: '#305e22' },
-  indigo:  { stripe: '#3730a3', bg: 'rgba(55,48,163,0.06)',  border: 'rgba(55,48,163,0.14)',  text: '#3730a3' },
+  blue:    { stripe: '#2557a7', bg: 'var(--pl-accent-soft)',  border: 'rgba(30,58,95,0.14)',   text: '#1e3a5f' },
+  orange:  { stripe: '#c05621', bg: 'var(--pl-danger-soft)',  border: 'rgba(192,86,33,0.16)',  text: '#c05621' },
+  emerald: { stripe: '#305e22', bg: 'var(--pl-success-soft)', border: 'rgba(48,94,34,0.16)',   text: '#305e22' },
+  indigo:  { stripe: '#3730a3', bg: 'var(--pl-accent-soft)',  border: 'rgba(55,48,163,0.14)',  text: '#3730a3' },
 };
 
 const FILTERS = ['Todos', 'Estudo', 'Questões', 'Simulado', 'Revisão'];
@@ -105,7 +105,7 @@ export default function Historico({
           style={{
             flex: 1, background: 'transparent', border: 0, outline: 0,
             fontFamily: 'var(--pl-sans)', fontSize: 13.5,
-            color: 'var(--pl-ink-2, #3a342c)',
+            color: 'var(--pl-ink-2)',
             letterSpacing: '-0.005em',
           }}
         />
@@ -141,7 +141,7 @@ export default function Historico({
                 padding: '7px 14px',
                 fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 600,
                 letterSpacing: '-0.005em',
-                color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2, #3a342c)',
+                color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
                 background: active ? 'var(--pl-ink)' : 'var(--pl-surface)',
                 border: `1px solid ${active ? 'var(--pl-ink)' : 'var(--pl-rule-strong)'}`,
                 borderRadius: 6, cursor: 'pointer',
@@ -158,9 +158,9 @@ export default function Historico({
           fontFamily: 'var(--pl-mono)', fontSize: 12,
           color: 'var(--pl-ink-3)', fontWeight: 500,
         }}>
-          <span style={{ color: 'var(--pl-ink-2, #3a342c)', fontWeight: 600 }}>{filtered.length}</span>
+          <span style={{ color: 'var(--pl-ink-2)', fontWeight: 600 }}>{filtered.length}</span>
           {' / '}
-          <span style={{ color: 'var(--pl-ink-2, #3a342c)', fontWeight: 600 }}>{totalSessions}</span>
+          <span style={{ color: 'var(--pl-ink-2)', fontWeight: 600 }}>{totalSessions}</span>
         </span>
       </div>
 
@@ -371,7 +371,7 @@ function EmptyState({ hasRecords }) {
 
       <p style={{
         fontFamily: 'var(--pl-sans)', fontSize: 13.5, lineHeight: 1.55,
-        color: 'var(--pl-ink-2, #3a342c)', fontWeight: 500,
+        color: 'var(--pl-ink-2)', fontWeight: 500,
         maxWidth: '44ch', margin: 0,
       }}>
         Comece uma sessão de estudo — em alguns minutos o primeiro
