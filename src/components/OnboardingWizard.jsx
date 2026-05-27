@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { DEFAULT_COURSE_TEMPLATES, normalizeCourseTemplates } from '../lib/courseTemplates';
+import { updateProfile } from '../lib/profileApi';
 import { normalizeCpf, isValidCpf } from '../lib/profileProgress';
 import { showToast } from '../lib/dialogs';
 
@@ -728,27 +729,21 @@ export default function OnboardingWizard({
         cpf: validation.cpfDigits,
         onboarding_done: true,
         meta_horas_semana: totalHours || 0,
-        updated_at: new Date().toISOString(),
       };
 
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('cpf', validation.cpfDigits)
-        .neq('id', currentUserId)
-        .maybeSingle();
-      if (existing) {
-        setProfileErrors((prev) => ({ ...prev, cpf: 'Este CPF já está cadastrado em outra conta.' }));
-        setSaving(false);
-        return;
+      if (normalizeCpf(profile?.cpf || '') !== validation.cpfDigits) {
+        const { data: cpfAvailable, error: cpfError } = await supabase.rpc('cpf_disponivel', {
+          check_cpf: validation.cpfDigits,
+        });
+        if (cpfError) throw cpfError;
+        if (cpfAvailable === false) {
+          setProfileErrors((prev) => ({ ...prev, cpf: 'Este CPF já está cadastrado em outra conta.' }));
+          setSaving(false);
+          return;
+        }
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', currentUserId);
-
-      if (error) throw error;
+      await updateProfile(currentUserId, updates);
 
       if (selectedObjective?.sourceKind === 'contest') {
         setTargetContestId?.(selectedObjective.rawId || contestId.replace(/^contest:/, ''));
