@@ -151,22 +151,50 @@ function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
   });
 }
 
+const OBJECTIVE_TYPES = ['Faculdade', 'Vestibular', 'Concurso'];
+
 function StepContest({ objectiveLibrary, selectedId, onSelect }) {
+  const [activeType, setActiveType] = useState('Faculdade');
+  const [activeArea, setActiveArea] = useState('');
   const [query, setQuery] = useState('');
+
+  const typeCounts = useMemo(() => (
+    OBJECTIVE_TYPES.reduce((acc, type) => {
+      acc[type] = (objectiveLibrary || []).filter((item) => item.objectiveType === type).length;
+      return acc;
+    }, {})
+  ), [objectiveLibrary]);
+
+  const areas = useMemo(() => {
+    const names = (objectiveLibrary || [])
+      .filter((item) => item.objectiveType === activeType)
+      .map((item) => item.area || item.orgao || item.organization || 'Geral')
+      .filter(Boolean);
+    return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [activeType, objectiveLibrary]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return (objectiveLibrary || []).slice(0, 80);
     return (objectiveLibrary || [])
+      .filter((c) => c.objectiveType === activeType)
+      .filter((c) => !activeArea || (c.area || c.orgao || c.organization || 'Geral') === activeArea)
       .filter(
         (c) =>
+          !q ||
           (c.nome || c.name || '').toLowerCase().includes(q) ||
           (c.orgao || c.organization || '').toLowerCase().includes(q) ||
           (c.area || '').toLowerCase().includes(q) ||
           (c.objectiveType || '').toLowerCase().includes(q)
       )
       .slice(0, 80);
-  }, [objectiveLibrary, query]);
+  }, [activeArea, activeType, objectiveLibrary, query]);
+
+  const handleTypeChange = (type) => {
+    setActiveType(type);
+    setActiveArea('');
+    setQuery('');
+    onSelect('');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -178,6 +206,83 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
         <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
           Isso orienta seu plano, suas questões e sua rotina. Pode pular se quiser.
         </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
+        {OBJECTIVE_TYPES.map((type) => {
+          const active = activeType === type;
+          const label = type === 'Concurso' ? 'Concursos' : type;
+          return (
+            <button
+              key={type}
+              type="button"
+              onClick={() => handleTypeChange(type)}
+              style={{
+                minWidth: 0,
+                border: `1px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                borderRadius: 999,
+                background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+                padding: '9px 8px',
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: 800,
+                textAlign: 'center',
+              }}
+            >
+              <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+              <span style={{ display: 'block', marginTop: 1, fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>
+                {typeCounts[type] || 0} opções
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <p className="pl-eyebrow" style={{ margin: 0 }}>
+          Áreas de {activeType === 'Concurso' ? 'concursos' : activeType.toLowerCase()}
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 78, overflowY: 'auto' }}>
+          <button
+            type="button"
+            onClick={() => setActiveArea('')}
+            style={{
+              border: `1px solid ${!activeArea ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+              borderRadius: 999,
+              background: !activeArea ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+              color: !activeArea ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+              padding: '6px 10px',
+              cursor: 'pointer',
+              fontSize: 11.5,
+              fontWeight: 700,
+            }}
+          >
+            Todas
+          </button>
+          {areas.map((area) => {
+            const active = activeArea === area;
+            return (
+              <button
+                key={area}
+                type="button"
+                onClick={() => setActiveArea(active ? '' : area)}
+                style={{
+                  border: `1px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                  borderRadius: 999,
+                  background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                  color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                }}
+              >
+                {area}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div style={{ position: 'relative' }}>
