@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Bell, Lightbulb, LogOut, Menu, Moon, Search, ShieldAlert, Sparkles, Sun, UserCircle2 } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { Bell, Lightbulb, LogOut, Menu, Moon, Megaphone, Search, Send, ShieldAlert, Sparkles, Sun, UserCircle2, X } from 'lucide-react';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
 
@@ -78,10 +78,16 @@ export default function Header({
   onOpenOnboarding,
   darkMode = false,
   onToggleDarkMode,
+  adminNotices = [],
+  onDismissNotice,
+  onPublishNotice,
 }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [broadcastText, setBroadcastText] = useState('');
+  const [broadcastSending, setBroadcastSending] = useState(false);
+  const broadcastRef = useRef(null);
 
   const displayName = useMemo(() => {
     const capitalizeFirst = (value = '') => {
@@ -324,7 +330,7 @@ export default function Header({
           }}
           aria-label="Notificações"
         >
-          {notifications.length > 0 && (
+          {(notifications.length > 0 || adminNotices.length > 0) && (
             <span style={{
               position: 'absolute', top: 5, right: 6,
               width: 6, height: 6, borderRadius: 999, background: 'var(--pl-warn)',
@@ -357,58 +363,132 @@ export default function Header({
       {isNotificationsOpen && (
         <div style={{
           position: 'absolute', right: 16, top: '100%', marginTop: 6,
-          width: 320, maxHeight: 400,
+          width: 340, maxHeight: 520,
           background: 'var(--pl-surface)',
           border: '1px solid var(--pl-rule-2)',
-          borderRadius: 8, boxShadow: 'var(--pl-sh-mid)',
-          zIndex: 40, overflow: 'hidden',
+          borderRadius: 10, boxShadow: 'var(--pl-sh-mid)',
+          zIndex: 40, overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--pl-rule)' }}>
-            <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>Lembretes</div>
-            <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
-              Próximos alertas
-            </p>
+            <p className="pl-eyebrow" style={{ fontSize: 9.5 }}>Central de avisos</p>
           </div>
-          <div style={{ maxHeight: 320, overflowY: 'auto', padding: 10 }}>
-            {notifications.length === 0 ? (
-              <div style={{
-                padding: '20px 16px', textAlign: 'center',
-                fontSize: 13, color: 'var(--pl-ink-3)',
-                border: '1px dashed var(--pl-rule-2)', borderRadius: 6,
-                background: 'var(--pl-bg-soft)',
-              }}>
-                Nenhum lembrete no momento.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {notifications.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setIsNotificationsOpen(false);
-                      onOpenNotification?.(item);
-                    }}
-                    className="pl-card"
-                    style={{
-                      width: '100%', padding: '10px 12px', cursor: 'pointer',
-                      textAlign: 'left', display: 'flex', justifyContent: 'space-between',
-                      alignItems: 'flex-start', gap: 10,
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{item.title}</p>
-                      <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', margin: '2px 0 0', lineHeight: 1.4 }}>{item.text}</p>
-                    </div>
-                    {item.date && (
-                      <span className="pl-tag" style={{ flexShrink: 0 }}>
-                        {String(item.date).split('-').reverse().join('/')}
-                      </span>
-                    )}
-                  </button>
-                ))}
+
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+
+            {/* ── Área de publicação (só admin) ── */}
+            {isAdmin && (
+              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <Megaphone size={13} style={{ color: 'var(--pl-accent)' }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-accent)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Publicar aviso para todos
+                  </span>
+                </div>
+                <textarea
+                  ref={broadcastRef}
+                  value={broadcastText}
+                  onChange={(e) => setBroadcastText(e.target.value)}
+                  placeholder="Digite o aviso que todos os usuários verão..."
+                  rows={3}
+                  className="pl-input"
+                  style={{ width: '100%', resize: 'none', fontSize: 12, fontFamily: 'var(--pl-sans)', marginBottom: 8 }}
+                />
+                <button
+                  disabled={broadcastSending || !broadcastText.trim()}
+                  onClick={async () => {
+                    if (!broadcastText.trim()) return;
+                    setBroadcastSending(true);
+                    try {
+                      await onPublishNotice?.({ message: broadcastText.trim(), user_id: null });
+                      setBroadcastText('');
+                    } finally {
+                      setBroadcastSending(false);
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+                    background: broadcastText.trim() ? 'var(--pl-accent)' : 'var(--pl-bg)',
+                    color: broadcastText.trim() ? '#fff' : 'var(--pl-ink-4)',
+                    border: '1px solid var(--pl-accent-ring)',
+                    cursor: broadcastSending || !broadcastText.trim() ? 'not-allowed' : 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  <Send size={11} />
+                  {broadcastSending ? 'Enviando...' : 'Publicar'}
+                </button>
               </div>
             )}
+
+            {/* ── Avisos do admin para o usuário atual ── */}
+            {adminNotices.length > 0 && (
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--pl-rule)' }}>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Avisos da plataforma</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {adminNotices.map((notice) => (
+                    <div key={notice.id} className="pl-card" style={{
+                      padding: '10px 12px', background: 'var(--pl-accent-soft)',
+                      border: '1px solid var(--pl-accent-ring)',
+                      display: 'flex', gap: 10, alignItems: 'flex-start',
+                    }}>
+                      <Megaphone size={13} style={{ color: 'var(--pl-accent)', flexShrink: 0, marginTop: 2 }} />
+                      <p style={{ flex: 1, fontSize: 13, color: 'var(--pl-ink)', margin: 0, lineHeight: 1.5 }}>
+                        {notice.message}
+                      </p>
+                      <button
+                        onClick={() => onDismissNotice?.(notice.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pl-ink-3)', flexShrink: 0, padding: 0 }}
+                        title="Dispensar"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Lembretes normais ── */}
+            <div style={{ padding: 10 }}>
+              <p className="pl-eyebrow" style={{ padding: '4px 4px 8px' }}>Lembretes</p>
+              {notifications.length === 0 ? (
+                <div style={{
+                  padding: '16px', textAlign: 'center',
+                  fontSize: 13, color: 'var(--pl-ink-3)',
+                  border: '1px dashed var(--pl-rule-2)', borderRadius: 6,
+                  background: 'var(--pl-bg-soft)',
+                }}>
+                  Nenhum lembrete no momento.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {notifications.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => { setIsNotificationsOpen(false); onOpenNotification?.(item); }}
+                      className="pl-card"
+                      style={{
+                        width: '100%', padding: '10px 12px', cursor: 'pointer',
+                        textAlign: 'left', display: 'flex', justifyContent: 'space-between',
+                        alignItems: 'flex-start', gap: 10,
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{item.title}</p>
+                        <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', margin: '2px 0 0', lineHeight: 1.4 }}>{item.text}</p>
+                      </div>
+                      {item.date && (
+                        <span className="pl-tag" style={{ flexShrink: 0 }}>
+                          {String(item.date).split('-').reverse().join('/')}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

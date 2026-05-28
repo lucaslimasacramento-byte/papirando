@@ -1660,6 +1660,40 @@ export default function App() {
       });
   }, [manualReminders, contestLibrary, notificationSettings]);
 
+  // ── Admin notices ─────────────────────────────────────────────────────
+  const [adminNotices, setAdminNotices] = useState([]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    let cancelled = false;
+    supabase
+      .from('admin_notices')
+      .select('id, message, sent_at, user_id')
+      .or(`user_id.eq.${currentUserId},user_id.is.null`)
+      .is('read_at', null)
+      .order('sent_at', { ascending: false })
+      .limit(10)
+      .then(({ data }) => {
+        if (!cancelled && Array.isArray(data)) setAdminNotices(data);
+      });
+    return () => { cancelled = true; };
+  }, [currentUserId]);
+
+  const handleDismissNotice = async (noticeId) => {
+    setAdminNotices((prev) => prev.filter((n) => n.id !== noticeId));
+    await supabase.from('admin_notices').update({ read_at: new Date().toISOString() }).eq('id', noticeId);
+  };
+
+  const handlePublishNotice = async ({ message, user_id }) => {
+    const { error } = await supabase.from('admin_notices').insert({ message, user_id: user_id ?? null });
+    if (error) throw error;
+    // Se for broadcast, admin também vê imediatamente na lista própria
+    if (!user_id) {
+      setAdminNotices((prev) => [{ id: crypto.randomUUID(), message, sent_at: new Date().toISOString(), user_id: null }, ...prev]);
+    }
+  };
+  // ──────────────────────────────────────────────────────────────────────
+
   const allReminderNotifications = useMemo(() => {
     return [...contestNotifications, ...manualReminderNotifications].sort((first, second) => {
       if (first.priority !== second.priority) return second.priority - first.priority;
@@ -6624,6 +6658,9 @@ export default function App() {
           onOpenOnboarding={isAdmin ? () => setShowOnboardingPreview(true) : undefined}
           darkMode={darkMode}
           onToggleDarkMode={() => setDarkMode((v) => !v)}
+          adminNotices={adminNotices}
+          onDismissNotice={handleDismissNotice}
+          onPublishNotice={handlePublishNotice}
         />
 
         <div
