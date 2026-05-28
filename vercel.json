@@ -37,7 +37,7 @@
   "crons": [
     {
       "path": "/api/instagram/publish-due",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }

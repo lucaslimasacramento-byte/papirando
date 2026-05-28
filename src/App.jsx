@@ -6587,6 +6587,7 @@ export default function App() {
           onToggleCollapsed={setIsSidebarCollapsed}
           isAdmin={isAdmin}
           currentUserEmail={currentUserEmail}
+          currentProfile={effectiveProfile}
           onNavigate={() => setMobileNavOpen(false)}
           labelOverrides={sidebarLabelsOverride || {}}
           className="h-full min-h-0 shadow-float lg:shadow-none"

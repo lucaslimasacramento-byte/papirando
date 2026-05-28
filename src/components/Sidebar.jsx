@@ -188,6 +188,7 @@ export default function Sidebar({
   onToggleCollapsed,
   isAdmin = false,
   currentUserEmail = '',
+  currentProfile = null,
   onNavigate,
   className = '',
   labelOverrides = null,
@@ -223,12 +224,15 @@ export default function Sidebar({
   };
 
   const displayName = (() => {
+    const nome = String(currentProfile?.nome || '').trim();
+    if (nome) return nome.split(' ')[0];
     const raw = String(currentUserEmail || '').trim();
     if (!raw) return 'Conta ativa';
     const name = raw.split('@')[0];
     return name.charAt(0).toUpperCase() + name.slice(1);
   })();
 
+  const avatarUrl = String(currentProfile?.avatar_url || '').trim();
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -419,21 +423,33 @@ export default function Sidebar({
       </nav>
 
       {/* User profile */}
-      <div style={{
-        borderTop: '1px solid var(--pl-rule)',
-        padding: isCollapsed ? '10px 6px' : '10px 12px',
-        display: 'flex', alignItems: 'center',
-        gap: isCollapsed ? 0 : 10,
-        justifyContent: isCollapsed ? 'center' : 'flex-start',
-      }}>
+      <button
+        onClick={() => handleItemClick('perfil')}
+        style={{
+          borderTop: '1px solid var(--pl-rule)',
+          padding: isCollapsed ? '10px 6px' : '10px 12px',
+          display: 'flex', alignItems: 'center',
+          gap: isCollapsed ? 0 : 10,
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          background: 'none', border: 'none', cursor: 'pointer',
+          width: '100%', textAlign: 'left',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--pl-bg-soft)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+        title="Ver perfil"
+      >
         <div style={{
           width: 30, height: 30, borderRadius: 999,
           background: 'var(--pl-ink)', color: 'var(--pl-bg)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400,
           fontSize: 15, letterSpacing: '-0.04em', flexShrink: 0,
+          overflow: 'hidden',
         }}>
-          {initial}
+          {avatarUrl
+            ? <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : initial}
         </div>
         {!isCollapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -448,7 +464,7 @@ export default function Sidebar({
             </div>
           </div>
         )}
-      </div>
+      </button>
     </aside>
   );
 }
