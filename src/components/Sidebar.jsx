@@ -426,7 +426,7 @@ export default function Sidebar({
       <button
         onClick={() => handleItemClick('perfil')}
         style={{
-          borderTop: '1px solid var(--pl-rule)',
+          borderTop: '1px solid var(--pl-rule-2)',
           padding: isCollapsed ? '10px 6px' : '10px 12px',
           display: 'flex', alignItems: 'center',
           gap: isCollapsed ? 0 : 10,

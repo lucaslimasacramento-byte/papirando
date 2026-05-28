@@ -1482,7 +1482,7 @@ export default function App() {
       }),
     [historicoReal, subjectCatalog, currentBadgeConfig, progressConfig]
   );
-  const profileHasValidCpf = isValidCpf(effectiveProfile?.cpf || '');
+  const profileHasValidCpf = !effectiveProfile?.onboarding_done || isValidCpf(effectiveProfile?.cpf || '');
   const squadSummary = useMemo(
     () => ({
       count: Array.isArray(communityState?.memberships) ? communityState.memberships.length : 0,

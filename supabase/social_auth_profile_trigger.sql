@@ -15,7 +15,9 @@ begin
     nome,
     avatar_url,
     email_verificado,
-    status_cadastro
+    status_cadastro,
+    subscription_plan,
+    subscription_expires_at
   )
   values (
     new.id,
@@ -34,7 +36,9 @@ begin
     case
       when new.email_confirmed_at is not null then 'ativo'
       else 'pendente'
-    end
+    end,
+    'estudio',
+    timezone('utc', now()) + interval '3 months'
   )
   on conflict (id) do update
     set
@@ -52,6 +56,7 @@ begin
         else public.profiles.status_cadastro
       end,
       updated_at = timezone('utc', now());
+  -- Nota: no ON CONFLICT não sobrescrevemos subscription_plan para não afetar upgrades existentes.
 
   return new;
 exception
