@@ -6633,8 +6633,7 @@ export default function App() {
           } ${
             activeTab === 'historico' ||
             activeTab === 'questoes' ||
-            activeTab === 'comunidades' ||
-            activeTab === 'perfil'
+            activeTab === 'comunidades'
               ? `flex flex-col overflow-hidden ${activeTab === 'comunidades' ? 'pb-2' : 'pb-6'}`
               : `overflow-y-auto overflow-x-hidden ${['home', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades', 'esquadroes'].includes(activeTab) ? 'pb-0' : activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}

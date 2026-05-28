@@ -333,27 +333,6 @@ export default function Header({
           <Bell size={15} strokeWidth={1.75} />
         </button>
 
-        {/* Profile */}
-        <button
-          type="button"
-          onClick={onOpenProfile}
-          style={{
-            display: 'none',
-            alignItems: 'center', gap: 7,
-            height: 32, padding: '0 10px', borderRadius: 6,
-            border: '1px solid var(--pl-rule-strong)',
-            background: 'var(--pl-surface)', cursor: 'pointer',
-            fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink-2)',
-            maxWidth: 160, overflow: 'hidden',
-          }}
-          className="md:!flex"
-        >
-          <UserCircle2 size={14} strokeWidth={1.75} />
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {displayName}
-          </span>
-        </button>
-
         {/* Logout */}
         <button
           type="button"

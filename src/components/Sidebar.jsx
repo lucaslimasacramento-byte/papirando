@@ -460,7 +460,13 @@ export default function Sidebar({
               {displayName}
             </div>
             <div style={{ fontSize: 10, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-              {isAdmin ? 'Administrador' : 'papireiro'}
+              {isAdmin ? 'Administrador' : (
+                (() => {
+                  const firstName = String(currentProfile?.nome || '').trim().split(' ')[0].toLowerCase();
+                  const isFeminine = firstName.length > 1 && firstName.endsWith('a') && !['lucas', 'mateus', 'nicolas', 'tobias', 'elias', 'jonas', 'noa', 'ezra'].includes(firstName);
+                  return isFeminine ? 'papireia' : 'papireiro';
+                })()
+              )}
             </div>
           </div>
         )}
