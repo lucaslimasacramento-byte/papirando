@@ -25,14 +25,14 @@ create policy "admin_notices_admin_all"
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-        and (role = 'admin' or is_admin = true)
+        and role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-        and (role = 'admin' or is_admin = true)
+        and role = 'admin'
     )
   );
 
