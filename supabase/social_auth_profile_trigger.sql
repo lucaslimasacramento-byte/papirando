@@ -38,7 +38,7 @@ begin
       else 'pendente'
     end,
     'estudio',
-    timezone('utc', now()) + interval '3 months'
+    timezone('utc', now()) + interval '1 month'
   )
   on conflict (id) do update
     set
