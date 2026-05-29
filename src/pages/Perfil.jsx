@@ -913,7 +913,7 @@ export default function Perfil(props) {
                 <SectionHeader
                   eyebrow="Dados da conta"
                   title="Informações editáveis do perfil"
-                  subtitle="Persistidas pelo fluxo real de perfil do app."
+
                   action={
                     <button
                       type="button"
