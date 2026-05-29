@@ -911,9 +911,6 @@ export default function Perfil(props) {
             {activeTab === 'overview' && (
               <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
                 <SectionHeader
-                  eyebrow="Dados da conta"
-                  title="Informações editáveis do perfil"
-
                   action={
                     <button
                       type="button"
