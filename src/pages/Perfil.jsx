@@ -1494,7 +1494,8 @@ export default function Perfil(props) {
                   </div>
                 </div>
               </div>
-            )}\n          </main>
+            )}
+          </main>
         </div>
       </div>
 
