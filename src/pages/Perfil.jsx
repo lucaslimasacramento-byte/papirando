@@ -7,13 +7,13 @@ import {
   CheckCircle2,
   ChevronRight,
   Circle,
-  Crown,
   Download,
   FileText,
   KeyRound,
   LogOut,
   Mail,
   Medal,
+  Pencil,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -21,18 +21,18 @@ import {
   Trash2,
   Trophy,
   User2,
-  Users,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { isValidCpf, normalizeCpf } from '../lib/profileProgress';
+import { isValidCpf, normalizeCpf, PROGRESS_METRIC_OPTIONS } from '../lib/profileProgress';
+import { normalizeUsername, validateUsername, USERNAME_MAX_LENGTH } from '../lib/usernameRules';
 
 const navItems = [
-  { id: 'overview', label: 'Visao geral', icon: User2 },
+  { id: 'overview', label: 'Visão geral', icon: User2 },
   { id: 'achievements', label: 'Conquistas', icon: Trophy },
-  { id: 'security', label: 'Seguranca', icon: ShieldCheck },
+  { id: 'security', label: 'Segurança', icon: ShieldCheck },
 ];
 
-/** Planos alinhados a pagina Assinatura (precos exibidos; contratacao na area dedicada). */
+/** Planos alinhados à página Assinatura (preços exibidos; contratação na área dedicada). */
 const PERFIL_PLANOS = [
   {
     id: 'gratuito',
@@ -43,16 +43,16 @@ const PERFIL_PLANOS = [
     Icon: Circle,
     destaque: false,
     features: [
-      'Cronometro e registro de sessoes',
-      'Edital verticalizado basico',
+      'Cronômetro e registro de sessões',
+      'Edital verticalizado básico',
       '1 ciclo de estudo ativo',
-      'Historico resumido e limite diario de questoes',
+      'Histórico resumido e limite diário de questões',
     ],
   },
   {
     id: 'tatico',
-    nome: 'Tatico',
-    descricao: 'Para quem leva a aprovacao a serio.',
+    nome: 'Tático',
+    descricao: 'Para quem leva a aprovação a sério.',
     precoMensal: '49,90',
     precoAnual: '29,90',
     Icon: Star,
@@ -60,25 +60,25 @@ const PERFIL_PLANOS = [
     features: [
       'Tudo do Gratuito',
       'Ciclos de estudo ilimitados',
-      'Banco de questoes sem limite diario',
-      'Estatisticas e dashboards avancados',
-      'IA em recursos selecionados (conforme politica do plano)',
+      'Banco de questões sem limite diário',
+      'Estatísticas e dashboards avançados',
+      'IA em recursos selecionados (conforme política do plano)',
     ],
   },
   {
     id: 'elite',
     nome: 'Elite',
-    descricao: 'Pacote completo com destaque em IA e experiencia premium.',
+    descricao: 'Pacote completo com destaque em IA e experiência premium.',
     precoMensal: '89,90',
     precoAnual: '59,90',
     Icon: Sparkles,
     destaque: false,
     premium: true,
     features: [
-      'Tudo do Tatico',
-      'Redacoes e flashcards com IA',
+      'Tudo do Tático',
+      'Redações e flashcards com IA',
       'Prioridade em novidades e selos premium',
-      'Melhor custo-beneficio para uso intensivo',
+      'Melhor custo-benefício para uso intensivo',
     ],
   },
 ];
@@ -101,7 +101,7 @@ function formatPhone(value) {
 function formatPlanLabel(plan) {
   const normalized = String(plan || 'gratuito').toLowerCase();
   if (normalized === 'elite') return 'Elite';
-  if (normalized === 'tatico') return 'Tatico';
+  if (normalized === 'tatico') return 'Tático';
   return 'Gratuito';
 }
 
@@ -111,7 +111,7 @@ function formatSubscriptionStatus(status) {
   if (normalized === 'trial') return 'Trial';
   if (normalized === 'past_due') return 'Pendente';
   if (normalized === 'canceled') return 'Cancelada';
-  return normalized || 'Nao informado';
+  return normalized || 'Não informado';
 }
 
 function formatHours(minutes) {
@@ -123,13 +123,6 @@ function formatHours(minutes) {
 
 function formatNumber(value) {
   return new Intl.NumberFormat('pt-BR').format(Number(value || 0));
-}
-
-function formatAudiobookHours(seconds) {
-  const totalMinutes = Math.round(Math.max(0, Number(seconds || 0)) / 60);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${hours}h ${String(minutes).padStart(2, '0')}m`;
 }
 
 function getInitials(name, email) {
@@ -146,6 +139,12 @@ function getBadgeTone(unlocked, color) {
   return 'accent';
 }
 
+function formatBadgeRequirement(badge) {
+  const metricLabel = PROGRESS_METRIC_OPTIONS.find((option) => option.value === badge?.metric)?.label || 'progresso';
+  const target = formatNumber(badge?.target || 1);
+  return `${target} ${metricLabel.toLowerCase()}`;
+}
+
 /** Small badge/pill helper mapping tone to pl-tag class */
 function TagBadge({ children, tone = 'neutral' }) {
   const cls =
@@ -159,12 +158,12 @@ function TagBadge({ children, tone = 'neutral' }) {
 
 function SectionHeader({ eyebrow, title, subtitle, action }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
         <div>
-          <p className="pl-eyebrow" style={{ marginBottom: 6 }}>{eyebrow}</p>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{title}</h2>
-          {subtitle ? <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{subtitle}</p> : null}
+          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{eyebrow}</p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{title}</h2>
+          {subtitle ? <p style={{ marginTop: 3, fontSize: 12.5, color: 'var(--pl-ink-2)' }}>{subtitle}</p> : null}
         </div>
         {action}
       </div>
@@ -198,10 +197,10 @@ function ToneIconWrap({ tone = 'accent', children }) {
   );
 }
 
-function Field({ label, value, onChange, placeholder, disabled = false, type = 'text', autoComplete }) {
+function Field({ label, value, onChange, placeholder, disabled = false, type = 'text', autoComplete, maxLength }) {
   return (
     <label style={{ display: 'block' }}>
-      <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>{label}</span>
+      <span className="pl-eyebrow" style={{ display: 'block', marginBottom: 5 }}>{label}</span>
       <input
         type={type}
         value={value}
@@ -209,8 +208,9 @@ function Field({ label, value, onChange, placeholder, disabled = false, type = '
         placeholder={placeholder}
         disabled={disabled}
         autoComplete={autoComplete}
+        maxLength={maxLength}
         className="pl-input"
-        style={{ width: '100%' }}
+        style={{ width: '100%', height: 34 }}
       />
     </label>
   );
@@ -226,8 +226,8 @@ function ToggleChip({ active, onClick, children }) {
         border: active ? '1.5px solid var(--pl-accent)' : '1.5px solid var(--pl-rule-2)',
         background: active ? 'var(--pl-accent)' : 'var(--pl-surface)',
         color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
-        padding: '8px 16px',
-        fontSize: 13,
+        padding: '7px 14px',
+        fontSize: 12.5,
         fontWeight: 600,
         cursor: 'pointer',
         transition: 'all 0.15s',
@@ -242,23 +242,23 @@ function InfoTile({ label, value, helper, icon }) {
   const IconComponent = icon;
   return (
     <div style={{
-      borderRadius: 16,
+      borderRadius: 12,
       border: '1px solid var(--pl-rule-2)',
       background: 'var(--pl-bg-soft)',
-      padding: 16,
+      padding: 12,
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: 40, height: 40, borderRadius: 12,
+          width: 34, height: 34, borderRadius: 10,
           background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', flexShrink: 0,
         }}>
           {IconComponent ? <IconComponent style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} /> : null}
         </div>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{label}</p>
-          <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{value}</p>
-          <p style={{ marginTop: 4, fontSize: 12, color: 'var(--pl-ink-3)' }}>{helper}</p>
+          <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{label}</p>
+          <p style={{ marginTop: 3, fontSize: 12.5, color: 'var(--pl-ink-2)' }}>{value}</p>
+          <p style={{ marginTop: 3, fontSize: 11.5, color: 'var(--pl-ink-3)' }}>{helper}</p>
         </div>
       </div>
     </div>
@@ -269,23 +269,23 @@ function SecurityRow({ icon, label, value, helper }) {
   const IconComponent = icon;
   return (
     <div style={{
-      borderRadius: 16,
+      borderRadius: 12,
       border: '1px solid var(--pl-rule-2)',
       background: 'var(--pl-bg-soft)',
-      padding: 16,
+      padding: 10,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: 40, height: 40, borderRadius: 12,
+          width: 32, height: 32, borderRadius: 10,
           background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', flexShrink: 0,
         }}>
           {IconComponent ? <IconComponent style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} /> : null}
         </div>
         <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{label}</p>
-          <p style={{ marginTop: 4, wordBreak: 'break-all', fontSize: 13, color: 'var(--pl-ink-2)' }}>{value}</p>
-          <p style={{ marginTop: 4, fontSize: 12, color: 'var(--pl-ink-3)' }}>{helper}</p>
+          <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{label}</p>
+          <p style={{ marginTop: 2, wordBreak: 'break-all', fontSize: 12.5, color: 'var(--pl-ink-2)' }}>{value}</p>
+          <p style={{ marginTop: 2, fontSize: 11.5, color: 'var(--pl-ink-3)' }}>{helper}</p>
         </div>
       </div>
     </div>
@@ -310,19 +310,19 @@ function LgpdButton({ icon, label, description, tone = 'neutral', onClick }) {
         display: 'flex', width: '100%', alignItems: 'center', gap: 12,
         borderRadius: 14, border: `1px solid ${border}`,
         background: bg, color: color,
-        padding: 14, textAlign: 'left', cursor: 'pointer', transition: 'opacity 0.15s',
+        padding: 10, textAlign: 'left', cursor: 'pointer', transition: 'opacity 0.15s',
       }}
     >
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+        width: 32, height: 32, borderRadius: 9, flexShrink: 0,
         background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
       }}>
         {IconComponent && <IconComponent style={{ width: 16, height: 16 }} />}
       </div>
       <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 600 }}>{label}</p>
-        <p style={{ marginTop: 2, fontSize: 12, opacity: 0.7 }}>{description}</p>
+        <p style={{ fontSize: 12.5, fontWeight: 600 }}>{label}</p>
+        <p style={{ marginTop: 1, fontSize: 11.5, opacity: 0.7 }}>{description}</p>
       </div>
     </button>
   );
@@ -336,22 +336,22 @@ function ActionTile({ icon, title, desc, actionLabel, onClick, disabled = false 
       onClick={onClick}
       disabled={disabled}
       style={{
-        borderRadius: 18, border: '1px solid var(--pl-rule-2)',
-        background: 'var(--pl-bg-soft)', padding: 20, textAlign: 'left',
+        borderRadius: 12, border: '1px solid var(--pl-rule-2)',
+        background: 'var(--pl-bg-soft)', padding: 12, textAlign: 'left',
         cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.6 : 1,
         transition: 'all 0.15s', width: '100%',
       }}
     >
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: 40, height: 40, borderRadius: 12,
+        width: 32, height: 32, borderRadius: 10,
         background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
       }}>
         {IconComponent ? <IconComponent style={{ width: 16, height: 16, color: 'var(--pl-ink)' }} /> : null}
       </div>
-      <p style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{title}</p>
-      <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{desc}</p>
-      <p style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)' }}>{actionLabel}</p>
+      <p style={{ marginTop: 10, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{title}</p>
+      <p style={{ marginTop: 4, fontSize: 11.5, lineHeight: 1.45, color: 'var(--pl-ink-2)' }}>{desc}</p>
+      <p style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--pl-accent)' }}>{actionLabel}</p>
     </button>
   );
 }
@@ -381,8 +381,6 @@ export default function Perfil(props) {
     username: '',
     celular: '',
     cpf: '',
-    rankingDisplayMode: 'username',
-    rankingCodename: '',
   });
   const [saveState, setSaveState] = useState({ type: '', message: '' });
   const [saving, setSaving] = useState(false);
@@ -390,12 +388,14 @@ export default function Perfil(props) {
   const [passwordBusy, setPasswordBusy] = useState(false);
   const [passwordChangeBusy, setPasswordChangeBusy] = useState(false);
   const [emailBusy, setEmailBusy] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [remoteProfile, setRemoteProfile] = useState(null);
   const [planoPrecoAnual, setPlanoPrecoAnual] = useState(true);
+  const [showBadgeCatalog, setShowBadgeCatalog] = useState(false);
   const fileInputRef = useRef(null);
 
   const cpfDigitsPreview = useMemo(() => normalizeCpf(form.cpf || ''), [form.cpf]);
@@ -425,8 +425,6 @@ export default function Perfil(props) {
       username: String(profileData?.username || '').trim(),
       celular: String(profileData?.celular || profileData?.telefone || '').trim(),
       cpf: formatCpf(profileData?.cpf || ''),
-      rankingDisplayMode: String(profileData?.ranking_display_mode || 'username'),
-      rankingCodename: String(profileData?.ranking_codename || '').trim(),
     });
   }, [profileData]);
 
@@ -441,7 +439,7 @@ export default function Perfil(props) {
 
       if (error) {
         if (error.code !== 'PGRST116') {
-          console.warn('Nao foi possivel carregar o perfil remoto:', error.message);
+          console.warn('Não foi possível carregar o perfil remoto:', error.message);
         }
         setRemoteProfile({ email: currentUserEmail || '' });
         return;
@@ -473,6 +471,10 @@ export default function Perfil(props) {
   const memberships = Array.isArray(squadSummary?.memberships) ? squadSummary.memberships : [];
   const badges = Array.isArray(badgeSummary?.badges) ? badgeSummary.badges : [];
   const unlockedBadges = badges.filter((badge) => badge.unlocked);
+  const lockedBadges = badges.filter((badge) => !badge.unlocked);
+  const nextBadge = lockedBadges
+    .slice()
+    .sort((a, b) => Number(b.progressPercent || 0) - Number(a.progressPercent || 0))[0];
   const avatarInitials = getInitials(profileData?.nome || profileData?.name, currentUserEmail);
   const planLabel = formatPlanLabel(profileData?.subscription_plan || profileData?.plano);
   const subscriptionStatus = formatSubscriptionStatus(profileData?.subscription_status);
@@ -483,79 +485,39 @@ export default function Perfil(props) {
     return 'gratuito';
   }, [profileData?.subscription_plan, profileData?.plano]);
   const rankingPreview = useMemo(() => {
-    if (form.rankingDisplayMode === 'codename' && String(form.rankingCodename || '').trim()) {
-      return String(form.rankingCodename).trim();
-    }
-    return String(form.username || profileData?.username || profileData?.nome || profileData?.name || currentUserEmail || 'usuario').trim();
-  }, [form.rankingDisplayMode, form.rankingCodename, form.username, profileData, currentUserEmail]);
+    return String(form.username || profileData?.username || currentUserEmail || 'usuario').trim();
+  }, [form.username, profileData?.username, currentUserEmail]);
+  const usernameValidation = useMemo(() => validateUsername(form.username), [form.username]);
+  const usernameChanged = useMemo(() => {
+    return normalizeUsername(form.username) !== normalizeUsername(profileData?.username || '');
+  }, [form.username, profileData?.username]);
 
   const completionPercent = useMemo(() => {
     const checks = [
       Boolean(profileData?.nome || profileData?.name),
       Boolean(profileData?.username),
       Boolean(profileData?.avatar_url),
-      Boolean(profileData?.ranking_codename || form.rankingDisplayMode !== 'codename'),
       profileHasValidCpf,
       memberships.length > 0,
     ];
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-  }, [profileData, form.rankingDisplayMode, profileHasValidCpf, memberships.length]);
+  }, [profileData, profileHasValidCpf, memberships.length]);
 
   const heroStats = [
     { label: 'Perfil', value: `${completionPercent}% completo` },
     { label: 'Selos', value: formatNumber(unlockedBadges.length) },
-    { label: 'Level', value: `Lv ${formatNumber(xpSummary.level || 1)}` },
+    { label: 'Nível', value: `Nv ${formatNumber(xpSummary.level || 1)}` },
     { label: 'Audiolivros', value: `${formatNumber(audiobookSummary.inProgress || 0)} em curso` },
   ];
 
   const kpis = [
-    { label: 'Horas focadas', value: formatHours(xpSummary.totalMinutes), helper: 'Historico real salvo' },
-    { label: 'Questoes', value: formatNumber(xpSummary.totalQuestions), helper: 'Acertos + erros' },
-    { label: 'Ofensiva', value: `${formatNumber(xpSummary.streakDays)} dias`, helper: 'Melhor sequencia' },
-    { label: 'XP total', value: formatNumber(xpSummary.xpTotal), helper: `Progresso ${formatNumber(xpSummary.progressPercent)}%` },
+    { label: 'Horas focadas', value: formatHours(xpSummary.totalMinutes), helper: 'Histórico real salvo' },
+    { label: 'Questões', value: formatNumber(xpSummary.totalQuestions), helper: 'Acertos + erros' },
+    { label: 'Ofensiva', value: `${formatNumber(xpSummary.streakDays)} dias`, helper: 'Melhor sequência' },
     {
-      label: 'Redacoes',
+      label: 'Redações',
       value: formatNumber(essaySummary.corrected || 0),
-      helper: essaySummary.averageScore ? `Media ${String(essaySummary.averageScore).replace('.', ',')}` : 'Sem correcao ainda',
-    },
-  ];
-
-  const linkageCards = [
-    {
-      title: 'Esquadroes',
-      text: memberships.length > 0 ? `${formatNumber(memberships.length)} vinculo(s) ativo(s) na comunidade.` : 'Sem esquadroes vinculados no momento.',
-      tone: memberships.length > 0 ? 'accent' : 'danger',
-      icon: Users,
-    },
-    {
-      title: 'Selos',
-      text: unlockedBadges.length > 0 ? `${formatNumber(unlockedBadges.length)} selo(s) desbloqueado(s).` : 'Nenhum selo desbloqueado ainda.',
-      tone: unlockedBadges.length > 0 ? 'warn' : 'danger',
-      icon: Medal,
-    },
-    {
-      title: 'XP acumulado',
-      text: `${formatNumber(xpSummary.xpTotal)} XP acumulado na plataforma.`,
-      tone: xpSummary.xpTotal > 0 ? 'accent' : 'success',
-      icon: Crown,
-    },
-    {
-      title: 'Audiolivros',
-      text:
-        audiobookSummary.totalBooks > 0
-          ? `${formatNumber(audiobookSummary.favoriteCount || 0)} favorito(s), ${formatNumber(audiobookSummary.inProgress || 0)} em andamento e ${formatAudiobookHours(audiobookSummary.totalListenedSeconds || 0)} de reproducao.`
-          : 'Nenhum audiolivro iniciado ainda.',
-      tone: (audiobookSummary.inProgress || 0) > 0 ? 'accent' : 'danger',
-      icon: Trophy,
-    },
-    {
-      title: 'Redacoes',
-      text:
-        essaySummary.corrected > 0
-          ? `${formatNumber(essaySummary.corrected)} correcao(oes) com media ${String(essaySummary.averageScore || 0).replace('.', ',')}.`
-          : 'Nenhuma redacao corrigida ainda.',
-      tone: essaySummary.corrected > 0 ? 'accent' : 'danger',
-      icon: CheckCircle2,
+      helper: essaySummary.averageScore ? `Média ${String(essaySummary.averageScore).replace('.', ',')}` : 'Sem correção ainda',
     },
   ];
 
@@ -567,12 +529,17 @@ export default function Perfil(props) {
   const handleSave = async () => {
     if (typeof onSaveProfile !== 'function') return;
     if (!currentUserId) {
-      setSaveState({ type: 'error', message: 'Sessao indisponivel. Entre novamente para salvar o perfil.' });
+      setSaveState({ type: 'error', message: 'Sessão indisponível. Entre novamente para salvar o perfil.' });
       return;
     }
     const normalizedCpf = normalizeCpf(form.cpf);
+    const nextUsername = validateUsername(form.username);
+    if (!nextUsername.ok) {
+      setSaveState({ type: 'error', message: nextUsername.message });
+      return;
+    }
     if (normalizedCpf && !isValidCpf(normalizedCpf)) {
-      setSaveState({ type: 'error', message: 'CPF invalido. Revise os numeros antes de salvar.' });
+      setSaveState({ type: 'error', message: 'CPF inválido. Revise os números antes de salvar.' });
       return;
     }
     setSaving(true);
@@ -581,28 +548,27 @@ export default function Perfil(props) {
       const result = await onSaveProfile({
         ...profileData,
         ...form,
+        username: nextUsername.username,
         celular: formatPhone(form.celular),
         cpf: formatCpf(form.cpf),
-        ranking_display_mode: form.rankingDisplayMode,
-        ranking_codename: form.rankingCodename,
       });
       if (result?.ok) {
         setSaveState({
           type: result.partial ? 'warning' : 'success',
           message: result.partial
-            ? 'Perfil salvo localmente. A sincronizacao remota falhou.'
+            ? 'Perfil salvo localmente. A sincronização remota falhou.'
             : 'Dados do perfil salvos com sucesso.',
         });
         await loadRemoteProfile();
       } else {
         setSaveState({
           type: 'error',
-          message: result?.message || 'Nao foi possivel salvar o perfil. Corrija os campos indicados.',
+          message: result?.message || 'Não foi possível salvar o perfil. Corrija os campos indicados.',
         });
       }
     } catch (error) {
       console.error(error);
-      setSaveState({ type: 'error', message: 'Nao foi possivel salvar o perfil agora.' });
+      setSaveState({ type: 'error', message: 'Não foi possível salvar o perfil agora.' });
     } finally {
       setSaving(false);
     }
@@ -614,23 +580,23 @@ export default function Perfil(props) {
     if (!file || typeof onChangeAvatar !== 'function') return;
     const isImage = String(file.type || '').startsWith('image/');
     if (!isImage) {
-      setSaveState({ type: 'error', message: 'Formato invalido. Envie uma imagem.' });
+      setSaveState({ type: 'error', message: 'Formato inválido. Envie uma imagem.' });
       return;
     }
     const maxBytes = 5 * 1024 * 1024;
     if (file.size > maxBytes) {
-      setSaveState({ type: 'error', message: 'Imagem muito grande. O limite e 5 MB.' });
+      setSaveState({ type: 'error', message: 'Imagem muito grande. O limite é 5 MB.' });
       return;
     }
     setAvatarBusy(true);
     setSaveState({ type: '', message: '' });
     try {
       await onChangeAvatar(file);
-      setSaveState({ type: 'success', message: 'Foto atualizada com persistencia real.' });
+      setSaveState({ type: 'success', message: 'Foto atualizada com persistência real.' });
       await loadRemoteProfile();
     } catch (error) {
       console.error(error);
-      setSaveState({ type: 'error', message: 'Nao foi possivel atualizar a foto.' });
+      setSaveState({ type: 'error', message: 'Não foi possível atualizar a foto.' });
     } finally {
       setAvatarBusy(false);
     }
@@ -639,7 +605,7 @@ export default function Perfil(props) {
   const handlePasswordReset = async () => {
     const accountEmail = String(profileData?.email || currentUserEmail || '').trim();
     if (!accountEmail) {
-      setSaveState({ type: 'error', message: 'E-mail da conta nao encontrado para enviar a redefinicao.' });
+      setSaveState({ type: 'error', message: 'E-mail da conta não encontrado para enviar a redefinição.' });
       return;
     }
     setPasswordBusy(true);
@@ -651,11 +617,11 @@ export default function Perfil(props) {
       if (error) throw error;
       setSaveState({
         type: 'success',
-        message: `E-mail de redefinicao enviado para ${accountEmail}. Verifique a caixa de entrada e o spam.`,
+        message: `E-mail de redefinição enviado para ${accountEmail}. Verifique a caixa de entrada e o spam.`,
       });
     } catch (error) {
       console.error(error);
-      setSaveState({ type: 'error', message: error?.message || 'Nao foi possivel enviar o link agora.' });
+      setSaveState({ type: 'error', message: error?.message || 'Não foi possível enviar o link agora.' });
     } finally {
       setPasswordBusy(false);
     }
@@ -668,11 +634,11 @@ export default function Perfil(props) {
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setSaveState({ type: 'error', message: 'Formato de e-mail invalido.' });
+      setSaveState({ type: 'error', message: 'Formato de e-mail inválido.' });
       return;
     }
     if (email === String(currentUserEmail || '').toLowerCase()) {
-      setSaveState({ type: 'error', message: 'Este ja e o e-mail da sua conta.' });
+      setSaveState({ type: 'error', message: 'Este já é o e-mail da sua conta.' });
       return;
     }
     if (!currentUserId) return;
@@ -685,14 +651,15 @@ export default function Perfil(props) {
 
       const { error: profileError } = await supabase.from('profiles').update({ email }).eq('id', currentUserId);
       if (profileError) {
-        console.warn('Perfil: e-mail na tabela profiles nao atualizado:', profileError.message);
+        console.warn('Perfil: e-mail na tabela profiles não atualizado:', profileError.message);
       }
 
       setNewEmail('');
+      setEditingEmail(false);
       setSaveState({
         type: 'success',
         message:
-          'Solicitacao de troca de e-mail enviada. Se o projeto exigir confirmacao, abra o link no novo endereco; depois disso o login usara o e-mail novo.',
+          'Solicitação de troca de e-mail enviada. Se o projeto exigir confirmação, abra o link no novo endereço; depois disso o login usará o e-mail novo.',
       });
       await onSessionRefresh?.();
       await loadRemoteProfile();
@@ -700,7 +667,7 @@ export default function Perfil(props) {
       console.error(error);
       setSaveState({
         type: 'error',
-        message: error?.message || 'Nao foi possivel alterar o e-mail. Tente novamente ou use outro endereco.',
+        message: error?.message || 'Não foi possível alterar o e-mail. Tente novamente ou use outro endereço.',
       });
     } finally {
       setEmailBusy(false);
@@ -709,7 +676,7 @@ export default function Perfil(props) {
 
   const handlePasswordChangeDirect = async () => {
     if (!currentPassword) {
-      setSaveState({ type: 'error', message: 'Digite a senha atual para confirmar a alteracao.' });
+      setSaveState({ type: 'error', message: 'Digite a senha atual para confirmar a alteração.' });
       return;
     }
     if (newPassword.length < 6) {
@@ -717,7 +684,7 @@ export default function Perfil(props) {
       return;
     }
     if (newPassword !== confirmPassword) {
-      setSaveState({ type: 'error', message: 'A confirmacao da senha nao confere.' });
+      setSaveState({ type: 'error', message: 'A confirmação da senha não confere.' });
       return;
     }
 
@@ -740,13 +707,13 @@ export default function Perfil(props) {
       setConfirmPassword('');
       setSaveState({
         type: 'success',
-        message: 'Senha atualizada. Nas proximas vezes use a nova senha para entrar.',
+        message: 'Senha atualizada. Nas próximas vezes use a nova senha para entrar.',
       });
     } catch (error) {
       console.error(error);
       setSaveState({
         type: 'error',
-        message: error?.message || 'Nao foi possivel alterar a senha.',
+        message: error?.message || 'Não foi possível alterar a senha.',
       });
     } finally {
       setPasswordChangeBusy(false);
@@ -760,43 +727,70 @@ export default function Perfil(props) {
     : 'accent';
 
   return (
-    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
-      <div style={{ maxWidth: 1540, margin: '0 auto' }}>
-        {/* Hero editorial */}
-        <div style={{ marginBottom: 32 }}>
-          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Conta</p>
-          <h1 className="pl-display" style={{ marginBottom: 12 }}>Meu perfil.</h1>
-          <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', maxWidth: 520 }}>
-            Dados da conta, ranking, progresso e vinculos reais da sua jornada.
-          </p>
-        </div>
-
+    <div style={{ height: '100%', overflow: 'hidden', padding: '8px 20px 14px', background: 'transparent' }}>
+      <div style={{ height: '100%', maxWidth: 1540, margin: '0 auto', overflow: 'hidden' }}>
         {/* KPI strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 12 }}>
           {heroStats.map((k) => (
-            <div key={k.label} className="pl-card" style={{ padding: '12px 16px' }}>
-              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{k.label}</p>
-              <p className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink)' }}>{k.value}</p>
+            <div key={k.label} className="pl-card" style={{ padding: '9px 14px' }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 3 }}>{k.label}</p>
+              <p className="pl-num" style={{ fontSize: 18, color: 'var(--pl-ink)' }}>{k.value}</p>
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '280px minmax(0,1fr)' }}>
+        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: '280px minmax(0,1fr)', height: 'calc(100% - 76px)', minHeight: 0, overflow: 'hidden' }}>
           {/* Sidebar */}
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <aside style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
             {/* Avatar card */}
             <div className="pl-card" style={{ overflow: 'hidden' }}>
               <div style={{
-                position: 'relative', height: 180, overflow: 'hidden',
+                position: 'relative', height: 170, overflow: 'hidden',
                 borderRadius: '6px 6px 0 0',
                 background: 'linear-gradient(135deg, var(--pl-ink) 0%, var(--pl-accent) 100%)',
               }}>
                 {profileData?.avatar_url ? (
-                  <img
-                    src={profileData.avatar_url}
-                    alt={profileData?.nome || profileData?.name || 'Avatar'}
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+                  <>
+                    <img
+                      src={profileData.avatar_url}
+                      alt=""
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center',
+                        filter: 'blur(14px) saturate(0.92)',
+                        transform: 'scale(1.12)',
+                        opacity: 0.55,
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(180deg, rgba(20,17,13,0.08), rgba(20,17,13,0.34))',
+                    }} />
+                    <img
+                      src={profileData.avatar_url}
+                      alt={profileData?.nome || profileData?.name || 'Avatar'}
+                      style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        width: 124,
+                        height: 124,
+                        transform: 'translate(-50%, -50%)',
+                        borderRadius: '50%',
+                        border: '3px solid rgba(255,255,255,0.86)',
+                        boxShadow: '0 18px 42px rgba(20,17,13,0.32)',
+                        objectFit: 'cover',
+                        objectPosition: 'center',
+                        background: 'var(--pl-bg-soft)',
+                      }}
+                    />
+                  </>
                 ) : (
                   <div style={{
                     position: 'absolute', inset: 0,
@@ -827,7 +821,7 @@ export default function Perfil(props) {
                 </button>
               </div>
 
-              <nav style={{ padding: '12px 12px 16px' }}>
+              <nav style={{ padding: '8px 10px 10px' }}>
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const active = activeTab === item.id;
@@ -838,8 +832,8 @@ export default function Perfil(props) {
                       onClick={() => setActiveTabState(item.id)}
                       style={{
                         display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
-                        borderRadius: 14, padding: '10px 14px', textAlign: 'left',
-                        marginBottom: 6,
+                        borderRadius: 12, padding: '7px 10px', textAlign: 'left',
+                        marginBottom: 5,
                         background: active ? 'var(--pl-accent)' : 'transparent',
                         border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
                         color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
@@ -849,12 +843,12 @@ export default function Perfil(props) {
                       <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          width: 36, height: 36, borderRadius: 10,
+                          width: 30, height: 30, borderRadius: 9,
                           background: active ? 'rgba(255,255,255,0.15)' : 'var(--pl-bg-soft)',
                         }}>
                           <Icon style={{ width: 16, height: 16 }} />
                         </span>
-                        <span style={{ fontSize: 13, fontWeight: 600 }}>{item.label}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600 }}>{item.label}</span>
                       </span>
                       <ChevronRight style={{ width: 16, height: 16, opacity: active ? 0.7 : 0.4 }} />
                     </button>
@@ -866,26 +860,26 @@ export default function Perfil(props) {
             </div>
 
             {/* Snapshot card */}
-            <div className="pl-card" style={{ padding: 20 }}>
-              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Snapshot</p>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 14 }}>Leitura rapida</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="pl-card" style={{ padding: 14 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 5 }}>Snapshot</p>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 9 }}>Leitura rápida</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
                   ['Ranking atual', rankingPreview],
-                  ['Esquadroes', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vinculo'],
-                  ['Proxima meta', `${formatNumber(xpSummary.nextLevelXp || 0)} XP`],
+                  ['Esquadrões', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vínculo'],
+                  ['Próxima meta', `${formatNumber(xpSummary.nextLevelXp || 0)} XP`],
                 ].map(([label, value]) => (
                   <div key={label} style={{
                     display: 'grid', gridTemplateColumns: '1fr 1.35fr',
-                    alignItems: 'center', gap: 12,
-                    borderRadius: 12, background: 'var(--pl-bg-soft)',
-                    padding: '10px 14px',
+                    alignItems: 'center', gap: 8,
+                    borderRadius: 10, background: 'var(--pl-bg-soft)',
+                    padding: '7px 10px',
                   }}>
-                    <span style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>{label}</span>
+                    <span style={{ fontSize: 12, color: 'var(--pl-ink-2)' }}>{label}</span>
                     <span style={{
                       display: 'block', minWidth: 0, overflow: 'hidden',
                       textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      textAlign: 'right', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)',
+                      textAlign: 'right', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink)',
                     }} title={String(value || '')}>
                       {value}
                     </span>
@@ -896,7 +890,7 @@ export default function Perfil(props) {
           </aside>
 
           {/* Main content */}
-          <main style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <main style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
             {/* Save state banner */}
             {saveState.message ? (
               <div className="pl-card" style={{ padding: 16 }}>
@@ -916,10 +910,10 @@ export default function Perfil(props) {
 
             {/* Overview tab */}
             {activeTab === 'overview' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
                 <SectionHeader
                   eyebrow="Dados da conta"
-                  title="Informacoes editaveis do perfil"
+                  title="Informações editáveis do perfil"
                   subtitle="Persistidas pelo fluxo real de perfil do app."
                   action={
                     <button
@@ -934,10 +928,10 @@ export default function Perfil(props) {
                   }
                 />
 
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1.2fr 0.8fr' }}>
+                <div style={{ display: 'grid', minHeight: 0, gap: 14, gridTemplateColumns: '1.2fr 0.8fr', overflow: 'hidden' }}>
                   {/* Profile fields */}
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr 1fr' }}>
+                  <div className="pl-card" style={{ padding: 16, overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
                       <Field
                         label="Nome completo"
                         value={form.nome}
@@ -948,10 +942,22 @@ export default function Perfil(props) {
                       <Field
                         label="Username"
                         value={form.username}
-                        onChange={(value) => handleFieldChange('username', value.toLowerCase().replace(/\s+/g, ''))}
-                        placeholder="apenas letras minusculas, numeros, . e _"
+                        onChange={(value) => handleFieldChange('username', normalizeUsername(value))}
+                        placeholder="@papirando"
                         autoComplete="username"
+                        maxLength={USERNAME_MAX_LENGTH}
                       />
+                      <p style={{
+                        gridColumn: '2 / 3',
+                        marginTop: -8,
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        color: usernameValidation.ok ? 'var(--pl-ink-3)' : 'var(--pl-danger)',
+                      }}>
+                        {usernameChanged
+                          ? (usernameValidation.ok ? 'Ao salvar, esse será seu nome público nos rankings.' : usernameValidation.message)
+                          : '3 a 30 caracteres. Use letras, números, ponto ou underline.'}
+                      </p>
                       <Field
                         label="Celular"
                         value={form.celular}
@@ -959,7 +965,7 @@ export default function Perfil(props) {
                         placeholder="(75) 99999-9999"
                         autoComplete="tel"
                       />
-                      <div style={{ gridColumn: 'span 2' }}>
+                      <div>
                         <Field
                           label="CPF"
                           value={form.cpf}
@@ -968,7 +974,7 @@ export default function Perfil(props) {
                           autoComplete="off"
                         />
                         <p style={{
-                          marginTop: 8, fontSize: 12, fontWeight: 600,
+                          marginTop: 6, fontSize: 11.5, fontWeight: 600,
                           color: cpfDigitsPreview.length === 0
                             ? 'var(--pl-ink-3)'
                             : cpfDigitsPreview.length < 11
@@ -978,247 +984,172 @@ export default function Perfil(props) {
                                 : 'var(--pl-danger)',
                         }}>
                           {cpfDigitsPreview.length === 0
-                            ? 'CPF obrigatorio para validar a conta e usar recursos vinculados.'
+                            ? 'CPF obrigatório para validar a conta e usar recursos vinculados.'
                             : cpfDigitsPreview.length < 11
-                              ? 'Digite os 11 digitos.'
+                              ? 'Digite os 11 dígitos.'
                               : cpfLooksValid
-                                ? 'CPF valido. Clique em Salvar perfil para persistir.'
-                                : 'CPF invalido — confira os numeros ou os digitos verificadores.'}
+                                ? 'CPF válido. Clique em Salvar perfil para persistir.'
+                                : 'CPF inválido: confira os números ou os dígitos verificadores.'}
                         </p>
                       </div>
                     </div>
 
-                    {/* Ranking preference */}
-                    <div style={{
-                      marginTop: 20, borderRadius: 18, border: '1px solid var(--pl-rule-2)',
-                      background: 'var(--pl-bg-soft)', padding: 16,
-                    }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-                        <div>
-                          <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Preferencia de ranking</p>
-                          <p style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>Escolha como seu nome aparece nos rankings e areas sociais.</p>
-                        </div>
-                        <TagBadge tone="accent">{rankingPreview}</TagBadge>
-                      </div>
-
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
-                        <ToggleChip active={form.rankingDisplayMode === 'username'} onClick={() => handleFieldChange('rankingDisplayMode', 'username')}>
-                          Mostrar username
-                        </ToggleChip>
-                        <ToggleChip active={form.rankingDisplayMode === 'codename'} onClick={() => handleFieldChange('rankingDisplayMode', 'codename')}>
-                          Mostrar codinome
-                        </ToggleChip>
-                      </div>
-
-                      <Field
-                        label="Codinome"
-                        value={form.rankingCodename}
-                        onChange={(value) => handleFieldChange('rankingCodename', value)}
-                        placeholder="Ex.: Aguia Azul"
-                        disabled={form.rankingDisplayMode !== 'codename'}
-                      />
-                    </div>
-
                     {/* Info tiles */}
-                    <div style={{ marginTop: 20, display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
+                    <div style={{ marginTop: 12, display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
                       <InfoTile
                         label="Email da conta"
-                        value={profileData?.email || currentUserEmail || 'Nao informado'}
+                        value={profileData?.email || currentUserEmail || 'Não informado'}
                         helper={
                           profileData?.created_at
                             ? `Cadastro em ${new Date(profileData.created_at).toLocaleDateString('pt-BR')}`
-                            : 'Email autenticado atual'
+                            : 'E-mail autenticado atual'
                         }
                         icon={Mail}
                       />
                       <InfoTile
                         label="Status do CPF"
-                        value={profileHasValidCpf ? 'Valido' : 'Pendente'}
-                        helper={profileHasValidCpf ? 'Documento apto para vinculos' : 'Revise o CPF e salve'}
+                        value={profileHasValidCpf ? 'Válido' : 'Pendente'}
+                        helper={profileHasValidCpf ? 'Documento apto para vínculos' : 'Revise o CPF e salve'}
                         icon={BadgeCheck}
                       />
                     </div>
                   </div>
 
                   {/* Right column */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
                     {/* KPIs card */}
-                    <div className="pl-card" style={{ padding: 24 }}>
-                      <SectionHeader eyebrow="KPIs" title="Metricas reais" subtitle="Calculadas a partir do historico salvo e do motor de XP." />
-                      <div style={{ marginTop: 20, display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
+                    <div className="pl-card" style={{ padding: 16, overflow: 'hidden' }}>
+                      <SectionHeader eyebrow="KPIs" title="Métricas reais" subtitle="Calculadas a partir do histórico salvo e do motor de XP." />
+                      <div style={{ marginTop: 12, display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
                         {kpis.map((item) => (
                           <div key={item.label} style={{
-                            borderRadius: 14, border: '1px solid var(--pl-rule-2)',
-                            background: 'var(--pl-bg-soft)', padding: 18,
+                            borderRadius: 12, border: '1px solid var(--pl-rule-2)',
+                            background: 'var(--pl-bg-soft)', padding: 12,
                           }}>
-                            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{item.label}</p>
-                            <p className="pl-num" style={{ fontSize: 28, color: 'var(--pl-ink)' }}>{item.value}</p>
-                            <p style={{ marginTop: 8, fontSize: 12, color: 'var(--pl-ink-2)' }}>{item.helper}</p>
+                            <p className="pl-eyebrow" style={{ marginBottom: 5 }}>{item.label}</p>
+                            <p className="pl-num" style={{ fontSize: 24, color: 'var(--pl-ink)' }}>{item.value}</p>
+                            <p style={{ marginTop: 5, fontSize: 11.5, color: 'var(--pl-ink-2)' }}>{item.helper}</p>
                           </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* XP card */}
-                    <div className="pl-card" style={{ overflow: 'hidden' }}>
                       <div style={{
-                        padding: 24,
+                        marginTop: 12,
+                        borderRadius: 12,
+                        border: '1px solid var(--pl-rule-2)',
                         background: 'linear-gradient(135deg, var(--pl-ink) 0%, var(--pl-accent) 100%)',
                         color: 'var(--pl-bg)',
+                        padding: 14,
                       }}>
                         <TagBadge tone="neutral">XP atual</TagBadge>
-                        <h3 style={{ marginTop: 14, fontSize: 20, fontWeight: 700 }}>Nivel {formatNumber(xpSummary.level || 1)}</h3>
-                        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, opacity: 0.85 }}>
+                        <h3 style={{ marginTop: 8, fontSize: 17, fontWeight: 700 }}>Nível {formatNumber(xpSummary.level || 1)}</h3>
+                        <p style={{ marginTop: 6, fontSize: 12, lineHeight: 1.45, opacity: 0.88 }}>
                           {formatNumber(xpSummary.xpTotal || 0)} XP acumulado. Faltam{' '}
-                          {formatNumber(Math.max(0, Number(xpSummary.nextLevelXp || 0) - Number(xpSummary.xpTotal || 0)))} XP para o proximo nivel.
+                          {formatNumber(Math.max(0, Number(xpSummary.nextLevelXp || 0) - Number(xpSummary.xpTotal || 0)))} XP para o próximo nível.
                         </p>
-                      </div>
-                      <div style={{ padding: 20 }}>
-                        <div className="pl-progress">
-                          <div
-                            className="pl-progress-bar"
-                            style={{ width: `${Math.max(0, Math.min(100, Number(xpSummary.progressPercent || 0)))}%` }}
-                          />
-                        </div>
-                        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: 'var(--pl-ink-2)' }}>
-                          <span>XP atual</span>
-                          <span style={{ fontWeight: 600 }}>{formatNumber(xpSummary.progressPercent || 0)}%</span>
+                        <div style={{ marginTop: 10 }}>
+                          <div className="pl-progress" style={{ background: 'rgba(255,255,255,0.18)' }}>
+                            <div
+                              className="pl-progress-bar"
+                              style={{
+                                width: `${Math.max(0, Math.min(100, Number(xpSummary.progressPercent || 0)))}%`,
+                                background: 'var(--pl-highlight)',
+                              }}
+                            />
+                          </div>
+                          <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, opacity: 0.82 }}>
+                            <span>Progresso do nível</span>
+                            <span style={{ fontWeight: 700 }}>{formatNumber(xpSummary.progressPercent || 0)}%</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Linkage cards */}
-                <div className="pl-card" style={{ padding: 24 }}>
-                  <SectionHeader
-                    eyebrow="Vinculos"
-                    title="Esquadroes, selos e XP"
-                    subtitle="Resumo funcional do que a conta ja possui dentro da plataforma."
-                  />
-                  <div style={{ marginTop: 20, display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                    {linkageCards.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <div key={item.title} className="pl-card" style={{ padding: 24, boxShadow: 'none' }}>
-                          <ToneIconWrap tone={item.tone}>
-                            <Icon style={{ width: 20, height: 20 }} />
-                          </ToneIconWrap>
-                          <h3 style={{ marginTop: 18, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.title}</h3>
-                          <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{item.text}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             )}
 
             {/* Achievements tab */}
             {activeTab === 'achievements' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 8, overflow: 'hidden', transform: 'scale(0.94)', transformOrigin: 'top left', width: '106.4%' }}>
                 <SectionHeader
                   eyebrow="Conquistas"
-                  title="Selos e vinculos desbloqueados"
-                  subtitle="Tudo alimentado por XP, historico real e memberships atuais."
+                  title="Suas conquistas desbloqueadas"
+                  subtitle="Somente selos realmente conquistados com o seu histórico."
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => setShowBadgeCatalog(true)}
+                      className="pl-btn pl-btn-ghost"
+                    >
+                      Ver todos os selos
+                    </button>
+                  }
                 />
 
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                  {badges.length > 0 ? (
-                    badges.map((badge) => (
-                      <div key={badge.id} className="pl-card" style={{ padding: 24 }}>
+                <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
+                  {[
+                    ['Conquistados', formatNumber(unlockedBadges.length)],
+                    ['Disponíveis', formatNumber(badges.length)],
+                    ['Faltando', formatNumber(lockedBadges.length)],
+                    ['Próximo selo', nextBadge?.nome || 'Nenhum'],
+                  ].map(([label, value]) => (
+                    <div key={label} className="pl-card" style={{ padding: 12 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 5 }}>{label}</p>
+                      <p className="pl-num" style={{
+                        fontSize: label === 'Próximo selo' ? 15 : 21,
+                        lineHeight: 1.1,
+                        color: 'var(--pl-ink)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }} title={String(value || '')}>
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  {unlockedBadges.length > 0 ? (
+                    unlockedBadges.map((badge) => (
+                      <div key={badge.id} className="pl-card" style={{ padding: 14 }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                          <ToneIconWrap tone={getBadgeTone(badge.unlocked, badge.color)}>
+                          <ToneIconWrap tone={getBadgeTone(true, badge.color)}>
                             <Medal style={{ width: 20, height: 20 }} />
                           </ToneIconWrap>
-                          <TagBadge tone={getBadgeTone(badge.unlocked, badge.color)}>
-                            {badge.unlocked ? 'Desbloqueado' : `${formatNumber(badge.progressPercent)}%`}
-                          </TagBadge>
+                          <TagBadge tone={getBadgeTone(true, badge.color)}>Conquistado</TagBadge>
                         </div>
-                        <h3 style={{ marginTop: 18, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>{badge.nome}</h3>
-                        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{badge.descricao}</p>
-                        <p style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
-                          Progresso: {formatNumber(badge.current)} / {formatNumber(badge.target)}
+                        <h3 style={{ marginTop: 10, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{badge.nome}</h3>
+                        <p style={{ marginTop: 4, fontSize: 12, lineHeight: 1.4, color: 'var(--pl-ink-2)' }}>{badge.descricao}</p>
+                        <p style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                          Conquistado por cumprir: {formatBadgeRequirement(badge)}
                         </p>
                       </div>
                     ))
                   ) : (
                     <div className="pl-card" style={{ padding: 24, gridColumn: 'span 3' }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Ainda nao existem selos configurados para esta conta.</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>Nenhuma conquista desbloqueada ainda.</p>
+                      <p style={{ marginTop: 6, fontSize: 12.5, color: 'var(--pl-ink-2)' }}>Clique em “Ver todos os selos” para ver os requisitos disponíveis na plataforma.</p>
                     </div>
                   )}
-                </div>
-
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
-                  {/* Summary */}
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader eyebrow="Resumo" title="Leitura das conquistas" subtitle="Selos ativos, squads vinculados e nivel atual." />
-                    <div style={{ marginTop: 20, display: 'grid', gap: 14, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                      {[
-                        ['Selos ativos', formatNumber(badgeSummary.unlockedCount || 0)],
-                        ['Esquadroes', formatNumber(memberships.length)],
-                        ['Nivel atual', formatNumber(xpSummary.level || 1)],
-                      ].map(([label, value]) => (
-                        <div key={label} style={{
-                          borderRadius: 12, background: 'var(--pl-bg-soft)', padding: 18,
-                        }}>
-                          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>{label}</p>
-                          <p className="pl-num" style={{ fontSize: 28, color: 'var(--pl-ink)' }}>{value}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Memberships */}
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader eyebrow="Esquadroes" title="Memberships atuais" subtitle="Atalhos para abrir o esquadrao conectado a este perfil." />
-                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      {memberships.length > 0 ? (
-                        memberships.map((membership) => (
-                          <div
-                            key={membership.id}
-                            style={{
-                              display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14,
-                              borderRadius: 14, border: '1px solid var(--pl-rule-2)',
-                              background: 'var(--pl-bg-soft)', padding: 14,
-                            }}
-                          >
-                            <div>
-                              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{membership.name || membership.id}</p>
-                              <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>Papel: {membership.role || 'Membro'} · Status: {membership.status || 'Ativo'}</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => onOpenSquad?.(membership.id)}
-                              className="pl-btn pl-btn-ghost"
-                              style={{ fontSize: 13 }}
-                            >
-                              Abrir esquadrao
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Nenhum esquadrao vinculado a esta conta.</p>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'assinatura' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
                 <SectionHeader
                   eyebrow="Planos Papirando"
-                  title="Assinatura e beneficios"
-                  subtitle="Compare os niveis, veja o seu plano atual e abra a area de pagamento quando quiser mudar ou renovar."
+                  title="Assinatura e benefícios"
+                  subtitle="Compare os níveis, veja o seu plano atual e abra a área de pagamento quando quiser mudar ou renovar."
                   action={
                     <button
                       type="button"
                       onClick={() => setActiveTab?.('assinatura')}
                       className="pl-btn pl-btn-primary"
                     >
-                      Pagamentos e contratacao
+                      Pagamentos e contratação
                       <ChevronRight style={{ width: 16, height: 16 }} />
                     </button>
                   }
@@ -1238,7 +1169,7 @@ export default function Perfil(props) {
                         Plano {planLabel} · {subscriptionStatus}
                       </h2>
                       <p style={{ marginTop: 8, maxWidth: 480, fontSize: 13, lineHeight: 1.6, opacity: 0.88 }}>
-                        O plano ativo vale para recursos premium, limites de IA e ranking. Alteracoes de cobranca ficam na pagina dedicada de assinatura.
+                        O plano ativo vale para recursos premium, limites de IA e ranking. Alterações de cobrança ficam na página dedicada de assinatura.
                       </p>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
@@ -1249,7 +1180,7 @@ export default function Perfil(props) {
                         padding: '6px 12px', fontSize: 10, fontWeight: 700,
                         textTransform: 'uppercase', letterSpacing: '0.28em',
                       }}>
-                        {currentPlanId === 'elite' ? 'Nivel maximo' : currentPlanId === 'tatico' ? 'Plano intermediario' : 'Nivel inicial'}
+                        {currentPlanId === 'elite' ? 'Nível máximo' : currentPlanId === 'tatico' ? 'Plano intermediário' : 'Nível inicial'}
                       </span>
                       {currentPlanId !== 'elite' ? (
                         <button
@@ -1275,7 +1206,7 @@ export default function Perfil(props) {
                   borderRadius: 14, border: '1px solid var(--pl-rule-2)',
                   background: 'var(--pl-surface)', padding: '12px 18px',
                 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Precos exibidos por mes (referencia)</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Preços exibidos por mês (referência)</p>
                   <div style={{
                     display: 'flex', borderRadius: 14, border: '1px solid var(--pl-rule-2)',
                     background: 'var(--pl-bg-soft)', padding: 4,
@@ -1364,11 +1295,11 @@ export default function Perfil(props) {
                         <p style={{ marginTop: 18, fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em', color: isTatico ? 'var(--pl-bg)' : 'var(--pl-ink)' }}>
                           {precoValor}
                           {plano.id !== 'gratuito' ? (
-                            <span style={{ fontSize: 13, fontWeight: 600, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>/mes</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>/mês</span>
                           ) : null}
                         </p>
                         {plano.id !== 'gratuito' && planoPrecoAnual ? (
-                          <p style={{ fontSize: 12, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>Valores na cobranca anual (referencia da pagina de assinatura).</p>
+                          <p style={{ fontSize: 12, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>Valores na cobrança anual (referência da página de assinatura).</p>
                         ) : null}
 
                         <ul style={{ marginTop: 20, flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1392,7 +1323,7 @@ export default function Perfil(props) {
                             }),
                           }}
                         >
-                          {isCurrent ? 'Gerenciar na pagina de assinatura' : plano.id === 'gratuito' ? 'Detalhes e limites' : `Quero o ${plano.nome}`}
+                          {isCurrent ? 'Gerenciar na página de assinatura' : plano.id === 'gratuito' ? 'Detalhes e limites' : `Quero o ${plano.nome}`}
                         </button>
                       </div>
                     );
@@ -1401,8 +1332,8 @@ export default function Perfil(props) {
 
                 <div className="pl-card" style={{ padding: 24 }}>
                   <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
-                    Duvidas sobre cobranca, nota fiscal ou troca de cartao use a pagina <strong style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>Assinatura</strong> do app
-                    (mesmo menu onde voce acessa este perfil). Os precos finais podem incluir promocoes ativas no checkout.
+                    Dúvidas sobre cobrança, nota fiscal ou troca de cartão? Use a página <strong style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>Assinatura</strong> do app
+                    (mesmo menu onde você acessa este perfil). Os preços finais podem incluir promoções ativas no checkout.
                   </p>
                 </div>
               </div>
@@ -1410,180 +1341,126 @@ export default function Perfil(props) {
 
             {/* Security tab */}
             {activeTab === 'security' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
                 <SectionHeader
-                  eyebrow="Seguranca"
-                  title="Dados sensiveis e acessos"
-                  subtitle="Sem botoes mortos: tudo abaixo executa alguma acao real ou mostra o estado atual da conta."
+                  eyebrow="Segurança"
+                  title="Dados sensíveis e acessos"
+                  subtitle="Identidade, senha, sessão e exclusão num lugar só."
                 />
 
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader eyebrow="Conta" title="Dados principais" subtitle="Origem real do profile autenticado." />
-                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      <SecurityRow icon={Mail} label="Email autenticado" value={profileData?.email || currentUserEmail || 'Nao informado'} helper="Usado para login e recuperacao" />
-                      <SecurityRow icon={ShieldCheck} label="CPF" value={form.cpf || 'Nao informado'} helper={profileHasValidCpf ? 'Documento valido no perfil' : 'Revise e salve para validar'} />
-                      <SecurityRow icon={User2} label="Identificacao no ranking" value={rankingPreview} helper={form.rankingDisplayMode === 'codename' ? 'Modo codinome ativo' : 'Modo username ativo'} />
-                    </div>
-                  </div>
+                <div style={{ minHeight: 0, overflowY: 'auto', overflowX: 'hidden', paddingRight: 4, paddingBottom: 16 }}>
 
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader eyebrow="Conta" title="Status e indicacoes" subtitle="Resumo operacional da conta no app." />
-                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      <SecurityRow icon={RefreshCw} label="XP total" value={formatNumber(xpSummary.xpTotal)} helper={`Level ${formatNumber(xpSummary.level || 1)}`} />
-                      <SecurityRow
-                        icon={BadgeCheck}
-                        label="Referral code"
-                        value={profileData?.referral_code || 'Nao gerado'}
-                        helper={profileData?.referred_by_code ? `Indicado por ${profileData.referred_by_code}` : 'Conta sem indicacao vinculada'}
-                      />
-                    </div>
-                  </div>
-                </div>
+                  {/* Linha 1: Identidade + Senha */}
+                  <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)' }}>
 
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
-                  {/* Change email */}
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader
-                      eyebrow="E-mail"
-                      title="Trocar e-mail"
-                      subtitle="O login passara a usar o novo endereco apos a confirmacao exigida pelo provedor (verifique inbox e spam)."
-                    />
-                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      <Field
-                        label="Novo e-mail"
-                        type="email"
-                        value={newEmail}
-                        onChange={setNewEmail}
-                        placeholder="voce@exemplo.com"
-                        autoComplete="email"
-                      />
-                      <p style={{ fontSize: 12, color: 'var(--pl-ink-2)' }}>
-                        E-mail atual:{' '}
-                        <span style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>{profileData?.email || currentUserEmail || '—'}</span>
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleEmailChange}
-                        disabled={emailBusy || !currentUserId}
-                        className="pl-btn pl-btn-primary"
-                        style={{ opacity: (emailBusy || !currentUserId) ? 0.6 : 1 }}
-                      >
-                        {emailBusy ? 'Atualizando...' : 'Solicitar troca de e-mail'}
-                      </button>
-                    </div>
-                  </div>
+                    {/* Identidade */}
+                    <div className="pl-card" style={{ padding: 20 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Conta</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Identidade da conta</h3>
 
-                  {/* Change password */}
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader
-                      eyebrow="Senha"
-                      title="Nova senha (logado)"
-                      subtitle="Atualizacao imediata enquanto a sessao esta ativa. Minimo de 6 caracteres."
-                    />
-                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      <Field
-                        label="Senha atual"
-                        type="password"
-                        value={currentPassword}
-                        onChange={setCurrentPassword}
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                      />
-                      <Field
-                        label="Nova senha"
-                        type="password"
-                        value={newPassword}
-                        onChange={setNewPassword}
-                        placeholder="••••••••"
-                        autoComplete="new-password"
-                      />
-                      <Field
-                        label="Confirmar nova senha"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={setConfirmPassword}
-                        placeholder="Repita a senha"
-                        autoComplete="new-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={handlePasswordChangeDirect}
-                        disabled={passwordChangeBusy}
-                        className="pl-btn pl-btn-primary"
-                        style={{ opacity: passwordChangeBusy ? 0.6 : 1 }}
-                      >
-                        {passwordChangeBusy ? 'Salvando...' : 'Salvar nova senha'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
-                  {/* Recovery actions */}
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader eyebrow="Acoes reais" title="Recuperacao e sessao" subtitle="Fluxos funcionais ligados ao Supabase e ao app." />
-                    <div style={{ marginTop: 20, display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
-                      <ActionTile
-                        icon={KeyRound}
-                        title="Redefinir senha"
-                        desc="Envia um link real de redefinicao para o email autenticado."
-                        actionLabel={passwordBusy ? 'Enviando...' : 'Enviar link'}
-                        onClick={handlePasswordReset}
-                        disabled={passwordBusy || !currentUserEmail}
-                      />
-                      <ActionTile icon={LogOut} title="Encerrar sessao" desc="Sai da conta atual e retorna ao fluxo de login." actionLabel="Sair da conta" onClick={() => onLogout?.()} />
-                    </div>
-                  </div>
-
-                  {/* Integration signals */}
-                  <div className="pl-card" style={{ overflow: 'hidden' }}>
-                    <div style={{
-                      borderBottom: '1px solid var(--pl-rule-2)',
-                      background: 'var(--pl-bg-soft)',
-                      padding: '18px 24px',
-                    }}>
-                      <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Base da conta</p>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)' }}>Sinais de integracao</h3>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 24 }}>
-                      {[
-                        { label: 'Foto do perfil', value: profileData?.avatar_url ? 'Persistida' : 'Sem foto', tone: profileData?.avatar_url ? 'success' : 'danger' },
-                        { label: 'Username', value: profileData?.username || 'Nao informado', tone: profileData?.username ? 'accent' : 'danger' },
-                        { label: 'Referral code', value: profileData?.referral_code || 'Nao gerado', tone: profileData?.referral_code ? 'success' : 'danger' },
-                      ].map((item) => (
-                        <div key={item.label} style={{
-                          borderRadius: 14, border: '1px solid var(--pl-rule-2)',
-                          background: 'var(--pl-surface)', padding: 14,
-                        }}>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                            <div>
-                              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.label}</p>
-                              <p style={{ marginTop: 4, fontSize: 13, color: 'var(--pl-ink-2)' }}>{item.value}</p>
+                      <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 14px', marginBottom: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                            <ToneIconWrap tone="neutral"><Mail style={{ width: 15, height: 15 }} /></ToneIconWrap>
+                            <div style={{ minWidth: 0 }}>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>E-mail</p>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {profileData?.email || currentUserEmail || 'Não informado'}
+                              </p>
                             </div>
-                            <TagBadge tone={item.tone}>{item.value}</TagBadge>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => setEditingEmail((v) => !v)}
+                            className="pl-btn pl-btn-ghost"
+                            style={{ width: 32, minWidth: 32, height: 30, padding: 0, flexShrink: 0 }}
+                            aria-label="Editar e-mail"
+                          >
+                            <Pencil style={{ width: 13, height: 13 }} />
+                          </button>
                         </div>
-                      ))}
+                        {editingEmail && (
+                          <div style={{ marginTop: 12, display: 'grid', gap: 8, gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'end' }}>
+                            <Field label="Novo e-mail" type="email" value={newEmail} onChange={setNewEmail} placeholder="voce@exemplo.com" autoComplete="email" />
+                            <button type="button" onClick={handleEmailChange} disabled={emailBusy || !currentUserId} className="pl-btn pl-btn-primary" style={{ height: 34, opacity: (emailBusy || !currentUserId) ? 0.6 : 1 }}>
+                              {emailBusy ? 'Salvando...' : 'Confirmar'}
+                            </button>
+                            <p style={{ gridColumn: '1 / -1', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+                              O novo endereço pode exigir confirmação no inbox.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>
+                        <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 14px' }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>CPF</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: profileHasValidCpf ? 'var(--pl-ink)' : 'var(--pl-warn)' }}>
+                            {form.cpf || 'Não informado'}
+                          </p>
+                          <p style={{ marginTop: 3, fontSize: 11, color: profileHasValidCpf ? 'var(--pl-success)' : 'var(--pl-ink-3)' }}>
+                            {profileHasValidCpf ? 'Válido' : 'Preencha em Visão geral'}
+                          </p>
+                        </div>
+                        <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 14px' }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Username</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rankingPreview}</p>
+                          <p style={{ marginTop: 3, fontSize: 11, color: 'var(--pl-ink-3)' }}>Público nos rankings</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Senha + recuperação unificados */}
+                    <div className="pl-card" style={{ padding: 20 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Senha</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Alterar senha</h3>
+
+                      <div style={{ display: 'grid', gap: 10 }}>
+                        <Field label="Senha atual" type="password" value={currentPassword} onChange={setCurrentPassword} placeholder="••••••••" autoComplete="current-password" />
+                        <Field label="Nova senha" type="password" value={newPassword} onChange={setNewPassword} placeholder="••••••••" autoComplete="new-password" />
+                        <Field label="Confirmar nova senha" type="password" value={confirmPassword} onChange={setConfirmPassword} placeholder="Repita a senha" autoComplete="new-password" />
+                        <button type="button" onClick={handlePasswordChangeDirect} disabled={passwordChangeBusy} className="pl-btn pl-btn-primary" style={{ opacity: passwordChangeBusy ? 0.6 : 1 }}>
+                          {passwordChangeBusy ? 'Salvando...' : 'Salvar nova senha'}
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '18px 0' }}>
+                        <div style={{ flex: 1, height: 1, background: 'var(--pl-rule-2)' }} />
+                        <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', fontWeight: 600, letterSpacing: '0.06em' }}>OU</span>
+                        <div style={{ flex: 1, height: 1, background: 'var(--pl-rule-2)' }} />
+                      </div>
+
+                      <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', marginBottom: 2 }}>Esqueceu a senha?</p>
+                          <p style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>Receba um link de redefinição por e-mail.</p>
+                        </div>
+                        <button type="button" onClick={handlePasswordReset} disabled={passwordBusy || !currentUserEmail} className="pl-btn pl-btn-ghost" style={{ flexShrink: 0, opacity: (passwordBusy || !currentUserEmail) ? 0.5 : 1 }}>
+                          {passwordBusy ? 'Enviando...' : 'Enviar link'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* LGPD */}
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
-                  <div className="pl-card" style={{ padding: 24 }}>
-                    <SectionHeader
-                      eyebrow="LGPD"
-                      title="Seus dados"
-                      subtitle="Exporte uma copia completa dos seus dados ou leia nossa politica de privacidade."
-                    />
-                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <LgpdButton
-                        icon={Download}
-                        label="Exportar meus dados"
-                        description="Baixa um JSON com todo o seu historico"
-                        tone="accent"
-                        onClick={async () => {
+                  {/* Linha 2: Sessão + LGPD + Zona de perigo */}
+                  <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)' }}>
+
+                    <div className="pl-card" style={{ padding: 20 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Sessão</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Encerrar sessão</h3>
+                      <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', marginBottom: 16, lineHeight: 1.5 }}>
+                        Sai da conta e retorna ao login. Seus dados ficam salvos.
+                      </p>
+                      <button type="button" onClick={() => onLogout?.()} className="pl-btn pl-btn-ghost" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7 }}>
+                        <LogOut style={{ width: 14, height: 14 }} /> Sair da conta
+                      </button>
+                    </div>
+
+                    <div className="pl-card" style={{ padding: 20 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>LGPD</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Dados e documentos</h3>
+                      <div style={{ display: 'grid', gap: 8 }}>
+                        <LgpdButton icon={Download} label="Exportar meus dados" description="Baixa um JSON com todo o seu histórico" tone="accent" onClick={async () => {
                           try {
                             const { data, error } = await supabase.rpc('export_my_data');
                             if (error) throw error;
@@ -1597,59 +1474,123 @@ export default function Perfil(props) {
                           } catch {
                             alert('Erro ao exportar dados. Tente novamente.');
                           }
-                        }}
-                      />
-                      <LgpdButton
-                        icon={FileText}
-                        label="Politica de Privacidade"
-                        description="Veja como tratamos seus dados"
-                        tone="neutral"
-                        onClick={() => setActiveTab('privacidade')}
-                      />
-                      <LgpdButton
-                        icon={FileText}
-                        label="Termos de Uso"
-                        description="Regras e condicoes da plataforma"
-                        tone="neutral"
-                        onClick={() => setActiveTab('termos')}
-                      />
+                        }} />
+                        <LgpdButton icon={FileText} label="Política de Privacidade" description="Veja como tratamos seus dados" tone="neutral" onClick={() => setActiveTab('privacidade')} />
+                        <LgpdButton icon={FileText} label="Termos de Uso" description="Regras e condições da plataforma" tone="neutral" onClick={() => setActiveTab('termos')} />
+                      </div>
+                    </div>
+
+                    <div className="pl-card" style={{ padding: 20, border: '1px solid var(--pl-danger-soft)' }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 6, color: 'var(--pl-danger)' }}>Zona de perigo</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 8 }}>Excluir conta</h3>
+                      <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', marginBottom: 16, lineHeight: 1.5 }}>
+                        A exclusão é irreversível e pode levar até 30 dias.
+                      </p>
+                      <LgpdButton icon={Trash2} label="Solicitar exclusão" description="Inicia a remoção permanente" tone="danger" onClick={async () => {
+                        const confirmed = window.confirm('Tem certeza? Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.');
+                        if (!confirmed) return;
+                        try {
+                          const { data, error } = await supabase.rpc('request_account_deletion');
+                          if (error) throw error;
+                          alert(data?.message || 'Solicitação registrada. Entraremos em contato.');
+                        } catch {
+                          alert('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com');
+                        }
+                      }} />
                     </div>
                   </div>
 
-                  <div className="pl-card" style={{ padding: 24, border: '1px solid var(--pl-danger-soft)' }}>
-                    <SectionHeader
-                      eyebrow="Zona de perigo"
-                      title="Excluir conta"
-                      subtitle="A exclusao e irreversivel. Seus dados serao removidos em ate 30 dias."
-                    />
-                    <div style={{ marginTop: 20 }}>
-                      <LgpdButton
-                        icon={Trash2}
-                        label="Solicitar exclusao de conta"
-                        description="Inicia o processo de remocao permanente"
-                        tone="danger"
-                        onClick={async () => {
-                          const confirmed = window.confirm(
-                            'Tem certeza? Sua conta e todos os dados serao excluidos permanentemente em ate 30 dias. Esta acao nao pode ser desfeita.'
-                          );
-                          if (!confirmed) return;
-                          try {
-                            const { data, error } = await supabase.rpc('request_account_deletion');
-                            if (error) throw error;
-                            alert(data?.message || 'Solicitacao registrada. Entraremos em contato.');
-                          } catch {
-                            alert('Erro ao registrar solicitacao. Entre em contato: privacidade@papirando.com');
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
           </main>
         </div>
       </div>
+
+      {showBadgeCatalog ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Todos os selos disponíveis"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 120,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+            background: 'rgba(20, 17, 13, 0.42)',
+          }}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setShowBadgeCatalog(false);
+          }}
+        >
+          <div className="pl-card" style={{
+            width: 'min(980px, calc(100vw - 48px))',
+            maxHeight: 'min(760px, calc(100vh - 48px))',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            background: 'var(--pl-surface)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 16,
+              padding: 18,
+              borderBottom: '1px solid var(--pl-rule-2)',
+            }}>
+              <div>
+                <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Catálogo de selos</p>
+                <h3 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--pl-ink)' }}>Todos os selos disponíveis</h3>
+                <p style={{ marginTop: 6, fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                  Esses selos são configurados em Admin &gt; Configurações &gt; Selos.
+                </p>
+              </div>
+              <button type="button" className="pl-btn pl-btn-ghost" onClick={() => setShowBadgeCatalog(false)}>
+                Fechar
+              </button>
+            </div>
+
+            <div style={{
+              padding: 18,
+              overflowY: 'auto',
+              display: 'grid',
+              gap: 12,
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            }}>
+              {badges.length > 0 ? badges.map((badge) => (
+                <div key={badge.id} style={{
+                  borderRadius: 12,
+                  border: '1px solid var(--pl-rule-2)',
+                  background: 'var(--pl-bg-soft)',
+                  padding: 14,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                    <ToneIconWrap tone={getBadgeTone(badge.unlocked, badge.color)}>
+                      <Medal style={{ width: 20, height: 20 }} />
+                    </ToneIconWrap>
+                    <TagBadge tone={getBadgeTone(badge.unlocked, badge.color)}>
+                      {badge.unlocked ? 'Conquistado' : 'Disponível'}
+                    </TagBadge>
+                  </div>
+                  <h4 style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{badge.nome}</h4>
+                  <p style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.45, color: 'var(--pl-ink-2)' }}>{badge.descricao}</p>
+                  <p style={{ marginTop: 9, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                    Requisito: {formatBadgeRequirement(badge)}
+                  </p>
+                </div>
+              )) : (
+                <div style={{ gridColumn: '1 / -1', padding: 20, color: 'var(--pl-ink-2)' }}>
+                  Nenhum selo configurado ainda.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
