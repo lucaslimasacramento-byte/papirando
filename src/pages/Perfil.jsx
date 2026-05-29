@@ -1345,20 +1345,19 @@ export default function Perfil(props) {
                 <SectionHeader
                   eyebrow="Segurança"
                   title="Dados sensíveis e acessos"
-                  subtitle="Identidade, senha, sessão e exclusão num lugar só."
+                  subtitle="Identidade, senha, dados e exclusão num lugar só."
                 />
 
                 <div style={{ minHeight: 0, overflowY: 'auto', overflowX: 'hidden', paddingRight: 4, paddingBottom: 16 }}>
-
-                  {/* Linha 1: Identidade + Senha */}
                   <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)' }}>
 
-                    {/* Identidade */}
-                    <div className="pl-card" style={{ padding: 20 }}>
-                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Conta</p>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Identidade da conta</h3>
+                    {/* Identidade + LGPD + Perigo */}
+                    <div className="pl-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 2 }}>Conta</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 4 }}>Identidade da conta</h3>
 
-                      <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 14px', marginBottom: 10 }}>
+                      {/* E-mail */}
+                      <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                             <ToneIconWrap tone="neutral"><Mail style={{ width: 15, height: 15 }} /></ToneIconWrap>
@@ -1392,6 +1391,7 @@ export default function Perfil(props) {
                         )}
                       </div>
 
+                      {/* CPF + Username */}
                       <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>
                         <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 14px' }}>
                           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>CPF</p>
@@ -1408,9 +1408,59 @@ export default function Perfil(props) {
                           <p style={{ marginTop: 3, fontSize: 11, color: 'var(--pl-ink-3)' }}>Público nos rankings</p>
                         </div>
                       </div>
+
+                      {/* Divisor */}
+                      <div style={{ height: 1, background: 'var(--pl-rule-2)', margin: '2px 0' }} />
+
+                      {/* LGPD + Zona de perigo em grid 2 cols */}
+                      <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>
+
+                        {/* LGPD */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2 }}>LGPD</p>
+                          <LgpdButton icon={Download} label="Exportar dados" description="JSON com seu histórico" tone="accent" onClick={async () => {
+                            try {
+                              const { data, error } = await supabase.rpc('export_my_data');
+                              if (error) throw error;
+                              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `papirando-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            } catch {
+                              alert('Erro ao exportar dados. Tente novamente.');
+                            }
+                          }} />
+                          <LgpdButton icon={FileText} label="Privacidade" description="Como tratamos seus dados" tone="neutral" onClick={() => setActiveTab('privacidade')} />
+                          <LgpdButton icon={FileText} label="Termos de Uso" description="Regras da plataforma" tone="neutral" onClick={() => setActiveTab('termos')} />
+                        </div>
+
+                        {/* Zona de perigo */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2, color: 'var(--pl-danger)' }}>Zona de perigo</p>
+                          <div style={{ borderRadius: 12, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', padding: '10px 12px' }}>
+                            <p style={{ fontSize: 12, color: 'var(--pl-ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
+                              A exclusão é irreversível e pode levar até 30 dias.
+                            </p>
+                            <LgpdButton icon={Trash2} label="Solicitar exclusão" description="Inicia a remoção permanente" tone="danger" onClick={async () => {
+                              const confirmed = window.confirm('Tem certeza? Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.');
+                              if (!confirmed) return;
+                              try {
+                                const { data, error } = await supabase.rpc('request_account_deletion');
+                                if (error) throw error;
+                                alert(data?.message || 'Solicitação registrada. Entraremos em contato.');
+                              } catch {
+                                alert('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com');
+                              }
+                            }} />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Senha + recuperação unificados */}
+                    {/* Senha + recuperação */}
                     <div className="pl-card" style={{ padding: 20 }}>
                       <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Senha</p>
                       <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Alterar senha</h3>
@@ -1440,70 +1490,11 @@ export default function Perfil(props) {
                         </button>
                       </div>
                     </div>
+
                   </div>
-
-                  {/* Linha 2: Sessão + LGPD + Zona de perigo */}
-                  <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)' }}>
-
-                    <div className="pl-card" style={{ padding: 20 }}>
-                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Sessão</p>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Encerrar sessão</h3>
-                      <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', marginBottom: 16, lineHeight: 1.5 }}>
-                        Sai da conta e retorna ao login. Seus dados ficam salvos.
-                      </p>
-                      <button type="button" onClick={() => onLogout?.()} className="pl-btn pl-btn-ghost" style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: 7 }}>
-                        <LogOut style={{ width: 14, height: 14 }} /> Sair da conta
-                      </button>
-                    </div>
-
-                    <div className="pl-card" style={{ padding: 20 }}>
-                      <p className="pl-eyebrow" style={{ marginBottom: 6 }}>LGPD</p>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 16 }}>Dados e documentos</h3>
-                      <div style={{ display: 'grid', gap: 8 }}>
-                        <LgpdButton icon={Download} label="Exportar meus dados" description="Baixa um JSON com todo o seu histórico" tone="accent" onClick={async () => {
-                          try {
-                            const { data, error } = await supabase.rpc('export_my_data');
-                            if (error) throw error;
-                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `papirando-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                          } catch {
-                            alert('Erro ao exportar dados. Tente novamente.');
-                          }
-                        }} />
-                        <LgpdButton icon={FileText} label="Política de Privacidade" description="Veja como tratamos seus dados" tone="neutral" onClick={() => setActiveTab('privacidade')} />
-                        <LgpdButton icon={FileText} label="Termos de Uso" description="Regras e condições da plataforma" tone="neutral" onClick={() => setActiveTab('termos')} />
-                      </div>
-                    </div>
-
-                    <div className="pl-card" style={{ padding: 20, border: '1px solid var(--pl-danger-soft)' }}>
-                      <p className="pl-eyebrow" style={{ marginBottom: 6, color: 'var(--pl-danger)' }}>Zona de perigo</p>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 8 }}>Excluir conta</h3>
-                      <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', marginBottom: 16, lineHeight: 1.5 }}>
-                        A exclusão é irreversível e pode levar até 30 dias.
-                      </p>
-                      <LgpdButton icon={Trash2} label="Solicitar exclusão" description="Inicia a remoção permanente" tone="danger" onClick={async () => {
-                        const confirmed = window.confirm('Tem certeza? Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.');
-                        if (!confirmed) return;
-                        try {
-                          const { data, error } = await supabase.rpc('request_account_deletion');
-                          if (error) throw error;
-                          alert(data?.message || 'Solicitação registrada. Entraremos em contato.');
-                        } catch {
-                          alert('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com');
-                        }
-                      }} />
-                    </div>
-                  </div>
-
                 </div>
               </div>
-            )}
-          </main>
+            )}\n          </main>
         </div>
       </div>
 
