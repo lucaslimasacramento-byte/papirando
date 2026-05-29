@@ -865,7 +865,6 @@ export default function Perfil(props) {
               <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 9 }}>Leitura rápida</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {[
-                  ['Ranking atual', rankingPreview],
                   ['Esquadrões', memberships.length > 0 ? `${memberships.length} ativo(s)` : 'Nenhum vínculo'],
                   ['Próxima meta', `${formatNumber(xpSummary.nextLevelXp || 0)} XP`],
                 ].map(([label, value]) => (
