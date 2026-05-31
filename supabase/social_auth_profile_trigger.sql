@@ -37,8 +37,8 @@ begin
       when new.email_confirmed_at is not null then 'ativo'
       else 'pendente'
     end,
-    'estudio',
-    timezone('utc', now()) + interval '1 month'
+    'papiro',
+    timezone('utc', now()) + interval '30 days'
   )
   on conflict (id) do update
     set
@@ -57,6 +57,20 @@ begin
       end,
       updated_at = timezone('utc', now());
   -- Nota: no ON CONFLICT não sobrescrevemos subscription_plan para não afetar upgrades existentes.
+
+  -- Cria subscription de trial para usuários Google (somente se não existir)
+  insert into public.subscriptions (
+    user_id, provider, plan_name, billing_cycle, status,
+    current_period_start, current_period_end, cancel_at_period_end
+  )
+  select
+    new.id, 'manual', 'papiro', 'trial', 'trialing',
+    timezone('utc', now()),
+    timezone('utc', now()) + interval '30 days',
+    true
+  where not exists (
+    select 1 from public.subscriptions where user_id = new.id
+  );
 
   return new;
 exception

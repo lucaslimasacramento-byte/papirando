@@ -328,7 +328,7 @@ function LgpdButton({ icon, label, description, tone = 'neutral', onClick }) {
       </div>
       <div style={{ minWidth: 0 }}>
         <p style={{ fontSize: 12.5, fontWeight: 600 }}>{label}</p>
-        <p style={{ marginTop: 1, fontSize: 11.5, opacity: 0.7 }}>{description}</p>
+        <p style={{ marginTop: 1, fontSize: 11.5, color: 'var(--pl-ink-3)' }}>{description}</p>
       </div>
     </button>
   );
@@ -1267,7 +1267,7 @@ export default function Perfil(props) {
                         {/* Zona de perigo */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           <p className="pl-eyebrow" style={{ marginBottom: 2, color: 'var(--pl-danger)' }}>Zona de perigo</p>
-                          <div style={{ borderRadius: 12, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', padding: '10px 12px' }}>
+                          <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '10px 12px' }}>
                             <p style={{ fontSize: 12, color: 'var(--pl-ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
                               A exclusão é irreversível e pode levar até 30 dias.
                             </p>

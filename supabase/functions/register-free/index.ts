@@ -407,7 +407,7 @@ Deno.serve(async (req) => {
       cpf_validado_algoritmo: true,
       email_verificado: false,
       status_cadastro: 'pendente',
-      subscription_plan: 'elite',
+      subscription_plan: 'papiro',
       subscription_status: 'trialing',
       tentativas_cadastro: 0,
       ultimo_ip_cadastro: ipHash.slice(0, 48),
@@ -447,12 +447,12 @@ Deno.serve(async (req) => {
 
   const trialStart = new Date();
   const trialEnd = new Date(trialStart);
-  trialEnd.setMonth(trialEnd.getMonth() + 3);
+  trialEnd.setDate(trialEnd.getDate() + 30);
 
   const { error: subscriptionErr } = await admin.from('subscriptions').insert({
     user_id: userId,
     provider: 'manual',
-    plan_name: 'elite',
+    plan_name: 'papiro',
     billing_cycle: 'trial',
     status: 'trialing',
     current_period_start: trialStart.toISOString(),
@@ -504,7 +504,7 @@ Deno.serve(async (req) => {
 
   return respond({
     success: true,
-    message: 'Cadastro realizado. Voce ganhou 3 meses do plano Elite; verifique seu e-mail para ativar a conta.',
+    message: 'Cadastro realizado. Seu primeiro mes no Papiro e gratuito; verifique seu e-mail para ativar a conta.',
     code: 'SUCCESS_PENDING_EMAIL',
   });
 });

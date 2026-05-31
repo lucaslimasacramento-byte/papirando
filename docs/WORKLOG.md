@@ -155,6 +155,15 @@
 
 ---
 
+## BACKLOG PÓS-LANÇAMENTO
+
+| Item | Descrição |
+|---|---|
+| 📱 Verificação de celular por SMS | Twilio ou Z-API — validar número antes de salvar no perfil |
+| 📧 Template de e-mail personalizado | Supabase → Authentication → Email Templates → Reset Password |
+
+---
+
 ## PRÓXIMOS PASSOS IMEDIATOS
 
 1. **Conseguir STRIPE_SECRET_KEY** (aguardando SMS) → deploy da Edge Function → checkout funcionando
