@@ -922,7 +922,7 @@ export default function Login({
             </>
           ) : (
             <>
-              Já é papireiro?{' '}
+              Já tem conta?{' '}
               <button type="button" onClick={() => handleToggleMode('login')} style={{
                 background: 'transparent', border: 0, padding: 0,
                 fontFamily: 'var(--pl-sans)', fontSize: 12.5, fontWeight: 600,

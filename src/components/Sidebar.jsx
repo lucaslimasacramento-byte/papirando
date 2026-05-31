@@ -464,7 +464,7 @@ export default function Sidebar({
                 (() => {
                   const firstName = String(currentProfile?.nome || '').trim().split(' ')[0].toLowerCase();
                   const isFeminine = firstName.length > 1 && firstName.endsWith('a') && !['lucas', 'mateus', 'nicolas', 'tobias', 'elias', 'jonas', 'noa', 'ezra'].includes(firstName);
-                  return isFeminine ? 'papireia' : 'papireiro';
+                  return isFeminine ? 'papireira' : 'papireiro';
                 })()
               )}
             </div>

@@ -31,7 +31,7 @@ const PLANS = [
     annualPrice: '13,30',
     annualNote: 'R$ 159,90/ano',
     annualDiscount: '33% off',
-    cta: 'Começar 1º mês grátis',
+    cta: 'Assinar o Papiro',
     featured: true,
     trial: true,
     included: [
@@ -157,7 +157,7 @@ function PlanCard({ plan, isAnual, isCurrent, expiresAt, onSelect, checkoutLoadi
       }}
     >
       {/* Badge no topo do card Papiro */}
-      {plan.trial && !isCurrent && (
+      {plan.featured && !isCurrent && (
         <div style={{
           position: 'absolute', top: 0, right: 0,
           background: 'var(--pl-accent)', color: 'var(--pl-bg)',
@@ -165,7 +165,7 @@ function PlanCard({ plan, isAnual, isCurrent, expiresAt, onSelect, checkoutLoadi
           padding: '4px 12px', borderBottomLeftRadius: 8,
           textTransform: 'uppercase',
         }}>
-          1º mês grátis
+          1 mês grátis incluso
         </div>
       )}
 

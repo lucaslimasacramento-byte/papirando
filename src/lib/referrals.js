@@ -17,11 +17,11 @@ export function normalizeReferralCode(value) {
 }
 
 export function buildDefaultReferralCode({ username = '', email = '', userId = '' } = {}) {
-  const normalizedUsername = normalizeReferralCode(username).slice(0, 10);
+  const normalizedUsername = normalizeReferralCode(username).slice(0, 15);
   if (normalizedUsername.length >= 4) return normalizedUsername;
 
   const emailPrefix = String(email || '').split('@')[0];
-  const normalizedEmail = normalizeReferralCode(emailPrefix).slice(0, 10);
+  const normalizedEmail = normalizeReferralCode(emailPrefix).slice(0, 15);
   if (normalizedEmail.length >= 4) return normalizedEmail;
 
   const userTail = normalizeReferralCode(String(userId || '').slice(-6));

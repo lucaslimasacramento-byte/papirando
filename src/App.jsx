@@ -158,6 +158,8 @@ const EditalQuestao = lazy(() => import('./pages/EditalQuestao'));
 const Historico = lazy(() => import('./pages/Historico'));
 const Login = lazy(() => import('./pages/Login'));
 const Instagram = lazy(() => import('./pages/Instagram'));
+const Termos = lazy(() => import('./pages/Termos'));
+const Privacidade = lazy(() => import('./pages/Privacidade'));
 
 function buildDistinctPastelCycleColor(index, total = 1) {
   const safeTotal = Math.max(1, Number(total || 1));
@@ -6306,6 +6308,23 @@ export default function App() {
     );
   }
 
+  // Páginas públicas — acessíveis sem autenticação
+  const publicPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '') : '';
+  if (publicPath === '/privacidade') {
+    return (
+      <Suspense fallback={null}>
+        <Privacidade />
+      </Suspense>
+    );
+  }
+  if (publicPath === '/termos') {
+    return (
+      <Suspense fallback={null}>
+        <Termos />
+      </Suspense>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <Suspense
@@ -6717,7 +6736,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'perfil' && (
+          {(activeTab === 'perfil' || activeTab === 'assinatura') && (
             <Perfil
               temaAtivo={temaAtivo}
               setTemaAtivo={setTemaAtivo}
@@ -6738,17 +6757,7 @@ export default function App() {
               onSaveProfile={handleSaveProfile}
               onChangeAvatar={handleAvatarChange}
               onLogout={handleLogout}
-            />
-          )}
-
-          {activeTab === 'assinatura' && (
-            <Assinatura
-              temaAtivo={temaAtivo}
-              setActiveTab={setActiveTab}
-              currentUserId={currentUserId}
-              currentProfile={effectiveProfile}
-              isAdmin={isAdmin}
-              onProfileUpdate={(patch) => handleSaveProfile({ ...(effectiveProfile || {}), ...(patch || {}) })}
+              initialTab={activeTab === 'assinatura' ? 'assinatura' : 'overview'}
             />
           )}
 

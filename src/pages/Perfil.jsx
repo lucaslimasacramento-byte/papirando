@@ -575,12 +575,12 @@ export default function Perfil(props) {
         cpf: formatCpf(form.cpf),
       });
       if (result?.ok) {
-        setSaveState({
-          type: result.partial ? 'warning' : 'success',
-          message: result.partial
-            ? 'Perfil salvo localmente. A sincronização remota falhou.'
-            : 'Dados do perfil salvos com sucesso.',
-        });
+        if (result.partial) {
+          setSaveState({ type: 'warning', message: 'Perfil salvo localmente. A sincronização remota falhou.' });
+        } else {
+          setSaveState({ type: '', message: '' });
+          showToast('Dados do perfil salvos com sucesso.', 'success');
+        }
         await loadRemoteProfile();
       } else {
         setSaveState({
@@ -614,7 +614,8 @@ export default function Perfil(props) {
     setSaveState({ type: '', message: '' });
     try {
       await onChangeAvatar(file);
-      setSaveState({ type: 'success', message: 'Foto atualizada com persistência real.' });
+      setSaveState({ type: '', message: '' });
+      showToast('Foto de perfil atualizada!', 'success');
       await loadRemoteProfile();
     } catch (error) {
       console.error(error);

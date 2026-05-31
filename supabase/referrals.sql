@@ -101,7 +101,7 @@ begin
 
   -- Tenta usar o username como código (sincroniza sempre que username é válido)
   username_code := upper(regexp_replace(coalesce(new.username, ''), '[^A-Za-z0-9]', '', 'g'));
-  username_code := left(username_code, 10);
+  username_code := left(username_code, 15);
 
   if char_length(username_code) >= 4 then
     -- Username válido: sincroniza referral_code se for diferente
@@ -122,7 +122,7 @@ begin
       coalesce(split_part(coalesce(new.email, ''), '@', 1), 'PAPI'),
       '[^A-Za-z0-9]', '', 'g'
     ));
-    base_code := left(base_code, 10);
+    base_code := left(base_code, 15);
     if char_length(base_code) < 4 then
       base_code := 'PAPI' || right(replace(coalesce(new.id::text, gen_random_uuid()::text), '-', ''), 6);
     end if;
