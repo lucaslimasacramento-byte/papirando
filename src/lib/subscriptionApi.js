@@ -4,11 +4,12 @@ import { supabase } from './supabase';
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos de plano
 // ─────────────────────────────────────────────────────────────────────────────
-/** @returns {'gratuito'|'tatico'|'elite'} */
+/** @returns {'gratuito'|'papiro'} */
 export function normalizePlanName(raw) {
   const v = String(raw || '').toLowerCase().trim();
-  if (v === 'elite') return 'elite';
-  if (v === 'tatico') return 'tatico';
+  // plano pago atual e aliases legados
+  if (['papiro', 'elite', 'tatico'].includes(v)) return 'papiro';
+  // gratuito e alias folha
   return 'gratuito';
 }
 
@@ -41,11 +42,11 @@ export async function loadMySubscription() {
 }
 
 /**
- * Inicia o checkout Stripe.
- * @param {{ planId: 'tatico'|'elite', billing: 'monthly'|'annual' }} options
- * @returns {Promise<string>} URL do Stripe Checkout
+ * Inicia o checkout via Asaas.
+ * @param {{ planId: 'papiro', billing: 'monthly'|'annual' }} options
+ * @returns {Promise<string>} URL da página de pagamento Asaas
  */
-export async function startStripeCheckout({ planId, billing }) {
+export async function startCheckout({ planId, billing }) {
   const { data, error } = await supabase.functions.invoke('create-checkout-session', {
     body: { planId, billing },
   });
@@ -54,6 +55,9 @@ export async function startStripeCheckout({ planId, billing }) {
   if (!data?.url) throw new Error('URL de checkout nao retornada.');
   return data.url;
 }
+
+/** @deprecated Use startCheckout */
+export const startStripeCheckout = startCheckout;
 
 /**
  * Admin: carrega todas as assinaturas (requer is_app_admin = true via RLS)
@@ -171,6 +175,7 @@ export function useSubscription(userId) {
     !!subscription &&
     isPremiumStatus(subscription.status) &&
     (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+  // 'papiro' é o plano pago atual. 'tatico' e 'elite' são aliases legados.
 
   return {
     subscription,

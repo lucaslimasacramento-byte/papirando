@@ -7,6 +7,8 @@ import {
   CheckCircle2,
   ChevronRight,
   Circle,
+  CreditCard,
+  Crown,
   Download,
   FileText,
   KeyRound,
@@ -23,12 +25,16 @@ import {
   User2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import Assinatura from './Assinatura';
 import { isValidCpf, normalizeCpf, PROGRESS_METRIC_OPTIONS } from '../lib/profileProgress';
 import { normalizeUsername, validateUsername, USERNAME_MAX_LENGTH } from '../lib/usernameRules';
+import { startCheckout } from '../lib/subscriptionApi';
+import { showAlert, showConfirm, showToast } from '../lib/dialogs';
 
 const navItems = [
   { id: 'overview', label: 'Visão geral', icon: User2 },
   { id: 'achievements', label: 'Conquistas', icon: Trophy },
+  { id: 'assinatura', label: 'Assinatura', icon: CreditCard },
   { id: 'security', label: 'Segurança', icon: ShieldCheck },
 ];
 
@@ -373,9 +379,10 @@ export default function Perfil(props) {
     onChangeAvatar,
     onLogout,
     onSessionRefresh,
+    initialTab = 'overview',
   } = props;
 
-  const [activeTab, setActiveTabState] = useState('overview');
+  const [activeTab, setActiveTabState] = useState(initialTab || 'overview');
   const [form, setForm] = useState({
     nome: '',
     username: '',
@@ -396,6 +403,7 @@ export default function Perfil(props) {
   const [remoteProfile, setRemoteProfile] = useState(null);
   const [planoPrecoAnual, setPlanoPrecoAnual] = useState(true);
   const [showBadgeCatalog, setShowBadgeCatalog] = useState(false);
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
   const fileInputRef = useRef(null);
 
   const cpfDigitsPreview = useMemo(() => normalizeCpf(form.cpf || ''), [form.cpf]);
@@ -479,11 +487,25 @@ export default function Perfil(props) {
   const planLabel = formatPlanLabel(profileData?.subscription_plan || profileData?.plano);
   const subscriptionStatus = formatSubscriptionStatus(profileData?.subscription_status);
   const currentPlanId = useMemo(() => {
-    const raw = String(profileData?.subscription_plan || profileData?.plano || 'gratuito').toLowerCase();
-    if (raw === 'elite') return 'elite';
-    if (raw === 'tatico') return 'tatico';
-    return 'gratuito';
+    const raw = String(profileData?.subscription_plan || profileData?.plano || 'folha').toLowerCase();
+    if (['papiro', 'elite', 'tatico'].includes(raw)) return 'papiro';
+    return 'folha';
   }, [profileData?.subscription_plan, profileData?.plano]);
+
+  const handleCheckout = useCallback(async (planId, isAnual) => {
+    if (planId === 'folha') return; // plano gratuito, nada a fazer
+    setCheckoutBusy(true);
+    try {
+      const url = await startCheckout({
+        planId: 'papiro',
+        billing: isAnual ? 'annual' : 'monthly',
+      });
+      window.location.href = url;
+    } catch (err) {
+      showToast(err?.message || 'Erro ao iniciar pagamento. Tente novamente.', 'error');
+      setCheckoutBusy(false);
+    }
+  }, []);
   const rankingPreview = useMemo(() => {
     return String(form.username || profileData?.username || currentUserEmail || 'usuario').trim();
   }, [form.username, profileData?.username, currentUserEmail]);
@@ -727,8 +749,8 @@ export default function Perfil(props) {
     : 'accent';
 
   return (
-    <div style={{ height: '100%', overflow: 'hidden', padding: '8px 20px 14px', background: 'transparent' }}>
-      <div style={{ height: '100%', maxWidth: 1540, margin: '0 auto', overflow: 'hidden' }}>
+    <div style={{ height: activeTab === 'assinatura' ? 'auto' : '100%', overflow: activeTab === 'assinatura' ? 'visible' : 'hidden', padding: '8px 20px 14px', background: 'transparent' }}>
+      <div style={{ height: activeTab === 'assinatura' ? 'auto' : '100%', maxWidth: 1540, margin: '0 auto', overflow: activeTab === 'assinatura' ? 'visible' : 'hidden' }}>
         {/* KPI strip */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 12 }}>
           {heroStats.map((k) => (
@@ -739,7 +761,7 @@ export default function Perfil(props) {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: '280px minmax(0,1fr)', height: 'calc(100% - 76px)', minHeight: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gap: 14, gridTemplateColumns: '280px minmax(0,1fr)', height: activeTab === 'assinatura' ? 'auto' : 'calc(100% - 76px)', minHeight: 0, overflow: activeTab === 'assinatura' ? 'visible' : 'hidden' }}>
           {/* Sidebar */}
           <aside style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
             {/* Avatar card */}
@@ -889,7 +911,7 @@ export default function Perfil(props) {
           </aside>
 
           {/* Main content */}
-          <main style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
+          <main style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: activeTab === 'assinatura' ? 'auto' : 'hidden' }}>
             {/* Save state banner */}
             {saveState.message ? (
               <div className="pl-card" style={{ padding: 16 }}>
@@ -910,20 +932,6 @@ export default function Perfil(props) {
             {/* Overview tab */}
             {activeTab === 'overview' && (
               <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
-                <SectionHeader
-                  action={
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="pl-btn pl-btn-primary"
-                      style={{ opacity: saving ? 0.6 : 1 }}
-                    >
-                      {saving ? 'Salvando...' : 'Salvar perfil'}
-                    </button>
-                  }
-                />
-
                 <div style={{ display: 'grid', minHeight: 0, gap: 14, gridTemplateColumns: '1.2fr 0.8fr', overflow: 'hidden' }}>
                   {/* Profile fields */}
                   <div className="pl-card" style={{ padding: 16, overflow: 'hidden' }}>
@@ -1009,6 +1017,18 @@ export default function Perfil(props) {
                         icon={BadgeCheck}
                       />
                     </div>
+
+                    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="pl-btn pl-btn-primary"
+                        style={{ opacity: saving ? 0.6 : 1 }}
+                      >
+                        {saving ? 'Salvando...' : 'Salvar perfil'}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Right column */}
@@ -1067,7 +1087,7 @@ export default function Perfil(props) {
 
             {/* Achievements tab */}
             {activeTab === 'achievements' && (
-              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 8, overflow: 'hidden', transform: 'scale(0.94)', transformOrigin: 'top left', width: '106.4%' }}>
+              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
                 <SectionHeader
                   eyebrow="Conquistas"
                   title="Suas conquistas desbloqueadas"
@@ -1134,204 +1154,13 @@ export default function Perfil(props) {
             )}
 
             {activeTab === 'assinatura' && (
-              <div style={{ display: 'flex', minHeight: 0, flexDirection: 'column', gap: 10, overflow: 'hidden' }}>
-                <SectionHeader
-                  eyebrow="Planos Papirando"
-                  title="Assinatura e benefícios"
-                  subtitle="Compare os níveis, veja o seu plano atual e abra a área de pagamento quando quiser mudar ou renovar."
-                  action={
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab?.('assinatura')}
-                      className="pl-btn pl-btn-primary"
-                    >
-                      Pagamentos e contratação
-                      <ChevronRight style={{ width: 16, height: 16 }} />
-                    </button>
-                  }
+              <div style={{ minWidth: 0, width: '100%' }}>
+                <Assinatura
+                  currentPlan={currentPlanId}
+                  expiresAt={profileData?.subscription_expires_at || null}
+                  onSelectPlan={handleCheckout}
+                  checkoutLoading={checkoutBusy}
                 />
-
-                {/* Current plan banner */}
-                <div className="pl-card" style={{
-                  overflow: 'hidden',
-                  background: 'linear-gradient(135deg, var(--pl-ink) 0%, var(--pl-accent) 100%)',
-                  color: 'var(--pl-bg)',
-                  padding: '24px 28px',
-                }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                    <div>
-                      <p className="pl-eyebrow" style={{ marginBottom: 8, color: 'rgba(255,255,255,0.7)' }}>Sua assinatura</p>
-                      <h2 style={{ fontSize: 22, fontWeight: 700 }}>
-                        Plano {planLabel} · {subscriptionStatus}
-                      </h2>
-                      <p style={{ marginTop: 8, maxWidth: 480, fontSize: 13, lineHeight: 1.6, opacity: 0.88 }}>
-                        O plano ativo vale para recursos premium, limites de IA e ranking. Alterações de cobrança ficam na página dedicada de assinatura.
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center',
-                        borderRadius: 20, border: '1px solid rgba(255,255,255,0.25)',
-                        background: 'rgba(255,255,255,0.12)',
-                        padding: '6px 12px', fontSize: 10, fontWeight: 700,
-                        textTransform: 'uppercase', letterSpacing: '0.28em',
-                      }}>
-                        {currentPlanId === 'elite' ? 'Nível máximo' : currentPlanId === 'tatico' ? 'Plano intermediário' : 'Nível inicial'}
-                      </span>
-                      {currentPlanId !== 'elite' ? (
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab?.('assinatura')}
-                          style={{
-                            borderRadius: 14, border: '1px solid rgba(255,255,255,0.3)',
-                            background: 'rgba(255,255,255,0.12)', color: 'var(--pl-bg)',
-                            padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                            backdropFilter: 'blur(8px)', transition: 'background 0.15s',
-                          }}
-                        >
-                          Fazer upgrade
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Price toggle */}
-                <div style={{
-                  display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                  borderRadius: 14, border: '1px solid var(--pl-rule-2)',
-                  background: 'var(--pl-surface)', padding: '12px 18px',
-                }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Preços exibidos por mês (referência)</p>
-                  <div style={{
-                    display: 'flex', borderRadius: 14, border: '1px solid var(--pl-rule-2)',
-                    background: 'var(--pl-bg-soft)', padding: 4,
-                  }}>
-                    {[
-                      { label: 'Mensal', val: false },
-                      { label: 'Anual', val: true },
-                    ].map(({ label, val }) => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => setPlanoPrecoAnual(val)}
-                        style={{
-                          borderRadius: 10, padding: '6px 14px',
-                          fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                          background: planoPrecoAnual === val ? 'var(--pl-surface)' : 'transparent',
-                          color: planoPrecoAnual === val ? 'var(--pl-ink)' : 'var(--pl-ink-3)',
-                          boxShadow: planoPrecoAnual === val ? 'var(--pl-sh-low)' : 'none',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Plan cards */}
-                <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                  {PERFIL_PLANOS.map((plano) => {
-                    const isCurrent = currentPlanId === plano.id;
-                    const Icon = plano.Icon;
-                    const isElite = plano.id === 'elite';
-                    const isTatico = plano.id === 'tatico';
-                    const precoValor =
-                      plano.id === 'gratuito' ? 'R$ 0' : planoPrecoAnual ? `R$ ${plano.precoAnual}` : `R$ ${plano.precoMensal}`;
-
-                    return (
-                      <div
-                        key={plano.id}
-                        className="pl-card"
-                        style={{
-                          position: 'relative', display: 'flex', flexDirection: 'column', padding: 24,
-                          ...(isElite && {
-                            border: '2px solid var(--pl-warn)',
-                            background: 'linear-gradient(160deg, var(--pl-warn-soft) 0%, var(--pl-surface) 60%)',
-                            boxShadow: 'var(--pl-sh-mid)',
-                          }),
-                          ...(isTatico && !isElite && {
-                            border: '1.5px solid var(--pl-accent)',
-                            background: 'linear-gradient(160deg, var(--pl-accent) 0%, color-mix(in srgb, var(--pl-accent) 80%, black) 100%)',
-                            color: 'var(--pl-bg)',
-                          }),
-                          ...(isCurrent && { outline: '2px solid var(--pl-success)', outlineOffset: 2 }),
-                        }}
-                      >
-                        {isCurrent ? (
-                          <span className="pl-tag pl-tag-success" style={{ position: 'absolute', right: 14, top: 14 }}>
-                            Seu plano
-                          </span>
-                        ) : null}
-                        {plano.destaque && !isCurrent ? (
-                          <span className={isTatico ? 'pl-tag' : 'pl-tag pl-tag-accent'} style={{
-                            position: 'absolute', right: 14, top: 14,
-                            ...(isTatico && { background: 'rgba(255,255,255,0.2)', color: 'var(--pl-bg)', border: '1px solid rgba(255,255,255,0.3)' }),
-                          }}>
-                            Popular
-                          </span>
-                        ) : null}
-                        {plano.premium ? (
-                          <span className="pl-tag pl-tag-warn" style={{ position: 'absolute', left: 14, top: 14, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                            <Sparkles style={{ width: 12, height: 12 }} />
-                            Premium
-                          </span>
-                        ) : null}
-
-                        <div style={{
-                          marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          width: 44, height: 44, borderRadius: 12,
-                          background: isTatico ? 'rgba(255,255,255,0.15)' : isElite ? 'var(--pl-warn-soft)' : 'var(--pl-bg-soft)',
-                          color: isTatico ? 'var(--pl-bg)' : isElite ? 'var(--pl-warn)' : 'var(--pl-ink-2)',
-                        }}>
-                          <Icon style={{ width: 22, height: 22 }} strokeWidth={2} />
-                        </div>
-                        <h3 style={{ marginTop: 18, fontSize: 18, fontWeight: 800, color: isTatico ? 'var(--pl-bg)' : 'var(--pl-ink)' }}>{plano.nome}</h3>
-                        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.6, color: isTatico ? 'rgba(255,255,255,0.8)' : 'var(--pl-ink-2)' }}>{plano.descricao}</p>
-                        <p style={{ marginTop: 18, fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em', color: isTatico ? 'var(--pl-bg)' : 'var(--pl-ink)' }}>
-                          {precoValor}
-                          {plano.id !== 'gratuito' ? (
-                            <span style={{ fontSize: 13, fontWeight: 600, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>/mês</span>
-                          ) : null}
-                        </p>
-                        {plano.id !== 'gratuito' && planoPrecoAnual ? (
-                          <p style={{ fontSize: 12, color: isTatico ? 'rgba(255,255,255,0.65)' : 'var(--pl-ink-3)' }}>Valores na cobrança anual (referência da página de assinatura).</p>
-                        ) : null}
-
-                        <ul style={{ marginTop: 20, flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          {plano.features.map((line) => (
-                            <li key={line} style={{ display: 'flex', gap: 10, fontSize: 13 }}>
-                              <Check style={{ marginTop: 2, width: 16, height: 16, flexShrink: 0, color: isTatico ? 'var(--pl-success)' : 'var(--pl-success)' }} strokeWidth={2.5} />
-                              <span style={{ lineHeight: 1.5, color: isTatico ? 'rgba(255,255,255,0.9)' : 'var(--pl-ink-2)' }}>{line}</span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab?.('assinatura')}
-                          className={isCurrent ? 'pl-btn pl-btn-ghost' : isTatico ? 'pl-btn' : 'pl-btn pl-btn-primary'}
-                          style={{
-                            marginTop: 24, width: '100%', justifyContent: 'center',
-                            ...(isTatico && !isCurrent && {
-                              background: 'var(--pl-surface)', color: 'var(--pl-accent)',
-                              border: 'none', fontWeight: 700,
-                            }),
-                          }}
-                        >
-                          {isCurrent ? 'Gerenciar na página de assinatura' : plano.id === 'gratuito' ? 'Detalhes e limites' : `Quero o ${plano.nome}`}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="pl-card" style={{ padding: 24 }}>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
-                    Dúvidas sobre cobrança, nota fiscal ou troca de cartão? Use a página <strong style={{ fontWeight: 600, color: 'var(--pl-ink)' }}>Assinatura</strong> do app
-                    (mesmo menu onde você acessa este perfil). Os preços finais podem incluir promoções ativas no checkout.
-                  </p>
-                </div>
               </div>
             )}
 
@@ -1425,12 +1254,13 @@ export default function Perfil(props) {
                               a.download = `papirando-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
                               a.click();
                               URL.revokeObjectURL(url);
+                              showToast('Dados exportados com sucesso!', 'success');
                             } catch {
-                              alert('Erro ao exportar dados. Tente novamente.');
+                              showToast('Erro ao exportar dados. Tente novamente.', 'error');
                             }
                           }} />
-                          <LgpdButton icon={FileText} label="Privacidade" description="Como tratamos seus dados" tone="neutral" onClick={() => setActiveTab('privacidade')} />
-                          <LgpdButton icon={FileText} label="Termos de Uso" description="Regras da plataforma" tone="neutral" onClick={() => setActiveTab('termos')} />
+                          <LgpdButton icon={FileText} label="Privacidade" description="Como tratamos seus dados" tone="neutral" onClick={() => window.open('https://papirando.com/privacidade', '_blank')} />
+                          <LgpdButton icon={FileText} label="Termos de Uso" description="Regras da plataforma" tone="neutral" onClick={() => window.open('https://papirando.com/termos', '_blank')} />
                         </div>
 
                         {/* Zona de perigo */}
@@ -1441,14 +1271,17 @@ export default function Perfil(props) {
                               A exclusão é irreversível e pode levar até 30 dias.
                             </p>
                             <LgpdButton icon={Trash2} label="Solicitar exclusão" description="Inicia a remoção permanente" tone="danger" onClick={async () => {
-                              const confirmed = window.confirm('Tem certeza? Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.');
+                              const confirmed = await showConfirm(
+                                'Sua conta e todos os dados serão excluídos permanentemente em até 30 dias. Esta ação não pode ser desfeita.',
+                                { title: 'Excluir conta?', confirmLabel: 'Sim, excluir', cancelLabel: 'Cancelar', danger: true }
+                              );
                               if (!confirmed) return;
                               try {
                                 const { data, error } = await supabase.rpc('request_account_deletion');
                                 if (error) throw error;
-                                alert(data?.message || 'Solicitação registrada. Entraremos em contato.');
+                                await showAlert(data?.message || 'Solicitação registrada. Entraremos em contato em até 30 dias.', { title: 'Solicitação enviada' });
                               } catch {
-                                alert('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com');
+                                showToast('Erro ao registrar solicitação. Entre em contato: privacidade@papirando.com', 'error');
                               }
                             }} />
                           </div>

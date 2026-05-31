@@ -92,14 +92,36 @@ language plpgsql
 as $$
 declare
   generated_code text;
-  base_code text;
+  base_code      text;
+  username_code  text;
   existing_referrer_id uuid;
 begin
-  new.referral_code := upper(regexp_replace(coalesce(new.referral_code, ''), '[^A-Za-z0-9]', '', 'g'));
+  new.referral_code    := upper(regexp_replace(coalesce(new.referral_code,    ''), '[^A-Za-z0-9]', '', 'g'));
   new.referred_by_code := upper(regexp_replace(coalesce(new.referred_by_code, ''), '[^A-Za-z0-9]', '', 'g'));
 
-  if coalesce(new.referral_code, '') = '' then
-    base_code := upper(regexp_replace(coalesce(new.username, split_part(coalesce(new.email, ''), '@', 1), 'PAPI'), '[^A-Za-z0-9]', '', 'g'));
+  -- Tenta usar o username como código (sincroniza sempre que username é válido)
+  username_code := upper(regexp_replace(coalesce(new.username, ''), '[^A-Za-z0-9]', '', 'g'));
+  username_code := left(username_code, 10);
+
+  if char_length(username_code) >= 4 then
+    -- Username válido: sincroniza referral_code se for diferente
+    if upper(coalesce(new.referral_code, '')) <> username_code then
+      -- Só atualiza se não houver conflito com outro usuário
+      if not exists (
+        select 1 from public.profiles
+        where upper(referral_code) = username_code
+          and id <> coalesce(new.id, gen_random_uuid())
+      ) then
+        new.referral_code := username_code;
+      end if;
+    end if;
+
+  elsif coalesce(new.referral_code, '') = '' then
+    -- Sem username válido e sem código: gerar fallback (email ou PAPI+id)
+    base_code := upper(regexp_replace(
+      coalesce(split_part(coalesce(new.email, ''), '@', 1), 'PAPI'),
+      '[^A-Za-z0-9]', '', 'g'
+    ));
     base_code := left(base_code, 10);
     if char_length(base_code) < 4 then
       base_code := 'PAPI' || right(replace(coalesce(new.id::text, gen_random_uuid()::text), '-', ''), 6);
@@ -108,8 +130,7 @@ begin
     generated_code := base_code;
 
     if exists (
-      select 1
-      from public.profiles
+      select 1 from public.profiles
       where upper(referral_code) = generated_code
         and id <> coalesce(new.id, gen_random_uuid())
     ) then
@@ -118,6 +139,7 @@ begin
 
     new.referral_code := generated_code;
   end if;
+  -- Se não tem username válido mas JÁ tem código → mantém o existente sem alteração
 
   if new.referred_by_code = new.referral_code then
     new.referred_by_code := null;
@@ -175,25 +197,25 @@ begin
 
   if confirmed_total >= 1 then
     insert into public.referral_bonus_events (referrer_profile_id, milestone, reward_title)
-    values (target_referrer_id, 1, '+1 mes VIP')
+    values (target_referrer_id, 1, '1 mês grátis')
     on conflict (referrer_profile_id, milestone) do nothing;
   end if;
 
   if confirmed_total >= 3 then
     insert into public.referral_bonus_events (referrer_profile_id, milestone, reward_title)
-    values (target_referrer_id, 3, '15% OFF fixo')
+    values (target_referrer_id, 3, '3 meses grátis')
     on conflict (referrer_profile_id, milestone) do nothing;
   end if;
 
   if confirmed_total >= 5 then
     insert into public.referral_bonus_events (referrer_profile_id, milestone, reward_title)
-    values (target_referrer_id, 5, '20% OFF fixo')
+    values (target_referrer_id, 5, '6 meses grátis')
     on conflict (referrer_profile_id, milestone) do nothing;
   end if;
 
   if confirmed_total >= 10 then
     insert into public.referral_bonus_events (referrer_profile_id, milestone, reward_title)
-    values (target_referrer_id, 10, 'Semestre gratis')
+    values (target_referrer_id, 10, '1 ano grátis')
     on conflict (referrer_profile_id, milestone) do nothing;
   end if;
 end;

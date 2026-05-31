@@ -1,13 +1,35 @@
 # Papirando — Guia de Contexto para o Claude
 
-## ⚠️ LEIA ANTES DE QUALQUER COISA — Worklog ativo
+## ⚠️ LEIA ANTES DE QUALQUER COISA
 
-O arquivo [`docs/WORKLOG.md`](docs/WORKLOG.md) contém:
-- O status atual de cada frente de trabalho
-- O plano detalhado das próximas tarefas (dark mode, mobile, animações, estados vazios, tipografia)
-- O registro do que foi feito em sessões anteriores
+### 1. Worklog — sempre atualizado
+O arquivo [`docs/WORKLOG.md`](docs/WORKLOG.md) é o centro de controle do projeto. Contém:
+- Status de pagamentos (Asaas — aguardando liberação da conta)
+- **Plano tela a tela** — auditoria de produção com 50 páginas catalogadas em 8 blocos
+- Registro de todas as sessões anteriores
 
-**Toda vez que concluir uma tarefa, atualize o WORKLOG.md** — registre o que foi feito e marque o próximo passo.
+**Toda vez que concluir uma tarefa, atualize o WORKLOG.md** — marque o status da tela e registre o que foi feito.
+
+### 2. Modo de trabalho atual — Auditoria tela a tela
+
+Estamos em fase de **revisão página por página** para identificar o que está pronto para produção e o que fica para depois. O fluxo de trabalho é:
+
+1. Usuário diz qual tela quer revisar (ou a gente segue a ordem dos blocos do WORKLOG)
+2. Claude abre o arquivo, analisa o estado atual e aponta:
+   - O que está funcionando
+   - O que está quebrado ou incompleto
+   - O que precisa de ajuste antes do lançamento
+3. Corrige o que for rápido na hora
+4. Atualiza o status no WORKLOG.md (✅ / 🔧 / ⏳)
+
+**Ordem sugerida dos blocos:** Bloco 1 → 2 → 3 → 4 → 5 → 6 (ver WORKLOG.md)
+
+### 3. Pagamentos — status atual
+- Plataforma: **Asaas** (substituiu Stripe)
+- Edge Function `create-checkout-session` → reescrita para Asaas ✅
+- Edge Function `asaas-webhook` → criada ✅
+- **Aguardando:** liberação da conta Asaas para pegar API Key e fazer deploy
+- Quando liberar: setar secrets no Supabase + deploy das 2 funções + conectar botão no Perfil.jsx
 
 ---
 

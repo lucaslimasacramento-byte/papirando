@@ -930,9 +930,9 @@ export default function Login({
                 textDecoration: 'underline', textDecorationColor: 'rgba(29,78,216,0.3)',
               }}>Entra na sua conta</button>
               {' '}·{' '}
-              <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>termos</a>
+              <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>termos</a>
               {' '}e{' '}
-              <a href="#" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>privacidade</a>
+              <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--pl-ink-2)', textDecoration: 'underline', textDecorationColor: 'var(--pl-rule-strong)', textUnderlineOffset: 2 }}>privacidade</a>
             </>
           )}
         </div>

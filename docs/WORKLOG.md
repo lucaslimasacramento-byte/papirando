@@ -1,139 +1,199 @@
-# Papirando — Worklog de Sessão
+# Papirando — Worklog & Plano de Produção
 
-> **LEIA ISSO PRIMEIRO.** Este arquivo registra o que foi feito e o que vem a seguir.
-> Toda vez que uma tarefa é concluída, registre aqui antes de encerrar a sessão.
+> **LEIA ISSO PRIMEIRO.**
+> Este arquivo é o centro de controle do projeto. Registra o que foi feito, o que está em andamento e o plano tela a tela para o lançamento.
+> **Toda vez que uma tarefa for concluída, atualize aqui.**
 
 ---
 
-## Status geral
+## Legenda de status
 
-| Frente | Status |
+| Ícone | Significado |
 |---|---|
-| Migração `pl-*` — todas as páginas (`src/pages/`) | ✅ 100% concluído |
-| Migração `pl-*` — componentes (`src/components/`) | ✅ 100% concluído |
-| `PageHeadPremium.jsx` removido (componente orphan) | ✅ Concluído |
-| Supabase — buckets faltantes + RLS | ✅ `supabase/storage_buckets_missing.sql` criado |
-| Supabase — ordem de execução dos scripts | ✅ `supabase/EXECUTION_ORDER.md` criado |
-| Supabase — rascunho das 6 tabelas sem schema | ✅ `supabase/missing_tables_draft.sql` criado (validar antes de aplicar) |
-| **Dark mode — toggle implementado** | ✅ Concluído (toggle no Header, persiste em localStorage) |
-| **Responsividade mobile** | ✅ Concluído (grids, modais, header) |
-| **Animações (`pl-ai-shimmer`, etc.)** | ✅ Concluído |
-| **Estados vazios e de loading** | ✅ Concluído |
-| **Tipografia de conteúdo longo** | ✅ Concluído (pl-prose criada, sem containers de prosa longa identificados nas páginas atuais) |
+| ✅ | Pronto para produção |
+| 🔧 | Precisa de ajustes antes do lançamento |
+| ⏳ | Deixar para depois (pós-lançamento) |
+| 🚧 | Em andamento agora |
+| 🚫 | Admin / interno — não vai para usuário final |
 
 ---
 
-## Plano detalhado — Polish visual
+## PAGAMENTOS — Status atual (2026-05-30)
 
-### Fase 1 — Dark mode *(prioridade alta — afeta tudo)*
-
-**Objetivo:** garantir que `.pl-theme-dark` funciona em 100% dos componentes e páginas.
-
-**Tarefas:**
-- [x] Auditar `src/App.jsx` — classe `pl-theme-dark` aplicada em `document.documentElement` via `useEffect`, persiste em `localStorage` com chave `pl-dark`
-- [x] Toggle no Header — botão Moon/Sun entre notificações e perfil; props `darkMode` + `onToggleDarkMode` passadas do App
-- [x] Audit completo de `src/pages/` e `src/components/` — hardcodes mapeados
-- [x] Corrigidos em `src/pages/`: Ciclos (migração completa), AdminConfiguracoes (migração completa), AdminConcursos linhas 2100-3080, Dashboard, Login, MetasSemana, Redacoes, Historico, Comunidades
-- [x] Corrigidos em `src/components/`: AppOverlays, SimuladosRankingPanel, AdminAudiobookCatalogEditor, Conciliador
-- [x] Casos especiais preservados: TimerOverlay (dark intencional), focus mode Legislacao (#050816), player Audiobooks, bloco CompatibilityGauge do Conciliador, texto sobre pastéis de disciplina (#1e293b fixo)
-- [ ] Testar visualmente no browser após login — verificar se páginas chave respondem bem ao toggle
-
-**Arquivos-chave:**
-- `src/index.css` — definição dos tokens dark
-- `src/App.jsx` — lógica de toggle
-- `src/components/Header.jsx` — botão de toggle
+| Item | Status |
+|---|---|
+| Produto "Papirando Papiro" criado no Stripe | ✅ |
+| Preço mensal R$19,90 (`price_1Tcxk2DVbtxivpXmRjpQYTr5`) | ✅ |
+| Preço anual R$159,90 (`price_1TcxlpDVbtxivpXmAXdi753f`) | ✅ |
+| Price IDs salvos no Supabase Secrets | ✅ |
+| Edge Function `create-checkout-session` atualizada (plano `papiro` + trial 30d) | ✅ |
+| `STRIPE_SECRET_KEY` no Supabase Secrets | ⏳ Aguardando SMS do Stripe |
+| Deploy da Edge Function | ⏳ Depende da secret key |
+| Botão de checkout conectado no Perfil.jsx | ⏳ Depende do deploy |
+| PIX ativado no Stripe Dashboard | 🔧 Fazer em Settings → Payment methods |
 
 ---
 
-### Fase 2 — Responsividade mobile *(prioridade alta)*
+## INDICAÇÕES (Convide e Ganhe) — Status atual
 
-**Objetivo:** app funcionando corretamente em telas de 375px a 768px.
-
-**Tarefas por página (verificar e corrigir):**
-- [ ] Dashboard — KPI strip (grid 4 cols → 2 cols em mobile)
-- [ ] Planejamento / Ciclos — tabelas de horário (scroll horizontal ou reflow)
-- [ ] Simulados — tabela de questões (scroll ou cards em mobile)
-- [ ] Flashcards — deck de cards (tamanho e padding em tela pequena)
-- [ ] Redacoes — painel de critérios (layout lateral → vertical)
-- [ ] Esquadroes — grid de métricas (4 cols → 2 cols)
-- [ ] Planos — accordion de concursos (padding e texto)
-- [ ] Sidebar — comportamento em mobile (overlay, hamburguer)
-- [ ] Header — layout mobile
-
-**Critério de aceite:** nenhum scroll horizontal indesejado, texto legível, botões clicáveis (min 44px touch target).
+| Item | Status |
+|---|---|
+| Código de convite = username (trigger SQL) | ✅ |
+| Migration de usuários existentes | ✅ |
+| Recompensas atualizadas (meses grátis) | ✅ |
+| Textos em português corretos | ✅ |
+| Função SQL `award_referral_bonus_events` atualizada | 🔧 Rodar SQL no Supabase |
 
 ---
 
-### Fase 3 — Animações e micro-interações *(prioridade média)*
+## PLANO TELA A TELA — Auditoria de produção
 
-**Objetivo:** usar as animações definidas no CSS nos lugares corretos.
+### 🟢 BLOCO 1 — Acesso e identidade
 
-**Animações disponíveis no `src/index.css`:**
-- `pl-ai-shimmer` — shimmer nos elementos de IA (tags IA, botões IA, cards IA)
-- `pl-live-pulse` — pulse em indicadores "ao vivo" (timer, streak ativo)
-- `pl-gabarito-reveal` — reveal animado ao mostrar gabarito em simulados/flashcards
-
-**Tarefas:**
-- [ ] Confirmar que `pl-tag-ai` e `pl-btn-ai` já aplicam `pl-ai-shimmer` via CSS (checar `src/index.css`)
-- [ ] Identificar indicadores "ao vivo" que deveriam ter `pl-live-pulse` (TimerOverlay, streak no Dashboard)
-- [ ] Identificar onde `pl-gabarito-reveal` deveria ser aplicado (SimuladosRankingPanel, Flashcards reveal)
-- [ ] Aplicar as classes faltantes
+| Tela | Arquivo | Status | O que falta |
+|---|---|---|---|
+| Login / Cadastro | `Login.jsx` | ✅ | — |
+| Perfil | `Perfil.jsx` | ✅ | — |
+| Assinatura (tab no perfil) | `Assinatura.jsx` | 🔧 | Deploy Asaas (API Key pendente) |
+| Convide e Ganhe | `ConvideGanhe.jsx` | ✅ | — |
+| Termos de Uso | `Termos.jsx` | ✅ | — |
+| Privacidade | `Privacidade.jsx` | ✅ | — |
 
 ---
 
-### Fase 4 — Estados vazios e de loading *(prioridade média)*
+### 🟢 BLOCO 2 — Home e visão geral
 
-**Objetivo:** toda lista/tabela/grid tem estado vazio visual consistente e skeleton de loading.
-
-**Padrão a seguir:**
-```jsx
-{/* Estado vazio */}
-<div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--pl-ink-3)' }}>
-  <IconeRelevante size={32} style={{ marginBottom: 12, opacity: 0.4 }} />
-  <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Nada aqui ainda</p>
-  <p style={{ fontSize: 13 }}>Descrição curta do que fazer para popular.</p>
-</div>
-```
-
-**Páginas a revisar:**
-- [ ] Flashcards — lista de baralhos vazia
-- [ ] Materiais — lista de materiais vazia
-- [ ] Simulados — histórico vazio
-- [ ] Questoes — resultado de busca vazio
-- [ ] Comunidades — feed vazio
-- [ ] MapasMentais — galeria vazia
-- [ ] Revisoes — fila vazia
-- [ ] Redacoes — lista vazia
+| Tela | Arquivo | Status | O que falta |
+|---|---|---|---|
+| Dashboard | `Dashboard.jsx` | 🔧 | Validar dados reais (KPIs, streaks, resumo IA) |
+| Estatísticas | `Estatisticas.jsx` | 🔧 | Validar gráficos com dados reais |
+| Histórico | `Historico.jsx` | ✅ | — |
+| Sessões de Estudo | `Sessoes.jsx` | 🔧 | Validar timer e gravação de sessão |
 
 ---
 
-### Fase 5 — Tipografia de conteúdo longo *(prioridade baixa)*
+### 🟢 BLOCO 3 — Ferramentas de estudo (core IA)
 
-**Objetivo:** páginas com texto corrido têm estilos de prosa adequados.
+| Tela | Arquivo | Status | O que falta |
+|---|---|---|---|
+| Materiais (upload + processamento) | `Materiais.jsx` | 🔧 | Testar upload real + geração IA |
+| Questões (geração por IA) | `Questoes.jsx` | 🔧 | Testar geração com Gemini, limites free/papiro |
+| Simulados | `Simulados.jsx` | 🔧 | Testar fluxo completo + correção |
+| Flashcards | `Flashcards.jsx` | 🔧 | Testar geração IA + repetição espaçada |
+| Redações (correção por IA) | `Redacoes.jsx` | 🔧 | Testar correção com Gemini, limites free/papiro |
+| Revisões | `Revisoes.jsx` | 🔧 | Validar fila de revisão e algoritmo |
+| Mapas Mentais | `MapasMentais.jsx` | 🔧 | Testar geração IA + salvar |
 
-**Páginas afetadas:** Legislacao, Edital, Materiais (viewer de PDF), Audiobooks (transcrição).
+---
 
-**Tarefas:**
-- [ ] Definir classe `pl-prose` em `src/index.css` com line-height, max-width, espaçamento de parágrafos — usando `--pl-serif` para títulos e `--pl-sans` para corpo
-- [ ] Aplicar `pl-prose` nos containers de conteúdo longo de cada página
+### 🟢 BLOCO 4 — Planejamento e organização
+
+| Tela | Arquivo | Status | O que falta |
+|---|---|---|---|
+| Planejamento | `Planejamento.jsx` | 🔧 | Validar cronograma gerado |
+| Ciclos de Estudo | `Ciclos.jsx` | 🔧 | Validar ciclos e timer Pomodoro |
+| Metas da Semana | `MetasSemana.jsx` | ✅ | — |
+| Objetivos | `Objetivos.jsx` | 🔧 | Validar criação e progresso |
+| Lembretes e Calendário | `LembretesCalendario.jsx` | 🔧 | Validar criação e notificações |
+
+---
+
+### 🟡 BLOCO 5 — Concursos (nicho específico)
+
+| Tela | Arquivo | Status | O que falta |
+|---|---|---|---|
+| Concursos Disponíveis | `ConcursosDisponiveis.jsx` | 🔧 | Validar catálogo e filtros |
+| Meus Concursos | `MeusConcursos.jsx` | 🔧 | Validar inscrição e acompanhamento |
+| Detalhe do Concurso | `ConcursoDetalhe.jsx` | 🔧 | Validar dados e cronograma |
+| Edital | `Edital.jsx` | 🔧 | Validar análise por IA |
+| Questão de Edital | `EditalQuestao.jsx` | 🔧 | Validar fluxo |
+| Disciplinas | `Disciplinas.jsx` | ✅ | — |
+| Detalhe de Disciplina | `DisciplinaDetalhe.jsx` | ✅ | — |
+| Legislação | `Legislacao.jsx` | 🔧 | Validar busca e leitura |
+| Planos de Concurso | `Planos.jsx` | 🔧 | Validar geração de plano |
+
+---
+
+### 🟡 BLOCO 6 — Comunidade e social
+
+| Tela | Arquivo | Status | O que falta |
+|---|---|---|---|
+| Comunidades | `Comunidades.jsx` | 🔧 | Validar feed, posts e moderação |
+| Esquadrões | `Esquadroes.jsx` | 🔧 | Validar criação e membros |
+
+---
+
+### 🔴 BLOCO 7 — Pós-lançamento (não bloqueia MVP)
+
+| Tela | Arquivo | Status | Motivo |
+|---|---|---|---|
+| Audiobooks | `Audiobooks.jsx` | ⏳ | Conteúdo ainda não populado |
+| Bem-Estar | `BemEstar.jsx` | ⏳ | Feature secundária |
+| Conciliador | `Conciliador.jsx` | ⏳ | Feature complexa, pós-MVP |
+| Instagram | `Instagram.jsx` | ⏳ | Integração opcional |
+| Aplicativos | `Aplicativos.jsx` | ⏳ | Diretório pós-MVP |
+
+---
+
+### 🚫 BLOCO 8 — Admin (interno)
+
+| Tela | Arquivo |
+|---|---|
+| Dashboard Admin | `AdminDashboard.jsx` |
+| Assinaturas Admin | `AdminAssinaturas.jsx` |
+| Usuários | `AdminUsuarios.jsx` |
+| CRM | `AdminCRM.jsx` |
+| Finanças | `AdminFinance.jsx` |
+| Concursos Admin | `AdminConcursos.jsx` |
+| Questões Admin | `AdminQuestoes.jsx` |
+| Audiolivros Admin | `AdminAudiolivros.jsx` |
+| Legislação Admin | `AdminLegislacao.jsx` |
+| Mapas Mentais Admin | `AdminMindMapsGallery.jsx` |
+| Disciplinas Admin | `AdminDisciplinasPadrao.jsx` |
+| Beta Feedback | `AdminBetaFeedback.jsx` |
+| Configurações | `AdminConfiguracoes.jsx` |
+
+---
+
+## PRÓXIMOS PASSOS IMEDIATOS
+
+1. **Conseguir STRIPE_SECRET_KEY** (aguardando SMS) → deploy da Edge Function → checkout funcionando
+2. **Conectar botão de checkout no Perfil.jsx** (onSelectPlan → startStripeCheckout)
+3. **Ativar PIX no Stripe** (Settings → Payment methods → Pix)
+4. **Passar pelo Bloco 2** (Dashboard + Estatísticas) — validar dados reais
+5. **Passar pelo Bloco 3** (ferramentas IA) — testar cada feature com Gemini
 
 ---
 
 ## Registro de sessões
 
-### Sessão anterior (data aprox. 2026-05-26)
+### Sessão 2026-05-30
 **O que foi feito:**
-- Migração `pl-*` completa de todas as páginas (`src/pages/`) — ~32 arquivos
-- Migração `pl-*` de Sidebar.jsx e Header.jsx
-- Flashcards.jsx, Simulados.jsx, Questoes.jsx, Revisoes.jsx, Materiais.jsx, Audiobooks.jsx, Legislacao.jsx, Edital.jsx, Redacoes.jsx, MapasMentais.jsx, MetasSemana.jsx, Assinatura.jsx, DisciplinaDetalhe.jsx, Comunidades.jsx migrados
-- Esquadroes.jsx e Planos.jsx migrados (última sessão)
-- PageHeadPremium.jsx deletado (orphan)
-- Supabase: storage_buckets_missing.sql, EXECUTION_ORDER.md, missing_tables_draft.sql criados
+- Planejamento completo de pagamentos
+- Stripe: produto "Papirando Papiro" criado com preços mensal (R$19,90) e anual (R$159,90)
+- Edge Function `create-checkout-session` atualizada: plano `papiro`, trial 30 dias
+- Supabase CLI instalado via Scoop
+- Price IDs salvos no Supabase Secrets
+- Planos renomeados: Folha (free) + Papiro (R$19,90) — 2 tiers apenas
+- `Assinatura.jsx` reescrito com novo layout 2 colunas + badge "1º mês grátis"
+- `subscriptionApi.js` atualizado para reconhecer plano `papiro`
+- `ConvideGanhe.jsx` / `referrals.js`: recompensas atualizadas para meses grátis
+- Trigger SQL `prepare_profile_referral_fields` atualizado: referral_code = username
+- Migration criada para sincronizar usuários existentes
 
-**Próximos passos:**
-- Todas as 5 fases de polish concluídas ✅
-- Próxima frente a definir com o usuário (ex: testes, deploy, novas features)
+**Pendente desta sessão:**
+- STRIPE_SECRET_KEY (aguardando SMS do Stripe)
+- Deploy da Edge Function
+- Botão de checkout conectado no Perfil.jsx
 
 ---
 
-*Última atualização: 2026-05-26*
+### Sessão 2026-05-26
+**O que foi feito:**
+- Migração `pl-*` completa de todas as páginas (~32 arquivos)
+- Dark mode, responsividade mobile, animações, estados vazios, tipografia
+- Supabase: storage_buckets_missing.sql, EXECUTION_ORDER.md, missing_tables_draft.sql
+
+---
+
+*Última atualização: 2026-05-30*

@@ -1,10 +1,10 @@
 export const REFERRAL_STORAGE_KEY = 'papirando_pending_referral_code';
 
 export const REFERRAL_GOALS = [
-  { alvo: 1, titulo: '+1 mes VIP' },
-  { alvo: 3, titulo: '15% OFF fixo' },
-  { alvo: 5, titulo: '20% OFF fixo' },
-  { alvo: 10, titulo: 'Semestre gratis' },
+  { alvo: 1,  titulo: '1 mês grátis' },
+  { alvo: 3,  titulo: '3 meses grátis' },
+  { alvo: 5,  titulo: '6 meses grátis' },
+  { alvo: 10, titulo: '1 ano grátis' },
 ];
 
 export function normalizeReferralCode(value) {
