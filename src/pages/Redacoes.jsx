@@ -1,4 +1,6 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
+import PremiumGate from '../components/PremiumGate';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import {
   FileSignature,
   PenTool,
@@ -236,6 +238,8 @@ export default function Redacoes({
   redacaoExpertTips = [],
   redacaoThemeBankOverride = null,
   redacaoKitOverride = null,
+  isPremium = false,
+  onUpgrade,
 }) {
   const [redacaoInnerTab, setRedacaoInnerTab] = useState('correcao');
   const [expertModalTip, setExpertModalTip] = useState(null);
@@ -278,7 +282,15 @@ export default function Redacoes({
     }
   };
 
+  const { canUse: canUseLimit, getUsed, getLimit, increment } = usePlanLimits(currentUserId, isPremium);
+  const essaysUsed  = getUsed('essays_monthly');
+  const essaysLimit = getLimit('essays_monthly');
+
   const handleCorrigir = async () => {
+    if (!isPremium && !canUseLimit('essays_monthly')) {
+      if (typeof onUpgrade === 'function') onUpgrade();
+      return;
+    }
     const text = redacaoInputMode === 'upload' ? transcribedText : redacaoText;
     if (!text.trim()) {
       setCorrecaoErr(
@@ -288,6 +300,7 @@ export default function Redacoes({
       );
       return;
     }
+    if (!isPremium) await increment('essays_monthly');
     setCorrigindo(true);
     setCorrecaoResult(null);
     setCorrecaoErr('');
@@ -883,18 +896,29 @@ export default function Redacoes({
                         </span>
                       ) : 'Critérios da banca'}
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleCorrigir}
-                      disabled={corrigindo}
-                      aria-disabled={!canCorrigirRedacao}
-                      title={canCorrigirRedacao ? 'Corrigir redação com IA' : 'Escreva ou cole a redação primeiro'}
-                      className="pl-btn pl-btn-ai pl-btn-lg"
-                      style={{ opacity: canCorrigirRedacao ? 1 : 0.7 }}
-                    >
-                      {corrigindo ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
-                      {corrigindo ? 'Corrigindo…' : 'Corrigir com IA'}
-                    </button>
+                    {!isPremium && essaysUsed >= essaysLimit ? (
+                      <PremiumGate
+                        locked
+                        mode="banner"
+                        feature="essays_monthly"
+                        used={essaysUsed}
+                        limit={essaysLimit}
+                        onUpgrade={onUpgrade}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleCorrigir}
+                        disabled={corrigindo}
+                        aria-disabled={!canCorrigirRedacao}
+                        title={canCorrigirRedacao ? 'Corrigir redação com IA' : 'Escreva ou cole a redação primeiro'}
+                        className="pl-btn pl-btn-ai pl-btn-lg"
+                        style={{ opacity: canCorrigirRedacao ? 1 : 0.7 }}
+                      >
+                        {corrigindo ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+                        {corrigindo ? 'Corrigindo…' : 'Corrigir com IA'}
+                      </button>
+                    )}
                   </div>
                 )}
 

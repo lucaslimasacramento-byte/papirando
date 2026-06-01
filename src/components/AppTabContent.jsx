@@ -1,5 +1,6 @@
 ﻿import React, { Suspense, lazy } from 'react';
 import { Target } from 'lucide-react';
+import PremiumGate from './PremiumGate';
 
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const Estatisticas = lazy(() => import('../pages/Estatisticas'));
@@ -895,11 +896,13 @@ export default function AppTabContent(props) {
     );
   }
 
+  const onUpgrade = () => setActiveTab('perfil');
+
   if (activeTab === 'flashcards') {
-    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} setActiveTab={setActiveTab} />;
+    return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} setActiveTab={setActiveTab} isPremium={isPremiumPlan} onUpgrade={onUpgrade} />;
   }
 
-  if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} />;
+  if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} isPremium={isPremiumPlan} onUpgrade={onUpgrade} />;
 
   if (activeTab === 'metas') {
     return <MetasSemana currentUserId={currentUserId} historicoReal={historicoReal} />;
@@ -915,6 +918,8 @@ export default function AppTabContent(props) {
           onOpenRecommendedDiscipline={handleDisciplineClick}
           onStartRecommendedSession={startRecommendedStudySession}
           currentUserId={currentUserId}
+          isPremium={isPremiumPlan}
+          onUpgrade={onUpgrade}
         />
       );
   }
@@ -938,6 +943,8 @@ export default function AppTabContent(props) {
         planningCourseOptions={planningCourseOptions}
         isAdmin={isAdmin}
         setActiveTab={setActiveTab}
+        isPremium={isPremiumPlan}
+        onUpgrade={onUpgrade}
       />
     );
   }
@@ -956,6 +963,8 @@ export default function AppTabContent(props) {
         currentUserId={currentUserId}
         redacaoSummary={redacaoSummary}
         communityMetrics={communityMetrics}
+        isPremium={isPremiumPlan}
+        onUpgrade={onUpgrade}
       />
     );
   }
@@ -974,11 +983,23 @@ export default function AppTabContent(props) {
         redacaoExpertTips={redacaoExpertTips}
         redacaoThemeBankOverride={redacaoThemeBankOverride}
         redacaoKitOverride={redacaoKitOverride}
+        isPremium={isPremiumPlan}
+        onUpgrade={onUpgrade}
       />
     );
   }
 
   if (activeTab === 'audiobooks') {
+    if (!isPremiumPlan) {
+      return (
+        <PremiumGate
+          locked
+          feature="audiobooks"
+          mode="page"
+          onUpgrade={onUpgrade}
+        />
+      );
+    }
     return (
       <Audiobooks
         profile={effectiveProfile}
@@ -1010,12 +1031,14 @@ export default function AppTabContent(props) {
           setActiveTab('concurso_detalhe');
         }}
         onOpenStudyRegister={openStudyRegisterForDiscipline}
+        isPremium={isPremiumPlan}
+        onUpgrade={onUpgrade}
       />
     );
   }
 
   if (activeTab === 'legislacao') {
-    return <Legislacao isAdmin={isAdmin} currentUserId={currentUserId} onOpenAdminLegislacao={onOpenAdminLegislacao} />;
+    return <Legislacao isAdmin={isAdmin} currentUserId={currentUserId} onOpenAdminLegislacao={onOpenAdminLegislacao} isPremium={isPremiumPlan} onUpgrade={onUpgrade} />;
   }
 
   if (activeTab === 'edital_questao') {

@@ -138,6 +138,8 @@ export default function MapasMentais({
   onOpenDiscipline,
   onOpenContest,
   onOpenStudyRegister,
+  isPremium = false,
+  onUpgrade,
 }) {
   const context = useMemo(
     () => ({ bancoDisciplinas, subjectCatalog, contestLibrary }),
@@ -488,6 +490,7 @@ export default function MapasMentais({
   );
 
   const handleGerarMapa = () => {
+    if (!isPremium) { if (typeof onUpgrade === 'function') onUpgrade(); return; }
     const novoMapa = buildMapFromPrompt(promptMapa, context);
     if (!novoMapa) return;
 
@@ -774,12 +777,13 @@ export default function MapasMentais({
               <button
                 type="button"
                 onClick={handleGerarMapa}
-                disabled={!canGenerateAiMap || aiMapLoading}
+                disabled={(!isPremium) || !canGenerateAiMap || aiMapLoading}
                 className="pl-btn pl-btn-ai btn-gen"
-                style={{ opacity: !canGenerateAiMap || aiMapLoading ? 0.55 : 1 }}
+                style={{ opacity: (!isPremium || !canGenerateAiMap || aiMapLoading) ? 0.55 : 1 }}
+                title={!isPremium ? 'Disponível no plano Papiro' : undefined}
               >
                 {aiMapLoading ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                {aiMapLoading ? 'Criando…' : 'Gerar mapa'}
+                {aiMapLoading ? 'Criando…' : (!isPremium ? 'Papiro — Gerar mapa' : 'Gerar mapa')}
               </button>
             </div>
             {aiMapError ? <div className="pl-genbar-error">{aiMapError}</div> : null}

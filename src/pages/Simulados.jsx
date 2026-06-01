@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import PremiumGate from '../components/PremiumGate';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import {
   ArrowRight,
   ClipboardList,
@@ -32,6 +34,8 @@ export default function Simulados({
   currentUserId = '',
   redacaoSummary = {},
   communityMetrics = {},
+  isPremium = false,
+  onUpgrade,
 }) {
   const [historyQuery, setHistoryQuery] = useState('');
   const [rankingOpen, setRankingOpen] = useState(false);
@@ -178,14 +182,31 @@ export default function Simulados({
   const tempoMedio = formatTempoMedio(groupedSimulados);
   const emptyState = groupedSimulados.length === 0 && simuladoHistory.length === 0;
 
+  const { canUse: canUseLimit, getUsed, getLimit, increment: incUsage } = usePlanLimits(currentUserId, isPremium);
+  const simuladosUsed  = getUsed('simulados_monthly');
+  const simuladosLimit = getLimit('simulados_monthly');
+  const simuladoLimitReached = !isPremium && !canUseLimit('simulados_monthly');
+
+  function handleRegistrar() {
+    if (simuladoLimitReached) { if (typeof onUpgrade === 'function') onUpgrade(); return; }
+    if (!isPremium) incUsage('simulados_monthly');
+    openSimuladoReviewModal?.('novo');
+  }
+
   return (
     <div className="pl-page">
       <div className="simulados-wrap">
         <SimuladosHeader
           onRanking={() => setRankingOpen(true)}
           onCaderno={() => setIsCadernoModalOpen(true)}
-          onRegistrar={() => openSimuladoReviewModal?.('novo')}
+          onRegistrar={handleRegistrar}
         />
+        {simuladoLimitReached && (
+          <div style={{ marginBottom: 12 }}>
+            <PremiumGate locked mode="banner" feature="simulados_monthly"
+              used={simuladosUsed} limit={simuladosLimit} onUpgrade={onUpgrade} />
+          </div>
+        )}
 
         <SimuladosRankingPanel
           open={rankingOpen}

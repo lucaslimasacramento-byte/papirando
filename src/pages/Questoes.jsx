@@ -1,4 +1,5 @@
 ﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PremiumGate from '../components/PremiumGate';
 import {
   Loader2,
   AlertTriangle,
@@ -107,6 +108,8 @@ export default function Questoes({
   bancoDisciplinas = [],
   selectedCoursePlan = 'Todos',
   planningCourseOptions = [],
+  isPremium = false,
+  onUpgrade,
 }) {
   const [query, setQuery] = useState('');
   const [dbQuestions, setDbQuestions] = useState([]);
@@ -267,8 +270,10 @@ export default function Questoes({
   );
   const historyOverview = useMemo(() => buildStudyHistoryOverview(canonicalHistory), [canonicalHistory]);
 
-  const questionsToday = todayStats.resolved;
+  const questionsToday  = todayStats.resolved;
   const questionAccuracy = todayStats.accuracy;
+  const DAILY_LIMIT = 10;
+  const questionsLimitReached = !isPremium && questionsToday >= DAILY_LIMIT;
 
   const questionsRecommendation = studyRecommendation?.ranked?.find((item) => item?.studyMode === 'questoes') || null;
   // Use Supabase data when available, fall back to QUESTION_BANK only while loading
@@ -470,7 +475,19 @@ export default function Questoes({
               </p>
             </div>
           )}
-          {!dbLoading && currentQuestion ? (
+          {questionsLimitReached && (
+            <div style={{ marginBottom: 12 }}>
+              <PremiumGate
+                locked
+                mode="banner"
+                feature="questions_daily"
+                used={questionsToday}
+                limit={DAILY_LIMIT}
+                onUpgrade={onUpgrade}
+              />
+            </div>
+          )}
+          {!dbLoading && currentQuestion && !questionsLimitReached ? (
             <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
               <InteractiveQuestionCard
                 key={currentQuestion.id}

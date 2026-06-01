@@ -1,4 +1,6 @@
 ﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+import PremiumGate from '../components/PremiumGate';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import {
   ArrowLeft,
   Bookmark,
@@ -665,7 +667,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 /* ════════════════════════════════════════════════
    Página principal — listagem
    ════════════════════════════════════════════════ */
-export default function Materiais({ currentUserId }) {
+export default function Materiais({ currentUserId, isPremium = false, onUpgrade }) {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeMaterial, setActiveMaterial] = useState(null);
@@ -692,7 +694,15 @@ export default function Materiais({ currentUserId }) {
 
   useEffect(() => { loadMaterials(); }, [loadMaterials]);
 
+  const { canUse: canUseLimit, getUsed, getLimit, increment } = usePlanLimits(currentUserId, isPremium);
+  const uploadsUsed  = getUsed('uploads_monthly');
+  const uploadsLimit = getLimit('uploads_monthly');
+
   async function handleUpload() {
+    if (!isPremium && !canUseLimit('uploads_monthly')) {
+      setUploadErr(`Você atingiu o limite de ${uploadsLimit} upload(s) por mês no plano Folha. Assine o Papiro para uploads ilimitados.`);
+      return;
+    }
     if (!uploadFile) { setUploadErr('Selecione um arquivo PDF.'); return; }
     if (!uploadForm.title.trim()) { setUploadErr('Informe um título.'); return; }
     if (uploadFile.type !== 'application/pdf' || !String(uploadFile.name || '').toLowerCase().endsWith('.pdf')) {
@@ -701,6 +711,7 @@ export default function Materiais({ currentUserId }) {
     if (Number(uploadFile.size || 0) > 25 * 1024 * 1024) {
       setUploadErr('O PDF deve ter no máximo 25 MB.'); return;
     }
+    if (!isPremium) await increment('uploads_monthly');
     setUploading(true); setUploadErr('');
     try {
       const fileName = `${currentUserId}/${Date.now()}.pdf`;
@@ -802,13 +813,25 @@ export default function Materiais({ currentUserId }) {
         </div>
         <div className="meta">
           <span>PDF · marcações · flashcards<br />até 25 MB por arquivo</span>
-          <button
-            type="button"
-            onClick={() => { setUploadErr(''); setUploadModal(true); }}
-            className="pl-btn pl-btn-primary"
-          >
-            <Upload size={14} /> Enviar PDF
-          </button>
+          {!isPremium && uploadsUsed >= uploadsLimit ? (
+            <PremiumGate locked mode="button" feature="uploads_monthly"
+              label={`Upload (${uploadsUsed}/${uploadsLimit} usados)`}
+              hint="Uploads ilimitados no Papiro"
+              onUpgrade={onUpgrade} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setUploadErr(''); setUploadModal(true); }}
+              className="pl-btn pl-btn-primary"
+            >
+              <Upload size={14} /> Enviar PDF
+              {!isPremium && uploadsLimit !== Infinity && (
+                <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>
+                  ({uploadsUsed}/{uploadsLimit})
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </header>
 

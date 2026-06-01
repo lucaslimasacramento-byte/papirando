@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import PremiumGate from '../components/PremiumGate';
 import {
   ArrowLeft,
   BookOpen,
@@ -61,7 +62,7 @@ function ErrBanner({ msg }) {
   );
 }
 
-function FlashcardsHeader({ onNovoDeck, onGerarIa }) {
+function FlashcardsHeader({ onNovoDeck, onGerarIa, isPremium, onUpgrade }) {
   return (
     <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
@@ -78,9 +79,14 @@ function FlashcardsHeader({ onNovoDeck, onGerarIa }) {
         <button type="button" className="pl-btn pl-btn-primary" onClick={onNovoDeck}>
           <Plus size={13} /> Novo deck
         </button>
-        <button type="button" className="pl-btn pl-btn-ai" onClick={onGerarIa}>
-          <Sparkles size={12} /> Gerar com IA
-        </button>
+        {isPremium ? (
+          <button type="button" className="pl-btn pl-btn-ai" onClick={onGerarIa}>
+            <Sparkles size={12} /> Gerar com IA
+          </button>
+        ) : (
+          <PremiumGate locked mode="button" feature="ai_flashcards" onUpgrade={onUpgrade}
+            label="Gerar com IA" hint="Gere flashcards ilimitados com IA no Papiro" />
+        )}
       </div>
     </header>
   );
@@ -602,7 +608,7 @@ function inputCls() {
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Main Component Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-export default function Flashcards({ currentUserId, bancoDisciplinas = [], cursos = [], setActiveTab }) {
+export default function Flashcards({ currentUserId, bancoDisciplinas = [], cursos = [], setActiveTab, isPremium = false, onUpgrade }) {
   // Ã¢â€â‚¬Ã¢â€â‚¬ State Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [decks, setDecks]           = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -895,6 +901,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ AI generate cards from text Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async function handleAiGenerate(override = null) {
+    if (!isPremium) { if (typeof onUpgrade === 'function') onUpgrade(); return; }
     const quickForm = override && !override?.currentTarget ? override : null;
     const form = quickForm ? { ...aiForm, ...quickForm } : aiForm;
     const disciplina = String((quickForm ? '' : selectedDisciplineForAi?.nome) || form.disciplina || '').trim();
@@ -1434,6 +1441,8 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
         <FlashcardsHeader
           onNovoDeck={() => { setFormErr(''); setShowInlineDeckForm((prev) => !prev); }}
           onGerarIa={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
+          isPremium={isPremium}
+          onUpgrade={onUpgrade}
         />
 
         <ErrBanner msg={aiSuccess} />
