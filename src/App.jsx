@@ -3032,6 +3032,34 @@ export default function App() {
   }
 };
 
+  const normalizePhoneDigits = (value) => String(value || '').replace(/\D/g, '').slice(0, 11);
+
+  const checkPhoneAvailability = async (phoneValue) => {
+    const phoneDigits = normalizePhoneDigits(phoneValue);
+    if (!phoneDigits) return false;
+
+    const isSameProfilePhone = (profile) => {
+      const profilePhones = [profile?.celular, profile?.telefone].map(normalizePhoneDigits).filter(Boolean);
+      return profilePhones.includes(phoneDigits) && String(profile?.id || '') !== String(currentProfile?.id || '');
+    };
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, celular, telefone')
+        .limit(1000);
+      if (error) throw error;
+      return !(data || []).some(isSameProfilePhone);
+    } catch {
+      const localProfiles = [
+        ...adminProfiles,
+        ...Object.values(profileOverrides || {}),
+        currentProfile || {},
+      ];
+      return !localProfiles.some(isSameProfilePhone);
+    }
+  };
+
   const containsBlockedCodenameWord = (value) => {
     const normalized = String(value || '')
       .normalize('NFD')
@@ -3118,6 +3146,7 @@ export default function App() {
     const nome = String(draftProfile?.nome || '').trim();
     const username = String(draftProfile?.username || '').trim().toLowerCase();
     const telefone = String(draftProfile?.celular || draftProfile?.telefone || '').trim();
+    const telefoneDigits = normalizePhoneDigits(telefone);
     const cpfDigits = normalizeCpf(draftProfile?.cpf || '');
     const rankingDisplayMode = String(draftProfile?.rankingDisplayMode || draftProfile?.ranking_display_mode || 'username');
     const rankingCodename = String(draftProfile?.rankingCodename || draftProfile?.ranking_codename || '').trim();
@@ -3156,6 +3185,22 @@ export default function App() {
     const usernameAvailable = await checkUsernameAvailability(username);
     if (!usernameAvailable) {
       showToast('Esse username já está em uso. Escolha outro.', 'error');
+      return { ok: false };
+    }
+
+    if (!telefoneDigits) {
+      showToast('Digite o celular da conta.', 'error');
+      return { ok: false };
+    }
+
+    if (telefoneDigits.length < 10) {
+      showToast('Digite um celular válido com DDD.', 'error');
+      return { ok: false };
+    }
+
+    const phoneAvailable = await checkPhoneAvailability(telefone);
+    if (!phoneAvailable) {
+      showToast('Esse celular já está vinculado a outra conta.', 'error');
       return { ok: false };
     }
 
@@ -3248,7 +3293,7 @@ export default function App() {
         });
       }
 
-      updateProfile(currentUserId, {
+      await updateProfile(currentUserId, {
         nome,
         email: currentUserEmail || user?.email || '',
         celular: telefone,
@@ -3260,13 +3305,30 @@ export default function App() {
         ranking_codename: rankingCodename,
         referral_code: referralCode,
         referred_by_code: referredByCode || null,
-        billing: profilePatch.billing,
-      }).catch(console.warn);
+      });
 
       return { ok: true };
     } catch (error) {
       console.error('Erro ao salvar perfil:', error);
-      return { ok: true, partial: true };
+      const errorText = `${error?.message || ''} ${error?.details || ''}`.toLowerCase();
+      if (errorText.includes('profiles_username_unique') || errorText.includes('(username)')) {
+        showToast('Esse username já está em uso. Escolha outro.', 'error');
+        return { ok: false, message: 'Esse username já está em uso. Escolha outro.' };
+      }
+      if (errorText.includes('profiles_cpf_unique') || errorText.includes('(cpf)')) {
+        showToast('Esse CPF já está vinculado a outra conta.', 'error');
+        return { ok: false, message: 'Esse CPF já está vinculado a outra conta.' };
+      }
+      if (
+        errorText.includes('profiles_celular_unique') ||
+        errorText.includes('profiles_telefone_unique') ||
+        errorText.includes('(celular)') ||
+        errorText.includes('(telefone)')
+      ) {
+        showToast('Esse celular já está vinculado a outra conta.', 'error');
+        return { ok: false, message: 'Esse celular já está vinculado a outra conta.' };
+      }
+      return { ok: false, message: 'Não foi possível salvar o perfil agora.' };
     }
   };
 

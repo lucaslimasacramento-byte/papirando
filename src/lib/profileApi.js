@@ -25,14 +25,20 @@ export async function loadProfile(userId) {
 
 const PROFILE_ALLOWED_PATCH_KEYS = [
   'nome',
+  'email',
   'username',
+  'celular',
+  'telefone',
+  'cpf',
   'avatar_url',
+  'ranking_display_mode',
   'ranking_codename',
   'birth_date',
   'referral_code',
   'referred_by_code',
   'meta_horas_semana',
   'onboarding_done',
+  'cpf_validado_algoritmo',
 ];
 
 export async function updateProfile(userId, patch = {}) {

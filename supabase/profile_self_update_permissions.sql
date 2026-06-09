@@ -21,11 +21,16 @@ with check (auth.uid() = id);
 
 grant update (
   nome,
+  email,
   username,
+  celular,
+  telefone,
   avatar_url,
+  ranking_display_mode,
   ranking_codename,
   birth_date,
   cpf,
+  cpf_validado_algoritmo,
   referral_code,
   referred_by_code,
   meta_horas_semana,

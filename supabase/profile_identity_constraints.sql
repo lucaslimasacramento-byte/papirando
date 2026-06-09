@@ -1,5 +1,7 @@
 alter table public.profiles
   add column if not exists username text,
+  add column if not exists celular text,
+  add column if not exists telefone text,
   add column if not exists cpf text,
   add column if not exists ranking_codename text;
 
@@ -10,6 +12,14 @@ create unique index if not exists profiles_username_unique
 create unique index if not exists profiles_cpf_unique
   on public.profiles (cpf)
   where cpf is not null and btrim(cpf) <> '';
+
+create unique index if not exists profiles_celular_unique
+  on public.profiles ((regexp_replace(coalesce(celular, ''), '\D', '', 'g')))
+  where regexp_replace(coalesce(celular, ''), '\D', '', 'g') <> '';
+
+create unique index if not exists profiles_telefone_unique
+  on public.profiles ((regexp_replace(coalesce(telefone, ''), '\D', '', 'g')))
+  where regexp_replace(coalesce(telefone, ''), '\D', '', 'g') <> '';
 
 create unique index if not exists profiles_ranking_codename_unique
   on public.profiles (lower(ranking_codename))

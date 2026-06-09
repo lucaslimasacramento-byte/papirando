@@ -63,6 +63,56 @@ function sanitizePhone(raw: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
+function phoneDigits(raw: string): string {
+  return String(raw || '').replace(/\D/g, '').slice(0, 11);
+}
+
+function sanitizeUsername(raw: string): string {
+  return String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^@+/, '')
+    .replace(/\s+/g, '')
+    .slice(0, 30);
+}
+
+function validateUsernameValue(username: string): string {
+  const compact = username.replace(/[._]/g, '');
+  const blockedTerms = [
+    'papirando',
+    'puta',
+    'merda',
+    'porra',
+    'caralho',
+    'foda',
+    'fodase',
+    'fuder',
+    'buceta',
+    'pica',
+    'pau',
+    'cuzao',
+    'arrombado',
+    'arrombada',
+    'vagabundo',
+    'vagabunda',
+    'otario',
+    'otaria',
+    'babaca',
+    'desgraca',
+    'cacete',
+    'fdp',
+  ];
+
+  if (!username) return 'Digite um username.';
+  if (username.length < 3) return 'O username precisa ter pelo menos 3 caracteres.';
+  if (username.length > 30) return 'O username pode ter no máximo 30 caracteres.';
+  if (!/^[a-z0-9._]+$/.test(username)) return 'Use apenas letras minúsculas, números, ponto e underline.';
+  if (username.startsWith('.') || username.endsWith('.')) return 'O username não pode começar ou terminar com ponto.';
+  if (username.includes('..')) return 'O username não pode ter dois pontos seguidos.';
+  if (blockedTerms.some((term) => compact.includes(term))) return 'Esse username não pode ser usado.';
+  return '';
+}
+
 function validateBirthDate(iso: string): { ok: true } | { ok: false; code: string; message: string } {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
     return { ok: false, code: 'BIRTH_INVALID', message: 'Data de nascimento inválida.' };
@@ -239,10 +289,12 @@ Deno.serve(async (req) => {
   }
 
   const fullName = sanitizeName(String(body.fullName ?? ''));
+  const username = sanitizeUsername(String(body.username ?? ''));
   const email = String(body.email ?? '').trim().toLowerCase();
   const password = String(body.password ?? '');
   const birthDate = String(body.birthDate ?? '').trim();
   const celular = sanitizePhone(String(body.celular ?? body.phone ?? ''));
+  const celularDigits = phoneDigits(celular);
   const referralCode = String(body.referralCode ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   const cpfRaw = String(body.cpf ?? '');
 
@@ -254,7 +306,12 @@ Deno.serve(async (req) => {
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fieldErrors.email = 'E-mail inválido.';
 
+  const usernameError = validateUsernameValue(username);
+  if (usernameError) fieldErrors.username = usernameError;
+
   if (password.length < 6) fieldErrors.password = 'A senha deve ter pelo menos 6 caracteres.';
+
+  if (celularDigits.length < 10) fieldErrors.celular = 'Digite um celular válido com DDD.';
 
   const birthCheck = validateBirthDate(birthDate);
   if (!birthCheck.ok) fieldErrors.birthDate = birthCheck.message;
@@ -349,6 +406,53 @@ Deno.serve(async (req) => {
     );
   }
 
+  const { data: usernameRows, error: usernameErr } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('username', username)
+    .limit(1);
+  if (usernameErr) {
+    console.error('[register-free] username lookup', usernameErr.message);
+    return respond(
+      { success: false, message: 'NÃ£o foi possÃ­vel concluir o cadastro agora.', code: 'SERVER_ERROR' },
+      500,
+    );
+  }
+  if ((usernameRows || []).length > 0) {
+    return respond(
+      {
+        success: false,
+        message: 'Username já cadastrado.',
+        code: 'USERNAME_TAKEN',
+        fieldErrors: { username: 'Esse username já está em uso.' },
+      },
+      409,
+    );
+  }
+
+  const { data: phoneRows, error: phoneErr } = await admin
+    .from('profiles')
+    .select('id, celular, telefone')
+    .limit(1000);
+  if (phoneErr) {
+    console.error('[register-free] phone lookup', phoneErr.message);
+    return respond(
+      { success: false, message: 'NÃ£o foi possÃ­vel concluir o cadastro agora.', code: 'SERVER_ERROR' },
+      500,
+    );
+  }
+  if ((phoneRows || []).some((row) => [row.celular, row.telefone].map(phoneDigits).includes(celularDigits))) {
+    return respond(
+      {
+        success: false,
+        message: 'Celular já cadastrado.',
+        code: 'PHONE_TAKEN',
+        fieldErrors: { celular: 'Esse celular já está vinculado a outra conta.' },
+      },
+      409,
+    );
+  }
+
   const redirectTo =
     Deno.env.get('SIGNUP_EMAIL_REDIRECT_TO') ||
     req.headers.get('origin') ||
@@ -360,6 +464,7 @@ Deno.serve(async (req) => {
     email_confirm: false,
     user_metadata: {
       nome: fullName,
+      username,
       celular,
       birth_date: birthDate,
       referred_by_code: referralCode || '',
@@ -400,7 +505,9 @@ Deno.serve(async (req) => {
     .update({
       nome: fullName,
       email,
+      username,
       celular,
+      telefone: celular,
       cpf: cpfDigits,
       birth_date: birthDate,
       referred_by_code: referralCode || null,
@@ -425,9 +532,14 @@ Deno.serve(async (req) => {
       internal_detail: profileErr.message,
       email_hash: await emailHashFn(email),
     });
-    const isCpfUnique =
-      profileErr.code === '23505' ||
-      profileErr.message?.toLowerCase().includes('profiles_cpf_unique');
+    const profileErrText = `${profileErr.message || ''} ${profileErr.details || ''}`.toLowerCase();
+    const isCpfUnique = profileErrText.includes('profiles_cpf_unique') || profileErrText.includes('(cpf)');
+    const isUsernameUnique = profileErrText.includes('profiles_username_unique') || profileErrText.includes('(username)');
+    const isPhoneUnique =
+      profileErrText.includes('profiles_celular_unique') ||
+      profileErrText.includes('profiles_telefone_unique') ||
+      profileErrText.includes('(celular)') ||
+      profileErrText.includes('(telefone)');
     if (isCpfUnique) {
       return respond(
         {
@@ -435,6 +547,28 @@ Deno.serve(async (req) => {
           message: 'CPF já cadastrado.',
           code: 'CPF_TAKEN',
           fieldErrors: { cpf: 'CPF já cadastrado.' },
+        },
+        409,
+      );
+    }
+    if (isUsernameUnique) {
+      return respond(
+        {
+          success: false,
+          message: 'Username já cadastrado.',
+          code: 'USERNAME_TAKEN',
+          fieldErrors: { username: 'Esse username já está em uso.' },
+        },
+        409,
+      );
+    }
+    if (isPhoneUnique) {
+      return respond(
+        {
+          success: false,
+          message: 'Celular já cadastrado.',
+          code: 'PHONE_TAKEN',
+          fieldErrors: { celular: 'Esse celular já está vinculado a outra conta.' },
         },
         409,
       );

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { registerFreeAccount } from '../lib/registerApi';
 import { updateProfile } from '../lib/profileApi';
+import { normalizeUsername, validateUsername, USERNAME_MAX_LENGTH } from '../lib/usernameRules';
 
 const GOOGLE_IDENTITY_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
 const googleClientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
@@ -128,6 +129,8 @@ export default function Login({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [nome, setNome] = useState('');
+  const [username, setUsername] = useState('');
+  const [celular, setCelular] = useState('');
   const [cpf, setCpf] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [email, setEmail] = useState('');
@@ -150,6 +153,8 @@ export default function Login({
 
   const resetForm = () => {
     setNome('');
+    setUsername('');
+    setCelular('');
     setCpf('');
     setBirthDate('');
     setEmail('');
@@ -182,6 +187,9 @@ export default function Login({
     if (!isLoginMode) {
       if (!nome.trim()) { setError('Digite o seu nome completo.'); return false; }
       if (nome.trim().split(/\s+/).filter(Boolean).length < 2) { setError('Digite nome e sobrenome.'); return false; }
+      const usernameCheck = validateUsername(username);
+      if (!usernameCheck.ok) { setError(usernameCheck.message); return false; }
+      if (celular.replace(/\D/g, '').length < 10) { setError('Digite um celular válido com DDD.'); return false; }
       if (cpf.replace(/\D/g, '').length < 11) { setError('Digite o CPF completo (11 dígitos).'); return false; }
       if (!birthDate) { setError('Informe a data de nascimento.'); return false; }
       if (password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return false; }
@@ -327,11 +335,12 @@ export default function Login({
       // antifraude e faz rollback server-side se o perfil falhar (B-004 / B-003).
       const result = await registerFreeAccount({
         fullName: nome.trim(),
+        username: normalizeUsername(username),
         cpf: cpf.replace(/\D/g, ''),
         birthDate,
         email,
         password,
-        celular: '',
+        celular,
         referralCode: normalizedReferralCode || undefined,
       });
       if (!result.success) {
@@ -341,7 +350,7 @@ export default function Login({
       setSuccessMsg(result.message || 'Conta criada. Verifique o seu e-mail para ativar o acesso.');
       if (normalizedReferralCode) onReferralCodeConsumed?.();
       setIsLoginMode(true);
-      setPassword(''); setConfirmPassword(''); setCpf(''); setBirthDate('');
+      setPassword(''); setConfirmPassword(''); setUsername(''); setCelular(''); setCpf(''); setBirthDate('');
     } catch (err) {
       setError(getReadableError(err));
     } finally {
@@ -729,6 +738,35 @@ export default function Login({
             </PlField>
           )}
 
+          {!isLoginMode && (
+            <PlField label="Username">
+              <input
+                className="pl-input" type="text"
+                placeholder="@papirando" autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(normalizeUsername(e.target.value))}
+                style={{ width: '100%', height: 44 }}
+                maxLength={USERNAME_MAX_LENGTH}
+              />
+              <p style={{ margin: '6px 0 0', fontSize: 11.5, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+                3 a 30 caracteres. Use letras minúsculas, números, ponto ou underline.
+              </p>
+            </PlField>
+          )}
+
+          {!isLoginMode && (
+            <PlField label="Celular">
+              <input
+                className="pl-input" type="tel"
+                placeholder="(75) 99999-9999" autoComplete="tel"
+                value={celular}
+                onChange={(e) => setCelular(formatPhoneInput(e.target.value))}
+                style={{ width: '100%', height: 44 }}
+                inputMode="tel"
+              />
+            </PlField>
+          )}
+
           {/* CPF (apenas cadastro) */}
           {!isLoginMode && (
             <PlField label="CPF">
@@ -953,6 +991,13 @@ function formatCpfInput(value) {
 }
 
 // ── Field wrapper ─────────────────────────────────────────────────────────
+function formatPhoneInput(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 function PlField({ label, aside, children, className = '' }) {
   return (
     <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
