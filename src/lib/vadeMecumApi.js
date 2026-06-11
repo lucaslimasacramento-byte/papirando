@@ -30,6 +30,30 @@ export const BASE_VADE_SECTIONS = [
   'Sumulas e informativos',
 ];
 
+// Rótulos com acentuação correta — APENAS para exibição. As chaves acima ficam
+// sem acento porque são usadas como keys persistidas (sectionPageMap, estado do usuário).
+export const SECTION_DISPLAY_LABELS = {
+  'Apresentacao': 'Apresentação',
+  'Constituicao Federal': 'Constituição Federal',
+  'Lei de Introducao as Normas do Direito Brasileiro': 'Lei de Introdução às Normas do Direito Brasileiro',
+  'Codigo Civil': 'Código Civil',
+  'Codigo de Processo Civil': 'Código de Processo Civil',
+  'Codigo Penal e Contravencoes Penais': 'Código Penal e Contravenções Penais',
+  'Codigo de Processo Penal': 'Código de Processo Penal',
+  'Codigo Tributario Nacional': 'Código Tributário Nacional',
+  'Codigo de Defesa do Consumidor': 'Código de Defesa do Consumidor',
+  'Codigo Eleitoral': 'Código Eleitoral',
+  'Codigo Florestal': 'Código Florestal',
+  'Consolidacao das Leis do Trabalho': 'Consolidação das Leis do Trabalho',
+  'Leis especiais': 'Leis especiais',
+  'Legislacao administrativa': 'Legislação administrativa',
+  'Sumulas e informativos': 'Súmulas e informativos',
+};
+
+export function getSectionDisplayLabel(section) {
+  return SECTION_DISPLAY_LABELS[section] || section;
+}
+
 export const DEFAULT_SECTION_PAGE_MAP = {
   Apresentacao: 1,
   'Constituicao Federal': 9,

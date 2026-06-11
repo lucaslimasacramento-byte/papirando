@@ -3885,7 +3885,17 @@ export default function App() {
 
   const handleSaveManualReminder = (reminderDraft) => {
     if (Array.isArray(reminderDraft)) {
-      setManualReminders(reminderDraft.filter(Boolean));
+      // Lista vinda do Supabase: MESCLAR, não substituir — lembretes locais com id
+      // temporário (insert ainda em voo) seriam apagados por uma substituição seca.
+      setManualReminders((prev) => {
+        const remote = reminderDraft.filter(Boolean);
+        const remoteIds = new Set(remote.map((item) => String(item.id)));
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        const pendingLocal = (prev || []).filter(
+          (item) => !uuidRe.test(String(item?.id || '')) && !remoteIds.has(String(item?.id))
+        );
+        return [...pendingLocal, ...remote];
+      });
       return;
     }
 

@@ -80,6 +80,7 @@ function SheetMark({ pdf = true }) {
    ════════════════════════════════════════════════ */
 function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   const canvasRef = useRef(null);
+  const canvasAreaRef = useRef(null);
   const pdfDocRef = useRef(null);
   const renderTaskRef = useRef(null);
 
@@ -170,6 +171,18 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
         if (cancelled) return;
         pdfDocRef.current = doc;
         setTotalPages(doc.numPages);
+
+        // Fit-to-width: escala inicial calculada pela largura disponível do leitor,
+        // em vez do 1.4 fixo que deixava a página pequena em telas largas.
+        try {
+          const firstPage = await doc.getPage(1);
+          const naturalWidth = firstPage.getViewport({ scale: 1 }).width;
+          const areaWidth = canvasAreaRef.current?.clientWidth || 0;
+          if (!cancelled && areaWidth > 0 && naturalWidth > 0) {
+            const fitScale = Math.min(2.4, Math.max(0.8, (areaWidth - 56) / naturalWidth));
+            setScale(Math.round(fitScale * 10) / 10);
+          }
+        } catch { /* mantém a escala padrão */ }
         if (material.page_count !== doc.numPages) {
           await supabase.from('study_materials').update({ page_count: doc.numPages }).eq('id', material.id);
         }
@@ -357,7 +370,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 
       <div className="pl-mat-canvas-stage">
         {/* Canvas area */}
-        <div className="pl-mat-canvas-area" onMouseUp={handleMouseUp}>
+        <div className="pl-mat-canvas-area" ref={canvasAreaRef} onMouseUp={handleMouseUp}>
           {pdfErr && (
             <div style={{
               marginTop: 40, padding: '14px 20px',

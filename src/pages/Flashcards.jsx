@@ -506,7 +506,7 @@ function FlashcardsAiModal({
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <ErrBanner msg={aiErr} />
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
           <CField label="Curso">
             <select
               className={inputCls()}
@@ -580,7 +580,8 @@ function FlashcardsAiModal({
 
 function CField({ label, children }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    // minWidth: 0 — sem isso, selects com texto longo estouram a coluna do grid e o modal corta
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
       <label className="pl-eyebrow">{label}</label>
       {children}
     </div>

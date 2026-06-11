@@ -26,6 +26,7 @@ import {
   DEFAULT_SECTION_STATE,
   buildEmptyVadeState,
   buildSectionOrder,
+  getSectionDisplayLabel,
   inferSectionFromPage,
   loadActiveVadeMecumDocument,
   loadVadeMecumUserState,
@@ -482,7 +483,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
           <div className="head">
             <div>
               <p>Modo foco · Esc pra sair</p>
-              <h2>{selectedSection}</h2>
+              <h2>{getSectionDisplayLabel(selectedSection)}</h2>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <a href={activePdfUrl} target="_blank" rel="noreferrer" className="pl-btn-dark">
@@ -626,7 +627,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   onClick={() => goToSection(section)}
                   className={`pl-leg-chip ${selectedSection === section ? 'active' : ''}`}
                 >
-                  <span>{section}</span>
+                  <span>{getSectionDisplayLabel(section)}</span>
                   {(state.favorite || state.reviewed || hasNote) && (
                     <span className="badges">
                       {state.favorite && <Star className="star" />}
@@ -663,7 +664,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               <div className="head">
                 <div className="title-col">
                   <p>Leitura principal</p>
-                  <h2>{selectedSection}</h2>
+                  <h2>{getSectionDisplayLabel(selectedSection)}</h2>
                 </div>
                 <div className="nav-row">
                   <button
@@ -738,7 +739,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                 <div className="pane">
                   <div>
                     <p className="eyebrow">Bloco ativo</p>
-                    <h3>{selectedSection}</h3>
+                    <h3>{getSectionDisplayLabel(selectedSection)}</h3>
                   </div>
                   <div className="pl-leg-pill-row">
                     <button
@@ -890,7 +891,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                               onClick={() => goToPage(r.page)}
                               className="pl-leg-search-result"
                             >
-                              <span className="meta">Pág {r.page} · {r.section}</span>
+                              <span className="meta">Pág {r.page} · {getSectionDisplayLabel(r.section)}</span>
                               <p className="ex">{r.excerpt}</p>
                             </button>
                           ))

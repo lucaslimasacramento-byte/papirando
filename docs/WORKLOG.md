@@ -176,6 +176,18 @@
 
 ## Registro de sessões
 
+### Sessão 2026-06-11 (parte 5) — Correções da validação manual do Lucas
+- ✅ SQL das tabelas faltantes rodado no Supabase (confirmado "Success").
+- **Legislação / PDF bloqueado (causa raiz encontrada):** o CSP global em `vercel.json` tinha `frame-src` sem `'self'` + `X-Frame-Options: DENY` para tudo — o Chrome bloqueava o próprio PDF no iframe ("Este conteúdo está bloqueado"). Corrigido: `frame-src 'self'` no CSP + bloco de headers específico para `/assets/docs/*` com `SAMEORIGIN`/`frame-ancestors 'self'`.
+- **Lembrete não salvava (causa raiz):** o efeito de load da página dependia de `onSaveReminder` (identidade nova a cada render do App) → refazia o fetch e SUBSTITUÍA a lista, apagando o lembrete recém-criado com insert em voo. Corrigido: load 1x por usuário (ref) + merge no App preservando lembretes locais pendentes.
+- **Acentuação:** seções da Legislação ganharam `SECTION_DISPLAY_LABELS` (acentos só na exibição — as chaves persistidas ficam intactas); `sidebarNavLabels.js` corrigido (Histórico, Sessões, Estatísticas, Questões, Revisões, Redações, Prática, Legislação, Calendário, etc.). *Se o breadcrumb continuar sem acento, há label antigo salvo na config do admin — resetar em Admin → Configurações.*
+- **Flashcards dark mode:** `.flash-dark-card` é cartão invertido (fundo `--pl-ink`); no tema dark o ink fica claro → cream sobre cream. Override `.pl-theme-dark` mantém o cartão escuro; botão amarelo com texto sempre escuro.
+- **Modal "Gerar flashcards com IA" cortado:** grid `1fr` → `minmax(0,1fr)` + `minWidth: 0` nos campos.
+- **Materiais / viewer:** fit-to-width — escala inicial calculada pela largura do leitor (antes 1.4 fixo deixava a página pequena).
+- Build OK (1.46s) + ESLint limpo.
+
+---
+
 ### Sessão 2026-06-11 (parte 4) — Correções pós-auditoria do Cowork
 **Achados do agente Cowork corrigidos:**
 - 🔴 `Flashcards.jsx`: `Play` e `ArrowRight` usados sem import — página quebrava em runtime (build não pega). Imports adicionados.

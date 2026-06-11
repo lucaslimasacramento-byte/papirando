@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlarmClock,
   CalendarDays,
@@ -301,6 +301,14 @@ export default function LembretesCalendario({
     [calendarEvents]
   );
 
+  // onSaveReminder muda de identidade a cada render do App; com ele nas deps o
+  // efeito refazia o fetch a cada render e SUBSTITUÍA a lista — apagando o
+  // lembrete recém-criado cujo insert ainda estava em voo. Carregar 1x por usuário.
+  const onSaveReminderRef = useRef(onSaveReminder);
+  useEffect(() => {
+    onSaveReminderRef.current = onSaveReminder;
+  }, [onSaveReminder]);
+
   useEffect(() => {
     let active = true;
 
@@ -333,7 +341,7 @@ export default function LembretesCalendario({
           isDone: Boolean(row.is_done),
         }));
 
-        onSaveReminder?.(normalized);
+        onSaveReminderRef.current?.(normalized);
       } catch (error) {
         console.warn('[calendar_reminders] Falha ao carregar lembretes:', error?.message || error);
       }
@@ -344,7 +352,7 @@ export default function LembretesCalendario({
     return () => {
       active = false;
     };
-  }, [currentUserId, onSaveReminder]);
+  }, [currentUserId]);
 
   function openNewReminder(dateValue = '') {
     setEditingReminder(null);

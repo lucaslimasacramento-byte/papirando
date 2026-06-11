@@ -2805,6 +2805,15 @@ html, body {
   padding: 22px 24px;
 }
 
+/* Dark mode: este é um cartão "invertido" (escuro no tema light). No tema dark,
+   --pl-ink fica CLARO e o cartão virava cream com textos cream fixos — ilegível.
+   Aqui ele vira uma superfície escura normal e os textos cream voltam a funcionar. */
+.pl-theme-dark .flash-dark-card {
+  background: var(--pl-surface);
+  color: var(--pl-ink);
+  border: 1px solid var(--pl-rule-2);
+}
+
 .flash-card-corner {
   position: absolute;
   right: 0;
@@ -2882,6 +2891,11 @@ html, body {
   background: var(--pl-highlight);
   color: var(--pl-ink);
   box-shadow: 0 8px 20px rgba(244, 208, 78, 0.22);
+}
+
+/* Texto sempre escuro sobre o amarelo da marca (no dark, --pl-ink fica claro) */
+.pl-theme-dark .flash-highlight-btn {
+  color: #14110d;
 }
 
 .flash-outline-dark {
