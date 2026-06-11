@@ -96,7 +96,6 @@ export default function Ciclos({
   formatTimeStr = (mins) => formatMinutes(mins),
   onResetCycle = () => {},
   onFinalizeCycle = () => {},
-  embedded = false,
 }) {
   const safeDisciplines = React.useMemo(
     () =>
@@ -248,7 +247,7 @@ export default function Ciclos({
                   {String(step).padStart(2, '0')}
                 </div>
                 <span style={{ marginTop: 8, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: planWizardStep >= step ? 'var(--pl-accent)' : 'var(--pl-ink-3)' }}>
-                  {step === 1 ? 'Organizacao' : step === 2 ? 'Disciplinas' : step === 3 ? 'Relevancia' : 'Horarios'}
+                  {step === 1 ? 'Organização' : step === 2 ? 'Disciplinas' : step === 3 ? 'Relevância' : 'Horários'}
                 </span>
               </div>
             ))}
@@ -257,7 +256,7 @@ export default function Ciclos({
           {planWizardStep === 1 ? (
             <div style={{ maxWidth: 640, margin: '0 auto' }}>
               <div style={{ marginBottom: 32, textAlign: 'center' }}>
-                <p style={{ margin: 0, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Para iniciar o seu planejamento, escolha a melhor forma de visualizacao para voce:</p>
+                <p style={{ margin: 0, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Para iniciar o seu planejamento, escolha a melhor forma de visualização para você:</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                 <WizardModeCard title="Ciclo de Estudos" description="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina." icon={RefreshCw} selected={safeWizData.tipo === 'ciclo'} onClick={() => { setWizData((prev) => ({ ...prev, tipo: 'ciclo' })); setPlanWizardStep(2); }} />
@@ -307,7 +306,7 @@ export default function Ciclos({
                 </div>
 
                 <div style={{ minWidth: 0, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 24 }}>
-                  <h4 className="pl-eyebrow" style={{ margin: '0 0 16px', paddingBottom: 8, borderBottom: '1px solid var(--pl-rule-2)' }}>Pre-visualizacao do ciclo</h4>
+                  <h4 className="pl-eyebrow" style={{ margin: '0 0 16px', paddingBottom: 8, borderBottom: '1px solid var(--pl-rule-2)' }}>Pré-visualização do ciclo</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 4 }} className="custom-scrollbar">
                     {selectedSubjects.map((discipline, index) => {
                       const key = getWeightKey(discipline);

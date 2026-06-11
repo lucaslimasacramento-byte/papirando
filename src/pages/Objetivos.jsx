@@ -602,7 +602,6 @@ export default function Objetivos({
   cursos = [],
   onImportCatalogCourse,
   onOpenContestDetail,
-  currentCourseLimit = 3,
   remainingCourseSlots = 3,
   isAdmin = false,
   setActiveTab,

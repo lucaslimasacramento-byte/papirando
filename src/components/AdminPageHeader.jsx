@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function AdminPageHeader({
   icon: Icon,
-  badgeIcon,
+  badgeIcon: BadgeIcon,
   badge,
   title,
   subtitle,
@@ -30,7 +30,8 @@ export default function AdminPageHeader({
               )}
               <div style={{ minWidth: 0, flex: 1 }}>
                 {badge && (
-                  <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>
+                  <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {BadgeIcon && <BadgeIcon size={12} strokeWidth={2} />}
                     {badge}
                   </p>
                 )}

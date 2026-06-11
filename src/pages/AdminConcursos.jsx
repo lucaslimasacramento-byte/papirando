@@ -31,7 +31,6 @@ import {
 import { resolveSubjectCatalogEntry } from '../lib/subjectCatalogUtils';
 import { analyzeContestForm } from '../lib/aiClient';
 import { extractTextFromPdf } from '../lib/redacoesApi';
-import { supabase } from '../lib/supabase';
 import AdminPageHeader from '../components/AdminPageHeader';
 import AdminCourseTemplatesEditor from '../components/AdminCourseTemplatesEditor';
 import { useToast } from '../lib/toast';
@@ -232,17 +231,6 @@ Agora analise o edital anexado e retorne somente o JSON.
 
 const EMPTY_SUBJECT = { nome: '', cor: '', topicosTexto: '' };
 const UNCERTAIN_PATTERN = /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontrado|n[aã]o informado|ausente/i;
-const QUESTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
-const EMPTY_QUESTION_FORM = {
-  banca: '',
-  disciplina: '',
-  enunciado: '',
-  alternativas: ['', '', '', '', ''],
-  gabarito: 'A',
-  comentario: '',
-  nivel: 'medio',
-  tipo: 'multipla_escolha',
-};
 const EMPTY_FORM = {
   id: null,
   slug: '',
@@ -929,20 +917,6 @@ function parseContestFormLocally(text = '') {
   };
 }
 
-function truncateQuestionText(value = '', maxLength = 80) {
-  const text = String(value || '').trim();
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength).trimEnd()}...`;
-}
-
-function normalizeQuestionNivel(value = '') {
-  const raw = String(value || '').trim().toLowerCase();
-  if (raw === 'facil' || raw === 'fácil') return 'Fácil';
-  if (raw === 'medio' || raw === 'médio' || raw === 'media' || raw === 'média') return 'Médio';
-  if (raw === 'dificil' || raw === 'difícil') return 'Difícil';
-  return 'Médio';
-}
-
 function buildSubjectDraft(subject = {}) {
   return {
     nome: subject.nome || '',
@@ -1001,7 +975,7 @@ export default function AdminConcursos({
   courseTemplates = [],
   onSaveCourseTemplates,
 }) {
-  const { success, error: toastError, warning, info } = useToast();
+  const { success, error: toastError, warning } = useToast();
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -1020,11 +994,7 @@ export default function AdminConcursos({
   }, []);
   const [courseTemplatesSaving, setCourseTemplatesSaving] = useState(false);
   const [logoBatchUrl, setLogoBatchUrl] = useState('');
-  const [logoBatchOrgao, setLogoBatchOrgao] = useState('');
-  const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
-  const [questions, setQuestions] = useState([]);
-  const [questionsLoading, setQuestionsLoading] = useState(false);
-  const [questionsSaving, setQuestionsSaving] = useState(false);
+  const [logoBatchOrgao] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
@@ -1186,13 +1156,6 @@ export default function AdminConcursos({
     );
   }, [concursoCatalog]);
 
-  const orgaoOptions = useMemo(
-    () =>
-      Array.from(new Set(concursoCatalog.map((template) => String(template.concurso || '').trim()).filter(Boolean)))
-        .sort((first, second) => first.localeCompare(second, 'pt-BR')),
-    [concursoCatalog]
-  );
-
   const selectedOrgaoLogoUrls = useMemo(
     () =>
       Array.from(
@@ -1204,11 +1167,6 @@ export default function AdminConcursos({
         )
       ),
     [concursoCatalog, logoBatchOrgao]
-  );
-
-  const visibleQuestions = useMemo(
-    () => questions.filter((item) => item?.is_active !== false),
-    [questions]
   );
 
   const resetForm = () => {
@@ -1781,92 +1739,6 @@ export default function AdminConcursos({
       setDeleteTemplateError(error.message || 'Não foi possível excluir o concurso.');
     } finally {
       setIsDeletingTemplate(false);
-    }
-  };
-
-  const loadQuestions = async () => {
-    setQuestionsLoading(true);
-
-    try {
-      const { data, error } = await supabase
-        .from('questions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setQuestions(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Erro ao carregar banco de questões:', error);
-      setQuestions([]);
-    } finally {
-      setQuestionsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadQuestions();
-  }, []);
-
-  const updateQuestionAlternative = (index, value) => {
-    setQuestionForm((prev) => ({
-      ...prev,
-      alternativas: prev.alternativas.map((item, itemIndex) => (itemIndex === index ? value : item)),
-    }));
-  };
-
-  const handleSaveQuestion = async () => {
-    if (!String(questionForm.enunciado || '').trim()) {
-      warning('Preencha o enunciado da questão.');
-      return;
-    }
-
-    if (questionForm.alternativas.some((item) => !String(item || '').trim())) {
-      warning('Preencha todas as 5 alternativas.');
-      return;
-    }
-
-    setQuestionsSaving(true);
-
-    try {
-      const payload = {
-        banca: String(questionForm.banca || '').trim(),
-        disciplina: String(questionForm.disciplina || '').trim(),
-        enunciado: String(questionForm.enunciado || '').trim(),
-        alternativas: questionForm.alternativas.map((item, index) => ({
-          id: QUESTION_LABELS[index],
-          label: String(item || '').trim(),
-          isCorrect: QUESTION_LABELS[index] === questionForm.gabarito,
-        })),
-        gabarito: questionForm.gabarito,
-        explicacao: String(questionForm.comentario || '').trim(),
-        dificuldade: normalizeQuestionNivel(questionForm.nivel),
-        tipo: questionForm.tipo,
-        is_public: true,
-      };
-
-      const { error } = await supabase.from('questions').insert(payload);
-      if (error) throw error;
-
-      setQuestionForm(EMPTY_QUESTION_FORM);
-      await loadQuestions();
-    } catch (error) {
-      toastError(error.message || 'Não foi possível salvar a questão.', 'Erro ao salvar');
-    } finally {
-      setQuestionsSaving(false);
-    }
-  };
-
-  const handleDeleteQuestion = async (questionId) => {
-    try {
-      const { error } = await supabase
-        .from('questions')
-        .delete()
-        .eq('id', questionId);
-
-      if (error) throw error;
-      await loadQuestions();
-    } catch (error) {
-      toastError(error.message || 'Não foi possível excluir a questão.', 'Erro ao excluir');
     }
   };
 

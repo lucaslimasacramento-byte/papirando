@@ -39,6 +39,7 @@ const PROFILE_ALLOWED_PATCH_KEYS = [
   'meta_horas_semana',
   'onboarding_done',
   'cpf_validado_algoritmo',
+  'study_goal',
 ];
 
 export async function updateProfile(userId, patch = {}) {

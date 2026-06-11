@@ -9,7 +9,9 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/http.ts';
 
-const ASAAS_BASE = Deno.env.get('ASAAS_SANDBOX') === 'true'
+// produção exige ASAAS_SANDBOX=false explícito
+const isSandbox = Deno.env.get('ASAAS_SANDBOX') !== 'false';
+const ASAAS_BASE = isSandbox
   ? 'https://sandbox.asaas.com/api/v3'
   : 'https://api.asaas.com/v3';
 
@@ -150,6 +152,38 @@ serve(async (req) => {
 
     const plan = PLANS[`${planId}_${billing}`];
     if (!plan) return json(req, { error: 'Plano nao encontrado' }, 400);
+
+    // Assinatura ativa/trialing já existente? NÃO criar outra no Asaas (evita
+    // dupla cobrança quando o usuário clica de novo no checkout). Se houver
+    // cobrança pendente, reutiliza a URL dela. Este check também elimina o vetor
+    // de abuso que o rate-limit em memória não cobre entre cold starts.
+    const { data: existingSub } = await supabaseAdmin
+      .from('subscriptions')
+      .select('asaas_subscription_id, status')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .not('asaas_subscription_id', 'is', null)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingSub?.asaas_subscription_id) {
+      try {
+        const pendingPayments = await asaas(
+          `/payments?subscription=${existingSub.asaas_subscription_id}&status=PENDING&limit=1`,
+        );
+        const pending = Array.isArray(pendingPayments?.data) ? pendingPayments.data[0] : null;
+        if (pending?.invoiceUrl) {
+          return json(req, {
+            url: pending.invoiceUrl,
+            subscriptionId: existingSub.asaas_subscription_id,
+            reused: true,
+          });
+        }
+      } catch (lookupErr) {
+        console.error('[create-checkout-session] lookup de cobranca pendente falhou:', lookupErr);
+      }
+      return json(req, { error: 'Voce ja possui uma assinatura ativa. Gerencie-a na aba Assinatura do perfil.' }, 409);
+    }
 
     // Busca nome do perfil
     const { data: profile } = await supabaseAdmin

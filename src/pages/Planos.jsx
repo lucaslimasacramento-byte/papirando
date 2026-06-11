@@ -278,11 +278,18 @@ export default function Planos({
 
     try {
       const extractedText = await extractPdfText(file);
+      // PDF escaneado (só imagem) extrai "com sucesso" mas vem vazio — sem este check,
+      // nada acontecia na tela e o usuário ficava sem feedback.
+      if (String(extractedText || '').trim().length < 40) {
+        setAnalysisError('Esse PDF parece ser escaneado (imagem) ou está vazio — não consegui extrair o texto. Cole o texto do edital manualmente.');
+        return;
+      }
       setIaForm((prev) => ({ ...prev, editalText: extractedText }));
       setUploadedFileName(file.name);
       await runAnalysis(extractedText, { overwriteFields: true });
-    } catch {
-      alert('Não foi possível ler esse PDF. Tente outro arquivo ou cole o texto do edital.');
+    } catch (error) {
+      console.error('[Planos] erro ao ler PDF:', error?.message || error);
+      setAnalysisError('Não foi possível ler esse PDF. Tente outro arquivo ou cole o texto do edital.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -393,7 +400,7 @@ export default function Planos({
   };
 
   return (
-    <div className="pl-paper-bg-soft" style={{ flex: 1, overflow: 'auto', padding: '18px 20px 40px', border: 0, outline: 0 }}>
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '18px 20px 40px', border: 0, outline: 0 }}>
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 24, margin: 0 }}>
         <PlanosHeader
           onCriarCurso={() => openMode('intent')}
@@ -423,7 +430,7 @@ export default function Planos({
             cta={{ label: 'Ir para disciplinas', onClick: () => setActiveTab('disciplinas') }}
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, marginTop: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginTop: 14 }}>
             {cursoStats.map((curso) => (
               <CursoTile
                 key={curso.id}
@@ -804,6 +811,11 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
     : null;
 
   const hasStats = targetStats && (targetStats.disciplinasCount > 0 || targetStats.topicosCount > 0);
+  const targetDisciplinasCount = targetStats?.disciplinasCount || (Array.isArray(target?.disciplinas) ? target.disciplinas.length : 0);
+  const targetTopicosCount = targetStats?.topicosCount || (Array.isArray(target?.disciplinas)
+    ? target.disciplinas.reduce((acc, disciplina) => acc + (Array.isArray(disciplina?.topicos) ? disciplina.topicos.length : 0), 0)
+    : 0);
+  const targetProgress = targetStats?.progresso || 0;
 
   // Preview das primeiras disciplinas do concurso-alvo
   const disciplinaPreview = Array.isArray(target?.disciplinas)
@@ -824,6 +836,13 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
   };
 
   const salario = formatSalario(target?.salario);
+  const provaLabel = target?.prova_data ? formatDateDisplay(target.prova_data) : null;
+  const quickFacts = [
+    { key: 'prova', icon: CalendarDays, label: 'Prova', value: provaLabel || 'Sem data', tone: daysToExam !== null && daysToExam < 0 ? 'muted' : 'default' },
+    { key: 'vagas', icon: Users, label: 'Vagas', value: target?.vagas ? `${target.vagas}` : 'A definir', tone: 'default' },
+    { key: 'disciplinas', icon: BookOpen, label: 'Disciplinas', value: String(targetDisciplinasCount || 0), tone: 'default' },
+    { key: 'topicos', icon: Layers3, label: 'Tópicos', value: String(targetTopicosCount || 0), tone: 'default' },
+  ];
 
   return (
     <div style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -915,21 +934,50 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
               </p>
             </div>
 
-            {/* Fatos rápidos: salário + vagas */}
-            {(salario || target.vagas) && (
-              <div style={{ display: 'flex', gap: 10 }}>
-                {salario && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 5, background: 'var(--pl-success-soft, var(--pl-bg-soft))', border: '1px solid var(--pl-rule-2)' }}>
-                    <DollarSign size={11} style={{ color: 'var(--pl-success)', flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--pl-success)' }}>{salario}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
+              {quickFacts.map((fact) => {
+                const Icon = fact.icon;
+                return (
+                  <div key={fact.key} style={{
+                    minWidth: 0,
+                    border: '1px solid var(--pl-rule-2)',
+                    borderRadius: 8,
+                    background: fact.tone === 'muted' ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)',
+                    padding: '9px 10px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--pl-ink-3)' }}>
+                      <Icon size={12} />
+                      <span className="pl-eyebrow" style={{ fontSize: 8.5 }}>{fact.label}</span>
+                    </div>
+                    <p style={{
+                      margin: '5px 0 0',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontSize: fact.key === 'prova' ? 12 : 15,
+                      fontWeight: 800,
+                      color: fact.tone === 'muted' ? 'var(--pl-ink-3)' : 'var(--pl-ink)',
+                    }}>
+                      {fact.value}
+                    </p>
                   </div>
-                )}
-                {target.vagas && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 5, background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
-                    <Users size={11} style={{ color: 'var(--pl-ink-3)', flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{target.vagas} vagas</span>
-                  </div>
-                )}
+                );
+              })}
+            </div>
+
+            {(salario || target.inscricao_valor || target.escolaridade || statusLabel) && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: 8,
+                border: '1px solid var(--pl-rule)',
+                borderRadius: 8,
+                background: 'var(--pl-bg-soft)',
+                padding: 10,
+              }}>
+                <TargetInfoLine label="Banca" value={target.banca || 'A definir'} />
+                <TargetInfoLine label="Salário" value={salario || 'Não informado'} accent={Boolean(salario)} />
+                <TargetInfoLine label="Inscrição" value={target.inscricao_valor || 'Não informada'} />
               </div>
             )}
 
@@ -956,19 +1004,20 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline', marginBottom: 6 }}>
                   <span className="pl-eyebrow" style={{ fontSize: 9 }}>Progresso do curso</span>
                   <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--pl-ink-3)' }}>
-                    {targetStats.disciplinasCount} disc · {targetStats.topicosCount} tópicos · {targetStats.progresso}%
+                    {targetDisciplinasCount} disc · {targetTopicosCount} tópicos · {targetProgress}%
                   </span>
                 </div>
                 <div className="pl-progress">
-                  <div className="fill" style={{ width: `${Math.min(Math.max(targetStats.progresso, 0), 100)}%`, background: 'var(--pl-ink)', transition: 'width .4s ease' }} />
+                  <div className="fill" style={{ width: `${Math.min(Math.max(targetProgress, 0), 100)}%`, background: 'var(--pl-ink)', transition: 'width .4s ease' }} />
                 </div>
               </div>
             ) : (
-              !disciplinaPreview.length && !salario && (
-                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                  Esse objetivo orienta prioridade, revisões e foco diário do seu estudo.
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 10, borderRadius: 8, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '9px 11px' }}>
+                <p style={{ margin: 0, fontSize: 12, lineHeight: 1.45, color: 'var(--pl-ink-3)', fontWeight: 600 }}>
+                  Sem progresso ainda. Abra o curso e vincule estudos para esse painel começar a acompanhar sua rota.
                 </p>
-              )
+                <span className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink-3)' }}>0%</span>
+              </div>
             )}
 
             {/* Ações */}
@@ -999,6 +1048,25 @@ function AlvoStat({ label, value, accent = false }) {
     <div style={{ padding: '8px 10px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)' }}>
       <div className="pl-eyebrow" style={{ fontSize: 9 }}>{label}</div>
       <div className="pl-num" style={{ marginTop: 3, fontSize: 20, lineHeight: 1, color: accent ? 'var(--pl-accent)' : 'var(--pl-ink)' }}>{value}</div>
+    </div>
+  );
+}
+
+function TargetInfoLine({ label, value, accent = false }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      <p className="pl-eyebrow" style={{ margin: 0, fontSize: 8.5 }}>{label}</p>
+      <p style={{
+        margin: '3px 0 0',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        fontSize: 12,
+        fontWeight: 800,
+        color: accent ? 'var(--pl-success)' : 'var(--pl-ink-2)',
+      }}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -1197,11 +1265,11 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlv
   const visibleChips = chips.slice(0, 3);
 
   return (
-    <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 392 }}>
-      <div style={{ position: 'relative', padding: '18px 22px 36px', minHeight: 116, borderBottom: '1px solid var(--pl-rule)', background: isLibrary ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)' }}>
+    <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 318 }}>
+      <div style={{ position: 'relative', padding: '14px 16px 12px', borderBottom: '1px solid var(--pl-rule)', background: isLibrary ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)' }}>
         <div style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, background: 'var(--pl-bg-deep)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', minWidth: 0, gap: 6, flexWrap: 'wrap' }}>
             <span className={`pl-tag ${isLibrary ? '' : 'pl-tag-highlight'}`} style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               {tipoLabel}
             </span>
@@ -1211,37 +1279,43 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlv
             <Trash2 size={15} />
           </button>
         </div>
-        {secondaryTag && <div style={{ marginTop: 12 }}><span className="pl-tag">{secondaryTag}</span></div>}
-        <div style={{
-          position: 'absolute',
-          left: 22,
-          bottom: -22,
-          width: 56,
-          height: 56,
-          borderRadius: 8,
-          background: 'var(--pl-surface)',
-          border: '1px solid var(--pl-rule-2)',
-          boxShadow: 'var(--pl-sh-low)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-        }}>
-          {curso.imagem_url ? (
-            <img src={curso.imagem_url} alt={curso.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <PlCrestIcon label={curso.nome} />
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, minWidth: 0 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 9,
+            background: 'var(--pl-surface)',
+            border: '1px solid var(--pl-rule-2)',
+            boxShadow: 'var(--pl-sh-low)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}>
+            {curso.imagem_url ? (
+              <img src={curso.imagem_url} alt={curso.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <PlCrestIcon label={curso.nome} />
+            )}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            {secondaryTag ? (
+              <p style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
+                {secondaryTag}
+              </p>
+            ) : null}
+            <h3 style={{ margin: secondaryTag ? '3px 0 0' : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 18, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}>{curso.nome}</h3>
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: '32px 22px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <h3 style={{ margin: 0, fontSize: 19, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}>{curso.nome}</h3>
-        <p style={{ margin: '5px 0 0', fontSize: 12.5, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
+      <div style={{ padding: '13px 16px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <p style={{ margin: 0, minHeight: 34, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, lineHeight: 1.42, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
           {[curso.cargo || curso.concurso || curso.area || 'Curso cadastrado', curso.banca || curso.instituicao].filter(Boolean).join(' - ')}
         </p>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 14 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10, minHeight: 24 }}>
           {visibleChips.map((chip) => (
             <span key={chip.key} className={`pl-tag${chip.tone ? ` pl-tag-${chip.tone}` : ''}`}>
               {chip.label}
@@ -1250,22 +1324,22 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlv
           {chips.length > visibleChips.length && <span className="pl-tag">+{chips.length - visibleChips.length}</span>}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
           <EditorialMetric label="Disciplinas" value={String(curso.disciplinasCount)} />
           <EditorialMetric label="Tópicos" value={String(curso.topicosCount)} />
         </div>
 
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
             <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso do objetivo</span>
-            <span className="pl-num" style={{ fontSize: 17, color: 'var(--pl-ink-2)' }}>{curso.progresso}%</span>
+            <span className="pl-num" style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>{curso.progresso}%</span>
           </div>
-          <div className="pl-progress" style={{ marginTop: 7 }}>
+          <div className="pl-progress" style={{ marginTop: 6 }}>
             <div className="fill" style={{ width: `${Math.min(Math.max(curso.progresso, 0), 100)}%`, background: 'var(--pl-ink)' }} />
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 18 }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 14 }}>
           {!isTarget && onMarcarAlvo && (
             <button className="pl-btn pl-btn-sm" onClick={onMarcarAlvo}>Marcar alvo</button>
           )}
@@ -1280,9 +1354,9 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlv
 
 function EditorialMetric({ label, value }) {
   return (
-    <div style={{ padding: '10px 12px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)' }}>
+    <div style={{ padding: '8px 10px', border: '1px solid var(--pl-rule-2)', borderRadius: 6, background: 'var(--pl-surface-2)' }}>
       <div className="pl-eyebrow" style={{ fontSize: 9.5 }}>{label}</div>
-      <div className="pl-num" style={{ marginTop: 3, fontSize: 24, color: 'var(--pl-ink)', lineHeight: 1 }}>{value}</div>
+      <div className="pl-num" style={{ marginTop: 2, fontSize: 21, color: 'var(--pl-ink)', lineHeight: 1 }}>{value}</div>
     </div>
   );
 }
@@ -1296,7 +1370,7 @@ function PlCrestIcon({ label }) {
   );
 }
 
-function CreatePlanCard({ icon: Icon, iconWrap, title, text, badge, decorated = false, onClick }) {
+function CreatePlanCard({ icon: Icon, title, text, badge, decorated = false, onClick }) {
   return (
     <button
       onClick={onClick}

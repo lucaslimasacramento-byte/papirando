@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { BookOpen, Database, Pencil, Plus, Save, Tags, Trash2, X } from 'lucide-react';
 import AdminPageHeader from '../components/AdminPageHeader';
-import { showConfirm, showToast } from '../lib/dialogs';
+import { showConfirm } from '../lib/dialogs';
 
 const EMPTY_FORM = {
   id: null,

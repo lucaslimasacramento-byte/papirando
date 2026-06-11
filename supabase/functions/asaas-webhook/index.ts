@@ -62,7 +62,7 @@ serve(async (req) => {
       return new Response('Forbidden', { status: 403 });
     }
 
-    const event      = String(body.event      ?? '');
+    const event      = String(body.event      ?? '').toUpperCase().trim();
     const payment    = body.payment    as Record<string, unknown> | undefined;
     const subscription = body.subscription as Record<string, unknown> | undefined;
 

@@ -50,7 +50,6 @@ const EMPTY_EXPENSE = {
 export default function AdminFinance({
   profiles = [],
   expenses = [],
-  currentUserEmail = '',
   onSaveExpense,
   onDeleteExpense,
 }) {

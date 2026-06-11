@@ -294,17 +294,21 @@ export default function EditalQuestao({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        activeTab,
-        selectedPlan,
-        searchTerm,
-        expandedDiscipline,
-        priorityFilter,
-        showOnlyPending,
-      })
-    );
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          activeTab,
+          selectedPlan,
+          searchTerm,
+          expandedDiscipline,
+          priorityFilter,
+          showOnlyPending,
+        })
+      );
+    } catch {
+      /* storage cheio ou bloqueado — ignora */
+    }
   }, [activeTab, selectedPlan, searchTerm, expandedDiscipline, priorityFilter, showOnlyPending]);
 
   const selectedCourse = courseOptions.find((item) => item.plan === selectedPlan) || courseOptions[0] || null;
@@ -403,7 +407,11 @@ export default function EditalQuestao({
 
   const persistContext = (payload) => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem('papirando_edital_questao_context', JSON.stringify(payload));
+    try {
+      window.localStorage.setItem('papirando_edital_questao_context', JSON.stringify(payload));
+    } catch {
+      /* storage cheio ou bloqueado — ignora */
+    }
   };
 
   const handlePracticeTopic = (topic) => {

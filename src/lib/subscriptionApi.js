@@ -128,7 +128,7 @@ export async function adminCreateManualSubscription({ userId, planName, billing 
  * @param {string|null} userId  – auth.uid() do usuário
  * @returns {{
  *   subscription: object|null,
- *   planName: 'gratuito'|'tatico'|'elite',
+ *   planName: 'gratuito'|'papiro',
  *   isPremium: boolean,
  *   loading: boolean,
  *   refresh: () => void,

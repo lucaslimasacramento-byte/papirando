@@ -194,8 +194,7 @@ export default function Questoes({
       const { data, error } = await q.order('created_at', { ascending: false }).limit(50);
       if (error) throw error;
       setDbQuestions((data || []).map(normalizeQuestion));
-    } catch (error) {
-      console.warn('Falha ao carregar questões com is_active. Tentando fallback legado.', error);
+    } catch {
       let fallbackQuery = supabase.from('questions').select('*').eq('is_public', true);
       if (filterDisc) fallbackQuery = fallbackQuery.eq('disciplina', filterDisc);
       if (filterBanca) fallbackQuery = fallbackQuery.eq('banca', filterBanca);
@@ -249,7 +248,7 @@ export default function Questoes({
       .gte('answered_at', startOfToday.toISOString());
 
     if (error) {
-      console.error('Erro ao carregar stats de questões:', error);
+      console.error('[Questoes] erro ao carregar estatísticas de questões:', error);
       return;
     }
 
@@ -277,7 +276,10 @@ export default function Questoes({
 
   const questionsRecommendation = studyRecommendation?.ranked?.find((item) => item?.studyMode === 'questoes') || null;
   // Use Supabase data when available, fall back to QUESTION_BANK only while loading
-  const allQuestions = dbQuestions.length > 0 ? dbQuestions : (dbLoading ? [] : QUESTION_BANK);
+  const allQuestions = useMemo(
+    () => (dbQuestions.length > 0 ? dbQuestions : (dbLoading ? [] : QUESTION_BANK)),
+    [dbLoading, dbQuestions]
+  );
   const activeCaderno = cadernos.find((caderno) => caderno.id === activeCadernoId) || null;
   const activeCadernoQuestionIds = useMemo(
     () => new Set((activeCaderno?.questionIds || []).map((id) => String(id))),
@@ -459,7 +461,7 @@ export default function Questoes({
           {dbLoading && (
             <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, padding: '16px 0' }}>
               <Loader2 size={18} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>Carregando questoes...</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>Carregando questões...</span>
             </div>
           )}
           {!dbLoading && filteredQuestions.length === 0 && (
@@ -470,8 +472,8 @@ export default function Questoes({
               </p>
               <p style={{ fontSize: 13, maxWidth: 320, margin: '0 auto' }}>
                 {filteredQuestions.length === 0 && dbQuestions.length > 0
-                  ? 'Nenhuma questao corresponde aos filtros atuais. Tente ajustar a busca.'
-                  : 'Nenhuma questao disponivel. Importe questoes para comecar a praticar.'}
+                  ? 'Nenhuma questão corresponde aos filtros atuais. Tente ajustar a busca.'
+                  : 'Nenhuma questão disponível. Importe questões para começar a praticar.'}
               </p>
             </div>
           )}
@@ -501,7 +503,7 @@ export default function Questoes({
               />
               {!hasFiveOptionQuestion ? (
                 <p style={{ marginTop: 4, flexShrink: 0, fontSize: 10, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
-                  Dica: nao ha questao A-E neste resultado; ajuste filtros se quiser esse formato.
+                  Dica: não há questão A-E neste resultado; ajuste os filtros se quiser esse formato.
                 </p>
               ) : null}
             </div>
@@ -764,8 +766,8 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
             <InlineAction Icon={Bookmark} text="Salvar" />
-            <InlineAction Icon={MessageSquare} text="Comentarios" />
-            <InlineAction Icon={BarChart2} text="Estatisticas" />
+            <InlineAction Icon={MessageSquare} text="Comentários" />
+            <InlineAction Icon={BarChart2} text="Estatísticas" />
             <InlineReport />
           </div>
 
@@ -791,7 +793,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
                     tempo_segundos: tempoSegundos,
                   })
                     .then(() => onAnswered?.())
-                    .catch((error) => console.error('Erro ao salvar resposta da questao:', error));
+                    .catch((error) => console.error('[Questoes] erro ao salvar resposta da questão:', error));
                 }
                 return;
               }
@@ -876,7 +878,7 @@ function InlineReport() {
   );
 }
 
-function SidebarFolder({ Icon, iconWrap, title, subtitle }) {
+function SidebarFolder({ Icon, title, subtitle }) {
   return (
     <div style={{ display: 'flex', cursor: 'pointer', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, border: '1px solid transparent', padding: 12, transition: 'all 0.15s' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -956,7 +958,7 @@ function QuestionNotebookShelf({ cadernos, activeCadernoId, onSelect, onCreate, 
             >
               <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink)', fontFamily: 'var(--pl-sans)' }}>{caderno.title}</span>
               <span style={{ display: 'block', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
-                {caderno.questionIds?.length || 0} questoes · {caderno.plano || 'Plano livre'}
+                {caderno.questionIds?.length || 0} questões · {caderno.plano || 'Plano livre'}
               </span>
             </button>
             <button
@@ -1051,10 +1053,10 @@ function QuestionNotebookBuilder({
       <div style={{ maxHeight: '92vh', width: '100%', maxWidth: 960, overflow: 'hidden', borderRadius: '16px 16px 0 0', border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', boxShadow: 'var(--pl-sh-high)' }} role="dialog" aria-modal="true">
         <header style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
           <div>
-            <p className="pl-eyebrow" style={{ margin: 0 }}>Caderno de questoes</p>
+            <p className="pl-eyebrow" style={{ margin: 0 }}>Caderno de questões</p>
             <h2 className="pl-display" style={{ marginTop: 4, fontSize: 28, color: 'var(--pl-ink)' }}>Montar treino personalizado.</h2>
             <p style={{ marginTop: 8, maxWidth: 560, fontSize: 14, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>
-              De um titulo, vincule ao plano e distribua a quantidade de questoes por disciplina e topico.
+              Dê um título, vincule ao plano e distribua a quantidade de questões por disciplina e tópico.
             </p>
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar" style={{ display: 'inline-flex', height: 36, width: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)', cursor: 'pointer', flexShrink: 0 }}>
@@ -1222,10 +1224,4 @@ function buildNotebookQuestions(allQuestions, { rules, banca, difficulty }) {
 
   return selected;
 }
-
-function buttonClass(tone = 'primary', extra = '') {
-  const base = tone === 'primary' ? 'pl-btn pl-btn-primary' : 'pl-btn pl-btn-ghost';
-  return `${base} ${extra}`.trim();
-}
-
 

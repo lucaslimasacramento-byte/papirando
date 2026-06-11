@@ -35,12 +35,12 @@ export default function AdminDashboard({
   setActiveTab,
 }) {
   // Defensive: coerce every collection to an array even if parent passes null/undefined/non-array.
-  const contestLibrary = Array.isArray(contestLibraryProp) ? contestLibraryProp : [];
-  const cursos = Array.isArray(cursosProp) ? cursosProp : [];
-  const historicoReal = Array.isArray(historicoRealProp) ? historicoRealProp : [];
-  const profiles = Array.isArray(profilesProp) ? profilesProp : [];
-  const expenses = Array.isArray(expensesProp) ? expensesProp : [];
-  const leads = Array.isArray(leadsProp) ? leadsProp : [];
+  const contestLibrary = useMemo(() => (Array.isArray(contestLibraryProp) ? contestLibraryProp : []), [contestLibraryProp]);
+  const cursos = useMemo(() => (Array.isArray(cursosProp) ? cursosProp : []), [cursosProp]);
+  const historicoReal = useMemo(() => (Array.isArray(historicoRealProp) ? historicoRealProp : []), [historicoRealProp]);
+  const profiles = useMemo(() => (Array.isArray(profilesProp) ? profilesProp : []), [profilesProp]);
+  const expenses = useMemo(() => (Array.isArray(expensesProp) ? expensesProp : []), [expensesProp]);
+  const leads = useMemo(() => (Array.isArray(leadsProp) ? leadsProp : []), [leadsProp]);
 
   const [realMetrics, setRealMetrics] = useState({
     totalUsers: 0,

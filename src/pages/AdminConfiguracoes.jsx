@@ -90,8 +90,6 @@ export default function AdminConfiguracoes({
   onSaveSidebarLabels,
   notificationSettings = null,
   onSaveNotificationSettings,
-  courseTemplates = [],
-  onSaveCourseTemplates,
   initialSection = 'conteudo',
 }) {
   const [activeSection, setActiveSection] = useState(initialSection || 'conteudo');
@@ -114,9 +112,7 @@ export default function AdminConfiguracoes({
   const [kitDraft, setKitDraft] = useState(() => mergeRedacaoKitBundle(null));
   const [audiobookCatalogDraft, setAudiobookCatalogDraft] = useState(() => []);
   const [notificationDraft, setNotificationDraft] = useState(() => normalizeNotificationSettings(notificationSettings));
-  const [courseTemplatesDraft, setCourseTemplatesDraft] = useState(() => normalizeCourseTemplates(courseTemplates));
   const [notificationSaving, setNotificationSaving] = useState(false);
-  const [courseTemplatesSaving, setCourseTemplatesSaving] = useState(false);
   const [redacaoSiteSaving, setRedacaoSiteSaving] = useState(false);
   const [aiStatus, setAiStatus] = useState({ provider: 'offline', status: 'offline', model: '' });
   const [aiLoading, setAiLoading] = useState(false);
@@ -158,10 +154,6 @@ export default function AdminConfiguracoes({
   useEffect(() => {
     setNotificationDraft(normalizeNotificationSettings(notificationSettings));
   }, [notificationSettings]);
-
-  useEffect(() => {
-    setCourseTemplatesDraft(normalizeCourseTemplates(courseTemplates));
-  }, [courseTemplates]);
 
   useEffect(() => {
     refreshAiHealth();

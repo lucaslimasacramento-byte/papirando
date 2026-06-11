@@ -300,32 +300,42 @@ export default function Redacoes({
       );
       return;
     }
-    if (!isPremium) await increment('essays_monthly');
     setCorrigindo(true);
     setCorrecaoResult(null);
     setCorrecaoErr('');
     try {
       const correction = await analyzeRedacaoWithRealAI({ text, tema: redacaoTema, banca: redacaoBanca });
       setCorrecaoResult(correction);
+      // Limite só conta DEPOIS da IA responder — falha da IA não queima a cota do plano Folha.
+      if (!isPremium) {
+        try { await increment('essays_monthly'); } catch { /* contador é best-effort; não bloquear o parecer */ }
+      }
+
+      const record = normalizeRedacaoRecord({
+        user_id: currentUserId,
+        banca: redacaoBanca,
+        tema: redacaoTema,
+        status: 'corrected',
+        input_mode: redacaoInputMode === 'upload' ? 'upload' : 'text',
+        text,
+        original_text: redacaoInputMode === 'upload' ? '' : text,
+        transcribed_text: redacaoInputMode === 'upload' ? text : '',
+        correction,
+        score: correction.overallScore,
+        corrected_at: correction.analyzedAt,
+        updated_at: new Date().toISOString(),
+      });
       try {
-        await onSaveRedacao?.({
-          redacao: normalizeRedacaoRecord({
-            user_id: currentUserId,
-            banca: redacaoBanca,
-            tema: redacaoTema,
-            status: 'corrected',
-            input_mode: redacaoInputMode === 'upload' ? 'upload' : 'text',
-            text,
-            original_text: redacaoInputMode === 'upload' ? '' : text,
-            transcribed_text: redacaoInputMode === 'upload' ? text : '',
-            correction,
-            score: correction.overallScore,
-            corrected_at: correction.analyzedAt,
-            updated_at: new Date().toISOString(),
-          }),
-        });
-      } catch (saveErr) {
-        setCorrecaoErr(String(saveErr?.message || 'A IA gerou o parecer, mas não consegui salvar o histórico agora. Copie o feedback antes de sair da tela.'));
+        await onSaveRedacao?.({ redacao: record });
+      } catch (firstSaveErr) {
+        // 1 retry automático antes de pedir ação do usuário (falhas transitórias são comuns).
+        console.error('[Redacoes] falha ao salvar parecer (tentativa 1):', firstSaveErr?.message || firstSaveErr);
+        try {
+          await onSaveRedacao?.({ redacao: record });
+        } catch (saveErr) {
+          console.error('[Redacoes] falha ao salvar parecer (tentativa 2):', saveErr?.message || saveErr);
+          setCorrecaoErr(String(saveErr?.message || 'A IA gerou o parecer, mas não consegui salvar o histórico agora. O parecer está na tela — copie o feedback antes de sair.'));
+        }
       }
     } catch (err) {
       setCorrecaoErr(String(err?.message || 'Servidor de IA indisponível. Tente novamente em alguns instantes.'));
@@ -375,17 +385,6 @@ export default function Redacoes({
     }
     return REDACAO_ESQUELETOS_MILIMETRICOS;
   }, [kitBundle]);
-
-  const aplicarEsqueleto = (item) => {
-    if (!item?.corpo || corrigindo) return;
-    if (String(redacaoText || '').trim()) {
-      const ok = typeof window !== 'undefined' ? window.confirm('Substituir o texto atual pelo esqueleto selecionado?') : true;
-      if (!ok) return;
-    }
-    setRedacaoText(item.corpo);
-    setEsqueletoAtivoId(item.id);
-    setPartesGuiasAtivas(false);
-  };
 
   const handleParteLinhaChange = (key, raw) => {
     setPartesLinhas((p) => ({ ...p, [key]: clampParteLinhas(raw) }));

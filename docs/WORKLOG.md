@@ -176,6 +176,103 @@
 
 ## Registro de sessões
 
+### Sessão 2026-06-11 (parte 3) — FILA DO CLAUDE 100% FECHADA (C1–C14)
+**Blocos 2, 4, 5 e infra concluídos de uma vez (decisão: Lucas valida tudo no final):**
+- **C2 Lembretes (crítico):** página E App.jsx salvavam no Supabase — cada lembrete novo inseria **2 linhas duplicadas** no banco. Persistência centralizada no App.jsx com toast de erro em salvar/excluir. (Builders PostgREST resolvem com `{error}`, não lançam — os `.catch(console.warn)` antigos nunca pegavam nada.)
+- **C5 Metas:** delete agora checa `{error}`; em falha a meta não some da tela e um toast avisa.
+- **C7 Planos:** PDF escaneado/vazio agora dá erro claro ("cole o texto manualmente") em vez de silêncio.
+- **C8 Legislação:** verificado — alarme falso; todos os call-sites de `getDocument` já tinham try/catch.
+- **C10 Sessões:** erro ao carregar sessões recentes mostra aviso no card (antes fingia lista vazia). `formatHHMMSS` já tinha fallback.
+- **C11 Dashboard:** "Papirar agora" com cadeia de fallback (recomendação → timer → aba Sessões) — nunca clique morto.
+- **C12 Checkout (crítico):** check de assinatura duplicada na Edge Function — usuário com assinatura ativa reutiliza a cobrança pendente ou recebe 409, em vez de criar OUTRA assinatura no Asaas (risco de dupla cobrança). **⚠️ Requer redeploy:** `supabase functions deploy create-checkout-session`.
+- Build OK (3.93s) + ESLint limpo. Checklist atualizado (testes de duplicata do C2 e duplo clique do C12).
+
+**Estado: TODAS as correções de código pré-lançamento concluídas (C1–C14 + T1–T12).**
+
+**Deploy das Edge Functions (2026-06-11, via CLI):**
+- ✅ `create-checkout-session` deployada (inclui check de assinatura duplicada do C12)
+- ✅ `asaas-webhook` deployada (inclui endurecimento T8 do Codex)
+- ⏳ Secrets do Asaas (`ASAAS_API_KEY`, `ASAAS_WEBHOOK_TOKEN`, `ASAAS_SANDBOX`) — aguardando liberação da conta Asaas. Sem elas o checkout responde erro, mas nada quebra no app.
+
+**Falta apenas: validação manual do Lucas (checklist completo) + secrets do Asaas quando a conta liberar.**
+
+---
+
+### Sessão 2026-06-11 (parte 2) — Codex 100% + migration aplicada + Bloco 3
+- ✅ **Migration `study_goal` aplicada no Supabase** (confirmada via SQL Editor — "Success").
+- ✅ **Codex fechou TODAS as 12 tarefas** (T3, T4, T6–T11 nesta rodada): cores → tokens pl-*, código morto removido, botão sem ação deletado, webhook normalizado, ASAAS_SANDBOX fail-safe, localStorage com try/catch, 18 artefatos temporários removidos, .gitignore atualizado.
+- ✅ **Bloco 3 (fila do Claude) concluído — C3, C4, C9:**
+  - **C3 Flashcards:** timeout de 55s já existia no aiClient (alarme parcialmente falso); mensagem de timeout generalizada. Deck órfão corrigido — IA é chamada ANTES de criar o deck; inserção de cards com `Promise.allSettled` (relata sucesso parcial); deck recém-criado é deletado se nenhum card salvar.
+  - **C4 Redações:** bug crítico — limite mensal do Folha era incrementado ANTES da chamada de IA (falha da IA queimava a única correção do mês do usuário free). Agora incrementa só após sucesso. Save do parecer com 1 retry automático antes de mostrar o aviso.
+  - **C9 Mapas Mentais:** o botão "Gerar mapa" (gate Papiro) rodava só heurística local — IA real nunca era chamada apesar do endpoint `generate-mind-map` existir no gateway. Ligado `generateMindMap` com fallback honesto para heurística local em caso de falha. `Array.isArray` em `topicos`. Estados de loading/erro da UI ativados.
+- Build OK (1.79s) + ESLint limpo nos 4 arquivos alterados.
+- Checklist atualizado: teste de cota do C4 e testes de IA real/fallback do C9.
+- **Restam na fila do Claude:** C2, C5 (Bloco 4), C7, C8 (Bloco 5), C10, C11 (Bloco 2), C12 (infra pagamentos).
+
+---
+
+### Sessão 2026-06-11 — C14 concluído + Codex fechou T1/T5/T12
+**Codex:** T1 (logs limpos/padronizados), T5 (acentuação PT-BR), T12 (texto interno dos selos) — build e ESLint OK.
+**Claude — C14 concluído** (`Perfil.jsx`):
+- Decisão: banner de erro com botão "Tentar de novo" (em vez de retry automático silencioso, que esconderia dados desatualizados e arriscaria o usuário salvar por cima de dados velhos).
+- `loadRemoteProfile` agora seta `remoteLoadFailed` e loga com prefixo; banner amarelo (`--pl-warn-soft`) acima dos KPIs avisa que os dados podem estar desatualizados e oferece retry com spinner.
+- Checklist atualizado com o teste do banner (modo avião → abrir Perfil).
+**Bloco 1 — fila do Claude 100% fechada (C1, C6, C14).** Falta: validação manual do Lucas + T3/T4/T6-T11 do Codex.
+
+---
+
+### Sessão 2026-06-10 (parte 3) — Correção T2 perdida + C1 concluído
+**O que foi feito:**
+- **T2 (resgatada):** o resumo da sessão anterior dizia que `bem_estar` tinha sido adicionado ao `LAUNCH_HIDDEN_TABS`, mas o código não tinha a mudança. Adicionados `bem_estar` e `audiobooks` aos Sets em `Sidebar.jsx` E `App.jsx`.
+- **C1 concluído** — bugs reais de gate de plano (modelo 2 tiers Folha/Papiro):
+  - `App.jsx`: `isElitePlan` comparava `stripePlanName === 'elite'`, mas `useSubscription` normaliza para `'papiro'` → **assinante pagante nunca recebia recursos elite**. Corrigido para `'papiro'` + aliases legados no fallback.
+  - `App.jsx`: `isPremiumPlan` não incluía `'papiro'` no fallback do profile. Corrigido.
+  - `App.jsx`: limite de cursos — plano `papiro` caía no limite free (3). Agora papiro/elite/beta = 30.
+  - `SubscriptionPlanSeal.jsx`: selo do Header mostrava **"Gratuito" para usuário Papiro** (não tinha entrada `papiro`). Reescrito para Folha/Papiro com mapa de aliases legados.
+  - `Perfil.jsx`: removido código morto — `PERFIL_PLANOS` (3 tiers antigos com preços errados), `_formatPlanLabel`, `_formatSubscriptionStatus` e ícones órfãos.
+  - `planConfig.js`: adicionados `folha`/`papiro` (R$19,90 mensal / R$13,33 equiv. anual) — corrige cálculo de MRR no AdminFinance; legados mantidos para linhas antigas.
+  - `AdminAssinaturas.jsx`: selects e KPIs migrados para Papiro; opções legadas só aparecem se a linha ainda tiver o valor antigo.
+- **C6 concluído** — `ConvideGanhe.jsx`: `supabase.rpc()` retorna `{error}` em vez de lançar, então o catch nunca disparava e a falha da RPC `award_referral_bonus_events` era totalmente silenciosa. Agora checa o erro explicitamente, loga com prefixo e mostra aviso ao usuário. Bônus do fallback virtual passa a exibir "aguardando crédito" em vez de parecer creditado.
+- Docs da auditoria atualizados: C1 ✅, C6 ✅, C13 ✅ (Esquadrões = produto separado), T2 ✅, T1/T4 sem `Esquadroes.jsx`, checklist ganhou seção de testes do `study_goal`.
+- Build OK — chunks de Esquadroes/Instagram/Aplicativos confirmados fora do bundle.
+- **Bloco 1 (fila do Claude): fechado**, exceto C14 que depende de decisão do Lucas (UX quando o perfil falha ao carregar do Supabase).
+
+---
+
+### Sessão 2026-06-10 — Remoção Esquadrões + segmentação concurso + limpeza
+**O que foi feito:**
+- **Esquadrões removido do app** — código empacotado em `docs/esquadroes-package/README.md` com contexto completo para projeto B2B separado
+- **Instagram e Aplicativos removidos** — imports e casos de render deletados de AppTabContent; itens removidos do sidebar
+- **Segmentação concurso implementada:**
+  - Onboarding salva `study_goal` (`'concurso'` | `'vestibular'` | `'faculdade'`) no perfil
+  - Sidebar filtra tabs `edital`, `edital_questao`, `legislacao`, `concursos`, `conciliar` para quem não é concurseiro
+  - Fallback para usuários antigos: se `study_goal` é null mas tem `target_contest_id`, trata como concurseiro
+  - Perfil ganha seletor de "Objetivo de estudos" com save imediato (sem precisar salvar o form inteiro)
+- **`study_goal` adicionado ao allowlist** de `profileApi.js`
+- `LAUNCH_HIDDEN_TABS` atualizado: agora só esconde `comunidades` e `conciliar` no MVP
+
+**⚠️ Pendência obrigatória — migration Supabase:**
+Rodar no SQL Editor antes de usar a segmentação em produção:
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
+```
+
+---
+
+### Sessão 2026-06-10 — Auditoria completa de lançamento
+**O que foi feito:**
+- Auditoria automatizada de TODAS as telas (30+ páginas) + infraestrutura (rotas, gates, Edge Functions, segurança)
+- Criados 3 documentos de controle:
+  - `docs/AUDITORIA-LANCAMENTO.md` — plano mestre com fila de correções (Claude = complexas C1-C14, Codex = simples T1-T12)
+  - `docs/CODEX-TASKS.md` — 12 tarefas mecânicas com instruções prontas para colar no Codex
+  - `docs/CHECKLIST-VALIDACAO.md` — checklist de testes manuais do Lucas, por bloco
+- Falsos alarmes verificados e descartados: .env NÃO está no git; ai-server.mjs é só dev (produção usa api/ai.js na Vercel); webhook Asaas já usa eventos UPPERCASE
+- Bug real encontrado: BemEstar não está em LAUNCH_HIDDEN_TABS (visível no MVP) → tarefa T2 do Codex
+
+**Fluxo de trabalho definido:** Claude corrige complexas → Codex executa simples → Lucas valida no checklist → tela ✅ no WORKLOG.
+
+---
+
 ### Sessão 2026-05-30
 **O que foi feito:**
 - Planejamento completo de pagamentos

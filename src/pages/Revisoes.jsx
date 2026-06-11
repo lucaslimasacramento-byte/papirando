@@ -163,8 +163,6 @@ export default function Revisoes({
   }, [currentUserId, targetContest?.nome]);
 
   const reviewQueue = realReviewReady ? realReviewQueue : fallbackReviewQueue;
-  const primaryReview = reviewQueue[0] || null;
-  const urgentCount = reviewQueue.filter((item) => item.urgencyLabel === 'Alta prioridade').length;
 
   useEffect(() => {
     let active = true;

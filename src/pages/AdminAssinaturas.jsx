@@ -10,7 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import AdminPageHeader from '../components/AdminPageHeader';
-import { adminCreateManualSubscription, loadAllSubscriptions } from '../lib/subscriptionApi';
+import { adminCreateManualSubscription, loadAllSubscriptions, normalizePlanName } from '../lib/subscriptionApi';
 import { showConfirm, showToast } from '../lib/dialogs';
 import { supabase as supabaseClient } from '../lib/supabase';
 
@@ -35,7 +35,7 @@ export default function AdminAssinaturas() {
   // Form para criar assinatura manual
   const [showForm, setShowForm] = useState(false);
   const [formEmail, setFormEmail] = useState('');
-  const [formPlan, setFormPlan] = useState('tatico');
+  const [formPlan, setFormPlan] = useState('papiro');
   const [formBilling, setFormBilling] = useState('monthly');
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState('');
@@ -144,10 +144,10 @@ export default function AdminAssinaturas() {
     });
   }, [rows, emailMap, search]);
 
-  // Contadores
+  // Contadores — normalizePlanName mapeia aliases legados (tatico/elite) para 'papiro'
   const activeCount = rows.filter((r) => ['active', 'trialing'].includes(r.status)).length;
-  const eliteCount = rows.filter((r) => r.plan_name === 'elite').length;
-  const taticoCount = rows.filter((r) => r.plan_name === 'tatico').length;
+  const papiroCount = rows.filter((r) => normalizePlanName(r.plan_name) === 'papiro').length;
+  const trialCount = rows.filter((r) => r.status === 'trialing').length;
 
   return (
     <div className="pl-page">
@@ -160,12 +160,12 @@ export default function AdminAssinaturas() {
           subtitle={
             loading
               ? 'Carregando...'
-              : `${activeCount} ativas · ${eliteCount} Elite · ${taticoCount} Tatico · ${rows.length} total`
+              : `${activeCount} ativas · ${papiroCount} Papiro · ${trialCount} em trial · ${rows.length} total`
           }
           stats={[
             { key: 'ativas', label: 'Ativas', value: loading ? '–' : String(activeCount), icon: ShieldCheck, accent: 'emerald' },
-            { key: 'elite', label: 'Elite', value: loading ? '–' : String(eliteCount), icon: ShieldCheck, accent: 'amber' },
-            { key: 'tatico', label: 'Tatico', value: loading ? '–' : String(taticoCount), icon: ShieldCheck, accent: 'blue' },
+            { key: 'papiro', label: 'Papiro', value: loading ? '–' : String(papiroCount), icon: ShieldCheck, accent: 'amber' },
+            { key: 'trial', label: 'Trial', value: loading ? '–' : String(trialCount), icon: ShieldCheck, accent: 'blue' },
             { key: 'total', label: 'Total', value: loading ? '–' : String(rows.length), icon: ShieldCheck, accent: 'indigo' },
           ]}
         />
@@ -232,8 +232,7 @@ export default function AdminAssinaturas() {
                     className="pl-input"
                     disabled={creating}
                   >
-                    <option value="tatico">Tatico</option>
-                    <option value="elite">Elite</option>
+                    <option value="papiro">Papiro</option>
                   </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -324,8 +323,10 @@ export default function AdminAssinaturas() {
                           style={{ padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
                         >
                           <option value="gratuito">Gratuito</option>
-                          <option value="tatico">Tatico</option>
-                          <option value="elite">Elite</option>
+                          <option value="papiro">Papiro</option>
+                          {/* aliases legados — só aparecem se a linha ainda tiver o valor antigo */}
+                          {row.plan_name === 'tatico' ? <option value="tatico">Tático (legado)</option> : null}
+                          {row.plan_name === 'elite' ? <option value="elite">Elite (legado)</option> : null}
                         </select>
                       </td>
                       <td style={{ padding: '12px 16px 12px 0' }}>

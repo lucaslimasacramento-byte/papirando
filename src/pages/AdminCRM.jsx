@@ -62,7 +62,7 @@ function exportLeadsCsv(leads) {
   URL.revokeObjectURL(url);
 }
 
-export default function AdminCRM({ leads = [], currentUserEmail = '', onSaveLead, onDeleteLead }) {
+export default function AdminCRM({ leads = [], onSaveLead, onDeleteLead }) {
   const [form, setForm] = useState(EMPTY_LEAD);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });

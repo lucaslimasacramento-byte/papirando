@@ -15,6 +15,14 @@ export default defineConfig([
     '.claude/worktrees/**',
     '**/.claude/worktrees/**',
     '.tmp.driveupload/**',
+    '.tmp-previews/**',
+    '.tmp.drivedownload/**',
+    'node_modules/**',
+    'scripts/**',
+    '*.log',
+    '*.png',
+    '*.pdf',
+    '*.txt',
     'coverage/**',
   ]),
   {
@@ -45,7 +53,7 @@ export default defineConfig([
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
       'react/jsx-uses-vars': 'error',
       'react/react-in-jsx-scope': 'off',
-      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
   {

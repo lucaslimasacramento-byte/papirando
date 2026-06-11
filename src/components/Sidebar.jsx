@@ -23,12 +23,9 @@ import {
   FileSearch,
   Users,
   RefreshCw,
-  Smartphone,
-  Instagram,
   HeartPulse,
   Gift,
   User,
-  ShieldCheck,
   Crown,
   WalletCards,
   MessageSquareHeart,
@@ -88,10 +85,7 @@ const NAV_SECTIONS_BASE = [
     title: 'Apoio',
     items: [
       { id: 'comunidades', icon: Users, label: 'Comunidade' },
-      { id: 'esquadroes', icon: ShieldCheck, label: 'Esquadrões' },
       { id: 'conciliar', icon: RefreshCw, label: 'Conciliador' },
-      { id: 'instagram', icon: Instagram, label: 'Instagram', badge: 'IA' },
-      { id: 'aplicativos', icon: Smartphone, label: 'Aplicativos' },
       { id: 'bem_estar', icon: HeartPulse, label: 'Bem-estar' },
       { id: 'convide_ganhe', icon: Gift, label: 'Convide e ganhe', badge: 'VIP' },
       { id: 'perfil', icon: User, label: 'Perfil' },
@@ -118,7 +112,8 @@ const ADMIN_SECTION = {
 };
 
 const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
-const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'esquadroes', 'conciliar', 'instagram', 'aplicativos']);
+const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'conciliar', 'bem_estar', 'audiobooks']);
+const CONCURSO_ONLY_TABS = new Set(['edital', 'edital_questao', 'legislacao', 'concursos', 'conciliar']);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function getSidebarNavLabelSchema() {
@@ -196,15 +191,20 @@ export default function Sidebar({
   const navSections = useMemo(
     () => {
       const sections = isAdmin ? [...NAV_SECTIONS_BASE, ADMIN_SECTION] : NAV_SECTIONS_BASE;
-      if (!LAUNCH_MVP_MODE) return sections;
+      const isConcurseiro = currentProfile?.study_goal === 'concurso'
+        || (currentProfile?.study_goal == null && Boolean(currentProfile?.target_contest_id));
       return sections
         .map((section) => ({
           ...section,
-          items: section.items.filter((item) => !LAUNCH_HIDDEN_TABS.has(item.id)),
+          items: section.items.filter((item) => {
+            if (LAUNCH_MVP_MODE && LAUNCH_HIDDEN_TABS.has(item.id)) return false;
+            if (!isConcurseiro && CONCURSO_ONLY_TABS.has(item.id)) return false;
+            return true;
+          }),
         }))
         .filter((section) => section.items.length > 0);
     },
-    [isAdmin]
+    [isAdmin, currentProfile]
   );
   const overrides =
     labelOverrides && typeof labelOverrides === 'object' && !Array.isArray(labelOverrides) ? labelOverrides : {};
@@ -359,6 +359,8 @@ export default function Sidebar({
                 gridTemplateRows: shouldShowItems ? '1fr' : '0fr',
                 opacity: shouldShowItems ? 1 : 0,
                 transform: shouldShowItems ? 'translateY(0)' : 'translateY(-4px)',
+                pointerEvents: shouldShowItems ? 'auto' : 'none',
+                visibility: shouldShowItems ? 'visible' : 'hidden',
                 transition: 'grid-template-rows 0.22s ease, opacity 0.18s ease, transform 0.18s ease',
               }}
             >

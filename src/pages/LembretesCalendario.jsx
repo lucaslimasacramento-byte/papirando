@@ -59,7 +59,6 @@ export default function LembretesCalendario({
   notifications = [],
   agendaHoje = [],
   agendaAmanha = [],
-  checklistHistory = [],
   onOpenContest,
   onOpenDiscipline,
   studyPlanningMode = 'fixo',
@@ -70,7 +69,6 @@ export default function LembretesCalendario({
   activeCycle = [],
   manualReminders = [],
   onSaveReminder,
-  onDeleteReminder,
   currentUserId = '',
   contestOptions = [],
   sharedCalendarViewMode,
@@ -354,12 +352,6 @@ export default function LembretesCalendario({
     setReminderModalOpen(true);
   }
 
-  function openEditReminder(reminder) {
-    setEditingReminder(reminder);
-    setReminderForm(buildReminderDraft(reminder));
-    setReminderModalOpen(true);
-  }
-
   async function saveReminder() {
     if (!String(reminderForm.title || '').trim() || !String(reminderForm.date || '').trim()) return;
     const reminderPayload = {
@@ -371,69 +363,13 @@ export default function LembretesCalendario({
         contestOptions.find((contest) => contest.id === reminderForm.contestId)?.nome || '',
     };
 
+    // Persistência centralizada no App (handleSaveManualReminder) — salvar aqui TAMBÉM
+    // causava insert duplicado no Supabase (cada lembrete novo gerava 2 linhas).
     onSaveReminder?.(reminderPayload);
-
-    if (currentUserId) {
-      const payload = {
-        user_id: currentUserId,
-        titulo: reminderPayload.title,
-        descricao: reminderPayload.description || '',
-        tipo: reminderPayload.type || 'task',
-        data: reminderPayload.date,
-        hora: reminderPayload.time || '',
-        contest_slug: reminderPayload.contestSlug || reminderPayload.contestId || '',
-        disciplina: reminderPayload.disciplina || '',
-      };
-
-      if (editingReminder?.id) {
-        supabase
-          .from('calendar_reminders')
-          .update(payload)
-          .eq('id', editingReminder.id)
-          .eq('user_id', currentUserId)
-          .catch(console.warn);
-      } else {
-        supabase
-          .from('calendar_reminders')
-          .insert(payload)
-          .select('*')
-          .single()
-          .then(({ data, error }) => {
-            if (error) {
-              console.warn(error);
-              return;
-            }
-
-            if (data) {
-              onSaveReminder?.({
-                ...reminderPayload,
-                id: data.id,
-                contestId: data.contest_slug || reminderPayload.contestId || '',
-                contestSlug: data.contest_slug || reminderPayload.contestSlug || '',
-                disciplina: data.disciplina || reminderPayload.disciplina || '',
-              });
-            }
-          })
-          .catch(console.warn);
-      }
-    }
 
     setReminderModalOpen(false);
     setEditingReminder(null);
     setReminderForm(buildReminderDraft());
-  }
-
-  function handleDeleteManualReminder(reminderId) {
-    onDeleteReminder?.(reminderId);
-
-    if (currentUserId && reminderId) {
-      supabase
-        .from('calendar_reminders')
-        .delete()
-        .eq('id', reminderId)
-        .eq('user_id', currentUserId)
-        .catch(console.warn);
-    }
   }
 
   return (
@@ -525,14 +461,14 @@ function LembretesHeader({ alertasAtivos, provasNoRadar }) {
     <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
         <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
-          Lembretes &amp; calendário<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          Lembretes & calendário<span style={{ color: 'var(--pl-ink)' }}>.</span>
         </h1>
         <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
           Visualize alertas, organize pendências e acompanhe provas no calendário unificado.
         </p>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <ReminderStatTile label="Alertas ativos" value={alertasAtivos} color={alertasAtivos > 0 ? 'var(--pl-highlight-ink)' : 'var(--pl-ink)'} />
+        <ReminderStatTile label="Alertas ativos" value={alertasAtivos} color="var(--pl-ink)" />
         <ReminderStatTile label="Provas no radar" value={provasNoRadar} color="var(--pl-ink)" />
       </div>
     </header>
@@ -584,9 +520,9 @@ function ReminderFilterChip({ active, onClick, label, count }) {
         height: 28,
         padding: '0 10px',
         borderRadius: 6,
-        border: '1px solid var(--pl-rule-2)',
-        background: active ? 'var(--pl-ink)' : 'rgba(255,255,255,0.58)',
-        color: active ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+        border: active ? '1px solid var(--pl-reminder-filter-active-border, var(--pl-ink))' : '1px solid var(--pl-reminder-filter-border, var(--pl-rule-2))',
+        background: active ? 'var(--pl-reminder-filter-active-bg, var(--pl-ink))' : 'var(--pl-reminder-filter-bg, rgba(255,255,255,0.58))',
+        color: active ? 'var(--pl-reminder-filter-active-ink, var(--pl-bg))' : 'var(--pl-reminder-filter-ink, var(--pl-ink-2))',
         fontSize: 12,
         fontWeight: 700,
         cursor: 'pointer',
@@ -594,7 +530,7 @@ function ReminderFilterChip({ active, onClick, label, count }) {
       }}
     >
       {label}
-      <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: active ? 'rgba(243,239,229,0.18)' : 'var(--pl-bg-soft)', fontSize: 10 }}>
+      <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: active ? 'var(--pl-reminder-filter-count-active-bg, rgba(243,239,229,0.18))' : 'var(--pl-reminder-filter-count-bg, var(--pl-bg-soft))', color: active ? 'var(--pl-reminder-filter-count-active-ink, currentColor)' : 'var(--pl-reminder-filter-count-ink, currentColor)', fontSize: 10 }}>
         {count}
       </span>
     </button>

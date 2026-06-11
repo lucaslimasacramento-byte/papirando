@@ -238,7 +238,7 @@ export default function Login({
           nome: getGoogleProfileName(googleUser),
           avatar_url: googleUser.user_metadata?.avatar_url || googleUser.user_metadata?.picture || '',
         }).catch((profileError) => {
-          console.warn('[Google Auth] Sessão criada, mas o perfil não foi sincronizado.', profileError);
+          console.error('[Login] erro ao sincronizar perfil após login com Google:', profileError);
         });
       }
 
@@ -281,8 +281,7 @@ export default function Login({
           width: Math.min(460, googleButtonRef.current.offsetWidth || 360),
         });
         setGoogleReady(true);
-      } catch (err) {
-        console.error('[Google Auth] Falha ao preparar login direto.', err);
+      } catch {
         if (!cancelled) setGoogleReady(false);
       }
     }
@@ -398,7 +397,8 @@ export default function Login({
       }
 
       .pl-login-card.is-register {
-        height: min(760px, calc(100vh - 48px));
+        height: auto;
+        max-height: min(760px, calc(100vh - 48px));
       }
 
       .pl-login-card.is-register .pl-login-card-header {
@@ -494,7 +494,7 @@ export default function Login({
           min-height: 100svh;
           padding: 28px 18px !important;
           border-left: 0 !important;
-          overflow: hidden !important;
+          overflow: auto !important;
         }
 
         .pl-login-card {
@@ -509,6 +509,11 @@ export default function Login({
           display: flex !important;
           flex-direction: column;
         }
+
+        .pl-login-card.is-register {
+          max-height: none;
+          overflow: visible;
+        }
       }
 
       @media (max-width: 520px) {
@@ -518,10 +523,13 @@ export default function Login({
 
         .pl-login-card {
           width: 100%;
-          max-height: calc(100svh - 36px);
           height: auto;
           border-radius: 16px;
           padding: 24px 16px !important;
+        }
+
+        .pl-login-card:not(.is-register) {
+          max-height: calc(100svh - 36px);
         }
 
         .pl-login-card-header {
@@ -553,11 +561,12 @@ export default function Login({
       }
     `}</style>
     <div className="pl-login-page" style={{
-      width: '100%', height: '100vh',
+      width: '100%',
+      height: isLoginMode ? '100vh' : 'auto',
       display: 'grid',
       gridTemplateColumns: 'minmax(0, 1.35fr) minmax(460px, 0.95fr)',
-      minHeight: 0,
-      overflow: 'hidden',
+      minHeight: '100vh',
+      overflow: isLoginMode ? 'hidden' : 'auto',
       fontFamily: 'var(--pl-sans)',
     }}>
 
@@ -637,7 +646,7 @@ export default function Login({
         borderLeft: '1px solid var(--pl-rule-2)',
         padding: '32px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden',
+        overflow: isLoginMode ? 'hidden' : 'auto',
       }}>
         <div className={`pl-login-card ${isLoginMode ? '' : 'is-register'}`} style={{
           padding: isLoginMode ? '44px 46px' : '22px 40px',

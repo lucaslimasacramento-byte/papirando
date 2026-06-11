@@ -7,9 +7,9 @@ const COMPANY_NAME = 'Papirando';
 
 export default function Privacidade() {
   return (
-    <div className="min-h-screen bg-[var(--bg-canvas)] pb-24">
+    <div className="min-h-screen bg-[var(--pl-bg)] pb-24 text-[var(--pl-ink)]">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 via-[#0f172a] to-blue-900 px-6 py-14 text-white">
+      <div className="px-6 py-14" style={{ background: 'var(--pl-bg)', color: 'var(--pl-ink)' }}>
         <div className="mx-auto max-w-3xl">
           <div className="mb-4 flex items-center gap-2 text-blue-300">
             <ShieldCheck className="h-5 w-5" />

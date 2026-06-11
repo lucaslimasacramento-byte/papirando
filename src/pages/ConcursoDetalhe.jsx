@@ -87,7 +87,7 @@ export default function ConcursoDetalhe({
   useEffect(() => {
     setSelectedRoleId(getPrimaryContestRole(rawContest || {})?.id || '');
     setExpandedSubjects({});
-  }, [rawContest?.id]);
+  }, [rawContest]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -95,15 +95,6 @@ export default function ConcursoDetalhe({
     }, 0);
     return () => window.clearTimeout(timer);
   }, [contest?.id, contest?.imagem_url]);
-
-  const topicosCount = useMemo(
-    () =>
-      (contest?.disciplinas || []).reduce(
-        (acc, subject) => acc + (subject.topicos?.length || 0),
-        0
-      ),
-    [contest]
-  );
 
   const courseMatches = useMemo(() => {
     if (!contest) return [];
@@ -516,7 +507,7 @@ export default function ConcursoDetalhe({
               />
             ) : (
               <div
-                style={{ display: 'flex', minHeight: 260, width: '100%', alignItems: 'center', justifyContent: 'center', color: '#fff', background: `linear-gradient(135deg, ${contest.cor || '#1e3a5f'} 0%, #1e3a8a 100%)` }}
+                style={{ display: 'flex', minHeight: 260, width: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-surface)', background: `linear-gradient(135deg, ${contest.cor || 'var(--pl-accent)'} 0%, var(--pl-accent) 100%)` }}
               >
                 <LibraryBig size={56} />
               </div>

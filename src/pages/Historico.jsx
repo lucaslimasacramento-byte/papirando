@@ -8,10 +8,10 @@ import {
 
 /* ── Paleta por tipo de registro ────────────────────────────────── */
 const TYPE_PALETTE = {
-  blue:    { stripe: '#2557a7', bg: 'var(--pl-accent-soft)',  border: 'rgba(30,58,95,0.14)',   text: '#1e3a5f' },
-  orange:  { stripe: '#c05621', bg: 'var(--pl-danger-soft)',  border: 'rgba(192,86,33,0.16)',  text: '#c05621' },
-  emerald: { stripe: '#305e22', bg: 'var(--pl-success-soft)', border: 'rgba(48,94,34,0.16)',   text: '#305e22' },
-  indigo:  { stripe: '#3730a3', bg: 'var(--pl-accent-soft)',  border: 'rgba(55,48,163,0.14)',  text: '#3730a3' },
+  blue:    { stripe: 'var(--pl-accent)',  bg: 'var(--pl-accent-soft)',  border: 'rgba(30,58,95,0.14)',   text: 'var(--pl-accent)' },
+  orange:  { stripe: 'var(--pl-warn)',    bg: 'var(--pl-danger-soft)',  border: 'rgba(192,86,33,0.16)',  text: 'var(--pl-warn)' },
+  emerald: { stripe: 'var(--pl-success)', bg: 'var(--pl-success-soft)', border: 'rgba(48,94,34,0.16)',   text: 'var(--pl-success)' },
+  indigo:  { stripe: 'var(--pl-accent)',  bg: 'var(--pl-accent-soft)',  border: 'rgba(55,48,163,0.14)',  text: 'var(--pl-accent)' },
 };
 
 const FILTERS = ['Todos', 'Estudo', 'Questões', 'Simulado', 'Revisão'];
@@ -35,6 +35,8 @@ export default function Historico({
   subjectCatalog = [],
   initialQuery = '',
   initialFilter = 'Todos',
+  onOpenEdital,
+  onStartStudy,
 }) {
   const [query, setQuery]   = useState(initialQuery);
   const [filter, setFilter] = useState(initialFilter);
@@ -204,7 +206,7 @@ export default function Historico({
           style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 7 }}
         >
           {filtered.length === 0
-            ? <EmptyState hasRecords={totalSessions > 0} />
+            ? <EmptyState hasRecords={totalSessions > 0} onOpenEdital={onOpenEdital} onStartStudy={onStartStudy} />
             : filtered.map((item) => <HistoryCard key={item.id} item={item} />)
           }
         </div>
@@ -305,7 +307,7 @@ function MiniMetric({ label, value, highlight = false }) {
       <p style={{ margin: 0, fontFamily: 'var(--pl-mono)', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', marginBottom: 1 }}>
         {label}
       </p>
-      <p style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 14, fontWeight: 400, lineHeight: 1, color: highlight ? '#305e22' : 'var(--pl-ink)', letterSpacing: '-0.02em' }}>
+      <p style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 14, fontWeight: 400, lineHeight: 1, color: highlight ? 'var(--pl-success)' : 'var(--pl-ink)', letterSpacing: '-0.02em' }}>
         {value}
       </p>
     </div>
@@ -313,7 +315,7 @@ function MiniMetric({ label, value, highlight = false }) {
 }
 
 /* ── Estado vazio editorial ── */
-function EmptyState({ hasRecords }) {
+function EmptyState({ hasRecords, onOpenEdital, onStartStudy }) {
   if (hasRecords) {
     return (
       <div style={{
@@ -378,7 +380,7 @@ function EmptyState({ hasRecords }) {
         registro aparece por aqui, ordenado por matéria e dia.
       </p>
 
-      <button style={{
+      <button type="button" onClick={onStartStudy} style={{
         marginTop: 10,
         padding: '10px 18px',
         background: 'var(--pl-ink)', color: 'var(--pl-bg)',
@@ -399,9 +401,9 @@ function EmptyState({ hasRecords }) {
 
       <p style={{ margin: '2px 0 0', fontFamily: 'var(--pl-sans)', fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
         Ou explore o{' '}
-        <a href="#" style={{ color: 'var(--pl-accent)', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: 1, fontWeight: 600 }}>
+        <button type="button" onClick={onOpenEdital} style={{ border: 0, background: 'transparent', padding: 0, color: 'var(--pl-accent)', textDecoration: 'none', borderBottom: '1px solid currentColor', paddingBottom: 1, fontWeight: 600, cursor: 'pointer' }}>
           edital verticalizado
-        </a>
+        </button>
         {' '}antes de começar.
       </p>
     </div>

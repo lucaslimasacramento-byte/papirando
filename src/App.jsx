@@ -17,7 +17,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import { ToastProvider } from './lib/toast';
-import { showConfirm, showAlert, showToast } from './lib/dialogs';
+import { showConfirm, showToast } from './lib/dialogs';
 import CheckoutResultBanner from './components/CheckoutResultBanner';
 import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
@@ -41,7 +41,7 @@ import {
 } from './lib/audiobooks';
 
 const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
-const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'esquadroes', 'conciliar', 'instagram', 'aplicativos']);
+const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'conciliar', 'bem_estar', 'audiobooks']);
 import { loadAudiobookProgress, saveAudiobookProgress } from './lib/audiobookProgressApi';
 import {
   buildBadgeSummary,
@@ -122,11 +122,9 @@ const Estatisticas = lazy(() => import('./pages/Estatisticas'));
 const Planejamento = lazy(() => import('./pages/Planejamento'));
 const Assinatura = lazy(() => import('./pages/Assinatura'));
 const BemEstar = lazy(() => import('./pages/BemEstar'));
-const Aplicativos = lazy(() => import('./pages/Aplicativos'));
 const ConvideGanhe = lazy(() => import('./pages/ConvideGanhe'));
 const Perfil = lazy(() => import('./pages/Perfil'));
 const Comunidades = lazy(() => import('./pages/Comunidades'));
-const Esquadroes = lazy(() => import('./pages/Esquadroes'));
 const Conciliador = lazy(() => import('./pages/Conciliador'));
 const Redacoes = lazy(() => import('./pages/Redacoes'));
 const Audiobooks = lazy(() => import('./pages/Audiobooks'));
@@ -157,7 +155,6 @@ const Revisoes = lazy(() => import('./pages/Revisoes'));
 const EditalQuestao = lazy(() => import('./pages/EditalQuestao'));
 const Historico = lazy(() => import('./pages/Historico'));
 const Login = lazy(() => import('./pages/Login'));
-const Instagram = lazy(() => import('./pages/Instagram'));
 const Termos = lazy(() => import('./pages/Termos'));
 const Privacidade = lazy(() => import('./pages/Privacidade'));
 
@@ -245,7 +242,7 @@ function stripOAuthErrorFromLocation() {
   }
 }
 
-function EditorialTopStrip({ activeTab, setActiveTab }) {
+function EditorialTopStrip({ activeTab, setActiveTab, darkMode = false }) {
   const tabs = [
     { id: 'home', label: 'Dashboard' },
     { id: 'questoes', label: 'Questões' },
@@ -263,13 +260,29 @@ function EditorialTopStrip({ activeTab, setActiveTab }) {
           ? 'sessoes'
           : '';
 
+  const stripTheme = darkMode
+    ? {
+        background: '#0f0c08',
+        border: 'rgba(243, 239, 229, 0.14)',
+        active: '#f3efe5',
+        muted: 'rgba(243, 239, 229, 0.62)',
+        faint: 'rgba(243, 239, 229, 0.40)',
+      }
+    : {
+        background: '#efe8d8',
+        border: 'rgba(20, 17, 13, 0.14)',
+        active: '#14110d',
+        muted: 'rgba(20, 17, 13, 0.58)',
+        faint: 'rgba(20, 17, 13, 0.36)',
+      };
+
   return (
     <div
       className="fixed inset-x-0 top-0 z-[70] flex h-11 items-center border-b"
       style={{
-        background: 'var(--pl-ink, #14110d)',
-        borderColor: 'rgba(243, 239, 229, 0.12)',
-        color: 'var(--pl-bg, #f3efe5)',
+        background: stripTheme.background,
+        borderColor: stripTheme.border,
+        color: stripTheme.active,
         maxWidth: '100vw',
         overflowX: 'hidden',
       }}
@@ -277,13 +290,13 @@ function EditorialTopStrip({ activeTab, setActiveTab }) {
       <button
         type="button"
         onClick={() => setActiveTab('home')}
-        className="flex h-full w-[88px] items-center justify-center border-r"
-        style={{ borderColor: 'rgba(243, 239, 229, 0.12)' }}
+        className="flex h-full w-14 items-center justify-center border-r md:w-[88px]"
+        style={{ borderColor: stripTheme.border, color: stripTheme.active }}
         aria-label="Papirando"
       >
         <span style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1 }}>P</span>
       </button>
-      <nav className="flex h-full min-w-0 flex-1 items-center">
+      <nav className="hidden h-full min-w-0 flex-1 items-center md:flex">
         {tabs.map((tab) => {
           const isActive = activeId === tab.id;
           return (
@@ -293,22 +306,22 @@ function EditorialTopStrip({ activeTab, setActiveTab }) {
               onClick={() => setActiveTab(tab.id)}
               className="relative flex h-full items-center px-6 text-sm font-semibold transition"
               style={{
-                color: isActive ? 'var(--pl-bg, #f3efe5)' : 'rgba(243, 239, 229, 0.55)',
+                color: isActive ? stripTheme.active : stripTheme.muted,
               }}
             >
               {tab.label}
               {isActive ? (
                 <span
                   className="absolute inset-x-5 bottom-0 h-px"
-                  style={{ background: 'var(--pl-bg, #f3efe5)' }}
+                  style={{ background: stripTheme.active }}
                 />
               ) : null}
             </button>
           );
         })}
       </nav>
-      <div className="hidden shrink-0 items-center gap-2 px-5 text-[11px] font-semibold md:flex" style={{ color: 'rgba(243, 239, 229, 0.55)' }}>
-        <span style={{ color: 'rgba(243, 239, 229, 0.38)' }}>✣</span>
+      <div className="hidden shrink-0 items-center gap-2 px-5 text-[11px] font-semibold md:flex" style={{ color: stripTheme.muted }}>
+        <span style={{ color: stripTheme.faint }}>✣</span>
         Aplicação editorial · 16 mai 2026
       </div>
     </div>
@@ -699,15 +712,15 @@ export default function App() {
     }
   };
 
-  const normalizeLegacyCourseText = (value) =>
+  const normalizeLegacyCourseText = useCallback((value) =>
     String(value || '')
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, ' ')
-      .trim();
+      .trim(), []);
 
-  const isLegacyDemoCourse = (course = {}) => {
+  const isLegacyDemoCourse = useCallback((course = {}) => {
     const text = normalizeLegacyCourseText([course.id, course.nome, course.plano, course.concurso, course.cargo].join(' '));
     return (
       text.includes('curso-pmba-soldado-2026') ||
@@ -715,7 +728,7 @@ export default function App() {
       (text.includes('policia militar do estado da bahia') && text.includes('soldado')) ||
       (text.includes('adab 2026') && text.includes('fiscal estadual agropecuario'))
     );
-  };
+  }, [normalizeLegacyCourseText]);
 
   const sanitizeStoredCourses = (courses) => {
     if (!Array.isArray(courses)) return [];
@@ -782,7 +795,6 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showOnboardingPreview, setShowOnboardingPreview] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('pl-dark') === '1');
-  const theme = { primary: '#1e3a5f', sidebarBg: '#14110d', bg: '#f3efe5' };
 
   useEffect(() => {
     document.documentElement.classList.toggle('pl-theme-dark', darkMode);
@@ -1373,7 +1385,6 @@ export default function App() {
         })
       );
       setSelectedCommunitySquadId(localMatch.id);
-      setActiveTab('esquadroes');
       try {
         sessionStorage.setItem(handledKey, '1');
       } catch {
@@ -1405,7 +1416,6 @@ export default function App() {
         });
       });
       setSelectedCommunitySquadId(shaped.id);
-      setActiveTab('esquadroes');
       try {
         sessionStorage.setItem(handledKey, '1');
       } catch {
@@ -1503,15 +1513,17 @@ export default function App() {
     refresh: refreshSubscription,
   } = useSubscription(currentUserId);
 
-  // isElitePlan / isPremiumPlan: tabela Stripe tem prioridade; fallback para profile (beta manual)
-  const isElitePlan =
-    (isStripeActive && stripePlanName === 'elite') ||
-    (!isStripeActive && ['elite', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase()));
+  // Modelo 2 tiers: Folha (free) e Papiro (pago). 'tatico'/'elite'/'beta' são aliases legados de pago.
+  // useSubscription normaliza plan_name para 'gratuito'|'papiro', então comparar com 'papiro'.
+  // Tabela subscriptions (Asaas) tem prioridade; fallback para profile (beta/manual).
+  const profilePlanRaw = String(effectiveProfile?.subscription_plan || '').toLowerCase();
+  const hasPaidProfilePlan = ['papiro', 'elite', 'tatico', 'beta'].includes(profilePlanRaw);
 
-  const isPremiumPlan =
-    isAdmin ||
-    isStripeActive ||
-    ['elite', 'tatico', 'beta'].includes(String(effectiveProfile?.subscription_plan || '').toLowerCase());
+  const isElitePlan =
+    (isStripeActive && stripePlanName === 'papiro') ||
+    (!isStripeActive && hasPaidProfilePlan);
+
+  const isPremiumPlan = isAdmin || isStripeActive || hasPaidProfilePlan;
 
   const selectedContestDetail = findGroupedContestById(contestLibrary, selectedContestDetailId);
   const communityRankings = useMemo(
@@ -2551,7 +2563,7 @@ export default function App() {
 
       return inferidos.length > 0 ? [...prev, ...inferidos] : prev;
     });
-  }, [bancoDisciplinas]);
+  }, [bancoDisciplinas, isLegacyDemoCourse]);
 
   useEffect(() => {
     setCursos((prev) => {
@@ -2583,7 +2595,7 @@ export default function App() {
 
       return changed ? cleaned : prev;
     });
-  }, [bancoDisciplinas]);
+  }, [bancoDisciplinas, isLegacyDemoCourse]);
 
   useEffect(() => {
     let ignore = false;
@@ -3931,19 +3943,31 @@ export default function App() {
             prev.map((item) => (item.id === normalized.id ? { ...item, id: data.id } : item))
           );
         })
-        .catch(console.warn);
+        .catch((error) => {
+          console.error('[App] erro ao salvar lembrete no Supabase:', error?.message || error);
+          showToast('O lembrete não foi salvo no servidor — ele pode sumir ao recarregar. Verifique a conexão e salve de novo.', 'error');
+        });
     }
   };
 
   const handleDeleteManualReminder = (reminderId) => {
     setManualReminders((prev) => prev.filter((item) => item.id !== reminderId));
     if (currentUserId && reminderId) {
+      // Builders do PostgREST resolvem com { error } — não rejeitam; checar explicitamente.
       supabase
         .from('calendar_reminders')
         .delete()
         .eq('id', reminderId)
         .eq('user_id', currentUserId)
-        .catch(console.warn);
+        .then(({ error }) => {
+          if (!error) return;
+          console.error('[App] erro ao excluir lembrete no Supabase:', error.message || error);
+          showToast('Não foi possível excluir o lembrete no servidor — ele pode reaparecer ao recarregar.', 'error');
+        })
+        .catch((error) => {
+          console.error('[App] erro ao excluir lembrete no Supabase:', error?.message || error);
+          showToast('Não foi possível excluir o lembrete no servidor — ele pode reaparecer ao recarregar.', 'error');
+        });
     }
   };
 
@@ -4743,9 +4767,9 @@ export default function App() {
       return profile.max_courses;
     }
 
-    const plan = profile.subscription_plan || 'gratuito';
-    if (plan === 'elite') return 30;
-    if (plan === 'tatico') return 8;
+    const plan = String(profile.subscription_plan || 'gratuito').toLowerCase();
+    if (['papiro', 'elite', 'beta'].includes(plan)) return 30;
+    if (plan === 'tatico') return 8; // alias legado (tier intermediário antigo)
     return 3;
   };
 
@@ -4819,7 +4843,7 @@ export default function App() {
     throw new Error('Sessao expirada. Faca login novamente para continuar.');
   };
 
-  const uploadContestAsset = async ({ file, bucket, folder, existingUrl = '' }) => {
+  const uploadContestAsset = async ({ file, bucket, existingUrl = '' }) => {
     const adminSession = await ensureAdminSession();
 
     if (!file) throw new Error('Selecione um arquivo antes de enviar.');
@@ -6667,9 +6691,9 @@ export default function App() {
       <ToastProvider>
       <div
         className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden pt-11 font-sans text-slate-800"
-        style={{ backgroundColor: 'var(--pl-bg, #f3efe5)' }}
+        style={{ backgroundColor: 'var(--pl-bg, #f3efe5)', color: 'var(--pl-ink)' }}
       >
-      <EditorialTopStrip activeTab={activeTab} setActiveTab={setActiveTab} />
+      <EditorialTopStrip activeTab={activeTab} setActiveTab={setActiveTab} darkMode={darkMode} />
       {chartTooltip && (
         <div
           className="pointer-events-none fixed z-[9999] flex -translate-x-1/2 -translate-y-full transform items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-lg mt-[-10px]"
@@ -6690,9 +6714,9 @@ export default function App() {
       ) : null}
 
       <div
-        className={`fixed inset-y-0 left-0 z-50 flex h-[100dvh] min-h-0 shrink-0 flex-col transition-transform duration-200 ease-out lg:static lg:z-auto lg:h-full lg:max-h-none lg:translate-x-0 ${
-          mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } `}
+        className={`pl-mobile-sidebar-shell fixed inset-y-0 left-0 z-50 flex h-[100dvh] min-h-0 shrink-0 flex-col transition-transform duration-200 ease-out lg:static lg:z-auto lg:h-full lg:max-h-none ${
+          mobileNavOpen ? 'is-open' : ''
+        }`}
       >
         <Sidebar
           activeTab={activeTab}
@@ -7186,6 +7210,8 @@ export default function App() {
               setIsFilterPanelOpen={setIsFilterPanelOpen}
               setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
               handleDisciplineClick={handleDisciplineClick}
+              onOpenEdital={() => setActiveTab('edital')}
+              onStartStudy={() => setRegistroEstudoModalOpen(true)}
             />
           )}
 

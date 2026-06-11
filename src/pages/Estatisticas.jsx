@@ -125,7 +125,6 @@ function EstatisticasHeader({ onFiltros }) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button type="button" className="pl-btn pl-btn-ghost">Matérias padronizadas</button>
           <button type="button" className="pl-btn pl-btn-secondary" onClick={onFiltros}>
             <Filter size={14} />
             Filtros avançados
@@ -398,7 +397,7 @@ function buildEvolution(history, period) {
     days.set(day, current);
   });
   const sorted = [...days.entries()].sort().slice(-period);
-  return sorted.map(([_, value], index) => {
+  return sorted.map(([, value], index) => {
     const total = value.acertos + value.erros;
     return { dia: index + 1, valor: total > 0 ? Math.round((value.acertos / total) * 100) : 0 };
   });

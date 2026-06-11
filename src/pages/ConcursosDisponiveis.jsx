@@ -420,7 +420,7 @@ export default function ConcursosDisponiveis({
             <section key={area}>
               <AreaSectionHeader area={areaToken} count={contests.length} />
               {viewMode === 'vitrine' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, marginTop: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(292px, 1fr))', gap: 14, marginTop: 14 }}>
                   {contests.map((contest) => {
                     const imported = cursos.some(
                       (curso) => curso.plano === contest.plano || curso.nome === contest.nome || curso.concurso === contest.concurso
@@ -1046,24 +1046,32 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
   ].filter((item) => item.value !== '' && item.value != null);
 
   return (
-    <article className="pl-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ height: 168, position: 'relative', background: `linear-gradient(135deg, ${area.cover} 0%, ${area.coverGlow} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle, ${area.coverGlow} 0%, transparent 70%)`, opacity: 0.5 }} />
+    <article className="pl-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 330 }}>
+      <div style={{ minHeight: 74, position: 'relative', background: `linear-gradient(135deg, ${area.cover} 0%, ${area.coverGlow} 100%)`, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px' }}>
+        <div style={{ position: 'absolute', top: -54, right: -42, width: 150, height: 150, borderRadius: '50%', background: `radial-gradient(circle, ${area.coverGlow} 0%, transparent 70%)`, opacity: 0.42 }} />
         {concurso.imagem_url ? (
-          <img src={concurso.imagem_url} alt={concurso.nome} style={{ position: 'relative', zIndex: 1, maxWidth: 98, maxHeight: 98, objectFit: 'contain', filter: 'drop-shadow(0 18px 24px rgba(0,0,0,0.32))' }} />
+          <img src={concurso.imagem_url} alt={concurso.nome} style={{ position: 'relative', zIndex: 1, width: 50, height: 50, objectFit: 'contain', filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.32))', flexShrink: 0 }} />
         ) : (
-          <div style={{ position: 'relative', zIndex: 1, width: 88, height: 88, borderRadius: 18, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.12)', color: '#f3efe5', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-            <LibraryBig size={48} />
+          <div style={{ position: 'relative', zIndex: 1, width: 50, height: 50, borderRadius: 12, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.12)', color: '#f3efe5', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', flexShrink: 0 }}>
+            <LibraryBig size={26} />
           </div>
         )}
+        <div style={{ position: 'relative', zIndex: 1, minWidth: 0, flex: 1 }}>
+          <p style={{ margin: 0, fontSize: 10, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.62)' }}>
+            {concurso.banca || 'Banca a definir'}
+          </p>
+          <h3 style={{ margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16, lineHeight: 1.12, fontWeight: 800, color: '#f3efe5', letterSpacing: '-0.015em' }}>
+            {concurso.nome}
+          </h3>
+        </div>
         {imported && (
-          <div style={{ position: 'absolute', top: 12, right: 12, padding: '4px 8px', borderRadius: 4, background: 'rgba(243,239,229,0.15)', border: '1px solid rgba(243,239,229,0.20)', color: '#f3efe5', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', backdropFilter: 'blur(4px)' }}>
+          <div style={{ position: 'relative', zIndex: 1, padding: '4px 8px', borderRadius: 4, background: 'rgba(243,239,229,0.15)', border: '1px solid rgba(243,239,229,0.20)', color: '#f3efe5', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', backdropFilter: 'blur(4px)', flexShrink: 0 }}>
             Importado
           </div>
         )}
       </div>
 
-      <div style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+      <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <span className="pl-tag" style={{ background: area.chip, color: area.chipInk, textTransform: 'uppercase', fontSize: 10 }}>{area.label}</span>
           <span className={`pl-tag ${statusTone === 'neutral' ? '' : `pl-tag-${statusTone}`}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>
@@ -1072,20 +1080,17 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
         </div>
 
         <div>
-          <h3 style={{ margin: 0, fontSize: 20, lineHeight: 1.2, fontWeight: 800, color: 'var(--pl-ink)', letterSpacing: '-0.015em' }}>{concurso.nome}</h3>
-          <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.35, color: 'var(--pl-ink-2)', fontWeight: 600 }}>{concurso.cargo || concurso.concurso}</p>
+          <p style={{ margin: 0, minHeight: 32, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, lineHeight: 1.32, color: 'var(--pl-ink-2)', fontWeight: 600 }}>{concurso.cargo || concurso.concurso}</p>
         </div>
 
         {hasMultipleRoles && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-            {cargos.slice(0, 3).map((cargo) => <span key={cargo.id} className="pl-tag">{cargo.nome}</span>)}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 25, overflow: 'hidden' }}>
+            {cargos.slice(0, 2).map((cargo) => <span key={cargo.id} className="pl-tag">{cargo.nome}</span>)}
             {cargos.length > 3 && <span className="pl-tag">+{cargos.length - 3}</span>}
           </div>
         )}
 
-        <div style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 700 }}>{concurso.banca || 'Banca a definir'}</div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6 }}>
           {stats.map((item) => <ContestStat key={item.label} {...item} />)}
         </div>
 
@@ -1108,9 +1113,9 @@ function ContestStat({ label, value, tone }) {
         tone === 'accent' ? 'var(--pl-accent-2)' :
           'var(--pl-ink)';
   return (
-    <div style={{ padding: '8px 10px', border: '1px solid var(--pl-rule-2)', borderRadius: 4, background: 'var(--pl-surface-2)', minWidth: 0 }}>
-      <div className="pl-eyebrow" style={{ fontSize: 9 }}>{label}</div>
-      <div style={{ fontSize: 13, fontWeight: 800, marginTop: 3, color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
+    <div style={{ padding: '7px 9px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)', minWidth: 0 }}>
+      <div className="pl-eyebrow" style={{ fontSize: 8.5 }}>{label}</div>
+      <div style={{ fontSize: 12, fontWeight: 800, marginTop: 2, color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
     </div>
   );
 }

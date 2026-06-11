@@ -8,6 +8,7 @@ export default function RegistroSimuladoModal({
   setRegistroSimuladoModalOpen,
   onSaveSimulado,
   initialDraft = null,
+  bancoDisciplinas = [],
 }) {
   const [simuladoRows, setSimuladoRows] = useState([DEFAULT_ROW]);
   const [simuladoData, setSimuladoData] = useState(() => new Date().toISOString().slice(0, 10));
@@ -18,22 +19,38 @@ export default function RegistroSimuladoModal({
   const [comentarios, setComentarios] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const mockTopicos = {
-    'Direito Constitucional': [
-      'Direitos Fundamentais (Art. 5º)',
-      'Nacionalidade',
-      'Poder Executivo',
-      'Controle de Constitucionalidade',
-    ],
-    'Direito Administrativo': [
-      'Atos Administrativos',
-      'Poderes da Administração',
-      'Licitações (Lei 14.133)',
-      'Improbidade Administrativa',
-    ],
-    'Língua Portuguesa': ['Compreensão de Textos', 'Morfossintaxe', 'Crase', 'Concordância Verbal e Nominal'],
-    Informática: ['Segurança da Informação', 'Sistemas Operacionais', 'Redes de Computadores'],
-  };
+  const disciplineOptions = useMemo(() => {
+    const byName = new Map();
+    (Array.isArray(bancoDisciplinas) ? bancoDisciplinas : []).forEach((discipline) => {
+      const name = String(discipline?.nome || discipline?.disciplina || discipline?.name || '').trim();
+      if (!name) return;
+      const topics = Array.isArray(discipline?.topicos)
+        ? discipline.topicos
+        : Array.isArray(discipline?.topics)
+          ? discipline.topics
+          : [];
+      const topicNames = topics
+        .map((topic) => String(topic?.nome || topic?.topico || topic?.name || topic?.titulo || topic || '').trim())
+        .filter(Boolean);
+      const current = byName.get(name) || new Set();
+      topicNames.forEach((topicName) => current.add(topicName));
+      byName.set(name, current);
+    });
+
+    return Array.from(byName.entries())
+      .sort(([first], [second]) => first.localeCompare(second, 'pt-BR'))
+      .map(([name, topicSet]) => ({
+        name,
+        topics: Array.from(topicSet).sort((first, second) => first.localeCompare(second, 'pt-BR')),
+      }));
+  }, [bancoDisciplinas]);
+
+  const topicsByDiscipline = useMemo(() => {
+    return disciplineOptions.reduce((acc, discipline) => {
+      acc[discipline.name] = discipline.topics;
+      return acc;
+    }, {});
+  }, [disciplineOptions]);
 
   const totals = useMemo(() => {
     const brancos = simuladoRows.reduce((acc, row) => acc + Number(row.brancos || 0), 0);
@@ -214,10 +231,11 @@ export default function RegistroSimuladoModal({
                       }}
                     >
                       <option value="">Selecione a disciplina...</option>
-                      <option value="Direito Constitucional">Direito Constitucional</option>
-                      <option value="Direito Administrativo">Direito Administrativo</option>
-                      <option value="Língua Portuguesa">Língua Portuguesa</option>
-                      <option value="Informática">Informática</option>
+                      {disciplineOptions.map((discipline) => (
+                        <option key={discipline.name} value={discipline.name}>
+                          {discipline.name}
+                        </option>
+                      ))}
                     </select>
 
                     {row.disciplina ? (
@@ -227,7 +245,7 @@ export default function RegistroSimuladoModal({
                         onChange={(e) => updateSimuladoRow(row.id, 'topico', e.target.value)}
                       >
                         <option value="">Geral / Todos os assuntos</option>
-                        {(mockTopicos[row.disciplina] || []).map((topico) => (
+                        {(topicsByDiscipline[row.disciplina] || []).map((topico) => (
                           <option key={topico} value={topico}>
                             {topico}
                           </option>

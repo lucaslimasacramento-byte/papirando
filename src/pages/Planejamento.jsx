@@ -284,10 +284,9 @@ function PlanejamentoContent({
       subjectCatalog: safeSubjectCatalog,
     });
   }, [safeTargetDisciplines, cycleSourceDisciplines, safeSubjectCatalog]);
-  const [agendaViewMode, setAgendaViewMode] = useState('kanban');
   const [localCalViewMode, setLocalCalViewMode] = useState('mes');
   const [localCurrentDate, setLocalCurrentDate] = useState(new Date());
-  const [planningFilters, setPlanningFilters] = useState(DEFAULT_FILTERS);
+  const [planningFilters] = useState(DEFAULT_FILTERS);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [planningWizardAutoDismissed, setPlanningWizardAutoDismissed] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -306,9 +305,6 @@ function PlanejamentoContent({
   const [wizardMinDuration, setWizardMinDuration] = useState(Number(safePlanningSessionWindow.minMinutes || 60));
   const [wizardMaxDuration, setWizardMaxDuration] = useState(Number(safePlanningSessionWindow.maxMinutes || 120));
   const [wizardSubjectsPerDay, setWizardSubjectsPerDay] = useState(Number(safePlanningSessionWindow.subjectsPerDay || 2));
-  const [kanbanMenuOpen, setKanbanMenuOpen] = useState('');
-  const [draggedTaskId, setDraggedTaskId] = useState('');
-  const [dragOverColumn, setDragOverColumn] = useState('');
   const [aiSchedule, setAiSchedule] = useState(null);
   const [aiScheduleLoading, setAiScheduleLoading] = useState(false);
   const [aiScheduleError, setAiScheduleError] = useState('');
@@ -317,7 +313,7 @@ function PlanejamentoContent({
   const setCalViewMode = setSharedCalendarViewMode || setLocalCalViewMode;
   const currentDate = sharedCalendarDate || localCurrentDate;
   const setCurrentDate = setSharedCalendarDate || setLocalCurrentDate;
-  const [taskStatusMap, setTaskStatusMap] = useState(() => {
+  const [taskStatusMap] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('papirando_planning_task_status') || '{}');
       return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
@@ -330,7 +326,7 @@ function PlanejamentoContent({
     localStorage.setItem('papirando_planning_task_status', JSON.stringify(taskStatusMap));
   }, [taskStatusMap]);
 
-  const [removedPlanningTaskIds, setRemovedPlanningTaskIds] = useState(() => {
+  const [removedPlanningTaskIds] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(PLANNING_REMOVED_TASKS_KEY) || '{}');
       return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
@@ -478,16 +474,7 @@ function PlanejamentoContent({
         .map((day) => new Date(currentDate.getFullYear(), currentDate.getMonth(), Number(day))),
     [currentMonthGrid, currentDate]
   );
-  const selectedCourseLabels = safeCourseOptions.filter((course) => activePlans.includes(course.plano));
   const activeDays = safeAvailability.filter((day) => day?.enabled).length;
-  const turnosAtivos = safeAvailability.reduce(
-    (acc, day) => acc + (day?.slots || []).filter((slot) => slot?.enabled && Number(slot?.minutes || 0) > 0).length,
-    0
-  );
-  const rhythmPercent =
-    Number(summary.requiredMinutesPerWeek || 0) > 0
-      ? Math.max(0, Math.min(100, Math.round((Number(summary.weeklyMinutes || 0) / Number(summary.requiredMinutesPerWeek || 1)) * 100)))
-      : 100;
 
   const sessionsByDay = useMemo(
     () => Object.fromEntries((weeklyPlan?.days || []).map((day) => [day.id, day.sessions || []])),
@@ -548,28 +535,6 @@ function PlanejamentoContent({
     () => calendarEvents.filter((event) => matchesFilter(event, planningFilters)),
     [calendarEvents, planningFilters]
   );
-
-  const kanbanTasks = useMemo(() => {
-    return currentWeek.flatMap((date) => {
-      const weekdayId = getWeekdayId(date);
-      return (sessionsByDay[weekdayId] || []).map((session, index) => {
-        const taskId = `${toDateKey(date)}-${session.id}-${index}`;
-        return {
-          id: taskId,
-          titulo: session.title,
-          data: toDateKey(date),
-          hora: getSlotTimeLabel(session.slotId),
-          tipo: getSessionType(session),
-          cor: getSessionColor(session, index, planningSubjectColors),
-          detail: session.detail,
-          recommendation: session.recommendation || null,
-          status: taskStatusMap[taskId] || getDefaultTaskStatus(date),
-        };
-      });
-    })
-      .filter((task) => matchesFilter(task, planningFilters))
-      .filter((task) => !removedPlanningTaskIds[task.id]);
-  }, [currentWeek, sessionsByDay, taskStatusMap, planningFilters, planningSubjectColors, removedPlanningTaskIds]);
 
   useEffect(() => {
     if (!wizardOpen) return;
@@ -733,54 +698,6 @@ function PlanejamentoContent({
     pace: summary.paceLabel || 'ritmo sob controle',
   };
 
-  function handleStatusChange(taskId, status) {
-    setTaskStatusMap((prev) => ({ ...prev, [taskId]: status }));
-
-    if (status !== 'Concluido' || !currentUserId) return;
-
-    const relatedTask = kanbanTasks.find((task) => task.id === taskId);
-    const disciplina = String(
-      relatedTask?.recommendation?.nome ||
-        relatedTask?.recommendation?.disciplina ||
-        relatedTask?.titulo ||
-        ''
-    ).trim();
-
-    if (!disciplina) return;
-
-    markWeeklyGoalAsCompleted({
-      userId: currentUserId,
-      mondayIso: getCurrentWeekMondayIso(),
-      disciplina,
-    }).catch(console.warn);
-  }
-
-  function handleRemovePlanningTask(taskId) {
-    if (!window.confirm('Remover este bloco do planejamento? Ele some do calendário e do quadro.')) return;
-    setRemovedPlanningTaskIds((prev) => ({ ...prev, [taskId]: true }));
-    setTaskStatusMap((prev) => {
-      const next = { ...prev };
-      delete next[taskId];
-      return next;
-    });
-    setKanbanMenuOpen('');
-    setDraggedTaskId('');
-    setDragOverColumn('');
-  }
-
-  function handleDragStart(event, taskId) {
-    setDraggedTaskId(taskId);
-    event.dataTransfer.setData('text/plain', taskId);
-  }
-
-  function handleDrop(event, status) {
-    event.preventDefault();
-    if (!draggedTaskId) return;
-    handleStatusChange(draggedTaskId, status);
-    setDraggedTaskId('');
-    setDragOverColumn('');
-  }
-
   async function handleGenerateAiSchedule() {
     if (aiScheduleLoading) return;
 
@@ -807,7 +724,7 @@ function PlanejamentoContent({
 
       setAiSchedule(result);
     } catch (error) {
-      setAiScheduleError(error?.message || 'Nao foi possivel gerar o cronograma com IA.');
+      setAiScheduleError(error?.message || 'Não foi possível gerar o cronograma com IA.');
     } finally {
       setAiScheduleLoading(false);
     }
@@ -1649,7 +1566,7 @@ function CalendarCard({ currentDate, currentWeek, currentMonthGrid, calViewMode,
       : `Semana de ${currentWeek[0].getDate()}/${currentWeek[0].getMonth() + 1}`;
   const cells =
     calViewMode === 'mes'
-      ? currentMonthGrid.map((day, index) => (day ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day) : null))
+      ? currentMonthGrid.map((day) => (day ? new Date(currentDate.getFullYear(), currentDate.getMonth(), day) : null))
       : currentWeek;
 
   return (
@@ -1797,7 +1714,7 @@ function TagPill({ label, color, soft = false }) {
 }
 
 function WizardStepper({ step }) {
-  const steps = ['Organizacao', 'Disciplinas', 'Relevancia', 'Horarios'];
+  const steps = ['Organização', 'Disciplinas', 'Relevância', 'Horários'];
 
   return (
     <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -2061,59 +1978,6 @@ async function savePlanningToSupabase({ userId, availability = [], goals = [] })
   if (fallback.error) throw fallback.error;
 }
 
-async function markWeeklyGoalAsCompleted({ userId, mondayIso, disciplina }) {
-  const primary = await supabase
-    .from('weekly_goals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('semana_inicio', mondayIso)
-    .eq('disciplina', disciplina)
-    .limit(1)
-    .maybeSingle();
-
-  if (!primary.error && primary.data) {
-    const targetMinutes =
-      Number(primary.data.meta_minutos || 0) ||
-      Math.round(Number(primary.data.horas_meta || 0) * 60) ||
-      Math.round(Number(primary.data.meta_horas || 0) * 60);
-
-    if (targetMinutes > 0) {
-      await supabase
-        .from('weekly_goals')
-        .update({ concluido_minutos: targetMinutes })
-        .eq('user_id', userId)
-        .eq('semana_inicio', mondayIso)
-        .eq('disciplina', disciplina);
-    }
-    return;
-  }
-
-  const fallback = await supabase
-    .from('weekly_goals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('week_start', mondayIso)
-    .eq('disciplina', disciplina)
-    .limit(1)
-    .maybeSingle();
-
-  if (fallback.error || !fallback.data) return;
-
-  const targetMinutes =
-    Number(fallback.data.meta_minutos || 0) ||
-    Math.round(Number(fallback.data.horas_meta || 0) * 60) ||
-    Math.round(Number(fallback.data.meta_horas || 0) * 60);
-
-  if (targetMinutes <= 0) return;
-
-  await supabase
-    .from('weekly_goals')
-    .update({ concluido_minutos: targetMinutes })
-    .eq('user_id', userId)
-    .eq('week_start', mondayIso)
-    .eq('disciplina', disciplina);
-}
-
 function matchesFilter(item, filters) {
   if (item.tipo === 'Concurso' || item.tipo === 'Lembrete') return true;
   if (item.tipo === 'Revisao' && !filters.revisao) return false;
@@ -2222,37 +2086,8 @@ function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-function formatDateShort(value) {
-  const parts = String(value || '').split('-');
-  return parts.length === 3 ? `${parts[2]}/${parts[1]}` : '';
-}
-
 function getWeekdayId(date) {
   return WEEKDAY_ORDER[date.getDay()];
-}
-
-function getDefaultTaskStatus(date) {
-  const today = new Date();
-  const diff = new Date(toDateKey(date)).getTime() - new Date(toDateKey(today)).getTime();
-  if (diff < 0) return 'Concluido';
-  if (diff === 0) return 'Em Andamento';
-  return 'A Fazer';
-}
-
-function buildKanbanProgress(tasks) {
-  const total = tasks.length;
-  if (total === 0) return 0;
-  const done = tasks.filter((task) => task.status === 'Concluido').length;
-  return Math.round((done / total) * 100);
-}
-
-function handlePlanAction(item, mode, onOpenRecommendedDiscipline, onStartRecommendedSession) {
-  if (mode === 'start' && item?.recommendation) {
-    onStartRecommendedSession?.(item.recommendation);
-    return;
-  }
-
-  onOpenRecommendedDiscipline?.(item?.recommendation || item?.titulo || item?.title || '');
 }
 
 function buildWizardHoursFromAvailability(availability) {

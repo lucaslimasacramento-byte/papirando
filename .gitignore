@@ -25,6 +25,7 @@ build/
 
 # Logs
 *.log
+.tmp-vite-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -50,6 +51,12 @@ desktop.ini
 
 # Vite cache
 .vite/
+.tmp-previews/
+
+# Arquivos temporários e previews locais
+tmp_*
+*.tmp
+*-preview.png
 
 # TypeScript
 *.tsbuildinfo

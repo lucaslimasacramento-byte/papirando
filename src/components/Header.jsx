@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Bell, Lightbulb, LogOut, Menu, Moon, Megaphone, Search, Send, ShieldAlert, Sparkles, Sun, UserCircle2, X } from 'lucide-react';
+import { Bell, LogOut, Menu, Moon, Megaphone, Search, Send, ShieldAlert, Sun, UserCircle2, X } from 'lucide-react';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
 
@@ -65,8 +65,6 @@ export default function Header({
   activeTab,
   notifications = [],
   onOpenNotification,
-  currentUserEmail = '',
-  currentUsername = '',
   profileHasValidCpf = true,
   onOpenProfile,
   onLogout,
@@ -88,18 +86,6 @@ export default function Header({
   const [broadcastText, setBroadcastText] = useState('');
   const [broadcastSending, setBroadcastSending] = useState(false);
   const broadcastRef = useRef(null);
-
-  const displayName = useMemo(() => {
-    const capitalizeFirst = (value = '') => {
-      const text = String(value || '').trim();
-      if (!text) return '';
-      return text.charAt(0).toUpperCase() + text.slice(1);
-    };
-    if (String(currentUsername || '').trim()) return capitalizeFirst(currentUsername);
-    const raw = String(currentUserEmail || '').trim();
-    if (!raw) return 'Minha conta';
-    return capitalizeFirst(raw.split('@')[0]);
-  }, [currentUserEmail, currentUsername]);
 
   const searchItems = useMemo(
     () => (isAdmin ? [...SEARCH_ITEMS_BASE, ...SEARCH_ITEMS_ADMIN] : SEARCH_ITEMS_BASE),
@@ -276,26 +262,6 @@ export default function Header({
         {typeof onOpenAssinatura === 'function' && (
           <SubscriptionPlanSeal planId={subscriptionPlan} onClick={onOpenAssinatura} />
         )}
-
-        <button
-          type="button"
-          title="Em breve: assistente IA da plataforma para orientar estudos, materiais e próximos passos."
-          onClick={() => {}}
-          style={{
-            display: 'none',
-            alignItems: 'center', gap: 5,
-            height: 28, padding: '0 10px', borderRadius: 6,
-            border: '1px solid var(--pl-rule-strong)',
-            background: 'var(--pl-surface-2)',
-            fontSize: 11.5, fontWeight: 600, color: 'var(--pl-ink-3)',
-            cursor: 'pointer',
-          }}
-          className="md:!flex"
-        >
-          <Lightbulb size={12} strokeWidth={1.75} />
-          <Sparkles size={11} strokeWidth={1.75} style={{ color: 'var(--pl-accent)' }} />
-          <span className="hidden lg:inline">Assistente</span>
-        </button>
 
         {/* Dark mode toggle */}
         {typeof onToggleDarkMode === 'function' && (

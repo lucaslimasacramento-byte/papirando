@@ -49,13 +49,9 @@ function resolveAudiobookAudioSrc(url) {
 
 export default function Audiobooks(props) {
   const {
-    profile = {},
-    bancoDisciplinas = [],
     catalog = [],
     audiobookState = {},
     onSaveAudiobookState,
-    onOpenDiscipline,
-    onOpenProfile,
   } = props;
 
   const audioRef = useRef(null);

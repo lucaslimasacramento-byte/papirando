@@ -4,22 +4,38 @@
  */
 
 export const PLAN_CONFIG = {
+  // ── Planos atuais (modelo 2 tiers) ──
+  folha: {
+    label: 'Folha',
+    preco_mensal: 0,
+    preco_anual: 0,
+    max_courses: 3,
+    max_questions_per_day: 10,
+  },
+  papiro: {
+    label: 'Papiro',
+    preco_mensal: 19.9,
+    preco_anual: 13.33, // R$159,90/ano ÷ 12
+    max_courses: null,
+    max_questions_per_day: null,
+  },
+  // ── Aliases legados (assinaturas antigas ainda podem ter esses nomes no banco) ──
   gratuito: {
-    label: 'Gratuito',
+    label: 'Gratuito (legado)',
     preco_mensal: 0,
     preco_anual: 0,
     max_courses: 1,
     max_questions_per_day: 15,
   },
   tatico: {
-    label: 'Tático',
+    label: 'Tático (legado)',
     preco_mensal: 49.9,
     preco_anual: 29.9,
     max_courses: null,
     max_questions_per_day: null,
   },
   elite: {
-    label: 'Elite',
+    label: 'Elite (legado)',
     preco_mensal: 89.9,
     preco_anual: 59.9,
     max_courses: null,

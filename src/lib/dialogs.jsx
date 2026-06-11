@@ -134,7 +134,6 @@ export function showAlert(message, { title = 'Atenção' } = {}) {
 
 let toastRoot = null;
 let toastContainer = null;
-const toasts = [];
 let setToastsGlobal = null;
 
 function ToastHost() {

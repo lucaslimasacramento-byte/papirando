@@ -7,11 +7,9 @@ const Estatisticas = lazy(() => import('../pages/Estatisticas'));
 const Planejamento = lazy(() => import('../pages/Planejamento'));
 const Assinatura = lazy(() => import('../pages/Assinatura'));
 const BemEstar = lazy(() => import('../pages/BemEstar'));
-const Aplicativos = lazy(() => import('../pages/Aplicativos'));
 const ConvideGanhe = lazy(() => import('../pages/ConvideGanhe'));
 const Perfil = lazy(() => import('../pages/Perfil'));
 const Comunidades = lazy(() => import('../pages/Comunidades'));
-const Esquadroes = lazy(() => import('../pages/Esquadroes'));
 const Conciliador = lazy(() => import('../pages/Conciliador'));
 const Redacoes = lazy(() => import('../pages/Redacoes'));
 const Audiobooks = lazy(() => import('../pages/Audiobooks'));
@@ -90,9 +88,7 @@ const KNOWN_TABS = [
   'materiais',
   'metas',
   'comunidades',
-  'esquadroes',
   'conciliar',
-  'aplicativos',
   'bem_estar',
   'convide_ganhe',
   'perfil',
@@ -853,6 +849,8 @@ export default function AppTabContent(props) {
         setIsFilterPanelOpen={setIsFilterPanelOpen}
         setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
         handleDisciplineClick={handleDisciplineClick}
+        onOpenEdital={() => setActiveTab('edital')}
+        onStartStudy={() => setRegistroEstudoModalOpen?.(true)}
       />
     );
   }
@@ -1086,37 +1084,9 @@ export default function AppTabContent(props) {
         persistenceMode={communityPersistence.mode}
         communitySchemaReady={communityPersistence.schemaReady}
         selectedSquadId={selectedCommunitySquadId}
-        onSelectSquad={(squadId) => {
-          setSelectedCommunitySquadId(squadId);
-          if (squadId) setActiveTab('esquadroes');
-        }}
+        onSelectSquad={setSelectedCommunitySquadId}
         />
       </div>
-    );
-  }
-
-  if (activeTab === 'esquadroes') {
-    return (
-      <Esquadroes
-        currentUserId={currentUserId}
-        profile={effectiveProfile}
-        currentUsername={effectiveProfile?.username || ''}
-        currentUserEmail={currentUserEmail}
-        squadSummary={squadSummary}
-        communityState={communityState}
-        onSaveCommunityState={handleSaveCommunityState}
-        isElite={isElitePlan || isAdmin}
-        selectedSquadId={selectedCommunitySquadId}
-        onSelectSquad={setSelectedCommunitySquadId}
-        bancoDisciplinas={bancoDisciplinas}
-        subjectCatalog={subjectCatalog}
-        myContests={myContests}
-        historicoReal={historicoReal}
-        contestLibrary={contestLibrary}
-        concursoCatalog={contestLibrary}
-        cursos={cursos}
-        targetContestId={targetContestId}
-      />
     );
   }
 
@@ -1138,8 +1108,6 @@ export default function AppTabContent(props) {
       />
     );
   }
-
-  if (activeTab === 'aplicativos') return <Aplicativos />;
 
   if (!KNOWN_TABS.includes(activeTab)) {
     return (

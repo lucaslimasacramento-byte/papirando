@@ -6,9 +6,7 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  Circle,
   CreditCard,
-  Crown,
   Download,
   FileText,
   KeyRound,
@@ -18,8 +16,6 @@ import {
   Pencil,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
-  Star,
   Trash2,
   Trophy,
   User2,
@@ -38,57 +34,6 @@ const navItems = [
   { id: 'security', label: 'Segurança', icon: ShieldCheck },
 ];
 
-/** Planos alinhados à página Assinatura (preços exibidos; contratação na área dedicada). */
-const PERFIL_PLANOS = [
-  {
-    id: 'gratuito',
-    nome: 'Gratuito',
-    descricao: 'O essencial para organizar estudos e acompanhar edital.',
-    precoMensal: '0',
-    precoAnual: '0',
-    Icon: Circle,
-    destaque: false,
-    features: [
-      'Cronômetro e registro de sessões',
-      'Edital verticalizado básico',
-      '1 ciclo de estudo ativo',
-      'Histórico resumido e limite diário de questões',
-    ],
-  },
-  {
-    id: 'tatico',
-    nome: 'Tático',
-    descricao: 'Para quem leva a aprovação a sério.',
-    precoMensal: '49,90',
-    precoAnual: '29,90',
-    Icon: Star,
-    destaque: true,
-    features: [
-      'Tudo do Gratuito',
-      'Ciclos de estudo ilimitados',
-      'Banco de questões sem limite diário',
-      'Estatísticas e dashboards avançados',
-      'IA em recursos selecionados (conforme política do plano)',
-    ],
-  },
-  {
-    id: 'elite',
-    nome: 'Elite',
-    descricao: 'Pacote completo com destaque em IA e experiência premium.',
-    precoMensal: '89,90',
-    precoAnual: '59,90',
-    Icon: Sparkles,
-    destaque: false,
-    premium: true,
-    features: [
-      'Tudo do Tático',
-      'Redações e flashcards com IA',
-      'Prioridade em novidades e selos premium',
-      'Melhor custo-benefício para uso intensivo',
-    ],
-  },
-];
-
 function formatCpf(value) {
   const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
   if (digits.length <= 3) return digits;
@@ -102,22 +47,6 @@ function formatPhone(value) {
   if (digits.length <= 2) return digits;
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-}
-
-function formatPlanLabel(plan) {
-  const normalized = String(plan || 'gratuito').toLowerCase();
-  if (normalized === 'elite') return 'Elite';
-  if (normalized === 'tatico') return 'Tático';
-  return 'Gratuito';
-}
-
-function formatSubscriptionStatus(status) {
-  const normalized = String(status || 'trial').toLowerCase();
-  if (normalized === 'active') return 'Ativa';
-  if (normalized === 'trial') return 'Trial';
-  if (normalized === 'past_due') return 'Pendente';
-  if (normalized === 'canceled') return 'Cancelada';
-  return normalized || 'Não informado';
 }
 
 function formatHours(minutes) {
@@ -300,13 +229,18 @@ function SecurityRow({ icon, label, value, helper }) {
 
 function LgpdButton({ icon, label, description, tone = 'neutral', onClick }) {
   const IconComponent = icon;
-  let bg, border, color, hoverBg;
+  let bg, border, color, iconBg, iconBorder, descriptionColor;
   if (tone === 'blue' || tone === 'accent') {
-    bg = 'var(--pl-accent-soft)'; border = 'var(--pl-accent)'; color = 'var(--pl-accent)'; hoverBg = 'var(--pl-accent-soft)';
+    bg = 'var(--pl-accent-soft)'; border = 'var(--pl-accent)'; color = 'var(--pl-accent)';
   } else if (tone === 'red' || tone === 'danger') {
-    bg = 'var(--pl-danger-soft)'; border = 'var(--pl-danger)'; color = 'var(--pl-danger)'; hoverBg = 'var(--pl-danger-soft)';
+    bg = 'color-mix(in srgb, var(--pl-danger-soft) 42%, var(--pl-surface) 58%)';
+    border = 'color-mix(in srgb, var(--pl-danger) 58%, var(--pl-rule-2) 42%)';
+    color = 'color-mix(in srgb, var(--pl-danger) 78%, var(--pl-ink) 22%)';
+    iconBg = 'color-mix(in srgb, var(--pl-danger-soft) 36%, var(--pl-bg-soft) 64%)';
+    iconBorder = 'color-mix(in srgb, var(--pl-danger) 34%, var(--pl-rule-2) 66%)';
+    descriptionColor = 'color-mix(in srgb, var(--pl-danger) 34%, var(--pl-ink-3) 66%)';
   } else {
-    bg = 'var(--pl-bg-soft)'; border = 'var(--pl-rule-2)'; color = 'var(--pl-ink-2)'; hoverBg = 'var(--pl-bg-soft)';
+    bg = 'var(--pl-bg-soft)'; border = 'var(--pl-rule-2)'; color = 'var(--pl-ink-2)';
   }
   return (
     <button
@@ -322,13 +256,14 @@ function LgpdButton({ icon, label, description, tone = 'neutral', onClick }) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-        background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)',
+        background: iconBg || 'var(--pl-surface)',
+        border: `1px solid ${iconBorder || 'var(--pl-rule-2)'}`,
       }}>
         {IconComponent && <IconComponent style={{ width: 16, height: 16 }} />}
       </div>
       <div style={{ minWidth: 0 }}>
         <p style={{ fontSize: 12.5, fontWeight: 600 }}>{label}</p>
-        <p style={{ marginTop: 1, fontSize: 11.5, color: 'var(--pl-ink-3)' }}>{description}</p>
+        <p style={{ marginTop: 1, fontSize: 11.5, color: descriptionColor || 'var(--pl-ink-3)' }}>{description}</p>
       </div>
     </button>
   );
@@ -364,7 +299,6 @@ function ActionTile({ icon, title, desc, actionLabel, onClick, disabled = false 
 
 export default function Perfil(props) {
   const {
-    setActiveTab,
     profile = {},
     profileHasValidCpf = false,
     currentUserId = '',
@@ -374,10 +308,8 @@ export default function Perfil(props) {
     essaySummary = {},
     squadSummary = { memberships: [] },
     audiobookSummary = {},
-    onOpenSquad,
     onSaveProfile,
     onChangeAvatar,
-    onLogout,
     onSessionRefresh,
     initialTab = 'overview',
   } = props;
@@ -401,10 +333,26 @@ export default function Perfil(props) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [remoteProfile, setRemoteProfile] = useState(null);
-  const [planoPrecoAnual, setPlanoPrecoAnual] = useState(true);
+  const [remoteLoadFailed, setRemoteLoadFailed] = useState(false);
+  const [remoteRetrying, setRemoteRetrying] = useState(false);
   const [showBadgeCatalog, setShowBadgeCatalog] = useState(false);
   const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [goalBusy, setGoalBusy] = useState(false);
   const fileInputRef = useRef(null);
+
+  const handleStudyGoalChange = async (newGoal) => {
+    if (!currentUserId || goalBusy) return;
+    setGoalBusy(true);
+    try {
+      await supabase.from('profiles').update({ study_goal: newGoal }).eq('id', currentUserId);
+      showToast('Objetivo atualizado!', 'success');
+      await loadRemoteProfile();
+    } catch {
+      showToast('Não foi possível salvar o objetivo.', 'error');
+    } finally {
+      setGoalBusy(false);
+    }
+  };
 
   const cpfDigitsPreview = useMemo(() => normalizeCpf(form.cpf || ''), [form.cpf]);
   const cpfLooksValid = cpfDigitsPreview.length === 11 && isValidCpf(cpfDigitsPreview);
@@ -446,19 +394,30 @@ export default function Perfil(props) {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
 
       if (error) {
-        if (error.code !== 'PGRST116') {
-          console.warn('Não foi possível carregar o perfil remoto:', error.message);
-        }
+        console.error('[Perfil] erro ao carregar perfil remoto:', error.message || error);
         setRemoteProfile({ email: currentUserEmail || '' });
+        setRemoteLoadFailed(true);
         return;
       }
 
       setRemoteProfile(data || { email: currentUserEmail || '' });
+      setRemoteLoadFailed(false);
     } catch (error) {
-      console.warn('Falha inesperada ao carregar perfil remoto:', error);
+      console.error('[Perfil] erro ao carregar perfil remoto:', error?.message || error);
       setRemoteProfile({ email: currentUserEmail || '' });
+      setRemoteLoadFailed(true);
     }
   }, [currentUserEmail, currentUserId]);
+
+  const handleRetryRemoteProfile = useCallback(async () => {
+    if (remoteRetrying) return;
+    setRemoteRetrying(true);
+    try {
+      await loadRemoteProfile();
+    } finally {
+      setRemoteRetrying(false);
+    }
+  }, [loadRemoteProfile, remoteRetrying]);
 
   useEffect(() => {
     let cancelled = false;
@@ -467,7 +426,7 @@ export default function Perfil(props) {
         await loadRemoteProfile();
       } catch (error) {
         if (!cancelled) {
-          console.warn('Erro ignorado ao chamar loadRemoteProfile no efeito:', error);
+          console.error('[Perfil] erro ao carregar perfil remoto no efeito:', error);
         }
       }
     })();
@@ -484,8 +443,6 @@ export default function Perfil(props) {
     .slice()
     .sort((a, b) => Number(b.progressPercent || 0) - Number(a.progressPercent || 0))[0];
   const avatarInitials = getInitials(profileData?.nome || profileData?.name, currentUserEmail);
-  const planLabel = formatPlanLabel(profileData?.subscription_plan || profileData?.plano);
-  const subscriptionStatus = formatSubscriptionStatus(profileData?.subscription_status);
   const currentPlanId = useMemo(() => {
     const raw = String(profileData?.subscription_plan || profileData?.plano || 'folha').toLowerCase();
     if (['papiro', 'elite', 'tatico'].includes(raw)) return 'papiro';
@@ -588,8 +545,7 @@ export default function Perfil(props) {
           message: result?.message || 'Não foi possível salvar o perfil. Corrija os campos indicados.',
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       setSaveState({ type: 'error', message: 'Não foi possível salvar o perfil agora.' });
     } finally {
       setSaving(false);
@@ -617,8 +573,7 @@ export default function Perfil(props) {
       setSaveState({ type: '', message: '' });
       showToast('Foto de perfil atualizada!', 'success');
       await loadRemoteProfile();
-    } catch (error) {
-      console.error(error);
+    } catch {
       setSaveState({ type: 'error', message: 'Não foi possível atualizar a foto.' });
     } finally {
       setAvatarBusy(false);
@@ -643,7 +598,6 @@ export default function Perfil(props) {
         message: `E-mail de redefinição enviado para ${accountEmail}. Verifique a caixa de entrada e o spam.`,
       });
     } catch (error) {
-      console.error(error);
       setSaveState({ type: 'error', message: error?.message || 'Não foi possível enviar o link agora.' });
     } finally {
       setPasswordBusy(false);
@@ -674,7 +628,7 @@ export default function Perfil(props) {
 
       const { error: profileError } = await supabase.from('profiles').update({ email }).eq('id', currentUserId);
       if (profileError) {
-        console.warn('Perfil: e-mail na tabela profiles não atualizado:', profileError.message);
+        console.error('[Perfil] erro ao atualizar e-mail na tabela profiles:', profileError);
       }
 
       setNewEmail('');
@@ -687,7 +641,6 @@ export default function Perfil(props) {
       await onSessionRefresh?.();
       await loadRemoteProfile();
     } catch (error) {
-      console.error(error);
       setSaveState({
         type: 'error',
         message: error?.message || 'Não foi possível alterar o e-mail. Tente novamente ou use outro endereço.',
@@ -733,7 +686,6 @@ export default function Perfil(props) {
         message: 'Senha atualizada. Nas próximas vezes use a nova senha para entrar.',
       });
     } catch (error) {
-      console.error(error);
       setSaveState({
         type: 'error',
         message: error?.message || 'Não foi possível alterar a senha.',
@@ -752,6 +704,29 @@ export default function Perfil(props) {
   return (
     <div style={{ height: activeTab === 'assinatura' ? 'auto' : '100%', overflow: activeTab === 'assinatura' ? 'visible' : 'hidden', padding: '8px 20px 14px', background: 'transparent' }}>
       <div style={{ height: activeTab === 'assinatura' ? 'auto' : '100%', maxWidth: 1540, margin: '0 auto', overflow: activeTab === 'assinatura' ? 'visible' : 'hidden' }}>
+        {remoteLoadFailed ? (
+          <div
+            role="alert"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+              marginBottom: 12, padding: '10px 14px',
+              background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', borderRadius: 6,
+            }}
+          >
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink)' }}>
+              Não foi possível carregar seus dados mais recentes. As informações exibidas podem estar desatualizadas — evite salvar alterações até recarregar.
+            </span>
+            <button
+              type="button"
+              className="pl-btn pl-btn-ghost pl-btn-sm"
+              onClick={handleRetryRemoteProfile}
+              disabled={remoteRetrying}
+            >
+              <RefreshCw size={13} className={remoteRetrying ? 'animate-spin' : undefined} />
+              {remoteRetrying ? 'Recarregando…' : 'Tentar de novo'}
+            </button>
+          </div>
+        ) : null}
         {/* KPI strip */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 12 }}>
           {heroStats.map((k) => (
@@ -1019,6 +994,45 @@ export default function Perfil(props) {
                       />
                     </div>
 
+                    {/* Study goal */}
+                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--pl-rule-2)' }}>
+                      <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Objetivo de estudos</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {[
+                          { id: 'concurso', label: 'Concurso público' },
+                          { id: 'vestibular', label: 'Vestibular / ENEM' },
+                          { id: 'faculdade', label: 'Faculdade / Pós' },
+                        ].map((opt) => {
+                          const active = (profileData?.study_goal || '') === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              disabled={goalBusy}
+                              onClick={() => handleStudyGoalChange(active ? '' : opt.id)}
+                              style={{
+                                border: `1px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                                borderRadius: 999,
+                                background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                                color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+                                padding: '7px 14px',
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: goalBusy ? 'wait' : 'pointer',
+                                opacity: goalBusy ? 0.6 : 1,
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+                        Define quais seções do menu são exibidas para você.
+                      </p>
+                    </div>
+
                     <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
                       <button
                         type="button"
@@ -1266,8 +1280,13 @@ export default function Perfil(props) {
 
                         {/* Zona de perigo */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          <p className="pl-eyebrow" style={{ marginBottom: 2, color: 'var(--pl-danger)' }}>Zona de perigo</p>
-                          <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '10px 12px' }}>
+                          <p className="pl-eyebrow" style={{ marginBottom: 2, color: 'color-mix(in srgb, var(--pl-danger) 70%, var(--pl-warn) 30%)' }}>Zona de perigo</p>
+                          <div style={{
+                            borderRadius: 12,
+                            border: '1px solid color-mix(in srgb, var(--pl-danger) 22%, var(--pl-rule-2) 78%)',
+                            background: 'color-mix(in srgb, var(--pl-danger-soft) 18%, var(--pl-surface) 82%)',
+                            padding: '10px 12px',
+                          }}>
                             <p style={{ fontSize: 12, color: 'var(--pl-ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
                               A exclusão é irreversível e pode levar até 30 dias.
                             </p>
@@ -1368,7 +1387,7 @@ export default function Perfil(props) {
                 <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Catálogo de selos</p>
                 <h3 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--pl-ink)' }}>Todos os selos disponíveis</h3>
                 <p style={{ marginTop: 6, fontSize: 13, color: 'var(--pl-ink-2)' }}>
-                  Esses selos são configurados em Admin &gt; Configurações &gt; Selos.
+                  Os selos são concedidos pela equipe Papirando.
                 </p>
               </div>
               <button type="button" className="pl-btn pl-btn-ghost" onClick={() => setShowBadgeCatalog(false)}>

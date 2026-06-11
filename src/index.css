@@ -811,6 +811,75 @@ html, body {
   line-height: 1.5;
 }
 
+.pl-theme-dark .pl-lembretes-filters {
+  --pl-reminder-filter-bg: color-mix(in srgb, var(--pl-surface) 88%, var(--pl-bg-soft) 12%);
+  --pl-reminder-filter-border: var(--pl-rule-2);
+  --pl-reminder-filter-ink: var(--pl-ink-2);
+  --pl-reminder-filter-active-bg: var(--pl-ink);
+  --pl-reminder-filter-active-border: var(--pl-ink);
+  --pl-reminder-filter-active-ink: var(--pl-bg);
+  --pl-reminder-filter-count-bg: color-mix(in srgb, var(--pl-bg-soft) 78%, var(--pl-surface) 22%);
+  --pl-reminder-filter-count-ink: var(--pl-ink-2);
+  --pl-reminder-filter-count-active-bg: color-mix(in srgb, var(--pl-bg) 90%, var(--pl-surface) 10%);
+  --pl-reminder-filter-count-active-ink: var(--pl-ink);
+  background: color-mix(in srgb, var(--pl-surface) 82%, var(--pl-bg-soft) 18%);
+  border-color: var(--pl-rule-2);
+  box-shadow: none;
+}
+
+.pl-theme-dark .pl-lembretes-filters button:not(.pl-btn-primary) {
+  background: color-mix(in srgb, var(--pl-surface) 88%, var(--pl-bg-soft) 12%);
+  border-color: var(--pl-rule-2);
+  color: var(--pl-ink-2);
+}
+
+.pl-theme-dark .pl-lembretes-filters button:not(.pl-btn-primary):hover {
+  background: color-mix(in srgb, var(--pl-surface-2) 72%, var(--pl-bg-soft) 28%);
+  border-color: var(--pl-rule-strong);
+  color: var(--pl-ink);
+}
+
+.pl-theme-dark .pl-lembretes-filters button:not(.pl-btn-primary)[style*="var(--pl-ink)"] {
+  background: var(--pl-ink);
+  border-color: var(--pl-ink);
+  color: var(--pl-bg);
+}
+
+.pl-theme-dark .pl-lembretes-filters .pl-btn-primary {
+  background: var(--pl-ink);
+  border-color: var(--pl-ink);
+  color: var(--pl-bg);
+}
+
+.pl-theme-dark .pl-reminders-panel {
+  background: color-mix(in srgb, var(--pl-surface) 86%, var(--pl-bg-soft) 14%);
+  border-color: var(--pl-rule-2);
+}
+
+.pl-theme-dark .pl-reminder-tip {
+  background: color-mix(in srgb, var(--pl-bg-soft) 78%, var(--pl-surface) 22%);
+  border-color: var(--pl-rule-2);
+}
+
+.pl-theme-dark .pl-reminder-tip-icon {
+  color: var(--pl-ink-2);
+}
+
+.pl-theme-dark .pl-open-agenda {
+  background: color-mix(in srgb, var(--pl-surface) 88%, var(--pl-bg-soft) 12%);
+  border-color: var(--pl-rule-2);
+}
+
+.pl-theme-dark .pl-agenda-empty {
+  background: color-mix(in srgb, var(--pl-surface) 78%, var(--pl-bg-soft) 22%);
+  border-color: var(--pl-rule-2);
+}
+
+.pl-theme-dark .pl-agenda-empty > span {
+  background: color-mix(in srgb, var(--pl-bg-soft) 82%, var(--pl-surface) 18%);
+  color: var(--pl-ink-2);
+}
+
 .pl-tip-emphasis {
   text-decoration-line: underline;
   text-decoration-style: wavy;
@@ -1395,9 +1464,21 @@ html, body {
   background: var(--pl-ink);
   color: var(--pl-bg);
 }
+.pl-mobile-sidebar-shell {
+  transform: translateX(-100%) !important;
+}
+.pl-mobile-sidebar-shell.is-open {
+  transform: translateX(0) !important;
+}
+@media (min-width: 1024px) {
+  .pl-mobile-sidebar-shell {
+    transform: translateX(0) !important;
+  }
+}
 .pl-editorial-table {
   width: 100%;
-  min-width: 1080px;
+  min-width: min(920px, 100%);
+  table-layout: fixed;
   border-collapse: collapse;
   background: var(--pl-surface);
 }
@@ -1417,8 +1498,15 @@ html, body {
   color: var(--pl-ink-2);
   font-size: 13.5px;
   vertical-align: middle;
+  overflow-wrap: anywhere;
 }
 .pl-editorial-table tr.is-striped td { background: var(--pl-surface-2); }
+
+@media (max-width: 900px) {
+  .pl-editorial-table {
+    min-width: 760px;
+  }
+}
 .pl-area-marker {
   width: 5px;
   height: 42px;

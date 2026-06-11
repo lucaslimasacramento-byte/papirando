@@ -78,11 +78,12 @@ const STEPS = [
 export default function ConvideGanhe({ profile = {}, currentUserId = '', currentUserEmail = '', referralCode = '' }) {
   const [linkCopied, setLinkCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
-  const [linkShared, setLinkShared] = useState(false);
+  const [, setLinkShared] = useState(false);
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
   const [bonusHistory, setBonusHistory] = useState([]);
   const [loadError, setLoadError] = useState('');
+  const [bonusSyncIssue, setBonusSyncIssue] = useState(false);
   const [resolvedProfileCode, setResolvedProfileCode] = useState('');
   const [referredCount, setReferredCount] = useState(0);
   const [historyFilter, setHistoryFilter] = useState('todos');
@@ -111,14 +112,6 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
     () => buildInviteUrl(resolvedReferralCode, INVITE_ORIGIN),
     [resolvedReferralCode]
   );
-  const inviteOriginLabel = useMemo(() => {
-    try {
-      return new URL(inviteUrl).origin;
-    } catch {
-      return INVITE_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : 'https://papirando.app');
-    }
-  }, [inviteUrl]);
-
   const loadReferralData = useCallback(async ({ silent = false } = {}) => {
       if (silent) {
         setReloading(true);
@@ -245,12 +238,18 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
         const confirmedMergedCount = mergedHistory.filter((item) => item.status === 'Confirmado').length;
 
         // Tenta sincronizar os bônus no backend (função SQL com ON CONFLICT).
-        // Se houver bloqueio de permissão, seguimos com fallback visual local.
+        // supabase.rpc NÃO lança em erro de Postgres — retorna { error }; checar explicitamente.
+        // Se falhar, seguimos com fallback visual local mas avisamos o usuário (bonusSyncIssue).
+        let rpcFailed = false;
         try {
-          await supabase.rpc('award_referral_bonus_events', { target_referrer_id: userId });
-        } catch (rpcError) {
-          console.warn('Não foi possível sincronizar bônus via RPC.', rpcError?.message || rpcError);
+          const { error: rpcError } = await supabase.rpc('award_referral_bonus_events', { target_referrer_id: userId });
+          if (rpcError) {
+            rpcFailed = true;
+          }
+        } catch {
+          rpcFailed = true;
         }
+        setBonusSyncIssue(rpcFailed);
 
         let normalizedBonusRows = Array.isArray(bonusRows) ? bonusRows : [];
         try {
@@ -263,7 +262,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
             normalizedBonusRows = freshBonusRows;
           }
         } catch (refreshBonusError) {
-          console.warn('Falha ao recarregar bônus após sync.', refreshBonusError?.message || refreshBonusError);
+          console.error('[ConvideGanhe] erro ao recarregar bônus após sincronização:', refreshBonusError);
         }
 
         const bonusByMilestone = new Map();
@@ -293,8 +292,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
           }))
         );
         setBonusHistory(mergedBonusHistory);
-      } catch (error) {
-        console.warn('Erro ao carregar indicações:', error);
+      } catch {
         setHistory([]);
         setBonusHistory([]);
         setLoadError('Não foi possível carregar o programa de indicações agora.');
@@ -491,10 +489,18 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
             <span className="lab">Último bônus</span>
             <p>
               {latestBonus
-                ? `${latestBonus.reward_title} · ${formatReferralDate(latestBonus.created_at)}`
+                ? latestBonus.isVirtual
+                  ? `${latestBonus.reward_title} · aguardando crédito`
+                  : `${latestBonus.reward_title} · ${formatReferralDate(latestBonus.created_at)}`
                 : 'Nenhum bônus ainda — compartilhe o link para começar a contagem.'}
             </p>
           </div>
+
+          {bonusSyncIssue || latestBonus?.isVirtual ? (
+            <p style={{ marginTop: 8, fontSize: 11.5, fontWeight: 600, color: 'var(--pl-warn)' }}>
+              Suas recompensas ainda estão sendo sincronizadas. Se o bônus não aparecer como creditado em alguns minutos, recarregue a página ou fale com o suporte.
+            </p>
+          ) : null}
         </section>
 
         {/* Histórico */}
@@ -573,25 +579,6 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
             </a>
           </div>
         </section>
-      </div>
-    </div>
-  );
-}
-
-function StatCardDark({ label, hint, value, icon: Icon }) {
-  return (
-    <div
-      className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 shadow-inner shadow-black/20 backdrop-blur-sm"
-      title={hint}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
-          <p className="mt-2 tabular-nums text-2xl font-bold tracking-tight text-white">{value}</p>
-        </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
-          <Icon size={18} strokeWidth={2.25} />
-        </div>
       </div>
     </div>
   );

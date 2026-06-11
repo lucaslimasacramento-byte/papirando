@@ -88,9 +88,8 @@ function isTrustedRequestOrigin(req) {
   }
 }
 
-function isAdminProfile(profile, user) {
+function isAdminProfile(profile) {
   const role = String(profile?.role || '').trim().toLowerCase();
-  const email = String(profile?.email || user?.email || '').trim().toLowerCase();
 // SEC-002 + SEC-021: confia apenas em profiles.role. Sem fallback por dominio ou email hardcoded.
 return ['admin', 'admin_master', 'master'].includes(role);}
 

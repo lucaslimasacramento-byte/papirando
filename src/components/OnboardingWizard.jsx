@@ -723,12 +723,18 @@ export default function OnboardingWizard({
     setSaveError('');
 
     try {
+      const studyGoal = selectedObjective?.objectiveType === 'Concurso' ? 'concurso'
+        : selectedObjective?.objectiveType === 'Vestibular' ? 'vestibular'
+        : selectedObjective?.objectiveType === 'Faculdade' ? 'faculdade'
+        : null;
+
       const updates = {
         nome: validation.cleanName,
         birth_date: validation.cleanBirthDate,
         cpf: validation.cpfDigits,
         onboarding_done: true,
         meta_horas_semana: totalHours || 0,
+        ...(studyGoal ? { study_goal: studyGoal } : {}),
       };
 
       if (normalizeCpf(profile?.cpf || '') !== validation.cpfDigits) {

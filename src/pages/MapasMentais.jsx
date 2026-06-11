@@ -32,6 +32,7 @@ import {
 import { mindGraphToTopicNodes, ROOT_ID } from '../lib/mindMapGraph';
 import { galleryMapFromRow, loadMindMapGalleryRows } from '../lib/mindMapGalleryApi';
 import { canonicalizeSubjectName, normalizeSubjectText } from '../lib/subjectCatalogUtils';
+import { generateMindMap } from '../lib/aiClient';
 
 const DEFAULT_FILTERS = {
   query: '',
@@ -53,7 +54,7 @@ function buildMapFromPrompt(prompt, context) {
     return normalizedPrompt.toLowerCase().includes(normalizedName);
   }) || null;
 
-  const nodes = (matchedDiscipline?.topicos?.slice(0, 6) || [])
+  const nodes = (Array.isArray(matchedDiscipline?.topicos) ? matchedDiscipline.topicos.slice(0, 6) : [])
     .map((topic) => ({
       id: String(topic.id),
       label: topic.nome,
@@ -156,8 +157,8 @@ export default function MapasMentais({
   }));
   const [promptMapa, setPromptMapa] = useState('');
   const [aiMapForm, setAiMapForm] = useState({ courseId: '', disciplinaId: '', topicoId: '' });
-  const [aiMapLoading] = useState(false);
-  const [aiMapError] = useState('');
+  const [aiMapLoading, setAiMapLoading] = useState(false);
+  const [aiMapError, setAiMapError] = useState('');
   const [mapas, setMapas] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(MIND_MAPS_STORAGE_KEY) || '[]');
@@ -489,15 +490,72 @@ export default function MapasMentais({
     [context, registerUsage]
   );
 
-  const handleGerarMapa = () => {
+  const handleGerarMapa = async () => {
     if (!isPremium) { if (typeof onUpgrade === 'function') onUpgrade(); return; }
-    const novoMapa = buildMapFromPrompt(promptMapa, context);
-    if (!novoMapa) return;
+    const normalizedPrompt = String(promptMapa || '').replace(/\s+/g, ' ').trim();
+    if (!normalizedPrompt && !aiSelectedDiscipline) return;
 
-    setMapas((prev) => [novoMapa, ...prev]);
-    setPromptMapa('');
-    setMapaAtivoId(novoMapa.id);
-    registerUsage(novoMapa, 'created');
+    const adoptMap = (novoMapa) => {
+      setMapas((prev) => [novoMapa, ...prev]);
+      setPromptMapa('');
+      setMapaAtivoId(novoMapa.id);
+      registerUsage(novoMapa, 'created');
+    };
+
+    setAiMapLoading(true);
+    setAiMapError('');
+    try {
+      const payload = await generateMindMap({
+        disciplina: aiSelectedDiscipline?.nome || '',
+        topico: normalizedPrompt || aiSelectedDiscipline?.nome || '',
+        topics: aiTopicOptions.map((topic) => String(topic?.nome || '')).filter(Boolean),
+      });
+      const branches = Array.isArray(payload?.branches) ? payload.branches : [];
+      const nodes = branches
+        .slice(0, 8)
+        .map((branch, index) => ({
+          id: `ai-${Date.now()}-${index + 1}`,
+          label: String(branch?.label || '').trim(),
+          topicId: '',
+        }))
+        .filter((node) => node.label);
+      if (nodes.length === 0) throw new Error('A IA não retornou ramos válidos para o mapa.');
+
+      const titulo = String(payload?.title || normalizedPrompt || 'Mapa mental').trim();
+      adoptMap(normalizeMindMapRecord(
+        {
+          id: `map-${Date.now()}`,
+          titulo,
+          categoria: String(payload?.category || '').trim() || inferMindMapCategory(titulo, context.subjectCatalog),
+          disciplinaId: aiSelectedDiscipline?.id || '',
+          disciplinaNome: aiSelectedDiscipline?.nome || titulo,
+          plano: aiSelectedDiscipline?.plano || 'Geral',
+          topicoIds: [],
+          nodes,
+          contestIds: [],
+          promptBase: normalizedPrompt,
+          favorito: false,
+          criadoEm: new Date().toISOString(),
+          atualizadoEm: new Date().toISOString(),
+          ultimoAcessoEm: '',
+          totalAberturas: 0,
+          sourceType: 'ai',
+        },
+        context
+      ));
+    } catch (error) {
+      console.error('[MapasMentais] geração IA falhou:', error?.message || error);
+      // Fallback: estrutura básica local a partir do prompt, com aviso honesto.
+      const fallbackMap = buildMapFromPrompt(normalizedPrompt, context);
+      if (fallbackMap) {
+        adoptMap(fallbackMap);
+        setAiMapError('A IA está indisponível agora — criei uma estrutura básica a partir do seu texto. Edite à vontade e tente a IA de novo mais tarde.');
+      } else {
+        setAiMapError(String(error?.message || 'A IA não respondeu agora. Tente novamente em instantes.'));
+      }
+    } finally {
+      setAiMapLoading(false);
+    }
   };
 
   const handleToggleFavorite = (mapId) => {

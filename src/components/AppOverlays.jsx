@@ -102,6 +102,7 @@ export default function AppOverlays(props) {
         setRegistroSimuladoModalOpen={setRegistroSimuladoModalOpen}
         onSaveSimulado={saveSimuladoNoApp}
         initialDraft={simuladoDraft}
+        bancoDisciplinas={bancoDisciplinas}
       />
 
       <RegistroEstudoModal

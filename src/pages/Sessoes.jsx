@@ -48,6 +48,7 @@ export default function Sessoes({
   studySessionDraft = null,
 }) {
   const [recentSessions, setRecentSessions] = useState([]);
+  const [recentSessionsError, setRecentSessionsError] = useState(false);
   const [tipo, setTipo] = useState('classicos');
 
   const historyOverview = useMemo(
@@ -82,11 +83,17 @@ export default function Sessoes({
         .limit(5);
 
       if (error) {
-        console.warn('[Sessoes] load recent sessions error:', error.message);
-        if (!ignore) setRecentSessions([]);
+        console.error('[Sessoes] erro ao carregar sessões recentes:', error.message || error);
+        if (!ignore) {
+          setRecentSessions([]);
+          setRecentSessionsError(true);
+        }
         return;
       }
-      if (!ignore) setRecentSessions(Array.isArray(data) ? data : []);
+      if (!ignore) {
+        setRecentSessions(Array.isArray(data) ? data : []);
+        setRecentSessionsError(false);
+      }
     };
     loadRecentSessions();
     return () => {
@@ -137,7 +144,7 @@ export default function Sessoes({
           </div>
         </section>
 
-        <RecentSessionsCard sessions={recentSessions} />
+        <RecentSessionsCard sessions={recentSessions} loadError={recentSessionsError} />
       </div>
     </div>
   );
@@ -325,14 +332,18 @@ function NextStat({ label, value, muted }) {
   );
 }
 
-function RecentSessionsCard({ sessions }) {
+function RecentSessionsCard({ sessions, loadError = false }) {
   return (
     <section className="pl-card" style={{ padding: 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Clock size={16} />
         <div className="pl-overline">Últimas sessões</div>
       </div>
-      {sessions.length === 0 ? (
+      {loadError ? (
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: 'var(--pl-warn)' }}>
+          Não foi possível carregar suas sessões recentes. Recarregue a página para tentar de novo.
+        </p>
+      ) : sessions.length === 0 ? (
         <p className="pl-muted" style={{ margin: 0 }}>Nenhuma sessão registrada ainda. Inicie seu primeiro timer.</p>
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>

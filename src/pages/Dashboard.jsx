@@ -105,9 +105,21 @@ export default function Dashboard({
 
   const heroTopic = primaryRecommendation?.nome || targetContest?.nome || null;
   const heroDetail = primaryRecommendation?.nextTopic?.nome || primaryRecommendation?.reason || null;
-  const quickAction = primaryRecommendation
-    ? { label: 'Papirar agora', onClick: () => onStartRecommendedSession?.(primaryRecommendation) }
-    : { label: 'Papirar agora', onClick: () => openTimerSetup?.() };
+  const quickAction = {
+    label: 'Papirar agora',
+    // Cadeia de fallback — o clique nunca pode ser um no-op silencioso.
+    onClick: () => {
+      if (primaryRecommendation && typeof onStartRecommendedSession === 'function') {
+        onStartRecommendedSession(primaryRecommendation);
+        return;
+      }
+      if (typeof openTimerSetup === 'function') {
+        openTimerSetup();
+        return;
+      }
+      setActiveTab?.('sessoes');
+    },
+  };
 
   const weekBars = useMemo(() => {
     const today = new Date();
@@ -211,9 +223,9 @@ export default function Dashboard({
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 12 }}>
           <PlKpi label="Papirado hoje" num={historyOverview.todayMinutesLabel} detail="Volume efetivo" />
-          <PlKpi label="Sequencia" num={String(historyOverview.streakDays)} unit="d" detail="dias sem falhar" icon={<Flame size={14} style={{ color: 'var(--pl-warn)' }} />} />
-          <PlKpi label="Precisao" num={String(weeklyAccuracy)} unit="%" detail={`${totalAcertos} acertos - ${totalErros} erros`} />
-          <PlKpi label="Meta diaria" num={String(historyOverview.todayGoalProgress)} unit="%" detail="do objetivo de hoje" progress={historyOverview.todayGoalProgress / 100} />
+          <PlKpi label="Sequência" num={String(historyOverview.streakDays)} unit="d" detail="dias sem falhar" icon={<Flame size={14} style={{ color: 'var(--pl-warn)' }} />} />
+          <PlKpi label="Precisão" num={String(weeklyAccuracy)} unit="%" detail={`${totalAcertos} acertos - ${totalErros} erros`} />
+          <PlKpi label="Meta diária" num={String(historyOverview.todayGoalProgress)} unit="%" detail="do objetivo de hoje" progress={historyOverview.todayGoalProgress / 100} />
           <PlKpi label="Revisões" num={String(urgentReviews).padStart(2, '0')} detail="Alta prioridade" accentColor={urgentReviews > 0 ? 'warn' : undefined} />
         </section>
 
@@ -295,7 +307,7 @@ export default function Dashboard({
               </h2>
             </div>
             <button className="pl-btn-link" onClick={() => setActiveTab?.('estatisticas')}>
-              Estatisticas completas <ArrowRight size={12} />
+              Estatísticas completas <ArrowRight size={12} />
             </button>
           </div>
 
@@ -560,7 +572,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
           />
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <div className="pl-eyebrow" style={{ color: '#1e3a5f' }}>Passo {tutorialStep + 1} de {tutorialSteps.length}</div>
+              <div className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>Passo {tutorialStep + 1} de {tutorialSteps.length}</div>
               <h3 style={{ margin: '7px 0 0', fontSize: 19, lineHeight: 1.25, color: 'var(--pl-ink)' }}>{currentTutorial.title}</h3>
               <p style={{ margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
                 {currentTutorial.text}
@@ -581,7 +593,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
               <button
                 type="button"
                 className="pl-btn pl-btn-sm"
-                style={{ background: '#1e3a5f', color: '#fff', borderColor: '#1e3a5f' }}
+                style={{ background: 'var(--pl-accent)', color: 'var(--pl-surface)', borderColor: 'var(--pl-accent)' }}
                 onClick={nextTutorial}
               >
                 {tutorialStep >= tutorialSteps.length - 1 ? 'Concluir' : 'Próximo passo'}
@@ -615,6 +627,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
             background: 'radial-gradient(circle, rgba(200,160,50,0.28) 0%, rgba(200,160,50,0) 65%)',
           }}
         />
+        {/* cores fixas da marca */}
         <div
           style={{
             flex: '0 0 auto',
@@ -646,7 +659,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
               borderRadius: 999,
               border: '1px solid rgba(30,58,95,0.22)',
               background: 'var(--pl-surface)',
-              color: '#1e3a5f',
+              color: 'var(--pl-accent)',
               fontSize: 11,
               fontWeight: 800,
             }}
@@ -707,7 +720,7 @@ function PlOnboardStep({ number, title, text, active = false, dimmed = false }) 
         transition: 'opacity 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease',
       }}
     >
-      <div className="pl-num" style={{ fontSize: 38, color: active ? '#1e3a5f' : 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
+      <div className="pl-num" style={{ fontSize: 38, color: active ? 'var(--pl-accent)' : 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
       <h3 style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{title}</h3>
       <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{text}</p>
     </div>

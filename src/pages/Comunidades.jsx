@@ -114,7 +114,6 @@ function CommunityTopTenSidebar({ posts = [], tags = [], onPickTrend, className 
   );
 }
 
-const cx = (...classes) => classes.filter(Boolean).join(' ');
 const initials = (name = '') => String(name).split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
 function sortPostsByMode(posts, mode) {
@@ -630,7 +629,7 @@ export default function Comunidades({
           })
         );
       })
-      .catch(console.warn);
+      .catch((error) => console.error('[Comunidades] erro ao carregar comentários:', error));
   }
 
   async function handleExpandPost(post) {
@@ -648,7 +647,9 @@ export default function Comunidades({
 
     if (reactionType !== 'upvote' || !currentUserId) return;
 
-    togglePostUpvote(postId, currentUserId).catch(console.warn);
+    togglePostUpvote(postId, currentUserId).catch((error) => {
+      console.error('[Comunidades] erro ao alternar voto da publicação:', error);
+    });
   }
 
   async function handleAdminPostAction(post, action) {

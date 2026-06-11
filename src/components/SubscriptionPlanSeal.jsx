@@ -1,14 +1,24 @@
 import React from 'react';
-import { Crown, Sparkles, Circle, ShieldCheck } from 'lucide-react';
+import { Crown, Circle, ShieldCheck } from 'lucide-react';
 
 /**
- * Selo de assinatura alinhado a `profiles.subscription_plan` (gratuito | tatico | elite).
- * Animações por nível: `seal-plan-gratuito`, `seal-plan-tatico`, `seal-plan-elite` em `index.css`.
+ * Selo de assinatura alinhado a `profiles.subscription_plan`.
+ * Modelo 2 tiers: `folha` (free) e `papiro` (pago).
+ * Aliases legados aceitos: gratuito/free → folha; tatico/elite/beta → papiro.
+ * Animações por nível: `seal-plan-gratuito`, `seal-plan-elite` em `index.css`.
  */
+const PLAN_ALIASES = {
+  gratuito: 'folha',
+  free: 'folha',
+  tatico: 'papiro',
+  elite: 'papiro',
+  beta: 'papiro',
+};
+
 const PLAN_CONFIG = {
-  gratuito: {
-    label: 'Gratuito',
-    title: 'Plano gratuito — toque para ver planos',
+  folha: {
+    label: 'Folha',
+    title: 'Plano Folha — toque para conhecer o Papiro',
     icon: Circle,
     iconSize: 12,
     animClass: 'seal-plan-gratuito',
@@ -22,25 +32,9 @@ const PLAN_CONFIG = {
       fontWeight: 600,
     },
   },
-  tatico: {
-    label: 'Tático',
-    title: 'Plano Tático — toque para gerenciar assinatura',
-    icon: Sparkles,
-    iconSize: 14,
-    animClass: 'seal-plan-tatico',
-    style: {
-      border: '1px solid rgba(96,165,250,0.6)',
-      background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8, #2563eb)',
-      color: '#fff',
-      padding: '6px 12px',
-      gap: 6,
-      fontSize: 12,
-      fontWeight: 700,
-    },
-  },
-  elite: {
-    label: 'Elite',
-    title: 'Plano Elite — toque para gerenciar assinatura',
+  papiro: {
+    label: 'Papiro',
+    title: 'Plano Papiro — toque para gerenciar assinatura',
     icon: Crown,
     iconSize: 16,
     animClass: 'seal-plan-elite',
@@ -75,8 +69,9 @@ const PLAN_CONFIG = {
 };
 
 export default function SubscriptionPlanSeal({ planId, onClick }) {
-  const key = String(planId || 'gratuito').toLowerCase();
-  const cfg = PLAN_CONFIG[key] || PLAN_CONFIG.gratuito;
+  const raw = String(planId || 'folha').toLowerCase();
+  const key = PLAN_CONFIG[raw] ? raw : (PLAN_ALIASES[raw] || 'folha');
+  const cfg = PLAN_CONFIG[key];
   const Icon = cfg.icon;
   const iconSize = cfg.iconSize ?? 13;
 
@@ -100,7 +95,7 @@ export default function SubscriptionPlanSeal({ planId, onClick }) {
         ...cfg.style,
       }}
     >
-      <Icon size={iconSize} strokeWidth={key === 'gratuito' ? 2.5 : 2} style={{ position: 'relative', zIndex: 1, flexShrink: 0 }} />
+      <Icon size={iconSize} strokeWidth={key === 'folha' ? 2.5 : 2} style={{ position: 'relative', zIndex: 1, flexShrink: 0 }} />
       <span style={{ position: 'relative', zIndex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cfg.label}</span>
     </button>
   );

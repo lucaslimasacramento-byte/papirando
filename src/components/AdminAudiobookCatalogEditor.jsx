@@ -21,7 +21,7 @@ function getBookMeta(book, index) {
  * @param {(fn: (d: object[]) => object[]) => void} props.onDraftChange
  */
 export function AdminAudiobookCatalogEditor({ draft, onDraftChange }) {
-  const books = Array.isArray(draft) ? draft : [];
+  const books = useMemo(() => (Array.isArray(draft) ? draft : []), [draft]);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {

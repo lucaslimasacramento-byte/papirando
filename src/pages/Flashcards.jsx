@@ -38,7 +38,7 @@ import { generateFlashcards } from '../lib/aiClient';
 const COLOR_STYLES = {
   blue:    { bg: 'var(--pl-accent-soft)',   dot: 'var(--pl-accent)',   text: 'var(--pl-accent)'   },
   emerald: { bg: 'var(--pl-success-soft)',  dot: 'var(--pl-success)',  text: 'var(--pl-success)'  },
-  violet:  { bg: '#f3f0ff',                 dot: '#7c3aed',            text: '#6d28d9'             },
+  violet:  { bg: 'var(--pl-accent-soft)',   dot: 'var(--pl-accent)',   text: 'var(--pl-accent)'    },
   orange:  { bg: 'var(--pl-warn-soft)',     dot: 'var(--pl-warn)',     text: 'var(--pl-warn)'     },
   rose:    { bg: 'var(--pl-danger-soft)',   dot: 'var(--pl-danger)',   text: 'var(--pl-danger)'   },
   amber:   { bg: 'var(--pl-warn-soft)',     dot: 'var(--pl-warn)',     text: 'var(--pl-warn)'     },
@@ -745,8 +745,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     setLoading(true);
     try {
       setDecks(await loadDecks(currentUserId));
-    } catch (error) {
-      console.warn('[Flashcards] loadDecks error:', error.message);
+    } catch {
       setDecks([]);
     } finally {
       setLoading(false);
@@ -757,8 +756,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     setCardsLoading(true);
     try {
       setCards(await loadCards(deckId));
-    } catch (error) {
-      console.warn('[Flashcards] loadCards error:', error.message);
+    } catch {
       setCards([]);
     } finally {
       setCardsLoading(false);
@@ -928,17 +926,8 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
 
     try {
       const quantidade = Math.min(20, Math.max(5, Number(form.quantidade) || 10));
-      let targetDeck = activeDeck;
 
-      if (!targetDeck?.id) {
-        targetDeck = await createDeck({
-          userId: currentUserId,
-          titulo: topico ? `${disciplina || 'Flashcards'} · ${topico}` : disciplina || 'Flashcards IA',
-          disciplina: disciplina || 'Geral',
-        });
-        setActiveDeck(targetDeck);
-      }
-
+      // IA primeiro, deck depois — se a IA falhar, nenhum deck vazio órfão fica para trás.
       const payload = await generateFlashcards({
         disciplina,
         topico,
@@ -948,10 +937,22 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
       const flashcards = Array.isArray(payload?.flashcards) ? payload.flashcards : [];
 
       if (flashcards.length === 0) {
-        throw new Error('Nenhum flashcard foi retornado pela IA.');
+        throw new Error('Nenhum flashcard foi retornado pela IA. Tente novamente ou ajuste o tópico.');
       }
 
-      await Promise.all(
+      let targetDeck = activeDeck;
+      let deckCreatedNow = false;
+
+      if (!targetDeck?.id) {
+        targetDeck = await createDeck({
+          userId: currentUserId,
+          titulo: topico ? `${disciplina || 'Flashcards'} · ${topico}` : disciplina || 'Flashcards IA',
+          disciplina: disciplina || 'Geral',
+        });
+        deckCreatedNow = true;
+      }
+
+      const results = await Promise.allSettled(
         flashcards.map((card) =>
           createCard({
             deckId: targetDeck.id,
@@ -961,14 +962,27 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
           })
         )
       );
+      const createdCount = results.filter((r) => r.status === 'fulfilled').length;
 
+      if (createdCount === 0) {
+        // Nenhum card salvou — se o deck acabou de ser criado, remove para não deixar órfão.
+        if (deckCreatedNow) {
+          try { await deleteDeck(targetDeck.id); } catch { /* deck órfão será visível; melhor que mascarar o erro original */ }
+        }
+        throw new Error('Os flashcards foram gerados mas não puderam ser salvos. Verifique sua conexão e tente de novo.');
+      }
+
+      if (deckCreatedNow) setActiveDeck(targetDeck);
       await refreshDecks();
       await refreshCards(targetDeck.id);
-      setAiSuccess(`${flashcards.length} flashcards criados com sucesso!`);
+      setAiSuccess(
+        createdCount === flashcards.length
+          ? `${createdCount} flashcards criados com sucesso!`
+          : `${createdCount} de ${flashcards.length} flashcards salvos — os demais falharam, tente gerar de novo.`
+      );
       setAiGenModal(false);
       setAiForm({ courseId: '', disciplinaId: '', topicoId: '', disciplina: '', topico: '', quantidade: 10 });
     } catch (error) {
-      console.warn('[Flashcards] generateFlashcards error:', error?.message || error);
       setAiErr(error?.message || 'A IA de produção não respondeu agora. Tente novamente em instantes.');
     } finally {
       setAiLoading(false);
@@ -1303,7 +1317,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
                 <button
                   onClick={() => handleDeleteCard(deleteConfirm.id)}
                   className="pl-btn"
-                  style={{ background: 'var(--pl-danger)', color: '#fff', border: 'none' }}
+                  style={{ background: 'var(--pl-danger)', color: 'var(--pl-surface)', border: 'none' }}
                 >
                   Excluir
                 </button>
@@ -1530,7 +1544,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
               <button
                 onClick={() => handleDeleteDeck(deleteConfirm.id)}
                 className="pl-btn"
-                style={{ background: 'var(--pl-danger)', color: '#fff', border: 'none' }}
+                style={{ background: 'var(--pl-danger)', color: 'var(--pl-surface)', border: 'none' }}
               >
                 Excluir
               </button>

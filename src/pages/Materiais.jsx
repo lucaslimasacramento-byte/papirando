@@ -204,7 +204,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
           .eq('id', material.id);
       } catch (e) {
         if (!cancelled && e?.name !== 'RenderingCancelledException') {
-          console.warn('[PDFViewer] render error:', e.message);
+          console.error('[Materiais] erro ao renderizar PDF:', e);
         }
       }
     }

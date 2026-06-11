@@ -27,7 +27,7 @@ async function postJson(path, payload) {
     }
   } catch (networkErr) {
     if (networkErr?.name === 'AbortError') {
-      throw new Error('A analise demorou demais. Tente um PDF menor ou use a opcao de colar texto.');
+      throw new Error('A IA demorou demais para responder. Tente novamente em instantes ou com um conteúdo menor.');
     }
     throw new Error(`Sem conexao com o servidor de IA (${networkErr?.message || 'network error'}).`);
   }
