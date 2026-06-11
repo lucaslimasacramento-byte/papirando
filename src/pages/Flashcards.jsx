@@ -2,12 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PremiumGate from '../components/PremiumGate';
 import {
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   Check,
   ChevronRight,
   Flame,
   Layers3,
   Loader2,
+  Play,
   Plus,
   RotateCcw,
   Sparkles,

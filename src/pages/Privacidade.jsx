@@ -11,12 +11,12 @@ export default function Privacidade() {
       {/* Hero */}
       <div className="px-6 py-14" style={{ background: 'var(--pl-bg)', color: 'var(--pl-ink)' }}>
         <div className="mx-auto max-w-3xl">
-          <div className="mb-4 flex items-center gap-2 text-blue-300">
+          <div className="mb-4 flex items-center gap-2 text-[var(--pl-accent)]">
             <ShieldCheck className="h-5 w-5" />
             <span className="text-sm font-semibold uppercase tracking-widest">Privacidade</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Política de Privacidade</h1>
-          <p className="mt-3 text-slate-300">Atualizado em {LAST_UPDATED}</p>
+          <p className="mt-3 text-[var(--pl-ink-3)]">Atualizado em {LAST_UPDATED}</p>
         </div>
       </div>
 
@@ -114,16 +114,16 @@ export default function Privacidade() {
         </Section>
 
         <Section title="10. Contato — Encarregado de Dados (DPO)">
-          <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4">
-            <Mail className="h-5 w-5 shrink-0 text-blue-600" />
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--pl-rule-2)] bg-[var(--pl-accent-soft)] p-4">
+            <Mail className="h-5 w-5 shrink-0 text-[var(--pl-accent)]" />
             <div>
-              <p className="text-sm font-semibold text-slate-900">Para exercer seus direitos ou tirar dúvidas:</p>
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm text-blue-700 hover:underline">
+              <p className="text-sm font-semibold text-[var(--pl-ink)]">Para exercer seus direitos ou tirar dúvidas:</p>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm text-[var(--pl-accent)] hover:underline">
                 {CONTACT_EMAIL}
               </a>
             </div>
           </div>
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-[var(--pl-ink-3)]">
             Responderemos em até 15 dias úteis, conforme previsto na LGPD.
           </p>
         </Section>
@@ -136,8 +136,8 @@ export default function Privacidade() {
 function Section({ title, children }) {
   return (
     <section>
-      <h2 className="mb-3 text-lg font-bold text-slate-900">{title}</h2>
-      <div className="space-y-2 text-sm leading-relaxed text-slate-700">{children}</div>
+      <h2 className="mb-3 text-lg font-bold text-[var(--pl-ink)]">{title}</h2>
+      <div className="space-y-2 text-sm leading-relaxed text-[var(--pl-ink-2)]">{children}</div>
     </section>
   );
 }

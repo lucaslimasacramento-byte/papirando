@@ -176,6 +176,49 @@
 
 ## Registro de sessões
 
+### Sessão 2026-06-11 (parte 4) — Correções pós-auditoria do Cowork
+**Achados do agente Cowork corrigidos:**
+- 🔴 `Flashcards.jsx`: `Play` e `ArrowRight` usados sem import — página quebrava em runtime (build não pega). Imports adicionados.
+- 🔴 `Termos.jsx`/`Privacidade.jsx`: classes `text-slate-*`/`text-blue-300`/`bg-blue-50` remanescentes → migradas para tokens `var(--pl-*)` (corrige dark mode).
+- 🟡 `Perfil.jsx`: `handleStudyGoalChange` agora propaga via novo prop `onProfilePatched` → Sidebar atualiza sem F5; também passou a checar `{error}` do update. Bônus: `onOpenSquad` no Perfil navegava para a tab `esquadroes` removida → agora vai para `comunidades`.
+- 🟡 `App.jsx` `formatHHMMSS`: omitia a hora quando 0 — "00:30" (30s) era lido como 30min pelo `parseTime` das Metas. Agora sempre `HH:MM:SS`.
+- 🟡 Legislação/PDF viewer: investigado — o PDF está trackeado e deployado; **provável falso positivo da automação** (browser headless não renderiza PDF em iframe). Lucas confirma de olho.
+
+**🚨 ACHADO CRÍTICO (a partir da pista do console "Erro ao carregar redações"):**
+3 tabelas NÃO EXISTEM no banco de produção: `essay_submissions`, `flashcard_reviews`, `flashcard_deck_progress`.
+- Redações não salvam; **revisar flashcard quebra** (`submitReview` lança erro).
+- ✅ SQL pronto e idempotente em **`supabase/RODAR-AGORA-tabelas-faltantes.sql`** — Lucas roda no SQL Editor.
+
+**Pendentes de validação manual (Lucas):** Lembretes 4.6–4.8 (modal), PDF escaneado no Edital (C7), viewer da Legislação no navegador real.
+
+---
+
+### Sessão 2026-06-11 (parte 4) — Auditoria de produção completa (CHECKLIST-COWORK.md)
+
+**Validação browser-to-browser de todos os Blocos 0–5 em papirando.com (produção).**
+Conta usada: Lucas (MASTER/Administrador). Todos os resultados gravados em `docs/CHECKLIST-COWORK.md`.
+
+**Resumo de status por bloco:**
+- ✅ Bloco 0 (Global): navegação, dark mode parcial, F5, menu oculto ok
+- ✅ Bloco 1 (Acesso): login, perfil, offline, convite ok
+- ✅ Bloco 2 (Home): dashboard, histórico, sessões, offline ok
+- ⚠️ Bloco 3 (IA): materiais, redações, mapas mentais ok — **Flashcards QUEBRADO** (bug crítico)
+- ✅ Bloco 4 (Planejamento): cronograma, metas, ciclos ok (lembretes ⏭️ validação manual)
+- ✅ Bloco 5 (Concursos): edital, disciplinas, legislação (parcial) ok
+
+**Bugs encontrados que precisam de correção antes do lançamento:**
+
+1. **CRÍTICO — Flashcards.jsx:** `Play` e `ArrowRight` não importados do lucide-react → página quebra com `ReferenceError: Play is not defined`. Fix: 1 linha de import.
+2. **Termos.jsx + Privacidade.jsx:** `text-slate-900` / `text-slate-700` hardcoded → headings e corpo invisíveis no dark mode. Fix: substituir por `text-[var(--pl-ink)]` / `text-[var(--pl-ink-2)]`.
+3. **Perfil.jsx — study_goal:** pill não atualiza sidebar sem F5 (handleStudyGoalChange não chama onSaveProfile).
+4. **Sessões.jsx — formatação de tempo:** "0h48min" para 48 segundos (segundos exibidos como minutos).
+5. **Legislação:** PDF viewer não renderiza conteúdo (broken image) — navegação/busca ok, mas conteúdo visual ausente.
+6. **Materiais PDF / C7:** PDF vazio aceito silenciosamente sem mensagem de erro ao usuário.
+7. **Console:** "Erro ao carregar redações do Supabase: Object" em todo load do Dashboard.
+8. **Console:** BrasilAPI feriados falhando silenciosamente.
+
+---
+
 ### Sessão 2026-06-11 (parte 3) — FILA DO CLAUDE 100% FECHADA (C1–C14)
 **Blocos 2, 4, 5 e infra concluídos de uma vez (decisão: Lucas valida tudo no final):**
 - **C2 Lembretes (crítico):** página E App.jsx salvavam no Supabase — cada lembrete novo inseria **2 linhas duplicadas** no banco. Persistência centralizada no App.jsx com toast de erro em salvar/excluir. (Builders PostgREST resolvem com `{error}`, não lançam — os `.catch(console.warn)` antigos nunca pegavam nada.)

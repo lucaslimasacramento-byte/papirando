@@ -311,6 +311,7 @@ export default function Perfil(props) {
     onSaveProfile,
     onChangeAvatar,
     onSessionRefresh,
+    onProfilePatched,
     initialTab = 'overview',
   } = props;
 
@@ -344,7 +345,10 @@ export default function Perfil(props) {
     if (!currentUserId || goalBusy) return;
     setGoalBusy(true);
     try {
-      await supabase.from('profiles').update({ study_goal: newGoal }).eq('id', currentUserId);
+      const { error } = await supabase.from('profiles').update({ study_goal: newGoal }).eq('id', currentUserId);
+      if (error) throw error;
+      // Propaga para o estado global do App — o Sidebar reage na hora, sem F5.
+      onProfilePatched?.({ study_goal: newGoal });
       showToast('Objetivo atualizado!', 'success');
       await loadRemoteProfile();
     } catch {

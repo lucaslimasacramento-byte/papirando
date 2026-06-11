@@ -180,27 +180,79 @@
 
 ## 📋 Relatório de Resultados (o agente preenche)
 
-**Data/URL testada:** _____
-**Conta(s) usada(s):** _____
+**Data/URL testada:** 2026-06-11 · https://www.papirando.com/
+**Conta(s) usada(s):** Lucas (MASTER/Administrador) — conta de produção logada pelo próprio usuário
 
 | Bloco | ✅ Passou | ❌ Falhou | ⏭️ Pulado | Observações |
 |---|---|---|---|---|
-| 0 — Global | | | | |
-| 1 — Acesso | | | | |
-| 2 — Home | | | | |
-| 3 — IA | | | | |
-| 4 — Planejamento | | | | |
-| 5 — Concursos | | | | |
+| 0 — Global | G1 G2 G5 G6 G7 G11 | G3 G9 | G4 G8 G10 | G3: dark mode Termos/Privacidade invisível; G9: sidebar não atualiza sem F5 |
+| 1 — Acesso | 1.1 1.2 1.4 1.5 1.6 1.7 1.8 1.9 1.10 1.11 1.12 | 1.14 | 1.3 1.13 | 1.14: dark mode headings invisíveis em Termos e Privacidade |
+| 2 — Home | 2.1 2.2 2.3 2.4 2.5 2.7 | — | — | 2.6 ⚠️ passou mas bug: "0h48min" para 48 segundos (segundos exibidos como minutos) |
+| 3 — IA | 3.1 3.9 3.10 3.12 3.14 3.15 | 3.5 | 3.2* 3.3 3.4 3.6 3.7 3.8 3.11 3.13 | 3.5 CRÍTICO: Flashcards quebra (Play/ArrowRight não importados); *3.2 testado em sessão anterior |
+| 4 — Planejamento | 4.1 4.2 4.3 4.4 4.5 4.9 | 4.6 4.7 4.8 | — | 4.6–4.8: modal Lembretes não responde a automação (input React controlado bloqueado via CDP) |
+| 5 — Concursos | 5.1 5.2 5.3 5.5 | 5.4 5.6 | — | 5.4: sem warning C7 no upload de PDF vazio; 5.6: PDF viewer não renderiza conteúdo |
+
+---
 
 ### Falhas detalhadas
-> Para cada ❌: item, passos executados, esperado vs. obtido, mensagem de erro/console, screenshot.
 
-1. …
+**F1 — G3 / 1.14 ❌ — Termos e Privacidade: headings invisíveis no dark mode**
+- **Passos:** alternar para dark mode → abrir `/termos` ou `/privacidade`
+- **Esperado:** texto legível
+- **Obtido:** headings das seções (`<h2>`) e corpo de texto são invisíveis (preto sobre preto)
+- **Causa:** `Termos.jsx` e `Privacidade.jsx` usam classes Tailwind `text-slate-900` e `text-slate-700` hardcoded no componente `Section`. Não respeitam os tokens CSS dark mode.
+- **Fix:** substituir `text-slate-900` → `text-[var(--pl-ink)]` e `text-slate-700` → `text-[var(--pl-ink-2)]` no componente `Section` dos dois arquivos.
+
+**F2 — G9 ❌ — Pill de study_goal no Perfil não atualiza sidebar sem F5**
+- **Passos:** Perfil → Visão geral → clicar pill "Vestibular / ENEM"
+- **Esperado:** toast de sucesso + tabs de concurso somem do menu imediatamente
+- **Obtido:** toast de sucesso mas sidebar permanece igual até F5
+- **Causa:** `handleStudyGoalChange` em `Perfil.jsx` salva no Supabase e no estado local, mas não chama `onSaveProfile` → `currentProfile` no `App.jsx` não é atualizado → sidebar continua renderizando com o valor antigo.
+- **Fix:** após salvar, chamar `onSaveProfile({ ...currentProfile, study_goal: newGoal })` ou emitir evento de atualização de perfil.
+
+**F3 — 2.6 ⚠️ — Sessão: tempo exibido em minutos em vez de segundos**
+- **Passos:** iniciar sessão → finalizar com ~48 segundos de duração → ver no histórico
+- **Esperado:** "0h48s" ou "48 segundos"
+- **Obtido:** "0h48min" — os segundos estão sendo interpretados como minutos na formatação da duração
+- **Severidade:** média — afeta a exibição de sessões curtas
+
+**F4 — 3.5 ❌ CRÍTICO — Flashcards: página quebra com ReferenceError**
+- **Passos:** clicar em "Flashcards" no menu
+- **Esperado:** lista de decks
+- **Obtido:** React error boundary mostra "Algo saiu do esperado"
+- **Erro no console:** `ReferenceError: Play is not defined`
+- **Causa:** `Flashcards.jsx` usa `<Play size={12} />` (linha 143) e `<ArrowRight />` (linha 310) mas nenhum dos dois está na importação do `lucide-react`. A linha de import precisa incluir `Play` e `ArrowRight`.
+- **Fix:** adicionar `Play, ArrowRight` ao import: `import { ..., Play, ArrowRight } from 'lucide-react'`
+- **Impacto:** bloqueia 100% do uso de Flashcards em produção.
+
+**F5 — 4.6 / 4.7 / 4.8 ❌ — Lembretes: modal não aceita input via automação**
+- **Passos:** Lembretes → "Novo lembrete" → tentar preencher título
+- **Esperado:** título preenchido, lembrete salvo
+- **Obtido:** o campo de input controlado pelo React não aceita eventos sintéticos via CDP, nativeInputValueSetter, nem dispatchEvent('input'). O lembrete foi salvo com título vazio.
+- **Nota:** esta falha pode ser limitação do CDP/automação, não necessariamente um bug para o usuário real. Recomenda-se validação manual por Lucas.
+
+**F6 — 5.4 ❌ — PDF vazio/sem texto aceito silenciosamente**
+- **Passos:** Materiais PDF → "Enviar PDF" → upload de PDF válido mas sem conteúdo de texto (324 bytes, 1 página em branco)
+- **Esperado:** erro claro "PDF parece ser escaneado… cole o texto" (C7)
+- **Obtido:** upload bem-sucedido, PDF aparece na biblioteca com 0 páginas, visualizador abre com 1 página em branco — zero feedback ao usuário sobre ausência de texto
+- **Nota:** o flow de "upload de edital PDF para análise IA" (concurso context) não foi encontrado — EsPCEx foi importado via Biblioteca do app, não via PDF upload. Pode ser que o C7 esteja implementado no fluxo de importação de edital; não testado.
+
+**F7 — 5.6 ❌ — Legislação: PDF viewer não renderiza conteúdo**
+- **Passos:** Legislação → qualquer bloco/página
+- **Esperado:** conteúdo do PDF exibido (texto do Vade Mecum)
+- **Obtido:** ícone de arquivo quebrado em toda página. Navegação (Anterior/Próxima), troca de bloco e busca funcionam corretamente — só a renderização visual do PDF falha.
+- **O que funciona:** troca de bloco (Constituição Federal, Código Civil…), contador de páginas (1/801 → 9/801 → 16/801), busca por texto ("direitos fundamentais" encontra resultados indexados com trechos), clicar em resultado navega para a página correta.
+- **O que falha:** o conteúdo visual do PDF não é exibido (broken image icon). Sem mensagem de erro explicativa para o usuário.
+
+---
 
 ### Erros de console avulsos
-> Erros vermelhos vistos fora dos testes dirigidos.
 
-1. …
+1. **"Erro ao carregar redações do Supabase: Object"** — aparece em TODO load do Dashboard. Erro silencioso (não visível ao usuário) mas indica falha persistente ao buscar redações. Investigar permissões RLS ou query.
+2. **"[BrasilAPI] Falha ao carregar feriados: 2026 Failed to fetch (brasilapi.com.br)"** — na página de Legislação (e provavelmente em Lembretes/Calendário). A API de feriados está falhando. A tela não quebra, mas feriados não aparecem no calendário.
+
+---
 
 ### Recomendação final
-> Uma frase: pronto para lançar / corrigir X antes / bloqueado por Y.
+
+**Corrigir F4 (Flashcards quebrado — 2 linhas de fix) e F1/F7 (dark mode + PDF viewer) ANTES de lançar; F2 (sidebar study_goal) e F3 (tempo em sessões) são bugs de UX mas não bloqueiam; F5/F6 precisam de validação manual pelo Lucas.**

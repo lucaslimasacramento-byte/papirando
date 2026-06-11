@@ -5908,12 +5908,13 @@ export default function App() {
   };
 
   const formatHHMMSS = (totalSecs) => {
-    const h = Math.floor(totalSecs / 3600);
-    const m = Math.floor((totalSecs % 3600) / 60);
-    const s = totalSecs % 60;
-    return `${h > 0 ? h.toString().padStart(2, '0') + ':' : ''}${m
-      .toString()
-      .padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    const safe = Math.max(0, Math.floor(Number(totalSecs) || 0));
+    const h = Math.floor(safe / 3600);
+    const m = Math.floor((safe % 3600) / 60);
+    const s = safe % 60;
+    // SEMPRE HH:MM:SS — omitir a hora fazia "00:30" (30s) ser lido como 30min
+    // pelos parsers de tempo (MetasSemana.parseTime, studyAnalytics).
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const formatTimeStr = (mins) => `${Math.floor(mins / 60)}h${mins % 60 > 0 ? mins % 60 + 'min' : '00min'}`;
@@ -6838,9 +6839,10 @@ export default function App() {
               audiobookSummary={audiobookSummary}
               onOpenSquad={(squadId) => {
                 setSelectedCommunitySquadId(squadId);
-                setActiveTab('esquadroes');
+                setActiveTab('comunidades');
               }}
               onSaveProfile={handleSaveProfile}
+              onProfilePatched={(patch) => setCurrentProfile((prev) => ({ ...(prev || {}), ...(patch || {}) }))}
               onChangeAvatar={handleAvatarChange}
               onLogout={handleLogout}
               initialTab={activeTab === 'assinatura' ? 'assinatura' : 'overview'}
