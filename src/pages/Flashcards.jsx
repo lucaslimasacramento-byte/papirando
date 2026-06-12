@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PremiumGate from '../components/PremiumGate';
 import {
   ArrowLeft,
@@ -651,6 +651,29 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
   const [formErr, setFormErr]       = useState('');
   const [showInlineDeckForm, setShowInlineDeckForm] = useState(false);
 
+  // Atalhos de teclado na sessão de estudo: Espaço/Enter revela; 1-4 avalia; Esc sai.
+  const flippedRef = useRef(false);
+  useEffect(() => { flippedRef.current = flipped; }, [flipped]);
+  useEffect(() => {
+    if (!studyMode || sessionDone) return undefined;
+    const onKey = (e) => {
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      if (e.key === 'Escape') { setStudyMode(false); return; }
+      if (!flippedRef.current && (e.key === ' ' || e.key === 'Enter')) {
+        e.preventDefault();
+        setFlipped(true);
+        return;
+      }
+      if (flippedRef.current && ['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        rateCard(Number(e.key));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [studyMode, sessionDone]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const deckStats = useMemo(() => {
     const totalDecks = decks.length;
     const totalCards = decks.reduce((acc, deck) => acc + Number(deck.total_cards || 0), 0);
@@ -1054,77 +1077,76 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     const currentCard = studyQueue[studyIndex];
     const progress = ((studyIndex) / studyQueue.length) * 100;
 
+    const RATING_TONES = {
+      1: { tone: 'danger',  label: 'Errei',   hint: 'de novo' },
+      2: { tone: 'warn',    label: 'Difícil', hint: '' },
+      3: { tone: 'success', label: 'Lembrei', hint: '' },
+      4: { tone: 'accent',  label: 'Fácil',   hint: '' },
+    };
+
     return (
-      <div style={{ display: 'flex', height: '100%', minHeight: 0, flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--pl-rule)', padding: '10px 14px' }}>
-          <button
-            onClick={() => setStudyMode(false)}
-            style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-          >
+      <div className="pl-fc-study">
+        {/* Top bar */}
+        <div className="pl-fc-study-top">
+          <button className="pl-fc-study-close" onClick={() => setStudyMode(false)} aria-label="Sair da revisão">
             <X size={16} />
           </button>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>{activeDeck?.title}</p>
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>
-              {studyIndex + 1} / {studyQueue.length}
-            </p>
+          <div className="pl-fc-study-meta">
+            <span className="deck">{activeDeck?.disciplina || 'Flashcards'}</span>
+            <span className="title">{activeDeck?.title}</span>
           </div>
+          <span className="pl-fc-study-counter">
+            <strong>{studyIndex + 1}</strong> / {studyQueue.length}
+          </span>
         </div>
 
-        {/* Progress bar */}
-        <div style={{ height: 6, background: 'var(--pl-bg-soft)' }}>
-          <div
-            style={{ height: '100%', background: 'var(--pl-accent)', transition: 'width 500ms', width: `${progress}%` }}
-          />
+        {/* Progress */}
+        <div className="pl-fc-study-progress">
+          <div className="fill" style={{ width: `${progress}%` }} />
         </div>
 
-        {/* Card area */}
-        <div style={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '20px 16px' }}>
-          {/* Flip card */}
+        {/* Card */}
+        <div className="pl-fc-study-stage">
           <div
-            onClick={() => setFlipped((f) => !f)}
-            className="pl-card"
-            style={{ minHeight: 170, width: '100%', maxWidth: 576, cursor: 'pointer', userSelect: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center', boxShadow: 'var(--pl-sh-mid)', transition: 'box-shadow 0.2s' }}
+            className={`pl-fc-flip ${flipped ? 'is-flipped' : ''}`}
+            onClick={() => !flipped && setFlipped(true)}
+            role="button"
+            tabIndex={0}
           >
-            <p className="pl-eyebrow">
-              {flipped ? 'Verso' : 'Frente'}
-            </p>
-            <p style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: 'var(--pl-ink)', margin: 0 }}>
-              {flipped
-                ? <span className="pl-gabarito-reveal" style={{ display: 'block' }}>{currentCard?.back}</span>
-                : currentCard?.front}
-            </p>
-            {!flipped && (
-              <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginTop: 8 }}>Clique para revelar</p>
-            )}
+            <div className="pl-fc-flip-inner">
+              <div className="pl-fc-face front">
+                <span className="pl-fc-face-tag">Frente</span>
+                <p className="pl-fc-face-text">{currentCard?.front}</p>
+                <span className="pl-fc-face-hint">Toque ou <kbd>espaço</kbd> para revelar</span>
+              </div>
+              <div className="pl-fc-face back">
+                <span className="pl-fc-face-tag">Verso</span>
+                <p className="pl-fc-face-text">{currentCard?.back}</p>
+              </div>
+            </div>
           </div>
 
-          {/* Rating buttons */}
+          {/* Ações */}
           {flipped ? (
-            <div style={{ display: 'grid', width: '100%', maxWidth: 640, gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            <div className="pl-fc-rating-row">
               {[1, 2, 3, 4].map((rating) => {
-                const info = RATING_LABELS[rating];
+                const info = RATING_TONES[rating];
                 const preview = formatNextInterval(currentCard, rating);
                 return (
                   <button
                     key={rating}
                     onClick={() => rateCard(rating)}
-                    className={`flash-rating-btn ${info.color}`}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: 12, border: '2px solid', padding: '10px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'transform 0.1s' }}
+                    className={`pl-fc-rating pl-fc-rating-${info.tone}`}
                   >
-                    <span style={{ fontSize: 14 }}>{info.emoji}</span>
-                    <span>{info.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.7, marginTop: 2 }}>{preview}</span>
+                    <span className="kbd">{rating}</span>
+                    <span className="lab">{info.label}</span>
+                    <span className="prev">{preview}</span>
                   </button>
                 );
               })}
             </div>
           ) : (
-            <button
-              onClick={() => setFlipped(true)}
-              className="pl-btn pl-btn-primary"
-            >
+            <button onClick={() => setFlipped(true)} className="pl-btn pl-btn-primary pl-btn-lg pl-fc-reveal">
               Mostrar resposta
             </button>
           )}

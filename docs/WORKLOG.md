@@ -176,6 +176,17 @@
 
 ## Registro de sessões
 
+### Sessão 2026-06-11 (parte 6) — Viewer de PDF em scroll + revamp dos Flashcards
+- **PDF (Legislação) — causa raiz real:** `<iframe>` de PDF é bloqueado pelo Chrome mesmo same-origin com `X-Frame-Options: DENY`. Solução definitiva: novo componente `src/components/PdfScrollViewer.jsx` que renderiza o PDF via **pdf.js em canvas, com scroll contínuo** (páginas empilhadas), virtualizado (só renderiza o que está perto do viewport — aguenta as 801 páginas do Vade Mecum) e fit-to-width. Navegação (Anterior/Próxima, seções, marcadores, resultados de busca) usa ref imperativo `scrollToPage` com salto instantâneo; o scroll informa a página visível de volta. Os dois `<iframe>` da Legislação (normal + modo foco) foram substituídos.
+- **Flashcards (revamp do diferencial):**
+  - Bug visual encontrado: os botões de avaliação usavam classes Tailwind (`bg-red-100…`) que **não existem** neste projeto → ficavam sem cor. Reescritos com tokens `pl-*` semânticos (Errei/Difícil/Lembrei/Fácil em vermelho/âmbar/verde/azul).
+  - Nova tela de estudo `.pl-fc-study-*`: card com **flip 3D**, frente/verso marcados, barra de progresso em gradiente, contador, fundo com leve halo de acento (não mais preto vazio).
+  - **Atalhos de teclado:** Espaço/Enter revela; 1–4 avalia; Esc sai.
+- Build OK (1.46s) + ESLint limpo. PDF confirmado servido (200, application/pdf). ⚠️ Telas exigem login+dados → verificação visual final é do Lucas após deploy.
+- Materiais.jsx mantido como está (página-a-página com fit-to-width) — migração para scroll fica para um próximo passo se desejado.
+
+---
+
 ### Sessão 2026-06-11 (parte 5) — Correções da validação manual do Lucas
 - ✅ SQL das tabelas faltantes rodado no Supabase (confirmado "Success").
 - **Legislação / PDF bloqueado (causa raiz encontrada):** o CSP global em `vercel.json` tinha `frame-src` sem `'self'` + `X-Frame-Options: DENY` para tudo — o Chrome bloqueava o próprio PDF no iframe ("Este conteúdo está bloqueado"). Corrigido: `frame-src 'self'` no CSP + bloco de headers específico para `/assets/docs/*` com `SAMEORIGIN`/`frame-ancestors 'self'`.

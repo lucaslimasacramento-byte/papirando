@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import PdfScrollViewer from '../components/PdfScrollViewer';
 import {
   BASE_VADE_SECTIONS,
   DEFAULT_SECTION_PAGE_MAP,
@@ -85,6 +86,7 @@ function dedupeHistory(history, nextValue) {
 
 export default function Legislacao({ isAdmin = false, currentUserId = '', onOpenAdminLegislacao }) {
   const fileInputRef = useRef(null);
+  const viewerRef = useRef(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isIndexingPdf, setIsIndexingPdf] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -256,7 +258,6 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
     : orderedSections[0];
   const currentPage = Math.max(1, Number(vadeState.currentPage || sectionPageMap[selectedSection] || 1));
   const activePdfUrl = documentMeta?.pdfUrl || '/assets/docs/vade-mecum-senado-federal-2ed.pdf';
-  const iframePdfUrl = `${activePdfUrl}#toolbar=1&navpanes=0&page=${currentPage}`;
   const fullReaderUrl = `${activePdfUrl}#toolbar=1&page=${currentPage}`;
 
   const filteredSections = useMemo(() => {
@@ -343,10 +344,12 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
   };
 
   const goToSection = (section) => {
+    const targetPage = sectionPageMap[section] || 1;
+    viewerRef.current?.scrollToPage(targetPage);
     updateState((prev) => ({
       ...prev,
       selectedSection: section,
-      currentPage: sectionPageMap[section] || 1,
+      currentPage: targetPage,
       updatedAt: new Date().toISOString(),
     }));
 
@@ -356,15 +359,26 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
     }));
   };
 
+  // Atualiza só o estado (chamado pelo viewer durante o scroll — não rola de volta).
   const goToPage = (page) => {
     const safePage = Math.max(1, Number(page || 1));
     const inferredSection = inferSectionFromPage(safePage, sectionPageMap);
-    updateState((prev) => ({
-      ...prev,
-      currentPage: safePage,
-      selectedSection: inferredSection,
-      updatedAt: new Date().toISOString(),
-    }));
+    updateState((prev) => {
+      if (prev.currentPage === safePage && prev.selectedSection === inferredSection) return prev;
+      return {
+        ...prev,
+        currentPage: safePage,
+        selectedSection: inferredSection,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  };
+
+  // Navegação explícita (botões, marcadores, resultados de busca): rola o viewer.
+  const navigateToPage = (page) => {
+    const safePage = Math.max(1, Number(page || 1));
+    viewerRef.current?.scrollToPage(safePage);
+    goToPage(safePage);
   };
 
   const submitPdfSearch = () => {
@@ -495,10 +509,11 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
             </div>
           </div>
           <div className="canvas">
-            <iframe
-              key={`focus-${selectedSection}-${currentPage}`}
-              title="Vade Mecum foco"
-              src={iframePdfUrl}
+            <PdfScrollViewer
+              ref={viewerRef}
+              url={activePdfUrl}
+              initialPage={currentPage}
+              onVisiblePageChange={goToPage}
             />
           </div>
         </section>
@@ -669,7 +684,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                 <div className="nav-row">
                   <button
                     type="button"
-                    onClick={() => goToPage(currentPage - 1)}
+                    onClick={() => navigateToPage(currentPage - 1)}
                     disabled={currentPage <= 1}
                     className="pl-btn pl-btn-sm"
                   >
@@ -677,7 +692,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                   </button>
                   <button
                     type="button"
-                    onClick={() => goToPage(currentPage + 1)}
+                    onClick={() => navigateToPage(currentPage + 1)}
                     disabled={maxPage != null && currentPage >= maxPage}
                     className="pl-btn pl-btn-sm"
                   >
@@ -701,10 +716,11 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                 </div>
               </div>
               <div className="canvas">
-                <iframe
-                  key={`${selectedSection}-${currentPage}`}
-                  title="Vade Mecum"
-                  src={iframePdfUrl}
+                <PdfScrollViewer
+                  ref={viewerRef}
+                  url={activePdfUrl}
+                  initialPage={currentPage}
+                  onVisiblePageChange={goToPage}
                 />
               </div>
             </section>
@@ -811,7 +827,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                     ) : (
                       markersForCurrentSection.map((m) => (
                         <div key={m.id} className="pl-leg-marker-item">
-                          <button type="button" onClick={() => goToPage(m.page)} className="info">
+                          <button type="button" onClick={() => navigateToPage(m.page)} className="info">
                             <p className="lbl">
                               <span className="swatch" style={{ background: m.color }} />
                               <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -888,7 +904,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                             <button
                               key={`${r.page}-${i}-${r.excerpt.slice(0, 24)}`}
                               type="button"
-                              onClick={() => goToPage(r.page)}
+                              onClick={() => navigateToPage(r.page)}
                               className="pl-leg-search-result"
                             >
                               <span className="meta">Pág {r.page} · {getSectionDisplayLabel(r.section)}</span>
