@@ -26,7 +26,7 @@ interface PlanConfig {
 
 const PLANS: Record<string, PlanConfig> = {
   papiro_monthly: {
-    value: 19.90,
+    value: 5.00, // TESTE — voltar para 19.90 antes do lançamento
     cycle: 'MONTHLY',
     description: 'Papirando Papiro — Mensal',
     trialDays: 30,
@@ -226,6 +226,8 @@ serve(async (req) => {
     trialEnd.setDate(trialEnd.getDate() + plan.trialDays);
     const nextDueDate = trialEnd.toISOString().split('T')[0]; // YYYY-MM-DD
 
+    const appUrl = Deno.env.get('APP_URL') ?? 'https://papirando.app';
+
     // Cria assinatura no Asaas
     const subscription = await asaas('/subscriptions', 'POST', {
       customer: customerId,
@@ -235,10 +237,16 @@ serve(async (req) => {
       cycle: plan.cycle,
       description: plan.description,
       externalReference: user.id,
+      // Após o pagamento, o Asaas redireciona o cliente de volta ao app.
+      callback: {
+        successUrl: `${appUrl}/?checkout=success&plan=${planId}`,
+        autoRedirect: true,
+      },
     });
 
-    // Registra no banco com status trialing
-    await supabaseAdmin.from('subscriptions').upsert(
+    // Registra no banco com status trialing. NÃO ignorar erro: se a gravação
+    // falhar, o usuário ficaria sem acesso e o webhook não acharia a assinatura.
+    const { error: upsertError } = await supabaseAdmin.from('subscriptions').upsert(
       {
         user_id: user.id,
         provider: 'asaas',
@@ -255,12 +263,15 @@ serve(async (req) => {
       { onConflict: 'user_id' },
     );
 
+    if (upsertError) {
+      console.error('[create-checkout-session] falha ao gravar subscription:', upsertError.message);
+      throw new Error('DB_UPSERT_FAILED');
+    }
+
     // Busca a primeira cobrança para pegar a URL de pagamento
     const payments = await asaas(`/payments?subscription=${subscription.id}&limit=1`);
     const firstPayment = Array.isArray(payments?.data) ? payments.data[0] : null;
     const paymentUrl = firstPayment?.invoiceUrl ?? null;
-
-    const appUrl = Deno.env.get('APP_URL') ?? 'https://papirando.app';
 
     return json(req, {
       url: paymentUrl ?? `${appUrl}/?checkout=success&plan=${planId}`,
