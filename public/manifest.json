@@ -1,7 +1,7 @@
 {
   "name": "Papirando",
   "short_name": "Papirando",
-  "description": "Estude para concursos públicos com ferramenta séria.",
+  "description": "O estúdio de estudos com IA para qualquer estudante: questões, flashcards, mapas mentais e simulados a partir do seu próprio material.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

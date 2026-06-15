@@ -176,6 +176,20 @@
 
 ## Registro de sessões
 
+### Sessão 2026-06-14 — Hardening pré-lançamento (segurança + SEO)
+**Auditoria de segurança (Claude + subagente) nos surfaces de backend. Achados aplicados:**
+- 🔴 **HIGH — Webhook Asaas fail-open (corrigido):** `asaas-webhook` só checava o token se ele estivesse setado (`WEBHOOK_TOKEN && ...`) e concedia acesso pago com base em `payment.externalReference` vindo do corpo. Um atacante poderia forjar `PAYMENT_RECEIVED` e virar Papiro de graça. Correções: (1) token **obrigatório** — fail-closed (503) se não configurado; (2) comparação em tempo constante; (3) **verifica o pagamento direto na API do Asaas** (`GET /payments/{id}`) e deriva o `user_id` da linha gravada no checkout (casada por `asaas_subscription_id`), nunca do corpo. Redeploy feito (fica 503 até as secrets do Asaas existirem — estado seguro).
+- 🟡 **MEDIUM — Self-grant de plano via profiles (blindado):** `isPremiumPlan` aceita `subscription_plan` do profile como fallback; se o trigger `trg_protect_profile_privileged_fields` não estiver no banco, um usuário poderia dar PATCH em `subscription_plan='papiro'`. Como vários SQLs não estavam aplicados em prod, criei **`supabase/RODAR-AGORA-seguranca.sql`** (idempotente e tolerante) — ⚠️ **Lucas roda no SQL Editor**.
+- ✅ Surfaces confirmados seguros: auth do gateway de IA (valida JWT contra Supabase), sem SSRF/command-exec nas rotas de IA, `create-checkout-session` (plano/valor server-side, ligado ao JWT), RLS das tabelas de usuário (own-row), admin via `is_app_admin()` no RLS.
+- ⏳ **Gap conhecido (não-bug, custo):** cota de plano da IA é só no front; o gateway autentica + rate-limita mas não checa cota por plano. Risco de custo contido pelo rate-limit; endurecer server-side fica para pós-lançamento.
+
+**SEO / metadados:**
+- `index.html`: título com tagline, `meta description`, OG completo + Twitter card; posicionamento corrigido (era "concursos públicos" → estudantes em geral); domínio alinhado para **papirando.com** (estava `.app` em og/referrals, inconsistente com produção e e-mails). ⚠️ Falta criar um `og-image.png` 1200×630 dedicado (hoje aponta para o app-icon SVG).
+- `manifest.json`: description corrigida (posicionamento).
+- `referrals.js`: fallback de origem → papirando.com.
+
+---
+
 ### Sessão 2026-06-11 (parte 6) — Viewer de PDF em scroll + revamp dos Flashcards
 - **PDF (Legislação) — causa raiz real:** `<iframe>` de PDF é bloqueado pelo Chrome mesmo same-origin com `X-Frame-Options: DENY`. Solução definitiva: novo componente `src/components/PdfScrollViewer.jsx` que renderiza o PDF via **pdf.js em canvas, com scroll contínuo** (páginas empilhadas), virtualizado (só renderiza o que está perto do viewport — aguenta as 801 páginas do Vade Mecum) e fit-to-width. Navegação (Anterior/Próxima, seções, marcadores, resultados de busca) usa ref imperativo `scrollToPage` com salto instantâneo; o scroll informa a página visível de volta. Os dois `<iframe>` da Legislação (normal + modo foco) foram substituídos.
 - **Flashcards (revamp do diferencial):**

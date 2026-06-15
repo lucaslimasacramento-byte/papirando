@@ -32,7 +32,7 @@ export function buildInviteUrl(code, origin = '') {
   const normalizedCode = normalizeReferralCode(code);
   const safeOrigin =
     String(origin || '').trim() ||
-    (typeof window !== 'undefined' ? window.location.origin : 'https://papirando.app');
+    (typeof window !== 'undefined' ? window.location.origin : 'https://papirando.com');
 
   if (!normalizedCode) return safeOrigin;
   return `${safeOrigin.replace(/\/$/, '')}/entrar?ref=${encodeURIComponent(normalizedCode)}`;
