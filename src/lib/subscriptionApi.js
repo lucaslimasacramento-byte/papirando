@@ -51,7 +51,16 @@ export async function startCheckout({ planId, billing }) {
     body: { planId, billing },
   });
 
-  if (error) throw new Error(error.message || 'Erro ao criar sessao de pagamento.');
+  if (error) {
+    // Em respostas non-2xx o supabase-js retorna uma mensagem genérica; a mensagem
+    // real da função vem no corpo (error.context). Tenta extraí-la.
+    let message = error.message || 'Erro ao criar sessao de pagamento.';
+    try {
+      const body = await error.context?.json?.();
+      if (body?.error) message = body.error;
+    } catch { /* mantém mensagem genérica */ }
+    throw new Error(message);
+  }
   if (!data?.url) throw new Error('URL de checkout nao retornada.');
   return data.url;
 }

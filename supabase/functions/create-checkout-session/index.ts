@@ -70,7 +70,10 @@ async function findOrCreateCustomer(
   userId: string,
   email: string,
   name: string,
+  cpfCnpj: string,
 ): Promise<string> {
+  const customerName = name || email.split('@')[0] || 'Aluno Papirando';
+
   // Verifica se já existe customer salvo
   const { data: sub } = await supabaseAdmin
     .from('subscriptions')
@@ -80,18 +83,27 @@ async function findOrCreateCustomer(
     .limit(1)
     .maybeSingle();
 
-  if (sub?.asaas_customer_id) return String(sub.asaas_customer_id);
+  if (sub?.asaas_customer_id) {
+    // Garante que o customer tem o CPF (cobranças exigem). Faz update idempotente.
+    const id = String(sub.asaas_customer_id);
+    await asaas(`/customers/${id}`, 'POST', { name: customerName, email, cpfCnpj });
+    return id;
+  }
 
   // Busca por externalReference no Asaas
   const search = await asaas(`/customers?externalReference=${encodeURIComponent(userId)}`);
   if (Array.isArray(search?.data) && search.data.length > 0) {
-    return String(search.data[0].id);
+    const id = String(search.data[0].id);
+    // Customer pode ter sido criado antes sem CPF — atualiza antes de cobrar.
+    await asaas(`/customers/${id}`, 'POST', { name: customerName, email, cpfCnpj });
+    return id;
   }
 
-  // Cria novo customer
+  // Cria novo customer já com o CPF
   const customer = await asaas('/customers', 'POST', {
-    name: name || email.split('@')[0] || 'Aluno Papirando',
+    name: customerName,
     email,
+    cpfCnpj,
     externalReference: userId,
     notificationDisabled: false,
   });
@@ -185,18 +197,28 @@ serve(async (req) => {
       return json(req, { error: 'Voce ja possui uma assinatura ativa. Gerencie-a na aba Assinatura do perfil.' }, 409);
     }
 
-    // Busca nome do perfil
+    // Busca nome + CPF do perfil
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('nome')
+      .select('nome, cpf')
       .eq('id', user.id)
       .maybeSingle();
+
+    // Asaas exige CPF/CNPJ do cliente para gerar a cobrança (PIX ou cartão).
+    const cpfDigits = String(profile?.cpf || '').replace(/\D/g, '');
+    if (cpfDigits.length !== 11 && cpfDigits.length !== 14) {
+      return json(req, {
+        error: 'Preencha um CPF válido no seu Perfil antes de assinar.',
+        code: 'CPF_REQUIRED',
+      }, 422);
+    }
 
     const customerId = await findOrCreateCustomer(
       supabaseAdmin,
       user.id,
       user.email ?? '',
       String(profile?.nome || ''),
+      cpfDigits,
     );
 
     // Data da primeira cobrança (após trial de 30 dias)
