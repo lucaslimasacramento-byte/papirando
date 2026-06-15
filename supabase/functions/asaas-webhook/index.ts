@@ -94,7 +94,12 @@ serve(async (req) => {
       console.error('[asaas-webhook] ASAAS_WEBHOOK_TOKEN nao configurado — recusando.');
       return new Response('Webhook nao configurado', { status: 503 });
     }
-    if (!safeEqual(String(body.accessToken ?? ''), WEBHOOK_TOKEN)) {
+    // Asaas envia o token no header `asaas-access-token`; aceitamos também o
+    // corpo (body.accessToken) por robustez entre versões do painel.
+    const sentToken = String(
+      req.headers.get('asaas-access-token') ?? body.accessToken ?? ''
+    );
+    if (!safeEqual(sentToken, WEBHOOK_TOKEN)) {
       console.warn('[asaas-webhook] token invalido');
       return new Response('Forbidden', { status: 403 });
     }
