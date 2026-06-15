@@ -22,9 +22,13 @@ function parseOrigins(value: string): string[] {
 
 function allowedOrigins(): Set<string> {
   return new Set([
+    'https://papirando.com',
+    'https://www.papirando.com',
     'https://papirando.vercel.app',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://localhost:5176',
+    'http://127.0.0.1:5176',
     ...parseOrigins(env('ALLOWED_ORIGINS')),
     ...parseOrigins(env('APP_URL')),
     ...parseOrigins(env('SITE_URL')),
