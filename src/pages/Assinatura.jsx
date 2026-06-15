@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
+import { startCheckout } from '../lib/subscriptionApi';
+import { showToast } from '../lib/dialogs';
 
 const PLANS = [
   {
@@ -60,10 +62,29 @@ export default function Assinatura({
   user = null,
   currentPlan = 'folha',
   expiresAt = null,
-  onSelectPlan = () => {},
+  onSelectPlan = null,
   checkoutLoading = false,
 }) {
   const [isAnual, setIsAnual] = useState(false);
+  const [internalBusy, setInternalBusy] = useState(false);
+
+  // Se o pai passou um handler (ex.: Perfil), usa ele. Senão, dispara o checkout
+  // aqui mesmo — assim a tela funciona mesmo renderizada standalone (AppTabContent).
+  const handleSelect = async (planId) => {
+    if (planId === 'folha') return;
+    if (typeof onSelectPlan === 'function') {
+      onSelectPlan(planId, isAnual);
+      return;
+    }
+    setInternalBusy(true);
+    try {
+      const url = await startCheckout({ planId: 'papiro', billing: isAnual ? 'annual' : 'monthly' });
+      window.location.href = url;
+    } catch (err) {
+      showToast(err?.message || 'Erro ao iniciar o pagamento. Tente novamente.', 'error');
+      setInternalBusy(false);
+    }
+  };
 
   // Normaliza planos legados para os nomes atuais
   const normalizedCurrentPlan = useMemo(() => {
@@ -104,8 +125,8 @@ export default function Assinatura({
             isAnual={isAnual}
             isCurrent={normalizedCurrentPlan === plan.id}
             expiresAt={normalizedCurrentPlan === plan.id ? expiresAt : null}
-            onSelect={(planId) => onSelectPlan(planId, isAnual)}
-            checkoutLoading={checkoutLoading}
+            onSelect={(planId) => handleSelect(planId)}
+            checkoutLoading={checkoutLoading || internalBusy}
           />
         ))}
       </div>
