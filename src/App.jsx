@@ -6448,6 +6448,17 @@ export default function App() {
     );
   }
 
+  // Aguarda o perfil carregar antes de decidir entre onboarding e plataforma.
+  // Sem isso, contas novas veem o dashboard "piscar" antes do gate de onboarding,
+  // pois currentProfile comeca null e so vira objeto apos o fetch assincrono.
+  if (!isAdmin && Boolean(currentUserId) && currentProfile === null) {
+    return (
+      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: '#f3efe5' }}>
+        <span style={{ fontFamily: 'var(--pl-serif, Fraunces, serif)', fontStyle: 'italic', color: '#847b6c', fontSize: 16 }}>Carregando…</span>
+      </div>
+    );
+  }
+
   const needsOnboarding =
     !isAdmin &&
     Boolean(currentUserId) &&
