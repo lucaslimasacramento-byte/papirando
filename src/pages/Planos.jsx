@@ -29,6 +29,7 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { analyzeEdital } from '../lib/aiClient';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
+import { storageThumb } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -869,7 +870,7 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
           overflow: 'hidden',
         }}>
           {target?.imagem_url
-            ? <img src={target.imagem_url} alt={target.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.30))' }} />
+            ? <img src={storageThumb(target.imagem_url, 160)} alt={target.nome} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.30))' }} />
             : <Target size={26} style={{ color: 'rgba(243,239,229,0.65)' }} strokeWidth={1.5} />
           }
         </div>
@@ -1294,7 +1295,7 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlv
             flexShrink: 0,
           }}>
             {curso.imagem_url ? (
-              <img src={curso.imagem_url} alt={curso.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={storageThumb(curso.imagem_url, 256)} alt={curso.nome} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <PlCrestIcon label={curso.nome} />
             )}

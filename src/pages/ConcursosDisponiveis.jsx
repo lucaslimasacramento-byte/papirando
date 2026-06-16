@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { buildContestForRole, CONTEST_STATUS_LABELS, CONTEST_STATUS_OPTIONS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
 import { getAreaToken } from '../lib/areaTokens';
+import { storageThumb } from '../lib/imageUrl';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
@@ -776,8 +777,10 @@ function CourseCard({ template, areaToken, intentFilter, added, loading, limiteA
 
         {template.imagem_url ? (
           <img
-            src={template.imagem_url}
+            src={storageThumb(template.imagem_url, 160)}
             alt={template.nome}
+            loading="lazy"
+            decoding="async"
             style={{ position: 'relative', zIndex: 1, maxWidth: 72, maxHeight: 72, objectFit: 'contain', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.30))' }}
           />
         ) : (
@@ -1050,7 +1053,7 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
       <div style={{ minHeight: 74, position: 'relative', background: `linear-gradient(135deg, ${area.cover} 0%, ${area.coverGlow} 100%)`, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px' }}>
         <div style={{ position: 'absolute', top: -54, right: -42, width: 150, height: 150, borderRadius: '50%', background: `radial-gradient(circle, ${area.coverGlow} 0%, transparent 70%)`, opacity: 0.42 }} />
         {concurso.imagem_url ? (
-          <img src={concurso.imagem_url} alt={concurso.nome} style={{ position: 'relative', zIndex: 1, width: 50, height: 50, objectFit: 'contain', filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.32))', flexShrink: 0 }} />
+          <img src={storageThumb(concurso.imagem_url, 120)} alt={concurso.nome} loading="lazy" decoding="async" style={{ position: 'relative', zIndex: 1, width: 50, height: 50, objectFit: 'contain', filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.32))', flexShrink: 0 }} />
         ) : (
           <div style={{ position: 'relative', zIndex: 1, width: 50, height: 50, borderRadius: 12, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.12)', color: '#f3efe5', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', flexShrink: 0 }}>
             <LibraryBig size={26} />
@@ -1345,7 +1348,7 @@ function ContestPreviewModal({
               <div style={{ pointerEvents: 'none', position: 'absolute', left: -40, top: -40, height: 112, width: 112, borderRadius: '50%', background: 'rgba(34,211,238,0.1)' }} />
               <div style={{ pointerEvents: 'none', position: 'absolute', right: -32, bottom: 8, height: 96, width: 96, borderRadius: '50%', background: 'rgba(52,211,153,0.1)' }} />
               {contest.imagem_url ? (
-                <img src={contest.imagem_url} alt={contest.nome} style={{ position: 'relative', zIndex: 1, maxHeight: '74%', maxWidth: '62%', objectFit: 'contain', filter: 'drop-shadow(0 18px 24px rgba(0,0,0,0.32))' }} />
+                <img src={storageThumb(contest.imagem_url, 256)} alt={contest.nome} loading="lazy" decoding="async" style={{ position: 'relative', zIndex: 1, maxHeight: '74%', maxWidth: '62%', objectFit: 'contain', filter: 'drop-shadow(0 18px 24px rgba(0,0,0,0.32))' }} />
               ) : (
                 <div style={{ position: 'relative', zIndex: 1, display: 'flex', height: 80, width: 80, alignItems: 'center', justifyContent: 'center', borderRadius: 24, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.1)', color: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.24)', backdropFilter: 'blur(8px)' }}>
                   <LibraryBig size={42} />

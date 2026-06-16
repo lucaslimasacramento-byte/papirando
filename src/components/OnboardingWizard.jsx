@@ -15,6 +15,7 @@ import { DEFAULT_COURSE_TEMPLATES, normalizeCourseTemplates } from '../lib/cours
 import { updateProfile } from '../lib/profileApi';
 import { normalizeCpf, isValidCpf } from '../lib/profileProgress';
 import { showToast } from '../lib/dialogs';
+import { storageThumb } from '../lib/imageUrl';
 
 const TOTAL_STEPS = 4;
 
@@ -395,7 +396,7 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
                 }}
               >
                 {logo ? (
-                  <img src={logo} alt="" loading="lazy" decoding="async" width={28} height={28} style={{ width: 28, height: 28, flexShrink: 0, borderRadius: 6, objectFit: 'contain' }} />
+                  <img src={storageThumb(logo, 64)} alt="" loading="lazy" decoding="async" width={28} height={28} style={{ width: 28, height: 28, flexShrink: 0, borderRadius: 6, objectFit: 'contain' }} />
                 ) : (
                   <div style={{
                     width: 28, height: 28, flexShrink: 0, borderRadius: 6,

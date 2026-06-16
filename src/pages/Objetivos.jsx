@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { getAreaToken } from '../lib/areaTokens';
+import { storageThumb } from '../lib/imageUrl';
 
 // ─── CourseTemplateView (Faculdade e Vestibular) ──────────────────────────────
 
@@ -225,7 +226,7 @@ function MeusObjetivos({ cursos, onSetActiveTab, onRemove }) {
               title="Abrir edital"
             >
               {curso.imagem_url ? (
-                <img src={curso.imagem_url} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
+                <img src={storageThumb(curso.imagem_url, 64)} alt="" loading="lazy" decoding="async" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain', flexShrink: 0 }} />
               ) : (
                 <div style={{
                   width: 28, height: 28, borderRadius: 6, flexShrink: 0,
@@ -352,7 +353,7 @@ function CatalogoView({ catalog, tipo, cursos, onImport, onOpenDetail, limiteAti
                 <div style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                     {c.imagem_url ? (
-                      <img src={c.imagem_url} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+                      <img src={storageThumb(c.imagem_url, 80)} alt="" loading="lazy" decoding="async" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
                     ) : (
                       <div style={{
                         width: 36, height: 36, borderRadius: 8, flexShrink: 0,

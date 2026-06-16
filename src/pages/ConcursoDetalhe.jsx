@@ -25,6 +25,7 @@ import {
   normalizeContestStatus,
 } from '../lib/contestGrouping';
 import { getContestAreaTheme } from '../lib/contestAreaTheme';
+import { storageThumb } from '../lib/imageUrl';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
@@ -280,7 +281,7 @@ export default function ConcursoDetalhe({
   ].filter((item) => !item.hidden);
 
   const checklistDoneCount = actionChecklist.filter((item) => item.done).length;
-  const logoSrc = contest?.imagem_url && !imageError ? contest.imagem_url : '';
+  const logoSrc = contest?.imagem_url && !imageError ? storageThumb(contest.imagem_url, 160) : '';
 
   if (!contest) {
     return (
@@ -500,8 +501,10 @@ export default function ConcursoDetalhe({
           <div style={{ borderRight: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)' }}>
             {contest.imagem_url && !imageError ? (
               <img
-                src={contest.imagem_url}
+                src={storageThumb(contest.imagem_url, 320)}
                 alt={contest.nome}
+                loading="lazy"
+                decoding="async"
                 onError={() => setImageError(true)}
                 style={{ height: '100%', minHeight: 260, width: '100%', objectFit: 'contain', background: 'var(--pl-surface)', padding: 24 }}
               />
