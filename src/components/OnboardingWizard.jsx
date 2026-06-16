@@ -278,7 +278,7 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
         <p className="pl-eyebrow" style={{ margin: 0 }}>
           Áreas de {activeType === 'Concurso' ? 'concursos' : activeType.toLowerCase()}
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 78, overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 150, overflowY: 'auto' }}>
           <button
             type="button"
             onClick={() => setActiveArea('')}
@@ -395,7 +395,7 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
                 }}
               >
                 {logo ? (
-                  <img src={logo} alt="" style={{ width: 28, height: 28, flexShrink: 0, borderRadius: 6, objectFit: 'contain' }} />
+                  <img src={logo} alt="" loading="lazy" decoding="async" width={28} height={28} style={{ width: 28, height: 28, flexShrink: 0, borderRadius: 6, objectFit: 'contain' }} />
                 ) : (
                   <div style={{
                     width: 28, height: 28, flexShrink: 0, borderRadius: 6,
@@ -816,7 +816,7 @@ export default function OnboardingWizard({
 
   return (
     <div className="pl-card" style={{
-      width: '100%', maxWidth: 480,
+      width: '100%', maxWidth: 560,
       display: 'flex', flexDirection: 'column',
       borderRadius: 12,
       overflow: 'hidden',

@@ -6776,7 +6776,7 @@ export default function App() {
           onOpenProfile={() => setActiveTab('perfil')}
           onLogout={handleLogout}
           onOpenMobileNav={() => setMobileNavOpen(true)}
-          subscriptionPlan={isAdmin ? 'master' : String(effectiveProfile?.subscription_plan || 'gratuito').toLowerCase()}
+          subscriptionPlan={isAdmin ? 'master' : (isPremiumPlan ? 'papiro' : 'gratuito')}
           onOpenAssinatura={() => setActiveTab('assinatura')}
           isAdmin={isAdmin}
           onNavigate={(tabId) => {
