@@ -96,7 +96,26 @@ function StepWelcome({ profile }) {
         </h2>
         <p style={{ fontSize: 13.5, color: 'var(--pl-ink-2)', lineHeight: 1.55, maxWidth: 340 }}>
           O Papirando é seu estúdio de estudos pessoal com IA. Vamos configurar sua conta
-          em 3 passos rápidos.
+          em poucos passos.
+        </p>
+      </div>
+
+      <div
+        className="pl-card-paper"
+        style={{
+          width: '100%',
+          padding: '14px 16px',
+          border: '1px solid var(--pl-accent)',
+          background: 'var(--pl-accent-soft)',
+          textAlign: 'left',
+        }}
+      >
+        <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>
+          1 mês grátis incluso
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--pl-ink)', lineHeight: 1.5, fontWeight: 600 }}>
+          Ao concluir, você ganha 30 dias completos do plano Papiro — acesso total,
+          sem cartão e sem compromisso. Cancele quando quiser.
         </p>
       </div>
 
@@ -751,11 +770,19 @@ export default function OnboardingWizard({
 
       await updateProfile(currentUserId, updates);
 
+      // Concede o periodo gratuito de 30 dias (plano Papiro). Idempotente no backend.
+      // Nao bloqueia o onboarding se falhar — apenas registra.
+      try {
+        await supabase.functions.invoke('start-trial');
+      } catch (trialErr) {
+        console.warn('[onboarding] start-trial falhou:', trialErr?.message || trialErr);
+      }
+
       if (selectedObjective?.sourceKind === 'contest') {
         setTargetContestId?.(selectedObjective.rawId || contestId.replace(/^contest:/, ''));
       }
 
-      showToast('Configuração salva! Bem-vindo ao Papirando.', 'success');
+      showToast('Configuração salva! Seu mês grátis do Papiro está ativo.', 'success');
       onComplete?.(updates);
     } catch (e) {
       const msg = e?.message || 'Não foi possível salvar. Tente novamente.';

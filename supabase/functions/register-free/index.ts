@@ -514,8 +514,12 @@ Deno.serve(async (req) => {
       cpf_validado_algoritmo: true,
       email_verificado: false,
       status_cadastro: 'pendente',
-      subscription_plan: 'papiro',
-      subscription_status: 'trialing',
+      // O acesso premium vem da linha `subscriptions` (status trialing, 30 dias),
+      // que expira sozinha e devolve o usuario ao plano Folha. Manter o profile
+      // como 'gratuito' evita premium vitalicio (o gate por subscription_plan
+      // nao checa validade). Ver create-checkout-session / start-trial.
+      subscription_plan: 'gratuito',
+      subscription_status: 'trial',
       tentativas_cadastro: 0,
       ultimo_ip_cadastro: ipHash.slice(0, 48),
       updated_at: new Date().toISOString(),
