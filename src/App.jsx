@@ -25,6 +25,7 @@ import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
 import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
+import { compressImage } from './lib/imageCompress';
 import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
@@ -4864,11 +4865,16 @@ export default function App() {
     const isImageBucket = bucket === 'contest-images';
     const allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp'];
 
+    let uploadFile = file;
+
     if (isImageBucket) {
       if (!allowedImageTypes.includes(type) || !['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
         throw new Error('Envie uma imagem PNG, JPG ou WebP.');
       }
       if (size > 3 * 1024 * 1024) throw new Error('A imagem deve ter no maximo 3 MB.');
+      // Comprime/redimensiona no navegador antes de enviar (logo ~900KB -> ~10KB).
+      // Falha de compressao retorna o original, entao nao quebra o upload.
+      uploadFile = await compressImage(file, { maxSize: 512, quality: 0.85 });
     } else {
       if (type !== 'application/pdf' || extension !== 'pdf') {
         throw new Error('Envie um arquivo PDF valido.');
@@ -4877,7 +4883,7 @@ export default function App() {
     }
 
     return uploadContestAssetAdmin({
-      file,
+      file: uploadFile,
       kind: isImageBucket ? 'image' : 'edital',
       existingUrl,
       adminEmail: adminSession?.user?.email || currentUserEmail || currentProfile?.email || '',
