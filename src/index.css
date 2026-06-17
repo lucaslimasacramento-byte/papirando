@@ -1309,6 +1309,67 @@ html, body {
   100% { background-position: 200% center; }
 }
 
+/* ── Selo de plano Papiro — dourado vivo ── */
+.seal-plan-elite {
+  background-size: 200% 200% !important;
+  animation: seal-gold-flow 6s ease-in-out infinite;
+  box-shadow: 0 2px 10px rgba(217,119,6,0.28), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.seal-plan-elite:hover { filter: brightness(1.06); }
+
+@keyframes seal-gold-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* brilho que varre o selo */
+.seal-plan-elite::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: -40%;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-18deg);
+  animation: seal-shine 3.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes seal-shine {
+  0%        { left: -40%; }
+  55%, 100% { left: 130%; }
+}
+
+/* contador de trial dentro do selo */
+.seal-trial-count {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 1px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(69,26,3,0.22);
+  color: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-transform: none;
+}
+/* trial acabando: pulso de urgencia */
+.seal-trial.urgent {
+  animation: seal-gold-flow 6s ease-in-out infinite, seal-urgent-pulse 1.7s ease-in-out infinite;
+}
+.seal-trial.urgent .seal-trial-count { background: rgba(127,29,29,0.45); }
+@keyframes seal-urgent-pulse {
+  0%, 100% { box-shadow: 0 2px 10px rgba(217,119,6,0.28), 0 0 0 0 rgba(220,38,38,0.5); }
+  50%      { box-shadow: 0 2px 10px rgba(217,119,6,0.28), 0 0 0 6px rgba(220,38,38,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal-plan-elite, .seal-plan-elite::after, .seal-trial.urgent { animation: none; }
+}
+
 /* Tag IA — ink sólido, sparkle #93b4ff */
 .pl-tag-ai {
   display: inline-flex; align-items: center; gap: 5px;

@@ -70,6 +70,7 @@ export default function Header({
   onLogout,
   onOpenMobileNav,
   subscriptionPlan = 'gratuito',
+  trialDaysLeft = null,
   onOpenAssinatura,
   isAdmin = false,
   onNavigate,
@@ -260,7 +261,7 @@ export default function Header({
           </button>
         )}
         {typeof onOpenAssinatura === 'function' && (
-          <SubscriptionPlanSeal planId={subscriptionPlan} onClick={onOpenAssinatura} />
+          <SubscriptionPlanSeal planId={subscriptionPlan} trialDaysLeft={trialDaysLeft} onClick={onOpenAssinatura} />
         )}
 
         {/* Dark mode toggle */}

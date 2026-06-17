@@ -1511,8 +1511,18 @@ export default function App() {
   const {
     planName: stripePlanName,
     isPremium: isStripeActive,
+    subscription: currentSubscription,
     refresh: refreshSubscription,
   } = useSubscription(currentUserId);
+
+  // Dias restantes do periodo gratuito (so quando status = trialing).
+  const trialDaysLeft = useMemo(() => {
+    if (!currentSubscription || currentSubscription.status !== 'trialing') return null;
+    const end = currentSubscription.current_period_end;
+    if (!end) return null;
+    const diffMs = new Date(end).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diffMs / 86400000));
+  }, [currentSubscription]);
 
   // Modelo 2 tiers: Folha (free) e Papiro (pago). 'tatico'/'elite'/'beta' são aliases legados de pago.
   // useSubscription normaliza plan_name para 'gratuito'|'papiro', então comparar com 'papiro'.
@@ -6783,6 +6793,7 @@ export default function App() {
           onLogout={handleLogout}
           onOpenMobileNav={() => setMobileNavOpen(true)}
           subscriptionPlan={isAdmin ? 'master' : (isPremiumPlan ? 'papiro' : 'gratuito')}
+          trialDaysLeft={isAdmin ? null : trialDaysLeft}
           onOpenAssinatura={() => setActiveTab('assinatura')}
           isAdmin={isAdmin}
           onNavigate={(tabId) => {
