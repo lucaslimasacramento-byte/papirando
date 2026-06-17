@@ -74,6 +74,14 @@ async function findOrCreateCustomer(
 ): Promise<string> {
   const customerName = name || email.split('@')[0] || 'Aluno Papirando';
 
+  // Campos base do customer. notificationDisabled: true DESLIGA as notificações
+  // automáticas do Asaas (email/SMS/WhatsApp), que são cobradas (~R$0,99/pacote).
+  // O Papirando faz a própria comunicação com o aluno. Aplicado tanto na criação
+  // quanto nas atualizações para garantir o estado correto em customers antigos.
+  const baseFields = { name: customerName, email, cpfCnpj, notificationDisabled: true };
+  // Log sem expor o CPF em texto puro.
+  const safeLog = { name: customerName, email, cpfCnpj: '***', notificationDisabled: true };
+
   // Verifica se já existe customer salvo
   const { data: sub } = await supabaseAdmin
     .from('subscriptions')
@@ -84,9 +92,11 @@ async function findOrCreateCustomer(
     .maybeSingle();
 
   if (sub?.asaas_customer_id) {
-    // Garante que o customer tem o CPF (cobranças exigem). Faz update idempotente.
+    // Garante CPF + notificações desligadas no customer já salvo. Update idempotente.
     const id = String(sub.asaas_customer_id);
-    await asaas(`/customers/${id}`, 'POST', { name: customerName, email, cpfCnpj });
+    console.log('[create-checkout-session] update customer (salvo)', id, JSON.stringify(safeLog));
+    const updated = await asaas(`/customers/${id}`, 'POST', baseFields);
+    console.log('[create-checkout-session] update resp notificationDisabled =', updated?.notificationDisabled);
     return id;
   }
 
@@ -94,19 +104,20 @@ async function findOrCreateCustomer(
   const search = await asaas(`/customers?externalReference=${encodeURIComponent(userId)}`);
   if (Array.isArray(search?.data) && search.data.length > 0) {
     const id = String(search.data[0].id);
-    // Customer pode ter sido criado antes sem CPF — atualiza antes de cobrar.
-    await asaas(`/customers/${id}`, 'POST', { name: customerName, email, cpfCnpj });
+    // Customer pode ter sido criado antes sem CPF / com notificações ligadas — corrige.
+    console.log('[create-checkout-session] update customer (encontrado)', id, JSON.stringify(safeLog));
+    const updated = await asaas(`/customers/${id}`, 'POST', baseFields);
+    console.log('[create-checkout-session] update resp notificationDisabled =', updated?.notificationDisabled);
     return id;
   }
 
-  // Cria novo customer já com o CPF
+  // Cria novo customer já com CPF e notificações desligadas
+  console.log('[create-checkout-session] create customer payload', JSON.stringify({ ...safeLog, externalReference: userId }));
   const customer = await asaas('/customers', 'POST', {
-    name: customerName,
-    email,
-    cpfCnpj,
+    ...baseFields,
     externalReference: userId,
-    notificationDisabled: false,
   });
+  console.log('[create-checkout-session] create resp', JSON.stringify({ id: customer?.id, notificationDisabled: customer?.notificationDisabled }));
 
   return String(customer.id);
 }

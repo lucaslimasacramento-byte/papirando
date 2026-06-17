@@ -6,3 +6,8 @@ enabled = true
 
 [functions.register-free]
 verify_jwt = false
+
+# Asaas chama o webhook sem JWT do Supabase — a autenticacao e feita pelo
+# token proprio (header asaas-access-token, validado dentro da funcao).
+[functions.asaas-webhook]
+verify_jwt = false
