@@ -26,7 +26,7 @@ interface PlanConfig {
 
 const PLANS: Record<string, PlanConfig> = {
   papiro_monthly: {
-    value: 5.00, // TESTE — voltar para 19.90 antes do lançamento
+    value: 19.90,
     cycle: 'MONTHLY',
     description: 'Papirando Papiro — Mensal',
     trialDays: 30,
