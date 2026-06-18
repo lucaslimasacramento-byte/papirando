@@ -11,12 +11,8 @@ import {
   Sparkles,
   Eye,
   ShieldAlert,
-  Pin,
   Plus,
-  EyeOff,
-  Trash2,
   X,
-  Gavel,
 } from 'lucide-react';
 import {
   addPostComment,
@@ -56,70 +52,14 @@ function hotEngagementScore(post) {
   return Number(post.upvotesCount || 0) * 2 + Number(post.commentsCount || 0) + Number(post.viewsCount || 0) / 10;
 }
 
-function CommunityTopTenSidebar({ posts = [], tags = [], onPickTrend, className = '' }) {
-  return (
-    <div
-      className={className}
-      style={{
-        display: 'flex', minHeight: 0, flex: 1, flexDirection: 'column',
-        borderRadius: 20, border: '1px solid var(--pl-rule-2)',
-        background: 'var(--pl-surface)',
-      }}
-    >
-      <div style={{ flexShrink: 0, borderBottom: '1px solid var(--pl-rule)', padding: '12px 16px' }}>
-        <p className="pl-eyebrow">Top 10</p>
-        <p style={{ marginTop: 2, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Tópicos mais engajados</p>
-        <p style={{ marginTop: 4, fontSize: 12, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>Clique para abrir no feed central.</p>
-      </div>
-      <ul style={{ minHeight: 0, flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', margin: 0, padding: 0, listStyle: 'none' }}>
-        {posts.map((tp, idx) => {
-          const slug = String(tp.categorySlug || 'geral').toLowerCase();
-          return (
-            <li key={`top-${tp.id}`} style={{ borderTop: idx === 0 ? 'none' : '1px solid var(--pl-rule)' }}>
-              <button
-                type="button"
-                onClick={() => onPickTrend?.({ type: 'post', post: tp, tags })}
-                style={{
-                  display: 'flex', width: '100%', gap: 12, padding: '12px',
-                  textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
-                }}
-              >
-                <div style={{ position: 'relative', height: 48, width: 48, flexShrink: 0, overflow: 'hidden', borderRadius: 6, background: 'var(--pl-bg-soft)' }}>
-                  {tp.avatar ? (
-                    <img src={tp.avatar} alt="" className="object-cover" style={{ height: '100%', width: '100%' }} />
-                  ) : (
-                    <span style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-2)' }}>{initials(tp.author)}</span>
-                  )}
-                  <span style={{
-                    position: 'absolute', bottom: -2, right: -2, display: 'flex',
-                    height: 20, minWidth: 20, alignItems: 'center', justifyContent: 'center',
-                    borderRadius: 4, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)',
-                    padding: '0 2px', fontSize: 10, fontWeight: 700, color: 'var(--pl-ink)',
-                  }}>
-                    {idx + 1}
-                  </span>
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, fontWeight: 600, lineHeight: 1.35, color: 'var(--pl-ink)' }}>{tp.title}</p>
-                  <p style={{ marginTop: 4, fontSize: 11, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
-                    s/{slug} · {formatCommunityRelativeTime(tp.createdAt)} · {Number(tp.upvotesCount || 0)} apoios · {Number(tp.commentsCount || 0)} com.
-                  </p>
-                </div>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
 const initials = (name = '') => String(name).split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
 function sortPostsByMode(posts, mode) {
   const items = [...posts];
   if (mode === 'recent') return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  if (mode === 'top') return items.sort((a, b) => b.upvotesCount - a.upvotesCount || b.viewsCount - a.viewsCount);
+  if (mode === 'top') return items.sort((a, b) =>
+    (Number(b.upvotesCount || 0) - Number(a.upvotesCount || 0)) ||
+    (Number(b.viewsCount || 0) - Number(a.viewsCount || 0)));
   return items.sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
@@ -592,6 +532,10 @@ export default function Comunidades({
     const content = String(commentDrafts[postId] || '').trim();
     if (!content) return;
 
+    // Guardamos o estado anterior para reverter o comentário otimista se a rede falhar —
+    // sem isso, o comentário "aparecia publicado" mas sumia no reload, sem aviso ao usuário.
+    const previousState = communityData;
+
     const optimisticUpdater = (prev) =>
       createLocalCommunityComment(prev, {
         profile,
@@ -629,7 +573,13 @@ export default function Comunidades({
           })
         );
       })
-      .catch((error) => console.error('[Comunidades] erro ao carregar comentários:', error));
+      .catch((error) => {
+        console.error('[Comunidades] erro ao publicar comentário:', error);
+        setCommunityData(previousState);
+        setCommentDrafts((prev) => ({ ...prev, [postId]: content }));
+        setComposerToast('Não foi possível publicar o comentário. Tente novamente.');
+        setTimeout(() => setComposerToast(''), 2500);
+      });
   }
 
   async function handleExpandPost(post) {

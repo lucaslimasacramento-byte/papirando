@@ -534,10 +534,13 @@ export default function Esquadroes({
         return;
       }
 
+      // Filtra por category_slug='esquadrao': sem isso, posts do fórum (category_slug='forum',
+      // mesmo community_scope) eram lidos como esquadrões e viravam "esquadrões-fantasma".
       const { data, error } = await supabase
         .from('community_posts')
         .select('*')
         .eq('community_scope', 'Esquadrão')
+        .eq('category_slug', 'esquadrao')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -1494,7 +1497,15 @@ export default function Esquadroes({
     if (usingRemoteSquads) {
       const sid = selectedSquad.id;
       setRemoteSquads((prev) => prev.filter((item) => String(item.id) !== String(sid)));
-      supabase.from('community_posts').delete().eq('id', sid).catch(console.warn);
+      // O query builder do Supabase é "thenable" mas não expõe .catch — usar .then(({error}))
+      // como no resto do arquivo; encadear .catch lançava TypeError e abortava o handler.
+      supabase
+        .from('community_posts')
+        .delete()
+        .eq('id', sid)
+        .then(({ error }) => {
+          if (error) console.warn('[esquadroes] Falha ao excluir esquadrão:', error.message || error);
+        });
       onSaveCommunityState?.((prev) => ({
         ...prev,
         squads: (Array.isArray(prev.squads) ? prev.squads : []).filter((item) => String(item.id) !== String(sid)),
@@ -1669,8 +1680,9 @@ export default function Esquadroes({
     if (!selectedSquad) return;
     const content = String(newForumPost || '').trim();
     if (!content) return;
-    const existingPosts = Array.isArray(communityState?.forumPosts) ? communityState.forumPosts : [];
-    const nextPostId = `forum-${selectedSquad.id}-${existingPosts.length + 1}`;
+    // ID único por timestamp+sufixo aleatório: usar `length+1` sobre o array global de
+    // fóruns gerava IDs repetidos entre esquadrões (keys duplicadas + moderação no post errado).
+    const nextPostId = `forum-${selectedSquad.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const nextPost = {
       id: nextPostId,
@@ -1710,7 +1722,9 @@ export default function Esquadroes({
           community_scope: 'Esquadrão',
           is_public: false,
         })
-        .catch(console.warn);
+        .then(({ error }) => {
+          if (error) console.warn('[esquadroes] Falha ao publicar no fórum:', error.message || error);
+        });
     }
 
     setNewForumPost('');
