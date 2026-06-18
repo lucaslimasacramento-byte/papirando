@@ -1,22 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Activity,
   ArrowRight,
   BookOpen,
   CheckCircle2,
   Clock,
   Flame,
-  LayoutGrid,
-  Pause,
   Play,
-  ShieldCheck,
   Sparkles,
   Square,
   Target,
   Timer,
-  Users,
-  Wind,
-  Zap,
 } from 'lucide-react';
 import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
 import { supabase } from '../lib/supabase';
@@ -49,7 +42,6 @@ export default function Sessoes({
 }) {
   const [recentSessions, setRecentSessions] = useState([]);
   const [recentSessionsError, setRecentSessionsError] = useState(false);
-  const [tipo, setTipo] = useState('classicos');
 
   const historyOverview = useMemo(
     () => buildStudyHistoryOverview(historicoReal, { dayGoalMinutes: 180 }),
@@ -121,7 +113,7 @@ export default function Sessoes({
         <KpiStrip overview={historyOverview} urgentReviews={urgentReviews} />
 
         <section className="sessoes-main-grid">
-          <MetodosCard tipo={tipo} setTipo={setTipo} onIniciar={startMetodo} />
+          <MetodosCard onIniciar={startMetodo} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <SessaoAoVivoCard
@@ -198,23 +190,13 @@ function SessionKpi({ icon: Icon, label, value, sub, tone }) {
   );
 }
 
-function MetodosCard({ tipo, setTipo, onIniciar }) {
+function MetodosCard({ onIniciar }) {
   return (
     <section className="pl-card" style={{ padding: 22 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'end', marginBottom: 16 }}>
         <div>
           <div className="pl-overline">Métodos de estudo</div>
           <h2 className="pl-section-title" style={{ marginTop: 7 }}>Qual ritmo hoje?</h2>
-        </div>
-        <div className="planning-segment">
-          <button type="button" className={tipo === 'classicos' ? 'is-active' : ''} onClick={() => setTipo('classicos')}>
-            <ShieldCheck size={13} />
-            Ritmos clássicos
-          </button>
-          <button type="button" className={tipo === 'guiada' ? 'is-active' : ''} onClick={() => setTipo('guiada')}>
-            <Users size={13} />
-            Guiada
-          </button>
         </div>
       </div>
       <div className="sessoes-method-grid">

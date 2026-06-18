@@ -91,7 +91,6 @@ export default function Estatisticas({
 
         <SecondaryStatsStrip
           redacaoSummary={redacaoSummary}
-          stats={{ simulados: 0, mediaSimulados: '0%' }}
           updatedAt={updatedAt}
         />
 
@@ -156,14 +155,12 @@ function StatKpi({ icon: Icon, label, value, sub, tone }) {
   );
 }
 
-function SecondaryStatsStrip({ redacaoSummary, stats, updatedAt }) {
+function SecondaryStatsStrip({ redacaoSummary, updatedAt }) {
   return (
     <section className="stats-secondary-strip">
       <MicroStat label="Redações" value={redacaoSummary.corrected || 0} />
       <MicroStat label="Melhor nota" value={redacaoSummary.bestScore || 0} />
       <MicroStat label="Rascunhos" value={redacaoSummary.drafts || 0} />
-      <MicroStat label="Simulados" value={stats.simulados} />
-      <MicroStat label="Média simulados" value={stats.mediaSimulados} />
       <div style={{ flex: 1 }} />
       <span className="pl-muted" style={{ fontSize: 12, fontWeight: 700 }}>Última atualização {updatedAt}</span>
     </section>
