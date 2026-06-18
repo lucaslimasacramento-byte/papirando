@@ -178,7 +178,7 @@ export default function Dashboard({
                 </>
               )}
             </div>
-            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 62, color: 'var(--pl-ink)' }}>
+            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 'clamp(34px, 6vw, 62px)', color: 'var(--pl-ink)' }}>
               {greeting}{cleanUserName ? `, ${cleanUserName}` : ''}<span style={{ color: 'var(--pl-accent)' }}>.</span>
             </h1>
             {(heroTopic || heroDetail) && (
@@ -531,7 +531,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
     <div style={{ minHeight: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
       <section>
         <div className="pl-eyebrow">Bem-vindo</div>
-        <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 68, color: 'var(--pl-ink)' }}>
+        <h1 className="pl-display" style={{ margin: '12px 0 0', fontSize: 'clamp(36px, 6vw, 68px)', color: 'var(--pl-ink)' }}>
           {greeting}{userName ? `, ${userName}` : ''}. Bora começar a papirar?
         </h1>
         <p style={{ margin: '16px 0 0', maxWidth: 680, fontSize: 17, lineHeight: 1.55, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
