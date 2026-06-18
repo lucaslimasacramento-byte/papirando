@@ -989,7 +989,7 @@ export default function MapasMentais({
                     Tópicos do mapa
                   </div>
                   <div className="pl-vinc-chips">
-                    {mapaAtivo.nodes.map((node) => (
+                    {(mapaAtivo.nodes || []).map((node) => (
                       <button
                         key={node.id}
                         type="button"

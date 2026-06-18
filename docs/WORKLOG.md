@@ -87,7 +87,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Flashcards | `Flashcards.jsx` | 🔧 | Código auditado ✅ (try/catch nos handlers, métricas falsas removidas). SRS correto. Falta: testar geração IA no app |
 | Redações (correção por IA) | `Redacoes.jsx` | ✅ | Código auditado — sólido. Bug de cota confirmado corrigido (incrementa só após IA), save com retry+feedback, upload validado |
 | Revisões | `Revisoes.jsx` | ✅ | Código auditado — sólido (4 imports órfãos removidos). Falta: catch silencioso da fila não dá feedback; card "Histórico" é placeholder estático |
-| Mapas Mentais | `MapasMentais.jsx` | 🔧 | ⏳ PRÓXIMA TELA A AUDITAR — Testar geração IA + salvar |
+| Mapas Mentais | `MapasMentais.jsx` | ✅ | Código auditado — sólido. IA real + fallback confirmados; guarda Array.isArray adicionada. Bloco 3 COMPLETO |
 
 ---
 
@@ -198,7 +198,9 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 - Redações ✅: auditado, sólido, sem achados. Bug de cota confirmado corrigido.
 - Revisões ✅: auditado, sólido; 4 imports órfãos removidos. Flag: catch silencioso da fila + card "Histórico" placeholder.
 
-**🔖 ONDE PARAMOS:** falta **Mapas Mentais** (`MapasMentais.jsx`) pra fechar o Bloco 3. Depois: Blocos 4 (Planejamento), 5 (Concursos), 6 (Comunidade). Pendência transversal anotada: passe único pra endurecer `{error}` em deletes/leituras silenciosas (Materiais e afins).
+**Mapas Mentais ✅** (fecha o Bloco 3): IA real + fallback honesto confirmados, cota não queima, Supabase com fallback localStorage; guarda `(mapaAtivo.nodes || [])` adicionada.
+
+**🔖 ONDE PARAMOS:** Blocos 2 e 3 **COMPLETOS**. Próximo: **Bloco 4 — Planejamento** (Planejamento, Ciclos, Objetivos, Lembretes; Metas da Semana já ✅). Depois Blocos 5 (Concursos) e 6 (Comunidade). Pendência transversal: passe único pra endurecer `{error}` em deletes/leituras silenciosas (Materiais e afins).
 
 ### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
 **Maratona de debugging que deixou o ciclo de pagamento 100% funcional e testado em produção.**
@@ -421,4 +423,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-06-18 — auditoria Bloco 2 completo + Bloco 3 (6/7); falta Mapas Mentais*
+*Última atualização: 2026-06-18 — auditoria Blocos 2 e 3 COMPLETOS; próximo Bloco 4*
