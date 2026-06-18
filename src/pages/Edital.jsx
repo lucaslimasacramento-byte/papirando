@@ -18,6 +18,10 @@ import {
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
 
+// Limite mínimo de caracteres para considerar que há um edital extraível.
+// Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
+const MIN_EDITAL_CHARS = 400;
+
 export default function Edital({
   editalText = '',
   bancoDisciplinas = [],
@@ -119,16 +123,35 @@ export default function Edital({
     };
   }, [editalAtivo]);
 
-  const hasEditalText = String(editalText || '').trim().length > 0;
+  const editalTextoLimpo = String(editalText || '').trim();
+  const hasEditalText = editalTextoLimpo.length > 0;
 
   const handleAnalyzeEdital = async () => {
     if (!hasEditalText) return;
+
+    // PDF escaneado (imagem) ou vazio extrai pouquíssimo texto: a IA volta vazia
+    // e o painel mostraria "Não identificado" como se tivesse dado certo. Barramos antes.
+    if (editalTextoLimpo.length < MIN_EDITAL_CHARS) {
+      setAiAnalysis(null);
+      setAiError(
+        'Não consegui extrair texto suficiente deste edital. Se for um PDF escaneado (imagem), ' +
+        'o conteúdo precisa estar em texto pesquisável — tente colar o texto ou enviar um PDF com texto selecionável.'
+      );
+      setAiPanelOpen(true);
+      return;
+    }
+
     setAiLoading(true);
     setAiError('');
     setAiPanelOpen(true);
     try {
       const resultado = await analyzeEdital(editalText);
-      setAiAnalysis(resultado);
+      if (!temDadosUteis(resultado)) {
+        setAiAnalysis(null);
+        setAiError('A IA não conseguiu identificar dados do edital neste texto. Confira se o conteúdo enviado é mesmo o edital.');
+      } else {
+        setAiAnalysis(resultado);
+      }
     } catch (err) {
       setAiError(err?.message || 'Erro ao analisar edital.');
     } finally {
@@ -543,18 +566,20 @@ function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAn
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
-            <AiMiniInfo label="Concurso" value={aiAnalysis?.examName || 'Não identificado'} />
-            <AiMiniInfo label="Banca" value={aiAnalysis?.banca || aiAnalysis?.organization || 'Não identificada'} />
-            <AiMiniInfo
-              label="Datas"
-              value={[
-                aiAnalysis?.dates?.publicationDate,
-                aiAnalysis?.dates?.registrationPeriod,
-                aiAnalysis?.dates?.examDate,
-              ].filter(Boolean).join(' · ') || 'Sem datas extraídas'}
-            />
-          </div>
+          {!aiLoading && !aiError && aiAnalysis && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+              <AiMiniInfo label="Concurso" value={aiAnalysis?.examName || 'Não identificado'} />
+              <AiMiniInfo label="Banca" value={aiAnalysis?.banca || aiAnalysis?.organization || 'Não identificada'} />
+              <AiMiniInfo
+                label="Datas"
+                value={[
+                  aiAnalysis?.dates?.publicationDate,
+                  aiAnalysis?.dates?.registrationPeriod,
+                  aiAnalysis?.dates?.examDate,
+                ].filter(Boolean).join(' · ') || 'Sem datas extraídas'}
+              />
+            </div>
+          )}
         </div>
       )}
     </section>
@@ -577,6 +602,17 @@ function EmptyDashed({ icon: Icon, title }) {
       <strong style={{ display: 'block', marginTop: 8 }}>{title}</strong>
     </div>
   );
+}
+
+// A IA pode devolver um objeto sem nenhum campo realmente extraído (tudo vazio/null).
+// Nesse caso o painel mostraria "Não identificado" como sucesso — então tratamos como falha.
+function temDadosUteis(resultado) {
+  if (!resultado || typeof resultado !== 'object') return false;
+  const nome = resultado.examName || resultado.concurso || resultado.nome;
+  const banca = resultado.banca || resultado.organization;
+  const datas = resultado.dates && Object.values(resultado.dates).some(Boolean);
+  const disciplinas = Array.isArray(resultado.disciplinas) && resultado.disciplinas.length > 0;
+  return Boolean(nome || banca || datas || disciplinas);
 }
 
 function inferTopicType(topico) {
