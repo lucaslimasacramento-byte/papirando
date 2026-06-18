@@ -8,7 +8,6 @@ import {
   Plus,
   PlusCircle,
   RefreshCw,
-  RotateCcw,
 } from 'lucide-react';
 
 const CYCLE_PASTEL_COLORS = Array.from(
@@ -591,7 +590,7 @@ function SliderRow({ label, value, max, step, onChange }) {
   );
 }
 
-function CycleRow({ item, onStart, onRegister, onHistory = () => {}, timeLabel }) {
+function CycleRow({ item, onStart, onRegister, timeLabel }) {
   const rawProgress = Math.round(Number(item.progresso || 0));
   const progressWidth = Math.max(0, Math.min(rawProgress, 100));
 
@@ -638,7 +637,6 @@ function CycleRow({ item, onStart, onRegister, onHistory = () => {}, timeLabel }
             <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 20px', borderTop: '1px solid var(--pl-rule)', paddingTop: 12, fontSize: '0.82rem', fontWeight: 500, color: 'var(--pl-ink-2)' }}>
               <button type="button" onClick={onStart} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', transition: 'color 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--pl-accent)'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--pl-ink-2)'; }}><Play size={15} fill="currentColor" style={{ color: 'var(--pl-accent)' }} /> Iniciar estudo</button>
               <button type="button" onClick={onRegister} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', transition: 'color 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--pl-accent)'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--pl-ink-2)'; }}><PlusCircle size={15} style={{ color: 'var(--pl-ink-2)' }} /> Adicionar estudo manualmente</button>
-              <button type="button" onClick={onHistory} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', transition: 'color 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--pl-accent)'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--pl-ink-2)'; }}><RotateCcw size={15} /> Ver ultimos estudos</button>
               <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--pl-ink-3)' }}>{rawProgress}%</span>
             </div>
           </div>
@@ -709,7 +707,6 @@ function buildInnerCycleSegments(subjects) {
       startAngle,
       endAngle,
       path: createDonutArcPath(startAngle, endAngle, INNER_RING_INNER_RADIUS, INNER_RING_OUTER_RADIUS),
-      percentFormat: Math.max(1, Math.round((Number(subject?.minutos || 0) / totalMinutes) * 100)),
     };
   });
 }
@@ -742,7 +739,6 @@ function buildOuterCycleSegments(subjects) {
         startAngle,
         endAngle,
         path: createDonutArcPath(startAngle, endAngle, OUTER_RING_INNER_RADIUS, OUTER_RING_OUTER_RADIUS),
-        percentFormat: Math.max(1, Math.round((Number(block?.minutos || 0) / totalMinutes) * 100)),
       });
 
       blockCursor += blockSpan;
