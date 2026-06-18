@@ -897,7 +897,9 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       <div className="pl-leg-search-results" style={{ marginTop: 6 }}>
                         {searchResults.length === 0 ? (
                           <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                            Nenhuma ocorrência no texto indexado.
+                            {isIndexingPdf || pageIndex.length === 0
+                              ? 'Indexando o documento… a busca fica disponível em instantes.'
+                              : 'Nenhuma ocorrência no texto indexado.'}
                           </p>
                         ) : (
                           searchResults.map((r, i) => (

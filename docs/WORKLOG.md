@@ -114,7 +114,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Questão de Edital | `EditalQuestao.jsx` | 🔧 | Código auditado ✅ (filtro de prioridade escondia "altíssima"; banca exibida com chave errada `bancaLabel`→`banca`; removido TAB_ITEMS + 3 componentes mortos + 9 imports mortos). Flag: `matchesTopicHistory` includes bidirecional pode inflar tempo por tópico de nome genérico (regra de negócio) |
 | Disciplinas | `Disciplinas.jsx` | ✅ | — |
 | Detalhe de Disciplina | `DisciplinaDetalhe.jsx` | ✅ | — |
-| Legislação | `Legislacao.jsx` | 🔧 | Validar busca e leitura |
+| Legislação | `Legislacao.jsx` | 🔧 | Código auditado ✅ (busca não diz mais "nenhuma ocorrência" durante indexação). 🚧 DECISÕES: #1 PDF de ~1360 pág. é baixado/parseado 2x (indexação serial + viewer) → trava aba; #2 erro de Supabase é engolido e serve PDF default sem avisar (banner de erro virou código morto) |
 | Planos de Concurso | `Planos.jsx` | 🔧 | Validar geração de plano |
 
 ---
