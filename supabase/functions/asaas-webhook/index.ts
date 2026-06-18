@@ -139,8 +139,11 @@ serve(async (req) => {
           .maybeSingle();
 
         if (!sub?.user_id) {
-          console.warn('[asaas-webhook] assinatura desconhecida:', subId);
-          return new Response('Assinatura desconhecida', { status: 404 });
+          // Assinatura nao registrada no nosso banco (ex: cobranca antiga/externa,
+          // anterior a correcao das colunas asaas_*). Responde 200 (ack/no-op) para
+          // o Asaas parar de re-tentar e nao penalizar o webhook.
+          console.warn('[asaas-webhook] assinatura desconhecida (ack/no-op):', subId);
+          return new Response('ok (assinatura desconhecida)', { status: 200 });
         }
 
         const isAnnual = sub.billing_cycle === 'annual';
