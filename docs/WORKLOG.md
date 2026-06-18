@@ -70,10 +70,10 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Dashboard | `Dashboard.jsx` | 🔧 | Validar dados reais (KPIs, streaks, resumo IA) |
-| Estatísticas | `Estatisticas.jsx` | 🔧 | Validar gráficos com dados reais |
+| Dashboard | `Dashboard.jsx` | 🔧 | Código auditado ✅ (mobile corrigido). Falta: "Meta diária" usa 180min fixo (não a meta real) + validar dados no app |
+| Estatísticas | `Estatisticas.jsx` | 🔧 | Código auditado ✅ (simulados placeholder ocultados). Falta: validar gráficos com dados reais |
 | Histórico | `Historico.jsx` | ✅ | — |
-| Sessões de Estudo | `Sessoes.jsx` | 🔧 | Validar timer e gravação de sessão |
+| Sessões de Estudo | `Sessoes.jsx` | 🔧 | Código auditado ✅ (aba "Guiada" morta removida). Falta: validar timer/gravação no app |
 
 ---
 
