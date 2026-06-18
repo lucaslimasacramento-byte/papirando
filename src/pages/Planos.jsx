@@ -7,16 +7,11 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  Copy,
-  DollarSign,
-  EyeOff,
   GraduationCap,
   Layers3,
   LibraryBig,
   Loader2,
-  PenTool,
   Play,
-  Plus,
   Sparkles,
   Target,
   Trash2,
@@ -254,7 +249,13 @@ export default function Planos({
 
         setAnalysisResult(heuristicAnalysis);
         applyAnalysisToForm(heuristicAnalysis, options);
-        setAnalysisError(realAiError.message || 'A IA de produção não respondeu; o app exibiu a análise interna.');
+        // Quando o fallback heurístico produz um resultado, não assustar o usuário com o
+        // erro técnico da IA — só avisar que é a análise interna. Sem fallback, mostrar o erro.
+        setAnalysisError(
+          heuristicAnalysis
+            ? 'A IA de produção não respondeu agora — exibimos a análise interna (heurística). Revise os campos antes de importar.'
+            : (realAiError.message || 'Não foi possível analisar o edital.')
+        );
         return heuristicAnalysis;
       } catch {
         setAnalysisResult(null);
@@ -345,6 +346,10 @@ export default function Planos({
     if (roles.length > 1) {
       onOpenContestDetail?.(template.id);
       closeMode();
+      return;
+    }
+    if (roles.length === 0) {
+      alert('Esse concurso não tem cargos definidos para importar.');
       return;
     }
 
@@ -683,8 +688,8 @@ export default function Planos({
                   className="pl-input"
                   style={{ width: '100%', boxSizing: 'border-box' }}
                 >
-                  {analysisResult.contests.map((contest) => (
-                    <option key={contest.id} value={contest.id}>
+                  {analysisResult.contests.map((contest, idx) => (
+                    <option key={contest.id ?? idx} value={contest.id}>
                       {contest.title} - {contest.disciplinasCount} disciplinas / {contest.topicosCount} tópicos
                     </option>
                   ))}
@@ -804,7 +809,11 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
   const [todayTime, setTodayTime] = React.useState(0);
 
   React.useEffect(() => {
-    setTodayTime(Date.now());
+    // Normaliza para a meia-noite local: a prova é fixada em T00:00:00, então comparar
+    // contra "agora" (Date.now) desviava a contagem de dias em até 1 dia conforme a hora.
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    setTodayTime(now.getTime());
   }, []);
 
   const daysToExam = target?.prova_data && todayTime
@@ -989,8 +998,8 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
                   <BookOpen size={10} /> Matérias do edital
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                  {disciplinaPreview.map((nome) => (
-                    <span key={nome} className="pl-tag" style={{ fontSize: 10, padding: '2px 8px' }}>{nome}</span>
+                  {disciplinaPreview.map((nome, idx) => (
+                    <span key={`${nome}-${idx}`} className="pl-tag" style={{ fontSize: 10, padding: '2px 8px' }}>{nome}</span>
                   ))}
                   {extraDisciplinas > 0 && (
                     <span className="pl-tag" style={{ fontSize: 10, padding: '2px 8px', color: 'var(--pl-ink-3)' }}>+{extraDisciplinas}</span>
@@ -1040,15 +1049,6 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-function AlvoStat({ label, value, accent = false }) {
-  return (
-    <div style={{ padding: '8px 10px', border: '1px solid var(--pl-rule-2)', borderRadius: 5, background: 'var(--pl-surface-2)' }}>
-      <div className="pl-eyebrow" style={{ fontSize: 9 }}>{label}</div>
-      <div className="pl-num" style={{ marginTop: 3, fontSize: 20, lineHeight: 1, color: accent ? 'var(--pl-accent)' : 'var(--pl-ink)' }}>{value}</div>
     </div>
   );
 }
@@ -1367,37 +1367,6 @@ function PlCrestIcon({ label }) {
   return (
     <div style={{ width: 42, height: 42, borderRadius: 7, background: 'var(--pl-ink)', color: 'var(--pl-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 24 }}>
       {initial}
-    </div>
-  );
-}
-
-function CreatePlanCard({ icon: Icon, title, text, badge, decorated = false, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="pl-card"
-      style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden', padding: 24, textAlign: 'center', cursor: 'pointer' }}
-    >
-      {decorated && <div style={{ position: 'absolute', right: 0, top: 0, width: 96, height: 96, borderBottomLeftRadius: 100, background: 'var(--pl-accent-soft)', opacity: 0.6, pointerEvents: 'none' }} />}
-      {badge && (
-        <span className="pl-tag pl-tag-accent" style={{ position: 'absolute', right: 16, top: 16, fontSize: 9, fontWeight: 700 }}>
-          {badge}
-        </span>
-      )}
-      <div style={{ position: 'relative', zIndex: 1, marginBottom: 16, display: 'flex', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
-        <Icon size={28} />
-      </div>
-      <h3 style={{ position: 'relative', zIndex: 1, marginBottom: 8, fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)', margin: '0 0 8px' }}>{title}</h3>
-      <p style={{ position: 'relative', zIndex: 1, fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)', margin: 0 }}>{text}</p>
-    </button>
-  );
-}
-
-function MetricMiniCard({ label, value }) {
-  return (
-    <div style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 12 }}>
-      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
-      <p style={{ fontSize: 17, fontWeight: 600, lineHeight: 1, color: 'var(--pl-ink)', margin: 0 }}>{value}</p>
     </div>
   );
 }

@@ -115,7 +115,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Disciplinas | `Disciplinas.jsx` | ✅ | — |
 | Detalhe de Disciplina | `DisciplinaDetalhe.jsx` | ✅ | — |
 | Legislação | `Legislacao.jsx` | ✅ | Código auditado e corrigido ✅ — #1 indexação do PDF agora é SOB DEMANDA (só roda quando há busca de texto ativa; antes parseava ~1360 pág. no load + viewer = dupla carga); #2 fallback do Supabase agora exibe banner de aviso (`isFallback` em vadeMecumApi); #5 busca distingue "indexando" de "nenhuma ocorrência". Verificação no navegador bloqueada por login (sem credenciais) — compila limpo, sem erros de console |
-| Planos de Concurso | `Planos.jsx` | 🔧 | Validar geração de plano |
+| Planos de Concurso | `Planos.jsx` | ✅ | Código auditado e corrigido ✅ — #1 valida cargos vazios antes de importar; #2 fallback heurístico mostra mensagem amigável (não erro técnico) quando a IA de produção falha; #3 dias-para-prova normalizado p/ meia-noite (fuso); keys de lista; removidos 3 componentes mortos + 5 imports mortos. Confirmado: `onAnalyzeEdital` (=analyzeEditalDocument) é síncrono → fallback funciona. Flag #4: `formatSalario` mostra só 1º número em faixas salariais (precisão, deixado) |
 
 ---
 
@@ -200,11 +200,11 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 **Mapas Mentais ✅** (fecha o Bloco 3): IA real + fallback honesto confirmados, cota não queima, Supabase com fallback localStorage; guarda `(mapaAtivo.nodes || [])` adicionada.
 
-**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3 e 4 **COMPLETOS**. Próximo: **Bloco 5 — Concursos** (Concursos Disponíveis, Meus Concursos, Concurso Detalhe, Edital, Questão de Edital, Legislação, Planos de Concurso; Disciplinas e Detalhe de Disciplina já ✅). Depois Bloco 6 (Comunidade).
+**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3, 4 e **5 COMPLETOS**. Bloco 5 — Concursos: todas as telas auditadas ✅ (Concursos Disponíveis, Concurso Detalhe, Edital, Questão de Edital, Legislação, Planos; Meus Concursos removido; Disciplinas e Detalhe já ✅). Pendências de DECISÃO deixadas: Edital #2 (botão "Importar com IA" só analisa, não importa disciplinas); Planos #4 (formatSalario em faixas). Próximo: **Bloco 6 (Comunidade)**.
 
 **Pendências transversais acumuladas (passe dedicado depois):**
 - Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos e ConcursosDisponiveis sem catch → falha silenciosa no limite de cursos).
-- **Fuso na contagem "dias para a prova":** normalizar `today` para meia-noite (`setHours(0,0,0,0)`) onde calcula diffDays. Corrigido em ConcursoDetalhe; ainda existe em `App.jsx` (~2107, alimenta Dashboard/Objetivos). Aplicar lá também.
+- **Fuso na contagem "dias para a prova":** normalizar `today` para meia-noite (`setHours(0,0,0,0)`) onde calcula diffDays. Corrigido em ConcursoDetalhe e Planos; ainda existe em `App.jsx` (~2107, alimenta Dashboard/Objetivos). Aplicar lá também.
 - Features pela metade flagged: cronograma "Gerar com IA" não persiste (Planejamento); modo de edição de Ciclo decorativo + marcar-concluída sem UI (Ciclos); editar/excluir lembrete manual sem UI (Lembretes); incremento de cota no save do modal de Simulado; ranking fake (Simulados).
 
 ### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
