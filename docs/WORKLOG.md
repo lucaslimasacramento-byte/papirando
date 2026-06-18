@@ -85,9 +85,9 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Questões (banco de questões) | `Questoes.jsx` | 🔧 | Código auditado ✅ (token de borda + no-op + código morto). Falta: confirmar trava do limite diário no backend |
 | Simulados | `Simulados.jsx` | 🔧 | Código auditado ✅ (gating consistente, placeholders). Falta: mover incremento de cota p/ o save do modal; ranking fake |
 | Flashcards | `Flashcards.jsx` | 🔧 | Código auditado ✅ (try/catch nos handlers, métricas falsas removidas). SRS correto. Falta: testar geração IA no app |
-| Redações (correção por IA) | `Redacoes.jsx` | 🔧 | Testar correção com Gemini, limites free/papiro |
-| Revisões | `Revisoes.jsx` | 🔧 | Validar fila de revisão e algoritmo |
-| Mapas Mentais | `MapasMentais.jsx` | 🔧 | Testar geração IA + salvar |
+| Redações (correção por IA) | `Redacoes.jsx` | ✅ | Código auditado — sólido. Bug de cota confirmado corrigido (incrementa só após IA), save com retry+feedback, upload validado |
+| Revisões | `Revisoes.jsx` | ✅ | Código auditado — sólido (4 imports órfãos removidos). Falta: catch silencioso da fila não dá feedback; card "Histórico" é placeholder estático |
+| Mapas Mentais | `MapasMentais.jsx` | 🔧 | ⏳ PRÓXIMA TELA A AUDITAR — Testar geração IA + salvar |
 
 ---
 
@@ -180,6 +180,25 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 ---
 
 ## Registro de sessões
+
+### Sessão 2026-06-18 — Auditoria tela a tela (Blocos 2 e 3)
+
+**Método:** agente focado lê cada arquivo → Claude revisa e aplica os fixes → commit por tela → WORKLOG atualizado. Build verificado a cada passo.
+
+**Bloco 2 (completo):**
+- Dashboard: clamp nos headings (mobile). Flag: "Meta diária" usa 180min fixo (não a meta real).
+- Estatísticas: micro-stats de Simulado (hardcoded 0) ocultados.
+- Sessões: aba "Guiada" morta removida + imports órfãos.
+
+**Bloco 3 (6 de 7):**
+- Materiais ✅: cota de upload só consome após sucesso (era queimada antes); imports limpos. Flag: deletes/leituras sem checar `{error}`.
+- Questões ✅: token de borda inexistente `--pl-rule-1`→`--pl-rule-2` (6 controles); botões no-op escondidos; código morto removido; copy de produção. Flag: confirmar trava do limite diário no backend.
+- Simulados ✅: 3 botões burlavam o limite → roteados pelo `handleRegistrar`; placeholders "?" corrigidos. Flag: incremento de cota deveria ir pro save do modal; ranking fake.
+- Flashcards ✅: try/catch nos handlers async (não congela sessão/modal); métricas falsas removidas (Retenção 7d, atividade semanal fabricada, Aprendendo/Reaprendendo estimados); botão "só revisões" mentiroso removido. SRS/FSRS correto.
+- Redações ✅: auditado, sólido, sem achados. Bug de cota confirmado corrigido.
+- Revisões ✅: auditado, sólido; 4 imports órfãos removidos. Flag: catch silencioso da fila + card "Histórico" placeholder.
+
+**🔖 ONDE PARAMOS:** falta **Mapas Mentais** (`MapasMentais.jsx`) pra fechar o Bloco 3. Depois: Blocos 4 (Planejamento), 5 (Concursos), 6 (Comunidade). Pendência transversal anotada: passe único pra endurecer `{error}` em deletes/leituras silenciosas (Materiais e afins).
 
 ### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
 **Maratona de debugging que deixou o ciclo de pagamento 100% funcional e testado em produção.**
@@ -402,4 +421,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-06-17 — pagamentos Asaas fechados end-to-end*
+*Última atualização: 2026-06-18 — auditoria Bloco 2 completo + Bloco 3 (6/7); falta Mapas Mentais*

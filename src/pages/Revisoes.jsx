@@ -2,13 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
-  BrainCircuit,
   Clock,
-  Layers3,
   Loader2,
   Play,
-  RotateCcw,
-  Sparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
