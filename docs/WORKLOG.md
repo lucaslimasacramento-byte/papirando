@@ -99,7 +99,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Ciclos de Estudo | `Ciclos.jsx` | 🔧 | Código auditado ✅ (no-op + campo morto). Flag: modo de edição decorativo, marcar-concluída sem UI, "Ciclos completos" sempre ≤1 |
 | Metas da Semana | `MetasSemana.jsx` | ✅ | — |
 | Objetivos | `Objetivos.jsx` | ✅ | Código auditado — sólido. Flag: 4 handlers async sem catch (falha silenciosa ao estourar limite de cursos) → entra no passe de error-handling |
-| Lembretes e Calendário | `LembretesCalendario.jsx` | 🔧 | ⏳ PRÓXIMA — Validar criação e notificações |
+| Lembretes e Calendário | `LembretesCalendario.jsx` | 🔧 | Código auditado ✅ (bugs históricos resolvidos, código morto removido). Flag: sem UI de editar/excluir lembrete manual (componentes existem mas não renderizados) |
 
 ---
 
@@ -200,7 +200,11 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 **Mapas Mentais ✅** (fecha o Bloco 3): IA real + fallback honesto confirmados, cota não queima, Supabase com fallback localStorage; guarda `(mapaAtivo.nodes || [])` adicionada.
 
-**🔖 ONDE PARAMOS:** Blocos 2 e 3 **COMPLETOS**. Próximo: **Bloco 4 — Planejamento** (Planejamento, Ciclos, Objetivos, Lembretes; Metas da Semana já ✅). Depois Blocos 5 (Concursos) e 6 (Comunidade). Pendência transversal: passe único pra endurecer `{error}` em deletes/leituras silenciosas (Materiais e afins).
+**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3 e 4 **COMPLETOS**. Próximo: **Bloco 5 — Concursos** (Concursos Disponíveis, Meus Concursos, Concurso Detalhe, Edital, Questão de Edital, Legislação, Planos de Concurso; Disciplinas e Detalhe de Disciplina já ✅). Depois Bloco 6 (Comunidade).
+
+**Pendências transversais acumuladas (passe dedicado depois):**
+- Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos sem catch → falha silenciosa no limite de cursos).
+- Features pela metade flagged: cronograma "Gerar com IA" não persiste (Planejamento); modo de edição de Ciclo decorativo + marcar-concluída sem UI (Ciclos); editar/excluir lembrete manual sem UI (Lembretes); incremento de cota no save do modal de Simulado; ranking fake (Simulados).
 
 ### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
 **Maratona de debugging que deixou o ciclo de pagamento 100% funcional e testado em produção.**
@@ -423,4 +427,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-06-18 — auditoria Blocos 2 e 3 COMPLETOS; próximo Bloco 4*
+*Última atualização: 2026-06-18 — auditoria Blocos 2, 3 e 4 COMPLETOS; próximo Bloco 5*
