@@ -107,10 +107,10 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Concursos Disponíveis | `ConcursosDisponiveis.jsx` | 🔧 | Validar catálogo e filtros |
-| Meus Concursos | `MeusConcursos.jsx` | 🔧 | Validar inscrição e acompanhamento |
-| Detalhe do Concurso | `ConcursoDetalhe.jsx` | 🔧 | Validar dados e cronograma |
-| Edital | `Edital.jsx` | 🔧 | Validar análise por IA |
+| Concursos Disponíveis | `ConcursosDisponiveis.jsx` | 🔧 | Código auditado ✅ (off-by-one cargos, dark mode estados vazios, código morto). Flag: import/add sem catch |
+| ~~Meus Concursos~~ | ~~`MeusConcursos.jsx`~~ | ✅ | REMOVIDO — página morta (não renderizada); coberto por Objetivos |
+| Detalhe do Concurso | `ConcursoDetalhe.jsx` | 🔧 | Código auditado ✅ (fuso dias-para-prova, import morto). Flag: cores hardcoded no hero (polish) |
+| Edital | `Edital.jsx` | 🔧 | ⏳ PRÓXIMA — Validar análise por IA |
 | Questão de Edital | `EditalQuestao.jsx` | 🔧 | Validar fluxo |
 | Disciplinas | `Disciplinas.jsx` | ✅ | — |
 | Detalhe de Disciplina | `DisciplinaDetalhe.jsx` | ✅ | — |
@@ -203,7 +203,8 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 **🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3 e 4 **COMPLETOS**. Próximo: **Bloco 5 — Concursos** (Concursos Disponíveis, Meus Concursos, Concurso Detalhe, Edital, Questão de Edital, Legislação, Planos de Concurso; Disciplinas e Detalhe de Disciplina já ✅). Depois Bloco 6 (Comunidade).
 
 **Pendências transversais acumuladas (passe dedicado depois):**
-- Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos sem catch → falha silenciosa no limite de cursos).
+- Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos e ConcursosDisponiveis sem catch → falha silenciosa no limite de cursos).
+- **Fuso na contagem "dias para a prova":** normalizar `today` para meia-noite (`setHours(0,0,0,0)`) onde calcula diffDays. Corrigido em ConcursoDetalhe; ainda existe em `App.jsx` (~2107, alimenta Dashboard/Objetivos). Aplicar lá também.
 - Features pela metade flagged: cronograma "Gerar com IA" não persiste (Planejamento); modo de edição de Ciclo decorativo + marcar-concluída sem UI (Ciclos); editar/excluir lembrete manual sem UI (Lembretes); incremento de cota no save do modal de Simulado; ranking fake (Simulados).
 
 ### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
