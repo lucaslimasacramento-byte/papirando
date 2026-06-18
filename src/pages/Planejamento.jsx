@@ -34,12 +34,6 @@ const MONTH_NAMES = [
   'Dezembro',
 ];
 
-const KANBAN_COLUMNS = [
-  { id: 'todo', nome: 'A Fazer', cor: '#D6EAF8' },
-  { id: 'doing', nome: 'Em Andamento', cor: '#FCF3CF' },
-  { id: 'done', nome: 'Concluido', cor: '#D5F5E3' },
-];
-
 const DEFAULT_FILTERS = { sessao: true, revisao: true, questoes: true };
 /** Evita reabrir o wizard em loop ao fechar sem salvar (persiste na aba). */
 const PLANNING_WIZARD_DISMISSED_KEY = 'papirando_planning_wizard_dismissed';
@@ -169,17 +163,6 @@ class PlanningErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-
-const DEFAULT_WIZARD_DATA = {
-  tipo: 'ciclo',
-  materias: [],
-  pesos: {},
-  horasSemana: 18,
-  minSessao: '1h 30m',
-  maxSessao: '2h 00m',
-  diasSemana: { dom: false, seg: true, ter: true, qua: true, qui: true, sex: true, sab: false },
-  horasPorDia: { dom: 0, seg: 4, ter: 4, qua: 4, qui: 4, sex: 4, sab: 0 },
-};
 
 export default function Planejamento(props) {
   return (
@@ -1402,7 +1385,6 @@ function SequenciaDosEstudosCard({ disciplinas, activeIndex, onEditar, onStart, 
           <div className="pl-overline">Sequência dos estudos</div>
           <h2 className="pl-section-title" style={{ marginTop: 7 }}>{disciplinas.length} matérias na rotação</h2>
         </div>
-        <button type="button" className="pl-btn-link">Ver finalizadas →</button>
       </div>
 
       <div style={{ display: 'grid', gap: 8, marginTop: 18 }}>
@@ -1533,7 +1515,7 @@ function PlanejamentoFixo({ stats, currentDate, currentWeek, currentMonthGrid, c
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
         <FixoStat label="Carga da semana" value={stats.weeklyLabel} sub={`${stats.sessions} blocos planejados`} tone="ink" />
         <FixoStat label="Tópicos em aberto" value={stats.pending} sub={`${stats.required} / semana`} tone="warn" />
-        <FixoStat label="Leitura rápida" value={stats.activeDays} sub={`dias ativos · ${stats.pace}`} tone="success" />
+        <FixoStat label="Dias ativos" value={stats.activeDays} sub={`na semana · ${stats.pace}`} tone="success" />
       </section>
       <CalendarCard
         currentDate={currentDate}
@@ -1656,39 +1638,6 @@ function arcPath(cx, cy, rOuter, start, end, rInner) {
   const e2 = polar(rInner, end);
   const large = end - start <= 180 ? '0' : '1';
   return `M ${s1.x} ${s1.y} A ${rOuter} ${rOuter} 0 ${large} 0 ${e1.x} ${e1.y} L ${s2.x} ${s2.y} A ${rInner} ${rInner} 0 ${large} 1 ${e2.x} ${e2.y} Z`;
-}
-
-function FilterLine({ checked, onChange, color, label }) {
-  return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-      <input type="checkbox" checked={checked} onChange={onChange} style={{ width: 16, height: 16, cursor: 'pointer' }} />
-      <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: color }} />
-      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{label}</span>
-    </label>
-  );
-}
-
-function InfoCard({ title, items, children }) {
-  return (
-    <div className="pl-card" style={{ padding: 24, boxShadow: 'var(--pl-sh-low)' }}>
-      <h4 className="pl-eyebrow" style={{ marginBottom: 16, borderBottom: '1px solid var(--pl-rule)', paddingBottom: 8 }}>{title}</h4>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {items.map((item) => (
-          <p key={item} style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>{item}</p>
-        ))}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function CycleInfoCard({ title, text }) {
-  return (
-    <div className="pl-card" style={{ padding: 20 }}>
-      <p className="pl-eyebrow">{title}</p>
-      <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{text}</p>
-    </div>
-  );
 }
 
 function TagPill({ label, color, soft = false }) {
