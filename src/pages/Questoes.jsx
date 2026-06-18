@@ -341,7 +341,7 @@ export default function Questoes({
                 type="number"
                 min={1}
                 autoFocus
-                style={{ width: 64, borderRadius: 6, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', padding: '3px 8px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)' }}
+                style={{ width: 64, borderRadius: 6, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '3px 8px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)' }}
                 value={metaDiariaQuestoes}
                 onChange={(e) => setMetaDiariaQuestoes(Number(e.target.value))}
                 onBlur={() => setIsEditingMeta(false)}
@@ -351,7 +351,7 @@ export default function Questoes({
               <button
                 type="button"
                 onClick={() => setIsEditingMeta(true)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', padding: '3px 10px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '3px 10px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
               >
                 <span>{questionsToday}</span>
                 <span style={{ color: 'var(--pl-ink-3)' }}>/</span>
@@ -396,7 +396,7 @@ export default function Questoes({
             <button
               type="button"
               onClick={() => setCadernoBuilderOpen(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
             >
               <ClipboardList size={14} />
               Montar caderno
@@ -404,12 +404,12 @@ export default function Questoes({
             <button
               type="button"
               onClick={() => setFiltersOpen(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)', padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
             >
               <SlidersHorizontal size={14} />
               Filtros
               {activeFiltersCount > 0 && (
-                <span style={{ borderRadius: 99, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg)', padding: '1px 6px', fontSize: 10, fontWeight: 700, color: 'var(--pl-accent)' }}>
+                <span style={{ borderRadius: 99, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg)', padding: '1px 6px', fontSize: 10, fontWeight: 700, color: 'var(--pl-accent)' }}>
                   {activeFiltersCount}
                 </span>
               )}
@@ -433,7 +433,7 @@ export default function Questoes({
               <button
                 type="button"
                 onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterDif(''); setActiveCadernoId(''); }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-1)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
               >
                 <X size={13} />
                 Limpar
