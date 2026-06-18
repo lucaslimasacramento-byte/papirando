@@ -239,8 +239,8 @@ serve(async (req) => {
 
     const appUrl = Deno.env.get('APP_URL') ?? 'https://papirando.app';
 
-    // Cria assinatura no Asaas
-    const subscription = await asaas('/subscriptions', 'POST', {
+    // Corpo base da assinatura.
+    const subscriptionBody: Record<string, unknown> = {
       customer: customerId,
       billingType: 'UNDEFINED', // cliente escolhe PIX ou cartão na página de pagamento
       value: plan.value,
@@ -253,7 +253,24 @@ serve(async (req) => {
         successUrl: `${appUrl}/?checkout=success&plan=${planId}`,
         autoRedirect: true,
       },
-    });
+    };
+
+    // O callback.successUrl exige um domínio cadastrado na conta Asaas (Minha Conta
+    // → Informações). Se não houver, o Asaas recusa a assinatura inteira. Nesse caso
+    // recriamos SEM o callback para o checkout não quebrar (apenas sem auto-redirect).
+    let subscription;
+    try {
+      subscription = await asaas('/subscriptions', 'POST', subscriptionBody);
+    } catch (subErr) {
+      const subMsg = subErr instanceof Error ? subErr.message : String(subErr);
+      if (/dom[ií]nio|site/i.test(subMsg)) {
+        console.warn('[create-checkout-session] callback sem domínio configurado — criando sem redirect:', subMsg);
+        const { callback: _omit, ...withoutCallback } = subscriptionBody;
+        subscription = await asaas('/subscriptions', 'POST', withoutCallback);
+      } else {
+        throw subErr;
+      }
+    }
 
     // Registra no banco com status trialing. NÃO ignorar erro: se a gravação
     // falhar, o usuário ficaria sem acesso e o webhook não acharia a assinatura.
