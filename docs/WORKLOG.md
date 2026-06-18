@@ -81,8 +81,8 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Materiais (upload + processamento) | `Materiais.jsx` | 🔧 | Testar upload real + geração IA |
-| Questões (geração por IA) | `Questoes.jsx` | 🔧 | Testar geração com Gemini, limites free/papiro |
+| Materiais (upload + processamento) | `Materiais.jsx` | 🔧 | Código auditado ✅ (cota só após upload OK). Falta: testar upload real + endurecer error-handling de deletes/leituras |
+| Questões (banco de questões) | `Questoes.jsx` | 🔧 | Código auditado ✅ (token de borda + no-op + código morto). Falta: confirmar trava do limite diário no backend |
 | Simulados | `Simulados.jsx` | 🔧 | Testar fluxo completo + correção |
 | Flashcards | `Flashcards.jsx` | 🔧 | Testar geração IA + repetição espaçada |
 | Redações (correção por IA) | `Redacoes.jsx` | 🔧 | Testar correção com Gemini, limites free/papiro |
