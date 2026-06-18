@@ -2,18 +2,13 @@
 import PremiumGate from '../components/PremiumGate';
 import {
   Loader2,
-  AlertTriangle,
-  BarChart2,
-  Bookmark,
   BookOpen,
   Check,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
   Edit3,
-  Flag,
   Layers3,
-  MessageSquare,
   Play,
   Plus,
   Search,
@@ -763,14 +758,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         padding: '8px 16px',
         background: submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-bg-soft)',
       }}>
-        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
-            <InlineAction Icon={Bookmark} text="Salvar" />
-            <InlineAction Icon={MessageSquare} text="Comentários" />
-            <InlineAction Icon={BarChart2} text="Estatísticas" />
-            <InlineReport />
-          </div>
-
+        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
           <div style={{ display: 'flex', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
           {submitted ? (
             <button type="button" onClick={resetQuestion} className="pl-btn pl-btn-ghost pl-btn-sm">
@@ -814,19 +802,6 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
   );
 }
 
-function FilterField({ label, options }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <label style={{ marginBottom: 8, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{label}</label>
-      <select style={{ width: '100%', cursor: 'pointer', borderRadius: 10, border: '2px solid transparent', background: 'var(--pl-bg-soft)', padding: '10px 14px', fontWeight: 700, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', transition: 'border-color 0.15s' }}>
-        {options.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
 function AnswerOption({ label, text, selected = false, submitted = false, isCorrect = false, isWrongSelection = false, onClick }) {
   let containerStyle;
   let markerStyle;
@@ -857,53 +832,6 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
       </div>
       <span style={{ minWidth: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: textColor }}>{text}</span>
     </button>
-  );
-}
-
-function InlineAction({ Icon, text }) {
-  return (
-    <button type="button" style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 8, padding: '6px 10px', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--pl-sans)', transition: 'background 0.15s, color 0.15s' }}>
-      {React.createElement(Icon, { size: 15 })}
-      {text}
-    </button>
-  );
-}
-
-function InlineReport() {
-  return (
-    <button type="button" style={{ display: 'flex', alignItems: 'center', gap: 4, borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--pl-sans)', transition: 'background 0.15s, color 0.15s' }}>
-      <Flag size={13} />
-      Reportar
-    </button>
-  );
-}
-
-function SidebarFolder({ Icon, title, subtitle }) {
-  return (
-    <div style={{ display: 'flex', cursor: 'pointer', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, border: '1px solid transparent', padding: 12, transition: 'all 0.15s' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 8, boxShadow: 'var(--pl-sh-low)' }}>
-          {React.createElement(Icon, { size: 18 })}
-        </div>
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0, fontFamily: 'var(--pl-sans)' }}>{title}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--pl-ink-3)', margin: 0, fontFamily: 'var(--pl-sans)' }}>{subtitle}</p>
-        </div>
-      </div>
-      <ChevronRight size={18} style={{ color: 'var(--pl-rule-strong)' }} />
-    </div>
-  );
-}
-
-function InsightCard({ title, text }) {
-  return (
-    <div className="pl-card" style={{ padding: 16 }}>
-      <div style={{ marginBottom: 12, display: 'flex', height: 40, width: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' }}>
-        <AlertTriangle size={18} />
-      </div>
-      <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, fontFamily: 'var(--pl-sans)' }}>{title}</h3>
-      <p style={{ marginTop: 8, fontSize: 14, fontWeight: 500, lineHeight: 1.45, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{text}</p>
-    </div>
   );
 }
 
@@ -1148,7 +1076,7 @@ function QuestionNotebookBuilder({
 
         <footer style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
-            O caderno fica salvo neste navegador. Quando houver tabela Supabase, ele podera acompanhar o aluno em qualquer dispositivo.
+            Seus cadernos ficam salvos neste dispositivo para acesso rápido e offline.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button type="button" className="pl-btn pl-btn-ghost" onClick={onClose}>Cancelar</button>
