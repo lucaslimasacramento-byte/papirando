@@ -800,7 +800,12 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
   }
 
   async function startStudy() {
-    const deckDueCards = await loadDueCards(activeDeck.id);
+    let deckDueCards = [];
+    try {
+      deckDueCards = await loadDueCards(activeDeck.id);
+    } catch (error) {
+      console.error('[Flashcards] erro ao carregar cards para estudo:', error?.message || error);
+    }
     const due = deckDueCards.length > 0 ? deckDueCards : getDueCards(cards);
     if (due.length === 0) return;
     setStudyQueue(due);
@@ -813,8 +818,15 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
 
   async function startDeckStudy(deck) {
     if (!deck?.id) return;
-    const loadedCards = await loadCards(deck.id);
-    const dueCards = await loadDueCards(deck.id);
+    let loadedCards = [];
+    let dueCards = [];
+    try {
+      loadedCards = await loadCards(deck.id);
+      dueCards = await loadDueCards(deck.id);
+    } catch (error) {
+      console.error('[Flashcards] erro ao iniciar estudo do deck:', error?.message || error);
+      return;
+    }
     const queue = dueCards.length > 0 ? dueCards : getDueCards(loadedCards);
     const fallbackQueue = loadedCards.slice(0, Math.min(20, loadedCards.length));
     const nextQueue = queue.length > 0 ? queue : fallbackQueue;
@@ -834,15 +846,19 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     const card = studyQueue[studyIndex];
     if (!card) return;
 
-    const updated = await submitReview({
-      card,
-      rating,
-      userId: currentUserId,
-      deckId: activeDeck?.id,
-    });
-
-    // Update local cards array
-    setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, ...updated } : c)));
+    try {
+      const updated = await submitReview({
+        card,
+        rating,
+        userId: currentUserId,
+        deckId: activeDeck?.id,
+      });
+      // Update local cards array
+      setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, ...updated } : c)));
+    } catch (error) {
+      // Não congela a sessão se a gravação falhar — apenas registra e avança.
+      console.error('[Flashcards] erro ao salvar review:', error?.message || error);
+    }
 
     // Stats
     const statKey = ['again', 'hard', 'good', 'easy'][rating - 1];
@@ -906,21 +922,31 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ Delete deck Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async function handleDeleteDeck(deckId) {
-    await deleteDeck(deckId);
-    await refreshDecks();
-    setDeleteConfirm(null);
-    if (activeDeck?.id === deckId) {
-      setActiveDeck(null);
-      setCards([]);
+    try {
+      await deleteDeck(deckId);
+      await refreshDecks();
+      if (activeDeck?.id === deckId) {
+        setActiveDeck(null);
+        setCards([]);
+      }
+    } catch (error) {
+      console.error('[Flashcards] erro ao excluir deck:', error?.message || error);
+    } finally {
+      setDeleteConfirm(null);
     }
   }
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ Delete card Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async function handleDeleteCard(cardId) {
-    await deleteCard(cardId);
-    setCards((prev) => prev.filter((c) => c.id !== cardId));
-    await refreshDecks();
-    setDeleteConfirm(null);
+    try {
+      await deleteCard(cardId);
+      setCards((prev) => prev.filter((c) => c.id !== cardId));
+      await refreshDecks();
+    } catch (error) {
+      console.error('[Flashcards] erro ao excluir card:', error?.message || error);
+    } finally {
+      setDeleteConfirm(null);
+    }
   }
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ AI generate cards from text Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
