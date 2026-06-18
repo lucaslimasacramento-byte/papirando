@@ -410,7 +410,7 @@ export default function ConcursosDisponiveis({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
         {groupedCatalog.length === 0 ? (
-          <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
+          <section style={{ borderRadius: '2rem', border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 40, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
             Nenhum concurso disponível no momento. Aguarde a equipe adicionar novos editais.
           </section>
         ) : null}
@@ -460,7 +460,7 @@ export default function ConcursosDisponiveis({
         })}
 
         {groupedCatalog.length > 0 && displayedGroups.length === 0 && (
-          <section className="rounded-[2rem] border border-dashed border-gray-200 bg-white p-10 text-center text-sm font-semibold text-gray-500">
+          <section style={{ borderRadius: '2rem', border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 40, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
             Nenhum concurso encontrado com esses filtros.
           </section>
         )}
@@ -1089,7 +1089,7 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
         {hasMultipleRoles && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 25, overflow: 'hidden' }}>
             {cargos.slice(0, 2).map((cargo) => <span key={cargo.id} className="pl-tag">{cargo.nome}</span>)}
-            {cargos.length > 3 && <span className="pl-tag">+{cargos.length - 3}</span>}
+            {cargos.length > 2 && <span className="pl-tag">+{cargos.length - 2}</span>}
           </div>
         )}
 
@@ -1212,30 +1212,6 @@ function InfoPill({ icon: Icon, label }) {
   );
 }
 
-function MetaCounter({ label, value }) {
-  return (
-    <div style={{ borderRadius: 14, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 12px' }}>
-      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
-      <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</p>
-    </div>
-  );
-}
-
-function QuickInfo({ label, value, tone = 'blue', wide = false }) {
-  const toneColors = {
-    blue: 'var(--pl-accent)',
-    amber: 'var(--pl-warn)',
-    green: 'var(--pl-success)',
-  };
-
-  return (
-    <div style={{ minWidth: 0, borderRadius: 14, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '8px 12px', gridColumn: wide ? 'span 2' : undefined }}>
-      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
-      <p style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.3, color: toneColors[tone] || toneColors.blue, wordBreak: 'break-word' }}>{value}</p>
-    </div>
-  );
-}
-
 function QuickTag({ children, tone = 'blue' }) {
   const toneStyles = {
     blue: { border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' },
@@ -1248,15 +1224,6 @@ function QuickTag({ children, tone = 'blue' }) {
     <span style={{ borderRadius: 999, padding: '4px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.16em', ...(toneStyles[tone] || toneStyles.blue) }}>
       {children}
     </span>
-  );
-}
-
-function MiniStat({ label, value }) {
-  return (
-    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '8px 12px' }}>
-      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
-      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</p>
-    </div>
   );
 }
 
