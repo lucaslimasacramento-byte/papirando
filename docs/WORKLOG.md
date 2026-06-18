@@ -18,19 +18,24 @@
 
 ---
 
-## PAGAMENTOS — Status atual (2026-05-30)
+## PAGAMENTOS — Status atual (2026-06-17) — ✅ FUNCIONANDO E TESTADO
+
+Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produção**.
 
 | Item | Status |
 |---|---|
-| Produto "Papirando Papiro" criado no Stripe | ✅ |
-| Preço mensal R$19,90 (`price_1Tcxk2DVbtxivpXmRjpQYTr5`) | ✅ |
-| Preço anual R$159,90 (`price_1TcxlpDVbtxivpXmAXdi753f`) | ✅ |
-| Price IDs salvos no Supabase Secrets | ✅ |
-| Edge Function `create-checkout-session` atualizada (plano `papiro` + trial 30d) | ✅ |
-| `STRIPE_SECRET_KEY` no Supabase Secrets | ⏳ Aguardando SMS do Stripe |
-| Deploy da Edge Function | ⏳ Depende da secret key |
-| Botão de checkout conectado no Perfil.jsx | ⏳ Depende do deploy |
-| PIX ativado no Stripe Dashboard | 🔧 Fazer em Settings → Payment methods |
+| Checkout `create-checkout-session` (cria assinatura R$19,90 + trial 30d) | ✅ |
+| Envia CPF do perfil ao Asaas (exigência de cobrança) | ✅ |
+| `notificationDisabled: true` (sem taxa de notificação ~R$0,99) | ✅ |
+| Trial 30 dias automático no onboarding (`start-trial`, cobre e-mail + Google) | ✅ |
+| Webhook `asaas-webhook` recebe evento e responde 200 | ✅ |
+| Pagamento → assinatura vira `active` no banco | ✅ **testado** (PAYMENT_RECEIVED → active) |
+| Webhook cadastrado no painel Asaas (token sincronizado, fila ligada) | ✅ |
+| Selo PAPIRO animado + contagem regressiva do trial no header | ✅ |
+| Colunas `asaas_*` + `UNIQUE(user_id)` no banco de produção | ✅ |
+| **Reverter preço de teste R$5 → R$19,90** | ✅ |
+| Redirect de volta ao app pós-pagamento | ⏳ opcional — exige cadastrar domínio no Asaas (Minha Conta → Informações) |
+| Confirmar secret `ASAAS_SANDBOX=false` | ⏳ verificar (cobranças reais sugerem que já está) |
 
 ---
 
@@ -54,7 +59,7 @@
 |---|---|---|---|
 | Login / Cadastro | `Login.jsx` | ✅ | — |
 | Perfil | `Perfil.jsx` | ✅ | — |
-| Assinatura (tab no perfil) | `Assinatura.jsx` | 🔧 | Deploy Asaas (API Key pendente) |
+| Assinatura (tab no perfil) | `Assinatura.jsx` | ✅ | Checkout Asaas funcionando end-to-end |
 | Convide e Ganhe | `ConvideGanhe.jsx` | ✅ | — |
 | Termos de Uso | `Termos.jsx` | ✅ | — |
 | Privacidade | `Privacidade.jsx` | ✅ | — |
@@ -166,15 +171,30 @@
 
 ## PRÓXIMOS PASSOS IMEDIATOS
 
-1. **Conseguir STRIPE_SECRET_KEY** (aguardando SMS) → deploy da Edge Function → checkout funcionando
-2. **Conectar botão de checkout no Perfil.jsx** (onSelectPlan → startStripeCheckout)
-3. **Ativar PIX no Stripe** (Settings → Payment methods → Pix)
-4. **Passar pelo Bloco 2** (Dashboard + Estatísticas) — validar dados reais
-5. **Passar pelo Bloco 3** (ferramentas IA) — testar cada feature com Gemini
+1. ✅ ~~Pagamentos~~ — **concluído** (Asaas funcionando end-to-end, ver seção PAGAMENTOS)
+2. **Passar pelo Bloco 2** (Dashboard + Estatísticas) — validar dados reais
+3. **Passar pelo Bloco 3** (ferramentas IA) — testar cada feature com Gemini
+4. (opcional) Cadastrar domínio no Asaas → reativa redirect pós-pagamento
+5. (pré-lançamento) Confirmar `ASAAS_SANDBOX=false`
 
 ---
 
 ## Registro de sessões
+
+### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
+**Maratona de debugging que deixou o ciclo de pagamento 100% funcional e testado em produção.**
+
+- **Checkout (`create-checkout-session`) — 3 bugs em cascata corrigidos:**
+  1. Função não enviava `cpfCnpj` ao Asaas → 500. Agora lê `profiles.cpf`.
+  2. Colunas `asaas_customer_id`/`asaas_subscription_id` não existiam no banco de prod (migration nunca aplicada) → upsert falhava silenciosamente. Aplicadas via Management API.
+  3. Faltava constraint `UNIQUE(user_id)` exigida pelo `onConflict` do upsert. Aplicada.
+  - Bônus: upsert agora checa erro (antes engolia); `startCheckout` expõe a mensagem real da função.
+- **Notificações pagas do Asaas desativadas:** customer criado/atualizado com `notificationDisabled: true` (economiza ~R$0,99/cobrança). Nova Edge Function admin `asaas-fix-customers` corrige clientes antigos (idempotente).
+- **Trial automático no onboarding:** nova Edge Function `start-trial` concede 30 dias do Papiro via tabela `subscriptions` ao concluir o onboarding (cobre cadastro por e-mail E Google). Profile fica `gratuito` de propósito → expira sozinho no dia 30 (premium amarrado à subscription, não ao profile). `register-free` alinhado. Banner "1 mês grátis" no StepWelcome.
+- **Webhook (`asaas-webhook`) ativado:** `verify_jwt=false` (Asaas chama sem JWT; auth via token próprio). Token sincronizado entre painel Asaas e secret `ASAAS_WEBHOOK_TOKEN`. Responde 200 (ack) para "assinatura desconhecida" (eventos fantasmas) pra não penalizar a fila. **Testado: PAYMENT_RECEIVED → 200 → subscription `active` (confirmado no banco).**
+- **Gotcha do callback:** `callback.successUrl` exige domínio cadastrado na conta Asaas; sem ele a assinatura era recusada inteira (500). Checkout agora recria sem callback nesse caso (não quebra).
+- **UX:** selo PAPIRO dourado animado + contagem regressiva do trial no header (pulsa quando ≤5 dias). Onboarding não "pisca" o dashboard antes (guard de loading). Logos de concurso otimizadas: `storageThumb()` na entrega (884KB→~9KB via render endpoint) + `compressImage()` no upload (WebP, max 512px). Modal do onboarding mais largo.
+- **Preço:** revertido de R$5 (teste) para **R$19,90**. Líquido no PIX ≈ R$17,91.
 
 ### Sessão 2026-06-14 — Hardening pré-lançamento (segurança + SEO)
 **Auditoria de segurança (Claude + subagente) nos surfaces de backend. Achados aplicados:**
@@ -382,4 +402,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-05-30*
+*Última atualização: 2026-06-17 — pagamentos Asaas fechados end-to-end*
