@@ -123,8 +123,8 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Comunidades | `Comunidades.jsx` | 🔧 | Validar feed, posts e moderação |
-| Esquadrões | `Esquadroes.jsx` | 🔧 | Validar criação e membros |
+| Comunidades | `Comunidades.jsx` | 🔧 | Código auditado ✅ (sort 'top' NaN; comentário otimista reverte em erro; código morto). 🚧 DECISÕES: "Salvar" post não persiste (early-return bloqueia, some no reload); upvote é fire-and-forget sem reconciliação; view count só persiste se `onViewPost` for passado |
+| Esquadrões | `Esquadroes.jsx` | 🔧 | Crashes corrigidos ✅ (`.catch` no builder Supabase em excluir/publicar; esquadrão-fantasma do fórum; colisão de ID). 🚧 GRANDE DECISÃO: feature largamente MOCK — simulado grava nota aleatória 7–10 (não abre simulado); botões responder/curtir/menu decorativos sem handler; moderação do fórum e tentativas só em estado local (não persistem); persistência remota otimista e silenciosa sem rollback; contador de membros dessincroniza. Precisa decidir o que entra no lançamento |
 
 ---
 
@@ -200,7 +200,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 **Mapas Mentais ✅** (fecha o Bloco 3): IA real + fallback honesto confirmados, cota não queima, Supabase com fallback localStorage; guarda `(mapaAtivo.nodes || [])` adicionada.
 
-**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3, 4 e **5 COMPLETOS**. Bloco 5 — Concursos: todas as telas auditadas ✅ (Concursos Disponíveis, Concurso Detalhe, Edital, Questão de Edital, Legislação, Planos; Meus Concursos removido; Disciplinas e Detalhe já ✅). Pendências de DECISÃO deixadas: Edital #2 (botão "Importar com IA" só analisa, não importa disciplinas); Planos #4 (formatSalario em faixas). Próximo: **Bloco 6 (Comunidade)**.
+**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3, 4, **5 e 6 (auditoria de código) COMPLETOS**. Bloco 6 — Comunidade: crashes de runtime do Esquadrões corrigidos (`.catch` no builder Supabase, esquadrão-fantasma, colisão de ID), bugs de robustez do Comunidades corrigidos. **AGUARDANDO DECISÃO**: Esquadrões é largamente mock (simulado fake, botões decorativos, persistência local) — decidir escopo de lançamento. Comunidades: "Salvar" e upvote sem persistência confiável. Pendências de DECISÃO anteriores: Edital #2 (importar disciplinas); Planos #4 (faixas salariais). Próximo: definir escopo das decisões OU avançar para passe transversal de pendências.
 
 **Pendências transversais acumuladas (passe dedicado depois):**
 - Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos e ConcursosDisponiveis sem catch → falha silenciosa no limite de cursos).
