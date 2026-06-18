@@ -95,11 +95,11 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Planejamento | `Planejamento.jsx` | 🔧 | Validar cronograma gerado |
-| Ciclos de Estudo | `Ciclos.jsx` | 🔧 | Validar ciclos e timer Pomodoro |
+| Planejamento | `Planejamento.jsx` | 🔧 | Código auditado ✅ (label, no-op, código morto). Flag: "Gerar com IA" não persiste/não vira plano (#1); questoes_meta derivado (#4) |
+| Ciclos de Estudo | `Ciclos.jsx` | 🔧 | Código auditado ✅ (no-op + campo morto). Flag: modo de edição decorativo, marcar-concluída sem UI, "Ciclos completos" sempre ≤1 |
 | Metas da Semana | `MetasSemana.jsx` | ✅ | — |
-| Objetivos | `Objetivos.jsx` | 🔧 | Validar criação e progresso |
-| Lembretes e Calendário | `LembretesCalendario.jsx` | 🔧 | Validar criação e notificações |
+| Objetivos | `Objetivos.jsx` | ✅ | Código auditado — sólido. Flag: 4 handlers async sem catch (falha silenciosa ao estourar limite de cursos) → entra no passe de error-handling |
+| Lembretes e Calendário | `LembretesCalendario.jsx` | 🔧 | ⏳ PRÓXIMA — Validar criação e notificações |
 
 ---
 
