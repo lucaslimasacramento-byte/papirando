@@ -231,7 +231,9 @@ export async function loadActiveVadeMecumDocument() {
     return normalizeVadeDocument(data || DEFAULT_VADE_DOCUMENT);
   } catch (error) {
     console.error('Erro ao carregar documento ativo do Vade Mecum:', error);
-    return normalizeVadeDocument(DEFAULT_VADE_DOCUMENT);
+    // Falha de rede/banco: servimos o PDF embarcado, mas sinalizamos que é fallback
+    // para a UI avisar que pode não ser a versão oficial mais recente.
+    return { ...normalizeVadeDocument(DEFAULT_VADE_DOCUMENT), isFallback: true };
   }
 }
 

@@ -114,7 +114,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Questão de Edital | `EditalQuestao.jsx` | 🔧 | Código auditado ✅ (filtro de prioridade escondia "altíssima"; banca exibida com chave errada `bancaLabel`→`banca`; removido TAB_ITEMS + 3 componentes mortos + 9 imports mortos). Flag: `matchesTopicHistory` includes bidirecional pode inflar tempo por tópico de nome genérico (regra de negócio) |
 | Disciplinas | `Disciplinas.jsx` | ✅ | — |
 | Detalhe de Disciplina | `DisciplinaDetalhe.jsx` | ✅ | — |
-| Legislação | `Legislacao.jsx` | 🔧 | Código auditado ✅ (busca não diz mais "nenhuma ocorrência" durante indexação). 🚧 DECISÕES: #1 PDF de ~1360 pág. é baixado/parseado 2x (indexação serial + viewer) → trava aba; #2 erro de Supabase é engolido e serve PDF default sem avisar (banner de erro virou código morto) |
+| Legislação | `Legislacao.jsx` | ✅ | Código auditado e corrigido ✅ — #1 indexação do PDF agora é SOB DEMANDA (só roda quando há busca de texto ativa; antes parseava ~1360 pág. no load + viewer = dupla carga); #2 fallback do Supabase agora exibe banner de aviso (`isFallback` em vadeMecumApi); #5 busca distingue "indexando" de "nenhuma ocorrência". Verificação no navegador bloqueada por login (sem credenciais) — compila limpo, sem erros de console |
 | Planos de Concurso | `Planos.jsx` | 🔧 | Validar geração de plano |
 
 ---

@@ -101,6 +101,8 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
   const [pdfSearch, setPdfSearch] = useState('');
   const [focusMode, setFocusMode] = useState(false);
   const [pageIndex, setPageIndex] = useState([]);
+  // Indexação do PDF (~1360 páginas) é cara: só roda quando o usuário usa a busca de texto.
+  const [indexRequested, setIndexRequested] = useState(false);
   const [markerDraft, setMarkerDraft] = useState({ label: '', excerpt: '', color: MARKER_COLORS[0] });
   const [asideTab, setAsideTab] = useState('bloco');
 
@@ -161,8 +163,14 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
     };
   }, [currentUserId]);
 
+  // Dispara a indexação assim que houver um termo de busca ativo (digitado, do histórico
+  // ou restaurado da última sessão). Sem busca, o PDF nunca é indexado — evita travar a aba.
   useEffect(() => {
-    if (!documentMeta?.pdfUrl) return;
+    if (pdfSearch.trim() && !indexRequested) setIndexRequested(true);
+  }, [pdfSearch, indexRequested]);
+
+  useEffect(() => {
+    if (!documentMeta?.pdfUrl || !indexRequested) return;
 
     let cancelled = false;
 
@@ -217,7 +225,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
     return () => {
       cancelled = true;
     };
-  }, [documentMeta?.pdfUrl, documentMeta?.sectionPageMap]);
+  }, [documentMeta?.pdfUrl, documentMeta?.sectionPageMap, indexRequested]);
 
   useEffect(() => {
     persistLocalState(currentUserId, vadeState);
@@ -671,6 +679,16 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
               borderRadius: 4, fontSize: 13, fontWeight: 600,
             }}>{saveError}</div>
           )}
+          {documentMeta?.isFallback && !isBootstrapping && (
+            <div style={{
+              padding: '10px 14px', marginBottom: 10,
+              background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)',
+              border: '1px solid rgba(180,83,9,0.25)', borderLeft: '3px solid var(--pl-warn)',
+              borderRadius: 4, fontSize: 13, fontWeight: 600,
+            }}>
+              Não foi possível verificar a versão oficial agora — exibindo a versão de referência embarcada, que pode estar desatualizada.
+            </div>
+          )}
 
           {/* ═══ Reader + Aside ═══ */}
           <div className="pl-leg-body">
@@ -897,7 +915,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
                       <div className="pl-leg-search-results" style={{ marginTop: 6 }}>
                         {searchResults.length === 0 ? (
                           <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                            {isIndexingPdf || pageIndex.length === 0
+                            {isIndexingPdf
                               ? 'Indexando o documento… a busca fica disponível em instantes.'
                               : 'Nenhuma ocorrência no texto indexado.'}
                           </p>
