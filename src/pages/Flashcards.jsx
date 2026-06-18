@@ -5,7 +5,6 @@ import {
   ArrowRight,
   BookOpen,
   Check,
-  ChevronRight,
   Flame,
   Layers3,
   Loader2,
@@ -45,8 +44,6 @@ const COLOR_STYLES = {
   rose:    { bg: 'var(--pl-danger-soft)',   dot: 'var(--pl-danger)',   text: 'var(--pl-danger)'   },
   amber:   { bg: 'var(--pl-warn-soft)',     dot: 'var(--pl-warn)',     text: 'var(--pl-warn)'     },
 };
-
-const COLOR_OPTIONS = Object.keys(COLOR_STYLES);
 
 function getColor(color) {
   return COLOR_STYLES[color] || COLOR_STYLES.blue;
@@ -99,7 +96,6 @@ function FlashKpiStrip({ stats }) {
     { label: 'Decks', value: String(stats.totalDecks).padStart(2, '0'), sub: 'coleções ativas' },
     { label: 'Cards', value: String(stats.totalCards), sub: `${stats.newCards} novos pra entrar`, tone: 'accent' },
     { label: 'Vence hoje', value: String(stats.dueToday).padStart(2, '0'), sub: 'alta prioridade', tone: 'warn', icon: Flame },
-    { label: 'Retenção 7d', value: stats.retention == null ? '--%' : `${stats.retention}%`, sub: 'meta saudável >= 85%', tone: 'success' },
   ];
   return (
     <section className="flash-kpi-grid">
@@ -120,12 +116,10 @@ function FlashKpiStrip({ stats }) {
   );
 }
 
-function AprenderHojeCard({ totals, nextCard, onIniciar, onSomenteRevisao }) {
+function AprenderHojeCard({ totals, nextCard, onIniciar }) {
   const total = Math.max(0, Number(totals.dueToday || 0));
   const novos = Math.max(0, Number(totals.newCards || 0));
   const rev = Math.max(0, Number(totals.totalReviewed || 0));
-  const learning = Math.max(0, Math.round(novos * 0.18));
-  const relearning = Math.max(0, total > 3 ? Math.round(total * 0.18) : 0);
 
   return (
     <section className="flash-dark-card">
@@ -144,26 +138,19 @@ function AprenderHojeCard({ totals, nextCard, onIniciar, onSomenteRevisao }) {
           <button type="button" className="flash-highlight-btn" onClick={onIniciar}>
             <Play size={12} /> Iniciar revisão
           </button>
-          <button type="button" className="flash-outline-dark" onClick={onSomenteRevisao}>
-            Estudar só revisões
-          </button>
         </div>
       </div>
 
       <StackedBar
         segments={[
           { n: novos, color: 'rgba(243,239,229,0.28)' },
-          { n: learning, color: 'var(--pl-warn)' },
           { n: Math.max(total, rev), color: 'var(--pl-success)' },
-          { n: relearning, color: 'var(--pl-danger)' },
         ]}
       />
 
       <div className="flash-state-grid">
         <StateMetric label="Novos" value={novos} />
-        <StateMetric label="Aprendendo" value={learning} tone="warn" />
         <StateMetric label="Revisão" value={total} tone="success" />
-        <StateMetric label="Reaprendendo" value={relearning} tone="danger" />
       </div>
 
       <NextCardPreview card={nextCard} />
@@ -296,7 +283,6 @@ function DeckCard({ deck, onAbrir, onEstudar, onDelete }) {
       <div className="flash-mini-stats">
         <span><strong>{total}</strong> cards</span>
         <span><strong>{due}</strong> hoje</span>
-        <span><strong>{retention || '--'}</strong>{retention ? '%' : ''} ret.</span>
       </div>
       <div className="pl-progress-track">
         <div className="pl-progress-fill" style={{ width: `${retention || Math.min(100, reviewed)}%` }} />
@@ -387,26 +373,6 @@ function ProximosVencerList({ items, onAbrir }) {
           </button>
         ))}
       </div>
-    </section>
-  );
-}
-
-function AtividadeSemanaCard({ data, retencao }) {
-  const max = Math.max(1, ...data.map((item) => item.n));
-  const healthy = Number(retencao || 0) >= 85;
-  return (
-    <section className="pl-card-paper flash-week-card">
-      <div className="pl-overline">Últimos 7 dias</div>
-      <h3 className="pl-section-title">Ritmo de revisão</h3>
-      <div className="flash-week-bars">
-        {data.map((item, index) => (
-          <div key={item.dia}>
-            <span style={{ height: `${Math.max(8, (item.n / max) * 74)}px` }} className={index === data.length - 1 ? 'is-today' : ''} />
-            <em>{item.dia}</em>
-          </div>
-        ))}
-      </div>
-      <p><strong>{retencao == null ? '--' : `${retencao}%`}</strong> de retenção média. {healthy ? 'Segue nesse ritmo.' : 'Vale revisar hoje.'}</p>
     </section>
   );
 }
@@ -680,8 +646,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     const totalReviewed = decks.reduce((acc, deck) => acc + Number(deck.revisados || 0), 0);
     const dueToday = decks.reduce((acc, deck) => acc + Number(deck.due_today || deck.vencendoHoje || 0), 0);
     const newCards = Math.max(0, totalCards - totalReviewed);
-    const retention = totalReviewed > 0 ? Math.min(99, Math.max(0, Math.round((totalReviewed / Math.max(totalReviewed + Number(decks.length || 0), 1)) * 100))) : null;
-    return { totalDecks, totalCards, totalReviewed, dueToday, newCards, retention };
+    return { totalDecks, totalCards, totalReviewed, dueToday, newCards };
   }, [decks]);
 
   const dashboardDecks = useMemo(() => {
@@ -714,11 +679,6 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
         state: deck.vencendoHoje > 3 ? State.Relearning : State.Review,
       }));
   }, [dashboardDecks]);
-
-  const weekActivity = useMemo(() => {
-    const base = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-    return base.map((dia, index) => ({ dia, n: Math.max(0, Math.round((deckStats.totalReviewed / 7) * (index === 5 ? 1.4 : 0.75 + index * 0.06))) }));
-  }, [deckStats.totalReviewed]);
 
   const courseOptions = useMemo(() => {
     const map = new Map();
@@ -1209,15 +1169,6 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
               <Trash2 size={16} />
             </button>
             <button
-              type="button"
-              onClick={() => { setAiErr(''); setAiSuccess(''); setAiGenModal(true); }}
-              className="pl-btn pl-btn-ai pl-btn-sm"
-              style={{ display: 'none' }}
-            >
-              <Sparkles size={14} aria-hidden />
-              Gerar com IA
-            </button>
-            <button
               onClick={() => { setFormErr(''); setCardModal(true); }}
               className="pl-btn pl-btn-primary pl-btn-sm"
             >
@@ -1545,10 +1496,6 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
                     const nextDeck = dashboardDecks.find((deck) => deck.vencendoHoje > 0) || dashboardDecks[0];
                     startDeckStudy(nextDeck);
                   }}
-                  onSomenteRevisao={() => {
-                    const nextDeck = dashboardDecks.find((deck) => deck.vencendoHoje > 0) || dashboardDecks[0];
-                    startDeckStudy(nextDeck);
-                  }}
                 />
 
                 <DecksSection
@@ -1576,7 +1523,6 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
                     if (deck) openDeck(deck);
                   }}
                 />
-                <AtividadeSemanaCard data={weekActivity} retencao={deckStats.retention} />
               </aside>
             </section>
           </>
