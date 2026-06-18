@@ -83,8 +83,8 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 |---|---|---|---|
 | Materiais (upload + processamento) | `Materiais.jsx` | 🔧 | Código auditado ✅ (cota só após upload OK). Falta: testar upload real + endurecer error-handling de deletes/leituras |
 | Questões (banco de questões) | `Questoes.jsx` | 🔧 | Código auditado ✅ (token de borda + no-op + código morto). Falta: confirmar trava do limite diário no backend |
-| Simulados | `Simulados.jsx` | 🔧 | Testar fluxo completo + correção |
-| Flashcards | `Flashcards.jsx` | 🔧 | Testar geração IA + repetição espaçada |
+| Simulados | `Simulados.jsx` | 🔧 | Código auditado ✅ (gating consistente, placeholders). Falta: mover incremento de cota p/ o save do modal; ranking fake |
+| Flashcards | `Flashcards.jsx` | 🔧 | Código auditado ✅ (try/catch nos handlers, métricas falsas removidas). SRS correto. Falta: testar geração IA no app |
 | Redações (correção por IA) | `Redacoes.jsx` | 🔧 | Testar correção com Gemini, limites free/papiro |
 | Revisões | `Revisoes.jsx` | 🔧 | Validar fila de revisão e algoritmo |
 | Mapas Mentais | `MapasMentais.jsx` | 🔧 | Testar geração IA + salvar |
