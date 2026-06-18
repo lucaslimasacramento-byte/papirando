@@ -1362,63 +1362,12 @@ function openCalendarEvent(event, onOpenContest, onOpenDiscipline) {
   }
 }
 
-function FilterPill({ active, onClick, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        borderRadius: 999,
-        border: `1px solid ${active ? 'var(--pl-accent-soft)' : 'var(--pl-rule-2)'}`,
-        padding: '5px 12px',
-        fontSize: 11,
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.14em',
-        background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
-        color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
-        cursor: 'pointer',
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
 function CalendarToggle({ label, checked, onChange }) {
   return (
     <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '6px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)', cursor: 'pointer' }}>
       <input type="checkbox" checked={checked} onChange={onChange} style={{ width: 14, height: 14 }} />
       {label}
     </label>
-  );
-}
-
-function MiniTone({ type }) {
-  const labelMap = {
-    prova: 'Prova',
-    task: 'Pendência',
-    status: 'Status',
-  };
-
-  const tagClassMap = {
-    prova: 'pl-tag pl-tag-accent',
-    task: 'pl-tag pl-tag-warn',
-    status: 'pl-tag pl-tag-danger',
-  };
-
-  return (
-    <span className={tagClassMap[type] || 'pl-tag pl-tag-warn'} style={{ textTransform: 'uppercase', letterSpacing: '0.18em', fontSize: 10 }}>
-      {labelMap[type] || 'Lembrete'}
-    </span>
-  );
-}
-
-function MiniDate({ date }) {
-  return (
-    <span className="pl-tag" style={{ textTransform: 'uppercase', letterSpacing: '0.18em', fontSize: 10 }}>
-      {formatDateBR(date)}
-    </span>
   );
 }
 
