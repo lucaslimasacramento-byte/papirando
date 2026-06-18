@@ -4,14 +4,9 @@ import { usePlanLimits } from '../hooks/usePlanLimits';
 import {
   ArrowRight,
   ClipboardList,
-  Clock,
-  FileText,
-  PieChart,
   PlusSquare,
   Search,
   Settings,
-  Target,
-  TrendingUp,
   Trophy,
 } from 'lucide-react';
 import SimuladosRankingPanel from '../components/SimuladosRankingPanel';
@@ -220,7 +215,7 @@ export default function Simulados({
 
         {emptyState ? (
           <SimuladosEmptyState
-            onRegistrar={() => openSimuladoReviewModal?.('novo')}
+            onRegistrar={handleRegistrar}
             onCaderno={() => setIsCadernoModalOpen(true)}
           />
         ) : (
@@ -240,7 +235,7 @@ export default function Simulados({
                 <div className="simulados-pathway-grid">
                   <PathwayCard
                     primary
-                    onAction={() => openSimuladoReviewModal?.('novo')}
+                    onAction={handleRegistrar}
                     badge="Fluxo rápido"
                     badgeTone="accent"
                     title="Registrar prova externa"
@@ -373,7 +368,7 @@ function HistoricoTabela({ items, total, query, setQuery, onRevisar }) {
           {items.map((row, index) => (
             <div key={row.id} className={`simulados-table-row ${index % 2 ? 'is-alt' : ''}`}>
               <span>{formatDate(row.date)}</span>
-              <span><strong>{row.title}</strong><em>{`? ${row.acertos} / ? ${row.erros} / ? ${row.brancos} / liquida ${row.notaLiquida}`}</em></span>
+              <span><strong>{row.title}</strong><em>{`Acertos ${row.acertos} · Erros ${row.erros} · Brancos ${row.brancos} · Líquida ${row.notaLiquida}`}</em></span>
               <span>{row.banca || '-'}</span>
               <span><b className={`pl-tag ${accuracyTagClass(row.accuracy)}`}>{row.accuracy}%</b></span>
               <span className="pl-serif-number">{row.questions || '-'}</span>
