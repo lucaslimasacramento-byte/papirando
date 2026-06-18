@@ -10,7 +10,6 @@ import {
   ExternalLink,
   GraduationCap,
   Heart,
-  Layers3,
   LibraryBig,
   Pencil,
   Plus,
@@ -141,6 +140,7 @@ export default function ConcursoDetalhe({
     if (contest.prova_data) {
       const provaDate = new Date(`${contest.prova_data}T00:00:00`);
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const diffDays = Math.ceil((provaDate.getTime() - today.getTime()) / 86400000);
 
       if (diffDays >= 0 && diffDays <= 45) {
@@ -175,6 +175,7 @@ export default function ConcursoDetalhe({
     if (contest.prova_data) {
       const provaDate = new Date(`${contest.prova_data}T00:00:00`);
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const diffDays = Math.ceil((provaDate.getTime() - today.getTime()) / 86400000);
 
       if (diffDays >= 0 && diffDays <= 60) {
