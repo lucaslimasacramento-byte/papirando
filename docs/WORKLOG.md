@@ -111,7 +111,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | ~~Meus Concursos~~ | ~~`MeusConcursos.jsx`~~ | ✅ | REMOVIDO — página morta (não renderizada); coberto por Objetivos |
 | Detalhe do Concurso | `ConcursoDetalhe.jsx` | 🔧 | Código auditado ✅ (fuso dias-para-prova, import morto). Flag: cores hardcoded no hero (polish) |
 | Edital | `Edital.jsx` | 🔧 | Código auditado ✅ (#1 validação: tamanho mínimo + estado "não consegui extrair" + IA sem dados úteis). 🚧 DECISÃO #2: "Importar com IA" só analisa, não importa disciplinas (mesmo handler de "Analisar") — wiring de feature pendente |
-| Questão de Edital | `EditalQuestao.jsx` | 🔧 | Validar fluxo |
+| Questão de Edital | `EditalQuestao.jsx` | 🔧 | Código auditado ✅ (filtro de prioridade escondia "altíssima"; banca exibida com chave errada `bancaLabel`→`banca`; removido TAB_ITEMS + 3 componentes mortos + 9 imports mortos). Flag: `matchesTopicHistory` includes bidirecional pode inflar tempo por tópico de nome genérico (regra de negócio) |
 | Disciplinas | `Disciplinas.jsx` | ✅ | — |
 | Detalhe de Disciplina | `DisciplinaDetalhe.jsx` | ✅ | — |
 | Legislação | `Legislacao.jsx` | 🔧 | Validar busca e leitura |

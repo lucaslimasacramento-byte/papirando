@@ -8,40 +8,23 @@ import {
   Clock,
   BarChart2,
   AlertTriangle,
-  BarChart3,
   BookOpen,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Clock3,
   DownloadCloud,
-  ExternalLink,
-  FileSearch,
-  Filter,
   Flame,
-  History,
-  LayoutDashboard,
-  Layers3,
-  PlayCircle,
   Search,
   Settings,
   ShieldCheck,
   TrendingUp,
   Trophy,
-  Zap,
 } from 'lucide-react';
 import { buildCanonicalHistory, parseStudyTimeToMinutes } from '../lib/studyAnalytics';
 import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
 
 const STORAGE_KEY = 'papirando_edital_questao_state';
-const TAB_ITEMS = [
-  { id: 'visao-geral', label: 'Visão geral', icon: LayoutDashboard },
-  { id: 'disciplinas', label: 'Disciplinas', icon: Layers3 },
-  { id: 'criticos', label: 'Pontos críticos', icon: Flame },
-  { id: 'progresso', label: 'Progresso', icon: TrendingUp },
-  { id: 'estrutura', label: 'Estrutura', icon: BookOpen },
-  { id: 'conquistas', label: 'Conquistas', icon: Trophy },
-];
 
 const DEFAULT_STATE = {
   activeTab: 'visao-geral',
@@ -555,8 +538,8 @@ export default function EditalQuestao({
           ) : (
             <span className="meta">Nenhum curso cadastrado</span>
           )}
-          {selectedCourse?.bancaLabel ? (
-            <span className="meta">{selectedCourse.bancaLabel}</span>
+          {selectedCourse?.banca && selectedCourse.banca !== 'A definir' ? (
+            <span className="meta">{selectedCourse.banca}</span>
           ) : null}
         </div>
         <div className="actions">
@@ -753,6 +736,7 @@ function Toolbar({ searchTerm, setSearchTerm, priorityFilter, setPriorityFilter,
       </div>
       <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
         <option value="todas">Todas as prioridades</option>
+        <option value="altissima">Prioridade altíssima</option>
         <option value="alta">Prioridade alta</option>
         <option value="media">Prioridade média</option>
         <option value="baixa">Prioridade baixa</option>
@@ -1074,54 +1058,6 @@ function ConquistasSection({ computed }) {
   );
 }
 
-function EmptyState({ selectedCourse, hasEnrolledCourses, onOpenPlanos }) {
-  if (!hasEnrolledCourses) {
-    return (
-      <div style={{ borderRadius: 20, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-surface)', padding: '40px 32px', textAlign: 'center', boxShadow: 'var(--pl-sh-low)' }}>
-        <div style={{ margin: '0 auto 16px', display: 'flex', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' }}>
-          <BookOpen size={24} />
-        </div>
-        <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Nenhum curso para analisar</h3>
-        <p style={{ margin: '8px auto 0', maxWidth: 460, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
-          Este painel usa apenas os cursos que você cadastra em <strong style={{ color: 'var(--pl-ink)' }}>Planos</strong>. Adicione um plano para cruzar edital, disciplinas e seu desempenho.
-        </p>
-        <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <button type="button" onClick={() => onOpenPlanos?.()} className="pl-btn pl-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            Ir a Planos
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ borderRadius: 20, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-surface)', padding: '40px 32px', textAlign: 'center', boxShadow: 'var(--pl-sh-low)' }}>
-      <div style={{ margin: '0 auto 16px', display: 'flex', width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderRadius: 16, background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' }}><BookOpen size={24} /></div>
-      <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>Ainda não há tópicos para este edital</h3>
-      <p style={{ margin: '8px auto 0', maxWidth: 460, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
-        O curso <strong style={{ color: 'var(--pl-ink)' }}>{selectedCourse?.nome || 'selecionado'}</strong> não tem tópicos vinculados à análise. Revise disciplinas e estrutura em Planos ou no cadastro do curso.
-      </p>
-      <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-        <button type="button" onClick={() => onOpenPlanos?.()} className="pl-btn pl-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          Ajustar em Planos
-        </button>
-        {selectedCourse?.editalUrl ? (
-          <a
-            href={selectedCourse.editalUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="pl-btn pl-btn-ghost"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-          >
-            <ExternalLink size={16} />
-            Abrir edital (PDF)
-          </a>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 function SectionCard({ eyebrow, title, subtitle, children, action }) {
   return (
     <div className="pl-card" style={{ padding: '20px 24px' }}>
@@ -1164,30 +1100,6 @@ function FeatureSquare({ title, value, description, accent }) {
       <p className="pl-eyebrow" style={{ margin: 0 }}>{title}</p>
       <h4 className="pl-num" style={{ marginTop: 12, fontSize: 22 }}>{value}</h4>
       <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{description}</p>
-    </div>
-  );
-}
-
-function SidebarMiniMetric({ label, value, hint }) {
-  return (
-    <div style={{ borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>{label}</p>
-        <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>{value}</span>
-      </div>
-      <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{hint}</p>
-    </div>
-  );
-}
-
-function QuickStep({ icon: Icon, title, description }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 12px' }}>
-      <span style={{ marginTop: 2, display: 'flex', width: 36, height: 36, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'var(--pl-surface)', color: 'var(--pl-accent)', boxShadow: 'var(--pl-sh-low)' }}><Icon size={16} /></span>
-      <div>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</p>
-        <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{description}</p>
-      </div>
     </div>
   );
 }
