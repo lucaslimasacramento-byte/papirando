@@ -10,9 +10,7 @@ import {
   FileText,
   Highlighter,
   Loader2,
-  Minus,
   NotebookPen,
-  Plus,
   Search,
   Sparkles,
   Trash2,
@@ -724,7 +722,6 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
     if (Number(uploadFile.size || 0) > 25 * 1024 * 1024) {
       setUploadErr('O PDF deve ter no máximo 25 MB.'); return;
     }
-    if (!isPremium) await increment('uploads_monthly');
     setUploading(true); setUploadErr('');
     try {
       const fileName = `${currentUserId}/${Date.now()}.pdf`;
@@ -741,6 +738,9 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
           file_size: uploadFile.size,
         }).select().single();
       if (dbErr) throw new Error(dbErr.message);
+      // Cota só é consumida após upload + registro OK — evita queimar o upload
+      // do mês do usuário Folha quando o storage/insert falha.
+      if (!isPremium) await increment('uploads_monthly');
       setMaterials((prev) => [data, ...prev]);
       setUploadModal(false);
       setUploadForm({ title: '', disciplina: '' });
