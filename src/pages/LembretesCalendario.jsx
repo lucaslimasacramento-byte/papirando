@@ -69,6 +69,7 @@ export default function LembretesCalendario({
   activeCycle = [],
   manualReminders = [],
   onSaveReminder,
+  onDeleteReminder,
   currentUserId = '',
   contestOptions = [],
   sharedCalendarViewMode,
@@ -360,6 +361,19 @@ export default function LembretesCalendario({
     setReminderModalOpen(true);
   }
 
+  function openEditReminder(item) {
+    if (!item) return;
+    setEditingReminder(item);
+    setReminderForm(buildReminderDraft(item));
+    setReminderModalOpen(true);
+  }
+
+  function handleDeleteReminder(reminderId) {
+    if (!reminderId) return;
+    if (typeof window !== 'undefined' && !window.confirm('Excluir este lembrete?')) return;
+    onDeleteReminder?.(reminderId);
+  }
+
   async function saveReminder() {
     if (!String(reminderForm.title || '').trim() || !String(reminderForm.date || '').trim()) return;
     const reminderPayload = {
@@ -412,6 +426,13 @@ export default function LembretesCalendario({
           onOpenContest={onOpenContest}
         />
       </section>
+
+      <HistoricoCard
+        manuais={Array.isArray(manualReminders) ? manualReminders : []}
+        onEdit={openEditReminder}
+        onDelete={handleDeleteReminder}
+        onOpenContest={onOpenContest}
+      />
 
       {calendarOpen ? (
         <FullScreenCalendarModal
