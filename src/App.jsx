@@ -5549,6 +5549,72 @@ export default function App() {
     };
   };
 
+  // Importa disciplinas da análise da IA (Edital.jsx, shape flat {nome, topicos[]})
+  // para o plano de um concurso JÁ existente — sem criar curso novo.
+  const handleImportEditalDisciplinas = async ({ disciplinas, plano }) => {
+    const blocks = (Array.isArray(disciplinas) ? disciplinas : [])
+      .map((d) => ({
+        nome: normalizeSubjectNameForApp(String(d?.nome || '').trim()),
+        topicos: Array.isArray(d?.topicos) ? d.topicos.map((t) => String(t || '').trim()).filter(Boolean) : [],
+      }))
+      .filter((d) => d.nome);
+
+    if (blocks.length === 0) {
+      throw new Error('A IA não identificou disciplinas para importar.');
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('Sessão expirada. Faça login novamente.');
+
+    const planoAlvo = String(plano || '').trim() || 'Geral';
+    const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+    const novasDisciplinas = [];
+
+    for (const [index, block] of blocks.entries()) {
+      const subject = await insertSubjectWithCatalogFallback({
+        user_id: user.id,
+        nome: block.nome,
+        subject_catalog_id: resolveSubjectCatalogIdForApp(block.nome),
+        plano: planoAlvo,
+        cor: palette[index % palette.length],
+        percentual: 0,
+        tempo_total_min: 0,
+      });
+
+      const topicosCriados = [];
+      for (const [topicIndex, topicName] of block.topicos.entries()) {
+        const { data: topic, error: topicError } = await supabase
+          .from('topics')
+          .insert({
+            subject_id: subject.id,
+            nome: topicName,
+            ordem: topicIndex + 1,
+            concluido: false,
+            acertos: 0,
+            erros: 0,
+            percentual: 0,
+            data_conclusao: null,
+          })
+          .select('*')
+          .single();
+        if (topicError) throw topicError;
+        topicosCriados.push({ ...topic, data: null });
+      }
+
+      novasDisciplinas.push(buildUpdatedDiscipline(subject, topicosCriados, 0));
+    }
+
+    setBancoDisciplinas((prev) => [...prev, ...novasDisciplinas]);
+    return {
+      disciplinasCriadas: novasDisciplinas.length,
+      topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
+    };
+  };
+
   const deleteCourse = async (curso) => {
     const courseKeys = new Set(
       [curso.plano, curso.nome, curso.concurso].map((value) => String(value || '').trim()).filter(Boolean)
@@ -6621,6 +6687,7 @@ export default function App() {
     disciplineViewToken,
     setLinkModalOpen,
     toggleEditalTopico,
+    handleImportEditalDisciplinas,
     highlightedDisciplineTopicId,
     expandedEditalSubject,
     setExpandedEditalSubject,

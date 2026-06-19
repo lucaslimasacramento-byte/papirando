@@ -202,6 +202,7 @@ export default function AppTabContent(props) {
     disciplineViewToken,
     setLinkModalOpen,
     toggleEditalTopico,
+    handleImportEditalDisciplinas,
     highlightedDisciplineTopicId,
     expandedEditalSubject,
     setExpandedEditalSubject,
@@ -768,6 +769,7 @@ export default function AppTabContent(props) {
         setEditingDiscipline={setEditingDiscipline}
         setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
         setLinkModalOpen={setLinkModalOpen}
+        onImportDisciplinas={handleImportEditalDisciplinas}
       />
     );
   }

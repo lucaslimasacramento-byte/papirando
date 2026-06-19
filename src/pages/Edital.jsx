@@ -33,11 +33,13 @@ export default function Edital({
   setEditingDiscipline,
   setRegistroEstudoModalOpen,
   setLinkModalOpen,
+  onImportDisciplinas,
 }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [importMsg, setImportMsg] = useState('');
   const [concursoSelecionadoId, setConcursoSelecionadoId] = useState('');
   const [selectorOpen, setSelectorOpen] = useState(false);
 
@@ -126,9 +128,8 @@ export default function Edital({
   const editalTextoLimpo = String(editalText || '').trim();
   const hasEditalText = editalTextoLimpo.length > 0;
 
-  const handleAnalyzeEdital = async () => {
-    if (!hasEditalText) return;
-
+  // Roda a leitura por IA e trata os estados comuns. Retorna o resultado válido ou null.
+  const runAnalysis = async () => {
     // PDF escaneado (imagem) ou vazio extrai pouquíssimo texto: a IA volta vazia
     // e o painel mostraria "Não identificado" como se tivesse dado certo. Barramos antes.
     if (editalTextoLimpo.length < MIN_EDITAL_CHARS) {
@@ -138,22 +139,55 @@ export default function Edital({
         'o conteúdo precisa estar em texto pesquisável — tente colar o texto ou enviar um PDF com texto selecionável.'
       );
       setAiPanelOpen(true);
-      return;
+      return null;
     }
 
-    setAiLoading(true);
     setAiError('');
     setAiPanelOpen(true);
+    const resultado = await analyzeEdital(editalText);
+    if (!temDadosUteis(resultado)) {
+      setAiAnalysis(null);
+      setAiError('A IA não conseguiu identificar dados do edital neste texto. Confira se o conteúdo enviado é mesmo o edital.');
+      return null;
+    }
+    setAiAnalysis(resultado);
+    return resultado;
+  };
+
+  const handleAnalyzeEdital = async () => {
+    if (!hasEditalText) return;
+    setAiLoading(true);
     try {
-      const resultado = await analyzeEdital(editalText);
-      if (!temDadosUteis(resultado)) {
-        setAiAnalysis(null);
-        setAiError('A IA não conseguiu identificar dados do edital neste texto. Confira se o conteúdo enviado é mesmo o edital.');
-      } else {
-        setAiAnalysis(resultado);
-      }
+      await runAnalysis();
     } catch (err) {
       setAiError(err?.message || 'Erro ao analisar edital.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // "Importar com IA": analisa e, se houver disciplinas, adiciona-as ao plano do concurso ativo.
+  const handleImportarComIA = async () => {
+    if (!hasEditalText) return;
+    setAiLoading(true);
+    setImportMsg('');
+    try {
+      const resultado = await runAnalysis();
+      if (!resultado) return;
+      const disciplinas = Array.isArray(resultado.disciplinas) ? resultado.disciplinas : [];
+      if (disciplinas.length === 0) {
+        setAiError('A IA leu o edital mas não identificou disciplinas para importar. Você pode adicionar manualmente.');
+        return;
+      }
+      const out = await onImportDisciplinas?.({
+        disciplinas,
+        plano: concursoSelecionado?.plano || 'Geral',
+      });
+      const nDisc = out?.disciplinasCriadas ?? disciplinas.length;
+      const nTop = out?.topicosCriados ?? 0;
+      setImportMsg(`${nDisc} disciplina(s) importada(s)${nTop ? ` com ${nTop} tópico(s)` : ''}.`);
+    } catch (err) {
+      setAiError(err?.message || 'Não foi possível importar as disciplinas do edital.');
     } finally {
       setAiLoading(false);
     }
@@ -177,6 +211,15 @@ export default function Edital({
 
         <KpiStrip totals={totals} />
 
+        {importMsg && (
+          <div style={{
+            padding: '10px 14px',
+            background: 'var(--pl-success-soft)', color: 'var(--pl-success)',
+            border: '1px solid var(--pl-success)', borderLeft: '3px solid var(--pl-success)',
+            borderRadius: 4, fontSize: 13, fontWeight: 600,
+          }}>{importMsg}</div>
+        )}
+
         {(aiPanelOpen || aiAnalysis || aiLoading || aiError) && (
           <AiAnalysisPanel
             aiPanelOpen={aiPanelOpen}
@@ -198,7 +241,7 @@ export default function Edital({
             <EditalEmptyState
               canAnalyze={hasEditalText}
               loading={aiLoading}
-              onImportarIA={handleAnalyzeEdital}
+              onImportarIA={handleImportarComIA}
               onAdicionar={() => setEditingDiscipline?.({ plano: concursoSelecionado?.plano || 'Geral' })}
             />
           ) : (
