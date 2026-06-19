@@ -244,7 +244,11 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   }
 
   async function deleteHighlight(id) {
-    await supabase.from('material_highlights').delete().eq('id', id);
+    const { error } = await supabase.from('material_highlights').delete().eq('id', id);
+    if (error) {
+      window.alert(error.message || 'Não foi possível remover o destaque. Tente novamente.');
+      return;
+    }
     setHighlights((prev) => prev.filter((h) => h.id !== id));
   }
 
@@ -262,7 +266,11 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   }
 
   async function deleteNote(id) {
-    await supabase.from('material_notes').delete().eq('id', id);
+    const { error } = await supabase.from('material_notes').delete().eq('id', id);
+    if (error) {
+      window.alert(error.message || 'Não foi possível remover a anotação. Tente novamente.');
+      return;
+    }
     setNotes((prev) => prev.filter((n) => n.id !== id));
   }
 
@@ -287,7 +295,11 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   }
 
   async function deleteMaterialMarker(id) {
-    await supabase.from('material_markers').delete().eq('id', id);
+    const { error } = await supabase.from('material_markers').delete().eq('id', id);
+    if (error) {
+      window.alert(error.message || 'Não foi possível remover a marcação. Tente novamente.');
+      return;
+    }
     setMarkers((prev) => prev.filter((m) => m.id !== id));
   }
 
@@ -754,8 +766,14 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
 
   async function handleDelete(material) {
     if (typeof window !== 'undefined' && !window.confirm(`Remover "${material.title}" da sua biblioteca?`)) return;
+    // Arquivo no storage é best-effort; o banco é a fonte de verdade da lista, então só
+    // removemos da UI se o delete no banco confirmar (antes sumia mesmo com falha e voltava no reload).
     await supabase.storage.from('study-materials').remove([material.storage_path]);
-    await supabase.from('study_materials').delete().eq('id', material.id);
+    const { error } = await supabase.from('study_materials').delete().eq('id', material.id);
+    if (error) {
+      window.alert(error.message || 'Não foi possível remover esse material. Tente novamente.');
+      return;
+    }
     setMaterials((prev) => prev.filter((m) => m.id !== material.id));
   }
 

@@ -67,6 +67,7 @@ export default function ConcursosDisponiveis({
   const [viewMode, setViewMode] = useState('vitrine');
   const [sortMode, setSortMode] = useState('relevancia');
   const [importingId, setImportingId] = useState('');
+  const [importError, setImportError] = useState('');
   const [selectedContest, setSelectedContest] = useState(null);
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
@@ -278,9 +279,12 @@ export default function ConcursosDisponiveis({
 
     const importTemplate = buildContestForRole(contest, roles[0]);
     setImportingId(importTemplate.id || contest.id);
+    setImportError('');
     try {
       await onImportCatalogCourse?.(importTemplate);
       setActiveTab?.('planos');
+    } catch (error) {
+      setImportError(error?.message || 'Não foi possível adicionar esse concurso. Tente novamente.');
     } finally {
       setImportingId('');
     }
@@ -304,6 +308,15 @@ export default function ConcursosDisponiveis({
   return (
     <div className="pl-page">
         <ConcursosHeader publicados={totalPublicados} areas={totalAreas} />
+
+        {importError && (
+          <div style={{
+            padding: '10px 14px',
+            background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)',
+            border: '1px solid var(--pl-danger)', borderLeft: '3px solid var(--pl-danger)',
+            borderRadius: 4, fontSize: 13, fontWeight: 600,
+          }}>{importError}</div>
+        )}
 
         {/* Seletor de tipo */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', borderBottom: '1px solid var(--pl-rule-2)', paddingBottom: 16 }}>
@@ -337,8 +350,13 @@ export default function ConcursosDisponiveis({
             intentFilter={tipoAtivo}
             cursos={cursos}
             onCreateCourse={async (data) => {
-              await onImportCatalogCourse?.(data);
-              setActiveTab?.('planos');
+              setImportError('');
+              try {
+                await onImportCatalogCourse?.(data);
+                setActiveTab?.('planos');
+              } catch (error) {
+                setImportError(error?.message || 'Não foi possível adicionar esse curso. Tente novamente.');
+              }
             }}
             limiteAtingido={limiteAtingido}
             isAdmin={isAdmin}

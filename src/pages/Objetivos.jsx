@@ -609,6 +609,7 @@ export default function Objetivos({
   onRemoveCourse,
 }) {
   const [tipoAtivo, setTipoAtivo] = useState('concurso');
+  const [importError, setImportError] = useState('');
 
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
 
@@ -618,7 +619,14 @@ export default function Objetivos({
   );
 
   const handleCreateCourse = async (courseData) => {
-    await onImportCatalogCourse?.(courseData);
+    setImportError('');
+    try {
+      await onImportCatalogCourse?.(courseData);
+    } catch (error) {
+      // Feedback centralizado no banner; rethrow para a view-filha pular o estado de sucesso.
+      setImportError(error?.message || 'Não foi possível adicionar esse objetivo. Tente novamente.');
+      throw error;
+    }
   };
 
   const kpis = [
@@ -663,6 +671,15 @@ export default function Objetivos({
       <div>
         <p className="pl-eyebrow" style={{ marginBottom: 14 }}>Adicionar objetivo</p>
 
+        {importError && (
+          <div style={{
+            padding: '10px 14px', marginBottom: 14,
+            background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)',
+            border: '1px solid var(--pl-danger)', borderLeft: '3px solid var(--pl-danger)',
+            borderRadius: 4, fontSize: 13, fontWeight: 600,
+          }}>{importError}</div>
+        )}
+
         {/* Tabs de tipo */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20, borderBottom: '1px solid var(--pl-rule-2)', paddingBottom: 16 }}>
           {TIPOS.map(({ id, label, icon: Icon }) => {
@@ -696,7 +713,7 @@ export default function Objetivos({
             catalog={concursoCatalog}
             tipo="concurso"
             cursos={cursos}
-            onImport={onImportCatalogCourse}
+            onImport={handleCreateCourse}
             onOpenDetail={onOpenContestDetail}
             limiteAtingido={limiteAtingido}
             isAdmin={isAdmin}
