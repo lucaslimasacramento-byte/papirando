@@ -1485,6 +1485,23 @@ export default function App() {
     () => buildLevelSummary(profileMetrics.xpTotal, progressConfig.xp),
     [profileMetrics.xpTotal, progressConfig]
   );
+
+  // Write-back do XP para profiles.xp_total (consultável no ranking de Simulados).
+  // Debounced: o XP é recalculado localmente; só persistimos quando estabiliza.
+  useEffect(() => {
+    if (!currentUserId) return undefined;
+    const xp = Math.max(0, Math.round(Number(profileMetrics?.xpTotal || 0)));
+    const timeoutId = window.setTimeout(() => {
+      supabase
+        .from('profiles')
+        .update({ xp_total: xp })
+        .eq('id', currentUserId)
+        .then(({ error }) => {
+          if (error) console.warn('[xp] falha ao persistir xp_total:', error.message || error);
+        });
+    }, 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, [currentUserId, profileMetrics?.xpTotal]);
   const badgeSummary = useMemo(
     () =>
       buildBadgeSummary({

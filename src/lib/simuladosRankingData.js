@@ -122,3 +122,77 @@ export function displayNameFromRow(row) {
   if (row?.fullName) return row.fullName;
   return 'Candidato';
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// Ranking multi-métrica (média de acertos %, nº de simulados, XP) + visão Geral.
+// Lê a RPC agregada get_simulados_leaderboard (ver supabase/simulados_ranking.sql).
+
+export const RANKING_VIEWS = [
+  { key: 'geral', label: 'Geral', metric: (r) => r.geralScore, format: (r) => `${r.geralScore} pts` },
+  { key: 'acertos', label: 'Acertos', metric: (r) => r.mediaAcertos, format: (r) => `${r.mediaAcertos}%` },
+  { key: 'simulados', label: 'Simulados', metric: (r) => r.simuladoCount, format: (r) => `${r.simuladoCount}` },
+  { key: 'xp', label: 'XP', metric: (r) => r.xp, format: (r) => `${r.xp} XP` },
+];
+
+// Pesos da visão Geral (cada métrica normalizada 0–100 pelo máximo da população).
+const GERAL_WEIGHTS = { acertos: 0.5, simulados: 0.3, xp: 0.2 };
+
+export async function loadSimuladosLeaderboard({ currentUserId = '', profile = {} } = {}) {
+  let raw = [];
+  try {
+    const { data, error } = await supabase.rpc('get_simulados_leaderboard');
+    if (!error && Array.isArray(data)) raw = data;
+  } catch {
+    raw = [];
+  }
+
+  const uid = String(currentUserId || '');
+  const rows = raw.map((r) => ({
+    id: String(r.user_id || ''),
+    username: String(r.username || '').trim(),
+    fullName: String(r.full_name || '').trim(),
+    avatarUrl: String(r.avatar_url || '').trim(),
+    plan: String(r.subscription_plan || '').trim(),
+    xp: Math.max(0, Number(r.xp_total || 0)),
+    simuladoCount: Math.max(0, Number(r.simulado_count || 0)),
+    mediaAcertos: Math.max(0, Math.min(100, Math.round(Number(r.avg_desempenho || 0)))),
+    isSelf: uid !== '' && String(r.user_id || '') === uid,
+  }));
+
+  // Garante a linha do próprio usuário mesmo que ainda não tenha dados.
+  if (uid && !rows.some((r) => r.id === uid)) {
+    rows.push({
+      id: uid,
+      username: String(profile?.username || '').trim(),
+      fullName: String(profile?.full_name || '').trim(),
+      avatarUrl: String(profile?.avatar_url || '').trim(),
+      plan: String(profile?.subscription_plan || '').trim(),
+      xp: 0,
+      simuladoCount: 0,
+      mediaAcertos: 0,
+      isSelf: true,
+    });
+  }
+
+  const maxAcertos = Math.max(1, ...rows.map((r) => r.mediaAcertos));
+  const maxCount = Math.max(1, ...rows.map((r) => r.simuladoCount));
+  const maxXp = Math.max(1, ...rows.map((r) => r.xp));
+
+  rows.forEach((r) => {
+    const nAcertos = (r.mediaAcertos / maxAcertos) * 100;
+    const nCount = (r.simuladoCount / maxCount) * 100;
+    const nXp = (r.xp / maxXp) * 100;
+    r.geralScore = Math.round(
+      nAcertos * GERAL_WEIGHTS.acertos + nCount * GERAL_WEIGHTS.simulados + nXp * GERAL_WEIGHTS.xp
+    );
+  });
+
+  return rows;
+}
+
+export function rankLeaderboard(rows = [], viewKey = 'geral') {
+  const view = RANKING_VIEWS.find((v) => v.key === viewKey) || RANKING_VIEWS[0];
+  return [...(Array.isArray(rows) ? rows : [])]
+    .sort((a, b) => Number(view.metric(b)) - Number(view.metric(a)) || b.geralScore - a.geralScore)
+    .map((row, index) => ({ ...row, rank: index + 1, displayScore: view.format(row) }));
+}

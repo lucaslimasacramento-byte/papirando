@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import PremiumGate from '../components/PremiumGate';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import {
@@ -10,6 +10,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import SimuladosRankingPanel from '../components/SimuladosRankingPanel';
+import { loadSimuladosLeaderboard, rankLeaderboard, displayNameFromRow } from '../lib/simuladosRankingData';
 import {
   buildCanonicalHistory,
   buildDisciplineSummaryFromHistory,
@@ -34,6 +35,37 @@ export default function Simulados({
 }) {
   const [historyQuery, setHistoryQuery] = useState('');
   const [rankingOpen, setRankingOpen] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadSimuladosLeaderboard({ currentUserId, profile })
+      .then((data) => {
+        if (!cancelled) setLeaderboard(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setLeaderboard([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, profile]);
+
+  // Preview real da sidebar (top 5 por nota Geral + posição do usuário).
+  const rankingPreview = useMemo(() => {
+    const ranked = rankLeaderboard(leaderboard, 'geral');
+    const self = ranked.find((row) => row.isSelf);
+    return {
+      selfRank: self?.rank || null,
+      rows: ranked.slice(0, 5).map((row) => ({
+        id: row.id,
+        rank: row.rank,
+        name: row.isSelf ? 'Você' : displayNameFromRow(row),
+        score: row.displayScore,
+        isSelf: row.isSelf,
+      })),
+    };
+  }, [leaderboard]);
 
   const realStats = {
     total: Number(simuladoStats?.total || 0),
@@ -208,9 +240,6 @@ export default function Simulados({
           onClose={() => setRankingOpen(false)}
           profile={profile}
           currentUserId={currentUserId}
-          historicoReal={historicoReal}
-          redacaoSummary={redacaoSummary}
-          communityMetrics={communityMetrics}
         />
 
         {emptyState ? (
@@ -271,7 +300,7 @@ export default function Simulados({
                 />
                 <EvolucaoPorMateria items={disciplineProgress} />
                 <RankingSidebar
-                  ranking={buildRankingPreview(communityMetrics, currentUserId, profile, historicoReal, redacaoSummary)}
+                  ranking={rankingPreview}
                   onAbrir={() => setRankingOpen(true)}
                 />
               </aside>
@@ -461,20 +490,6 @@ function formatTempoMedio(items) {
   const hh = Math.floor(minutes / 60);
   const mm = String(minutes % 60).padStart(2, '0');
   return `${hh}h${mm}`;
-}
-
-function buildRankingPreview(communityMetrics, currentUserId, profile, historicoReal, redacaoSummary) {
-  const questionPts = Number(communityMetrics?.correctAnswers || (Array.isArray(historicoReal) ? historicoReal : []).reduce((a, r) => a + Number(r?.acertos || 0), 0));
-  const redacaoPts = Number(redacaoSummary?.points || redacaoSummary?.pontos || 0);
-  const self = { id: currentUserId || 'self', rank: 3, name: profile?.nome || profile?.name || 'Você', score: questionPts + redacaoPts, isSelf: true };
-  const rows = [
-    { id: 'top-1', rank: 1, name: 'Ana P.', score: Math.max(self.score + 420, 1200) },
-    { id: 'top-2', rank: 2, name: 'Bruno C.', score: Math.max(self.score + 180, 980) },
-    self,
-    { id: 'top-4', rank: 4, name: 'Marina L.', score: Math.max(self.score - 80, 640) },
-    { id: 'top-5', rank: 5, name: 'Diego R.', score: Math.max(self.score - 160, 520) },
-  ];
-  return { selfRank: self.rank, rows };
 }
 
 function formatDate(value) {

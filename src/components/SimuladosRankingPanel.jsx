@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BarChart2, Loader2, PenLine, Sparkles, Target, Trophy, User, X } from 'lucide-react';
+import { Loader2, Trophy, User, X } from 'lucide-react';
 import {
-  computeRedacaoRankingPoints,
   displayNameFromRow,
-  loadOfficialRankingBoard,
+  loadSimuladosLeaderboard,
+  rankLeaderboard,
+  RANKING_VIEWS,
 } from '../lib/simuladosRankingData';
 
 function avatarFallbackSeed(row) {
@@ -21,36 +22,18 @@ export default function SimuladosRankingPanel({
   onClose,
   profile = {},
   currentUserId = '',
-  historicoReal = [],
-  redacaoSummary = {},
-  communityMetrics = {},
 }) {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
   const [loadError, setLoadError] = useState('');
   const [selectedPerson, setSelectedPerson] = useState(null);
-
-  const selfPreview = useMemo(() => {
-    const rq = computeRedacaoRankingPoints(redacaoSummary);
-    const qq = Number(
-      communityMetrics?.correctAnswers != null
-        ? communityMetrics.correctAnswers
-        : (Array.isArray(historicoReal) ? historicoReal : []).reduce((a, r) => a + Number(r?.acertos || 0), 0)
-    );
-    return { questionPts: qq, redacaoPts: rq, total: qq + rq };
-  }, [communityMetrics, historicoReal, redacaoSummary]);
+  const [view, setView] = useState('geral');
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError('');
     try {
-      const data = await loadOfficialRankingBoard({
-        currentUserId,
-        historicoReal,
-        redacaoSummary,
-        communityMetrics,
-        profile,
-      });
+      const data = await loadSimuladosLeaderboard({ currentUserId, profile });
       setRows(Array.isArray(data) ? data : []);
     } catch (e) {
       setLoadError(String(e?.message || 'Nao foi possivel carregar o ranking.'));
@@ -58,7 +41,7 @@ export default function SimuladosRankingPanel({
     } finally {
       setLoading(false);
     }
-  }, [communityMetrics, currentUserId, historicoReal, profile, redacaoSummary]);
+  }, [currentUserId, profile]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -79,6 +62,9 @@ export default function SimuladosRankingPanel({
     };
   }, [open]);
 
+  const ranked = useMemo(() => rankLeaderboard(rows, view), [rows, view]);
+  const selfRow = useMemo(() => ranked.find((row) => row.isSelf) || null, [ranked]);
+
   if (!open) return null;
 
   return (
@@ -89,34 +75,57 @@ export default function SimuladosRankingPanel({
           <div>
             <div className="pl-overline">Comunidade Papirando</div>
             <h2 id="ranking-dialog-title">Ranking.</h2>
-            <p>Pontuacao oficial: acertos em questoes somados aos pontos de redacao.</p>
+            <p>Compare por desempenho, volume de simulados ou XP — ou veja a nota Geral combinada.</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
         </header>
 
         <div className="simulados-ranking-stats">
-          <span><b>{selfPreview.questionPts}</b>Questoes</span>
-          <span><b>{selfPreview.redacaoPts}</b>Redacao</span>
-          <span className="is-total"><b>{selfPreview.total}</b>Total</span>
+          <span><b>{selfRow?.mediaAcertos ?? 0}%</b>Acertos</span>
+          <span><b>{selfRow?.simuladoCount ?? 0}</b>Simulados</span>
+          <span><b>{selfRow?.xp ?? 0}</b>XP</span>
+          <span className="is-total"><b>#{selfRow?.rank ?? '-'}</b>Sua posição</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: 6, padding: '0 16px 4px', flexWrap: 'wrap' }}>
+          {RANKING_VIEWS.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              onClick={() => setView(v.key)}
+              style={{
+                borderRadius: 999,
+                border: '1px solid var(--pl-rule-2)',
+                padding: '5px 14px',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                background: view === v.key ? 'var(--pl-accent)' : 'var(--pl-surface)',
+                color: view === v.key ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+              }}
+            >
+              {v.label}
+            </button>
+          ))}
         </div>
 
         <div className="simulados-ranking-body">
           {loading ? (
-            <div className="simulados-ranking-empty"><Loader2 className="animate-spin" size={28} /><p>Carregando perfis oficiais...</p></div>
+            <div className="simulados-ranking-empty"><Loader2 className="animate-spin" size={28} /><p>Carregando ranking...</p></div>
           ) : loadError ? (
             <div className="simulados-ranking-empty"><p>{loadError}</p></div>
-          ) : rows.length === 0 ? (
+          ) : ranked.length === 0 ? (
             <div className="simulados-ranking-empty"><Trophy size={34} /><p>Nenhuma pontuacao registrada ainda.</p></div>
           ) : (
             <ul className="simulados-ranking-modal-list">
-              {rows.map((row) => (
+              {ranked.map((row) => (
                 <li key={row.id} className={row.isSelf ? 'is-self' : ''}>
                   <button type="button" onClick={() => setSelectedPerson(row)}>
                     <span className="rank">{String(row.rank).padStart(2, '0')}</span>
                     <img src={avatarSrc(row)} alt="" loading="lazy" />
-                    <span className="person"><b>{displayNameFromRow(row)}</b><em>Questoes {row.questionPoints} / Redacao {row.isSelf || row.redacaoPoints > 0 ? row.redacaoPoints : '-'}</em></span>
+                    <span className="person"><b>{displayNameFromRow(row)}</b><em>{row.mediaAcertos}% · {row.simuladoCount} simulados · {row.xp} XP</em></span>
                     {row.isSelf && <span className="self-badge">VOCE</span>}
-                    <strong>{row.totalScore}</strong>
+                    <strong>{row.displayScore}</strong>
                   </button>
                 </li>
               ))}
@@ -125,7 +134,7 @@ export default function SimuladosRankingPanel({
         </div>
 
         <footer className="simulados-modal-footer">
-          <p>Redacao de outros candidatos entra quando o historico publico estiver disponivel.</p>
+          <p>Geral = acertos (50%) + nº de simulados (30%) + XP (20%), cada um normalizado.</p>
         </footer>
       </div>
       {selectedPerson ? <MiniProfileSheet person={selectedPerson} profile={profile} onClose={() => setSelectedPerson(null)} /> : null}
@@ -318,9 +327,9 @@ function MiniProfileSheet({ person, profile, onClose }) {
             }}
           >
             {[
-              { label: 'Total', value: person.totalScore, color: 'var(--pl-ink)' },
-              { label: 'Questoes', value: person.questionPoints, color: 'var(--pl-accent)' },
-              { label: 'Redacao', value: person.redacaoPoints || 0, color: 'var(--pl-accent)' },
+              { label: 'Acertos', value: `${person.mediaAcertos || 0}%`, color: 'var(--pl-ink)' },
+              { label: 'Simulados', value: person.simuladoCount || 0, color: 'var(--pl-accent)' },
+              { label: 'XP', value: person.xp || 0, color: 'var(--pl-accent)' },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -380,9 +389,9 @@ function MiniProfileSheet({ person, profile, onClose }) {
                 marginBottom: 12,
               }}
             >
-              <dt style={{ fontWeight: 500, color: 'var(--pl-ink-2)' }}>Tentativas (questoes)</dt>
+              <dt style={{ fontWeight: 500, color: 'var(--pl-ink-2)' }}>Nota Geral</dt>
               <dd style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: 'var(--pl-ink)' }}>
-                {person.questionAttempts}
+                {person.geralScore ?? 0} pts
               </dd>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
