@@ -2105,7 +2105,10 @@ export default function App() {
         let diasParaProva = null;
         if (contest.prova_data) {
           const provaDate = new Date(`${contest.prova_data}T00:00:00`);
+          // Normaliza "hoje" para meia-noite local: a prova é fixada em T00:00:00, então
+          // comparar contra a hora atual desviava a contagem de dias em até 1 dia.
           const today = new Date();
+          today.setHours(0, 0, 0, 0);
           diasParaProva = Math.ceil((provaDate.getTime() - today.getTime()) / 86400000);
         }
 
@@ -2207,10 +2210,12 @@ export default function App() {
       const secondDate = new Date(`${second.prova_data}T00:00:00`).getTime();
       return firstDate - secondDate;
     })[0];
-    const closestDays =
-      closestContest?.prova_data
-        ? Math.ceil((new Date(`${closestContest.prova_data}T00:00:00`).getTime() - new Date().getTime()) / 86400000)
-        : null;
+    let closestDays = null;
+    if (closestContest?.prova_data) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      closestDays = Math.ceil((new Date(`${closestContest.prova_data}T00:00:00`).getTime() - hoje.getTime()) / 86400000);
+    }
 
     return {
       id: 'planning-multi',

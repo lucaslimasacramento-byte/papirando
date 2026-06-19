@@ -160,6 +160,26 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 ---
 
+## ✅ REVISÃO FINAL DE TELAS (último passo antes do lançamento)
+
+> Fazer **depois** do passe transversal de pendências. Objetivo: passar por cada tela do app uma última vez e tomar a decisão de produto definitiva — **o que fica, o que sai e o que NÃO vai pro lançamento** (fica escondido/desativado e volta depois).
+
+Para cada tela, decidir um de três destinos:
+- **FICA** — entra no lançamento como está (auditada e aprovada).
+- **SAI** — remover de vez (página morta / redundante).
+- **NÃO LANÇA** — esconder do menu/navegação por ora (código permanece, volta quando pronto).
+
+Itens que já entram nessa revisão com pendência conhecida:
+- **Esquadrões** — partes mock desativadas; decidir se a feature reduzida FICA ou se NÃO LANÇA inteira.
+- **Edital** — decisão #2 (botão "Importar com IA" só analisa, não importa disciplinas).
+- **Planos** — decisão #4 (formatSalario em faixas salariais).
+- **Bloco 7** (Audiobooks, Bem-Estar, Conciliador, Instagram, Aplicativos) — confirmar quais ficam fora (NÃO LANÇA) no MVP.
+- Revisar features pela metade flagadas nos blocos 2–4 (cronograma IA, Ciclos, Lembretes, Simulados) — FICA / NÃO LANÇA.
+
+Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida no menu/navegação.
+
+---
+
 ## BACKLOG PÓS-LANÇAMENTO
 
 | Item | Descrição |
@@ -204,7 +224,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 **Pendências transversais acumuladas (passe dedicado depois):**
 - Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos e ConcursosDisponiveis sem catch → falha silenciosa no limite de cursos).
-- **Fuso na contagem "dias para a prova":** normalizar `today` para meia-noite (`setHours(0,0,0,0)`) onde calcula diffDays. Corrigido em ConcursoDetalhe e Planos; ainda existe em `App.jsx` (~2107, alimenta Dashboard/Objetivos). Aplicar lá também.
+- ✅ **Fuso na contagem "dias para a prova":** RESOLVIDO. Normalizado `today` para meia-noite em ConcursoDetalhe, Planos e `App.jsx` (2 pontos: lista de concursos ~2107 e fallback `closestDays` ~2214). `trialDaysLeft` (assinatura) usa timestamp completo — correto, não mexido.
 - Features pela metade flagged: cronograma "Gerar com IA" não persiste (Planejamento); modo de edição de Ciclo decorativo + marcar-concluída sem UI (Ciclos); editar/excluir lembrete manual sem UI (Lembretes); incremento de cota no save do modal de Simulado; ranking fake (Simulados).
 
 ### Sessão 2026-06-17 — Pagamentos Asaas fechados end-to-end + trial + UX
