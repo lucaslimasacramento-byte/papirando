@@ -37,6 +37,27 @@ const MONTH_NAMES = [
 const DEFAULT_FILTERS = { sessao: true, revisao: true, questoes: true };
 /** Evita reabrir o wizard em loop ao fechar sem salvar (persiste na aba). */
 const PLANNING_WIZARD_DISMISSED_KEY = 'papirando_planning_wizard_dismissed';
+
+// Persistência do cronograma gerado por IA: antes era só estado em memória e sumia
+// ao trocar de aba ou recarregar. Guardamos por usuário no localStorage.
+const aiScheduleStorageKey = (userId) => `papirando_ai_schedule_${userId || 'anon'}`;
+function readSavedAiSchedule(userId) {
+  try {
+    const raw = localStorage.getItem(aiScheduleStorageKey(userId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+function persistAiSchedule(userId, schedule) {
+  try {
+    if (schedule) localStorage.setItem(aiScheduleStorageKey(userId), JSON.stringify(schedule));
+    else localStorage.removeItem(aiScheduleStorageKey(userId));
+  } catch {
+    /* localStorage indisponível — segue só com o estado em memória */
+  }
+}
+
 const PLANNING_REMOVED_TASKS_KEY = 'papirando_planning_removed_tasks';
 const DURATION_OPTIONS = [30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180];
 const WEEKDAY_ORDER = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
@@ -288,7 +309,7 @@ function PlanejamentoContent({
   const [wizardMinDuration, setWizardMinDuration] = useState(Number(safePlanningSessionWindow.minMinutes || 60));
   const [wizardMaxDuration, setWizardMaxDuration] = useState(Number(safePlanningSessionWindow.maxMinutes || 120));
   const [wizardSubjectsPerDay, setWizardSubjectsPerDay] = useState(Number(safePlanningSessionWindow.subjectsPerDay || 2));
-  const [aiSchedule, setAiSchedule] = useState(null);
+  const [aiSchedule, setAiSchedule] = useState(() => readSavedAiSchedule(currentUserId));
   const [aiScheduleLoading, setAiScheduleLoading] = useState(false);
   const [aiScheduleError, setAiScheduleError] = useState('');
   const [remotePlanningLoaded, setRemotePlanningLoaded] = useState(false);
@@ -706,6 +727,7 @@ function PlanejamentoContent({
       });
 
       setAiSchedule(result);
+      persistAiSchedule(currentUserId, result);
     } catch (error) {
       setAiScheduleError(error?.message || 'Não foi possível gerar o cronograma com IA.');
     } finally {
@@ -733,6 +755,7 @@ function PlanejamentoContent({
             onClose={() => {
               setAiSchedule(null);
               setAiScheduleError('');
+              persistAiSchedule(currentUserId, null);
             }}
           />
         ) : null}
