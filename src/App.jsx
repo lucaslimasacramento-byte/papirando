@@ -2010,6 +2010,17 @@ export default function App() {
     localStorage.setItem('papirando_active_cycle', JSON.stringify(activeCycle));
   }, [activeCycle]);
 
+  // Contador real de ciclos completos (antes "Ciclos completos" mostrava sempre 0:
+  // não era passado para a tela nem persistido). Incrementa ao recomeçar um ciclo 100% feito.
+  const [ciclosCompletos, setCiclosCompletos] = useState(() => {
+    const saved = Number(localStorage.getItem('papirando_ciclos_completos'));
+    return Number.isFinite(saved) && saved > 0 ? saved : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('papirando_ciclos_completos', String(ciclosCompletos));
+  }, [ciclosCompletos]);
+
   const [_expandedDisciplinas, setExpandedDisciplinas] = useState({
     constitucional: false,
     administrativo: false,
@@ -2364,6 +2375,11 @@ export default function App() {
   const restartActiveCycle = () => {
     setIsEditingCycle(false);
     setShowFinishedSessions(true);
+    // Recomeçar um ciclo cujas sessões estão todas concluídas conta como 1 ciclo completo.
+    const sessoes = Array.isArray(activeCycle) ? activeCycle : [];
+    if (sessoes.length > 0 && sessoes.every((item) => item?.concluido)) {
+      setCiclosCompletos((prev) => prev + 1);
+    }
     setActiveCycle((prev) =>
       (Array.isArray(prev) ? prev : []).map((item) => ({
         ...item,
@@ -6716,6 +6732,7 @@ export default function App() {
     minConcluidosCiclo,
     totMinutosCiclo,
     progressoCiclo,
+    ciclosCompletos,
     showFinishedSessions,
     setShowFinishedSessions,
     toggleSessionConcluida,
@@ -7300,6 +7317,7 @@ export default function App() {
                 minConcluidosCiclo,
                 totMinutosCiclo,
                 progressoCiclo,
+                ciclosCompletos,
                 showFinishedSessions,
                 setShowFinishedSessions,
                 activeCycle,

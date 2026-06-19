@@ -1332,7 +1332,7 @@ function CicloFlexivel({
           acumuladoMin={acumuladoMin}
           progress={progress}
         />
-        <CicloActions onRecomecar={onRecomecar} onReplanejar={onReplanejar} onRemover={onRemover} disabled={disciplinas.length === 0} />
+        <CicloActions onRecomecar={onRecomecar} onReplanejar={onReplanejar} onRemover={onRemover} disabled={disciplinas.length === 0} complete={progress >= 100 && disciplinas.length > 0} />
       </section>
 
       <section className="planning-main-grid">
@@ -1381,12 +1381,18 @@ function ProgressoCicloCard({ feitoMin, previstoMin, acumuladoMin, progress }) {
   );
 }
 
-function CicloActions({ onRecomecar, onReplanejar, onRemover, disabled }) {
+function CicloActions({ onRecomecar, onReplanejar, onRemover, disabled, complete = false }) {
   return (
     <div className="pl-card planning-cycle-actions">
-      <button type="button" className="pl-btn pl-btn-sm" onClick={onRecomecar} disabled={disabled}>
+      <button
+        type="button"
+        className={complete ? 'pl-btn pl-btn-primary pl-btn-sm' : 'pl-btn pl-btn-sm'}
+        onClick={onRecomecar}
+        disabled={disabled}
+        title={complete ? 'Marca este ciclo como concluído e reinicia a rotação' : 'Reinicia o progresso do ciclo'}
+      >
         <RotateCcw size={13} />
-        Recomeçar
+        {complete ? 'Concluir ciclo' : 'Recomeçar'}
       </button>
       <button type="button" className="pl-btn pl-btn-sm" onClick={onReplanejar}>
         <Settings2 size={13} />
