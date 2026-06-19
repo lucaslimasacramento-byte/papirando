@@ -32,7 +32,7 @@ AS $$
   SELECT
     p.id AS user_id,
     p.username,
-    p.full_name,
+    p.nome AS full_name,
     p.avatar_url,
     p.subscription_plan,
     COALESCE(p.xp_total, 0) AS xp_total,
