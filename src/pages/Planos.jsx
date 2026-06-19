@@ -840,9 +840,20 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
     : null;
 
   const formatSalario = (v) => {
-    const n = parseFloat(String(v || '').replace(/[^\d,.-]/g, '').replace(',', '.'));
-    if (!n || !isFinite(n)) return null;
-    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    const raw = String(v || '').trim();
+    if (!raw) return null;
+    // Captura cada número no formato pt-BR (ex.: "2.500,00", "4000", "1.234").
+    // Antes, faixas ("R$ 2.500 a R$ 4.000") embolavam num único parseFloat e mostravam lixo.
+    const tokens = raw.match(/\d[\d.]*(?:,\d+)?/g);
+    if (!tokens) return null;
+    const nums = tokens
+      .map((s) => parseFloat(s.replace(/\./g, '').replace(',', '.')))
+      .filter((n) => isFinite(n) && n > 0);
+    if (nums.length === 0) return null;
+    const fmt = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    const min = Math.min(...nums);
+    const max = Math.max(...nums);
+    return min === max ? fmt(min) : `${fmt(min)} a ${fmt(max)}`;
   };
 
   const salario = formatSalario(target?.salario);
