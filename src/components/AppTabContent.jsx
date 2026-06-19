@@ -384,10 +384,6 @@ export default function AppTabContent(props) {
         essaySummary={redacaoSummary}
         squadSummary={squadSummary}
         audiobookSummary={audiobookSummary}
-        onOpenSquad={(squadId) => {
-          setSelectedCommunitySquadId(squadId);
-          setActiveTab('esquadroes');
-        }}
         onSaveProfile={handleSaveProfile}
         onChangeAvatar={handleAvatarChange}
         onLogout={handleLogout}

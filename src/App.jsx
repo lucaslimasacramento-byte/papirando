@@ -6817,13 +6817,13 @@ export default function App() {
         <div
           ref={contentScrollRef}
           className={`pl-paper-bg-soft scrollbar-thin relative min-h-0 flex-1 ${
-            ['home', 'questoes', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades', 'esquadroes'].includes(activeTab) ? 'px-0 pt-0 sm:px-0 md:px-0' : 'px-3 pt-2 sm:px-4 md:px-5'
+            ['home', 'questoes', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades'].includes(activeTab) ? 'px-0 pt-0 sm:px-0 md:px-0' : 'px-3 pt-2 sm:px-4 md:px-5'
           } ${
             activeTab === 'historico' ||
             activeTab === 'questoes' ||
             activeTab === 'comunidades'
               ? `flex flex-col overflow-hidden ${activeTab === 'comunidades' ? 'pb-2' : 'pb-6'}`
-              : `overflow-y-auto overflow-x-hidden ${['home', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades', 'esquadroes'].includes(activeTab) ? 'pb-0' : activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
+              : `overflow-y-auto overflow-x-hidden ${['home', 'planos', 'concursos', 'lembretes', 'disciplinas', 'edital', 'planejamento', 'ciclos', 'metas', 'estatisticas', 'sessoes', 'flashcards', 'revisoes', 'simulados', 'redacoes', 'materiais', 'audiobooks', 'mapas', 'legislacao', 'edital_questao', 'comunidades'].includes(activeTab) ? 'pb-0' : activeTab === 'lembretes' ? 'pb-6' : 'pb-24'}`
           }`}
         >
           <CheckoutResultBanner onSuccess={refreshSubscription} />
@@ -7422,26 +7422,7 @@ export default function App() {
               persistenceMode={communityPersistence.mode}
               communitySchemaReady={communityPersistence.schemaReady}
               selectedSquadId={selectedCommunitySquadId}
-              onSelectSquad={(squadId) => {
-                setSelectedCommunitySquadId(squadId);
-                if (squadId) setActiveTab('esquadroes');
-              }}
-            />
-          )}
-          {activeTab === 'esquadroes' && (
-            <Esquadroes
-              currentUserId={currentUserId}
-              profile={effectiveProfile}
-              currentUsername={effectiveProfile?.username || ''}
-              currentUserEmail={currentUserEmail}
-              squadSummary={squadSummary}
-              communityState={communityState}
-              onSaveCommunityState={handleSaveCommunityState}
-              isElite={isElitePlan || isAdmin}
-              selectedSquadId={selectedCommunitySquadId}
               onSelectSquad={setSelectedCommunitySquadId}
-              contestLibrary={contestLibrary}
-              cursos={cursos}
             />
           )}
           {activeTab === 'conciliar' && (
@@ -7498,7 +7479,6 @@ export default function App() {
             'legislacao',
             'edital_questao',
             'comunidades',
-            'esquadroes',
             'conciliar',
             'aplicativos',
             'instagram',

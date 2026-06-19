@@ -123,8 +123,8 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Comunidades | `Comunidades.jsx` | ✅ | Auditado e corrigido ✅ — sort 'top' NaN; comentário otimista reverte em erro; **"Salvar" agora persiste** (setPostReaction grava em community_post_reactions, re-hidrata no reload); **upvote reconciliado** (dirigido por estado, sem desync) + rollback em erro; togglePostUpvote (bugado) removido; código morto. Verificação no navegador bloqueada por login. Flag: view count só persiste se `onViewPost` for passado pelo pai |
-| Esquadrões | `Esquadroes.jsx` | ✅ | Crashes corrigidos ✅ (`.catch` no builder Supabase; esquadrão-fantasma do fórum; colisão de ID). Partes MOCK desativadas p/ lançamento ✅ — simulado vira "Em breve" (nota aleatória removida); botões decorativos do fórum (responder/curtir/partilhar/menu) removidos ou viram display; 8 imports + 2 funções órfãs limpos. Mantido o que funciona (criar esquadrão, membros, avisos, abrir tópico, comentários). Backlog: persistência remota silenciosa sem rollback; 7 componentes mortos não-renderizados; contador de membros dessincroniza |
+| Comunidades | `Comunidades.jsx` | ✅ FICA | **DECISÃO: FICA (lança).** Removida do `LAUNCH_HIDDEN_TABS`. Auditada e corrigida (Salvar/upvote persistem, comentário com rollback, sort 'top'). Flag: view count só persiste se `onViewPost` for passado |
+| ~~Esquadrões~~ | ~~`Esquadroes.jsx`~~ | ✅ SAI | **DECISÃO: SAI (removido de vez).** Arquivo deletado (estava órfão — sem import) + render/nav/busca/Perfil row desconectados. Backend de squad/convite (ligado à Comunidade) mantido intacto |
 
 ---
 
@@ -220,7 +220,7 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 
 **Mapas Mentais ✅** (fecha o Bloco 3): IA real + fallback honesto confirmados, cota não queima, Supabase com fallback localStorage; guarda `(mapaAtivo.nodes || [])` adicionada.
 
-**🔖 ONDE PARAMOS (atualizado 2026-06-19):** Blocos 2–6 COMPLETOS + **passe transversal de código CONCLUÍDO** (✅ fuso dias-para-prova normalizado em todo o App; ✅ tratamento de erro endurecido em deletes/imports silenciosos de ConcursosDisponiveis/Objetivos/Materiais). Restam apenas **DECISÕES de produto**, todas consolidadas na nova etapa **"REVISÃO FINAL DE TELAS"** (ver seção própria): Esquadrões reduzido, Edital #2, Planos #4, features pela metade (Planejamento/Ciclos/Lembretes/Simulados), e Bloco 7. **Próximo: rodar a Revisão Final de Telas** — decidir FICA / SAI / NÃO LANÇA tela a tela.
+**🔖 ONDE PARAMOS (atualizado 2026-06-19):** Blocos 2–6 + passe transversal CONCLUÍDOS. **REVISÃO FINAL DE TELAS em andamento.** Decisões já aplicadas: ✅ Comunidade **FICA**; ✅ Esquadrões **SAI** (deletado + desconectado); ✅ ponto único de telas escondidas (`src/lib/launchConfig.js`) aplicado ao menu lateral **e** à busca do Header (NÃO LANÇA: Conciliador, Bem-estar, Audiolivros, Instagram, Aplicativos). **FALTA IMPLEMENTAR (decidido pelo usuário):** features pela metade de verdade (Planejamento "Gerar com IA", Ciclos, Lembretes editar/excluir, Simulados ranking) + Edital #2 (importar disciplinas) + Planos #4 (faixas salariais). Ciclos: confirmar se entra no menu. **Próximo: implementar essas features.**
 
 **Pendências transversais acumuladas (passe dedicado depois):**
 - ✅ **Endurecer `{error}` em deletes/falhas silenciosas:** RESOLVIDO. ConcursosDisponiveis (import/add com catch + banner de erro); Objetivos (handleCreateCourse catch + banner, todas as views roteadas por ele); Materiais (handleDelete só remove da UI se o banco confirmar + alert; deletes de highlight/note/marker idem). Nota menor restante: `loadMaterials` ainda mostra lista vazia em erro de leitura (reload resolve).

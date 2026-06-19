@@ -38,6 +38,7 @@ import {
   Sun,
   GraduationCap,
 } from 'lucide-react';
+import { LAUNCH_MVP_MODE, LAUNCH_HIDDEN_TABS, CONCURSO_ONLY_TABS } from '../lib/launchConfig';
 
 const NAV_SECTIONS_BASE = [
   {
@@ -110,10 +111,6 @@ const ADMIN_SECTION = {
     { id: 'admin_configuracoes', icon: Compass, label: 'Configurações', badge: 'Admin' },
   ],
 };
-
-const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
-const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'conciliar', 'bem_estar', 'audiobooks']);
-const CONCURSO_ONLY_TABS = new Set(['edital', 'edital_questao', 'legislacao', 'concursos', 'conciliar']);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function getSidebarNavLabelSchema() {

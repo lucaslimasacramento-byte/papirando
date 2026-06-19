@@ -23,7 +23,6 @@ export const SIDEBAR_NAV_LABEL_SCHEMA = [
   { id: 'mapas_mentais', defaultLabel: 'Mapas mentais', sectionTitle: 'Biblioteca' },
   { id: 'legislacao', defaultLabel: 'Legislação', sectionTitle: 'Biblioteca' },
   { id: 'comunidades', defaultLabel: 'Comunidades', sectionTitle: 'Apoio' },
-  { id: 'esquadroes', defaultLabel: 'Esquadrões', sectionTitle: 'Apoio' },
   { id: 'conciliador', defaultLabel: 'Conciliador', sectionTitle: 'Apoio' },
   { id: 'instagram', defaultLabel: 'Instagram', sectionTitle: 'Apoio' },
   { id: 'aplicativos', defaultLabel: 'Aplicativos', sectionTitle: 'Apoio' },

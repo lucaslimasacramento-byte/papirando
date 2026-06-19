@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { Bell, LogOut, Menu, Moon, Megaphone, Search, Send, ShieldAlert, Sun, UserCircle2, X } from 'lucide-react';
 import { ADMIN_TAB_TITLES } from '../lib/adminTabIds';
+import { isTabHiddenAtLaunch } from '../lib/launchConfig';
 import SubscriptionPlanSeal from './SubscriptionPlanSeal';
 
 const SEARCH_ITEMS_BASE = [
@@ -26,7 +27,6 @@ const SEARCH_ITEMS_BASE = [
   { id: 'legislacao', label: 'Legislação', group: 'Biblioteca' },
   { id: 'edital_questao', label: 'Edital em questão', group: 'Biblioteca' },
   { id: 'comunidades', label: 'Comunidade', group: 'Apoio' },
-  { id: 'esquadroes', label: 'Esquadrões', group: 'Apoio' },
   { id: 'conciliar', label: 'Conciliador', group: 'Apoio' },
   { id: 'instagram', label: 'Instagram', group: 'Apoio' },
   { id: 'aplicativos', label: 'Aplicativos', group: 'Apoio' },
@@ -89,7 +89,12 @@ export default function Header({
   const broadcastRef = useRef(null);
 
   const searchItems = useMemo(
-    () => (isAdmin ? [...SEARCH_ITEMS_BASE, ...SEARCH_ITEMS_ADMIN] : SEARCH_ITEMS_BASE),
+    () => {
+      const base = isAdmin ? [...SEARCH_ITEMS_BASE, ...SEARCH_ITEMS_ADMIN] : SEARCH_ITEMS_BASE;
+      // Respeita o mesmo filtro de lançamento do menu lateral: antes a busca alcançava
+      // telas escondidas no MVP (Conciliador, Bem-estar, Audiolivros, Instagram, Aplicativos).
+      return base.filter((item) => !isTabHiddenAtLaunch(item.id));
+    },
     [isAdmin]
   );
 
