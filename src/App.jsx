@@ -41,8 +41,7 @@ import {
   normalizeAudiobookState,
 } from './lib/audiobooks';
 
-const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
-const LAUNCH_HIDDEN_TABS = new Set(['comunidades', 'conciliar', 'bem_estar', 'audiobooks']);
+import { LAUNCH_MVP_MODE, LAUNCH_HIDDEN_TABS } from './lib/launchConfig';
 import { loadAudiobookProgress, saveAudiobookProgress } from './lib/audiobookProgressApi';
 import {
   buildBadgeSummary,
