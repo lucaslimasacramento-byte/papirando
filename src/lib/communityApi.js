@@ -1542,35 +1542,42 @@ export async function addPostComment({ postId, userId, authorName, authorAvatarU
   return data || null;
 }
 
-export async function togglePostUpvote(postId, userId) {
-  if (!postId || !userId) return { enabled: false };
+/**
+ * Define uma reação ('upvote' | 'save') conforme o estado desejado (enabled), em vez de
+ * alternar cegamente. Idempotente: não duplica nem erra se já estiver no estado pedido.
+ * Dirigir pelo estado desejado evita o local divergir do banco em cliques rápidos/reload parcial.
+ */
+export async function setPostReaction(postId, userId, reactionType, enabled) {
+  if (!postId || !userId || !reactionType) return { enabled: Boolean(enabled) };
 
   const { data: existing, error: existingError } = await supabase
     .from('community_post_reactions')
     .select('id')
     .eq('post_id', postId)
     .eq('user_id', userId)
-    .eq('reaction_type', 'upvote')
+    .eq('reaction_type', reactionType)
     .maybeSingle();
 
   if (existingError) throw existingError;
+
+  if (enabled) {
+    if (existing?.id) return { enabled: true };
+    const { error: insertError } = await supabase.from('community_post_reactions').insert({
+      post_id: postId,
+      user_id: userId,
+      reaction_type: reactionType,
+    });
+    if (insertError) throw insertError;
+    return { enabled: true };
+  }
 
   if (existing?.id) {
     const { error: deleteError } = await supabase
       .from('community_post_reactions')
       .delete()
       .eq('id', existing.id);
-
     if (deleteError) throw deleteError;
-    return { enabled: false };
   }
-
-  const { error: insertError } = await supabase.from('community_post_reactions').insert({
-    post_id: postId,
-    user_id: userId,
-    reaction_type: 'upvote',
-  });
-
-  if (insertError) throw insertError;
-  return { enabled: true };
+  return { enabled: false };
 }
+

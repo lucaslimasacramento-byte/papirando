@@ -38,7 +38,7 @@ import {
   publishCommunityPost,
   slugifyCategory,
   toggleLocalCommunityReaction,
-  togglePostUpvote,
+  setPostReaction,
 } from '../lib/communityApi';
 import AppToast from '../components/AppToast';
 
@@ -593,13 +593,22 @@ export default function Comunidades({
   }
 
   async function handleTogglePostReaction(postId, reactionType, enabled) {
+    // Estado anterior para reverter se a persistência falhar (evita o local divergir do banco).
+    const previousState = communityData;
     setCommunityData((prev) => toggleLocalCommunityReaction(prev, { postId, reactionType, enabled }));
 
-    if (reactionType !== 'upvote' || !currentUserId) return;
+    if (!currentUserId) return;
 
-    togglePostUpvote(postId, currentUserId).catch((error) => {
-      console.error('[Comunidades] erro ao alternar voto da publicação:', error);
-    });
+    try {
+      // setPostReaction persiste tanto 'upvote' quanto 'save' conforme o estado desejado.
+      // (Antes: 'save' nunca persistia e 'upvote' era fire-and-forget, podendo dessincronizar.)
+      await setPostReaction(postId, currentUserId, reactionType, enabled);
+    } catch (error) {
+      console.error('[Comunidades] erro ao salvar reação da publicação:', error);
+      setCommunityData(previousState);
+      setComposerToast('Não foi possível salvar sua ação. Tente novamente.');
+      setTimeout(() => setComposerToast(''), 2500);
+    }
   }
 
   async function handleAdminPostAction(post, action) {

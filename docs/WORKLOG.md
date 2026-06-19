@@ -123,8 +123,8 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Comunidades | `Comunidades.jsx` | 🔧 | Código auditado ✅ (sort 'top' NaN; comentário otimista reverte em erro; código morto). 🚧 DECISÕES: "Salvar" post não persiste (early-return bloqueia, some no reload); upvote é fire-and-forget sem reconciliação; view count só persiste se `onViewPost` for passado |
-| Esquadrões | `Esquadroes.jsx` | 🔧 | Crashes corrigidos ✅ (`.catch` no builder Supabase em excluir/publicar; esquadrão-fantasma do fórum; colisão de ID). 🚧 GRANDE DECISÃO: feature largamente MOCK — simulado grava nota aleatória 7–10 (não abre simulado); botões responder/curtir/menu decorativos sem handler; moderação do fórum e tentativas só em estado local (não persistem); persistência remota otimista e silenciosa sem rollback; contador de membros dessincroniza. Precisa decidir o que entra no lançamento |
+| Comunidades | `Comunidades.jsx` | ✅ | Auditado e corrigido ✅ — sort 'top' NaN; comentário otimista reverte em erro; **"Salvar" agora persiste** (setPostReaction grava em community_post_reactions, re-hidrata no reload); **upvote reconciliado** (dirigido por estado, sem desync) + rollback em erro; togglePostUpvote (bugado) removido; código morto. Verificação no navegador bloqueada por login. Flag: view count só persiste se `onViewPost` for passado pelo pai |
+| Esquadrões | `Esquadroes.jsx` | ✅ | Crashes corrigidos ✅ (`.catch` no builder Supabase; esquadrão-fantasma do fórum; colisão de ID). Partes MOCK desativadas p/ lançamento ✅ — simulado vira "Em breve" (nota aleatória removida); botões decorativos do fórum (responder/curtir/partilhar/menu) removidos ou viram display; 8 imports + 2 funções órfãs limpos. Mantido o que funciona (criar esquadrão, membros, avisos, abrir tópico, comentários). Backlog: persistência remota silenciosa sem rollback; 7 componentes mortos não-renderizados; contador de membros dessincroniza |
 
 ---
 
@@ -200,7 +200,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 **Mapas Mentais ✅** (fecha o Bloco 3): IA real + fallback honesto confirmados, cota não queima, Supabase com fallback localStorage; guarda `(mapaAtivo.nodes || [])` adicionada.
 
-**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3, 4, **5 e 6 (auditoria de código) COMPLETOS**. Bloco 6 — Comunidade: crashes de runtime do Esquadrões corrigidos (`.catch` no builder Supabase, esquadrão-fantasma, colisão de ID), bugs de robustez do Comunidades corrigidos. **AGUARDANDO DECISÃO**: Esquadrões é largamente mock (simulado fake, botões decorativos, persistência local) — decidir escopo de lançamento. Comunidades: "Salvar" e upvote sem persistência confiável. Pendências de DECISÃO anteriores: Edital #2 (importar disciplinas); Planos #4 (faixas salariais). Próximo: definir escopo das decisões OU avançar para passe transversal de pendências.
+**🔖 ONDE PARAMOS (atualizado 2026-06-18):** Blocos 2, 3, 4, **5 e 6 COMPLETOS**. Bloco 6 fechado: Comunidades com Salvar+upvote agora persistindo de verdade; Esquadrões com crashes corrigidos e partes mock desativadas para o lançamento (decisão do usuário: "desativar partes mock" + "corrigir persistência"). Pendências de DECISÃO anteriores ainda abertas: Edital #2 (importar disciplinas); Planos #4 (faixas salariais). **Próximo: passe transversal de pendências** (fuso dias-para-prova em App.jsx ~2107; endurecer catch em deletes silenciosos; features pela metade flagged nos blocos anteriores).
 
 **Pendências transversais acumuladas (passe dedicado depois):**
 - Endurecer `{error}` em deletes/leituras silenciosas (Materiais; handlers do Objetivos e ConcursosDisponiveis sem catch → falha silenciosa no limite de cursos).
