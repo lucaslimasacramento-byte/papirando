@@ -5,37 +5,29 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
-  Camera,
   CalendarDays,
   ChevronDown,
   ChevronUp,
   ClipboardList,
-  CircleHelp,
   Copy,
   Crown,
   Filter,
   Link2,
   Megaphone,
   MessageCircle,
-  MoreHorizontal,
   Plus,
   Search,
   Send,
-  Share2,
   Shield,
   Sparkles,
   Star,
-  Target,
   ThumbsUp,
   Trophy,
   UserPlus,
   Users,
   Wrench,
   X,
-  Pin,
   Clock3,
-  CheckCircle2,
-  Flame,
   Eye,
   Bookmark,
   ShieldCheck,
@@ -750,7 +742,6 @@ export default function Esquadroes({
   const attemptActorId = String(currentUserId || displayName || '').trim().toLowerCase();
   const simuladoAttemptKey = selectedSimulado ? `${selectedSquad?.id || 'squad'}:${selectedSimulado.id}:${attemptActorId}` : '';
   const simuladoAttempt = simuladoAttemptKey ? simuladoAttemptsByUser[simuladoAttemptKey] : null;
-  const canAttemptSelectedSimulado = Boolean(selectedSimulado) && !simuladoAttempt;
   const canReviewAsTeacher = canManageSquad;
   const displayRanking = (selectedSquad?.internalRanking || []).length
     ? selectedSquad.internalRanking
@@ -1552,20 +1543,6 @@ export default function Esquadroes({
     setActiveSection('forum');
     setForumFocusedPostId(String(postId || ''));
     setExpandedReplies((prev) => ({ ...prev, [postId]: true }));
-  }
-
-  function handleStartSimulado(simulado) {
-    if (!simulado) return;
-    const key = `${selectedSquad?.id || 'squad'}:${simulado.id}:${attemptActorId}`;
-    if (simuladoAttemptsByUser[key]) return;
-    setSimuladoAttemptsByUser((prev) => ({
-      ...prev,
-      [key]: {
-        score: Number((Math.random() * 3 + 7).toFixed(1)),
-        completedAt: new Date().toISOString(),
-        teacherComment: '',
-      },
-    }));
   }
 
   function handleTeacherCommentOnAttempt(comment) {
@@ -2812,15 +2789,14 @@ export default function Esquadroes({
                             </>
                           ) : (
                             <>
-                              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', margin: '0 0 12px' }}>Você ainda não realizou este simulado.</p>
+                              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)', margin: '0 0 12px' }}>A aplicação de simulados dentro do esquadrão chega em breve.</p>
                               <button
                                 type="button"
-                                onClick={() => handleStartSimulado(selectedSimulado)}
-                                disabled={!canAttemptSelectedSimulado}
-                                className="pl-btn pl-btn-primary"
-                                style={{ opacity: canAttemptSelectedSimulado ? 1 : 0.55, cursor: canAttemptSelectedSimulado ? 'pointer' : 'not-allowed' }}
+                                disabled
+                                className="pl-btn"
+                                style={{ opacity: 0.55, cursor: 'not-allowed' }}
                               >
-                                Iniciar simulado
+                                Em breve
                               </button>
                             </>
                           )}
@@ -3568,9 +3544,6 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {post.pinned ? <span className="pl-tag pl-tag-warn">Fixado</span> : null}
           {post.solved ? <span className="pl-tag pl-tag-success">Resolvido</span> : null}
-          <button style={{ color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-            <MoreHorizontal size={18} />
-          </button>
         </div>
       </div>
 
@@ -3585,12 +3558,12 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
       </div>
 
       <div style={{ marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20, borderTop: '1px solid var(--pl-rule)', borderBottom: '1px solid var(--pl-rule)', padding: '16px 0' }}>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
           <ThumbsUp size={16} /> {post.helpful}
-        </button>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
           <MessageCircle size={16} /> {post.replies} respostas
-        </button>
+        </div>
         <button
           type="button"
           onClick={onOpenThread}
@@ -3601,45 +3574,9 @@ function ForumPostFull({ post, expanded, onToggleReplies, onOpenThread }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
           <Eye size={16} /> {post.views} visualizações
         </div>
-        <button style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          <Share2 size={16} /> Partilhar
-        </button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div className="pl-card-paper" style={{ padding: 16, border: '1px solid var(--pl-accent-ring)' }}>
-          <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <img src={post.avatar || 'https://i.pravatar.cc/150?img=1'} alt={post.author} style={{ height: 36, width: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-            <div style={{ minWidth: 0 }}>
-              <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{post.author}</p>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--pl-ink-4)', margin: 0 }}>Responder no tópico</p>
-            </div>
-          </div>
-
-          <textarea
-            rows="3"
-            placeholder="Escreve uma resposta, complementa a explicação ou salva um colega do desespero..."
-            className="pl-input"
-            style={{ width: '100%', resize: 'none', boxSizing: 'border-box' }}
-          />
-
-          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <Camera size={16} />
-              </button>
-              <button style={{ borderRadius: 8, padding: 8, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <Target size={16} />
-              </button>
-            </div>
-
-            <button className="pl-btn pl-btn-primary">
-              <Send size={14} />
-              Responder
-            </button>
-          </div>
-        </div>
-
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Comentários</p>
@@ -3685,19 +3622,15 @@ function CommentThread({ comment, level = 0 }) {
             </div>
           </div>
 
-          <button style={{ color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-            <MoreHorizontal size={16} />
-          </button>
         </div>
 
         <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', margin: 0 }}>{comment.content}</p>
 
         <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
-          <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
             <ThumbsUp size={14} />
             {comment.likes || 0}
-          </button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>Responder</button>
+          </span>
           {(comment.children || []).length ? (
             <button
               type="button"
