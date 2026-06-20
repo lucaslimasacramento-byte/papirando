@@ -1051,7 +1051,7 @@ export default function Comunidades({
 
   if (communityLoading) {
     return (
-      <div className="pl-paper-bg" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1560, margin: '0 auto', padding: '14px 18px 0', overflowY: 'auto' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 24 }}>
             {[1, 2, 3].map((sk) => (
@@ -1075,7 +1075,7 @@ export default function Comunidades({
   }
 
   return (
-    <div className="pl-paper-bg" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <style>{communityCss}</style>
       <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1560, margin: '0 auto', padding: '14px 18px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
