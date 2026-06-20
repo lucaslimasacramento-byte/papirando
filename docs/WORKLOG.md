@@ -214,8 +214,10 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 - ✅ Segurança: triggers `trg_protect_profile_privileged_fields` + `profiles_block_sensitive_self_update` LIGADOS → sem self-grant de plano.
 - ✅ Drift de coluna em `select` explícito: achei e corrigi `profiles.full_name` (inexistente → `nome`) no fallback do ranking (commit `6e3d760`); demais colunas (flashcard `due`/`color`, questions, etc.) conferidas e OK.
 - ✅ SQL do ranking de Simulados aplicado (sessão anterior).
+- ✅ **Drift de TABELA:** `material_markers` (marcadores PDF/Materiais) e `weekly_availability` (Planejamento) não existiam em prod → criadas com RLS + GRANTs (migration `202606190001`). Fecha a varredura: tabelas, colunas, RPCs, políticas e grants TODOS conferidos.
+- ✅ Template do catálogo criado: `docs/CATALOGO-TEMPLATE.md` (schema JSON p/ popular concursos/vestibulares/faculdades).
 
-**Pendente:** redesign visual da Comunidade (Lucas trazendo direção de outro app); confirmar `ASAAS_SANDBOX=false`.
+**Pendente:** redesign visual da Comunidade (Lucas trazendo direção de outro app); popular catálogo (Lucas devolve o JSON → Claude gera SQL); confirmar `ASAAS_SANDBOX=false`.
 
 ### Sessão 2026-06-18 — Auditoria tela a tela (Blocos 2 e 3)
 
