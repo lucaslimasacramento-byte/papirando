@@ -1054,7 +1054,7 @@ export default function Comunidades({
   if (communityLoading) {
     return (
       <div className="pl-paper-bg" style={{ minHeight: '100vh' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '34px 30px 40px' }}>
+        <div style={{ maxWidth: 1560, margin: '0 auto', padding: '14px 18px 36px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[1, 2, 3].map((sk) => (
               <div key={sk} style={{
@@ -1079,50 +1079,7 @@ export default function Comunidades({
   return (
     <div className="pl-paper-bg" style={{ minHeight: '100vh' }}>
       <style>{communityCss}</style>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '34px 30px 40px' }}>
-
-        {/* ░░ MASTHEAD ░░ */}
-        <header style={{
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap',
-          paddingBottom: 22, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 22,
-        }}>
-          <div style={{ minWidth: 0 }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Papirando · Fórum de estudos</p>
-            <h1 className="pl-display" style={{ margin: 0, fontSize: 'clamp(38px,4.4vw,56px)', lineHeight: 0.92 }}>
-              Comunidade<span style={{ color: 'var(--pl-accent)' }}>.</span>
-            </h1>
-            <p style={{ margin: '9px 0 0', maxWidth: 560, fontSize: 14.5, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
-              Troque dúvidas, métodos e desabafos com quem também está na luta dos estudos. Pergunte, responda, evolua.
-            </p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ textAlign: 'right' }}>
-              <div className="pl-eyebrow">Conectado como</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end', marginTop: 5 }}>
-                <span style={{
-                  overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 26, height: 26, borderRadius: 8, color: 'var(--pl-accent)', fontSize: 12, fontWeight: 700,
-                  background: 'var(--pl-accent-soft)',
-                }}>
-                  {composerAvatarUrl ? <img src={composerAvatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : composerInitials}
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{displayName}</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={openComposerModal}
-              className="pl-tap"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8, height: 44, padding: '0 20px', border: 0,
-                borderRadius: 11, background: 'var(--pl-ink)', color: 'var(--pl-bg)', fontFamily: 'var(--pl-sans)',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--pl-sh-low)',
-              }}
-            >
-              <Plus size={16} /> Nova pergunta
-            </button>
-          </div>
-        </header>
+      <div style={{ maxWidth: 1560, margin: '0 auto', padding: '14px 18px 36px' }}>
 
         {/* ░░ APP GRID ░░ */}
         <div className="plc-grid">
@@ -1291,6 +1248,18 @@ export default function Comunidades({
                   style={{ flex: 1, minWidth: 0, border: 0, background: 'transparent', fontFamily: 'var(--pl-sans)', fontSize: 14, color: 'var(--pl-ink)' }}
                 />
               </div>
+              <button
+                type="button"
+                onClick={openComposerModal}
+                className="pl-tap"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8, height: 40, padding: '0 18px', border: 0,
+                  borderRadius: 10, background: 'var(--pl-ink)', color: 'var(--pl-bg)', fontFamily: 'var(--pl-sans)',
+                  fontSize: 13.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: 'var(--pl-sh-low)',
+                }}
+              >
+                <Plus size={15} /> Nova pergunta
+              </button>
             </div>
 
             {/* inline composer prompt */}
@@ -1436,31 +1405,6 @@ export default function Comunidades({
 
           {/* ── RIGHT CONTEXT COLUMN ── */}
           <aside className="plc-rail-r" style={{ position: 'sticky', top: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {/* Stats REAIS (sem numeros fake do mockup) */}
-            <div style={{
-              background: 'var(--pl-accent-strong, var(--pl-accent))', borderRadius: 16, padding: 20, color: '#fff',
-              boxShadow: 'var(--pl-sh-mid)', overflow: 'hidden', position: 'relative',
-            }}>
-              <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.07)' }} />
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)' }}>
-                A comunidade em números
-              </div>
-              <div style={{ display: 'flex', gap: 18, marginTop: 16, flexWrap: 'wrap' }}>
-                <div>
-                  <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, lineHeight: 1 }}>{formatCount(communityStats.totalPosts)}</div>
-                  <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.72)', marginTop: 4 }}>tópicos</div>
-                </div>
-                <div>
-                  <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, lineHeight: 1 }}>{formatCount(communityStats.totalComments)}</div>
-                  <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.72)', marginTop: 4 }}>respostas</div>
-                </div>
-                <div>
-                  <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, lineHeight: 1 }}>{formatCount(communityStats.totalUpvotes)}</div>
-                  <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.72)', marginTop: 4 }}>apoios</div>
-                </div>
-              </div>
-            </div>
-
             {/* Diretrizes (texto estatico) */}
             <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule)', borderRadius: 14, padding: 18, boxShadow: 'var(--pl-sh-low)' }}>
               <div className="pl-eyebrow" style={{ marginBottom: 14 }}>Diretrizes da comunidade</div>
