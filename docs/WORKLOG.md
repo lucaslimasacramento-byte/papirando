@@ -201,6 +201,22 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 
 ## Registro de sessões
 
+### Sessão 2026-06-19 (parte 2) — Comunidade quebrada + varredura de drift de migração
+
+**Comunidade não abria (3 camadas, todas corrigidas):**
+1. Tabelas `community_*` davam **403** → `community.sql` estava aplicado pela metade em prod (faltava INSERT grant em `community_posts`). Reapliquei o `community.sql` inteiro (idempotente) → grants/políticas completos; comunidade já grava (POST 201).
+2. `redacao_site_content` dava **400** → faltavam 2 colunas (`audiobook_catalog_json`, `sidebar_labels_json`) → o `select` inteiro falhava e derrubava TODA a config do site. Adicionei as 2 colunas.
+3. **Causa real do "pisca e cai pra início":** `App.jsx` tinha cópia **stale** de `LAUNCH_HIDDEN_TABS` (linha 45) que ainda escondia `'comunidades'` → o guard `setActiveTab('home')` redirecionava. Agora importa de `launchConfig.js` (fonte única). Commit `c7e84da`.
+
+**Varredura proativa de "migração aplicada pela metade" (mesmo padrão):**
+- ✅ RPCs: todas as 11 chamadas pelo app existem no banco.
+- ✅ `launchConfig.js` é fonte única real (App/Header/Sidebar importam; sem outras cópias stale).
+- ✅ Segurança: triggers `trg_protect_profile_privileged_fields` + `profiles_block_sensitive_self_update` LIGADOS → sem self-grant de plano.
+- ✅ Drift de coluna em `select` explícito: achei e corrigi `profiles.full_name` (inexistente → `nome`) no fallback do ranking (commit `6e3d760`); demais colunas (flashcard `due`/`color`, questions, etc.) conferidas e OK.
+- ✅ SQL do ranking de Simulados aplicado (sessão anterior).
+
+**Pendente:** redesign visual da Comunidade (Lucas trazendo direção de outro app); confirmar `ASAAS_SANDBOX=false`.
+
 ### Sessão 2026-06-18 — Auditoria tela a tela (Blocos 2 e 3)
 
 **Método:** agente focado lê cada arquivo → Claude revisa e aplica os fixes → commit por tela → WORKLOG atualizado. Build verificado a cada passo.
