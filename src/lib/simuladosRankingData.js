@@ -50,7 +50,7 @@ export async function loadOfficialRankingBoard({
 
   try {
     const [profilesRes, answersRes] = await Promise.all([
-      supabase.from('profiles').select('id, username, full_name, avatar_url, subscription_plan').limit(80),
+      supabase.from('profiles').select('id, username, full_name:nome, avatar_url, subscription_plan').limit(80),
       supabase.from('question_answers').select('user_id, is_correct'),
     ]);
     if (!profilesRes.error) profiles = profilesRes.data || [];
