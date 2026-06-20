@@ -962,6 +962,8 @@ function buildFormFromTemplate(template) {
 export default function AdminConcursos({
   currentUserEmail = '',
   concursoCatalog = [],
+  concursoDrafts = [],
+  onRefreshDrafts,
   subjectCatalog = [],
   onCreateTemplate,
   onUpdateTemplate,
@@ -997,6 +999,10 @@ export default function AdminConcursos({
   const [logoBatchOrgao] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
+  const [publishingDraftId, setPublishingDraftId] = useState('');
+  const [uploadingLogoDraftId, setUploadingLogoDraftId] = useState('');
+  const [draftQuery, setDraftQuery] = useState('');
+  const [draftTypeFilter, setDraftTypeFilter] = useState('todos');
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
   const [aiFormText, setAiFormText] = useState('');
   const [aiInputMode, setAiInputMode] = useState('text'); // 'text' | 'pdf'
@@ -1734,6 +1740,10 @@ export default function AdminConcursos({
       if (target.id === selectedTemplateId) {
         resetForm();
       }
+      // Se o item excluído era um rascunho, recarrega a fila de revisão.
+      if (target.is_public === false) {
+        await onRefreshDrafts?.();
+      }
       setDeleteTarget(null);
     } catch (error) {
       setDeleteTemplateError(error.message || 'Não foi possível excluir o concurso.');
@@ -1742,8 +1752,118 @@ export default function AdminConcursos({
     }
   };
 
+  // Monta o payload completo que onUpdateTemplate espera (mesma forma do batch de logo),
+  // permitindo sobrescrever campos pontuais (ex.: is_public ao publicar, imagem_url ao trocar logo).
+  const buildTemplatePayload = (template, overrides = {}) => ({
+    id: template.id,
+    slug: template.slug || '',
+    nome: template.nome || '',
+    plano: template.plano || template.nome || '',
+    concurso: template.concurso || template.nome || '',
+    area: template.area || 'Geral',
+    cargo: template.cargo || '',
+    banca: template.banca || 'A definir',
+    salario: template.salario || '',
+    inscricao_valor: template.inscricao_valor || '',
+    escolaridade: template.escolaridade || '',
+    vagas: template.vagas || '',
+    lotacao: template.lotacao || '',
+    etapas: template.etapas || '',
+    etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : [],
+    taf_itens: Array.isArray(template.taf_itens) ? template.taf_itens : [],
+    cor: template.cor || '#1e3a5f',
+    descricao: template.descricao || '',
+    imagem_url: template.imagem_url || '',
+    edital_url: template.edital_url || '',
+    prova_data: template.prova_data || '',
+    status_concurso: template.status_concurso || 'edital_publicado',
+    is_public: template.is_public !== false,
+    disciplinas: (template.disciplinas || []).map((subject, subjectIndex) => ({
+      nome: subject.nome || '',
+      ordem: subjectIndex,
+      cor: subject.cor || '',
+      topicos: (subject.topicos || []).map((topic, topicIndex) => ({
+        nome: typeof topic === 'string' ? topic : topic.nome,
+        ordem: topicIndex,
+      })).filter((topic) => topic.nome),
+    })),
+    ...overrides,
+  });
+
+  const handlePublishDraft = async (draft) => {
+    if (!draft?.id) return;
+    setPublishingDraftId(draft.id);
+    try {
+      await onUpdateTemplate?.(buildTemplatePayload(draft, { is_public: true }));
+      await onRefreshDrafts?.();
+      success(`"${draft.nome}" publicado no catálogo.`);
+    } catch (error) {
+      toastError(error.message || 'Não foi possível publicar o rascunho.', 'Erro ao publicar');
+    } finally {
+      setPublishingDraftId('');
+    }
+  };
+
+  const handleDraftLogoUpload = async (draft, file) => {
+    if (!draft?.id || !file) return;
+    if (!file.type.startsWith('image/')) {
+      warning('Envie uma imagem PNG, JPG ou WEBP.');
+      return;
+    }
+    setUploadingLogoDraftId(draft.id);
+    try {
+      const url = await onUploadImage?.({ file, currentUrl: draft.imagem_url || '' });
+      if (url) {
+        await onUpdateTemplate?.(buildTemplatePayload(draft, { imagem_url: url }));
+        await onRefreshDrafts?.();
+        success('Logotipo atualizada.');
+      }
+    } catch (error) {
+      toastError(error.message || 'Não foi possível enviar a imagem.', 'Erro no upload');
+    } finally {
+      setUploadingLogoDraftId('');
+    }
+  };
+
   const faculdadeCount = (courseTemplatesDraft ?? []).filter((item) => item.intent === 'faculdade').length;
   const vestibularCount = (courseTemplatesDraft ?? []).filter((item) => item.intent === 'vestibular').length;
+
+  // Classifica um rascunho em um dos três grupos (curso/faculdade caem em "curso").
+  const draftBucketOf = (d) => {
+    if (d.tipo === 'vestibular') return 'vestibular';
+    if (d.tipo === 'concurso') return 'concurso';
+    if (d.tipo === 'faculdade' || d.tipo === 'curso') return 'curso';
+    return 'outros';
+  };
+
+  // Contagem por tipo (independe da busca/filtro) — para os botões de filtro.
+  const draftCounts = React.useMemo(() => {
+    const c = { todos: concursoDrafts.length, vestibular: 0, concurso: 0, curso: 0, outros: 0 };
+    for (const d of concursoDrafts) c[draftBucketOf(d)] += 1;
+    return c;
+  }, [concursoDrafts]);
+
+  // Rascunhos filtrados por busca + filtro de tipo e agrupados (fila de revisão).
+  const draftGroups = React.useMemo(() => {
+    const q = draftQuery.trim().toLowerCase();
+    const order = [
+      ['vestibular', 'Vestibulares'],
+      ['concurso', 'Concursos'],
+      ['curso', 'Cursos'],
+      ['outros', 'Outros'],
+    ];
+    const buckets = { vestibular: [], concurso: [], curso: [], outros: [] };
+    for (const d of concursoDrafts) {
+      if (draftTypeFilter !== 'todos' && draftBucketOf(d) !== draftTypeFilter) continue;
+      if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
+      buckets[draftBucketOf(d)].push(d);
+    }
+    const groups = order
+      .map(([key, label]) => [label, buckets[key]])
+      .filter(([, arr]) => arr.length > 0);
+    const total = groups.reduce((sum, [, arr]) => sum + arr.length, 0);
+    return { groups, total };
+  }, [concursoDrafts, draftQuery, draftTypeFilter]);
 
   return (
     <div className="pl-page">
@@ -1802,6 +1922,7 @@ export default function AdminConcursos({
           { id: 'concursos', label: 'Concursos', count: stats.templates },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
           { id: 'vestibulares', label: 'Vestibulares', count: vestibularCount },
+          { id: 'rascunhos', label: 'Rascunhos', count: concursoDrafts.length },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -1934,6 +2055,168 @@ export default function AdminConcursos({
         </div>
       </div>
       )} {/* fim adminSection === 'concursos' */}
+
+      {adminSection === 'rascunhos' && (
+      <div className="pl-card" style={{ padding: 20 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200 }}>
+            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-4)', pointerEvents: 'none' }} />
+            <input
+              value={draftQuery}
+              onChange={(e) => setDraftQuery(e.target.value)}
+              placeholder="Buscar rascunho por nome, órgão, cargo…"
+              className="pl-input"
+              style={{ paddingLeft: 32, width: '100%' }}
+            />
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
+            {draftGroups.total} de {concursoDrafts.length} rascunho(s)
+          </p>
+        </div>
+
+        {/* Filtro por tipo */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+          {[
+            { id: 'todos', label: 'Todos', count: draftCounts.todos },
+            { id: 'vestibular', label: 'Vestibulares', count: draftCounts.vestibular },
+            { id: 'concurso', label: 'Concursos', count: draftCounts.concurso },
+            { id: 'curso', label: 'Cursos', count: draftCounts.curso },
+            ...(draftCounts.outros > 0 ? [{ id: 'outros', label: 'Outros', count: draftCounts.outros }] : []),
+          ].map((f) => {
+            const active = draftTypeFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setDraftTypeFilter(f.id)}
+                className={active ? 'pl-tag pl-tag-accent' : 'pl-tag'}
+                style={{ cursor: 'pointer', border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)', display: 'inline-flex', gap: 6, alignItems: 'center' }}
+              >
+                {f.label}
+                <span style={{ fontWeight: 700, opacity: 0.8 }}>{f.count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginBottom: 16, lineHeight: 1.5 }}>
+          Itens importados ficam aqui como rascunho — <strong>invisíveis para os alunos</strong> até você publicar.
+          Revise os dados (clique no nome para editar), envie a logotipo e clique em <strong>Publicar</strong> quando estiver pronto.
+        </p>
+
+        <div style={{ maxHeight: 520, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
+          {concursoDrafts.length === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
+              Nenhum rascunho na fila. Itens importados (is_public=false) aparecem aqui.
+            </div>
+          ) : draftGroups.total === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
+              Nenhum rascunho encontrado com essa busca.
+            </div>
+          ) : (
+            draftGroups.groups.map(([label, items]) => (
+              <div key={label}>
+                <div style={{
+                  position: 'sticky', top: 0, zIndex: 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '6px 14px',
+                  background: 'var(--pl-bg-soft)',
+                  borderBottom: '1px solid var(--pl-rule)',
+                }}>
+                  <p className="pl-eyebrow" style={{ margin: 0 }}>{label}</p>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{items.length}</span>
+                </div>
+                {items.map((draft) => {
+                  const isPublishing = publishingDraftId === draft.id;
+                  const isUploading = uploadingLogoDraftId === draft.id;
+                  const busy = isPublishing || isUploading;
+                  return (
+                    <div
+                      key={draft.id}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto minmax(0,1.6fr) minmax(110px,0.7fr) auto',
+                        gap: 10,
+                        padding: '10px 14px',
+                        alignItems: 'center',
+                        borderBottom: '1px solid var(--pl-rule)',
+                        opacity: busy ? 0.6 : 1,
+                      }}
+                    >
+                      {/* Logo + upload */}
+                      <label
+                        title="Enviar logotipo"
+                        style={{
+                          width: 36, height: 36, borderRadius: 6, overflow: 'hidden', flexShrink: 0,
+                          border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: busy ? 'default' : 'pointer',
+                          position: 'relative',
+                        }}
+                      >
+                        {isUploading
+                          ? <Loader2 size={14} className="pl-spin" style={{ color: 'var(--pl-ink-4)' }} />
+                          : draft.imagem_url
+                            ? <img src={draft.imagem_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                            : <Upload size={13} style={{ color: 'var(--pl-ink-4)' }} />
+                        }
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={busy}
+                          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleDraftLogoUpload(draft, f); }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+
+                      {/* Nome / órgão — clique abre o modal de edição */}
+                      <button type="button" onClick={() => handleEditTemplate(draft)} disabled={busy} style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.nome}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {[draft.concurso, draft.cargo].filter(Boolean).join(' · ') || '—'}
+                        </p>
+                      </button>
+
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.banca || '—'}</p>
+
+                      {/* Ações */}
+                      <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center', justifySelf: 'end' }}>
+                        <button
+                          type="button"
+                          className="pl-btn pl-btn-ghost pl-btn-sm"
+                          onClick={() => handleEditTemplate(draft)}
+                          disabled={busy}
+                          title="Revisar / editar"
+                        >
+                          <Pencil size={13} /> Editar
+                        </button>
+                        <button
+                          type="button"
+                          className="pl-btn pl-btn-primary pl-btn-sm"
+                          onClick={() => handlePublishDraft(draft)}
+                          disabled={busy}
+                          title="Publicar no catálogo"
+                        >
+                          {isPublishing ? <Loader2 size={13} className="pl-spin" /> : <Eye size={13} />} Publicar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSelected(draft)}
+                          disabled={busy}
+                          title={`Excluir ${draft.nome}`}
+                          style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', borderRadius: 4, padding: 4, lineHeight: 0 }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+      )} {/* fim adminSection === 'rascunhos' */}
 
       {(adminSection === 'cursos' || adminSection === 'vestibulares') && courseTemplatesDraft === null && (
         <div className="pl-card-paper" style={{ padding: 32, textAlign: 'center' }}>

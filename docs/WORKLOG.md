@@ -201,6 +201,26 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 
 ## Registro de sessões
 
+### Sessão 2026-06-20 — Importação do catálogo (rascunhos) + área de revisão no admin
+
+**Contexto:** 6 JSONs de catálogo no `Downloads`. Auditados e separados em 2 grupos:
+- ✅ **376 exames reais** (200 `vestibular` + 176 `concurso` nos lotes 01/02/03) — `tipo` válido pro CHECK.
+- 🚫 **578 "faculdade"** (`faculdades_200_seed` = nomes de curso + `faculdades_cine_brasil_completo_378` = áreas CINE) — **não são exames**, violam o CHECK `tipo IN ('concurso','vestibular','enem')`. **Decisão do Lucas: ignorar nesta importação** (viram tarefa separada quando definirmos pra que servem).
+
+**Decisões:** importar os 376 como **rascunho** (`is_public=false`) via SQL direto (Management API) + construir área "Rascunhos" no admin pra revisar/publicar item a item.
+
+**Feito (código):**
+- `scripts/gen_catalog_drafts_sql.mjs` — gera o SQL de import (lê os 4 JSONs válidos, sanitiza datas/NOT NULL/jsonb, deduplica slug, `on conflict (slug) do nothing` com CTE para subjects/topics só anexarem a templates recém-criados). Saída: 376 statements.
+- `src/lib/contestCatalogApi.js` — extraído `fetchAndAssembleTemplates(supabase, isPublic)`; adicionado `loadContestDraftsFromSupabase` (admin-only, `is_public=false`). **Loader público intocado.**
+- `src/App.jsx` — state `contestDrafts` + `refreshContestDrafts` + effect que carrega rascunhos só quando `isAdmin`; props `concursoDrafts`/`onRefreshDrafts` passadas ao AdminConcursos.
+- `src/pages/AdminConcursos.jsx` — aba **"Rascunhos"** (fila de revisão): busca, agrupado por tipo, upload de logotipo por item, **Editar** (abre modal), **Publicar** (`is_public=true` → some da fila e entra no catálogo) e **Excluir**. Helper `buildTemplatePayload`. Build limpo (sem erros no Vite/console).
+
+**✅ Import rodado em produção (2026-06-20):** skip-list dos 6 slugs existentes aplicada (0 colisões), SQL rodado em 16 lotes via Management API. Resultado no banco: **376 rascunhos** (200 vestibular + 176 concurso), 6 publicados intocados, 1.104 disciplinas, 8.846 tópicos. Spot-check OK (ENEM 5 disc/43 tóp; PM SP Soldado 5 disc/26 tóp; ambos `is_public=false`).
+
+**Próximo passo (Lucas):** logar como admin → Catálogo → aba **Rascunhos** → revisar, anexar logos e publicar os exames prioritários. Os 578 "faculdade" seguem de fora (definir destino depois).
+
+---
+
 ### Sessão 2026-06-19 (parte 2) — Comunidade quebrada + varredura de drift de migração
 
 **Comunidade não abria (3 camadas, todas corrigidas):**
@@ -468,4 +488,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-06-19 — auditoria (Blocos 2–6) + Revisão Final #1–6 CONCLUÍDAS; SQL do ranking de Simulados aplicado no banco*
+*Última atualização: 2026-06-20 — import do catálogo CONCLUÍDO: 376 exames como rascunho no banco + área "Rascunhos" no admin para revisar/publicar*

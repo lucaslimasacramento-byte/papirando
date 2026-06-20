@@ -92,69 +92,91 @@ export function normalizeContestTemplate(template, index = 0) {
   };
 }
 
-export async function loadContestCatalogFromSupabase(supabase, fallbackCatalog = []) {
-  try {
-    const { data: templates, error: templatesError } = await supabase
-      .from('contest_templates')
+// Busca e monta templates (com disciplinas/tópicos) filtrando por is_public.
+// Reutilizado pelo loader público (is_public=true) e pelo loader de rascunhos
+// admin-only (is_public=false). A RLS já garante que só admin enxerga rascunhos.
+async function fetchAndAssembleTemplates(supabase, isPublic) {
+  const { data: templates, error: templatesError } = await supabase
+    .from('contest_templates')
+    .select('*')
+    .eq('is_public', isPublic)
+    .order('created_at', { ascending: false });
+
+  if (templatesError) throw templatesError;
+  if (!templates || templates.length === 0) {
+    return [];
+  }
+
+  const templateIds = templates.map((template) => template.id);
+
+  const { data: subjects, error: subjectsError } = await supabase
+    .from('contest_template_subjects')
+    .select('*')
+    .in('template_id', templateIds)
+    .order('ordem', { ascending: true });
+
+  if (subjectsError) throw subjectsError;
+
+  const subjectIds = (subjects || []).map((subject) => subject.id);
+  let topics = [];
+
+  if (subjectIds.length > 0) {
+    const { data: topicRows, error: topicsError } = await supabase
+      .from('contest_template_topics')
       .select('*')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false });
-
-    if (templatesError) throw templatesError;
-    if (!templates || templates.length === 0) {
-      return [];
-    }
-
-    const templateIds = templates.map((template) => template.id);
-
-    const { data: subjects, error: subjectsError } = await supabase
-      .from('contest_template_subjects')
-      .select('*')
-      .in('template_id', templateIds)
+      .in('subject_id', subjectIds)
       .order('ordem', { ascending: true });
 
-    if (subjectsError) throw subjectsError;
+    if (topicsError) throw topicsError;
+    topics = topicRows || [];
+  }
 
-    const subjectIds = (subjects || []).map((subject) => subject.id);
-    let topics = [];
-
-    if (subjectIds.length > 0) {
-      const { data: topicRows, error: topicsError } = await supabase
-        .from('contest_template_topics')
-        .select('*')
-        .in('subject_id', subjectIds)
-        .order('ordem', { ascending: true });
-
-      if (topicsError) throw topicsError;
-      topics = topicRows || [];
-    }
-
-    return templates.map((template, index) => {
-      const disciplinas = (subjects || [])
-        .filter((subject) => subject.template_id === template.id)
-        .map((subject, subjectIndex) =>
-          normalizeSubject(
-            {
-              ...subject,
-              topicos: topics.filter((topic) => topic.subject_id === subject.id),
-            },
-            subjectIndex
-          )
-        );
-
-      return normalizeContestTemplate(
-        {
-          ...template,
-          disciplinas,
-        },
-        index
+  return templates.map((template, index) => {
+    const disciplinas = (subjects || [])
+      .filter((subject) => subject.template_id === template.id)
+      .map((subject, subjectIndex) =>
+        normalizeSubject(
+          {
+            ...subject,
+            topicos: topics.filter((topic) => topic.subject_id === subject.id),
+          },
+          subjectIndex
+        )
       );
-    });
+
+    return normalizeContestTemplate(
+      {
+        ...template,
+        disciplinas,
+      },
+      index
+    );
+  });
+}
+
+export async function loadContestCatalogFromSupabase(supabase, fallbackCatalog = []) {
+  try {
+    return await fetchAndAssembleTemplates(supabase, true);
   } catch (error) {
     console.warn(
       '[contestCatalog] usando catálogo local (Supabase indisponível no momento):',
       error?.message || error?.code || 'sem detalhe'
     );
     return fallbackCatalog.map((template, index) => normalizeContestTemplate(template, index));
+  }
+}
+
+// Carrega os rascunhos (is_public=false). Só retorna dados para admin — para os
+// demais usuários a RLS devolve lista vazia. Não tem fallback local: rascunho
+// só existe no Supabase.
+export async function loadContestDraftsFromSupabase(supabase) {
+  try {
+    return await fetchAndAssembleTemplates(supabase, false);
+  } catch (error) {
+    console.warn(
+      '[contestCatalog] não foi possível carregar rascunhos:',
+      error?.message || error?.code || 'sem detalhe'
+    );
+    return [];
   }
 }

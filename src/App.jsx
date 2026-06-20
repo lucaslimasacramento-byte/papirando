@@ -22,7 +22,7 @@ import CheckoutResultBanner from './components/CheckoutResultBanner';
 import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
-import { loadContestCatalogFromSupabase } from './lib/contestCatalogApi';
+import { loadContestCatalogFromSupabase, loadContestDraftsFromSupabase } from './lib/contestCatalogApi';
 import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { compressImage } from './lib/imageCompress';
@@ -1031,6 +1031,7 @@ export default function App() {
   }, [cursos]);
 
   const [contestLibrary, setContestLibrary] = useState(() => localConcursoCatalog);
+  const [contestDrafts, setContestDrafts] = useState([]);
   const [selectedContestDetailId, setSelectedContestDetailId] = useState(null);
   const [favoriteContestIds, setFavoriteContestIds] = useState(() => {
     const saved = readJsonStorage('papirando_favorite_contests', []);
@@ -2683,6 +2684,24 @@ export default function App() {
       ignore = true;
     };
   }, [currentAuthUser]);
+
+  // Rascunhos (is_public=false) só fazem sentido para admin; a RLS devolve [] para os demais.
+  useEffect(() => {
+    if (!isAdmin) {
+      setContestDrafts([]);
+      return undefined;
+    }
+    let ignore = false;
+
+    (async () => {
+      const drafts = await loadContestDraftsFromSupabase(supabase);
+      if (!ignore) setContestDrafts(drafts);
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [isAdmin]);
 
   useEffect(() => {
     let ignore = false;
@@ -4687,6 +4706,12 @@ export default function App() {
     const templates = await loadContestCatalogFromSupabase(supabase, localConcursoCatalog);
     setContestLibrary(templates);
     return templates;
+  };
+
+  const refreshContestDrafts = async () => {
+    const drafts = await loadContestDraftsFromSupabase(supabase);
+    setContestDrafts(drafts);
+    return drafts;
   };
 
   const refreshSubjectCatalog = async () => {
@@ -7032,7 +7057,6 @@ export default function App() {
               onAnalyzeEdital={analyzeEditalDocument}
               onDeleteCourse={deleteCourse}
               setSelectedCoursePlan={setSelectedCoursePlan}
-              concursoCatalog={contestLibrary}
               currentCourseLimit={currentCourseLimit}
               currentCourseCount={currentCourseCount}
               remainingCourseSlots={remainingCourseSlots}
@@ -7157,6 +7181,8 @@ export default function App() {
             <AdminConcursos
               currentUserEmail={currentUserEmail}
               concursoCatalog={contestLibrary}
+              concursoDrafts={contestDrafts}
+              onRefreshDrafts={refreshContestDrafts}
               subjectCatalog={subjectCatalog}
               onCreateTemplate={createContestTemplate}
               onUpdateTemplate={updateContestTemplate}
