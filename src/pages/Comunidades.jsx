@@ -719,12 +719,12 @@ export default function Comunidades({
       setDraftContent('');
       setActiveFilter('recent');
       if (draft.category) setActiveTag(draft.category);
-      setComposerToast('Topico publicado com sucesso.');
+      setComposerToast('Tópico publicado com sucesso.');
       setIsComposerOpen(false);
       setTimeout(() => setComposerToast(''), 2500);
     } catch (error) {
       setCommunityData(previousState);
-      setComposerError(String(error?.message || 'Nao foi possivel publicar agora. Tente novamente.'));
+      setComposerError(String(error?.message || 'Não foi possível publicar agora. Tente novamente.'));
     } finally {
       setComposerSubmitting(false);
     }
@@ -1049,13 +1049,11 @@ export default function Comunidades({
     ? 'Toda a comunidade reunida. Filtre por sala para focar num tema.'
     : (activeRoomMeta?.description || '');
 
-  const composerInitials = initials(displayName);
-
   if (communityLoading) {
     return (
-      <div className="pl-paper-bg" style={{ minHeight: '100vh' }}>
-        <div style={{ maxWidth: 1560, margin: '0 auto', padding: '14px 18px 36px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="pl-paper-bg" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1560, margin: '0 auto', padding: '14px 18px 0', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 24 }}>
             {[1, 2, 3].map((sk) => (
               <div key={sk} style={{
                 display: 'flex', gap: 16, background: 'var(--pl-surface)', border: '1px solid var(--pl-rule)',
@@ -1077,15 +1075,15 @@ export default function Comunidades({
   }
 
   return (
-    <div className="pl-paper-bg" style={{ minHeight: '100vh' }}>
+    <div className="pl-paper-bg" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <style>{communityCss}</style>
-      <div style={{ maxWidth: 1560, margin: '0 auto', padding: '14px 18px 36px' }}>
+      <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1560, margin: '0 auto', padding: '14px 18px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* ░░ APP GRID ░░ */}
         <div className="plc-grid">
 
           {/* ── LEFT RAIL ── */}
-          <aside className="plc-rail-l" style={{ position: 'sticky', top: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <aside className="plc-rail-l" style={{ alignSelf: 'start', minHeight: 0, maxHeight: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
             <nav style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule)', borderRadius: 14, padding: 8, boxShadow: 'var(--pl-sh-low)' }}>
               <button
                 type="button"
@@ -1164,46 +1162,10 @@ export default function Comunidades({
                 <p style={{ margin: '10px 2px 8px', fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>{activeRoomDesc}</p>
               ) : null}
             </div>
-
-            {/* Em alta */}
-            {trendingFeedPosts.length > 0 ? (
-              <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule)', borderRadius: 14, padding: 16, boxShadow: 'var(--pl-sh-low)' }}>
-                <div className="pl-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-                  <Flame size={14} color="var(--pl-highlight-ink)" /> Em alta
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {trendingFeedPosts.slice(0, 5).map((tp, i) => (
-                    <button
-                      key={tp.id}
-                      type="button"
-                      onClick={() => handlePickTrend({ type: 'post', post: tp, tags })}
-                      className="pl-tap"
-                      style={{
-                        display: 'flex', gap: 11, alignItems: 'flex-start', width: '100%', padding: '8px 6px',
-                        border: 0, borderRadius: 9, background: 'transparent', cursor: 'pointer', textAlign: 'left',
-                      }}
-                    >
-                      <span style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1, color: 'var(--pl-ink-4)', width: 18, flex: '0 0 18px' }}>{i + 1}</span>
-                      <span style={{ minWidth: 0 }}>
-                        <span style={{
-                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                          fontSize: 12.5, fontWeight: 600, lineHeight: 1.35, color: 'var(--pl-ink)',
-                        }}>
-                          {tp.title}
-                        </span>
-                        <span style={{ display: 'block', marginTop: 3, fontSize: 11, color: 'var(--pl-ink-3)' }}>
-                          #{tp.category} · {Math.round(hotEngagementScore(tp))} pts
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </aside>
 
           {/* ── MAIN COLUMN ── */}
-          <main style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <main className="pl-feed-scroll" style={{ minWidth: 0, minHeight: 0, overflowY: 'auto', paddingBottom: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* toolbar: sort + search */}
             <div style={{
@@ -1261,32 +1223,6 @@ export default function Comunidades({
                 <Plus size={15} /> Nova pergunta
               </button>
             </div>
-
-            {/* inline composer prompt */}
-            <button
-              type="button"
-              onClick={openComposerModal}
-              className="pl-tap"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12, background: 'var(--pl-surface)',
-                border: '1px dashed var(--pl-rule-2)', borderRadius: 14, padding: '14px 16px', cursor: 'pointer', textAlign: 'left',
-              }}
-            >
-              <span style={{
-                overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: 36, height: 36, flex: '0 0 36px', borderRadius: 11, color: 'var(--pl-accent)', fontSize: 14,
-                fontWeight: 700, background: 'var(--pl-accent-soft)',
-              }}>
-                {composerAvatarUrl ? <img src={composerAvatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : composerInitials}
-              </span>
-              <span style={{ flex: 1, fontSize: 14, color: 'var(--pl-ink-3)' }}>Tem uma dúvida ou dica? Compartilhe com a comunidade…</span>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6, height: 32, padding: '0 13px', borderRadius: 9,
-                background: 'var(--pl-ink)', color: 'var(--pl-bg)', fontSize: 12.5, fontWeight: 600,
-              }}>
-                <Plus size={13} /> Perguntar
-              </span>
-            </button>
 
             {/* breadcrumb */}
             {activeTag !== 'Todos' ? (
@@ -1404,7 +1340,43 @@ export default function Comunidades({
           </main>
 
           {/* ── RIGHT CONTEXT COLUMN ── */}
-          <aside className="plc-rail-r" style={{ position: 'sticky', top: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <aside className="plc-rail-r" style={{ alignSelf: 'start', minHeight: 0, maxHeight: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {/* Em alta */}
+            {trendingFeedPosts.length > 0 ? (
+              <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule)', borderRadius: 14, padding: 16, boxShadow: 'var(--pl-sh-low)' }}>
+                <div className="pl-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+                  <Flame size={14} color="var(--pl-highlight-ink)" /> Em alta
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {trendingFeedPosts.slice(0, 5).map((tp, i) => (
+                    <button
+                      key={tp.id}
+                      type="button"
+                      onClick={() => handlePickTrend({ type: 'post', post: tp, tags })}
+                      className="pl-tap"
+                      style={{
+                        display: 'flex', gap: 11, alignItems: 'flex-start', width: '100%', padding: '8px 6px',
+                        border: 0, borderRadius: 9, background: 'transparent', cursor: 'pointer', textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1, color: 'var(--pl-ink-4)', width: 18, flex: '0 0 18px' }}>{i + 1}</span>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                          fontSize: 12.5, fontWeight: 600, lineHeight: 1.35, color: 'var(--pl-ink)',
+                        }}>
+                          {tp.title}
+                        </span>
+                        <span style={{ display: 'block', marginTop: 3, fontSize: 11, color: 'var(--pl-ink-3)' }}>
+                          #{tp.category} · {Math.round(hotEngagementScore(tp))} pts
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {/* Diretrizes (texto estatico) */}
             <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule)', borderRadius: 14, padding: 18, boxShadow: 'var(--pl-sh-low)' }}>
               <div className="pl-eyebrow" style={{ marginBottom: 14 }}>Diretrizes da comunidade</div>
@@ -1701,8 +1673,13 @@ const communityCss = `
   display: grid;
   grid-template-columns: 264px minmax(0,1fr) 304px;
   gap: 26px;
-  align-items: start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
+.pl-feed-scroll::-webkit-scrollbar { width: 10px; }
+.pl-feed-scroll::-webkit-scrollbar-thumb { background: var(--pl-rule-2); border-radius: 8px; }
+.pl-feed-scroll::-webkit-scrollbar-track { background: transparent; }
 @media (max-width: 1180px) {
   .plc-grid { grid-template-columns: 236px minmax(0,1fr); }
   .plc-rail-r { display: none; }
