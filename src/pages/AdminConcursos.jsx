@@ -1013,8 +1013,18 @@ export default function AdminConcursos({
   const [contestFormOptions, setContestFormOptions] = useState([]);
   const [contestQuery, setContestQuery] = useState('');
   const [contestAreaFilter, setContestAreaFilter] = useState('Todos');
-  const [contestTipoFilter, setContestTipoFilter] = useState('concurso'); // concurso | vestibular | todos
   const [customEtapaText, setCustomEtapaText] = useState('');
+
+  // Tipo mostrado na lista do catálogo depende da aba: Concursos = concurso,
+  // Vestibulares = vestibular (ambos vêm de contest_templates).
+  const contestSectionTipo = adminSection === 'vestibulares' ? 'vestibular' : 'concurso';
+
+  // Carrega os rascunhos sempre que o admin abre o Catálogo — evita a corrida do
+  // efeito no mount do App que às vezes deixava a aba Rascunhos vazia.
+  useEffect(() => {
+    onRefreshDrafts?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     try {
@@ -1116,15 +1126,13 @@ export default function AdminConcursos({
     return concursoCatalog.filter((template) => {
       const matchArea = selectedContestAreaFilter === 'Todos' || (template.area || 'Geral') === selectedContestAreaFilter;
       const tipo = template.tipo || 'concurso';
-      const matchTipo =
-        contestTipoFilter === 'todos' ||
-        (contestTipoFilter === 'vestibular' ? tipo === 'vestibular' : tipo !== 'vestibular');
+      const matchTipo = contestSectionTipo === 'vestibular' ? tipo === 'vestibular' : tipo !== 'vestibular';
       const haystack = [template.nome, template.concurso, template.cargo, template.banca, template.area]
         .join(' ')
         .toLowerCase();
       return matchArea && matchTipo && (!query || haystack.includes(query));
     });
-  }, [concursoCatalog, selectedContestAreaFilter, contestTipoFilter, contestQuery]);
+  }, [concursoCatalog, selectedContestAreaFilter, contestSectionTipo, contestQuery]);
 
   // Contagens por tipo no catálogo publicado (para os chips de filtro e a aba).
   const publishedConcursoCount = useMemo(
@@ -1971,7 +1979,7 @@ export default function AdminConcursos({
         {[
           { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
-          { id: 'vestibulares', label: 'Vestibulares', count: vestibularCount },
+          { id: 'vestibulares', label: 'Vestibulares', count: publishedVestibularCount },
           { id: 'rascunhos', label: 'Rascunhos', count: concursoDrafts.length },
         ].map((tab) => (
           <button
@@ -2003,7 +2011,7 @@ export default function AdminConcursos({
         ))}
       </div>
 
-      {adminSection === 'concursos' && (
+      {(adminSection === 'concursos' || adminSection === 'vestibulares') && (
       <div className="pl-card" style={{ padding: 20 }}>
         {/* Barra de busca + ações */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16, alignItems: 'flex-end' }}>
@@ -2012,7 +2020,7 @@ export default function AdminConcursos({
             <input
               value={contestQuery}
               onChange={(e) => setContestQuery(e.target.value)}
-              placeholder="Nome, cargo, órgão ou banca…"
+              placeholder={contestSectionTipo === 'vestibular' ? 'Nome do vestibular, banca…' : 'Nome, cargo, órgão ou banca…'}
               className="pl-input"
               style={{ paddingLeft: 32, width: '100%' }}
             />
@@ -2031,38 +2039,15 @@ export default function AdminConcursos({
             style={{ flexShrink: 0 }}
             onClick={() => { resetForm(); setIsContestModalOpen(true); }}
           >
-            <Plus size={14} /> Novo concurso
+            <Plus size={14} /> {contestSectionTipo === 'vestibular' ? 'Novo vestibular' : 'Novo concurso'}
           </button>
-        </div>
-
-        {/* Filtro por tipo (concurso x vestibular publicado) */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-          {[
-            { id: 'concurso', label: 'Concursos', count: publishedConcursoCount },
-            { id: 'vestibular', label: 'Vestibulares', count: publishedVestibularCount },
-            { id: 'todos', label: 'Todos', count: publishedConcursoCount + publishedVestibularCount },
-          ].map((f) => {
-            const active = contestTipoFilter === f.id;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setContestTipoFilter(f.id)}
-                className={active ? 'pl-tag pl-tag-accent' : 'pl-tag'}
-                style={{ cursor: 'pointer', border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)', display: 'inline-flex', gap: 6, alignItems: 'center' }}
-              >
-                {f.label}
-                <span style={{ fontWeight: 700, opacity: 0.8 }}>{f.count}</span>
-              </button>
-            );
-          })}
         </div>
 
         {/* Lista */}
         <div style={{ maxHeight: 440, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
           {filteredContestCatalog.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
-              Nenhum concurso encontrado com os filtros atuais.
+              {contestSectionTipo === 'vestibular' ? 'Nenhum vestibular encontrado.' : 'Nenhum concurso encontrado com os filtros atuais.'}
             </div>
           ) : (
             contestSections.map(([area, areaTemplates]) => (
@@ -2307,7 +2292,7 @@ export default function AdminConcursos({
       </div>
       )} {/* fim adminSection === 'rascunhos' */}
 
-      {(adminSection === 'cursos' || adminSection === 'vestibulares') && courseTemplatesDraft === null && (
+      {adminSection === 'cursos' && courseTemplatesDraft === null && (
         <div className="pl-card-paper" style={{ padding: 32, textAlign: 'center' }}>
           <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>Carregando catálogo…</p>
         </div>
@@ -2323,19 +2308,6 @@ export default function AdminConcursos({
           title="Cursos de faculdade"
           subtitle="Alimente os cursos que aparecem no caminho Cursos do modal Novo objetivo de estudo."
           emptyLabel="Nenhum curso de faculdade cadastrado ainda."
-        />
-      )}
-
-      {adminSection === 'vestibulares' && courseTemplatesDraft !== null && (
-        <AdminCourseTemplatesEditor
-          templates={courseTemplatesDraft}
-          setTemplates={setCourseTemplatesDraft}
-          isSaving={courseTemplatesSaving}
-          onSave={saveCourseTemplates}
-          intentFilter="vestibular"
-          title="Vestibulares"
-          subtitle="Cadastre trilhas de vestibular, ENEM ou processos seletivos com disciplinas e tópicos iniciais."
-          emptyLabel="Nenhum vestibular cadastrado ainda."
         />
       )}
 
