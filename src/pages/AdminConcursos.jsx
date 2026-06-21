@@ -1843,7 +1843,7 @@ export default function AdminConcursos({
     return c;
   }, [concursoDrafts]);
 
-  // Rascunhos filtrados por busca + filtro de tipo e agrupados (fila de revisão).
+  // Rascunhos filtrados por busca + filtro de tipo, agrupados por tipo e sub-agrupados por area.
   const draftGroups = React.useMemo(() => {
     const q = draftQuery.trim().toLowerCase();
     const order = [
@@ -1858,10 +1858,23 @@ export default function AdminConcursos({
       if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
       buckets[draftBucketOf(d)].push(d);
     }
-    const groups = order
-      .map(([key, label]) => [label, buckets[key]])
-      .filter(([, arr]) => arr.length > 0);
-    const total = groups.reduce((sum, [, arr]) => sum + arr.length, 0);
+    const groups = [];
+    let total = 0;
+    for (const [key, label] of order) {
+      const items = buckets[key];
+      if (!items.length) continue;
+      total += items.length;
+      const byArea = new Map();
+      for (const d of items) {
+        const a = String(d.area || '').trim() || 'Sem área';
+        if (!byArea.has(a)) byArea.set(a, []);
+        byArea.get(a).push(d);
+      }
+      const areaGroups = [...byArea.entries()].sort(
+        (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])
+      );
+      groups.push({ label, count: items.length, areaGroups });
+    }
     return { groups, total };
   }, [concursoDrafts, draftQuery, draftTypeFilter]);
 
@@ -2114,18 +2127,32 @@ export default function AdminConcursos({
               Nenhum rascunho encontrado com essa busca.
             </div>
           ) : (
-            draftGroups.groups.map(([label, items]) => (
-              <div key={label}>
+            draftGroups.groups.map((group) => (
+              <div key={group.label}>
                 <div style={{
-                  position: 'sticky', top: 0, zIndex: 1,
+                  position: 'sticky', top: 0, zIndex: 2,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '6px 14px',
-                  background: 'var(--pl-bg-soft)',
-                  borderBottom: '1px solid var(--pl-rule)',
+                  padding: '8px 14px',
+                  background: 'var(--pl-surface-2)',
+                  borderBottom: '1px solid var(--pl-rule-2)',
                 }}>
-                  <p className="pl-eyebrow" style={{ margin: 0 }}>{label}</p>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{items.length}</span>
+                  <p className="pl-eyebrow" style={{ margin: 0, color: 'var(--pl-accent)' }}>{group.label}</p>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{group.count}</span>
                 </div>
+                {group.areaGroups.map(([area, items]) => (
+                <div key={area}>
+                {group.areaGroups.length > 1 && (
+                  <div style={{
+                    position: 'sticky', top: 33, zIndex: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '5px 14px 5px 22px',
+                    background: 'var(--pl-bg-soft)',
+                    borderBottom: '1px solid var(--pl-rule)',
+                  }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{area}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{items.length}</span>
+                  </div>
+                )}
                 {items.map((draft) => {
                   const isPublishing = publishingDraftId === draft.id;
                   const isUploading = uploadingLogoDraftId === draft.id;
@@ -2211,6 +2238,8 @@ export default function AdminConcursos({
                     </div>
                   );
                 })}
+                </div>
+                ))}
               </div>
             ))
           )}

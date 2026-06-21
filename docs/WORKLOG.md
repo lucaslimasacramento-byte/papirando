@@ -215,9 +215,21 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 - `src/App.jsx` — state `contestDrafts` + `refreshContestDrafts` + effect que carrega rascunhos só quando `isAdmin`; props `concursoDrafts`/`onRefreshDrafts` passadas ao AdminConcursos.
 - `src/pages/AdminConcursos.jsx` — aba **"Rascunhos"** (fila de revisão): busca, agrupado por tipo, upload de logotipo por item, **Editar** (abre modal), **Publicar** (`is_public=true` → some da fila e entra no catálogo) e **Excluir**. Helper `buildTemplatePayload`. Build limpo (sem erros no Vite/console).
 
-**✅ Import rodado em produção (2026-06-20):** skip-list dos 6 slugs existentes aplicada (0 colisões), SQL rodado em 16 lotes via Management API. Resultado no banco: **376 rascunhos** (200 vestibular + 176 concurso), 6 publicados intocados, 1.104 disciplinas, 8.846 tópicos. Spot-check OK (ENEM 5 disc/43 tóp; PM SP Soldado 5 disc/26 tóp; ambos `is_public=false`).
+**✅ Import rodado em produção (2026-06-20):** skip-list dos slugs existentes aplicada, SQL rodado em lotes via Management API.
 
-**Próximo passo (Lucas):** logar como admin → Catálogo → aba **Rascunhos** → revisar, anexar logos e publicar os exames prioritários. Os 578 "faculdade" seguem de fora (definir destino depois).
+**Estado final no banco (após 2ª rodada — 17 lotes de concurso):**
+- **832 concursos em rascunho** (`is_public=false`) — categorizados por área: Administrativa 276, Policial 106, Educação 81, Fiscal 71, Saúde 69, Legislativa 53, Tecnologia 42, Jurídica 41…
+- **200 vestibulares PUBLICADOS** (`is_public=true`) — decisão do Lucas: vestibular é padrão, não precisa de revisão. (Os 176 concursos da 1ª rodada continuam rascunho; lotes 01/02/03 deduplicados na 2ª.)
+- 3.072 disciplinas, 17.466 tópicos. 6 templates antigos intocados.
+- ⚠️ **832 concursos sem logo** (JSONs não trazem `imagem_url`) — upload manual por item na aba Rascunhos.
+
+**Lista de graduação (`courseTemplates` / aba Faculdade):** descoberto que o **CINE/MEC (386 entradas) já estava carregado** em `redacao_site_content.course_templates_json`. É o seletor de "qual graduação você faz" — estável, sem rascunho. **Pendência:** remover os 10 cabeçalhos "ABI [área]" (não são cursos) — bloqueado pelo classificador por ser delete; aguardando OK explícito do Lucas.
+
+**Melhoria na aba Rascunhos:** agora sub-agrupa por **tipo → área** (ex: Concursos → Administrativa → itens), com filtro por tipo e busca, pra facilitar a validação dos 832.
+
+**Gerador `gen_catalog_drafts_sql.mjs`:** generalizado pra aceitar lista de arquivos via env `CATALOG_FILES` (reutilizável pra próximos lotes).
+
+**Próximo passo (Lucas):** logar como admin → Catálogo → aba **Rascunhos** → revisar por área, anexar logos e publicar. Os 2 arquivos "faculdade" (cursos de graduação) já estão na lista CINE — só falta o OK pra limpar os 10 "ABI".
 
 ---
 

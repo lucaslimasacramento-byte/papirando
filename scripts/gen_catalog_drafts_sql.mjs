@@ -13,12 +13,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const DOWNLOADS = 'C:/Users/lucas/Downloads';
-const FILES = [
-  'papirando_vestibulares_seed_200.json',
-  'papirando_lote_01_nacional_federal_2026_06_20.json',
-  'papirando_lote_02_bahia_2026_06_20.json',
-  'papirando_lote_03_sao_paulo_2026_06_20.json',
-];
+// Arquivos de entrada: via env CATALOG_FILES (caminhos absolutos separados por
+// vírgula ou quebra de linha) ou, na ausência, os seeds padrão em Downloads.
+const ENV_FILES = (process.env.CATALOG_FILES || '')
+  .split(/[\n,]/)
+  .map((s) => s.trim())
+  .filter(Boolean);
+const FILES = ENV_FILES.length
+  ? ENV_FILES
+  : [
+      'papirando_vestibulares_seed_200.json',
+      'papirando_lote_01_nacional_federal_2026_06_20.json',
+      'papirando_lote_02_bahia_2026_06_20.json',
+      'papirando_lote_03_sao_paulo_2026_06_20.json',
+    ];
 const OUT = process.argv[3] || path.join(process.env.TEMP || '.', 'catalog_drafts.sql');
 const SKIP_FILE = process.argv[2] || '';
 
@@ -59,7 +67,8 @@ function qdate(value) {
 
 const all = [];
 for (const f of FILES) {
-  const arr = JSON.parse(fs.readFileSync(path.join(DOWNLOADS, f), 'utf8'));
+  const full = path.isAbsolute(f) || f.includes(':') ? f : path.join(DOWNLOADS, f);
+  const arr = JSON.parse(fs.readFileSync(full, 'utf8'));
   for (const it of arr) all.push(it);
 }
 
