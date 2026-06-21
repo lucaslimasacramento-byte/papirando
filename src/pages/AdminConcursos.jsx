@@ -34,6 +34,8 @@ import { extractTextFromPdf } from '../lib/redacoesApi';
 import AdminPageHeader from '../components/AdminPageHeader';
 import AdminCourseTemplatesEditor from '../components/AdminCourseTemplatesEditor';
 import { useToast } from '../lib/toast';
+import { supabase } from '../lib/supabase';
+import { loadContestDraftsFromSupabase, loadContestTemplateContent } from '../lib/contestCatalogApi';
 import { CONTEST_STATUS_OPTIONS, normalizeContestStatus } from '../lib/contestGrouping';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
 
@@ -962,9 +964,6 @@ function buildFormFromTemplate(template) {
 export default function AdminConcursos({
   currentUserEmail = '',
   concursoCatalog = [],
-  concursoDrafts = [],
-  onRefreshDrafts,
-  onLoadTemplateContent,
   subjectCatalog = [],
   onCreateTemplate,
   onUpdateTemplate,
@@ -1003,18 +1002,33 @@ export default function AdminConcursos({
   const [publishingDraftId, setPublishingDraftId] = useState('');
   const [uploadingLogoDraftId, setUploadingLogoDraftId] = useState('');
   const [draftQuery, setDraftQuery] = useState('');
-  const [draftReloadStatus, setDraftReloadStatus] = useState('');
-  const reloadDraftsNow = async () => {
-    setDraftReloadStatus(`onRefreshDrafts=${typeof onRefreshDrafts} · onLoad=${typeof onLoadTemplateContent} · prop=${concursoDrafts.length} · carregando…`);
+  // Rascunhos carregados pelo PRÓPRIO AdminConcursos (import direto), sem depender de
+  // props vindas do App — o bundler estava dropando essas props no build de produção.
+  const [localDrafts, setLocalDrafts] = useState([]);
+  const [draftsLoading, setDraftsLoading] = useState(false);
+
+  const reloadDrafts = async () => {
+    setDraftsLoading(true);
     try {
-      const d = await onRefreshDrafts?.();
-      setDraftReloadStatus(
-        `tipo=${typeof onRefreshDrafts} · retornou=${Array.isArray(d) ? `${d.length} itens` : JSON.stringify(d)} · prop agora=${concursoDrafts.length}`
-      );
-    } catch (e) {
-      setDraftReloadStatus(`erro: ${e?.message || e}`);
+      const { data } = await supabase.auth.getSession();
+      if (!data?.session) return [];
+      const result = await loadContestDraftsFromSupabase(supabase);
+      const arr = Array.isArray(result) ? result : [];
+      setLocalDrafts(arr);
+      return arr;
+    } catch (error) {
+      toastError(error.message || 'Não foi possível carregar os rascunhos.', 'Erro');
+      return [];
+    } finally {
+      setDraftsLoading(false);
     }
   };
+
+  // Carrega os rascunhos ao abrir o Catálogo (sessão já está pronta nesse ponto).
+  useEffect(() => {
+    reloadDrafts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [draftTypeFilter, setDraftTypeFilter] = useState('todos');
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
   const [aiFormText, setAiFormText] = useState('');
@@ -1617,8 +1631,7 @@ export default function AdminConcursos({
   const ensureTemplateContent = async (template) => {
     if (!template?.id) return template;
     if (Array.isArray(template.disciplinas) && template.disciplinas.length > 0) return template;
-    if (!onLoadTemplateContent) return template;
-    const disciplinas = await onLoadTemplateContent(template.id);
+    const disciplinas = await loadContestTemplateContent(supabase, template.id);
     return { ...template, disciplinas: Array.isArray(disciplinas) ? disciplinas : [] };
   };
 
@@ -1789,7 +1802,7 @@ export default function AdminConcursos({
       }
       // Se o item excluído era um rascunho, recarrega a fila de revisão.
       if (target.is_public === false) {
-        await onRefreshDrafts?.();
+        await reloadDrafts();
       }
       setDeleteTarget(null);
     } catch (error) {
@@ -1844,7 +1857,7 @@ export default function AdminConcursos({
       // Carrega disciplinas/tópicos antes (a lista vem sem eles) pra não apagá-los ao salvar.
       const full = await ensureTemplateContent(draft);
       await onUpdateTemplate?.(buildTemplatePayload(full, { is_public: true }));
-      await onRefreshDrafts?.();
+      await reloadDrafts();
       success(`"${draft.nome}" publicado no catálogo.`);
     } catch (error) {
       toastError(error.message || 'Não foi possível publicar o rascunho.', 'Erro ao publicar');
@@ -1866,7 +1879,7 @@ export default function AdminConcursos({
         // Carrega disciplinas/tópicos antes pra não apagá-los ao salvar a logo.
         const full = await ensureTemplateContent(draft);
         await onUpdateTemplate?.(buildTemplatePayload(full, { imagem_url: url }));
-        await onRefreshDrafts?.();
+        await reloadDrafts();
         success('Logotipo atualizada.');
       }
     } catch (error) {
@@ -1889,10 +1902,10 @@ export default function AdminConcursos({
 
   // Contagem por tipo (independe da busca/filtro) — para os botões de filtro.
   const draftCounts = React.useMemo(() => {
-    const c = { todos: concursoDrafts.length, vestibular: 0, concurso: 0, curso: 0, outros: 0 };
-    for (const d of concursoDrafts) c[draftBucketOf(d)] += 1;
+    const c = { todos: localDrafts.length, vestibular: 0, concurso: 0, curso: 0, outros: 0 };
+    for (const d of localDrafts) c[draftBucketOf(d)] += 1;
     return c;
-  }, [concursoDrafts]);
+  }, [localDrafts]);
 
   // Rascunhos filtrados por busca + filtro de tipo, agrupados por tipo e sub-agrupados por area.
   const draftGroups = React.useMemo(() => {
@@ -1904,7 +1917,7 @@ export default function AdminConcursos({
       ['outros', 'Outros'],
     ];
     const buckets = { vestibular: [], concurso: [], curso: [], outros: [] };
-    for (const d of concursoDrafts) {
+    for (const d of localDrafts) {
       if (draftTypeFilter !== 'todos' && draftBucketOf(d) !== draftTypeFilter) continue;
       if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
       buckets[draftBucketOf(d)].push(d);
@@ -1927,7 +1940,7 @@ export default function AdminConcursos({
       groups.push({ label, count: items.length, areaGroups });
     }
     return { groups, total };
-  }, [concursoDrafts, draftQuery, draftTypeFilter]);
+  }, [localDrafts, draftQuery, draftTypeFilter]);
 
   return (
     <div className="pl-page">
@@ -1986,7 +1999,7 @@ export default function AdminConcursos({
           { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
           { id: 'vestibulares', label: 'Vestibulares', count: publishedVestibularCount },
-          { id: 'rascunhos', label: 'Rascunhos', count: concursoDrafts.length },
+          { id: 'rascunhos', label: 'Rascunhos', count: localDrafts.length },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -2134,14 +2147,11 @@ export default function AdminConcursos({
             />
           </div>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
-            {draftGroups.total} de {concursoDrafts.length} rascunho(s)
+            {draftsLoading ? 'carregando…' : `${draftGroups.total} de ${localDrafts.length} rascunho(s)`}
           </p>
-          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={reloadDraftsNow}>
-            Recarregar
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={reloadDrafts} disabled={draftsLoading}>
+            {draftsLoading ? <Loader2 size={13} className="pl-spin" /> : null} Recarregar
           </button>
-          {draftReloadStatus && (
-            <span style={{ fontSize: 12, color: 'var(--pl-accent)', fontWeight: 600 }}>{draftReloadStatus}</span>
-          )}
         </div>
 
         {/* Filtro por tipo */}
@@ -2175,7 +2185,7 @@ export default function AdminConcursos({
         </p>
 
         <div style={{ maxHeight: 520, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
-          {concursoDrafts.length === 0 ? (
+          {localDrafts.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
               Nenhum rascunho na fila. Itens importados (is_public=false) aparecem aqui.
             </div>
