@@ -1019,12 +1019,6 @@ export default function AdminConcursos({
   // Vestibulares = vestibular (ambos vêm de contest_templates).
   const contestSectionTipo = adminSection === 'vestibulares' ? 'vestibular' : 'concurso';
 
-  // Carrega os rascunhos sempre que o admin abre o Catálogo — evita a corrida do
-  // efeito no mount do App que às vezes deixava a aba Rascunhos vazia.
-  useEffect(() => {
-    onRefreshDrafts?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     try {

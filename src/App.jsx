@@ -2689,14 +2689,19 @@ export default function App() {
   }, [currentAuthUser]);
 
   // Rascunhos (is_public=false) só fazem sentido para admin; a RLS devolve [] para os demais.
+  // IMPORTANTE: depende de currentAuthUser — se a query rodar antes da sessão estar
+  // pronta, ela vai como ANÔNIMA e a RLS esconde os rascunhos (retorna 0). Por isso
+  // garantimos a sessão antes de consultar.
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin || !currentAuthUser) {
       setContestDrafts([]);
       return undefined;
     }
     let ignore = false;
 
     (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (ignore || !sessionData?.session) return;
       const drafts = await loadContestDraftsFromSupabase(supabase);
       if (!ignore) setContestDrafts(drafts);
     })();
@@ -2704,7 +2709,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [isAdmin]);
+  }, [isAdmin, currentAuthUser]);
 
   useEffect(() => {
     let ignore = false;
