@@ -92,57 +92,87 @@ export function normalizeContestTemplate(template, index = 0) {
   };
 }
 
+// Busca TODAS as linhas de uma tabela, paginando em blocos de 1000 (limite padrão
+// do PostgREST). `filter` aplica .eq()/.order() etc. A RLS escopa o que cada
+// usuário enxerga (público vê só is_public=true; admin vê tudo).
+async function fetchAllRows(supabase, table, { applyFilter, orderColumn } = {}) {
+  const PAGE = 1000;
+  const build = (withCount) => {
+    let query = supabase.from(table).select('*', withCount ? { count: 'exact' } : undefined);
+    if (applyFilter) query = applyFilter(query);
+    if (orderColumn) query = query.order(orderColumn, { ascending: true });
+    return query;
+  };
+
+  // 1ª página com count exato → sabemos o total e disparamos o resto em paralelo.
+  const first = await build(true).range(0, PAGE - 1);
+  if (first.error) throw first.error;
+  const rows = first.data || [];
+  const total = typeof first.count === 'number' ? first.count : rows.length;
+  if (total <= PAGE) return rows;
+
+  const pageRequests = [];
+  for (let from = PAGE; from < total; from += PAGE) {
+    pageRequests.push(build(false).range(from, from + PAGE - 1));
+  }
+  const results = await Promise.all(pageRequests);
+  for (const result of results) {
+    if (result.error) throw result.error;
+    rows.push(...(result.data || []));
+  }
+
+  return rows;
+}
+
 // Busca e monta templates (com disciplinas/tópicos) filtrando por is_public.
 // Reutilizado pelo loader público (is_public=true) e pelo loader de rascunhos
 // admin-only (is_public=false). A RLS já garante que só admin enxerga rascunhos.
+//
+// IMPORTANTE: disciplinas/tópicos são buscados SEM `.in(ids)` — com centenas de
+// templates a lista de IDs estourava o tamanho da URL (HTTP 414) e o limite de
+// 1000 linhas cortava o resto, fazendo o loader cair no fallback local. Agora
+// pagina tudo (range) e deixa a RLS escopar; o agrupamento é feito por Map em JS.
 async function fetchAndAssembleTemplates(supabase, isPublic) {
-  const { data: templates, error: templatesError } = await supabase
-    .from('contest_templates')
-    .select('*')
-    .eq('is_public', isPublic)
-    .order('created_at', { ascending: false });
+  const templates = await fetchAllRows(supabase, 'contest_templates', {
+    applyFilter: (q) => q.eq('is_public', isPublic),
+    orderColumn: 'created_at',
+  });
+  if (!templates.length) return [];
 
-  if (templatesError) throw templatesError;
-  if (!templates || templates.length === 0) {
-    return [];
+  const templateIdSet = new Set(templates.map((t) => t.id));
+
+  const [allSubjects, allTopics] = await Promise.all([
+    fetchAllRows(supabase, 'contest_template_subjects', { orderColumn: 'ordem' }),
+    fetchAllRows(supabase, 'contest_template_topics', { orderColumn: 'ordem' }),
+  ]);
+
+  // tópicos agrupados por subject_id
+  const topicsBySubject = new Map();
+  for (const topic of allTopics) {
+    const list = topicsBySubject.get(topic.subject_id);
+    if (list) list.push(topic);
+    else topicsBySubject.set(topic.subject_id, [topic]);
   }
 
-  const templateIds = templates.map((template) => template.id);
-
-  const { data: subjects, error: subjectsError } = await supabase
-    .from('contest_template_subjects')
-    .select('*')
-    .in('template_id', templateIds)
-    .order('ordem', { ascending: true });
-
-  if (subjectsError) throw subjectsError;
-
-  const subjectIds = (subjects || []).map((subject) => subject.id);
-  let topics = [];
-
-  if (subjectIds.length > 0) {
-    const { data: topicRows, error: topicsError } = await supabase
-      .from('contest_template_topics')
-      .select('*')
-      .in('subject_id', subjectIds)
-      .order('ordem', { ascending: true });
-
-    if (topicsError) throw topicsError;
-    topics = topicRows || [];
+  // disciplinas agrupadas por template_id (só dos templates carregados)
+  const subjectsByTemplate = new Map();
+  for (const subject of allSubjects) {
+    if (!templateIdSet.has(subject.template_id)) continue;
+    const list = subjectsByTemplate.get(subject.template_id);
+    if (list) list.push(subject);
+    else subjectsByTemplate.set(subject.template_id, [subject]);
   }
 
   return templates.map((template, index) => {
-    const disciplinas = (subjects || [])
-      .filter((subject) => subject.template_id === template.id)
-      .map((subject, subjectIndex) =>
-        normalizeSubject(
-          {
-            ...subject,
-            topicos: topics.filter((topic) => topic.subject_id === subject.id),
-          },
-          subjectIndex
-        )
-      );
+    const disciplinas = (subjectsByTemplate.get(template.id) || []).map((subject, subjectIndex) =>
+      normalizeSubject(
+        {
+          ...subject,
+          topicos: topicsBySubject.get(subject.id) || [],
+        },
+        subjectIndex
+      )
+    );
 
     return normalizeContestTemplate(
       {
