@@ -1003,6 +1003,16 @@ export default function AdminConcursos({
   const [publishingDraftId, setPublishingDraftId] = useState('');
   const [uploadingLogoDraftId, setUploadingLogoDraftId] = useState('');
   const [draftQuery, setDraftQuery] = useState('');
+  const [draftReloadStatus, setDraftReloadStatus] = useState('');
+  const reloadDraftsNow = async () => {
+    setDraftReloadStatus('carregando…');
+    try {
+      const d = await onRefreshDrafts?.();
+      setDraftReloadStatus(`retornou ${Array.isArray(d) ? d.length : 'null'} rascunho(s)`);
+    } catch (e) {
+      setDraftReloadStatus(`erro: ${e?.message || e}`);
+    }
+  };
   const [draftTypeFilter, setDraftTypeFilter] = useState('todos');
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
   const [aiFormText, setAiFormText] = useState('');
@@ -2124,6 +2134,12 @@ export default function AdminConcursos({
           <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
             {draftGroups.total} de {concursoDrafts.length} rascunho(s)
           </p>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={reloadDraftsNow}>
+            Recarregar
+          </button>
+          {draftReloadStatus && (
+            <span style={{ fontSize: 12, color: 'var(--pl-accent)', fontWeight: 600 }}>{draftReloadStatus}</span>
+          )}
         </div>
 
         {/* Filtro por tipo */}
