@@ -1961,34 +1961,22 @@ export default function AdminConcursos({
         </div>
       </header>
 
-      {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 8 }}>
+      {/* KPI strip — tudo numa linha (9 blocos) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 8, marginBottom: 8 }}>
         {[
           { label: 'Total catálogo', value: stats.templates + (courseTemplatesDraft?.length ?? 0) },
           { label: 'Concursos', value: stats.templates },
           { label: 'Faculdade', value: faculdadeCount },
           { label: 'Vestibulares', value: vestibularCount },
           { label: 'Publicados', value: stats.publicados },
+          { label: 'Sem imagem', value: stats.semImagem, warn: true },
+          { label: 'Sem edital', value: stats.semEdital, warn: true },
+          { label: 'Sem data', value: stats.semProva, warn: true },
+          { label: 'Sem tópicos', value: stats.semTopicos, warn: true },
         ].map((k) => (
-          <div key={k.label} className="pl-card" style={{ padding: '12px 16px' }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{k.label}</p>
-            <p className="pl-num" style={{ fontSize: 24 }}>{k.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Insights */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 8 }}>
-        {[
-          { label: 'Sem imagem', value: stats.semImagem, text: 'concursos sem capa' },
-          { label: 'Sem edital', value: stats.semEdital, text: 'sem PDF publicado' },
-          { label: 'Sem data', value: stats.semProva, text: 'sem data de prova' },
-          { label: 'Sem tópicos', value: stats.semTopicos, text: 'disciplinas rasas' },
-        ].map((k) => (
-          <div key={k.label} className="pl-card-paper" style={{ padding: '12px 16px' }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{k.label}</p>
-            <p className="pl-num" style={{ fontSize: 22, color: k.value > 0 ? 'var(--pl-warn)' : 'var(--pl-ink-3)' }}>{k.value}</p>
-            <p style={{ fontSize: 11, color: 'var(--pl-ink-4)', marginTop: 2 }}>{k.text}</p>
+          <div key={k.label} className={k.warn ? 'pl-card-paper' : 'pl-card'} style={{ padding: '10px 12px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 4, fontSize: 9, whiteSpace: 'nowrap' }}>{k.label}</p>
+            <p className="pl-num" style={{ fontSize: 20, color: k.warn ? (k.value > 0 ? 'var(--pl-warn)' : 'var(--pl-ink-3)') : 'var(--pl-ink)' }}>{k.value}</p>
           </div>
         ))}
       </div>
