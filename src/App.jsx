@@ -2697,7 +2697,20 @@ export default function App() {
     let ignore = false;
 
     (async () => {
+      // DEBUG temporário — diagnóstico da aba Rascunhos vazia.
+      try {
+        const { data: au } = await supabase.auth.getUser();
+        const probe = await supabase
+          .from('contest_templates')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_public', false);
+        console.log('[DEBUG-RASCUNHOS] uid=', au?.user?.id, 'email=', au?.user?.email,
+          'isAdmin(front)=', isAdmin, 'rascunhos via RLS=', probe.count, 'erro=', probe.error?.message || null);
+      } catch (e) {
+        console.log('[DEBUG-RASCUNHOS] probe falhou:', e?.message || e);
+      }
       const drafts = await loadContestDraftsFromSupabase(supabase);
+      console.log('[DEBUG-RASCUNHOS] loader retornou', drafts.length, 'rascunhos');
       if (!ignore) setContestDrafts(drafts);
     })();
 
