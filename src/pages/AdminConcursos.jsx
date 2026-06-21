@@ -1005,10 +1005,12 @@ export default function AdminConcursos({
   const [draftQuery, setDraftQuery] = useState('');
   const [draftReloadStatus, setDraftReloadStatus] = useState('');
   const reloadDraftsNow = async () => {
-    setDraftReloadStatus('carregando…');
+    setDraftReloadStatus(`onRefreshDrafts=${typeof onRefreshDrafts} · onLoad=${typeof onLoadTemplateContent} · prop=${concursoDrafts.length} · carregando…`);
     try {
       const d = await onRefreshDrafts?.();
-      setDraftReloadStatus(`retornou ${Array.isArray(d) ? d.length : 'null'} rascunho(s)`);
+      setDraftReloadStatus(
+        `tipo=${typeof onRefreshDrafts} · retornou=${Array.isArray(d) ? `${d.length} itens` : JSON.stringify(d)} · prop agora=${concursoDrafts.length}`
+      );
     } catch (e) {
       setDraftReloadStatus(`erro: ${e?.message || e}`);
     }
