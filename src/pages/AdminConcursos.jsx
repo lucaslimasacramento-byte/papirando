@@ -964,6 +964,7 @@ export default function AdminConcursos({
   concursoCatalog = [],
   concursoDrafts = [],
   onRefreshDrafts,
+  onLoadTemplateContent,
   subjectCatalog = [],
   onCreateTemplate,
   onUpdateTemplate,
@@ -1582,11 +1583,28 @@ export default function AdminConcursos({
     }
   };
 
-  const handleEditTemplate = (template) => {
+  // A lista vem SEM disciplinas/tópicos (carregados sob demanda). Garante que o
+  // template tenha disciplinas antes de editar/publicar — senão o save as apagaria.
+  const ensureTemplateContent = async (template) => {
+    if (!template?.id) return template;
+    if (Array.isArray(template.disciplinas) && template.disciplinas.length > 0) return template;
+    if (!onLoadTemplateContent) return template;
+    const disciplinas = await onLoadTemplateContent(template.id);
+    return { ...template, disciplinas: Array.isArray(disciplinas) ? disciplinas : [] };
+  };
+
+  const handleEditTemplate = async (template) => {
     setSelectedTemplateId(template.id);
-    setForm(buildFormFromTemplate(template));
     setIsContestModalOpen(true);
     localStorage.removeItem(DRAFT_STORAGE_KEY);
+    // abre o modal já e popula assim que as disciplinas chegarem (consulta rápida)
+    setForm(buildFormFromTemplate(template));
+    try {
+      const full = await ensureTemplateContent(template);
+      if (full !== template) setForm(buildFormFromTemplate(full));
+    } catch (error) {
+      toastError(error.message || 'Não foi possível carregar as disciplinas deste concurso.', 'Erro ao abrir');
+    }
   };
 
   const handleImageUpload = async (file) => {
@@ -1794,7 +1812,9 @@ export default function AdminConcursos({
     if (!draft?.id) return;
     setPublishingDraftId(draft.id);
     try {
-      await onUpdateTemplate?.(buildTemplatePayload(draft, { is_public: true }));
+      // Carrega disciplinas/tópicos antes (a lista vem sem eles) pra não apagá-los ao salvar.
+      const full = await ensureTemplateContent(draft);
+      await onUpdateTemplate?.(buildTemplatePayload(full, { is_public: true }));
       await onRefreshDrafts?.();
       success(`"${draft.nome}" publicado no catálogo.`);
     } catch (error) {
@@ -1814,7 +1834,9 @@ export default function AdminConcursos({
     try {
       const url = await onUploadImage?.({ file, currentUrl: draft.imagem_url || '' });
       if (url) {
-        await onUpdateTemplate?.(buildTemplatePayload(draft, { imagem_url: url }));
+        // Carrega disciplinas/tópicos antes pra não apagá-los ao salvar a logo.
+        const full = await ensureTemplateContent(draft);
+        await onUpdateTemplate?.(buildTemplatePayload(full, { imagem_url: url }));
         await onRefreshDrafts?.();
         success('Logotipo atualizada.');
       }

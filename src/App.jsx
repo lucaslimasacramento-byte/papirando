@@ -22,7 +22,7 @@ import CheckoutResultBanner from './components/CheckoutResultBanner';
 import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
-import { loadContestCatalogFromSupabase, loadContestDraftsFromSupabase } from './lib/contestCatalogApi';
+import { loadContestCatalogFromSupabase, loadContestDraftsFromSupabase, loadContestTemplateContent } from './lib/contestCatalogApi';
 import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { compressImage } from './lib/imageCompress';
@@ -4717,6 +4717,16 @@ export default function App() {
     return drafts;
   };
 
+  // Carrega disciplinas/tópicos de UM template sob demanda (lista vem sem eles).
+  const loadTemplateContent = async (templateId) => {
+    try {
+      return await loadContestTemplateContent(supabase, templateId);
+    } catch (error) {
+      console.warn('[contestCatalog] falha ao carregar disciplinas do template', templateId, error?.message || error);
+      return [];
+    }
+  };
+
   const refreshSubjectCatalog = async () => {
     const entries = await loadSubjectCatalogFromSupabase(supabase, localSubjectCatalog);
     setSubjectCatalog(entries);
@@ -7186,6 +7196,7 @@ export default function App() {
               concursoCatalog={contestLibrary}
               concursoDrafts={contestDrafts}
               onRefreshDrafts={refreshContestDrafts}
+              onLoadTemplateContent={loadTemplateContent}
               subjectCatalog={subjectCatalog}
               onCreateTemplate={createContestTemplate}
               onUpdateTemplate={updateContestTemplate}

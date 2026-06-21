@@ -115,106 +115,58 @@ async function fetchAllRows(supabase, table, { applyFilter } = {}) {
   return out;
 }
 
-// Busca linhas escopadas por uma lista de IDs, em blocos pequenos (.in com poucos
-// IDs por request, em pools de `concurrency`). Resolve dois problemas que matavam
-// o loader com muitos itens: (a) HTTP 414 (URL gigante quando a lista de IDs é
-// grande) e (b) statement timeout — cada query mexe só com as linhas daqueles IDs,
-// então a RLS (que faz JOIN por linha) avalia um conjunto pequeno e rápido.
-async function fetchByIds(supabase, table, column, ids, { orderColumn, chunkSize = 80, concurrency = 6 } = {}) {
-  if (!ids.length) return [];
-  const chunks = [];
-  for (let i = 0; i < ids.length; i += chunkSize) chunks.push(ids.slice(i, i + chunkSize));
-
-  const out = [];
-  for (let i = 0; i < chunks.length; i += concurrency) {
-    const batch = chunks.slice(i, i + concurrency).map(async (chunk) => {
-      let query = supabase.from(table).select('*').in(column, chunk);
-      if (orderColumn) query = query.order(orderColumn, { ascending: true });
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    });
-    const results = await Promise.all(batch);
-    for (const rows of results) out.push(...rows);
-  }
-
-  return out;
-}
-
-// Busca e monta templates (com disciplinas/tópicos) filtrando por is_public.
-// Reutilizado pelo loader público (is_public=true) e pelo loader de rascunhos
-// admin-only (is_public=false). A RLS já garante que só admin enxerga rascunhos.
-//
-// Disciplinas/tópicos são buscados ESCOPADOS por ID em blocos (fetchByIds) — não
-// mais "tudo de uma vez": com 1.500+ concursos e ~27k tópicos, buscar tudo com
-// count exato estourava o statement timeout (500) e a tela ficava vazia.
-async function fetchAndAssembleTemplates(supabase, isPublic) {
+// Monta a LISTA filtrando por is_public — SÓ templates, SEM disciplinas/tópicos.
+// Decisão arquitetural (def.): com 1.500+ concursos e ~27k tópicos, carregar
+// disciplinas/tópicos junto da lista (mesmo escopado/paginado) estourava o
+// statement timeout da RLS (500) E o lock de auth do supabase-js (muitos requests
+// concorrentes → "Lock not released" → AbortError → fallback). A lista não precisa
+// deles. Disciplinas/tópicos carregam SOB DEMANDA via loadContestTemplateContent
+// quando um concurso é aberto pra editar/ver.
+async function fetchTemplatesList(supabase, isPublic) {
   const templates = await fetchAllRows(supabase, 'contest_templates', {
     applyFilter: (q) => q.eq('is_public', isPublic).order('created_at', { ascending: false }),
   });
-  if (!templates.length) return [];
+  return templates.map((template, index) =>
+    normalizeContestTemplate({ ...template, disciplinas: [] }, index)
+  );
+}
 
-  const templateIds = templates.map((t) => t.id);
+// Carrega as disciplinas/tópicos de UM template (sob demanda). Consulta pequena
+// (eq por template_id, in pelos poucos subject_ids) — rápida, sem timeout/lock.
+export async function loadContestTemplateContent(supabase, templateId) {
+  if (!templateId) return [];
 
-  // Disciplinas/tópicos são complementares: se falharem, ainda retornamos os
-  // templates — a lista (catálogo/rascunhos) não depende deles; só edição/detalhe.
-  let allSubjects = [];
-  let allTopics = [];
-  try {
-    allSubjects = await fetchByIds(supabase, 'contest_template_subjects', 'template_id', templateIds, {
-      orderColumn: 'ordem',
-    });
-    const subjectIds = allSubjects.map((s) => s.id);
-    allTopics = await fetchByIds(supabase, 'contest_template_topics', 'subject_id', subjectIds, {
-      orderColumn: 'ordem',
-    });
-  } catch (error) {
-    console.warn(
-      '[contestCatalog] disciplinas/tópicos indisponíveis — retornando templates sem elas:',
-      error?.message || error?.code || 'sem detalhe'
-    );
+  const { data: subjects, error: subjectsError } = await supabase
+    .from('contest_template_subjects')
+    .select('*')
+    .eq('template_id', templateId)
+    .order('ordem', { ascending: true });
+  if (subjectsError) throw subjectsError;
+
+  const subjectRows = subjects || [];
+  const subjectIds = subjectRows.map((s) => s.id);
+  let topics = [];
+  if (subjectIds.length > 0) {
+    const { data: topicRows, error: topicsError } = await supabase
+      .from('contest_template_topics')
+      .select('*')
+      .in('subject_id', subjectIds)
+      .order('ordem', { ascending: true });
+    if (topicsError) throw topicsError;
+    topics = topicRows || [];
   }
 
-  // tópicos agrupados por subject_id
-  const topicsBySubject = new Map();
-  for (const topic of allTopics) {
-    const list = topicsBySubject.get(topic.subject_id);
-    if (list) list.push(topic);
-    else topicsBySubject.set(topic.subject_id, [topic]);
-  }
-
-  // disciplinas agrupadas por template_id
-  const subjectsByTemplate = new Map();
-  for (const subject of allSubjects) {
-    const list = subjectsByTemplate.get(subject.template_id);
-    if (list) list.push(subject);
-    else subjectsByTemplate.set(subject.template_id, [subject]);
-  }
-
-  return templates.map((template, index) => {
-    const disciplinas = (subjectsByTemplate.get(template.id) || []).map((subject, subjectIndex) =>
-      normalizeSubject(
-        {
-          ...subject,
-          topicos: topicsBySubject.get(subject.id) || [],
-        },
-        subjectIndex
-      )
-    );
-
-    return normalizeContestTemplate(
-      {
-        ...template,
-        disciplinas,
-      },
+  return subjectRows.map((subject, index) =>
+    normalizeSubject(
+      { ...subject, topicos: topics.filter((t) => t.subject_id === subject.id) },
       index
-    );
-  });
+    )
+  );
 }
 
 export async function loadContestCatalogFromSupabase(supabase, fallbackCatalog = []) {
   try {
-    return await fetchAndAssembleTemplates(supabase, true);
+    return await fetchTemplatesList(supabase, true);
   } catch (error) {
     console.warn(
       '[contestCatalog] usando catálogo local (Supabase indisponível no momento):',
@@ -229,7 +181,7 @@ export async function loadContestCatalogFromSupabase(supabase, fallbackCatalog =
 // só existe no Supabase.
 export async function loadContestDraftsFromSupabase(supabase) {
   try {
-    return await fetchAndAssembleTemplates(supabase, false);
+    return await fetchTemplatesList(supabase, false);
   } catch (error) {
     console.warn(
       '[contestCatalog] não foi possível carregar rascunhos:',
