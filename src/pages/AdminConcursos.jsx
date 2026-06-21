@@ -1013,6 +1013,7 @@ export default function AdminConcursos({
   const [contestFormOptions, setContestFormOptions] = useState([]);
   const [contestQuery, setContestQuery] = useState('');
   const [contestAreaFilter, setContestAreaFilter] = useState('Todos');
+  const [contestTipoFilter, setContestTipoFilter] = useState('concurso'); // concurso | vestibular | todos
   const [customEtapaText, setCustomEtapaText] = useState('');
 
   useEffect(() => {
@@ -1114,12 +1115,26 @@ export default function AdminConcursos({
 
     return concursoCatalog.filter((template) => {
       const matchArea = selectedContestAreaFilter === 'Todos' || (template.area || 'Geral') === selectedContestAreaFilter;
+      const tipo = template.tipo || 'concurso';
+      const matchTipo =
+        contestTipoFilter === 'todos' ||
+        (contestTipoFilter === 'vestibular' ? tipo === 'vestibular' : tipo !== 'vestibular');
       const haystack = [template.nome, template.concurso, template.cargo, template.banca, template.area]
         .join(' ')
         .toLowerCase();
-      return matchArea && (!query || haystack.includes(query));
+      return matchArea && matchTipo && (!query || haystack.includes(query));
     });
-  }, [concursoCatalog, selectedContestAreaFilter, contestQuery]);
+  }, [concursoCatalog, selectedContestAreaFilter, contestTipoFilter, contestQuery]);
+
+  // Contagens por tipo no catálogo publicado (para os chips de filtro e a aba).
+  const publishedConcursoCount = useMemo(
+    () => concursoCatalog.filter((t) => (t.tipo || 'concurso') !== 'vestibular').length,
+    [concursoCatalog]
+  );
+  const publishedVestibularCount = useMemo(
+    () => concursoCatalog.filter((t) => t.tipo === 'vestibular').length,
+    [concursoCatalog]
+  );
 
   const contestSections = useMemo(() => {
     const grouped = filteredContestCatalog.reduce((acc, template) => {
@@ -1954,7 +1969,7 @@ export default function AdminConcursos({
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 20 }}>
         {[
-          { id: 'concursos', label: 'Concursos', count: stats.templates },
+          { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
           { id: 'vestibulares', label: 'Vestibulares', count: vestibularCount },
           { id: 'rascunhos', label: 'Rascunhos', count: concursoDrafts.length },
@@ -2018,6 +2033,29 @@ export default function AdminConcursos({
           >
             <Plus size={14} /> Novo concurso
           </button>
+        </div>
+
+        {/* Filtro por tipo (concurso x vestibular publicado) */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+          {[
+            { id: 'concurso', label: 'Concursos', count: publishedConcursoCount },
+            { id: 'vestibular', label: 'Vestibulares', count: publishedVestibularCount },
+            { id: 'todos', label: 'Todos', count: publishedConcursoCount + publishedVestibularCount },
+          ].map((f) => {
+            const active = contestTipoFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setContestTipoFilter(f.id)}
+                className={active ? 'pl-tag pl-tag-accent' : 'pl-tag'}
+                style={{ cursor: 'pointer', border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)', display: 'inline-flex', gap: 6, alignItems: 'center' }}
+              >
+                {f.label}
+                <span style={{ fontWeight: 700, opacity: 0.8 }}>{f.count}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Lista */}
