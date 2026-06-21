@@ -104,21 +104,28 @@ async function fetchAllRows(supabase, table, { applyFilter, orderColumn } = {}) 
     return query;
   };
 
-  // 1ª página com count exato → sabemos o total e disparamos o resto em paralelo.
+  // 1ª página com count exato → sabemos o total.
   const first = await build(true).range(0, PAGE - 1);
   if (first.error) throw first.error;
   const rows = first.data || [];
   const total = typeof first.count === 'number' ? first.count : rows.length;
   if (total <= PAGE) return rows;
 
-  const pageRequests = [];
-  for (let from = PAGE; from < total; from += PAGE) {
-    pageRequests.push(build(false).range(from, from + PAGE - 1));
-  }
-  const results = await Promise.all(pageRequests);
-  for (const result of results) {
-    if (result.error) throw result.error;
-    rows.push(...(result.data || []));
+  // Demais páginas em pools de CONCURRENCY (evita disparar dezenas de requests
+  // simultâneos — dois loaders na tela admin somavam ~70 e alguns falhavam).
+  const CONCURRENCY = 6;
+  const offsets = [];
+  for (let from = PAGE; from < total; from += PAGE) offsets.push(from);
+
+  for (let i = 0; i < offsets.length; i += CONCURRENCY) {
+    const batch = offsets
+      .slice(i, i + CONCURRENCY)
+      .map((from) => build(false).range(from, from + PAGE - 1));
+    const results = await Promise.all(batch);
+    for (const result of results) {
+      if (result.error) throw result.error;
+      rows.push(...(result.data || []));
+    }
   }
 
   return rows;
@@ -141,10 +148,22 @@ async function fetchAndAssembleTemplates(supabase, isPublic) {
 
   const templateIdSet = new Set(templates.map((t) => t.id));
 
-  const [allSubjects, allTopics] = await Promise.all([
-    fetchAllRows(supabase, 'contest_template_subjects', { orderColumn: 'ordem' }),
-    fetchAllRows(supabase, 'contest_template_topics', { orderColumn: 'ordem' }),
-  ]);
+  // Disciplinas/tópicos são complementares: se falharem (ex.: volume alto, rede),
+  // ainda retornamos os templates — a lista (catálogo/rascunhos) não depende deles;
+  // só a edição/detalhe usa. Assim um erro aqui nunca esvazia a tela.
+  let allSubjects = [];
+  let allTopics = [];
+  try {
+    [allSubjects, allTopics] = await Promise.all([
+      fetchAllRows(supabase, 'contest_template_subjects', { orderColumn: 'ordem' }),
+      fetchAllRows(supabase, 'contest_template_topics', { orderColumn: 'ordem' }),
+    ]);
+  } catch (error) {
+    console.warn(
+      '[contestCatalog] disciplinas/tópicos indisponíveis — retornando templates sem elas:',
+      error?.message || error?.code || 'sem detalhe'
+    );
+  }
 
   // tópicos agrupados por subject_id
   const topicsBySubject = new Map();
