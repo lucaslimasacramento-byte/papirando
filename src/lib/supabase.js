@@ -186,6 +186,22 @@ if (supabaseConfigError) {
 migrateSupabaseAuthStorage()
 stripOAuthErrorFromLocation()
 
+// Lock de auth em memória: serializa as operações de token DENTRO da aba via uma
+// cadeia de promessas, em vez do navigator LockManager padrão. O padrão, sob alta
+// concorrência (vários loaders na tela admin disparando juntos), não liberava o
+// lock em 5s e outro request o "roubava" (AbortError: "Lock broken ... 'steal'"),
+// abortando requisições — foi o que deixava catálogo/rascunhos caindo no fallback.
+// Esta versão nunca rouba/aborta e ainda serializa o refresh (sem corrida).
+let supabaseAuthLockChain = Promise.resolve()
+function supabaseAuthLock(_name, _acquireTimeout, fn) {
+  const run = supabaseAuthLockChain.then(fn, fn)
+  supabaseAuthLockChain = run.then(
+    () => undefined,
+    () => undefined
+  )
+  return run
+}
+
 export const supabase = createClient(supabaseClientUrl, supabaseClientAnonKey, {
   global: {
     fetch: supabaseFetch,
@@ -195,5 +211,6 @@ export const supabase = createClient(supabaseClientUrl, supabaseClientAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    lock: supabaseAuthLock,
   },
 })
