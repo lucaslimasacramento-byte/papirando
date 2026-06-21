@@ -217,11 +217,14 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 
 **✅ Import rodado em produção (2026-06-20):** skip-list dos slugs existentes aplicada, SQL rodado em lotes via Management API.
 
-**Estado final no banco (após 2ª rodada — 17 lotes de concurso):**
-- **832 concursos em rascunho** (`is_public=false`) — categorizados por área: Administrativa 276, Policial 106, Educação 81, Fiscal 71, Saúde 69, Legislativa 53, Tecnologia 42, Jurídica 41…
+**Estado no banco (após 3ª rodada — lotes 17–29 + revisão geral nacional):**
+- **1.502 concursos em rascunho** (`is_public=false`), 5.385 disciplinas, 27.382 tópicos. Áreas: Administrativa 465, Policial 225, Educação 162, Fiscal 123, Saúde 109, Legislativa 101, Jurídica 89… A "revisão geral" (1.183) era ~73% repetição (867 pulados por slug, 670 novos).
+- (2ª rodada havia deixado 832 concursos / 3.072 disc / 17.466 tóp.)
 - **200 vestibulares PUBLICADOS** (`is_public=true`) — decisão do Lucas: vestibular é padrão, não precisa de revisão. (Os 176 concursos da 1ª rodada continuam rascunho; lotes 01/02/03 deduplicados na 2ª.)
 - 3.072 disciplinas, 17.466 tópicos. 6 templates antigos intocados.
-- ⚠️ **832 concursos sem logo** (JSONs não trazem `imagem_url`) — upload manual por item na aba Rascunhos.
+- ⚠️ **Concursos sem logo** (JSONs não trazem `imagem_url`) — upload manual por item na aba Rascunhos.
+
+**🔧 FIX CRÍTICO do loader (`contestCatalogApi.js`):** com centenas de templates, o loader buscava disciplinas/tópicos via `.in('subject_id', [milhares de ids])` → HTTP 414 (URL grande) + corte de 1000 linhas → caía no fallback local (2 itens), deixando catálogo público E aba Rascunhos quase vazios (sintoma: tela mostrava "Concursos: 2", "Rascunhos: 0" mesmo com tudo no banco). Reescrito `fetchAllRows` pra paginar por `range` (sem teto), buscar páginas em paralelo (via `count` exato) e agrupar por Map em JS (sem `.in()`). Validado em produção: 206 públicos + rascunhos corretos, ~2,3s. Commit `0a940ee`.
 
 **Lista de graduação (`courseTemplates` / aba Faculdade):** descoberto que o **CINE/MEC (386 entradas) já estava carregado** em `redacao_site_content.course_templates_json`. É o seletor de "qual graduação você faz" — estável, sem rascunho. **Pendência:** remover os 10 cabeçalhos "ABI [área]" (não são cursos) — bloqueado pelo classificador por ser delete; aguardando OK explícito do Lucas.
 
