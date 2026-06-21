@@ -416,14 +416,17 @@ function distributeCycleBlockCounts(weightedDisciplines, totalBlockCount, minimu
   return distribution;
 }
 
-const ADMIN_EMAILS = ['lucaslimasacramento@gmail.com'];
+// Allowlist explícito do dono — rede de segurança caso o profile falhe ao carregar
+// (sem isso, um erro transitório no fetch do profile derrubaria o acesso admin).
+// NÃO é mais usado o curinga de domínio @papirando.com: admin agora é por role.
+const ADMIN_EMAILS = ['contato@papirando.com', 'lucaslimasacramento@gmail.com'];
 
 function isAdminIdentity(profile, sessionEmail = '') {
   const role = String(profile?.role || '').trim().toLowerCase();
   const profileEmail = String(profile?.email || '').trim().toLowerCase();
   const email = profileEmail || String(sessionEmail || '').trim().toLowerCase();
 
-  return ['admin', 'admin_master', 'master'].includes(role) || email.endsWith('@papirando.com') || ADMIN_EMAILS.includes(email);
+  return ['admin', 'admin_master', 'master'].includes(role) || ADMIN_EMAILS.includes(email);
 }
 
 function buildCycleSequence(weightedDisciplines) {
