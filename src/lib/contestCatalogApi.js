@@ -92,72 +92,82 @@ export function normalizeContestTemplate(template, index = 0) {
   };
 }
 
-// Busca TODAS as linhas de uma tabela, paginando em blocos de 1000 (limite padrão
-// do PostgREST). `filter` aplica .eq()/.order() etc. A RLS escopa o que cada
-// usuário enxerga (público vê só is_public=true; admin vê tudo).
-async function fetchAllRows(supabase, table, { applyFilter, orderColumn } = {}) {
+// Busca todas as linhas aplicando um filtro, paginando em blocos de 1000.
+// SEM `count: 'exact'`: em tabelas grandes com RLS o count varre a tabela inteira
+// e estoura o statement timeout. Para quando a página vem curta.
+async function fetchAllRows(supabase, table, { applyFilter } = {}) {
   const PAGE = 1000;
-  const build = (withCount) => {
-    let query = supabase.from(table).select('*', withCount ? { count: 'exact' } : undefined);
+  const out = [];
+  let from = 0;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    let query = supabase.from(table).select('*');
     if (applyFilter) query = applyFilter(query);
-    if (orderColumn) query = query.order(orderColumn, { ascending: true });
-    return query;
-  };
-
-  // 1ª página com count exato → sabemos o total.
-  const first = await build(true).range(0, PAGE - 1);
-  if (first.error) throw first.error;
-  const rows = first.data || [];
-  const total = typeof first.count === 'number' ? first.count : rows.length;
-  if (total <= PAGE) return rows;
-
-  // Demais páginas em pools de CONCURRENCY (evita disparar dezenas de requests
-  // simultâneos — dois loaders na tela admin somavam ~70 e alguns falhavam).
-  const CONCURRENCY = 6;
-  const offsets = [];
-  for (let from = PAGE; from < total; from += PAGE) offsets.push(from);
-
-  for (let i = 0; i < offsets.length; i += CONCURRENCY) {
-    const batch = offsets
-      .slice(i, i + CONCURRENCY)
-      .map((from) => build(false).range(from, from + PAGE - 1));
-    const results = await Promise.all(batch);
-    for (const result of results) {
-      if (result.error) throw result.error;
-      rows.push(...(result.data || []));
-    }
+    const { data, error } = await query.range(from, from + PAGE - 1);
+    if (error) throw error;
+    const rows = data || [];
+    out.push(...rows);
+    if (rows.length < PAGE) break;
+    from += PAGE;
   }
 
-  return rows;
+  return out;
+}
+
+// Busca linhas escopadas por uma lista de IDs, em blocos pequenos (.in com poucos
+// IDs por request, em pools de `concurrency`). Resolve dois problemas que matavam
+// o loader com muitos itens: (a) HTTP 414 (URL gigante quando a lista de IDs é
+// grande) e (b) statement timeout — cada query mexe só com as linhas daqueles IDs,
+// então a RLS (que faz JOIN por linha) avalia um conjunto pequeno e rápido.
+async function fetchByIds(supabase, table, column, ids, { orderColumn, chunkSize = 80, concurrency = 6 } = {}) {
+  if (!ids.length) return [];
+  const chunks = [];
+  for (let i = 0; i < ids.length; i += chunkSize) chunks.push(ids.slice(i, i + chunkSize));
+
+  const out = [];
+  for (let i = 0; i < chunks.length; i += concurrency) {
+    const batch = chunks.slice(i, i + concurrency).map(async (chunk) => {
+      let query = supabase.from(table).select('*').in(column, chunk);
+      if (orderColumn) query = query.order(orderColumn, { ascending: true });
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    });
+    const results = await Promise.all(batch);
+    for (const rows of results) out.push(...rows);
+  }
+
+  return out;
 }
 
 // Busca e monta templates (com disciplinas/tópicos) filtrando por is_public.
 // Reutilizado pelo loader público (is_public=true) e pelo loader de rascunhos
 // admin-only (is_public=false). A RLS já garante que só admin enxerga rascunhos.
 //
-// IMPORTANTE: disciplinas/tópicos são buscados SEM `.in(ids)` — com centenas de
-// templates a lista de IDs estourava o tamanho da URL (HTTP 414) e o limite de
-// 1000 linhas cortava o resto, fazendo o loader cair no fallback local. Agora
-// pagina tudo (range) e deixa a RLS escopar; o agrupamento é feito por Map em JS.
+// Disciplinas/tópicos são buscados ESCOPADOS por ID em blocos (fetchByIds) — não
+// mais "tudo de uma vez": com 1.500+ concursos e ~27k tópicos, buscar tudo com
+// count exato estourava o statement timeout (500) e a tela ficava vazia.
 async function fetchAndAssembleTemplates(supabase, isPublic) {
   const templates = await fetchAllRows(supabase, 'contest_templates', {
-    applyFilter: (q) => q.eq('is_public', isPublic),
-    orderColumn: 'created_at',
+    applyFilter: (q) => q.eq('is_public', isPublic).order('created_at', { ascending: false }),
   });
   if (!templates.length) return [];
 
-  const templateIdSet = new Set(templates.map((t) => t.id));
+  const templateIds = templates.map((t) => t.id);
 
-  // Disciplinas/tópicos são complementares: se falharem (ex.: volume alto, rede),
-  // ainda retornamos os templates — a lista (catálogo/rascunhos) não depende deles;
-  // só a edição/detalhe usa. Assim um erro aqui nunca esvazia a tela.
+  // Disciplinas/tópicos são complementares: se falharem, ainda retornamos os
+  // templates — a lista (catálogo/rascunhos) não depende deles; só edição/detalhe.
   let allSubjects = [];
   let allTopics = [];
   try {
-    [allSubjects, allTopics] = await Promise.all([
-      fetchAllRows(supabase, 'contest_template_subjects', { orderColumn: 'ordem' }),
-      fetchAllRows(supabase, 'contest_template_topics', { orderColumn: 'ordem' }),
-    ]);
+    allSubjects = await fetchByIds(supabase, 'contest_template_subjects', 'template_id', templateIds, {
+      orderColumn: 'ordem',
+    });
+    const subjectIds = allSubjects.map((s) => s.id);
+    allTopics = await fetchByIds(supabase, 'contest_template_topics', 'subject_id', subjectIds, {
+      orderColumn: 'ordem',
+    });
   } catch (error) {
     console.warn(
       '[contestCatalog] disciplinas/tópicos indisponíveis — retornando templates sem elas:',
@@ -173,10 +183,9 @@ async function fetchAndAssembleTemplates(supabase, isPublic) {
     else topicsBySubject.set(topic.subject_id, [topic]);
   }
 
-  // disciplinas agrupadas por template_id (só dos templates carregados)
+  // disciplinas agrupadas por template_id
   const subjectsByTemplate = new Map();
   for (const subject of allSubjects) {
-    if (!templateIdSet.has(subject.template_id)) continue;
     const list = subjectsByTemplate.get(subject.template_id);
     if (list) list.push(subject);
     else subjectsByTemplate.set(subject.template_id, [subject]);
