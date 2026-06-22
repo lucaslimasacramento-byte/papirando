@@ -1613,6 +1613,35 @@ export default function AdminConcursos({
     }
   };
 
+  // Salva já tornando público — usado pelo botão "Publicar" do modal (valida nas abas → publica).
+  const handleSaveAndPublish = async () => {
+    const payload = { ...normalizeDraftToPayload(), is_public: true };
+
+    if (!payload.nome) {
+      warning('Digite o nome do concurso.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      if (selectedTemplate?.storage !== 'supabase') {
+        await onPromoteTemplate?.({ ...payload, id: null });
+      } else if (payload.id) {
+        await onUpdateTemplate?.(payload);
+      } else {
+        await onCreateTemplate?.(payload);
+      }
+      success(`"${payload.nome}" publicado no catálogo.`);
+      await reloadDrafts();
+      resetForm();
+      setIsContestModalOpen(false);
+    } catch (error) {
+      toastError(error.message || 'Não foi possível publicar o concurso.', 'Erro ao publicar');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSaveAllContestOptions = async () => {
     if (contestFormOptions.length <= 1) return;
     setIsSaving(true);
@@ -2985,14 +3014,30 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap justify-end gap-2 pt-4" style={{ borderTop: '1px solid var(--pl-rule-2)' }}>
+          <div className="mt-5 flex flex-wrap items-center justify-end gap-2 pt-4" style={{ borderTop: '1px solid var(--pl-rule-2)' }}>
             <button type="button" onClick={() => { resetForm(); setIsContestModalOpen(false); }} className="pl-btn pl-btn-ghost rounded-lg px-5 py-2.5 text-sm font-semibold">
               {form.id ? 'Cancelar' : 'Fechar'}
             </button>
-            <button onClick={handleSave} disabled={isSaving} className="pl-btn pl-btn-primary inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors disabled:opacity-70">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors disabled:opacity-70 ${form.is_public ? 'pl-btn pl-btn-primary' : 'pl-btn pl-btn-ghost'}`}
+            >
               {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-              {isSaving ? 'Salvando...' : form.id ? 'Salvar concurso' : 'Criar concurso'}
+              {isSaving ? 'Salvando...' : !form.id ? 'Criar concurso' : form.is_public ? 'Salvar concurso' : 'Salvar rascunho'}
             </button>
+            {!form.is_public && (
+              <button
+                onClick={handleSaveAndPublish}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold text-white transition-colors disabled:opacity-70"
+                style={{ background: 'var(--pl-success)' }}
+                title="Salvar e tornar visível para os alunos"
+              >
+                {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Eye size={15} />}
+                Publicar
+              </button>
+            )}
           </div>
         </div>
           </div>
