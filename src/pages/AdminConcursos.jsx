@@ -985,6 +985,8 @@ export default function AdminConcursos({
   const [isUploadingEdital, setIsUploadingEdital] = useState(false);
   const [isContestModalOpen, setIsContestModalOpen] = useState(false);
   const [adminSection, setAdminSection] = useState('concursos');
+  // Sub-visão de cada módulo: itens já no ar vs. rascunhos aguardando validação.
+  const [catalogView, setCatalogView] = useState('publicados'); // 'publicados' | 'rascunhos'
   // null = prop ainda não chegou do Supabase; [] ou [...] = já carregou
   const [courseTemplatesDraft, setCourseTemplatesDraftRaw] = useState(
     () => courseTemplates !== null ? normalizeCourseTemplates(courseTemplates) : null
@@ -1029,7 +1031,6 @@ export default function AdminConcursos({
     reloadDrafts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [draftTypeFilter, setDraftTypeFilter] = useState('todos');
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
   const [aiFormText, setAiFormText] = useState('');
   const [aiInputMode, setAiInputMode] = useState('text'); // 'text' | 'pdf'
@@ -1150,7 +1151,8 @@ export default function AdminConcursos({
       const haystack = [template.nome, template.concurso, template.cargo, template.banca, template.area]
         .join(' ')
         .toLowerCase();
-      return matchArea && matchTipo && (!query || haystack.includes(query));
+      // A lista "Publicados" mostra só o que está no ar. Rascunhos vivem em localDrafts.
+      return template.is_public && matchArea && matchTipo && (!query || haystack.includes(query));
     });
   }, [concursoCatalog, selectedContestAreaFilter, contestSectionTipo, contestQuery]);
 
@@ -1907,26 +1909,18 @@ export default function AdminConcursos({
     return c;
   }, [localDrafts]);
 
-  // Rascunhos filtrados por busca + filtro de tipo, agrupados por tipo e sub-agrupados por area.
-  const draftGroups = React.useMemo(() => {
+  // Rascunhos filtrados por busca, separados por bucket de tipo e sub-agrupados por área.
+  // Cada módulo (Concursos/Vestibulares/Faculdade) lê só o seu bucket.
+  const draftsByBucket = React.useMemo(() => {
     const q = draftQuery.trim().toLowerCase();
-    const order = [
-      ['vestibular', 'Vestibulares'],
-      ['concurso', 'Concursos'],
-      ['curso', 'Cursos'],
-      ['outros', 'Outros'],
-    ];
     const buckets = { vestibular: [], concurso: [], curso: [], outros: [] };
     for (const d of localDrafts) {
-      if (draftTypeFilter !== 'todos' && draftBucketOf(d) !== draftTypeFilter) continue;
       if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
       buckets[draftBucketOf(d)].push(d);
     }
-    const groups = [];
+    const grouped = {};
     let total = 0;
-    for (const [key, label] of order) {
-      const items = buckets[key];
-      if (!items.length) continue;
+    for (const [key, items] of Object.entries(buckets)) {
       total += items.length;
       const byArea = new Map();
       for (const d of items) {
@@ -1934,13 +1928,141 @@ export default function AdminConcursos({
         if (!byArea.has(a)) byArea.set(a, []);
         byArea.get(a).push(d);
       }
-      const areaGroups = [...byArea.entries()].sort(
-        (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])
-      );
-      groups.push({ label, count: items.length, areaGroups });
+      grouped[key] = {
+        count: items.length,
+        areaGroups: [...byArea.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])),
+      };
     }
-    return { groups, total };
-  }, [localDrafts, draftQuery, draftTypeFilter]);
+    grouped.total = total;
+    return grouped;
+  }, [localDrafts, draftQuery]);
+
+  // Sub-página de rascunhos de um módulo (concurso | vestibular | curso).
+  // Itens importados via código caem aqui — admin valida (edita) e publica.
+  const renderRascunhos = (bucket, { singular = 'item' } = {}) => {
+    const data = draftsByBucket[bucket] || { count: 0, areaGroups: [] };
+    const totalInBucket = localDrafts.filter((d) => draftBucketOf(d) === bucket).length;
+    return (
+      <div className="pl-card" style={{ padding: 20 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14, alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 200 }}>
+            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-4)', pointerEvents: 'none' }} />
+            <input
+              value={draftQuery}
+              onChange={(e) => setDraftQuery(e.target.value)}
+              placeholder={`Buscar rascunho de ${singular} por nome, órgão, área…`}
+              className="pl-input"
+              style={{ paddingLeft: 32, width: '100%' }}
+            />
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
+            {draftsLoading ? 'carregando…' : `${data.count} de ${totalInBucket} rascunho(s)`}
+          </p>
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={reloadDrafts} disabled={draftsLoading}>
+            {draftsLoading ? <Loader2 size={13} className="pl-spin" /> : null} Recarregar
+          </button>
+        </div>
+
+        <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginBottom: 14, lineHeight: 1.5 }}>
+          Itens importados ficam aqui como rascunho — <strong>invisíveis para os alunos</strong> até você publicar.
+          Clique no nome para revisar, envie a logotipo e clique em <strong>Publicar</strong> quando estiver pronto.
+        </p>
+
+        <div style={{ maxHeight: 520, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
+          {totalInBucket === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
+              Nenhum rascunho na fila. Itens importados (is_public=false) deste tipo aparecem aqui.
+            </div>
+          ) : data.count === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
+              Nenhum rascunho encontrado com essa busca.
+            </div>
+          ) : (
+            data.areaGroups.map(([area, items]) => (
+              <div key={area}>
+                {data.areaGroups.length > 1 && (
+                  <div style={{
+                    position: 'sticky', top: 0, zIndex: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '6px 14px',
+                    background: 'var(--pl-bg-soft)',
+                    borderBottom: '1px solid var(--pl-rule)',
+                  }}>
+                    <p className="pl-eyebrow" style={{ margin: 0 }}>{area}</p>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{items.length}</span>
+                  </div>
+                )}
+                {items.map((draft) => {
+                  const isPublishing = publishingDraftId === draft.id;
+                  const isUploading = uploadingLogoDraftId === draft.id;
+                  const busy = isPublishing || isUploading;
+                  return (
+                    <div
+                      key={draft.id}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto minmax(0,1.6fr) minmax(110px,0.7fr) auto',
+                        gap: 10,
+                        padding: '10px 14px',
+                        alignItems: 'center',
+                        borderBottom: '1px solid var(--pl-rule)',
+                        opacity: busy ? 0.6 : 1,
+                      }}
+                    >
+                      <label
+                        title="Enviar logotipo"
+                        style={{
+                          width: 36, height: 36, borderRadius: 6, overflow: 'hidden', flexShrink: 0,
+                          border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: busy ? 'default' : 'pointer',
+                          position: 'relative',
+                        }}
+                      >
+                        {isUploading
+                          ? <Loader2 size={14} className="pl-spin" style={{ color: 'var(--pl-ink-4)' }} />
+                          : draft.imagem_url
+                            ? <img src={draft.imagem_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                            : <Upload size={13} style={{ color: 'var(--pl-ink-4)' }} />
+                        }
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={busy}
+                          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleDraftLogoUpload(draft, f); }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+
+                      <button type="button" onClick={() => handleEditTemplate(draft)} disabled={busy} style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.nome}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {[draft.concurso, draft.cargo].filter(Boolean).join(' · ') || '—'}
+                        </p>
+                      </button>
+
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.banca || '—'}</p>
+
+                      <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center', justifySelf: 'end' }}>
+                        <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={() => handleEditTemplate(draft)} disabled={busy} title="Revisar / editar">
+                          <Pencil size={13} /> Editar
+                        </button>
+                        <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={() => handlePublishDraft(draft)} disabled={busy} title="Publicar no catálogo">
+                          {isPublishing ? <Loader2 size={13} className="pl-spin" /> : <Eye size={13} />} Publicar
+                        </button>
+                        <button type="button" onClick={() => handleDeleteSelected(draft)} disabled={busy} title={`Excluir ${draft.nome}`} style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', borderRadius: 4, padding: 4, lineHeight: 0 }}>
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="pl-page">
@@ -1985,14 +2107,13 @@ export default function AdminConcursos({
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 20 }}>
         {[
           { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
-          { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
           { id: 'vestibulares', label: 'Vestibulares', count: publishedVestibularCount },
-          { id: 'rascunhos', label: 'Rascunhos', count: localDrafts.length },
+          { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
         ].map((tab) => (
           <button
             key={tab.id}
             type="button"
-            onClick={() => setAdminSection(tab.id)}
+            onClick={() => { setAdminSection(tab.id); setCatalogView('publicados'); setDraftQuery(''); }}
             style={{
               padding: '8px 16px',
               fontSize: 13,
@@ -2018,7 +2139,49 @@ export default function AdminConcursos({
         ))}
       </div>
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares') && (
+      {/* Sub-toggle: Publicados | Rascunhos (por módulo) */}
+      {(() => {
+        const bucket = adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'cursos' ? 'curso' : 'concurso';
+        const pubCount = adminSection === 'vestibulares' ? publishedVestibularCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
+        const draftCount = draftCounts[bucket] || 0;
+        return (
+          <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+            {[
+              { id: 'publicados', label: 'Publicados', count: pubCount },
+              { id: 'rascunhos', label: 'Rascunhos', count: draftCount },
+            ].map((v) => {
+              const active = catalogView === v.id;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => { setCatalogView(v.id); setDraftQuery(''); }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '6px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+                    borderRadius: 6,
+                    border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
+                    background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                    color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+                  }}
+                >
+                  {v.label}
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 10,
+                    background: active ? 'var(--pl-accent)' : 'var(--pl-bg-soft)',
+                    color: active ? '#fff' : 'var(--pl-ink-4)',
+                  }}>{v.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {(adminSection === 'concursos' || adminSection === 'vestibulares') && catalogView === 'rascunhos' &&
+        renderRascunhos(adminSection === 'vestibulares' ? 'vestibular' : 'concurso', { singular: adminSection === 'vestibulares' ? 'vestibular' : 'concurso' })}
+
+      {(adminSection === 'concursos' || adminSection === 'vestibulares') && catalogView === 'publicados' && (
       <div className="pl-card" style={{ padding: 20 }}>
         {/* Barra de busca + ações */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16, alignItems: 'flex-end' }}>
@@ -2121,194 +2284,16 @@ export default function AdminConcursos({
       </div>
       )} {/* fim adminSection === 'concursos' */}
 
-      {adminSection === 'rascunhos' && (
-      <div className="pl-card" style={{ padding: 20 }}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200 }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-4)', pointerEvents: 'none' }} />
-            <input
-              value={draftQuery}
-              onChange={(e) => setDraftQuery(e.target.value)}
-              placeholder="Buscar rascunho por nome, órgão, cargo…"
-              className="pl-input"
-              style={{ paddingLeft: 32, width: '100%' }}
-            />
-          </div>
-          <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
-            {draftsLoading ? 'carregando…' : `${draftGroups.total} de ${localDrafts.length} rascunho(s)`}
-          </p>
-          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={reloadDrafts} disabled={draftsLoading}>
-            {draftsLoading ? <Loader2 size={13} className="pl-spin" /> : null} Recarregar
-          </button>
-        </div>
+      {adminSection === 'cursos' && catalogView === 'rascunhos' &&
+        renderRascunhos('curso', { singular: 'curso' })}
 
-        {/* Filtro por tipo */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-          {[
-            { id: 'todos', label: 'Todos', count: draftCounts.todos },
-            { id: 'vestibular', label: 'Vestibulares', count: draftCounts.vestibular },
-            { id: 'concurso', label: 'Concursos', count: draftCounts.concurso },
-            { id: 'curso', label: 'Cursos', count: draftCounts.curso },
-            ...(draftCounts.outros > 0 ? [{ id: 'outros', label: 'Outros', count: draftCounts.outros }] : []),
-          ].map((f) => {
-            const active = draftTypeFilter === f.id;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setDraftTypeFilter(f.id)}
-                className={active ? 'pl-tag pl-tag-accent' : 'pl-tag'}
-                style={{ cursor: 'pointer', border: active ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)', display: 'inline-flex', gap: 6, alignItems: 'center' }}
-              >
-                {f.label}
-                <span style={{ fontWeight: 700, opacity: 0.8 }}>{f.count}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginBottom: 16, lineHeight: 1.5 }}>
-          Itens importados ficam aqui como rascunho — <strong>invisíveis para os alunos</strong> até você publicar.
-          Revise os dados (clique no nome para editar), envie a logotipo e clique em <strong>Publicar</strong> quando estiver pronto.
-        </p>
-
-        <div style={{ maxHeight: 520, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
-          {localDrafts.length === 0 ? (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
-              Nenhum rascunho na fila. Itens importados (is_public=false) aparecem aqui.
-            </div>
-          ) : draftGroups.total === 0 ? (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
-              Nenhum rascunho encontrado com essa busca.
-            </div>
-          ) : (
-            draftGroups.groups.map((group) => (
-              <div key={group.label}>
-                <div style={{
-                  position: 'sticky', top: 0, zIndex: 2,
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '8px 14px',
-                  background: 'var(--pl-surface-2)',
-                  borderBottom: '1px solid var(--pl-rule-2)',
-                }}>
-                  <p className="pl-eyebrow" style={{ margin: 0, color: 'var(--pl-accent)' }}>{group.label}</p>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{group.count}</span>
-                </div>
-                {group.areaGroups.map(([area, items]) => (
-                <div key={area}>
-                {group.areaGroups.length > 1 && (
-                  <div style={{
-                    position: 'sticky', top: 33, zIndex: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '5px 14px 5px 22px',
-                    background: 'var(--pl-bg-soft)',
-                    borderBottom: '1px solid var(--pl-rule)',
-                  }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{area}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{items.length}</span>
-                  </div>
-                )}
-                {items.map((draft) => {
-                  const isPublishing = publishingDraftId === draft.id;
-                  const isUploading = uploadingLogoDraftId === draft.id;
-                  const busy = isPublishing || isUploading;
-                  return (
-                    <div
-                      key={draft.id}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'auto minmax(0,1.6fr) minmax(110px,0.7fr) auto',
-                        gap: 10,
-                        padding: '10px 14px',
-                        alignItems: 'center',
-                        borderBottom: '1px solid var(--pl-rule)',
-                        opacity: busy ? 0.6 : 1,
-                      }}
-                    >
-                      {/* Logo + upload */}
-                      <label
-                        title="Enviar logotipo"
-                        style={{
-                          width: 36, height: 36, borderRadius: 6, overflow: 'hidden', flexShrink: 0,
-                          border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: busy ? 'default' : 'pointer',
-                          position: 'relative',
-                        }}
-                      >
-                        {isUploading
-                          ? <Loader2 size={14} className="pl-spin" style={{ color: 'var(--pl-ink-4)' }} />
-                          : draft.imagem_url
-                            ? <img src={draft.imagem_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                            : <Upload size={13} style={{ color: 'var(--pl-ink-4)' }} />
-                        }
-                        <input
-                          type="file"
-                          accept="image/*"
-                          disabled={busy}
-                          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleDraftLogoUpload(draft, f); }}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-
-                      {/* Nome / órgão — clique abre o modal de edição */}
-                      <button type="button" onClick={() => handleEditTemplate(draft)} disabled={busy} style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.nome}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {[draft.concurso, draft.cargo].filter(Boolean).join(' · ') || '—'}
-                        </p>
-                      </button>
-
-                      <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.banca || '—'}</p>
-
-                      {/* Ações */}
-                      <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center', justifySelf: 'end' }}>
-                        <button
-                          type="button"
-                          className="pl-btn pl-btn-ghost pl-btn-sm"
-                          onClick={() => handleEditTemplate(draft)}
-                          disabled={busy}
-                          title="Revisar / editar"
-                        >
-                          <Pencil size={13} /> Editar
-                        </button>
-                        <button
-                          type="button"
-                          className="pl-btn pl-btn-primary pl-btn-sm"
-                          onClick={() => handlePublishDraft(draft)}
-                          disabled={busy}
-                          title="Publicar no catálogo"
-                        >
-                          {isPublishing ? <Loader2 size={13} className="pl-spin" /> : <Eye size={13} />} Publicar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteSelected(draft)}
-                          disabled={busy}
-                          title={`Excluir ${draft.nome}`}
-                          style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', borderRadius: 4, padding: 4, lineHeight: 0 }}
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-                </div>
-                ))}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-      )} {/* fim adminSection === 'rascunhos' */}
-
-      {adminSection === 'cursos' && courseTemplatesDraft === null && (
+      {adminSection === 'cursos' && catalogView === 'publicados' && courseTemplatesDraft === null && (
         <div className="pl-card-paper" style={{ padding: 32, textAlign: 'center' }}>
           <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>Carregando catálogo…</p>
         </div>
       )}
 
-      {adminSection === 'cursos' && courseTemplatesDraft !== null && (
+      {adminSection === 'cursos' && catalogView === 'publicados' && courseTemplatesDraft !== null && (
         <AdminCourseTemplatesEditor
           templates={courseTemplatesDraft}
           setTemplates={setCourseTemplatesDraft}
@@ -2326,18 +2311,13 @@ export default function AdminConcursos({
         {isContestModalOpen ? (
         <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-950/55 px-4 py-6 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-6xl">
-        <div className="pl-card rounded-[1.8rem] p-4 shadow-sm md:p-6">
-          <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="pl-card rounded-xl p-5 shadow-sm">
+          <div className="mb-5 flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between" style={{ borderColor: 'var(--pl-rule-2)' }}>
             <div>
-              <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Editor do concurso</p>
-              <h3 className="mt-2 text-2xl font-semibold" style={{ color: 'var(--pl-ink)' }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Editor do concurso</p>
+              <h3 className="text-xl font-semibold" style={{ color: 'var(--pl-ink)' }}>
                 {form.id ? 'Editando concurso' : 'Novo concurso'}
               </h3>
-              <p className="mt-2 text-sm font-semibold" style={{ color: 'var(--pl-ink-2)' }}>
-                {form.id
-                  ? 'As ações principais ficam aqui em cima: salvar, duplicar ou excluir.'
-                  : 'Preencha os dados principais e depois monte as disciplinas e tópicos.'}
-              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -2367,32 +2347,33 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={() => onDuplicateTemplate?.(selectedTemplate)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-700"
+                  className="pl-btn pl-btn-ghost inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold"
+                  title="Duplicar concurso"
                 >
                   <Copy size={15} />
-                  Duplicar
                 </button>
               )}
               {selectedTemplate && (
                 <button
                   type="button"
                   onClick={() => handleDeleteSelected(selectedTemplate)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700"
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold"
+                  style={{ color: 'var(--pl-danger)' }}
+                  title="Excluir concurso"
                 >
                   <Trash2 size={15} />
-                  Excluir concurso
                 </button>
               )}
             </div>
           </div>
 
-          <div className="mb-6 rounded-[1.6rem] border border-indigo-100 bg-indigo-50/60 p-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="mb-5 rounded-lg p-4" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>Preencher com IA</p>
-                <h4 className="mt-1 text-lg font-semibold" style={{ color: 'var(--pl-ink)' }}>Colar formulário analisado do edital</h4>
-                <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--pl-ink-2)' }}>
-                  Use o formulário estruturado que veio da análise do edital. A IA organiza os campos, disciplinas e tópicos no rascunho.
+                <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>Colar formulário analisado do edital</h4>
+                <p className="mt-1 text-xs" style={{ color: 'var(--pl-ink-3)' }}>
+                  A IA organiza campos, disciplinas e tópicos no rascunho a partir da análise do edital.
                 </p>
               </div>
 
@@ -2400,7 +2381,7 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={handleDownloadContestPrompt}
-                  className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-colors"
+                  className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors"
                   style={{ color: 'var(--pl-accent)' }}
                 >
                   <Download size={16} />
@@ -2409,7 +2390,7 @@ export default function AdminConcursos({
                 <button
                   type="button"
                   onClick={clearContestDraft}
-                  className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-colors"
+                  className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors"
                   style={{ color: 'var(--pl-accent)' }}
                 >
                   <X size={16} />
@@ -2422,7 +2403,7 @@ export default function AdminConcursos({
                     isParsingContestForm ||
                     (aiInputMode === 'text' ? !aiFormText.trim() : !aiPdfFile)
                   }
-                  className="pl-btn pl-btn-ai inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="pl-btn pl-btn-ai inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isParsingContestForm ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                   {isParsingContestForm
@@ -2433,7 +2414,7 @@ export default function AdminConcursos({
             </div>
 
             {/* Mode tabs */}
-            <div className="mt-4 flex gap-1 rounded-2xl bg-indigo-50 p-1">
+            <div className="mt-4 flex gap-1 rounded-lg bg-indigo-50 p-1">
               <button
                 type="button"
                 onClick={() => { setAiInputMode('text'); setContestFormImportStatus(''); setContestFormOptions([]); }}
@@ -2468,13 +2449,13 @@ export default function AdminConcursos({
                   setContestFormOptions([]);
                 }}
                 placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
-                className="pl-input mt-2 w-full rounded-[1.4rem] px-4 py-4 text-sm font-semibold outline-none"
+                className="pl-input mt-2 w-full rounded-lg px-4 py-4 text-sm font-semibold outline-none"
               />
             ) : (
               <div className="mt-2">
                 <label
                   htmlFor="ai-pdf-upload"
-                  className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.4rem] border-2 border-dashed px-6 py-8 transition-colors ${
+                  className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 transition-colors ${
                     aiPdfFile
                       ? 'border-indigo-300 bg-indigo-50'
                       : 'border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50'
@@ -2523,17 +2504,17 @@ export default function AdminConcursos({
             )}
 
             {contestFormImportStatus && (
-              <p className="mt-3 rounded-2xl px-4 py-3 text-sm font-semibold" style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', color: 'var(--pl-accent)' }}>
+              <p className="mt-3 rounded-lg px-4 py-3 text-sm font-semibold" style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', color: 'var(--pl-accent)' }}>
                 {contestFormImportStatus}
               </p>
             )}
 
             {contestFormOptions.length > 1 && (
-              <div className="mt-4 rounded-[1.4rem] p-4" style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)' }}>
+              <div className="mt-4 rounded-lg p-4" style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)' }}>
                 <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>
                   Opções separadas encontradas
                 </p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3" style={{ background: 'var(--pl-accent-soft)', border: '1px solid var(--pl-accent)' }}>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3" style={{ background: 'var(--pl-accent-soft)', border: '1px solid var(--pl-accent)' }}>
                   <p className="text-sm font-semibold" style={{ color: 'var(--pl-ink)' }}>
                     Salve tudo de uma vez. Concursos diferentes ficam em cards separados; cargos do mesmo concurso ficam dentro do card correto.
                   </p>
@@ -2560,7 +2541,7 @@ export default function AdminConcursos({
                         key={`${option.nome || option.cargo || 'opcao'}-${optionIndex}`}
                         type="button"
                         onClick={() => applyContestFormTemplate({ templates: contestFormOptions }, optionIndex)}
-                        className="rounded-2xl px-4 py-3 text-left transition-colors"
+                        className="rounded-lg px-4 py-3 text-left transition-colors"
                         style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}
                       >
                         <span className="line-clamp-2 text-sm font-bold" style={{ color: 'var(--pl-ink)' }}>
@@ -2578,7 +2559,7 @@ export default function AdminConcursos({
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-[1.5rem] p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
+            <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="pl-eyebrow">Mídia e arquivos</p>
@@ -2599,7 +2580,7 @@ export default function AdminConcursos({
               </div>
 
               <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-                <div className="overflow-hidden rounded-[1.2rem]" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
+                <div className="overflow-hidden rounded-lg" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
                 {form.imagem_url ? (
                   <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-36 w-full object-contain bg-slate-900/5 p-3" />
                 ) : (
@@ -2614,7 +2595,7 @@ export default function AdminConcursos({
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-3">
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
                       {isUploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                       {isUploadingImage ? 'Enviando imagem...' : 'Upload de imagem'}
                       <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0])} />
@@ -2622,7 +2603,7 @@ export default function AdminConcursos({
                     <input
                       value={form.imagem_url}
                       onChange={(e) => updateFormField('imagem_url', e.target.value)}
-                      className="pl-input w-full rounded-2xl px-4 py-3 text-sm font-semibold outline-none"
+                      className="pl-input w-full rounded-lg px-4 py-3 text-sm font-semibold outline-none"
                       placeholder="URL final da imagem"
                     />
                     {form.imagem_url && (
@@ -2643,7 +2624,7 @@ export default function AdminConcursos({
                       </div>
                     )}
                     {logoLibrary.length > 0 && (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                      <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                           Reutilizar logotipo
                         </p>
@@ -2680,7 +2661,7 @@ export default function AdminConcursos({
                   </div>
 
                   <div className="space-y-3">
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-50">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-50">
                       {isUploadingEdital ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
                       {isUploadingEdital ? 'Enviando edital...' : 'Upload de PDF'}
                       <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handleEditalUpload(e.target.files?.[0])} />
@@ -2688,7 +2669,7 @@ export default function AdminConcursos({
                     <input
                       value={form.edital_url}
                       onChange={(e) => updateFormField('edital_url', e.target.value)}
-                      className="pl-input w-full rounded-2xl px-4 py-3 text-sm font-semibold outline-none"
+                      className="pl-input w-full rounded-lg px-4 py-3 text-sm font-semibold outline-none"
                       placeholder="URL final do edital PDF"
                     />
                     {form.edital_url && (
@@ -2702,7 +2683,7 @@ export default function AdminConcursos({
             </div>
 
             <div className="space-y-5">
-              <div className="pl-card rounded-[1.5rem] p-4">
+              <div className="pl-card rounded-xl p-4">
                 <div className="mb-4">
                   <p className="pl-eyebrow">Dados principais</p>
                   <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>Identificação e vitrine</h4>
@@ -2743,7 +2724,7 @@ export default function AdminConcursos({
                 </div>
               </div>
 
-              <div className="rounded-[1.5rem] p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
+              <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
                 <div className="flex flex-col gap-1">
                   <p className="pl-eyebrow">Etapas do concurso</p>
                   <p className="text-xs font-semibold" style={{ color: 'var(--pl-ink-2)' }}>Marque as etapas comuns ou adicione uma etapa específica do edital.</p>
@@ -2777,12 +2758,12 @@ export default function AdminConcursos({
                       }
                     }}
                     placeholder="Ex.: Avaliação curricular, prova prática, títulos, perícia médica"
-                    className="pl-input rounded-2xl px-4 py-3 text-sm font-semibold outline-none"
+                    className="pl-input rounded-lg px-4 py-3 text-sm font-semibold outline-none"
                   />
                   <button
                     type="button"
                     onClick={addCustomEtapa}
-                    className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-colors"
+                    className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors"
                     style={{ color: 'var(--pl-accent)' }}
                   >
                     <Plus size={16} />
@@ -2810,7 +2791,7 @@ export default function AdminConcursos({
                 )}
 
                 {form.etapas_tags.includes('taf') && (
-                  <div className="mt-5 rounded-[1.2rem] border border-blue-100 bg-blue-50/60 p-4">
+                  <div className="mt-5 rounded-lg border border-blue-100 bg-blue-50/60 p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-900">Itens do TAF</p>
@@ -2853,7 +2834,7 @@ export default function AdminConcursos({
                   <button
                     type="button"
                     onClick={() => updateFormField('is_public', !form.is_public)}
-                    className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold ${
+                    className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold ${
                       form.is_public ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                     }`}
                   >
@@ -2870,11 +2851,11 @@ export default function AdminConcursos({
                     rows={4}
                     value={form.descricao}
                     onChange={(e) => updateFormField('descricao', e.target.value)}
-                    className="pl-input w-full rounded-[1.5rem] px-4 py-4 text-sm font-semibold outline-none"
+                    className="pl-input w-full rounded-xl px-4 py-4 text-sm font-semibold outline-none"
                   />
                 </div>
 
-                <div className="rounded-[1.5rem] p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
+                <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
                   <p className="pl-eyebrow">Checklist editorial</p>
                   <div className="mt-4 space-y-3 text-sm font-semibold" style={{ color: 'var(--pl-ink-2)' }}>
                     <ChecklistRow ok={Boolean(form.area)} label="Área definida" />
@@ -2902,7 +2883,7 @@ export default function AdminConcursos({
 
                 <div className="space-y-4">
                   {form.disciplinas.map((subject, index) => (
-                    <div key={`subject-${index}`} className="pl-card rounded-[1.6rem] p-4">
+                    <div key={`subject-${index}`} className="pl-card rounded-xl p-4">
                       {(() => {
                         const matchedSubject = resolveSubjectCatalogEntry(subject.nome, subjectCatalog);
                         return (
@@ -2944,7 +2925,7 @@ export default function AdminConcursos({
                           value={subject.topicosTexto}
                           onChange={(e) => updateSubjectField(index, 'topicosTexto', e.target.value)}
                           placeholder={`Um tópico por linha\nConceitos iniciais\nPoder de polícia\nAtos administrativos`}
-                          className="pl-input w-full rounded-[1.4rem] px-4 py-4 text-sm font-semibold outline-none"
+                          className="pl-input w-full rounded-lg px-4 py-4 text-sm font-semibold outline-none"
                         />
                       </div>
                           </>
@@ -2958,40 +2939,14 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          <div className="mt-6 pt-4" style={{ borderTop: '1px solid var(--pl-rule-2)' }}>
-            <div className="flex flex-wrap justify-end gap-3">
-              {form.id && (
-                <button type="button" onClick={() => { resetForm(); setIsContestModalOpen(false); }} className="pl-btn pl-btn-ghost rounded-xl px-5 py-3 text-sm font-bold">
-                  Cancelar edição
-                </button>
-              )}
-              {selectedTemplate && (
-                <button
-                  type="button"
-                  onClick={() => onDuplicateTemplate?.(selectedTemplate)}
-                  className="pl-btn pl-btn-ghost inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
-                  style={{ color: 'var(--pl-accent)' }}
-                >
-                  <Copy size={16} />
-                  Duplicar
-                </button>
-              )}
-              {selectedTemplate && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteSelected(selectedTemplate)}
-                  className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
-                  style={{ background: 'var(--pl-danger-soft)', border: '1px solid var(--pl-danger)', color: 'var(--pl-danger)' }}
-                >
-                  <Trash2 size={16} />
-                  Excluir
-                </button>
-              )}
-              <button onClick={handleSave} disabled={isSaving} className="pl-btn pl-btn-primary inline-flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-colors disabled:opacity-70">
-                <Plus size={16} />
-                {isSaving ? 'Salvando...' : form.id ? 'Atualizar concurso' : 'Criar concurso'}
-              </button>
-            </div>
+          <div className="mt-5 flex flex-wrap justify-end gap-2 pt-4" style={{ borderTop: '1px solid var(--pl-rule-2)' }}>
+            <button type="button" onClick={() => { resetForm(); setIsContestModalOpen(false); }} className="pl-btn pl-btn-ghost rounded-lg px-5 py-2.5 text-sm font-semibold">
+              {form.id ? 'Cancelar' : 'Fechar'}
+            </button>
+            <button onClick={handleSave} disabled={isSaving} className="pl-btn pl-btn-primary inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors disabled:opacity-70">
+              {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+              {isSaving ? 'Salvando...' : form.id ? 'Salvar concurso' : 'Criar concurso'}
+            </button>
           </div>
         </div>
           </div>
@@ -3043,7 +2998,7 @@ function LogosSection({
   return (
     <div className="space-y-6">
       {/* Grid de logos cadastradas */}
-      <div className="pl-card rounded-[1.6rem] p-5">
+      <div className="pl-card rounded-xl p-5">
         <p className="pl-eyebrow">Imagens cadastradas</p>
         <h3 className="mt-1 mb-4 text-xl font-semibold" style={{ color: 'var(--pl-ink)' }}>Selecione uma logo para vincular</h3>
 
@@ -3056,7 +3011,7 @@ function LogosSection({
                 key={logo.url}
                 type="button"
                 onClick={() => setLogoBatchUrl(logo.url === logoBatchUrl ? '' : logo.url)}
-                className="group flex flex-col items-center gap-2 rounded-2xl border-2 p-3 text-center transition-all"
+                className="group flex flex-col items-center gap-2 rounded-lg border-2 p-3 text-center transition-all"
                 style={logoBatchUrl === logo.url
                   ? { borderColor: 'var(--pl-accent)', background: 'var(--pl-accent-soft)' }
                   : { borderColor: 'var(--pl-rule)', background: 'var(--pl-bg-soft)' }}
@@ -3078,7 +3033,7 @@ function LogosSection({
       </div>
 
       {/* Painel de vinculação */}
-      <div className="rounded-[1.6rem] border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
+      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-500">Vincular por órgão</p>
         <h3 className="mt-1 text-xl font-semibold" style={{ color: 'var(--pl-ink)' }}>Aplicar logo a todos os concursos de um órgão</h3>
         <p className="mt-1 mb-4 max-w-2xl text-sm font-semibold leading-relaxed" style={{ color: 'var(--pl-ink-2)' }}>
@@ -3087,7 +3042,7 @@ function LogosSection({
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           {/* Preview da logo selecionada */}
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed" style={{ borderColor: 'var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-dashed" style={{ borderColor: 'var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
             {selectedLogo ? (
               <img src={selectedLogo.url} alt={selectedLogo.label} className="h-full w-full object-contain p-1" />
             ) : (
@@ -3100,7 +3055,7 @@ function LogosSection({
             <select
               value={logoBatchOrgao}
               onChange={(e) => setLogoBatchOrgao(e.target.value)}
-              className="pl-input w-full rounded-2xl px-4 py-3 text-sm font-semibold outline-none"
+              className="pl-input w-full rounded-lg px-4 py-3 text-sm font-semibold outline-none"
             >
               <option value="">Selecionar órgão</option>
               {orgaoOptions.map((orgao) => (
@@ -3113,7 +3068,7 @@ function LogosSection({
             type="button"
             onClick={onVincular}
             disabled={isSaving || !logoBatchUrl || !logoBatchOrgao}
-            className="pl-btn pl-btn-primary inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl px-6 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="pl-btn pl-btn-primary inline-flex min-h-[46px] items-center justify-center gap-2 rounded-lg px-6 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Link2 size={16} />
             Vincular
@@ -3121,21 +3076,21 @@ function LogosSection({
         </div>
 
         {logoBatchOrgao && selectedOrgaoLogoUrls.length > 1 && (
-          <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
             Atenção: esse órgão já tem mais de uma logotipo diferente. Ao vincular, todas ficam com esta mesma URL.
           </p>
         )}
       </div>
 
       {/* Tabela: logos por órgão */}
-      <div className="pl-card rounded-[1.6rem] p-5">
+      <div className="pl-card rounded-xl p-5">
         <p className="pl-eyebrow">Situação atual</p>
         <h3 className="mt-1 mb-4 text-xl font-semibold" style={{ color: 'var(--pl-ink)' }}>Órgãos e suas logos</h3>
 
         {logosByOrgao.length === 0 ? (
           <p className="py-8 text-center text-sm font-semibold" style={{ color: 'var(--pl-ink-3)' }}>Nenhum órgão cadastrado ainda.</p>
         ) : (
-          <div className="overflow-hidden rounded-2xl" style={{ border: '1px solid var(--pl-rule)', divide: 'solid var(--pl-rule)' }}>
+          <div className="overflow-hidden rounded-lg" style={{ border: '1px solid var(--pl-rule)', divide: 'solid var(--pl-rule)' }}>
             {logosByOrgao.map((item) => (
               <div key={item.orgao} className="flex items-center gap-4 px-4 py-3" style={{ borderBottom: '1px solid var(--pl-rule)' }}>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl p-1" style={{ background: 'var(--pl-bg-soft)' }}>
@@ -3171,7 +3126,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
       <div className="w-full max-w-xl overflow-hidden rounded-[1.75rem] shadow-2xl" style={{ background: 'var(--pl-surface)', borderColor: 'var(--pl-rule-2)', border: '1px solid var(--pl-rule-2)' }}>
         <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-6 text-white">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/15 text-red-200 ring-1 ring-red-300/30">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-500/15 text-red-200 ring-1 ring-red-300/30">
               <Trash2 size={22} />
             </div>
             <div className="min-w-0">
@@ -3186,12 +3141,12 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
 
         <div className="space-y-4 px-6 py-5">
           {isLocal ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-900">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-900">
               Este concurso ainda veio do catálogo local. O app vai sincronizar esse item com o Supabase antes de remover.
             </div>
           ) : null}
 
-          <div className="rounded-2xl px-4 py-3" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
+          <div className="rounded-lg px-4 py-3" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
             <p className="pl-eyebrow">Resumo</p>
             <div className="mt-2 grid gap-2 text-sm font-semibold sm:grid-cols-2" style={{ color: 'var(--pl-ink)' }}>
               <span>Área: {template?.area || 'Geral'}</span>
@@ -3202,7 +3157,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
           </div>
 
           {error ? (
-            <div role="alert" className="flex gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            <div role="alert" className="flex gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
               <AlertTriangle size={16} className="mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
@@ -3213,7 +3168,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
               type="button"
               onClick={onCancel}
               disabled={isDeleting}
-              className="pl-btn pl-btn-ghost inline-flex min-h-11 items-center justify-center rounded-2xl px-5 text-sm font-bold transition disabled:opacity-60"
+              className="pl-btn pl-btn-ghost inline-flex min-h-11 items-center justify-center rounded-lg px-5 text-sm font-bold transition disabled:opacity-60"
             >
               Cancelar
             </button>
@@ -3221,7 +3176,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
               type="button"
               onClick={onConfirm}
               disabled={isDeleting}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 text-sm font-bold text-white shadow-lg shadow-red-900/20 transition hover:bg-red-700 disabled:opacity-70"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-red-600 px-5 text-sm font-bold text-white shadow-lg shadow-red-900/20 transition hover:bg-red-700 disabled:opacity-70"
             >
               {isDeleting ? <Loader2 size={17} className="animate-spin" /> : <Trash2 size={17} />}
               {isDeleting ? 'Excluindo...' : 'Excluir definitivamente'}
@@ -3235,7 +3190,7 @@ function DeleteContestModal({ template, isDeleting, error, onCancel, onConfirm }
 
 function InsightCard({ title, value, text }) {
   return (
-    <div className="pl-card rounded-[1.6rem] p-5">
+    <div className="pl-card rounded-xl p-5">
       <p className="pl-eyebrow">{title}</p>
       <p className="pl-num mt-3 text-3xl">{value}</p>
       <p className="mt-2 text-sm font-semibold" style={{ color: 'var(--pl-ink-2)' }}>{text}</p>
@@ -3254,7 +3209,7 @@ function TextField({ label, value, onChange, placeholder = '', icon: Icon = null
           placeholder={placeholder}
           list={listId || undefined}
           onChange={(e) => onChange(e.target.value)}
-          className={`pl-input w-full rounded-2xl py-3 text-sm font-semibold outline-none ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`pl-input w-full rounded-lg py-3 text-sm font-semibold outline-none ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
         />
       </div>
     </div>
@@ -3270,7 +3225,7 @@ function SelectField({ label, value, onChange, options, icon: Icon = null }) {
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`pl-input w-full rounded-2xl py-3 text-sm font-semibold outline-none ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`pl-input w-full rounded-lg py-3 text-sm font-semibold outline-none ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -3293,7 +3248,7 @@ function ColorField({ value, onChange, compact = false }) {
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl p-2 h-12"
+        className="w-full rounded-lg p-2 h-12"
         style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}
       />
     </div>
@@ -3310,7 +3265,7 @@ function DateField({ value, onChange }) {
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="pl-input w-full rounded-2xl py-3 pl-11 pr-4 text-sm font-semibold outline-none"
+          className="pl-input w-full rounded-lg py-3 pl-11 pr-4 text-sm font-semibold outline-none"
         />
       </div>
     </div>
