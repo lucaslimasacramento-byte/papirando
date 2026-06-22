@@ -2367,6 +2367,7 @@ export default function AdminConcursos({
             </div>
           </div>
 
+          {!form.id && (
           <div className="mb-5 rounded-lg p-4" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -2449,7 +2450,7 @@ export default function AdminConcursos({
                   setContestFormOptions([]);
                 }}
                 placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
-                className="pl-input mt-2 w-full rounded-lg px-4 py-4 text-sm font-semibold outline-none"
+                className="pl-input mt-2 w-full rounded-lg px-4 py-4 text-sm outline-none"
               />
             ) : (
               <div className="mt-2">
@@ -2557,8 +2558,50 @@ export default function AdminConcursos({
               </div>
             )}
           </div>
+          )}
 
           <div className="space-y-5">
+            <div className="space-y-5">
+              <div className="pl-card rounded-xl p-4">
+                <div className="mb-4">
+                  <p className="pl-eyebrow">Dados principais</p>
+                  <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>Identificação e vitrine</h4>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
+                    <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
+                    <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
+                    <TextField
+                      label="Área"
+                      value={form.area}
+                      onChange={(value) => updateFormField('area', value)}
+                      placeholder="Ex: Militar"
+                      listId="contest-area-options"
+                    />
+                    <datalist id="contest-area-options">
+                      {manageableAreaOptions.map((area) => (
+                        <option key={area} value={area} />
+                      ))}
+                    </datalist>
+                    <TextField label="Cargo" value={form.cargo} onChange={(value) => updateFormField('cargo', value)} />
+                    <TextField label="Banca" value={form.banca} onChange={(value) => updateFormField('banca', value)} />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <TextField label="Salário" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
+                    <TextField label="Valor da inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
+                    <SelectField label="Escolaridade" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} options={ESCOLARIDADE_OPTIONS} icon={GraduationCap} />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <TextField label="Vagas" value={form.vagas} onChange={(value) => updateFormField('vagas', value)} placeholder="Ex: 500 vagas + CR" />
+                    <TextField label="Lotação" value={form.lotacao} onChange={(value) => updateFormField('lotacao', value)} placeholder="Ex: Alagoas" />
+                    <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicológico" />
+                  </div>
+                </div>
+              </div>
             <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -2603,7 +2646,7 @@ export default function AdminConcursos({
                     <input
                       value={form.imagem_url}
                       onChange={(e) => updateFormField('imagem_url', e.target.value)}
-                      className="pl-input w-full rounded-lg px-4 py-3 text-sm font-semibold outline-none"
+                      className="pl-input w-full rounded-lg px-4 py-3 text-sm outline-none"
                       placeholder="URL final da imagem"
                     />
                     {form.imagem_url && (
@@ -2669,7 +2712,7 @@ export default function AdminConcursos({
                     <input
                       value={form.edital_url}
                       onChange={(e) => updateFormField('edital_url', e.target.value)}
-                      className="pl-input w-full rounded-lg px-4 py-3 text-sm font-semibold outline-none"
+                      className="pl-input w-full rounded-lg px-4 py-3 text-sm outline-none"
                       placeholder="URL final do edital PDF"
                     />
                     {form.edital_url && (
@@ -2681,48 +2724,6 @@ export default function AdminConcursos({
                 </div>
               </div>
             </div>
-
-            <div className="space-y-5">
-              <div className="pl-card rounded-xl p-4">
-                <div className="mb-4">
-                  <p className="pl-eyebrow">Dados principais</p>
-                  <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>Identificação e vitrine</h4>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
-                    <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
-                    <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
-                    <TextField
-                      label="Área"
-                      value={form.area}
-                      onChange={(value) => updateFormField('area', value)}
-                      placeholder="Ex: Militar"
-                      listId="contest-area-options"
-                    />
-                    <datalist id="contest-area-options">
-                      {manageableAreaOptions.map((area) => (
-                        <option key={area} value={area} />
-                      ))}
-                    </datalist>
-                    <TextField label="Cargo" value={form.cargo} onChange={(value) => updateFormField('cargo', value)} />
-                    <TextField label="Banca" value={form.banca} onChange={(value) => updateFormField('banca', value)} />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <TextField label="Salário" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
-                    <TextField label="Valor da inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
-                    <SelectField label="Escolaridade" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} options={ESCOLARIDADE_OPTIONS} icon={GraduationCap} />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <TextField label="Vagas" value={form.vagas} onChange={(value) => updateFormField('vagas', value)} placeholder="Ex: 500 vagas + CR" />
-                    <TextField label="Lotação" value={form.lotacao} onChange={(value) => updateFormField('lotacao', value)} placeholder="Ex: Alagoas" />
-                    <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicológico" />
-                  </div>
-                </div>
-              </div>
 
               <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
                 <div className="flex flex-col gap-1">
@@ -2758,7 +2759,7 @@ export default function AdminConcursos({
                       }
                     }}
                     placeholder="Ex.: Avaliação curricular, prova prática, títulos, perícia médica"
-                    className="pl-input rounded-lg px-4 py-3 text-sm font-semibold outline-none"
+                    className="pl-input rounded-lg px-4 py-3 text-sm outline-none"
                   />
                   <button
                     type="button"
@@ -2809,7 +2810,7 @@ export default function AdminConcursos({
                             value={item}
                             onChange={(e) => updateTafItem(index, e.target.value)}
                             placeholder="Ex.: Corrida de 12 minutos"
-                            className="pl-input flex-1 rounded-xl px-4 py-3 text-sm font-semibold outline-none"
+                            className="pl-input flex-1 rounded-xl px-4 py-3 text-sm outline-none"
                           />
                           <button
                             type="button"
@@ -2851,7 +2852,7 @@ export default function AdminConcursos({
                     rows={4}
                     value={form.descricao}
                     onChange={(e) => updateFormField('descricao', e.target.value)}
-                    className="pl-input w-full rounded-xl px-4 py-4 text-sm font-semibold outline-none"
+                    className="pl-input w-full rounded-xl px-4 py-4 text-sm outline-none"
                   />
                 </div>
 
@@ -2925,7 +2926,7 @@ export default function AdminConcursos({
                           value={subject.topicosTexto}
                           onChange={(e) => updateSubjectField(index, 'topicosTexto', e.target.value)}
                           placeholder={`Um tópico por linha\nConceitos iniciais\nPoder de polícia\nAtos administrativos`}
-                          className="pl-input w-full rounded-lg px-4 py-4 text-sm font-semibold outline-none"
+                          className="pl-input w-full rounded-lg px-4 py-4 text-sm outline-none"
                         />
                       </div>
                           </>
@@ -3055,7 +3056,7 @@ function LogosSection({
             <select
               value={logoBatchOrgao}
               onChange={(e) => setLogoBatchOrgao(e.target.value)}
-              className="pl-input w-full rounded-lg px-4 py-3 text-sm font-semibold outline-none"
+              className="pl-input w-full rounded-lg px-4 py-3 text-sm outline-none"
             >
               <option value="">Selecionar órgão</option>
               {orgaoOptions.map((orgao) => (
@@ -3209,7 +3210,7 @@ function TextField({ label, value, onChange, placeholder = '', icon: Icon = null
           placeholder={placeholder}
           list={listId || undefined}
           onChange={(e) => onChange(e.target.value)}
-          className={`pl-input w-full rounded-lg py-3 text-sm font-semibold outline-none ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`pl-input w-full rounded-lg py-2.5 text-sm outline-none ${Icon ? 'pl-11 pr-4' : 'px-3'}`}
         />
       </div>
     </div>
@@ -3225,7 +3226,7 @@ function SelectField({ label, value, onChange, options, icon: Icon = null }) {
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`pl-input w-full rounded-lg py-3 text-sm font-semibold outline-none ${Icon ? 'pl-11 pr-4' : 'px-4'}`}
+          className={`pl-input w-full rounded-lg py-2.5 text-sm outline-none ${Icon ? 'pl-11 pr-4' : 'px-3'}`}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -3265,7 +3266,7 @@ function DateField({ value, onChange }) {
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="pl-input w-full rounded-lg py-3 pl-11 pr-4 text-sm font-semibold outline-none"
+          className="pl-input w-full rounded-lg py-2.5 pl-11 pr-4 text-sm outline-none"
         />
       </div>
     </div>
