@@ -1167,6 +1167,8 @@ html, body {
 }
 .pl-input::placeholder { color: var(--pl-ink-4); }
 .pl-input:focus { outline: none; border-color: var(--pl-accent); box-shadow: 0 0 0 3px var(--pl-accent-ring); }
+/* Textarea: libera a altura fixa do .pl-input para o atributo rows valer. */
+.pl-textarea { height: auto; min-height: 88px; padding: 10px 14px; line-height: 1.55; resize: vertical; }
 
 /* ── pl-* progress ── */
 .pl-progress { height: 4px; background: var(--pl-bg-soft); border-radius: 2px; overflow: hidden; }

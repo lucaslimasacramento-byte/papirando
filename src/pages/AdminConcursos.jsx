@@ -2486,7 +2486,7 @@ export default function AdminConcursos({
                   setContestFormOptions([]);
                 }}
                 placeholder="Cole aqui o formulário retornado pela análise do edital, incluindo identificação, dados do edital, etapas, disciplinas e tópicos."
-                className="pl-input mt-2 w-full rounded-lg px-4 py-4 text-sm outline-none"
+                className="pl-input pl-textarea mt-2 w-full rounded-lg text-sm outline-none"
               />
             ) : (
               <div className="mt-2">
@@ -2920,10 +2920,10 @@ export default function AdminConcursos({
                 <div>
                   <label className="pl-eyebrow mb-2 block">Descrição curta</label>
                   <textarea
-                    rows={4}
+                    rows={5}
                     value={form.descricao}
                     onChange={(e) => updateFormField('descricao', e.target.value)}
-                    className="pl-input w-full rounded-xl px-4 py-4 text-sm outline-none"
+                    className="pl-input pl-textarea w-full rounded-lg text-sm outline-none"
                   />
                 </div>
 
@@ -2993,13 +2993,18 @@ export default function AdminConcursos({
                       </div>
 
                       <div className="mt-4">
-                        <label className="pl-eyebrow mb-2 block">Tópicos da disciplina</label>
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <label className="pl-eyebrow">Tópicos da disciplina</label>
+                          <span className="text-[11px]" style={{ color: 'var(--pl-ink-3)' }}>
+                            {subject.topicosTexto.split('\n').map((l) => l.trim()).filter(Boolean).length} tópico(s) · um por linha
+                          </span>
+                        </div>
                         <textarea
-                          rows={6}
+                          rows={10}
                           value={subject.topicosTexto}
                           onChange={(e) => updateSubjectField(index, 'topicosTexto', e.target.value)}
                           placeholder={`Um tópico por linha\nConceitos iniciais\nPoder de polícia\nAtos administrativos`}
-                          className="pl-input w-full rounded-lg px-4 py-4 text-sm outline-none"
+                          className="pl-input pl-textarea w-full rounded-lg text-sm outline-none"
                         />
                       </div>
                           </>
