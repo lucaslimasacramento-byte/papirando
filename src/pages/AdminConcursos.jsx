@@ -987,6 +987,8 @@ export default function AdminConcursos({
   const [adminSection, setAdminSection] = useState('concursos');
   // Sub-visão de cada módulo: itens já no ar vs. rascunhos aguardando validação.
   const [catalogView, setCatalogView] = useState('publicados'); // 'publicados' | 'rascunhos'
+  // Aba interna do modal de edição: 'dados' | 'midia' | 'etapas' | 'conteudo'.
+  const [modalTab, setModalTab] = useState('dados');
   // null = prop ainda não chegou do Supabase; [] ou [...] = já carregou
   const [courseTemplatesDraft, setCourseTemplatesDraftRaw] = useState(
     () => courseTemplates !== null ? normalizeCourseTemplates(courseTemplates) : null
@@ -1031,6 +1033,11 @@ export default function AdminConcursos({
     reloadDrafts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sempre que o modal abre, volta para a primeira aba.
+  useEffect(() => {
+    if (isContestModalOpen) setModalTab('dados');
+  }, [isContestModalOpen]);
   const [deleteTemplateError, setDeleteTemplateError] = useState('');
   const [aiFormText, setAiFormText] = useState('');
   const [aiInputMode, setAiInputMode] = useState('text'); // 'text' | 'pdf'
@@ -2560,8 +2567,37 @@ export default function AdminConcursos({
           </div>
           )}
 
+          {/* Abas internas do modal */}
+          <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 20 }}>
+            {[
+              { id: 'dados', label: 'Dados', warn: !form.area || !form.cargo || !form.prova_data },
+              { id: 'midia', label: 'Mídia', warn: !form.imagem_url || !form.edital_url },
+              { id: 'etapas', label: 'Etapas', warn: false },
+              { id: 'conteudo', label: 'Conteúdo', warn: !form.disciplinas.some((s) => s.topicosTexto && s.topicosTexto.trim()) },
+            ].map((t) => {
+              const on = modalTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setModalTab(t.id)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 16px', fontSize: 13, fontWeight: 600, border: 'none',
+                    background: 'transparent', cursor: 'pointer', marginBottom: -1,
+                    borderBottom: on ? '2px solid var(--pl-accent)' : '2px solid transparent',
+                    color: on ? 'var(--pl-accent)' : 'var(--pl-ink-3)',
+                  }}
+                >
+                  {t.label}
+                  {t.warn && <span title="Itens pendentes nesta aba" style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--pl-warn)' }} />}
+                </button>
+              );
+            })}
+          </div>
           <div className="space-y-5">
             <div className="space-y-5">
+            {modalTab === 'dados' && (
               <div className="pl-card rounded-xl p-4">
                 <div className="mb-4">
                   <p className="pl-eyebrow">Dados principais</p>
@@ -2602,6 +2638,8 @@ export default function AdminConcursos({
                   </div>
                 </div>
               </div>
+            )}
+            {modalTab === 'midia' && (
             <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -2725,6 +2763,8 @@ export default function AdminConcursos({
               </div>
             </div>
 
+            )}
+            {modalTab === 'etapas' && (
               <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
                 <div className="flex flex-col gap-1">
                   <p className="pl-eyebrow">Etapas do concurso</p>
@@ -2827,6 +2867,8 @@ export default function AdminConcursos({
                 )}
               </div>
 
+            )}
+            {modalTab === 'dados' && (<>
               <div className="grid gap-4 md:grid-cols-[150px_1fr_1fr_180px]">
                 <ColorField value={form.cor} onChange={(value) => updateFormField('cor', value)} />
                 <DateField value={form.prova_data} onChange={(value) => updateFormField('prova_data', value)} />
@@ -2869,6 +2911,8 @@ export default function AdminConcursos({
                 </div>
               </div>
 
+            </>)}
+            {modalTab === 'conteudo' && (
               <div>
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <div>
@@ -2937,6 +2981,7 @@ export default function AdminConcursos({
                 </div>
 
               </div>
+            )}
             </div>
           </div>
 
