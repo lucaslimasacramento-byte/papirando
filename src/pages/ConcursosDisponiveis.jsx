@@ -1084,22 +1084,14 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
   const hasMultipleRoles = !isVest && cargos.length > 1;
   const statusKey = normalizeContestStatus(concurso.status_concurso);
   const statusTone = STATUS_TONE_MAP[statusKey] || 'accent';
-  const stats = (isVest
-    ? [
-        { label: 'Prova', value: formatDateBR(concurso.prova_data) },
-        { label: 'Inscrição', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
-        { label: 'Requisito', value: concurso.escolaridade || 'A definir', tone: 'accent' },
-        { label: 'Matérias', value: concurso.disciplinas?.length || 0 },
-      ]
-    : [
-        { label: 'Prova', value: formatDateBR(concurso.prova_data) },
-        { label: hasMultipleRoles ? 'Salários' : 'Salário', value: formatCurrencyBR(concurso.salario), tone: 'success' },
-        { label: hasMultipleRoles ? 'Inscrições' : 'Inscrição', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
-        { label: 'Nível', value: concurso.escolaridade || 'A definir', tone: 'accent' },
-        { label: hasMultipleRoles ? 'Vagas totais' : 'Vagas', value: concurso.vagas || 'A definir' },
-        { label: hasMultipleRoles ? 'Cargos' : 'Disciplinas', value: hasMultipleRoles ? cargos.length : concurso.disciplinas?.length || 0 },
-      ]
-  ).filter((item) => item.value !== '' && item.value != null);
+  const stats = [
+    { label: 'Prova', value: formatDateBR(concurso.prova_data) },
+    { label: hasMultipleRoles ? 'Salários' : 'Salário', value: formatCurrencyBR(concurso.salario), tone: 'success' },
+    { label: hasMultipleRoles ? 'Inscrições' : 'Inscrição', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
+    { label: 'Nível', value: concurso.escolaridade || 'A definir', tone: 'accent' },
+    { label: hasMultipleRoles ? 'Vagas totais' : 'Vagas', value: concurso.vagas || 'A definir' },
+    { label: hasMultipleRoles ? 'Cargos' : 'Disciplinas', value: hasMultipleRoles ? cargos.length : concurso.disciplinas?.length || 0 },
+  ].filter((item) => item.value !== '' && item.value != null);
 
   return (
     <article className="pl-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 330 }}>
@@ -1129,7 +1121,9 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
 
       <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <span className="pl-tag" style={{ background: area.chip, color: area.chipInk, textTransform: 'uppercase', fontSize: 10 }}>{area.label}</span>
+          {!isVest && (
+            <span className="pl-tag" style={{ background: area.chip, color: area.chipInk, textTransform: 'uppercase', fontSize: 10 }}>{area.label}</span>
+          )}
           <span className={`pl-tag ${statusTone === 'neutral' ? '' : `pl-tag-${statusTone}`}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>
             {STATUS_LABELS[statusKey] || 'Previsto'}
           </span>
@@ -1146,9 +1140,17 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6 }}>
-          {stats.map((item) => <ContestStat key={item.label} {...item} />)}
-        </div>
+        {isVest ? (
+          concurso.prova_data ? (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start', padding: '5px 10px', borderRadius: 5, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface-2)', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
+              <CalendarDays size={13} /> Prova · {formatDateBR(concurso.prova_data)}
+            </div>
+          ) : null
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6 }}>
+            {stats.map((item) => <ContestStat key={item.label} {...item} />)}
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
           <button className="pl-btn pl-btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={onOpen}>Ver detalhes</button>
