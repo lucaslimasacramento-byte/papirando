@@ -5315,11 +5315,14 @@ export default function App() {
     await refreshContestLibrary();
   };
 
-  const createCourseFromCatalog = async (template) => {
+  const createCourseFromCatalog = async (template, planName = null) => {
+    // planName: nome do plano definido pelo aluno ao combinar vários cursos.
+    // Quando presente, vira a chave de agrupamento (plano) de todos os cursos
+    // escolhidos — e as disciplinas herdam esse mesmo plano (insert abaixo).
     const novoCurso = createCourse({
       slug: template.slug,
       nome: template.nome,
-      plano: template.plano,
+      plano: (planName && planName.trim()) || template.plano,
       concurso: template.concurso,
       area: template.area,
       cargo: template.cargo,

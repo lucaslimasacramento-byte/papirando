@@ -4,6 +4,7 @@ import {
   BadgeCheck,
   Building2,
   CalendarDays,
+  Check,
   CheckCircle2,
   Compass,
   DollarSign,
@@ -75,6 +76,10 @@ export default function ConcursosDisponiveis({
   const [importError, setImportError] = useState('');
   const [selectedContest, setSelectedContest] = useState(null);
   const [expandedSubjects, setExpandedSubjects] = useState({});
+  // Multi-seleção: o aluno marca vários cursos e dá UM nome ao plano combinado.
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [planName, setPlanName] = useState('');
+  const [addingPlan, setAddingPlan] = useState(false);
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
   // Catálogo publicado (contest_templates) agrupado e separado pelo tipo da aba ativa:
   // Concursos = tudo que não é vestibular · Vestibulares = tipo 'vestibular'.
@@ -323,6 +328,54 @@ export default function ConcursosDisponiveis({
     }
   };
 
+  const toggleSelect = (contest) => {
+    const id = contest.id;
+    setImportError('');
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+    setPlanName('');
+  };
+
+  // Adiciona todos os cursos marcados sob um único plano nomeado pelo aluno.
+  const handleAddSelectedAsPlan = async () => {
+    const chosen = groupedCatalog.filter((c) => selectedIds.has(c.id));
+    if (chosen.length === 0) return;
+
+    const name = planName.trim();
+    if (!name) {
+      setImportError('Dê um nome ao seu plano antes de adicionar.');
+      return;
+    }
+    if (!isAdmin && remainingCourseSlots < chosen.length) {
+      setImportError(`Seu plano comporta mais ${remainingCourseSlots} curso(s), mas você selecionou ${chosen.length}.`);
+      return;
+    }
+
+    setAddingPlan(true);
+    setImportError('');
+    try {
+      for (const contest of chosen) {
+        const roles = getContestRoles(contest);
+        const importTemplate = buildContestForRole(contest, roles[0]);
+        await onImportCatalogCourse?.(importTemplate, name);
+      }
+      clearSelection();
+      setActiveTab?.('planos');
+    } catch (error) {
+      setImportError(error?.message || 'Não foi possível montar seu plano. Tente novamente.');
+    } finally {
+      setAddingPlan(false);
+    }
+  };
+
   const handleOpenContest = (contest) => {
     if (onOpenContestDetail) {
       onOpenContestDetail(contest);
@@ -360,7 +413,7 @@ export default function ConcursosDisponiveis({
               <button
                 key={id}
                 type="button"
-                onClick={() => { setTipoAtivo(id); setAreasSelecionadas([]); setQuery(''); }}
+                onClick={() => { setTipoAtivo(id); setAreasSelecionadas([]); setQuery(''); clearSelection(); }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '6px 16px', borderRadius: 20,
@@ -490,6 +543,8 @@ export default function ConcursosDisponiveis({
                         imported={imported}
                         limiteAtingido={limiteAtingido}
                         importing={importingId === contest.id}
+                        selected={selectedIds.has(contest.id)}
+                        onToggleSelect={() => toggleSelect(contest)}
                         formatDateBR={formatDateBR}
                         formatCurrencyBR={formatCurrencyBR}
                         onOpen={() => handleOpenContest(contest)}
@@ -522,6 +577,39 @@ export default function ConcursosDisponiveis({
           </section>
         )}
       </div>
+
+      {selectedIds.size > 0 && (
+        <div style={{
+          position: 'sticky', bottom: 16, zIndex: 20, marginTop: 8,
+          display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
+          padding: '12px 16px', borderRadius: 12,
+          border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)',
+          boxShadow: 'var(--pl-sh-high)',
+        }}>
+          <span className="pl-tag pl-tag-accent" style={{ flexShrink: 0 }}>
+            {selectedIds.size} curso(s) selecionado(s)
+          </span>
+          <input
+            className="pl-input"
+            placeholder="Nome do seu plano — ex.: Meu plano PMBA + PCBA"
+            value={planName}
+            onChange={(e) => setPlanName(e.target.value)}
+            style={{ flex: '1 1 240px', minWidth: 200 }}
+          />
+          <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={clearSelection}>
+            Limpar
+          </button>
+          <button
+            type="button"
+            className="pl-btn pl-btn-primary"
+            disabled={addingPlan}
+            onClick={handleAddSelectedAsPlan}
+            style={{ flexShrink: 0 }}
+          >
+            {addingPlan ? 'Montando…' : 'Adicionar ao meu plano'}
+          </button>
+        </div>
+      )}
 
       {selectedContest && (
         <ContestPreviewModal
@@ -1102,7 +1190,7 @@ function AreaSectionHeader({ area, count, tipo = 'concurso' }) {
   );
 }
 
-function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, formatDateBR, formatCurrencyBR, onOpen, onImport, tipo = 'concurso' }) {
+function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, selected = false, onToggleSelect, formatDateBR, formatCurrencyBR, onOpen, onImport, tipo = 'concurso' }) {
   const isVest = tipo === 'vestibular';
   const cargos = getContestRoles(concurso);
   const hasMultipleRoles = !isVest && cargos.length > 1;
@@ -1136,11 +1224,29 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
             {concurso.nome}
           </h3>
         </div>
-        {imported && (
+        {imported ? (
           <div style={{ position: 'relative', zIndex: 1, padding: '4px 8px', borderRadius: 4, background: 'rgba(243,239,229,0.15)', border: '1px solid rgba(243,239,229,0.20)', color: '#f3efe5', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', backdropFilter: 'blur(4px)', flexShrink: 0 }}>
             Importado
           </div>
-        )}
+        ) : onToggleSelect ? (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+            aria-pressed={selected}
+            title={selected ? 'Remover da seleção' : 'Selecionar para o meu plano'}
+            style={{
+              position: 'relative', zIndex: 1, flexShrink: 0,
+              width: 26, height: 26, borderRadius: 7, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: selected ? '1px solid #f3efe5' : '1px solid rgba(243,239,229,0.45)',
+              background: selected ? '#f3efe5' : 'rgba(0,0,0,0.22)',
+              color: selected ? area.cover : '#f3efe5',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            {selected ? <Check size={15} /> : null}
+          </button>
+        ) : null}
       </div>
 
       <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
