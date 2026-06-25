@@ -46,6 +46,11 @@ const STAGE_LABELS = {
   curso_formacao: 'Curso de formação',
 };
 
+// Localidade (bucket) de um vestibular: UF quando estadual, senão "Nacional".
+const localityOf = (t) => (t.scope === 'estadual' && t.uf ? String(t.uf).toUpperCase() : 'Nacional');
+const MODALITY_LABEL = { presencial: 'Presencial', ead: 'EAD', hibrido: 'Híbrido', multiplo: 'Presencial e EAD' };
+const INSTITUTION_TYPE_LABEL = { publica: 'Pública', privada: 'Privada', programa_governo: 'Programa do governo' };
+
 export default function ConcursosDisponiveis({
   concursoCatalog = [],
   courseTemplates = [],
@@ -80,6 +85,10 @@ export default function ConcursosDisponiveis({
     return all.filter((t) => (t.tipo || 'concurso') !== 'vestibular');
   }, [concursoCatalog, tipoAtivo]);
 
+  const isVest = tipoAtivo === 'vestibular';
+  // Chave de agrupamento/filtro: localidade (Nacional/UF) p/ vestibular, área p/ concurso.
+  const groupKeyOf = (t) => (isVest ? localityOf(t) : (t.area || 'Geral'));
+
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
     const [year, month, day] = String(value).split('-');
@@ -101,10 +110,15 @@ export default function ConcursosDisponiveis({
     });
   };
 
-  const areas = useMemo(
-    () => ['Todas', ...Array.from(new Set(groupedCatalog.map((item) => item.area || 'Geral')))],
-    [groupedCatalog]
-  );
+  const areas = useMemo(() => {
+    const keys = Array.from(new Set(groupedCatalog.map(groupKeyOf)));
+    // Vestibular: "Nacional" sempre primeiro, depois UFs em ordem alfabética.
+    if (isVest) {
+      keys.sort((a, b) => (a === 'Nacional' ? -1 : b === 'Nacional' ? 1 : a.localeCompare(b, 'pt-BR')));
+    }
+    return ['Todas', ...keys];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupedCatalog, isVest]);
 
   useEffect(() => {
     if (areasSelecionadas.length > 0) return;
@@ -131,7 +145,7 @@ export default function ConcursosDisponiveis({
       const matchArea =
         areasSelecionadas.length === 0 ||
         areasSelecionadas.includes('Todas') ||
-        areasSelecionadas.includes(contest.area || 'Geral');
+        areasSelecionadas.includes(groupKeyOf(contest));
       const matchStatus = statusFiltro === 'Todos' || normalizeContestStatus(contest.status_concurso) === statusFiltro;
 
       return matchQuery && matchArea && matchStatus && contest.is_public !== false;
@@ -219,14 +233,21 @@ export default function ConcursosDisponiveis({
 
   const grouped = useMemo(() => {
     const groups = concursosFiltrados.reduce((acc, contest) => {
-      const area = contest.area || 'Geral';
+      const area = groupKeyOf(contest);
       if (!acc[area]) acc[area] = [];
       acc[area].push(contest);
       return acc;
     }, {});
 
-    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'pt-BR'));
-  }, [concursosFiltrados]);
+    return Object.entries(groups).sort(([a], [b]) => {
+      if (isVest) {
+        if (a === 'Nacional') return -1;
+        if (b === 'Nacional') return 1;
+      }
+      return a.localeCompare(b, 'pt-BR');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [concursosFiltrados, isVest]);
 
   const areaStats = useMemo(() => {
     return areas.map((area) => ({
@@ -234,7 +255,7 @@ export default function ConcursosDisponiveis({
       total:
         area === 'Todas'
           ? groupedCatalog.filter((item) => item.is_public !== false).length
-          : groupedCatalog.filter((item) => (item.area || 'Geral') === area && item.is_public !== false).length,
+          : groupedCatalog.filter((item) => groupKeyOf(item) === area && item.is_public !== false).length,
     }));
   }, [areas, groupedCatalog]);
 
@@ -250,8 +271,9 @@ export default function ConcursosDisponiveis({
     [groupedCatalog]
   );
   const totalAreas = useMemo(
-    () => new Set(groupedCatalog.map((item) => item.area || 'Geral')).size,
-    [groupedCatalog]
+    () => new Set(groupedCatalog.map(groupKeyOf)).size,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [groupedCatalog, isVest]
   );
   const recommendationBuckets = useMemo(() => {
     const itens = tipoAtivo === 'vestibular' ? 'vestibulares' : 'concursos';
@@ -1067,7 +1089,7 @@ function AreaSectionHeader({ area, count, tipo = 'concurso' }) {
       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
         <span style={{ width: 10, height: 10, borderRadius: 2, background: area.cover, flexShrink: 0 }} />
         <div>
-          <div className="pl-eyebrow">Área</div>
+          <div className="pl-eyebrow">{tipo === 'vestibular' ? 'Localidade' : 'Área'}</div>
           <h2 style={{ margin: '4px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 29, color: 'var(--pl-ink)' }}>
             {area.label}
           </h2>
@@ -1123,6 +1145,14 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {!isVest && (
             <span className="pl-tag" style={{ background: area.chip, color: area.chipInk, textTransform: 'uppercase', fontSize: 10 }}>{area.label}</span>
+          )}
+          {isVest && (
+            <span className="pl-tag pl-tag-accent" style={{ textTransform: 'uppercase', fontSize: 10 }}>{localityOf(concurso)}</span>
+          )}
+          {isVest && (concurso.institution_type || concurso.modality) && (
+            <span className="pl-tag" style={{ textTransform: 'uppercase', fontSize: 10 }}>
+              {[INSTITUTION_TYPE_LABEL[concurso.institution_type], MODALITY_LABEL[concurso.modality]].filter(Boolean).join(' · ')}
+            </span>
           )}
           <span className={`pl-tag ${statusTone === 'neutral' ? '' : `pl-tag-${statusTone}`}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>
             {STATUS_LABELS[statusKey] || 'Previsto'}

@@ -88,6 +88,14 @@ export function normalizeContestTemplate(template, index = 0) {
     tipo: template.tipo || 'concurso',
     is_public: template.is_public !== false,
     storage: template.created_at ? 'supabase' : 'local',
+    // Campos do modelo de vestibulares (híbrido). Ausentes em concursos/legado.
+    uf: template.uf || null,
+    scope: template.scope || null,
+    modality: template.modality || null,
+    institution_type: template.institution_type || null,
+    registration_start: template.registration_start || null,
+    registration_end: template.registration_end || null,
+    meta: template.meta && typeof template.meta === 'object' ? template.meta : {},
     disciplinas,
   };
 }
