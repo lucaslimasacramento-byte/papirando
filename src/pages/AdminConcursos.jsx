@@ -2747,7 +2747,6 @@ export default function AdminConcursos({
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
-                    <TextField label="Plano interno" value={form.plano} onChange={(value) => updateFormField('plano', value)} />
                     <TextField label="Concurso / órgão" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} />
                     <TextField
                       label="Área"

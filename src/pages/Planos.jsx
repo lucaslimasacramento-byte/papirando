@@ -635,7 +635,6 @@ export default function Planos({
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 20 }}>
             <InputField label="Nome do curso" value={iaForm.nome} onChange={(value) => setIaForm((prev) => ({ ...prev, nome: value }))} />
-            <InputField label="Plano interno" value={iaForm.plano} onChange={(value) => setIaForm((prev) => ({ ...prev, plano: value }))} placeholder="Ex: PMBA - Soldado" />
             <InputField label="Concurso/órgão" value={iaForm.concurso} onChange={(value) => setIaForm((prev) => ({ ...prev, concurso: value }))} />
             <InputField label="Banca" value={iaForm.banca} onChange={(value) => setIaForm((prev) => ({ ...prev, banca: value }))} />
           </div>
