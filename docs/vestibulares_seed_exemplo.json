@@ -1,0 +1,70 @@
+[
+  {
+    "name": "ENEM 2026",
+    "institution": "Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira",
+    "institution_acronym": "INEP",
+    "image_url": "",
+    "scope": "nacional",
+    "state": null,
+    "institution_type": "publica",
+    "modality": "presencial",
+    "area": "Múltiplas áreas",
+    "education_level": "Ensino médio completo",
+    "registration_start": "2026-05-25",
+    "registration_end": "2026-06-12",
+    "registration_fee": "R$ 85,00",
+    "exam_date": "2026-11-08",
+    "official_url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem",
+    "registration_url": "https://enem.inep.gov.br/participante/",
+    "edital_url": "",
+    "short_description": "Maior exame do país, usado para acesso ao ensino superior via SiSU, ProUni e Fies.",
+    "about_institution": "O INEP é a autarquia federal responsável pelas avaliações e exames educacionais nacionais. Aplica o ENEM desde 1998.",
+    "subjects_summary": [
+      "Linguagens, Códigos e suas Tecnologias",
+      "Ciências Humanas e suas Tecnologias",
+      "Ciências da Natureza e suas Tecnologias",
+      "Matemática e suas Tecnologias",
+      "Redação"
+    ],
+    "timeline": [
+      { "title": "Início das inscrições", "date": "2026-05-25" },
+      { "title": "Fim das inscrições", "date": "2026-06-12" },
+      { "title": "1º dia de prova", "date": "2026-11-08" },
+      { "title": "2º dia de prova", "date": "2026-11-15" }
+    ],
+    "courses_offered": [],
+    "required_readings": [],
+    "entry_methods": ["SiSU", "ProUni", "Fies", "Processos seletivos próprios"]
+  },
+  {
+    "name": "Vestibular Online Anhanguera 2026",
+    "institution": "Anhanguera (Cogna Educação)",
+    "institution_acronym": "Anhanguera",
+    "image_url": "",
+    "scope": "nacional",
+    "state": null,
+    "institution_type": "privada",
+    "modality": "multiplo",
+    "area": "Graduação",
+    "education_level": "Ensino médio completo",
+    "registration_start": "2026-01-01",
+    "registration_end": null,
+    "registration_fee": "Gratuito",
+    "exam_date": null,
+    "official_url": "https://www.anhanguera.com/",
+    "registration_url": "https://www.anhanguera.com/institucional/formas-de-ingresso/",
+    "edital_url": "",
+    "short_description": "Vestibular online e gratuito, com prova agendada, para cursos de graduação em polos de todo o Brasil.",
+    "about_institution": "A Anhanguera faz parte da Cogna Educação, um dos maiores grupos educacionais do país, com polos de ensino a distância em todos os estados.",
+    "subjects_summary": ["Redação"],
+    "timeline": [],
+    "courses_offered": [
+      { "name": "Administração", "degree": "Bacharelado", "modality": "ead" },
+      { "name": "Pedagogia", "degree": "Licenciatura", "modality": "ead" },
+      { "name": "Análise e Desenvolvimento de Sistemas", "degree": "Tecnólogo", "modality": "ead" },
+      { "name": "Enfermagem", "degree": "Bacharelado", "modality": "hibrido" }
+    ],
+    "required_readings": [],
+    "entry_methods": ["Vestibular Online", "Nota do ENEM", "Transferência", "ProUni", "Fies"]
+  }
+]
