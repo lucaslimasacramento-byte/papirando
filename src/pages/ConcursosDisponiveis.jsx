@@ -71,7 +71,14 @@ export default function ConcursosDisponiveis({
   const [selectedContest, setSelectedContest] = useState(null);
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
-  const groupedCatalog = useMemo(() => groupContestTemplates(concursoCatalog), [concursoCatalog]);
+  // Catálogo publicado (contest_templates) agrupado e separado pelo tipo da aba ativa:
+  // Concursos = tudo que não é vestibular · Vestibulares = tipo 'vestibular'.
+  // (Graduação usa CourseTemplateView, fora deste fluxo.)
+  const groupedCatalog = useMemo(() => {
+    const all = groupContestTemplates(concursoCatalog);
+    if (tipoAtivo === 'vestibular') return all.filter((t) => t.tipo === 'vestibular');
+    return all.filter((t) => (t.tipo || 'concurso') !== 'vestibular');
+  }, [concursoCatalog, tipoAtivo]);
 
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
@@ -326,7 +333,7 @@ export default function ConcursosDisponiveis({
               <button
                 key={id}
                 type="button"
-                onClick={() => setTipoAtivo(id)}
+                onClick={() => { setTipoAtivo(id); setAreasSelecionadas([]); setQuery(''); }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '6px 16px', borderRadius: 20,
@@ -343,8 +350,8 @@ export default function ConcursosDisponiveis({
           })}
         </div>
 
-        {/* Vestibulares / Faculdade — catálogo do admin */}
-        {(tipoAtivo === 'vestibular' || tipoAtivo === 'faculdade') && (
+        {/* Graduação — catálogo de cursos do admin (course_templates) */}
+        {tipoAtivo === 'faculdade' && (
           <CourseTemplateView
             courseTemplates={courseTemplates}
             intentFilter={tipoAtivo}
@@ -363,8 +370,8 @@ export default function ConcursosDisponiveis({
           />
         )}
 
-        {/* Concursos — fluxo original */}
-        {tipoAtivo === 'concurso' && (
+        {/* Concursos e Vestibulares — fluxo do catálogo publicado (contest_templates) */}
+        {(tipoAtivo === 'concurso' || tipoAtivo === 'vestibular') && (
           <>
           <ConcursosFilters
           query={query}
@@ -429,7 +436,9 @@ export default function ConcursosDisponiveis({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
         {groupedCatalog.length === 0 ? (
           <section style={{ borderRadius: '2rem', border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 40, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
-            Nenhum concurso disponível no momento. Aguarde a equipe adicionar novos editais.
+            {tipoAtivo === 'vestibular'
+              ? 'Nenhum vestibular publicado no momento. Publique vestibulares em Configurações → Catálogo.'
+              : 'Nenhum concurso publicado no momento. Publique concursos em Configurações → Catálogo.'}
           </section>
         ) : null}
 
