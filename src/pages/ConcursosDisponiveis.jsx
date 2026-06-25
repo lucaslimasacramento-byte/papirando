@@ -82,7 +82,8 @@ export default function ConcursosDisponiveis({
   const groupedCatalog = useMemo(() => {
     const all = groupContestTemplates(concursoCatalog);
     if (tipoAtivo === 'vestibular') return all.filter((t) => t.tipo === 'vestibular');
-    return all.filter((t) => (t.tipo || 'concurso') !== 'vestibular');
+    if (tipoAtivo === 'enem') return all.filter((t) => t.tipo === 'enem');
+    return all.filter((t) => (t.tipo || 'concurso') === 'concurso');
   }, [concursoCatalog, tipoAtivo]);
 
   const isVest = tipoAtivo === 'vestibular';
@@ -333,6 +334,7 @@ export default function ConcursosDisponiveis({
 
   const TIPOS = [
     { id: 'concurso',   label: 'Concursos',   icon: LibraryBig },
+    { id: 'enem',       label: 'ENEM',         icon: Compass },
     { id: 'vestibular', label: 'Vestibulares', icon: GraduationCap },
     { id: 'faculdade',  label: 'Graduação',     icon: Building2 },
   ];
@@ -395,8 +397,8 @@ export default function ConcursosDisponiveis({
           />
         )}
 
-        {/* Concursos e Vestibulares — fluxo do catálogo publicado (contest_templates) */}
-        {(tipoAtivo === 'concurso' || tipoAtivo === 'vestibular') && (
+        {/* Concursos, ENEM e Vestibulares — fluxo do catálogo publicado (contest_templates) */}
+        {(tipoAtivo === 'concurso' || tipoAtivo === 'vestibular' || tipoAtivo === 'enem') && (
           <>
           <ConcursosFilters
           tipo={tipoAtivo}

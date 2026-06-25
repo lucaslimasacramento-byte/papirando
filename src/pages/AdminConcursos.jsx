@@ -1090,7 +1090,11 @@ export default function AdminConcursos({
 
   // Tipo mostrado na lista do catálogo depende da aba: Concursos = concurso,
   // Vestibulares = vestibular (ambos vêm de contest_templates).
-  const contestSectionTipo = adminSection === 'vestibulares' ? 'vestibular' : 'concurso';
+  const contestSectionTipo =
+    adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'enem' ? 'enem' : 'concurso';
+  // Substantivo usado nos rótulos da seção (botão criar, placeholder, estado vazio).
+  const contestSectionNoun =
+    contestSectionTipo === 'vestibular' ? 'vestibular' : contestSectionTipo === 'enem' ? 'exame ENEM' : 'concurso';
 
 
   useEffect(() => {
@@ -1203,7 +1207,7 @@ export default function AdminConcursos({
       const matchArea =
         selectedContestAreaFilter === 'Todos' ||
         contestGroupKey(template, contestSectionTipo) === selectedContestAreaFilter;
-      const matchTipo = contestSectionTipo === 'vestibular' ? tipo === 'vestibular' : tipo !== 'vestibular';
+      const matchTipo = tipo === contestSectionTipo;
       const haystack = [template.nome, template.concurso, template.cargo, template.banca, template.area]
         .join(' ')
         .toLowerCase();
@@ -1214,11 +1218,15 @@ export default function AdminConcursos({
 
   // Contagens por tipo no catálogo publicado (para os chips de filtro e a aba).
   const publishedConcursoCount = useMemo(
-    () => concursoCatalog.filter((t) => (t.tipo || 'concurso') !== 'vestibular').length,
+    () => concursoCatalog.filter((t) => (t.tipo || 'concurso') === 'concurso').length,
     [concursoCatalog]
   );
   const publishedVestibularCount = useMemo(
     () => concursoCatalog.filter((t) => t.tipo === 'vestibular').length,
+    [concursoCatalog]
+  );
+  const publishedEnemCount = useMemo(
+    () => concursoCatalog.filter((t) => t.tipo === 'enem').length,
     [concursoCatalog]
   );
 
@@ -2000,6 +2008,7 @@ export default function AdminConcursos({
   // Classifica um rascunho em um dos três grupos (curso/faculdade caem em "curso").
   const draftBucketOf = (d) => {
     if (d.tipo === 'vestibular') return 'vestibular';
+    if (d.tipo === 'enem') return 'enem';
     if (d.tipo === 'concurso') return 'concurso';
     if (d.tipo === 'faculdade' || d.tipo === 'curso') return 'curso';
     return 'outros';
@@ -2007,7 +2016,7 @@ export default function AdminConcursos({
 
   // Contagem por tipo (independe da busca/filtro) — para os botões de filtro.
   const draftCounts = React.useMemo(() => {
-    const c = { todos: localDrafts.length, vestibular: 0, concurso: 0, curso: 0, outros: 0 };
+    const c = { todos: localDrafts.length, vestibular: 0, enem: 0, concurso: 0, curso: 0, outros: 0 };
     for (const d of localDrafts) c[draftBucketOf(d)] += 1;
     return c;
   }, [localDrafts]);
@@ -2016,7 +2025,7 @@ export default function AdminConcursos({
   // Cada módulo (Concursos/Vestibulares/Faculdade) lê só o seu bucket.
   const draftsByBucket = React.useMemo(() => {
     const q = draftQuery.trim().toLowerCase();
-    const buckets = { vestibular: [], concurso: [], curso: [], outros: [] };
+    const buckets = { vestibular: [], enem: [], concurso: [], curso: [], outros: [] };
     for (const d of localDrafts) {
       if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
       buckets[draftBucketOf(d)].push(d);
@@ -2210,6 +2219,7 @@ export default function AdminConcursos({
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 20 }}>
         {[
           { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
+          { id: 'enem', label: 'ENEM', count: publishedEnemCount },
           { id: 'vestibulares', label: 'Vestibulares', count: publishedVestibularCount },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
         ].map((tab) => (
@@ -2244,8 +2254,8 @@ export default function AdminConcursos({
 
       {/* Sub-toggle: Publicados | Rascunhos (por módulo) */}
       {(() => {
-        const bucket = adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'cursos' ? 'curso' : 'concurso';
-        const pubCount = adminSection === 'vestibulares' ? publishedVestibularCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
+        const bucket = adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'enem' ? 'enem' : adminSection === 'cursos' ? 'curso' : 'concurso';
+        const pubCount = adminSection === 'vestibulares' ? publishedVestibularCount : adminSection === 'enem' ? publishedEnemCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
         const draftCount = draftCounts[bucket] || 0;
         return (
           <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
@@ -2281,10 +2291,10 @@ export default function AdminConcursos({
         );
       })()}
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares') && catalogView === 'rascunhos' &&
-        renderRascunhos(adminSection === 'vestibulares' ? 'vestibular' : 'concurso', { singular: adminSection === 'vestibulares' ? 'vestibular' : 'concurso' })}
+      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem') && catalogView === 'rascunhos' &&
+        renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares') && catalogView === 'publicados' && (
+      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem') && catalogView === 'publicados' && (
       <div className="pl-card" style={{ padding: 20 }}>
         {/* Barra de busca + ações */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16, alignItems: 'flex-end' }}>
@@ -2293,7 +2303,7 @@ export default function AdminConcursos({
             <input
               value={contestQuery}
               onChange={(e) => setContestQuery(e.target.value)}
-              placeholder={contestSectionTipo === 'vestibular' ? 'Nome do vestibular, banca…' : 'Nome, cargo, órgão ou banca…'}
+              placeholder={contestSectionTipo === 'vestibular' ? 'Nome do vestibular, banca…' : contestSectionTipo === 'enem' ? 'Nome do exame, edição, banca…' : 'Nome, cargo, órgão ou banca…'}
               className="pl-input"
               style={{ paddingLeft: 32, width: '100%' }}
             />
@@ -2310,9 +2320,9 @@ export default function AdminConcursos({
             type="button"
             className="pl-btn pl-btn-primary"
             style={{ flexShrink: 0 }}
-            onClick={() => { resetForm(); setForm((f) => ({ ...f, tipo: contestSectionTipo, scope: contestSectionTipo === 'vestibular' ? 'nacional' : '' })); setIsContestModalOpen(true); }}
+            onClick={() => { resetForm(); setForm((f) => ({ ...f, tipo: contestSectionTipo, area: contestSectionTipo === 'enem' ? 'Geral' : f.area, scope: contestSectionTipo === 'vestibular' ? 'nacional' : '' })); setIsContestModalOpen(true); }}
           >
-            <Plus size={14} /> {contestSectionTipo === 'vestibular' ? 'Novo vestibular' : 'Novo concurso'}
+            <Plus size={14} /> Novo {contestSectionNoun}
           </button>
         </div>
 
@@ -2320,7 +2330,7 @@ export default function AdminConcursos({
         <div style={{ maxHeight: 440, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
           {filteredContestCatalog.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pl-ink-3)', fontSize: 13 }}>
-              {contestSectionTipo === 'vestibular' ? 'Nenhum vestibular encontrado.' : 'Nenhum concurso encontrado com os filtros atuais.'}
+              {contestSectionTipo === 'concurso' ? 'Nenhum concurso encontrado com os filtros atuais.' : `Nenhum ${contestSectionNoun} encontrado.`}
             </div>
           ) : (
             contestSections.map(([area, areaTemplates]) => (
