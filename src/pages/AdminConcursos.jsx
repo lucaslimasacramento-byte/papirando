@@ -66,6 +66,25 @@ const ETAPA_OPTIONS = [
 const ETAPA_OPTION_VALUES = ETAPA_OPTIONS.map((option) => option.value);
 
 const AREA_OPTIONS = ['Militar', 'Policial', 'Agropecuária', 'Tribunais', 'Fiscal', 'Controle', 'Legislativo', 'Administrativa', 'Educação', 'Saúde', 'Geral'];
+
+// Localidade (bucket) de um vestibular: UF quando estadual, senão "Nacional".
+function vestibularLocality(template = {}) {
+  return template.scope === 'estadual' && template.uf ? String(template.uf).toUpperCase() : 'Nacional';
+}
+
+// Chave de agrupamento/filtro do catálogo: localidade p/ vestibular, área p/ concurso.
+function contestGroupKey(template = {}, tipo = 'concurso') {
+  return tipo === 'vestibular' ? vestibularLocality(template) : (template.area || 'Geral');
+}
+
+// Ordena chaves: "Nacional" sempre primeiro nos vestibulares, depois ordem alfabética.
+function compareGroupKeys(a, b, tipo = 'concurso') {
+  if (tipo === 'vestibular') {
+    if (a === 'Nacional') return -1;
+    if (b === 'Nacional') return 1;
+  }
+  return a.localeCompare(b, 'pt-BR');
+}
 const CONTEST_JSON_PROMPT_MD = `# Prompt para extrair JSON de concurso - Papirando
 
 Analise o edital anexado e me devolva SOMENTE um JSON valido, sem markdown, sem explicacoes e sem texto antes ou depois.
@@ -1149,10 +1168,18 @@ export default function AdminConcursos({
     };
   }, [concursoCatalog]);
 
-  const contestAreaOptions = useMemo(
-    () => ['Todos', ...Array.from(new Set(concursoCatalog.map((template) => template.area || 'Geral'))).sort((a, b) => a.localeCompare(b, 'pt-BR'))],
-    [concursoCatalog]
-  );
+  const contestAreaOptions = useMemo(() => {
+    const keys = Array.from(
+      new Set(
+        concursoCatalog
+          .filter((t) =>
+            contestSectionTipo === 'vestibular' ? t.tipo === 'vestibular' : (t.tipo || 'concurso') !== 'vestibular'
+          )
+          .map((t) => contestGroupKey(t, contestSectionTipo))
+      )
+    ).sort((a, b) => compareGroupKeys(a, b, contestSectionTipo));
+    return ['Todos', ...keys];
+  }, [concursoCatalog, contestSectionTipo]);
   const manageableAreaOptions = useMemo(
     () =>
       Array.from(
@@ -1172,8 +1199,10 @@ export default function AdminConcursos({
     const query = contestQuery.trim().toLowerCase();
 
     return concursoCatalog.filter((template) => {
-      const matchArea = selectedContestAreaFilter === 'Todos' || (template.area || 'Geral') === selectedContestAreaFilter;
       const tipo = template.tipo || 'concurso';
+      const matchArea =
+        selectedContestAreaFilter === 'Todos' ||
+        contestGroupKey(template, contestSectionTipo) === selectedContestAreaFilter;
       const matchTipo = contestSectionTipo === 'vestibular' ? tipo === 'vestibular' : tipo !== 'vestibular';
       const haystack = [template.nome, template.concurso, template.cargo, template.banca, template.area]
         .join(' ')
@@ -1195,19 +1224,19 @@ export default function AdminConcursos({
 
   const contestSections = useMemo(() => {
     const grouped = filteredContestCatalog.reduce((acc, template) => {
-      const area = template.area || 'Geral';
-      if (!acc[area]) acc[area] = [];
-      acc[area].push(template);
+      const key = contestGroupKey(template, contestSectionTipo);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(template);
       return acc;
     }, {});
 
     return Object.entries(grouped)
-      .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
-      .map(([area, templates]) => [
-        area,
+      .sort(([a], [b]) => compareGroupKeys(a, b, contestSectionTipo))
+      .map(([key, templates]) => [
+        key,
         templates.sort((first, second) => first.nome.localeCompare(second.nome, 'pt-BR')),
       ]);
-  }, [filteredContestCatalog]);
+  }, [filteredContestCatalog, contestSectionTipo]);
 
   const selectedTemplate = useMemo(
     () => concursoCatalog.find((template) => template.id === selectedTemplateId) || null,
