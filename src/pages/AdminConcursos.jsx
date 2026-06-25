@@ -44,11 +44,30 @@ const EDIT_TEMPLATE_STORAGE_KEY = 'papirando_admin_edit_contest_id';
 
 const STATUS_OPTIONS = CONTEST_STATUS_OPTIONS;
 
-const ESCOLARIDADE_OPTIONS = [
-  { value: '', label: 'Selecione' },
-  { value: 'Nível médio', label: 'Nível médio' },
-  { value: 'Nível superior', label: 'Nível superior' },
+// Escolaridade é multi-seleção: um concurso pode exigir mais de um nível.
+// Guardamos como string legível (ex.: "Níveis médio e superior") porque é assim
+// que a tela de detalhe exibe (contest.escolaridade) — sem mexer no banco.
+const ESCOLARIDADE_LEVELS = [
+  { key: 'fundamental', label: 'Fundamental', word: 'fundamental', stem: 'fundament' },
+  { key: 'medio', label: 'Médio', word: 'médio', stem: 'medio' },
+  { key: 'tecnico', label: 'Técnico', word: 'técnico', stem: 'tecnic' },
+  { key: 'superior', label: 'Superior', word: 'superior', stem: 'superior' },
 ];
+
+function parseEscolaridadeKeys(value = '') {
+  const lower = String(value || '').toLowerCase();
+  return ESCOLARIDADE_LEVELS
+    .filter((level) => lower.includes(level.word) || lower.includes(level.stem))
+    .map((level) => level.key);
+}
+
+function buildEscolaridadeLabel(keys = []) {
+  const words = ESCOLARIDADE_LEVELS.filter((level) => keys.includes(level.key)).map((level) => level.word);
+  if (words.length === 0) return '';
+  if (words.length === 1) return `Nível ${words[0]}`;
+  const last = words[words.length - 1];
+  return `Níveis ${words.slice(0, -1).join(', ')} e ${last}`;
+}
 
 const ETAPA_OPTIONS = [
   { value: 'prova_objetiva', label: 'Prova objetiva' },
@@ -2767,7 +2786,7 @@ export default function AdminConcursos({
                   <div className="grid gap-4 md:grid-cols-3">
                     <TextField label="Salário" value={form.salario} onChange={(value) => updateFormField('salario', value)} placeholder="Ex: R$ 5.516,71" icon={DollarSign} />
                     <TextField label="Valor da inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 150,00" icon={DollarSign} />
-                    <SelectField label="Escolaridade" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} options={ESCOLARIDADE_OPTIONS} icon={GraduationCap} />
+                    <EscolaridadeField value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-3">
@@ -3433,6 +3452,40 @@ function SelectField({ label, value, onChange, options, icon: Icon = null }) {
             </option>
           ))}
         </select>
+      </div>
+    </div>
+  );
+}
+
+// Escolaridade multi-seleção: marca um ou mais níveis; grava string legível.
+function EscolaridadeField({ label = 'Escolaridade', value, onChange }) {
+  const selectedKeys = parseEscolaridadeKeys(value);
+  const toggle = (key) => {
+    const next = selectedKeys.includes(key)
+      ? selectedKeys.filter((item) => item !== key)
+      : [...selectedKeys, key];
+    onChange(buildEscolaridadeLabel(next));
+  };
+  return (
+    <div>
+      <label className="pl-eyebrow mb-2 block">{label}</label>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {ESCOLARIDADE_LEVELS.map((level) => {
+          const active = selectedKeys.includes(level.key);
+          return (
+            <button
+              key={level.key}
+              type="button"
+              onClick={() => toggle(level.key)}
+              aria-pressed={active}
+              className={active ? 'pl-tag pl-tag-accent' : 'pl-tag'}
+              style={{ cursor: 'pointer', border: active ? undefined : '1px solid var(--pl-rule-2)', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+            >
+              {active ? <BadgeCheck size={13} /> : null}
+              {level.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
