@@ -5032,6 +5032,16 @@ export default function App() {
         is_public: templateData.is_public,
         disciplinas: templateData.disciplinas || [],
         slug: templateData.slug,
+        // Categoria + campos do modelo híbrido (vestibular/ENEM). Sem isso, o save
+        // perdia o tipo e o item caía em Concursos.
+        tipo: templateData.tipo || 'concurso',
+        scope: templateData.scope ?? null,
+        uf: templateData.uf ?? null,
+        modality: templateData.modality ?? null,
+        institution_type: templateData.institution_type ?? null,
+        registration_start: templateData.registration_start || null,
+        registration_end: templateData.registration_end || null,
+        meta: templateData.meta && typeof templateData.meta === 'object' ? templateData.meta : {},
       },
       templateData
     );
@@ -5097,6 +5107,16 @@ export default function App() {
         is_public: templateData.is_public,
         disciplinas: templateData.disciplinas || [],
         slug,
+        // Categoria + campos do modelo híbrido (vestibular/ENEM). Sem isso, o save
+        // perdia o tipo e o item caía em Concursos.
+        tipo: templateData.tipo || 'concurso',
+        scope: templateData.scope ?? null,
+        uf: templateData.uf ?? null,
+        modality: templateData.modality ?? null,
+        institution_type: templateData.institution_type ?? null,
+        registration_start: templateData.registration_start || null,
+        registration_end: templateData.registration_end || null,
+        meta: templateData.meta && typeof templateData.meta === 'object' ? templateData.meta : {},
       },
       existingRow || null
     );
