@@ -236,6 +236,7 @@ const UNCERTAIN_PATTERN = /n[aã]o tenho certeza|n[aã]o consta|n[aã]o encontra
 const EMPTY_FORM = {
   id: null,
   slug: '',
+  tipo: 'concurso',
   nome: '',
   plano: '',
   concurso: '',
@@ -257,6 +258,15 @@ const EMPTY_FORM = {
   prova_data: '',
   imagem_url: '',
   edital_url: '',
+  // Campos do modelo de vestibulares (híbrido)
+  uf: '',
+  scope: '',
+  modality: '',
+  institution_type: '',
+  registration_start: '',
+  registration_end: '',
+  about_institution: '',
+  meta: {},
   disciplinas: [EMPTY_SUBJECT],
 };
 
@@ -954,6 +964,15 @@ function buildFormFromTemplate(template) {
     prova_data: template.prova_data || '',
     imagem_url: template.imagem_url || '',
     edital_url: template.edital_url || '',
+    tipo: template.tipo || 'concurso',
+    uf: template.uf || '',
+    scope: template.scope || '',
+    modality: template.modality || '',
+    institution_type: template.institution_type || '',
+    registration_start: template.registration_start || '',
+    registration_end: template.registration_end || '',
+    about_institution: (template.meta && template.meta.about_institution) || '',
+    meta: template.meta && typeof template.meta === 'object' ? template.meta : {},
     disciplinas:
       Array.isArray(template.disciplinas) && template.disciplinas.length > 0
         ? template.disciplinas.map((subject) => buildSubjectDraft(subject))
@@ -979,6 +998,7 @@ export default function AdminConcursos({
 }) {
   const { success, error: toastError, warning } = useToast();
   const [form, setForm] = useState(EMPTY_FORM);
+  const isVestForm = form.tipo === 'vestibular';
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -1516,6 +1536,15 @@ export default function AdminConcursos({
     prova_data: form.prova_data,
     imagem_url: form.imagem_url.trim(),
     edital_url: form.edital_url.trim(),
+    tipo: form.tipo || 'concurso',
+    uf: form.tipo === 'vestibular' && form.scope === 'estadual' ? (form.uf || '').toUpperCase().slice(0, 2) : null,
+    scope: form.tipo === 'vestibular' ? (form.scope || 'nacional') : null,
+    modality: form.tipo === 'vestibular' ? (form.modality || null) : null,
+    institution_type: form.tipo === 'vestibular' ? (form.institution_type || null) : null,
+    registration_start: form.registration_start || null,
+    registration_end: form.registration_end || null,
+    // Preserva o meta carregado e atualiza só o "sobre a instituição" editável no modal.
+    meta: { ...(form.meta && typeof form.meta === 'object' ? form.meta : {}), about_institution: (form.about_institution || '').trim() },
     disciplinas: form.disciplinas
       .map((subject, subjectIndex) => ({
         nome: subject.nome.trim(),
@@ -1876,6 +1905,15 @@ export default function AdminConcursos({
     prova_data: template.prova_data || '',
     status_concurso: template.status_concurso || 'edital_publicado',
     is_public: template.is_public !== false,
+    // Preserva tipo + campos de vestibular ao publicar/enviar logo pela lista.
+    tipo: template.tipo || 'concurso',
+    uf: template.uf || null,
+    scope: template.scope || null,
+    modality: template.modality || null,
+    institution_type: template.institution_type || null,
+    registration_start: template.registration_start || null,
+    registration_end: template.registration_end || null,
+    meta: template.meta && typeof template.meta === 'object' ? template.meta : {},
     disciplinas: (template.disciplinas || []).map((subject, subjectIndex) => ({
       nome: subject.nome || '',
       ordem: subjectIndex,
@@ -2243,7 +2281,7 @@ export default function AdminConcursos({
             type="button"
             className="pl-btn pl-btn-primary"
             style={{ flexShrink: 0 }}
-            onClick={() => { resetForm(); setIsContestModalOpen(true); }}
+            onClick={() => { resetForm(); setForm((f) => ({ ...f, tipo: contestSectionTipo, scope: contestSectionTipo === 'vestibular' ? 'nacional' : '' })); setIsContestModalOpen(true); }}
           >
             <Plus size={14} /> {contestSectionTipo === 'vestibular' ? 'Novo vestibular' : 'Novo concurso'}
           </button>
@@ -2350,9 +2388,11 @@ export default function AdminConcursos({
         <div className="pl-card rounded-xl p-5 shadow-sm">
           <div className="mb-5 flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between" style={{ borderColor: 'var(--pl-rule-2)' }}>
             <div>
-              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Editor do concurso</p>
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{isVestForm ? 'Editor do vestibular' : 'Editor do concurso'}</p>
               <h3 className="text-xl font-semibold" style={{ color: 'var(--pl-ink)' }}>
-                {form.id ? 'Editando concurso' : 'Novo concurso'}
+                {isVestForm
+                  ? (form.id ? 'Editando vestibular' : 'Novo vestibular')
+                  : (form.id ? 'Editando concurso' : 'Novo concurso')}
               </h3>
             </div>
 
@@ -2377,7 +2417,7 @@ export default function AdminConcursos({
                 className="pl-btn pl-btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-                {isSaving ? 'Salvando...' : form.id ? 'Salvar concurso' : 'Criar concurso'}
+                {isSaving ? 'Salvando...' : `${form.id ? 'Salvar' : 'Criar'} ${isVestForm ? 'vestibular' : 'concurso'}`}
               </button>
               {selectedTemplate && (
                 <button
@@ -2403,7 +2443,7 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          {!form.id && (
+          {!form.id && !isVestForm && (
           <div className="mb-5 rounded-lg p-4" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -2599,10 +2639,10 @@ export default function AdminConcursos({
           {/* Abas internas do modal */}
           <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 20 }}>
             {[
-              { id: 'dados', label: 'Dados', warn: !form.area || !form.cargo || !form.prova_data },
-              { id: 'midia', label: 'Mídia', warn: !form.imagem_url || !form.edital_url },
-              { id: 'etapas', label: 'Etapas', warn: false },
-              { id: 'conteudo', label: 'Conteúdo', warn: !form.disciplinas.some((s) => s.topicosTexto && s.topicosTexto.trim()) },
+              { id: 'dados', label: 'Dados', warn: isVestForm ? (!form.concurso || !form.uf && form.scope === 'estadual') : (!form.area || !form.cargo || !form.prova_data) },
+              { id: 'midia', label: 'Mídia', warn: !form.imagem_url },
+              ...(isVestForm ? [] : [{ id: 'etapas', label: 'Etapas', warn: false }]),
+              { id: 'conteudo', label: isVestForm ? 'Matérias' : 'Conteúdo', warn: !form.disciplinas.some((s) => s.nome && s.nome.trim()) },
             ].map((t) => {
               const on = modalTab === t.id;
               return (
@@ -2629,10 +2669,42 @@ export default function AdminConcursos({
             {modalTab === 'dados' && (
               <div className="pl-card rounded-xl p-4">
                 <div className="mb-4">
-                  <p className="pl-eyebrow">Dados principais</p>
-                  <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>Identificação e vitrine</h4>
+                  <p className="pl-eyebrow">{isVestForm ? 'Dados do vestibular' : 'Dados principais'}</p>
+                  <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>{isVestForm ? 'Identificação' : 'Identificação e vitrine'}</h4>
                 </div>
 
+                {isVestForm ? (
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <TextField label="Nome do vestibular" value={form.nome} onChange={(value) => updateFormField('nome', value)} placeholder="Ex: FUVEST 2027" />
+                    <TextField label="Instituição" value={form.concurso} onChange={(value) => updateFormField('concurso', value)} placeholder="Ex: Universidade de São Paulo" />
+                    <TextField label="Sigla" value={form.banca} onChange={(value) => updateFormField('banca', value)} placeholder="Ex: USP" />
+                    <SelectField label="Abrangência" value={form.scope || 'nacional'} onChange={(value) => updateFormField('scope', value)} options={[{ value: 'nacional', label: 'Nacional' }, { value: 'estadual', label: 'Estadual' }]} />
+                    {form.scope === 'estadual'
+                      ? <TextField label="UF" value={form.uf} onChange={(value) => updateFormField('uf', value.toUpperCase().slice(0, 2))} placeholder="Ex: SP" />
+                      : <div />}
+                    <SelectField label="Tipo de instituição" value={form.institution_type} onChange={(value) => updateFormField('institution_type', value)} options={[{ value: '', label: 'Selecione' }, { value: 'publica', label: 'Pública' }, { value: 'privada', label: 'Privada' }, { value: 'programa_governo', label: 'Programa do governo' }]} />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <SelectField label="Modalidade" value={form.modality} onChange={(value) => updateFormField('modality', value)} options={[{ value: '', label: 'Selecione' }, { value: 'presencial', label: 'Presencial' }, { value: 'ead', label: 'EAD' }, { value: 'hibrido', label: 'Híbrido' }, { value: 'multiplo', label: 'Presencial e EAD' }]} />
+                    <TextField label="Área" value={form.area} onChange={(value) => updateFormField('area', value)} placeholder="Ex: Educação" />
+                    <TextField label="Requisito" value={form.escolaridade} onChange={(value) => updateFormField('escolaridade', value)} placeholder="Ex: Ensino médio completo" />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <TextField label="Taxa de inscrição" value={form.inscricao_valor} onChange={(value) => updateFormField('inscricao_valor', value)} placeholder="Ex: R$ 85,00 ou Gratuito" icon={DollarSign} />
+                    <div>
+                      <label className="pl-eyebrow mb-2 block">Inscrições — início</label>
+                      <input type="date" value={form.registration_start || ''} onChange={(e) => updateFormField('registration_start', e.target.value)} className="pl-input w-full rounded-lg py-2.5 px-3 text-sm outline-none" />
+                    </div>
+                    <div>
+                      <label className="pl-eyebrow mb-2 block">Inscrições — fim</label>
+                      <input type="date" value={form.registration_end || ''} onChange={(e) => updateFormField('registration_end', e.target.value)} className="pl-input w-full rounded-lg py-2.5 px-3 text-sm outline-none" />
+                    </div>
+                  </div>
+                </div>
+                ) : (
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <TextField label="Nome do concurso" value={form.nome} onChange={(value) => updateFormField('nome', value)} />
@@ -2666,6 +2738,7 @@ export default function AdminConcursos({
                     <TextField label="Resumo das etapas" value={form.etapas} onChange={(value) => updateFormField('etapas', value)} placeholder="Ex: Prova, TAF, psicológico" />
                   </div>
                 </div>
+                )}
               </div>
             )}
             {modalTab === 'midia' && (
@@ -2897,28 +2970,54 @@ export default function AdminConcursos({
                 <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
                   <p className="pl-eyebrow">Checklist editorial</p>
                   <div className="mt-4 space-y-3 text-sm font-semibold" style={{ color: 'var(--pl-ink-2)' }}>
-                    <ChecklistRow ok={Boolean(form.area)} label="Área definida" />
-                    <ChecklistRow ok={Boolean(form.cargo)} label="Cargo identificado" />
-                    <ChecklistRow ok={Boolean(form.prova_data)} label="Data da prova preenchida" />
-                    <ChecklistRow ok={Boolean(form.imagem_url)} label="Imagem publicada" />
-                    <ChecklistRow ok={Boolean(form.edital_url)} label="PDF do edital publicado" />
-                    <ChecklistRow ok={form.disciplinas.some((subject) => subject.topicosTexto.trim())} label="Tópicos cadastrados" />
+                    {isVestForm ? (
+                      <>
+                        <ChecklistRow ok={Boolean(form.concurso)} label="Instituição definida" />
+                        <ChecklistRow ok={form.scope !== 'estadual' || Boolean(form.uf)} label="UF (se estadual)" />
+                        <ChecklistRow ok={Boolean(form.modality)} label="Modalidade definida" />
+                        <ChecklistRow ok={Boolean(form.imagem_url)} label="Logo enviada" />
+                        <ChecklistRow ok={Boolean(form.prova_data) || Boolean(form.registration_start)} label="Data ou inscrições" />
+                        <ChecklistRow ok={form.disciplinas.some((subject) => subject.nome && subject.nome.trim())} label="Matérias cadastradas" />
+                      </>
+                    ) : (
+                      <>
+                        <ChecklistRow ok={Boolean(form.area)} label="Área definida" />
+                        <ChecklistRow ok={Boolean(form.cargo)} label="Cargo identificado" />
+                        <ChecklistRow ok={Boolean(form.prova_data)} label="Data da prova preenchida" />
+                        <ChecklistRow ok={Boolean(form.imagem_url)} label="Imagem publicada" />
+                        <ChecklistRow ok={Boolean(form.edital_url)} label="PDF do edital publicado" />
+                        <ChecklistRow ok={form.disciplinas.some((subject) => subject.topicosTexto.trim())} label="Tópicos cadastrados" />
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {isVestForm && (
+                <div className="rounded-xl p-4" style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)' }}>
+                  <label className="pl-eyebrow mb-2 block">Sobre a instituição</label>
+                  <textarea
+                    rows={4}
+                    value={form.about_institution}
+                    onChange={(e) => updateFormField('about_institution', e.target.value)}
+                    placeholder="História / contexto da instituição — aparece na tela de detalhes do vestibular."
+                    className="pl-input pl-textarea w-full rounded-lg text-sm outline-none"
+                  />
+                </div>
+              )}
 
             </>)}
             {modalTab === 'conteudo' && (
               <div>
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <div>
-                    <p className="pl-eyebrow">Conteúdo programático</p>
-                    <h4 className="mt-1 text-lg font-semibold" style={{ color: 'var(--pl-ink)' }}>Disciplinas e tópicos</h4>
+                    <p className="pl-eyebrow">{isVestForm ? 'Matérias da prova' : 'Conteúdo programático'}</p>
+                    <h4 className="mt-1 text-lg font-semibold" style={{ color: 'var(--pl-ink)' }}>{isVestForm ? 'Matérias e tópicos' : 'Disciplinas e tópicos'}</h4>
                   </div>
 
                   <button type="button" onClick={addSubject} className="pl-btn pl-btn-ghost inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold" style={{ color: 'var(--pl-accent)' }}>
                     <PlusCircle size={16} />
-                    Nova disciplina
+                    {isVestForm ? 'Nova matéria' : 'Nova disciplina'}
                   </button>
                 </div>
 
@@ -2996,7 +3095,7 @@ export default function AdminConcursos({
               className={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors disabled:opacity-70 ${form.is_public ? 'pl-btn pl-btn-primary' : 'pl-btn pl-btn-ghost'}`}
             >
               {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-              {isSaving ? 'Salvando...' : !form.id ? 'Criar concurso' : form.is_public ? 'Salvar concurso' : 'Salvar rascunho'}
+              {isSaving ? 'Salvando...' : !form.id ? `Criar ${isVestForm ? 'vestibular' : 'concurso'}` : form.is_public ? `Salvar ${isVestForm ? 'vestibular' : 'concurso'}` : 'Salvar rascunho'}
             </button>
             {!form.is_public && (
               <button

@@ -1160,7 +1160,10 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, for
         </div>
 
         <div>
-          <p style={{ margin: 0, minHeight: 32, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, lineHeight: 1.32, color: 'var(--pl-ink-2)', fontWeight: 600 }}>{isVest ? (concurso.descricao || `Vestibular · ${area.label}`) : (concurso.cargo || concurso.concurso)}</p>
+          <p style={isVest
+            ? { margin: 0, fontSize: 12, lineHeight: 1.42, color: 'var(--pl-ink-2)', fontWeight: 500 }
+            : { margin: 0, minHeight: 32, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, lineHeight: 1.32, color: 'var(--pl-ink-2)', fontWeight: 600 }
+          }>{isVest ? (concurso.descricao || `Vestibular · ${area.label}`) : (concurso.cargo || concurso.concurso)}</p>
         </div>
 
         {hasMultipleRoles && (

@@ -173,6 +173,15 @@ async function saveContestTemplate(supabaseAdmin, templateData = {}, existingId 
     edital_url: templateData.edital_url || null,
     prova_data: templateData.prova_data || null,
     status_concurso: templateData.status_concurso || 'edital_publicado',
+    // Tipo + campos do modelo de vestibulares (híbrido). Concursos enviam tipo='concurso'.
+    tipo: templateData.tipo || 'concurso',
+    uf: templateData.uf || null,
+    scope: templateData.scope || null,
+    modality: templateData.modality || null,
+    institution_type: templateData.institution_type || null,
+    registration_start: templateData.registration_start || null,
+    registration_end: templateData.registration_end || null,
+    meta: templateData.meta && typeof templateData.meta === 'object' ? templateData.meta : {},
     updated_at: now,
   };
 
