@@ -42,7 +42,201 @@ const STAGE_LABELS = {
   curso_formacao: 'Curso de formação',
 };
 
-export default function ConcursoDetalhe({
+const VEST_MODALITY_LABEL = { presencial: 'Presencial', ead: 'EAD', hibrido: 'Híbrido', multiplo: 'Presencial e EAD' };
+const VEST_INSTITUTION_TYPE_LABEL = { publica: 'Pública', privada: 'Privada', programa_governo: 'Programa do governo' };
+
+const fmtDateBR = (v) => {
+  if (!v) return null;
+  const [y, m, d] = String(v).split('-');
+  return y && m && d ? `${d}/${m}/${y}` : String(v);
+};
+
+// Roteador: vestibular tem layout próprio; concurso segue o corpo completo.
+export default function ConcursoDetalhe(props) {
+  if (props?.contest?.tipo === 'vestibular') return <VestibularDetalhe {...props} />;
+  return <ConcursoDetalheBody {...props} />;
+}
+
+function VestSection({ title, children }) {
+  return (
+    <section className="pl-card" style={{ padding: 20 }}>
+      <p className="pl-eyebrow" style={{ marginBottom: 12 }}>{title}</p>
+      {children}
+    </section>
+  );
+}
+
+function VestibularDetalhe({
+  contest,
+  onBack,
+  onImport,
+  importingId = '',
+  limiteAtingido = false,
+  cursos = [],
+}) {
+  const [imageError, setImageError] = useState(false);
+  const meta = contest?.meta && typeof contest.meta === 'object' ? contest.meta : {};
+  const locality = contest?.scope === 'estadual' && contest?.uf ? String(contest.uf).toUpperCase() : 'Nacional';
+  const modalityLabel = VEST_MODALITY_LABEL[contest?.modality] || null;
+  const instLabel = VEST_INSTITUTION_TYPE_LABEL[contest?.institution_type] || null;
+  const statusKey = normalizeContestStatus(contest?.status_concurso);
+  const importing = importingId === contest?.id;
+  const added = cursos.some((c) => c.plano === contest?.plano || c.nome === contest?.nome || c.concurso === contest?.concurso);
+
+  const insStart = fmtDateBR(contest?.registration_start);
+  const insEnd = fmtDateBR(contest?.registration_end);
+  const inscricaoPeriodo = insStart || insEnd ? `${insStart || '—'} até ${insEnd || 'em aberto'}` : null;
+
+  const subjects = (contest?.disciplinas || []).map((d) => (typeof d === 'string' ? d : d?.nome)).filter(Boolean);
+  const subjectsSummary = Array.isArray(meta.subjects_summary) && meta.subjects_summary.length ? meta.subjects_summary : subjects;
+  const timeline = Array.isArray(meta.timeline) ? meta.timeline.filter((t) => t && t.title) : [];
+  const courses = Array.isArray(meta.courses_offered) ? meta.courses_offered.filter((c) => c && (c.name || typeof c === 'string')) : [];
+  const readings = Array.isArray(meta.required_readings) ? meta.required_readings.filter(Boolean) : [];
+  const entryMethods = Array.isArray(meta.entry_methods) ? meta.entry_methods.filter(Boolean) : [];
+  const about = meta.about_institution || '';
+  const site = meta.official_url || contest?.official_url || '';
+  const regUrl = meta.registration_url || '';
+  const editalUrl = contest?.edital_url || meta.edital_url || '';
+
+  const facts = [
+    { label: 'Data da prova', value: fmtDateBR(contest?.prova_data) || 'A definir' },
+    inscricaoPeriodo ? { label: 'Inscrições', value: inscricaoPeriodo } : null,
+    { label: 'Taxa', value: contest?.inscricao_valor || 'A definir' },
+    contest?.escolaridade ? { label: 'Requisito', value: contest.escolaridade } : null,
+    modalityLabel ? { label: 'Modalidade', value: modalityLabel } : null,
+  ].filter(Boolean);
+
+  const badges = [locality, instLabel, modalityLabel, STATUS_LABELS[statusKey] || 'Previsto'].filter(Boolean);
+
+  return (
+    <div className="pl-page" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <button type="button" onClick={onBack} className="pl-btn pl-btn-ghost pl-btn-sm" style={{ alignSelf: 'flex-start' }}>
+        <ArrowLeft size={15} /> Voltar
+      </button>
+
+      {/* Cabeçalho */}
+      <header className="pl-card" style={{ padding: 20, display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <div style={{ width: 96, height: 96, borderRadius: 12, flexShrink: 0, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          {contest?.imagem_url && !imageError
+            ? <img src={storageThumb(contest.imagem_url, 160)} alt={contest.nome} onError={() => setImageError(true)} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }} />
+            : <GraduationCap size={36} style={{ color: 'var(--pl-ink-4)' }} />}
+        </div>
+        <div style={{ flex: '1 1 280px', minWidth: 0 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{contest?.banca || 'Instituição'}</p>
+          <h1 className="pl-display" style={{ fontSize: 32, margin: 0 }}>{contest?.nome}</h1>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+            {badges.map((b, i) => (
+              <span key={`${b}-${i}`} className={`pl-tag ${i === 0 ? 'pl-tag-accent' : ''}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>{b}</span>
+            ))}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onImport?.(contest)}
+          disabled={importing || limiteAtingido || added}
+          className="pl-btn pl-btn-primary"
+          style={{ alignSelf: 'center' }}
+        >
+          {added ? 'Já no painel' : importing ? 'Adicionando...' : limiteAtingido ? 'Limite atingido' : <>Adicionar ao painel <ArrowRight size={15} /></>}
+        </button>
+      </header>
+
+      {/* Fatos-chave */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+        {facts.map((f) => (
+          <div key={f.label} className="pl-card" style={{ padding: '12px 14px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{f.label}</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{f.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Como funciona */}
+      {contest?.descricao && (
+        <VestSection title="Como funciona">
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
+        </VestSection>
+      )}
+
+      {/* Calendário */}
+      {timeline.length > 0 && (
+        <VestSection title="Calendário">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {timeline.map((t, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderBottom: i < timeline.length - 1 ? '1px solid var(--pl-rule)' : 'none' }}>
+                <span style={{ fontSize: 13, color: 'var(--pl-ink-2)' }}>{t.title}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', whiteSpace: 'nowrap' }}>{fmtDateBR(t.date) || 'a definir'}</span>
+              </div>
+            ))}
+          </div>
+        </VestSection>
+      )}
+
+      {/* Matérias cobradas */}
+      {subjectsSummary.length > 0 && (
+        <VestSection title="Matérias cobradas">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {subjectsSummary.map((s, i) => <span key={`${s}-${i}`} className="pl-tag">{s}</span>)}
+          </div>
+        </VestSection>
+      )}
+
+      {/* Leituras obrigatórias */}
+      {readings.length > 0 && (
+        <VestSection title="Leituras obrigatórias">
+          <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {readings.map((r, i) => <li key={i} style={{ fontSize: 13.5, color: 'var(--pl-ink-2)' }}>{r}</li>)}
+          </ul>
+        </VestSection>
+      )}
+
+      {/* Cursos oferecidos */}
+      {courses.length > 0 && (
+        <VestSection title="Cursos oferecidos">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+            {courses.map((c, i) => (
+              <div key={i} style={{ padding: '8px 12px', border: '1px solid var(--pl-rule-2)', borderRadius: 6, background: 'var(--pl-surface-2)' }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{c.name || c}</p>
+                {(c.degree || c.modality) && (
+                  <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--pl-ink-3)' }}>{[c.degree, VEST_MODALITY_LABEL[c.modality] || c.modality].filter(Boolean).join(' · ')}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </VestSection>
+      )}
+
+      {/* Formas de ingresso */}
+      {entryMethods.length > 0 && (
+        <VestSection title="Formas de ingresso">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {entryMethods.map((m, i) => <span key={`${m}-${i}`} className="pl-tag pl-tag-accent">{m}</span>)}
+          </div>
+        </VestSection>
+      )}
+
+      {/* Sobre a instituição */}
+      {about && (
+        <VestSection title="Sobre a instituição">
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{about}</p>
+        </VestSection>
+      )}
+
+      {/* Links oficiais */}
+      {(site || regUrl || editalUrl) && (
+        <VestSection title="Links oficiais">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {site && <a href={site} target="_blank" rel="noopener noreferrer" className="pl-btn pl-btn-ghost pl-btn-sm"><ExternalLink size={14} /> Site oficial</a>}
+            {regUrl && <a href={regUrl} target="_blank" rel="noopener noreferrer" className="pl-btn pl-btn-ghost pl-btn-sm"><ExternalLink size={14} /> Inscrição</a>}
+            {editalUrl && <a href={editalUrl} target="_blank" rel="noopener noreferrer" className="pl-btn pl-btn-ghost pl-btn-sm"><ExternalLink size={14} /> Edital</a>}
+          </div>
+        </VestSection>
+      )}
+    </div>
+  );
+}
+
+function ConcursoDetalheBody({
   contest: rawContest,
   onBack,
   onImport,
