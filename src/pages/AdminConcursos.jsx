@@ -2689,107 +2689,74 @@ export default function AdminConcursos({
                 </div>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-                <div className="overflow-hidden rounded-lg" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
-                {form.imagem_url ? (
-                  <img src={form.imagem_url} alt={form.nome || 'Curso'} className="h-36 w-full object-contain bg-slate-900/5 p-3" />
-                ) : (
-                  <div
-                    className="flex h-36 w-full items-center justify-center text-white"
-                    style={{ background: `linear-gradient(135deg, ${form.cor || '#1e3a5f'} 0%, #1A365D 100%)` }}
-                  >
-                    <ImageIcon size={36} />
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Imagem / capa */}
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }}>
+                      {form.imagem_url ? (
+                        <img src={form.imagem_url} alt={form.nome || 'Capa'} className="h-full w-full object-contain p-2" onError={(e) => { e.target.style.display = 'none'; }} />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-white" style={{ background: `linear-gradient(135deg, ${form.cor || '#1e3a5f'} 0%, #1A365D 100%)` }}>
+                          <ImageIcon size={28} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-blue-200 bg-white px-3 py-2.5 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50">
+                        {isUploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                        {isUploadingImage ? 'Enviando...' : 'Upload de imagem'}
+                        <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0])} />
+                      </label>
+                      <input value={form.imagem_url} onChange={(e) => updateFormField('imagem_url', e.target.value)} className="pl-input w-full rounded-lg text-sm outline-none" placeholder="URL final da imagem" />
+                    </div>
                   </div>
-                )}
+                  {form.imagem_url && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button type="button" onClick={handleRemoveImage} className="rounded-lg px-3 py-1.5 text-xs font-semibold" style={{ background: 'var(--pl-danger-soft)', border: '1px solid var(--pl-danger)', color: 'var(--pl-danger)' }}>Remover imagem</button>
+                      {form.concurso && (
+                        <button type="button" disabled={isSaving} onClick={() => handleApplyLogoToOrgao(form.concurso, form.imagem_url)} className="rounded-lg px-3 py-1.5 text-xs font-semibold disabled:opacity-50" style={{ background: 'var(--pl-accent-soft)', border: '1px solid var(--pl-accent)', color: 'var(--pl-accent)' }}>Aplicar a todos de {form.concurso}</button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-3">
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-blue-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-50">
-                      {isUploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                      {isUploadingImage ? 'Enviando imagem...' : 'Upload de imagem'}
-                      <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0])} />
-                    </label>
-                    <input
-                      value={form.imagem_url}
-                      onChange={(e) => updateFormField('imagem_url', e.target.value)}
-                      className="pl-input w-full rounded-lg px-4 py-3 text-sm outline-none"
-                      placeholder="URL final da imagem"
-                    />
-                    {form.imagem_url && (
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button type="button" onClick={handleRemoveImage} className="rounded-xl px-4 py-2 text-xs font-bold" style={{ background: 'var(--pl-danger-soft)', border: '1px solid var(--pl-danger)', color: 'var(--pl-danger)' }}>
-                          Remover imagem
-                        </button>
-                        {form.concurso && (
-                          <button
-                            type="button"
-                            disabled={isSaving}
-                            onClick={() => handleApplyLogoToOrgao(form.concurso, form.imagem_url)}
-                            className="rounded-xl px-4 py-2 text-xs font-bold disabled:opacity-50" style={{ background: 'var(--pl-accent-soft)', border: '1px solid var(--pl-accent)', color: 'var(--pl-accent)' }}
-                          >
-                            Aplicar a todos de {form.concurso}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    {logoLibrary.length > 0 && (
-                      <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                          Reutilizar logotipo
-                        </p>
-                        <div className="mt-3 grid max-h-52 gap-2 overflow-y-auto pr-1">
-                          {logoLibrary.map((asset) => {
-                            const selected = form.imagem_url === asset.url;
-                            return (
-                              <button
-                                key={asset.url}
-                                type="button"
-                                onClick={() => {
-                                  updateFormField('imagem_url', asset.url);
-                                  setLogoBatchUrl(asset.url);
-                                }}
-                                className={`flex items-center gap-3 rounded-xl border bg-white p-2 text-left transition-colors ${
-                                  selected ? 'border-blue-300 ring-2 ring-blue-100' : 'border-slate-200 hover:border-blue-200'
-                                }`}
-                              >
-                                <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-900/5">
-                                  <img src={asset.url} alt="" className="h-full w-full object-contain p-1" aria-hidden />
-                                </span>
-                                <span className="min-w-0">
-                                  <span className="block truncate text-xs font-bold text-slate-800">{asset.label}</span>
-                                  <span className="block truncate text-[11px] font-semibold text-slate-400">
-                                    {asset.linked.length} vínculo(s) no catálogo
-                                  </span>
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-50">
-                      {isUploadingEdital ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
-                      {isUploadingEdital ? 'Enviando edital...' : 'Upload de PDF'}
-                      <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handleEditalUpload(e.target.files?.[0])} />
-                    </label>
-                    <input
-                      value={form.edital_url}
-                      onChange={(e) => updateFormField('edital_url', e.target.value)}
-                      className="pl-input w-full rounded-lg px-4 py-3 text-sm outline-none"
-                      placeholder="URL final do edital PDF"
-                    />
-                    {form.edital_url && (
-                      <button type="button" onClick={handleRemoveEdital} className="rounded-xl px-4 py-2 text-xs font-bold" style={{ background: 'var(--pl-danger-soft)', border: '1px solid var(--pl-danger)', color: 'var(--pl-danger)' }}>
-                        Remover edital
-                      </button>
-                    )}
-                  </div>
+                {/* Edital */}
+                <div className="space-y-3">
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-200 bg-white px-3 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50">
+                    {isUploadingEdital ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+                    {isUploadingEdital ? 'Enviando edital...' : 'Upload de PDF'}
+                    <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => handleEditalUpload(e.target.files?.[0])} />
+                  </label>
+                  <input value={form.edital_url} onChange={(e) => updateFormField('edital_url', e.target.value)} className="pl-input w-full rounded-lg text-sm outline-none" placeholder="URL final do edital PDF" />
+                  {form.edital_url && (
+                    <button type="button" onClick={handleRemoveEdital} className="rounded-lg px-3 py-1.5 text-xs font-semibold" style={{ background: 'var(--pl-danger-soft)', border: '1px solid var(--pl-danger)', color: 'var(--pl-danger)' }}>Remover edital</button>
+                  )}
                 </div>
               </div>
+
+              {/* Reutilizar logotipo - largura total */}
+              {logoLibrary.length > 0 && (
+                <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Reutilizar logotipo</p>
+                  <div className="mt-3 grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {logoLibrary.map((asset) => {
+                      const selected = form.imagem_url === asset.url;
+                      return (
+                        <button key={asset.url} type="button" onClick={() => { updateFormField('imagem_url', asset.url); setLogoBatchUrl(asset.url); }} className={`flex items-center gap-3 rounded-lg border bg-white p-2 text-left transition-colors ${selected ? 'border-blue-300 ring-2 ring-blue-100' : 'border-slate-200 hover:border-blue-200'}`}>
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-900/5">
+                            <img src={asset.url} alt="" className="h-full w-full object-contain p-1" aria-hidden />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-xs font-bold text-slate-800">{asset.label}</span>
+                            <span className="block truncate text-[11px] font-semibold text-slate-400">{asset.linked.length} vínculo(s) no catálogo</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             )}
@@ -2916,14 +2883,14 @@ export default function AdminConcursos({
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                <div>
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-stretch">
+                <div className="flex flex-col">
                   <label className="pl-eyebrow mb-2 block">Descrição curta</label>
                   <textarea
                     rows={5}
                     value={form.descricao}
                     onChange={(e) => updateFormField('descricao', e.target.value)}
-                    className="pl-input pl-textarea w-full rounded-lg text-sm outline-none"
+                    className="pl-input pl-textarea w-full flex-1 rounded-lg text-sm outline-none"
                   />
                 </div>
 
