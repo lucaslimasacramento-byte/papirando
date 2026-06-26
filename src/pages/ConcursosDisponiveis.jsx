@@ -22,6 +22,9 @@ import {
 import { buildContestForRole, CONTEST_STATUS_LABELS, CONTEST_STATUS_OPTIONS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
 import { getAreaToken } from '../lib/areaTokens';
 import { storageThumb } from '../lib/imageUrl';
+import { EnemDetalhe } from './ConcursoDetalhe';
+import { supabase } from '../lib/supabase';
+import { loadContestTemplateContent } from '../lib/contestCatalogApi';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
@@ -80,6 +83,8 @@ export default function ConcursosDisponiveis({
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [planName, setPlanName] = useState('');
   const [addingPlan, setAddingPlan] = useState(false);
+  // ENEM: as disciplinas/tópicos não vêm na lista; carrega sob demanda p/ a página rica.
+  const [enemDisciplinas, setEnemDisciplinas] = useState(null);
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
   // Catálogo publicado (contest_templates) agrupado e separado pelo tipo da aba ativa:
   // Concursos = tudo que não é vestibular · Vestibulares = tipo 'vestibular'.
@@ -94,6 +99,22 @@ export default function ConcursosDisponiveis({
   const isVest = tipoAtivo === 'vestibular';
   // Chave de agrupamento/filtro: localidade (Nacional/UF) p/ vestibular, área p/ concurso.
   const groupKeyOf = (t) => (isVest ? localityOf(t) : (t.area || 'Geral'));
+
+  // ENEM é exame único: pega o template e carrega disciplinas/tópicos sob demanda.
+  const enemTpl = tipoAtivo === 'enem' ? groupedCatalog[0] : null;
+  useEffect(() => {
+    let alive = true;
+    if (tipoAtivo !== 'enem' || !enemTpl?.id) { setEnemDisciplinas(null); return undefined; }
+    (async () => {
+      try {
+        const ds = await loadContestTemplateContent(supabase, enemTpl.id);
+        if (alive) setEnemDisciplinas(Array.isArray(ds) ? ds : []);
+      } catch {
+        if (alive) setEnemDisciplinas([]);
+      }
+    })();
+    return () => { alive = false; };
+  }, [tipoAtivo, enemTpl?.id]);
 
   const formatDateBR = (value) => {
     if (!value) return 'Sem data';
@@ -450,8 +471,27 @@ export default function ConcursosDisponiveis({
           />
         )}
 
-        {/* Concursos, ENEM e Vestibulares — fluxo do catálogo publicado (contest_templates) */}
-        {(tipoAtivo === 'concurso' || tipoAtivo === 'vestibular' || tipoAtivo === 'enem') && (
+        {/* ENEM — exame único: abre direto a página completa, sem vitrine de cards */}
+        {tipoAtivo === 'enem' && (
+          groupedCatalog.length > 0 ? (
+            <EnemDetalhe
+              embedded
+              contest={{ ...groupedCatalog[0], disciplinas: enemDisciplinas || groupedCatalog[0].disciplinas || [] }}
+              onImport={handleImport}
+              importingId={importingId}
+              limiteAtingido={limiteAtingido}
+              cursos={cursos}
+              isAdmin={isAdmin}
+            />
+          ) : (
+            <section style={{ borderRadius: '2rem', border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 40, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+              O ENEM ainda não foi publicado. Publique em Configurações → Catálogo → ENEM.
+            </section>
+          )
+        )}
+
+        {/* Concursos e Vestibulares — fluxo do catálogo publicado (contest_templates) */}
+        {(tipoAtivo === 'concurso' || tipoAtivo === 'vestibular') && (
           <>
           <ConcursosFilters
           tipo={tipoAtivo}

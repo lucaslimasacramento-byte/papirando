@@ -96,7 +96,7 @@ function enemAreaOf(nome = '') {
   return ENEM_AREA_MAP[key] || 'Outras';
 }
 
-function EnemDetalhe({
+export function EnemDetalhe({
   contest,
   onBack,
   onImport,
@@ -111,6 +111,7 @@ function EnemDetalhe({
   isInterested = false,
   isTargetContest = false,
   onEditContest,
+  embedded = false,
 }) {
   const [expanded, setExpanded] = useState({});
   const meta = contest?.meta && typeof contest.meta === 'object' ? contest.meta : {};
@@ -158,17 +159,19 @@ function EnemDetalhe({
 
   return (
     <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '20px 20px 40px' }}>
-      {/* Voltar + admin */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <button type="button" onClick={onBack} className="pl-btn pl-btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <ArrowLeft size={16} /> Voltar
-        </button>
-        {isAdmin ? (
-          <button type="button" onClick={() => onEditContest?.(contest)} className="pl-btn pl-btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', color: 'var(--pl-warn)' }}>
-            <Pencil size={14} /> Admin: editar
+      {/* Voltar + admin (oculto quando embutido na vitrine) */}
+      {!embedded && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <button type="button" onClick={onBack} className="pl-btn pl-btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <ArrowLeft size={16} /> Voltar
           </button>
-        ) : null}
-      </div>
+          {isAdmin ? (
+            <button type="button" onClick={() => onEditContest?.(contest)} className="pl-btn pl-btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', color: 'var(--pl-warn)' }}>
+              <Pencil size={14} /> Admin: editar
+            </button>
+          ) : null}
+        </div>
+      )}
 
       {/* Hero */}
       <div className="pl-card" style={{ padding: '24px 28px', background: 'linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%)', border: 'none', color: '#f3efe5' }}>
@@ -186,15 +189,21 @@ function EnemDetalhe({
             <p style={{ margin: '6px 0 0', fontSize: 14, fontWeight: 500, opacity: 0.8 }}>INEP/MEC · acesso ao ensino superior via SiSU, ProUni e Fies</p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-            <button type="button" onClick={() => onToggleFavorite?.(contest.id)} style={heroBtn(isFavorite, '#fa6464')}>
-              <Heart size={14} style={{ fill: isFavorite ? 'currentColor' : 'none' }} /> {isFavorite ? 'Favoritado' : 'Favoritar'}
-            </button>
-            <button type="button" onClick={() => onToggleInterested?.(contest.id)} style={heroBtn(isInterested, '#fab43c')}>
-              <Bookmark size={14} style={{ fill: isInterested ? 'currentColor' : 'none' }} /> {isInterested ? 'Quero estudar' : 'Interesse'}
-            </button>
-            <button type="button" onClick={() => onSetTargetContest?.(contest.id)} style={heroBtn(isTargetContest, '#fadc3c')}>
-              <BadgeCheck size={14} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} /> {isTargetContest ? 'Alvo' : 'Como alvo'}
-            </button>
+            {onToggleFavorite && (
+              <button type="button" onClick={() => onToggleFavorite(contest.id)} style={heroBtn(isFavorite, '#fa6464')}>
+                <Heart size={14} style={{ fill: isFavorite ? 'currentColor' : 'none' }} /> {isFavorite ? 'Favoritado' : 'Favoritar'}
+              </button>
+            )}
+            {onToggleInterested && (
+              <button type="button" onClick={() => onToggleInterested(contest.id)} style={heroBtn(isInterested, '#fab43c')}>
+                <Bookmark size={14} style={{ fill: isInterested ? 'currentColor' : 'none' }} /> {isInterested ? 'Quero estudar' : 'Interesse'}
+              </button>
+            )}
+            {onSetTargetContest && (
+              <button type="button" onClick={() => onSetTargetContest(contest.id)} style={heroBtn(isTargetContest, '#fadc3c')}>
+                <BadgeCheck size={14} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} /> {isTargetContest ? 'Alvo' : 'Como alvo'}
+              </button>
+            )}
             <button type="button" onClick={() => onImport?.(contest)} disabled={importing || limiteAtingido || added}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, background: 'rgba(255,255,255,0.95)', color: 'var(--pl-ink)', padding: '6px 14px', fontSize: 13, fontWeight: 700, border: 'none', cursor: importing || limiteAtingido || added ? 'not-allowed' : 'pointer', opacity: importing || limiteAtingido || added ? 0.6 : 1 }}>
               {added ? 'Já no painel' : limiteAtingido ? 'Limite' : importing ? '...' : <>Adicionar aos estudos <ArrowRight size={14} /></>}
