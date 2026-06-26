@@ -1069,6 +1069,8 @@ export default function AdminConcursos({
   const [publishingDraftId, setPublishingDraftId] = useState('');
   const [uploadingLogoDraftId, setUploadingLogoDraftId] = useState('');
   const [draftQuery, setDraftQuery] = useState('');
+  const [selectedDraftIds, setSelectedDraftIds] = useState(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
   // Rascunhos carregados pelo PRÓPRIO AdminConcursos (import direto), sem depender de
   // props vindas do App — o bundler estava dropando essas props no build de produção.
   const [localDrafts, setLocalDrafts] = useState([]);
@@ -2004,6 +2006,26 @@ export default function AdminConcursos({
     ...overrides,
   });
 
+  const handleBatchDeleteDrafts = async (idsToDelete) => {
+    if (!idsToDelete || idsToDelete.size === 0) return;
+    const count = idsToDelete.size;
+    if (!window.confirm(`Excluir ${count} rascunho(s) selecionado(s)? Esta ação não pode ser desfeita.`)) return;
+    setBatchDeleting(true);
+    try {
+      const targets = localDrafts.filter((d) => idsToDelete.has(d.id));
+      for (const t of targets) {
+        await onDeleteTemplate?.(t);
+      }
+      setSelectedDraftIds(new Set());
+      await reloadDrafts();
+      success(`${count} rascunho(s) excluído(s).`);
+    } catch (error) {
+      toastError(error.message || 'Erro ao excluir rascunhos.', 'Erro');
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
+
   const handlePublishDraft = async (draft) => {
     if (!draft?.id) return;
     setPublishingDraftId(draft.id);
@@ -2096,6 +2118,9 @@ export default function AdminConcursos({
   const renderRascunhos = (bucket, { singular = 'item' } = {}) => {
     const data = draftsByBucket[bucket] || { count: 0, areaGroups: [] };
     const totalInBucket = localDrafts.filter((d) => draftBucketOf(d) === bucket).length;
+    const allVisibleIds = data.areaGroups.flatMap(([, items]) => items.map((d) => d.id));
+    const allVisibleSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedDraftIds.has(id));
+    const someSelected = selectedDraftIds.size > 0;
     return (
       <div className="pl-card" style={{ padding: 20 }}>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14, alignItems: 'center' }}>
@@ -2112,6 +2137,18 @@ export default function AdminConcursos({
           <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
             {draftsLoading ? 'carregando…' : `${data.count} de ${totalInBucket} rascunho(s)`}
           </p>
+          {someSelected && (
+            <button
+              type="button"
+              className="pl-btn pl-btn-sm"
+              disabled={batchDeleting}
+              onClick={() => handleBatchDeleteDrafts(selectedDraftIds)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-danger-soft)', border: '1px solid var(--pl-danger)', color: 'var(--pl-danger)' }}
+            >
+              {batchDeleting ? <Loader2 size={13} className="pl-spin" /> : <Trash2 size={13} />}
+              Excluir selecionados ({selectedDraftIds.size})
+            </button>
+          )}
           <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={reloadDrafts} disabled={draftsLoading}>
             {draftsLoading ? <Loader2 size={13} className="pl-spin" /> : null} Recarregar
           </button>
@@ -2132,7 +2169,26 @@ export default function AdminConcursos({
               Nenhum rascunho encontrado com essa busca.
             </div>
           ) : (
-            data.areaGroups.map(([area, items]) => (
+            <>
+              {/* Cabeçalho de seleção */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderBottom: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={() => {
+                    if (allVisibleSelected) {
+                      setSelectedDraftIds((prev) => { const s = new Set(prev); allVisibleIds.forEach((id) => s.delete(id)); return s; });
+                    } else {
+                      setSelectedDraftIds((prev) => { const s = new Set(prev); allVisibleIds.forEach((id) => s.add(id)); return s; });
+                    }
+                  }}
+                  style={{ width: 15, height: 15, cursor: 'pointer', accentColor: 'var(--pl-accent)', flexShrink: 0 }}
+                />
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+                  {someSelected ? `${selectedDraftIds.size} selecionado(s)` : 'Selecionar todos'}
+                </span>
+              </div>
+              {data.areaGroups.map(([area, items]) => (
               <div key={area}>
                 {data.areaGroups.length > 1 && (
                   <div style={{
@@ -2149,20 +2205,36 @@ export default function AdminConcursos({
                 {items.map((draft) => {
                   const isPublishing = publishingDraftId === draft.id;
                   const isUploading = uploadingLogoDraftId === draft.id;
-                  const busy = isPublishing || isUploading;
+                  const busy = isPublishing || isUploading || batchDeleting;
+                  const isChecked = selectedDraftIds.has(draft.id);
                   return (
                     <div
                       key={draft.id}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: 'auto minmax(0,1.6fr) minmax(110px,0.7fr) auto',
+                        gridTemplateColumns: '20px auto minmax(0,1.6fr) minmax(110px,0.7fr) auto',
                         gap: 10,
                         padding: '10px 14px',
                         alignItems: 'center',
                         borderBottom: '1px solid var(--pl-rule)',
                         opacity: busy ? 0.6 : 1,
+                        background: isChecked ? 'var(--pl-danger-soft)' : 'transparent',
+                        transition: 'background .1s',
                       }}
                     >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          setSelectedDraftIds((prev) => {
+                            const s = new Set(prev);
+                            if (s.has(draft.id)) s.delete(draft.id); else s.add(draft.id);
+                            return s;
+                          });
+                        }}
+                        style={{ width: 15, height: 15, cursor: 'pointer', accentColor: 'var(--pl-danger)', flexShrink: 0 }}
+                      />
+
                       <label
                         title="Enviar logotipo"
                         style={{
@@ -2211,7 +2283,8 @@ export default function AdminConcursos({
                   );
                 })}
               </div>
-            ))
+            ))}
+            </>
           )}
         </div>
       </div>

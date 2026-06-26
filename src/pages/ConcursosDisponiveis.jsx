@@ -408,7 +408,7 @@ export default function ConcursosDisponiveis({
 
   const TIPOS = [
     { id: 'concurso',   label: 'Concursos',   icon: LibraryBig },
-    { id: 'enem',       label: 'ENEM',         icon: Compass },
+    { id: 'enem',       label: null,           icon: null, wordmark: true },
     { id: 'vestibular', label: 'Vestibulares', icon: GraduationCap },
     { id: 'faculdade',  label: 'Graduação',     icon: Building2 },
   ];
@@ -428,7 +428,7 @@ export default function ConcursosDisponiveis({
 
         {/* Seletor de tipo */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', borderBottom: '1px solid var(--pl-rule-2)', paddingBottom: 16 }}>
-          {TIPOS.map(({ id, label, icon: Icon }) => {
+          {TIPOS.map(({ id, label, icon: Icon, wordmark }) => {
             const active = tipoAtivo === id;
             return (
               <button
@@ -444,8 +444,14 @@ export default function ConcursosDisponiveis({
                   fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all .12s',
                 }}
               >
-                <Icon size={13} />
-                {label}
+                {wordmark ? (
+                  <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 13, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>enem</span>
+                ) : (
+                  <>
+                    <Icon size={13} />
+                    {label}
+                  </>
+                )}
               </button>
             );
           })}

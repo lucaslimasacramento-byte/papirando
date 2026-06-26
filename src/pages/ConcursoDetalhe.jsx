@@ -198,15 +198,12 @@ export function EnemDetalhe({
 
         {/* Main hero body */}
         <div style={{ padding: '20px 28px 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
-          {/* Wordmark */}
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 34, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.04em', lineHeight: 1 }}>enem</span>
-          </div>
-
-          {/* Title + badges */}
+          {/* Wordmark + info */}
           <div style={{ flex: 1, minWidth: 220 }}>
-            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 700, lineHeight: 1.05, color: '#f3efe5', letterSpacing: '-0.02em' }}>{contest?.nome || 'ENEM'}</h1>
-            <p style={{ margin: '8px 0 0', fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.65)', lineHeight: 1.5 }}>
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 52, fontWeight: 800, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.05em', lineHeight: 1, display: 'block' }}>enem</span>
+            </div>
+            <p style={{ margin: '0 0 0', fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.65)', lineHeight: 1.5 }}>
               Acesso ao ensino superior via SiSU, ProUni e Fies
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
