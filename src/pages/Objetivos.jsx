@@ -410,9 +410,30 @@ function CatalogoView({ catalog, tipo, cursos, onImport, onOpenDetail, limiteAti
 
 // ─── ENEM View ────────────────────────────────────────────────────────────────
 
-function EnemView({ cursos, onImport, limiteAtingido }) {
+function EnemView({ cursos, onImport, limiteAtingido, instituicoes = [], onUpdateTargets }) {
   const [loading, setLoading] = useState(false);
-  const jaAdicionado = (cursos || []).some((c) => inferTipo(c) === 'enem' || (c.nome || '').toLowerCase().includes('enem'));
+  const [busca, setBusca] = useState('');
+  const enemCurso = (cursos || []).find((c) => inferTipo(c) === 'enem' || (c.nome || '').toLowerCase().includes('enem'));
+  const jaAdicionado = Boolean(enemCurso);
+
+  const alvos = Array.isArray(enemCurso?.instituicoes_alvo) ? enemCurso.instituicoes_alvo : [];
+  const alvoIds = new Set(alvos.map((a) => a.id));
+  const maxAtingido = alvos.length >= 3;
+
+  const toggleAlvo = (inst) => {
+    if (!enemCurso || !onUpdateTargets) return;
+    if (alvoIds.has(inst.id)) {
+      onUpdateTargets(enemCurso.id, alvos.filter((a) => a.id !== inst.id));
+    } else if (!maxAtingido) {
+      onUpdateTargets(enemCurso.id, [...alvos, { id: inst.id, nome: inst.nome, uf: inst.uf || '', sigla: inst.concurso || '' }]);
+    }
+  };
+
+  const q = busca.trim().toLowerCase();
+  const instituicoesFiltradas = (instituicoes || [])
+    .filter((inst) => !q || [inst.nome, inst.concurso, inst.uf].some((v) => String(v || '').toLowerCase().includes(q)))
+    .sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR'))
+    .slice(0, 40);
 
   const handleAdd = async () => {
     if (loading || limiteAtingido || jaAdicionado) return;
@@ -486,6 +507,78 @@ function EnemView({ cursos, onImport, limiteAtingido }) {
           </button>
         )}
       </div>
+
+      {/* Instituições-alvo: o aluno mira até 3 instituições que ingressam pelo ENEM. */}
+      {jaAdicionado && (
+        <div className="pl-card" style={{ padding: 24, marginTop: 16 }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Minhas instituições-alvo</p>
+          <p style={{ margin: '4px 0 14px', fontSize: 12, color: 'var(--pl-ink-3)' }}>
+            Escolha até 3 instituições que você quer alcançar com a nota do ENEM. {alvos.length}/3 selecionada(s).
+          </p>
+
+          {alvos.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+              {alvos.map((a) => (
+                <span key={a.id} className="pl-tag pl-tag-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {a.nome}{a.uf ? ` · ${a.uf}` : ''}
+                  <button type="button" onClick={() => toggleAlvo({ id: a.id })} style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'inherit', lineHeight: 0, padding: 0 }} title="Remover">
+                    <X size={13} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div style={{ position: 'relative', marginBottom: 10 }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-4)', pointerEvents: 'none' }} />
+            <input
+              className="pl-input"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar instituição por nome ou UF…"
+              style={{ paddingLeft: 30, width: '100%' }}
+            />
+          </div>
+
+          <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid var(--pl-rule-2)', borderRadius: 6 }}>
+            {(instituicoes || []).length === 0 ? (
+              <p style={{ padding: 16, margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                Nenhuma instituição cadastrada ainda. (Admin → Catálogo → Instituições ENEM)
+              </p>
+            ) : instituicoesFiltradas.length === 0 ? (
+              <p style={{ padding: 16, margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>Nenhuma instituição encontrada.</p>
+            ) : (
+              instituicoesFiltradas.map((inst) => {
+                const sel = alvoIds.has(inst.id);
+                const bloqueado = !sel && maxAtingido;
+                return (
+                  <button
+                    key={inst.id}
+                    type="button"
+                    onClick={() => toggleAlvo(inst)}
+                    disabled={bloqueado}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
+                      padding: '8px 12px', border: 0, borderBottom: '1px solid var(--pl-rule)', cursor: bloqueado ? 'not-allowed' : 'pointer',
+                      background: sel ? 'var(--pl-accent-soft)' : 'transparent', opacity: bloqueado ? 0.45 : 1,
+                    }}
+                  >
+                    <span style={{ width: 18, flexShrink: 0, color: 'var(--pl-accent)' }}>
+                      {sel ? <CheckCircle2 size={16} /> : <Plus size={15} style={{ color: 'var(--pl-ink-4)' }} />}
+                    </span>
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inst.nome}</span>
+                      {(inst.concurso || inst.uf) && (
+                        <span style={{ display: 'block', fontSize: 11, color: 'var(--pl-ink-3)' }}>{[inst.concurso, inst.uf].filter(Boolean).join(' · ')}</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -602,6 +695,7 @@ export default function Objetivos({
   courseTemplates = [],
   cursos = [],
   onImportCatalogCourse,
+  onUpdateCourseTargets,
   onOpenContestDetail,
   remainingCourseSlots = 3,
   isAdmin = false,
@@ -736,6 +830,8 @@ export default function Objetivos({
             cursos={cursos}
             onImport={handleCreateCourse}
             limiteAtingido={limiteAtingido}
+            instituicoes={(concursoCatalog || []).filter((t) => t.tipo === 'enem_inst')}
+            onUpdateTargets={onUpdateCourseTargets}
           />
         )}
 

@@ -1110,10 +1110,16 @@ export default function AdminConcursos({
   // Tipo mostrado na lista do catálogo depende da aba: Concursos = concurso,
   // Vestibulares = vestibular (ambos vêm de contest_templates).
   const contestSectionTipo =
-    adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'enem' ? 'enem' : 'concurso';
+    adminSection === 'vestibulares' ? 'vestibular'
+      : adminSection === 'enem' ? 'enem'
+      : adminSection === 'enem_inst' ? 'enem_inst'
+      : 'concurso';
   // Substantivo usado nos rótulos da seção (botão criar, placeholder, estado vazio).
   const contestSectionNoun =
-    contestSectionTipo === 'vestibular' ? 'vestibular' : contestSectionTipo === 'enem' ? 'exame ENEM' : 'concurso';
+    contestSectionTipo === 'vestibular' ? 'vestibular'
+      : contestSectionTipo === 'enem' ? 'exame ENEM'
+      : contestSectionTipo === 'enem_inst' ? 'instituição ENEM'
+      : 'concurso';
 
 
   useEffect(() => {
@@ -1246,6 +1252,10 @@ export default function AdminConcursos({
   );
   const publishedEnemCount = useMemo(
     () => concursoCatalog.filter((t) => t.tipo === 'enem').length,
+    [concursoCatalog]
+  );
+  const publishedEnemInstCount = useMemo(
+    () => concursoCatalog.filter((t) => t.tipo === 'enem_inst').length,
     [concursoCatalog]
   );
 
@@ -2028,6 +2038,7 @@ export default function AdminConcursos({
   const draftBucketOf = (d) => {
     if (d.tipo === 'vestibular') return 'vestibular';
     if (d.tipo === 'enem') return 'enem';
+    if (d.tipo === 'enem_inst') return 'enem_inst';
     if (d.tipo === 'concurso') return 'concurso';
     if (d.tipo === 'faculdade' || d.tipo === 'curso') return 'curso';
     return 'outros';
@@ -2035,7 +2046,7 @@ export default function AdminConcursos({
 
   // Contagem por tipo (independe da busca/filtro) — para os botões de filtro.
   const draftCounts = React.useMemo(() => {
-    const c = { todos: localDrafts.length, vestibular: 0, enem: 0, concurso: 0, curso: 0, outros: 0 };
+    const c = { todos: localDrafts.length, vestibular: 0, enem: 0, enem_inst: 0, concurso: 0, curso: 0, outros: 0 };
     for (const d of localDrafts) c[draftBucketOf(d)] += 1;
     return c;
   }, [localDrafts]);
@@ -2044,7 +2055,7 @@ export default function AdminConcursos({
   // Cada módulo (Concursos/Vestibulares/Faculdade) lê só o seu bucket.
   const draftsByBucket = React.useMemo(() => {
     const q = draftQuery.trim().toLowerCase();
-    const buckets = { vestibular: [], enem: [], concurso: [], curso: [], outros: [] };
+    const buckets = { vestibular: [], enem: [], enem_inst: [], concurso: [], curso: [], outros: [] };
     for (const d of localDrafts) {
       if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
       buckets[draftBucketOf(d)].push(d);
@@ -2239,6 +2250,7 @@ export default function AdminConcursos({
         {[
           { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
           { id: 'enem', label: 'ENEM', count: publishedEnemCount },
+          { id: 'enem_inst', label: 'Instituições ENEM', count: publishedEnemInstCount },
           { id: 'vestibulares', label: 'Vestibulares', count: publishedVestibularCount },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
         ].map((tab) => (
@@ -2273,8 +2285,8 @@ export default function AdminConcursos({
 
       {/* Sub-toggle: Publicados | Rascunhos (por módulo) */}
       {(() => {
-        const bucket = adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'enem' ? 'enem' : adminSection === 'cursos' ? 'curso' : 'concurso';
-        const pubCount = adminSection === 'vestibulares' ? publishedVestibularCount : adminSection === 'enem' ? publishedEnemCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
+        const bucket = adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'enem' ? 'enem' : adminSection === 'enem_inst' ? 'enem_inst' : adminSection === 'cursos' ? 'curso' : 'concurso';
+        const pubCount = adminSection === 'vestibulares' ? publishedVestibularCount : adminSection === 'enem' ? publishedEnemCount : adminSection === 'enem_inst' ? publishedEnemInstCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
         const draftCount = draftCounts[bucket] || 0;
         return (
           <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
@@ -2310,10 +2322,10 @@ export default function AdminConcursos({
         );
       })()}
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem') && catalogView === 'rascunhos' &&
+      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'rascunhos' &&
         renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem') && catalogView === 'publicados' && (
+      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'publicados' && (
       <div className="pl-card" style={{ padding: 20 }}>
         {/* Barra de busca + ações */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16, alignItems: 'flex-end' }}>
@@ -2322,7 +2334,7 @@ export default function AdminConcursos({
             <input
               value={contestQuery}
               onChange={(e) => setContestQuery(e.target.value)}
-              placeholder={contestSectionTipo === 'vestibular' ? 'Nome do vestibular, banca…' : contestSectionTipo === 'enem' ? 'Nome do exame, edição, banca…' : 'Nome, cargo, órgão ou banca…'}
+              placeholder={contestSectionTipo === 'vestibular' ? 'Nome do vestibular, banca…' : contestSectionTipo === 'enem' ? 'Nome do exame, edição, banca…' : contestSectionTipo === 'enem_inst' ? 'Nome da instituição, sigla, UF…' : 'Nome, cargo, órgão ou banca…'}
               className="pl-input"
               style={{ paddingLeft: 32, width: '100%' }}
             />

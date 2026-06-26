@@ -4630,10 +4630,18 @@ export default function App() {
       status: courseData.status || 'ativo',
       origem: courseData.origem || 'manual',
       cor: courseData.cor || '#1e3a5f',
+      // Instituições-alvo (só ENEM): até 3 marcadores escolhidos pelo aluno.
+      instituicoes_alvo: Array.isArray(courseData.instituicoes_alvo) ? courseData.instituicoes_alvo : [],
     };
 
     setCursos((prev) => [novoCurso, ...prev]);
     return novoCurso;
+  };
+
+  // Atualiza as instituições-alvo de um objetivo (usado no ENEM). Máx. 3.
+  const updateCourseTargets = (courseId, instituicoesAlvo) => {
+    const list = Array.isArray(instituicoesAlvo) ? instituicoesAlvo.slice(0, 3) : [];
+    setCursos((prev) => prev.map((c) => (c.id === courseId ? { ...c, instituicoes_alvo: list } : c)));
   };
 
   const createCourseWithStarterSubjects = async (courseData) => {
@@ -7112,6 +7120,7 @@ export default function App() {
               courseTemplates={courseTemplates ?? []}
               cursos={cursos}
               onImportCatalogCourse={createCourseFromCatalog}
+              onUpdateCourseTargets={updateCourseTargets}
               onOpenContestDetail={(contest) => {
                 setSelectedContestDetailId(contest?.id || null);
                 setActiveTab('concurso_detalhe');
