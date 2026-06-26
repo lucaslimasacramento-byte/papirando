@@ -767,6 +767,11 @@ function normalizeJsonContestTemplate(raw = {}) {
     prova_data: provaData,
     edital_url: cleanImportedValue(template.edital_url || template.url_edital_pdf || ''),
     imagem_url: cleanImportedValue(template.imagem_url || template.image_url || template.capa_url || ''),
+    // Campos do modelo híbrido (vestibular/ENEM): preservados para o cadastro.
+    scope: template.scope || '',
+    registration_start: normalizeImportedDate(template.registration_start || ''),
+    registration_end: normalizeImportedDate(template.registration_end || ''),
+    prova_data_dia2: normalizeImportedDate(template.prova_data_dia2 || template.prova_data2 || ''),
     disciplinas,
   };
 }
@@ -1479,6 +1484,13 @@ export default function AdminConcursos({
       prova_data: provaData,
       edital_url: cleanImportedValue(template.edital_url) || prev.edital_url,
       imagem_url: cleanImportedValue(template.imagem_url) || prev.imagem_url,
+      // Campos do modelo híbrido (vestibular/ENEM) vindos do JSON colado.
+      registration_start: template.registration_start || prev.registration_start,
+      registration_end: template.registration_end || prev.registration_end,
+      scope: template.scope || prev.scope,
+      meta: template.prova_data_dia2
+        ? { ...(prev.meta && typeof prev.meta === 'object' ? prev.meta : {}), prova_data_dia2: template.prova_data_dia2 }
+        : prev.meta,
       disciplinas: importedSubjects.length > 0 ? importedSubjects : prev.disciplinas,
       };
     });

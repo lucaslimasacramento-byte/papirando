@@ -51,10 +51,252 @@ const fmtDateBR = (v) => {
   return y && m && d ? `${d}/${m}/${y}` : String(v);
 };
 
-// Roteador: vestibular tem layout próprio; concurso segue o corpo completo.
+// Roteador: ENEM e vestibular têm layout próprio; concurso segue o corpo completo.
 export default function ConcursoDetalhe(props) {
+  if (props?.contest?.tipo === 'enem') return <EnemDetalhe {...props} />;
   if (props?.contest?.tipo === 'vestibular') return <VestibularDetalhe {...props} />;
   return <ConcursoDetalheBody {...props} />;
+}
+
+// ─── ENEM: mapa matéria → área de conhecimento (a disciplina não guarda a área) ──
+const ENEM_AREA_ORDER = [
+  'Linguagens, Códigos e suas Tecnologias',
+  'Ciências Humanas e suas Tecnologias',
+  'Ciências da Natureza e suas Tecnologias',
+  'Matemática e suas Tecnologias',
+  'Redação',
+];
+const ENEM_AREA_MAP = {
+  'língua portuguesa': 'Linguagens, Códigos e suas Tecnologias',
+  'literatura': 'Linguagens, Códigos e suas Tecnologias',
+  'língua estrangeira': 'Linguagens, Códigos e suas Tecnologias',
+  'artes': 'Linguagens, Códigos e suas Tecnologias',
+  'educação física': 'Linguagens, Códigos e suas Tecnologias',
+  'tecnologias': 'Linguagens, Códigos e suas Tecnologias',
+  'história': 'Ciências Humanas e suas Tecnologias',
+  'geografia': 'Ciências Humanas e suas Tecnologias',
+  'filosofia': 'Ciências Humanas e suas Tecnologias',
+  'sociologia': 'Ciências Humanas e suas Tecnologias',
+  'biologia': 'Ciências da Natureza e suas Tecnologias',
+  'física': 'Ciências da Natureza e suas Tecnologias',
+  'química': 'Ciências da Natureza e suas Tecnologias',
+  'matemática': 'Matemática e suas Tecnologias',
+  'redação': 'Redação',
+};
+const ENEM_AREA_TINT = {
+  'Linguagens, Códigos e suas Tecnologias': '#1d4ed8',
+  'Ciências Humanas e suas Tecnologias': '#b45309',
+  'Ciências da Natureza e suas Tecnologias': '#047857',
+  'Matemática e suas Tecnologias': '#6d28d9',
+  'Redação': '#be123c',
+};
+
+function enemAreaOf(nome = '') {
+  const key = String(nome || '').trim().toLowerCase();
+  return ENEM_AREA_MAP[key] || 'Outras';
+}
+
+function EnemDetalhe({
+  contest,
+  onBack,
+  onImport,
+  onToggleFavorite,
+  onToggleInterested,
+  onSetTargetContest,
+  importingId = '',
+  limiteAtingido = false,
+  cursos = [],
+  isAdmin = false,
+  isFavorite = false,
+  isInterested = false,
+  isTargetContest = false,
+  onEditContest,
+}) {
+  const [expanded, setExpanded] = useState({});
+  const meta = contest?.meta && typeof contest.meta === 'object' ? contest.meta : {};
+  const added = cursos.some((c) => c.tipo === 'enem' || (c.nome || '').toLowerCase().includes('enem'));
+  const importing = importingId === contest?.id;
+
+  const insStart = fmtDateBR(contest?.registration_start);
+  const insEnd = fmtDateBR(contest?.registration_end);
+  const inscricaoPeriodo = insStart || insEnd ? `${insStart || '—'} até ${insEnd || 'em aberto'}` : null;
+  const dia2 = fmtDateBR(meta.prova_data_dia2 || meta.prova_data2 || contest?.prova_data_dia2);
+
+  const facts = [
+    inscricaoPeriodo ? { label: 'Inscrições', value: inscricaoPeriodo } : null,
+    { label: 'Taxa', value: contest?.inscricao_valor || 'A definir' },
+    { label: '1º dia de prova', value: fmtDateBR(contest?.prova_data) || 'A definir' },
+    dia2 ? { label: '2º dia de prova', value: dia2 } : null,
+    { label: 'Nível', value: contest?.escolaridade || 'Ensino médio completo' },
+  ].filter(Boolean);
+
+  // Agrupa as disciplinas nas 4 áreas + Redação.
+  const grupos = useMemo(() => {
+    const map = new Map();
+    (contest?.disciplinas || []).forEach((d) => {
+      const nome = typeof d === 'string' ? d : d?.nome;
+      if (!nome) return;
+      const topicos = (Array.isArray(d?.topicos) ? d.topicos : []).map((t) => (typeof t === 'string' ? t : t?.nome)).filter(Boolean);
+      const area = enemAreaOf(nome);
+      if (!map.has(area)) map.set(area, []);
+      map.get(area).push({ nome, topicos });
+    });
+    const ordered = ENEM_AREA_ORDER.filter((a) => map.has(a)).map((a) => [a, map.get(a)]);
+    const extras = [...map.keys()].filter((a) => !ENEM_AREA_ORDER.includes(a)).map((a) => [a, map.get(a)]);
+    return [...ordered, ...extras];
+  }, [contest?.disciplinas]);
+
+  const totalMaterias = grupos.reduce((acc, [, ms]) => acc + ms.length, 0);
+  const totalTopicos = grupos.reduce((acc, [, ms]) => acc + ms.reduce((s, m) => s + m.topicos.length, 0), 0);
+
+  const heroBtn = (active, tone) => ({
+    display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10,
+    border: active ? `1px solid ${tone}66` : '1px solid rgba(255,255,255,0.2)',
+    background: active ? `${tone}33` : 'rgba(255,255,255,0.05)',
+    padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#f3efe5', cursor: 'pointer',
+  });
+
+  return (
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '20px 20px 40px' }}>
+      {/* Voltar + admin */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <button type="button" onClick={onBack} className="pl-btn pl-btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <ArrowLeft size={16} /> Voltar
+        </button>
+        {isAdmin ? (
+          <button type="button" onClick={() => onEditContest?.(contest)} className="pl-btn pl-btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', color: 'var(--pl-warn)' }}>
+            <Pencil size={14} /> Admin: editar
+          </button>
+        ) : null}
+      </div>
+
+      {/* Hero */}
+      <div className="pl-card" style={{ padding: '24px 28px', background: 'linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%)', border: 'none', color: '#f3efe5' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 20 }}>
+          {contest?.imagem_url ? (
+            <img src={storageThumb(contest.imagem_url, 160)} alt="" style={{ width: 80, height: 80, objectFit: 'contain', flexShrink: 0, borderRadius: 10, background: 'rgba(255,255,255,0.9)', padding: 6 }} aria-hidden />
+          ) : (
+            <div style={{ width: 64, height: 64, borderRadius: 12, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <GraduationCap size={30} />
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', opacity: 0.65 }}>Exame Nacional</p>
+            <h1 style={{ margin: '6px 0 0', fontSize: 28, fontWeight: 600, lineHeight: 1.1, color: '#f3efe5' }}>{contest?.nome || 'ENEM'}</h1>
+            <p style={{ margin: '6px 0 0', fontSize: 14, fontWeight: 500, opacity: 0.8 }}>INEP/MEC · acesso ao ensino superior via SiSU, ProUni e Fies</p>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <button type="button" onClick={() => onToggleFavorite?.(contest.id)} style={heroBtn(isFavorite, '#fa6464')}>
+              <Heart size={14} style={{ fill: isFavorite ? 'currentColor' : 'none' }} /> {isFavorite ? 'Favoritado' : 'Favoritar'}
+            </button>
+            <button type="button" onClick={() => onToggleInterested?.(contest.id)} style={heroBtn(isInterested, '#fab43c')}>
+              <Bookmark size={14} style={{ fill: isInterested ? 'currentColor' : 'none' }} /> {isInterested ? 'Quero estudar' : 'Interesse'}
+            </button>
+            <button type="button" onClick={() => onSetTargetContest?.(contest.id)} style={heroBtn(isTargetContest, '#fadc3c')}>
+              <BadgeCheck size={14} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} /> {isTargetContest ? 'Alvo' : 'Como alvo'}
+            </button>
+            <button type="button" onClick={() => onImport?.(contest)} disabled={importing || limiteAtingido || added}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, background: 'rgba(255,255,255,0.95)', color: 'var(--pl-ink)', padding: '6px 14px', fontSize: 13, fontWeight: 700, border: 'none', cursor: importing || limiteAtingido || added ? 'not-allowed' : 'pointer', opacity: importing || limiteAtingido || added ? 0.6 : 1 }}>
+              {added ? 'Já no painel' : limiteAtingido ? 'Limite' : importing ? '...' : <>Adicionar aos estudos <ArrowRight size={14} /></>}
+            </button>
+            {contest?.edital_url ? (
+              <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')} style={heroBtn(false)}>
+                Edital <ExternalLink size={14} />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Fatos-chave */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+        {facts.map((f) => (
+          <div key={f.label} className="pl-card" style={{ padding: '12px 14px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{f.label}</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{f.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Resumo */}
+      {contest?.descricao && (
+        <VestSection title="Sobre o exame">
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
+        </VestSection>
+      )}
+
+      {/* Conteúdo por área */}
+      <section className="pl-card" style={{ padding: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+          <p className="pl-eyebrow" style={{ margin: 0 }}>Conteúdo por área de conhecimento</p>
+          {totalMaterias > 0 && (
+            <span style={{ fontSize: 11, color: 'var(--pl-ink-3)' }}>{grupos.length} áreas · {totalMaterias} matérias · {totalTopicos} tópicos</span>
+          )}
+        </div>
+
+        {totalMaterias === 0 ? (
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>
+            Trilha em montagem. (Admin → Catálogo → ENEM → colar o JSON da Matriz de Referência)
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {grupos.map(([area, materias]) => {
+              const tint = ENEM_AREA_TINT[area] || 'var(--pl-accent)';
+              return (
+                <div key={area}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 3, background: tint, flexShrink: 0 }} />
+                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{area}</h3>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 18 }}>
+                    {materias.map((m) => {
+                      const key = `${area}:${m.nome}`;
+                      const open = Boolean(expanded[key]);
+                      return (
+                        <div key={key} style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 6, overflow: 'hidden' }}>
+                          <button type="button" onClick={() => setExpanded((p) => ({ ...p, [key]: !p[key] }))}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '9px 12px', background: 'var(--pl-surface-2)', border: 0, cursor: 'pointer', textAlign: 'left' }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{m.nome}</span>
+                            <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', whiteSpace: 'nowrap' }}>{m.topicos.length} tópico(s) {open ? '▾' : '▸'}</span>
+                          </button>
+                          {open && m.topicos.length > 0 && (
+                            <ul style={{ margin: 0, padding: '10px 14px 12px 30px', display: 'flex', flexDirection: 'column', gap: 5, background: 'var(--pl-surface)' }}>
+                              {m.topicos.map((t, i) => (
+                                <li key={i} style={{ fontSize: 12.5, color: 'var(--pl-ink-2)', lineHeight: 1.45 }}>{t}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Ingresso */}
+      <VestSection title="Como o ENEM abre portas">
+        <p style={{ margin: '0 0 10px', fontSize: 13.5, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
+          A nota do ENEM é usada para ingresso no ensino superior por três caminhos principais:
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+          {[
+            { s: 'SiSU', d: 'Vagas em universidades públicas (federais e estaduais).' },
+            { s: 'ProUni', d: 'Bolsas de estudo (integral/parcial) em faculdades privadas.' },
+            { s: 'Fies', d: 'Financiamento estudantil para cursos pagos.' },
+          ].map((x) => (
+            <div key={x.s} style={{ padding: '10px 12px', border: '1px solid var(--pl-rule-2)', borderRadius: 6, background: 'var(--pl-surface-2)' }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-accent)' }}>{x.s}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--pl-ink-3)', lineHeight: 1.45 }}>{x.d}</p>
+            </div>
+          ))}
+        </div>
+      </VestSection>
+    </div>
+  );
 }
 
 function VestSection({ title, children }) {
