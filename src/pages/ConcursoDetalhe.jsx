@@ -84,11 +84,18 @@ const ENEM_AREA_MAP = {
   'redação': 'Redação',
 };
 const ENEM_AREA_TINT = {
-  'Linguagens, Códigos e suas Tecnologias': '#1d4ed8',
-  'Ciências Humanas e suas Tecnologias': '#b45309',
-  'Ciências da Natureza e suas Tecnologias': '#047857',
-  'Matemática e suas Tecnologias': '#6d28d9',
-  'Redação': '#be123c',
+  'Linguagens, Códigos e suas Tecnologias': '#1e3a5f',
+  'Ciências Humanas e suas Tecnologias': '#7c4a1e',
+  'Ciências da Natureza e suas Tecnologias': '#1e4d35',
+  'Matemática e suas Tecnologias': '#3d1e5c',
+  'Redação': '#7a1e2e',
+};
+const ENEM_AREA_DAY = {
+  'Linguagens, Códigos e suas Tecnologias': '1',
+  'Ciências Humanas e suas Tecnologias': '1',
+  'Redação': '1',
+  'Ciências da Natureza e suas Tecnologias': '2',
+  'Matemática e suas Tecnologias': '2',
 };
 
 function enemAreaOf(nome = '') {
@@ -126,12 +133,22 @@ export function EnemDetalhe({
   const facts = [
     inscricaoPeriodo ? { label: 'Inscrições', value: inscricaoPeriodo } : null,
     { label: 'Taxa', value: contest?.inscricao_valor || 'A definir' },
-    { label: '1º dia de prova', value: fmtDateBR(contest?.prova_data) || 'A definir' },
-    dia2 ? { label: '2º dia de prova', value: dia2 } : null,
-    { label: 'Nível', value: contest?.escolaridade || 'Ensino médio completo' },
+    { label: '1º dia', value: fmtDateBR(contest?.prova_data) || 'A definir' },
+    dia2 ? { label: '2º dia', value: dia2 } : null,
+    { label: 'Nível', value: contest?.escolaridade || 'Ens. Médio' },
   ].filter(Boolean);
 
-  // Agrupa as disciplinas nas 4 áreas + Redação.
+  const datas = [
+    contest?.registration_start ? { evento: 'Abertura das inscrições', data: fmtDateBR(contest.registration_start), dot: '#f4d04e' } : null,
+    contest?.registration_end ? { evento: 'Encerramento das inscrições', data: fmtDateBR(contest.registration_end), dot: 'rgba(243,239,229,0.35)' } : null,
+    contest?.prova_data ? { evento: '1º dia de prova', data: fmtDateBR(contest.prova_data), dot: '#f4d04e' } : null,
+    dia2 ? { evento: '2º dia de prova', data: dia2, dot: 'rgba(243,239,229,0.35)' } : null,
+  ].filter(Boolean);
+
+  const statusLabel = contest?.status_concurso
+    ? (STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto')
+    : 'A definir';
+
   const grupos = useMemo(() => {
     const map = new Map();
     (contest?.disciplinas || []).forEach((d) => {
@@ -148,162 +165,222 @@ export function EnemDetalhe({
   }, [contest?.disciplinas]);
 
   const totalMaterias = grupos.reduce((acc, [, ms]) => acc + ms.length, 0);
-  const totalTopicos = grupos.reduce((acc, [, ms]) => acc + ms.reduce((s, m) => s + m.topicos.length, 0), 0);
-
-  const heroBtn = (active, tone) => ({
-    display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10,
-    border: active ? `1px solid ${tone}66` : '1px solid rgba(255,255,255,0.2)',
-    background: active ? `${tone}33` : 'rgba(255,255,255,0.05)',
-    padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#f3efe5', cursor: 'pointer',
-  });
 
   return (
-    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '20px 20px 40px' }}>
-      {/* Voltar + admin (oculto quando embutido na vitrine) */}
+    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 20px 48px' }}>
+
+      {/* Voltar + admin */}
       {!embedded && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <button type="button" onClick={onBack} className="pl-btn pl-btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <ArrowLeft size={16} /> Voltar
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <button type="button" onClick={onBack}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 14px 7px 10px', borderRadius: 8, border: '1px solid rgba(20,17,13,0.14)', background: '#fff', color: '#3a342c', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            <ArrowLeft size={15} />
+            Voltar para concursos
           </button>
-          {isAdmin ? (
-            <button type="button" onClick={() => onEditContest?.(contest)} className="pl-btn pl-btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', color: 'var(--pl-warn)' }}>
+          {isAdmin && (
+            <button type="button" onClick={() => onEditContest?.(contest)}
+              className="pl-btn pl-btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pl-warn-soft)', border: '1px solid var(--pl-warn)', color: 'var(--pl-warn)' }}>
               <Pencil size={14} /> Admin: editar
             </button>
-          ) : null}
-        </div>
-      )}
-
-      {/* Hero */}
-      <div className="pl-card" style={{ padding: '24px 28px', background: 'linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%)', border: 'none', color: '#f3efe5' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 20 }}>
-          {contest?.imagem_url ? (
-            <img src={storageThumb(contest.imagem_url, 160)} alt="" style={{ width: 80, height: 80, objectFit: 'contain', flexShrink: 0, borderRadius: 10, background: 'rgba(255,255,255,0.9)', padding: 6 }} aria-hidden />
-          ) : (
-            <div style={{ width: 64, height: 64, borderRadius: 12, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <GraduationCap size={30} />
-            </div>
           )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', opacity: 0.65 }}>Exame Nacional</p>
-            <h1 style={{ margin: '6px 0 0', fontSize: 28, fontWeight: 600, lineHeight: 1.1, color: '#f3efe5' }}>{contest?.nome || 'ENEM'}</h1>
-            <p style={{ margin: '6px 0 0', fontSize: 14, fontWeight: 500, opacity: 0.8 }}>INEP/MEC · acesso ao ensino superior via SiSU, ProUni e Fies</p>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-            {onToggleFavorite && (
-              <button type="button" onClick={() => onToggleFavorite(contest.id)} style={heroBtn(isFavorite, '#fa6464')}>
-                <Heart size={14} style={{ fill: isFavorite ? 'currentColor' : 'none' }} /> {isFavorite ? 'Favoritado' : 'Favoritar'}
-              </button>
-            )}
-            {onToggleInterested && (
-              <button type="button" onClick={() => onToggleInterested(contest.id)} style={heroBtn(isInterested, '#fab43c')}>
-                <Bookmark size={14} style={{ fill: isInterested ? 'currentColor' : 'none' }} /> {isInterested ? 'Quero estudar' : 'Interesse'}
-              </button>
-            )}
-            {onSetTargetContest && (
-              <button type="button" onClick={() => onSetTargetContest(contest.id)} style={heroBtn(isTargetContest, '#fadc3c')}>
-                <BadgeCheck size={14} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} /> {isTargetContest ? 'Alvo' : 'Como alvo'}
-              </button>
-            )}
-            <button type="button" onClick={() => onImport?.(contest)} disabled={importing || limiteAtingido || added}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, background: 'rgba(255,255,255,0.95)', color: 'var(--pl-ink)', padding: '6px 14px', fontSize: 13, fontWeight: 700, border: 'none', cursor: importing || limiteAtingido || added ? 'not-allowed' : 'pointer', opacity: importing || limiteAtingido || added ? 0.6 : 1 }}>
-              {added ? 'Já no painel' : limiteAtingido ? 'Limite' : importing ? '...' : <>Adicionar aos estudos <ArrowRight size={14} /></>}
-            </button>
-            {contest?.edital_url ? (
-              <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')} style={heroBtn(false)}>
-                Edital <ExternalLink size={14} />
-              </button>
-            ) : null}
-          </div>
         </div>
-      </div>
-
-      {/* Fatos-chave */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-        {facts.map((f) => (
-          <div key={f.label} className="pl-card" style={{ padding: '12px 14px' }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{f.label}</p>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{f.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Resumo */}
-      {contest?.descricao && (
-        <VestSection title="Sobre o exame">
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
-        </VestSection>
       )}
 
-      {/* Conteúdo por área */}
-      <section className="pl-card" style={{ padding: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
-          <p className="pl-eyebrow" style={{ margin: 0 }}>Conteúdo por área de conhecimento</p>
+      {/* Hero navy */}
+      <div style={{ borderRadius: 16, overflow: 'hidden', background: '#1e3a5f', boxShadow: '0 8px 32px rgba(30,58,95,0.28)' }}>
+        {/* Eyebrow strip */}
+        <div style={{ padding: '18px 28px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>Exame Nacional</span>
+          <span style={{ color: 'rgba(243,239,229,0.25)' }}>&middot;</span>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>INEP / MEC</span>
+        </div>
+
+        {/* Main hero body */}
+        <div style={{ padding: '20px 28px 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
+          {/* Wordmark */}
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+            <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 34, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.04em', lineHeight: 1 }}>enem</span>
+          </div>
+
+          {/* Title + badges */}
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 700, lineHeight: 1.05, color: '#f3efe5', letterSpacing: '-0.02em' }}>{contest?.nome || 'ENEM'}</h1>
+            <p style={{ margin: '8px 0 0', fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.65)', lineHeight: 1.5 }}>
+              Acesso ao ensino superior via SiSU, ProUni e Fies
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 999, border: '1px solid rgba(244,208,78,0.4)', background: 'rgba(244,208,78,0.12)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#f4d04e' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f4d04e', display: 'inline-block' }} />
+                {statusLabel}
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: '1px solid rgba(243,239,229,0.15)', background: 'rgba(243,239,229,0.07)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.55)' }}>
+                {contest?.escolaridade || 'Ensino médio completo'}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'center', flexShrink: 0 }}>
+            <button type="button"
+              onClick={() => onImport?.(contest)}
+              disabled={importing || limiteAtingido || added}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, background: '#f3efe5', color: '#1e3a5f', border: 'none', padding: '10px 18px', fontSize: 13, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.14)', cursor: importing || limiteAtingido || added ? 'not-allowed' : 'pointer', opacity: importing || limiteAtingido || added ? 0.6 : 1 }}>
+              {added ? 'Já no painel' : limiteAtingido ? 'Limite' : importing ? '...' : 'Adicionar aos estudos'}
+              <ArrowRight size={14} />
+            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {onToggleFavorite && (
+                <button type="button" onClick={() => onToggleFavorite(contest.id)}
+                  style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 8, border: isFavorite ? '1px solid rgba(250,100,100,0.35)' : '1px solid rgba(243,239,229,0.18)', background: isFavorite ? 'rgba(250,100,100,0.18)' : 'rgba(243,239,229,0.07)', padding: '7px 12px', fontSize: 12, fontWeight: 600, color: isFavorite ? '#ffb3b3' : 'rgba(243,239,229,0.75)', cursor: 'pointer' }}>
+                  <Heart size={13} style={{ fill: isFavorite ? 'currentColor' : 'none' }} />
+                  {isFavorite ? 'Favoritado' : 'Favoritar'}
+                </button>
+              )}
+              {contest?.edital_url && (
+                <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
+                  style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 8, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.07)', padding: '7px 12px', fontSize: 12, fontWeight: 600, color: 'rgba(243,239,229,0.75)', cursor: 'pointer' }}>
+                  <ExternalLink size={13} />
+                  Edital
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Fact strip */}
+        {facts.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${facts.length}, 1fr)`, borderTop: '1px solid rgba(243,239,229,0.1)', background: 'rgba(0,0,0,0.15)' }}>
+            {facts.map((f, i) => (
+              <div key={f.label} style={{ padding: '14px 20px', borderRight: i < facts.length - 1 ? '1px solid rgba(243,239,229,0.07)' : 'none' }}>
+                <p style={{ margin: '0 0 5px', fontSize: 9, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.4)' }}>{f.label}</p>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#f3efe5' }}>{f.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Sobre */}
+      {contest?.descricao && (
+        <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '24px 28px', boxShadow: '0 1px 4px rgba(20,17,13,0.05)' }}>
+          <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Sobre o exame</p>
+          <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 26, color: '#14110d', lineHeight: 1.15 }}>O principal exame do Brasil</h2>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.7, color: '#3a342c', fontWeight: 500 }}>{contest.descricao}</p>
+        </div>
+      )}
+
+      {/* Areas de conhecimento */}
+      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.05)' }}>
+        <div style={{ padding: '22px 28px 16px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', borderBottom: '1px solid rgba(20,17,13,0.07)' }}>
+          <div>
+            <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Conteúdo programático</p>
+            <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>
+              Áreas de conhecimento
+            </h2>
+          </div>
           {totalMaterias > 0 && (
-            <span style={{ fontSize: 11, color: 'var(--pl-ink-3)' }}>{grupos.length} áreas · {totalMaterias} matérias · {totalTopicos} tópicos</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#847b6c', border: '1px solid rgba(20,17,13,0.12)', borderRadius: 6, padding: '4px 10px' }}>
+              {grupos.length} área{grupos.length !== 1 ? 's' : ''} &middot; {totalMaterias} matéria{totalMaterias !== 1 ? 's' : ''}
+            </span>
           )}
         </div>
 
         {totalMaterias === 0 ? (
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>
-            Trilha em montagem. (Admin → Catálogo → ENEM → colar o JSON da Matriz de Referência)
-          </p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {grupos.map(([area, materias]) => {
-              const tint = ENEM_AREA_TINT[area] || 'var(--pl-accent)';
-              return (
-                <div key={area}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 3, background: tint, flexShrink: 0 }} />
-                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{area}</h3>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 18 }}>
-                    {materias.map((m) => {
-                      const key = `${area}:${m.nome}`;
-                      const open = Boolean(expanded[key]);
-                      return (
-                        <div key={key} style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 6, overflow: 'hidden' }}>
-                          <button type="button" onClick={() => setExpanded((p) => ({ ...p, [key]: !p[key] }))}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '9px 12px', background: 'var(--pl-surface-2)', border: 0, cursor: 'pointer', textAlign: 'left' }}>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{m.nome}</span>
-                            <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', whiteSpace: 'nowrap' }}>{m.topicos.length} tópico(s) {open ? '▾' : '▸'}</span>
-                          </button>
-                          {open && m.topicos.length > 0 && (
-                            <ul style={{ margin: 0, padding: '10px 14px 12px 30px', display: 'flex', flexDirection: 'column', gap: 5, background: 'var(--pl-surface)' }}>
-                              {m.topicos.map((t, i) => (
-                                <li key={i} style={{ fontSize: 12.5, color: 'var(--pl-ink-2)', lineHeight: 1.45 }}>{t}</li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      );
-                    })}
+          <div style={{ padding: '24px 28px' }}>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>
+              Trilha em montagem. (Admin → Catálogo → ENEM → colar o JSON da Matriz de Referência)
+            </p>
+          </div>
+        ) : grupos.map(([area, materias], idx) => {
+          const tint = ENEM_AREA_TINT[area] || '#1e3a5f';
+          const day = ENEM_AREA_DAY[area];
+          const akey = `area-${idx}`;
+          const open = Boolean(expanded[akey]);
+          const isLast = idx === grupos.length - 1;
+          return (
+            <div key={area} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(20,17,13,0.07)' }}>
+              <button type="button" onClick={() => setExpanded((p) => ({ ...p, [akey]: !p[akey] }))}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '15px 28px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: tint, flexShrink: 0, display: 'inline-block' }} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#14110d', lineHeight: 1.2 }}>{area}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: '#847b6c' }}>{materias.length} matéria{materias.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                  {day && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: tint, background: `${tint}18`, border: `1px solid ${tint}40`, borderRadius: 6, padding: '3px 10px' }}>
+                      Dia {day}
+                    </span>
+                  )}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#847b6c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', display: 'block', flexShrink: 0 }}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              </button>
+              {open && (
+                <div style={{ padding: '0 28px 18px' }}>
+                  <div style={{ paddingTop: 12, borderTop: '1px solid rgba(20,17,13,0.07)', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {materias.map((m) => (
+                      <span key={m.nome}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, border: '1px solid rgba(20,17,13,0.1)', background: '#f9f7f0', fontSize: 12, fontWeight: 600, color: '#3a342c' }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: tint, flexShrink: 0, display: 'inline-block' }} />
+                        {m.nome}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-      {/* Ingresso */}
-      <VestSection title="Como o ENEM abre portas">
-        <p style={{ margin: '0 0 10px', fontSize: 13.5, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
-          A nota do ENEM é usada para ingresso no ensino superior por três caminhos principais:
+      {/* Como o ENEM abre portas */}
+      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '24px 28px', boxShadow: '0 1px 4px rgba(20,17,13,0.05)' }}>
+        <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Ingresso ao ensino superior</p>
+        <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d' }}>Como o ENEM abre portas</h2>
+        <p style={{ margin: '0 0 18px', fontSize: 13.5, lineHeight: 1.65, color: '#3a342c', fontWeight: 500 }}>
+          A nota do ENEM é reconhecida como principal porta de entrada ao ensino superior no Brasil, por três caminhos principais:
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
           {[
-            { s: 'SiSU', d: 'Vagas em universidades públicas (federais e estaduais).' },
-            { s: 'ProUni', d: 'Bolsas de estudo (integral/parcial) em faculdades privadas.' },
-            { s: 'Fies', d: 'Financiamento estudantil para cursos pagos.' },
+            { sigla: 'SiSU', nome: 'Sistema Unificado', descricao: 'Vagas em universidades públicas federais e estaduais, com seleção inteiramente pela nota do ENEM.' },
+            { sigla: 'ProU', nome: 'ProUni', descricao: 'Bolsas integrais e parciais em faculdades privadas para candidatos de baixa renda.' },
+            { sigla: 'Fies', nome: 'Fies', descricao: 'Financiamento estudantil do governo federal para custear cursos em instituições privadas credenciadas.' },
           ].map((x) => (
-            <div key={x.s} style={{ padding: '10px 12px', border: '1px solid var(--pl-rule-2)', borderRadius: 6, background: 'var(--pl-surface-2)' }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-accent)' }}>{x.s}</p>
-              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--pl-ink-3)', lineHeight: 1.45 }}>{x.d}</p>
+            <div key={x.sigla} style={{ padding: '18px 20px', border: '1px solid rgba(20,17,13,0.1)', borderRadius: 12, background: '#f9f7f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <span style={{ width: 34, height: 34, borderRadius: 10, background: '#1e3a5f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#f3efe5', fontSize: 11, fontWeight: 800, letterSpacing: '-.01em' }}>{x.sigla}</span>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#14110d' }}>{x.nome}</p>
+              </div>
+              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, color: '#3a342c', lineHeight: 1.55 }}>{x.descricao}</p>
             </div>
           ))}
         </div>
-      </VestSection>
+      </div>
+
+      {/* Datas importantes */}
+      {datas.length > 0 && (
+        <div style={{ borderRadius: 14, background: '#1e3a5f', padding: '24px 28px', boxShadow: '0 4px 20px rgba(30,58,95,0.2)' }}>
+          <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>Calendário oficial</p>
+          <h2 style={{ margin: '0 0 20px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#f3efe5' }}>Datas importantes</h2>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {datas.map((dt, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '13px 0', borderBottom: i < datas.length - 1 ? '1px solid rgba(243,239,229,0.1)' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: dt.dot, flexShrink: 0, display: 'inline-block' }} />
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.8)' }}>{dt.evento}</span>
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#f3efe5', whiteSpace: 'nowrap' }}>{dt.data}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
