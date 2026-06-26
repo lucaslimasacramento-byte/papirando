@@ -813,7 +813,7 @@ function parseContestJsonLocally(text = '') {
   const templates = rawTemplates
     .flatMap((item) => expandContestWithRoles(item))
     .map((item) => normalizeJsonContestTemplate(item))
-    .filter((item) => item.nome || item.cargo);
+    .filter((item) => item.nome || item.cargo || (Array.isArray(item.disciplinas) && item.disciplinas.length > 0));
   if (templates.length === 0) return null;
 
   return {
@@ -2501,18 +2501,23 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          {!form.id && !isVestForm && (
+          {(form.tipo === 'vestibular' || form.tipo === 'enem' || !form.id) && (
           <div className="mb-5 rounded-lg p-4" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>Preencher com IA</p>
-                <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>Colar formulário analisado do edital</h4>
+                <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>
+                  {isVestForm || form.tipo === 'enem' ? 'Colar JSON de matérias' : 'Colar formulário analisado do edital'}
+                </h4>
                 <p className="mt-1 text-xs" style={{ color: 'var(--pl-ink-3)' }}>
-                  A IA organiza campos, disciplinas e tópicos no rascunho a partir da análise do edital.
+                  {isVestForm || form.tipo === 'enem'
+                    ? 'Cole o JSON retornado pela IA (matérias e tópicos) e clique em Preencher — as disciplinas entram no rascunho sem mexer nos demais campos.'
+                    : 'A IA organiza campos, disciplinas e tópicos no rascunho a partir da análise do edital.'}
                 </p>
               </div>
 
               <div className="flex shrink-0 flex-wrap gap-2">
+                {form.tipo === 'concurso' && (
                 <button
                   type="button"
                   onClick={handleDownloadContestPrompt}
@@ -2522,9 +2527,20 @@ export default function AdminConcursos({
                   <Download size={16} />
                   Baixar prompt
                 </button>
+                )}
                 <button
                   type="button"
-                  onClick={clearContestDraft}
+                  onClick={() => {
+                    // Ao EDITAR (form.id), limpa só a área de colar — nunca o registro inteiro.
+                    if (form.id) {
+                      setAiFormText('');
+                      setAiPdfFile(null);
+                      setContestFormImportStatus('');
+                      setContestFormOptions([]);
+                    } else {
+                      clearContestDraft();
+                    }
+                  }}
                   className="pl-btn pl-btn-ghost inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors"
                   style={{ color: 'var(--pl-accent)' }}
                 >
