@@ -58,31 +58,7 @@ export default function ConcursoDetalhe(props) {
   return <ConcursoDetalheBody {...props} />;
 }
 
-// ─── ENEM: mapa matéria → área de conhecimento (a disciplina não guarda a área) ──
-const ENEM_AREA_ORDER = [
-  'Linguagens, Códigos e suas Tecnologias',
-  'Ciências Humanas e suas Tecnologias',
-  'Ciências da Natureza e suas Tecnologias',
-  'Matemática e suas Tecnologias',
-  'Redação',
-];
-const ENEM_AREA_MAP = {
-  'língua portuguesa': 'Linguagens, Códigos e suas Tecnologias',
-  'literatura': 'Linguagens, Códigos e suas Tecnologias',
-  'língua estrangeira': 'Linguagens, Códigos e suas Tecnologias',
-  'artes': 'Linguagens, Códigos e suas Tecnologias',
-  'educação física': 'Linguagens, Códigos e suas Tecnologias',
-  'tecnologias': 'Linguagens, Códigos e suas Tecnologias',
-  'história': 'Ciências Humanas e suas Tecnologias',
-  'geografia': 'Ciências Humanas e suas Tecnologias',
-  'filosofia': 'Ciências Humanas e suas Tecnologias',
-  'sociologia': 'Ciências Humanas e suas Tecnologias',
-  'biologia': 'Ciências da Natureza e suas Tecnologias',
-  'física': 'Ciências da Natureza e suas Tecnologias',
-  'química': 'Ciências da Natureza e suas Tecnologias',
-  'matemática': 'Matemática e suas Tecnologias',
-  'redação': 'Redação',
-};
+// ─── ENEM: cor e nome curto por área de conhecimento ────────────────────────
 const ENEM_AREA_TINT = {
   'Linguagens, Códigos e suas Tecnologias': '#1e3a5f',
   'Ciências Humanas e suas Tecnologias': '#7c4a1e',
@@ -90,19 +66,6 @@ const ENEM_AREA_TINT = {
   'Matemática e suas Tecnologias': '#3d1e5c',
   'Redação': '#7a1e2e',
 };
-const ENEM_AREA_DAY = {
-  'Linguagens, Códigos e suas Tecnologias': '1',
-  'Ciências Humanas e suas Tecnologias': '1',
-  'Redação': '1',
-  'Ciências da Natureza e suas Tecnologias': '2',
-  'Matemática e suas Tecnologias': '2',
-};
-
-function enemAreaOf(nome = '') {
-  const key = String(nome || '').trim().toLowerCase();
-  return ENEM_AREA_MAP[key] || 'Outras';
-}
-
 const ENEM_AREA_SHORTNAME = {
   'Linguagens, Códigos e suas Tecnologias': 'Linguagens',
   'Ciências Humanas e suas Tecnologias': 'Ciências Humanas',
@@ -125,6 +88,88 @@ const COMPETENCIAS_REDACAO = [
   { num: 'III', pts: 200, titulo: 'Seleção de argumentos',       desc: 'Seleção, organização e interpretação de informações, fatos, opiniões e argumentos.' },
   { num: 'IV',  pts: 200, titulo: 'Mecanismos linguísticos',     desc: 'Uso de recursos coesivos para construir a argumentação.' },
   { num: 'V',   pts: 200, titulo: 'Proposta de intervenção',     desc: 'Proposta de intervenção que respeite os direitos humanos.' },
+];
+
+// Conteúdo programático oficial do ENEM (exame nacional fixo). Fonte da verdade
+// para "o que cai por matéria" — cada matéria abre seu resumo + tópicos.
+const ENEM_MATERIAS = [
+  // ─── 1º DIA ───────────────────────────────────────────────────────────
+  {
+    dia: '1', area: 'Linguagens, Códigos e suas Tecnologias', nome: 'Língua Portuguesa',
+    resumo: 'Interpretação, leitura crítica e análise de textos de diferentes gêneros.',
+    topicos: ['Interpretação de textos', 'Compreensão de gêneros textuais', 'Sequências discursivas', 'Modos de organização textual', 'Texto verbal, não verbal e multimodal', 'Relação entre texto, contexto e finalidade', 'Função social dos textos', 'Funções da linguagem', 'Argumentação', 'Estratégias de convencimento', 'Identificação de tese e ponto de vista', 'Coesão e coerência', 'Progressão textual', 'Relações lógico-semânticas', 'Recursos expressivos da língua', 'Norma-padrão da Língua Portuguesa', 'Variação linguística', 'Variedades sociais, regionais e de registro', 'Linguagem formal e informal', 'Seleção lexical', 'Tempos e modos verbais', 'Elementos de referência pessoal, temporal e espacial', 'Gêneros digitais', 'Linguagem da internet', 'Comunicação em meios digitais', 'Impacto social das tecnologias da informação e comunicação'],
+  },
+  {
+    dia: '1', area: 'Linguagens, Códigos e suas Tecnologias', nome: 'Literatura',
+    resumo: 'Análise do texto literário, relação entre literatura e sociedade e contexto histórico e cultural das obras.',
+    topicos: ['Texto literário', 'Gêneros literários: narrativo, lírico e dramático', 'Literatura brasileira', 'Formação da literatura nacional', 'Patrimônio literário nacional', 'Relação entre literatura e sociedade', 'Relação entre literatura, história e cultura', 'Contexto histórico, social e político das obras', 'Processos de construção do texto literário', 'Recursos expressivos e estruturais do texto literário', 'Valores sociais e humanos na literatura', 'Relação entre literatura e outras artes', 'Continuidade e ruptura entre períodos literários', 'Concepções artísticas', 'Recepção e interpretação de textos literários'],
+  },
+  {
+    dia: '1', area: 'Linguagens, Códigos e suas Tecnologias', nome: 'Língua Estrangeira — Inglês ou Espanhol',
+    resumo: 'O aluno escolhe Inglês ou Espanhol na inscrição. A prova cobra principalmente leitura e interpretação.',
+    topicos: ['Interpretação de textos em língua estrangeira', 'Vocabulário em contexto', 'Expressões idiomáticas', 'Tema central do texto', 'Função social do texto', 'Estruturas linguísticas em uso', 'Relação entre linguagem, cultura e sociedade', 'Diversidade cultural e linguística', 'Produção cultural em língua estrangeira', 'Língua estrangeira como acesso à informação, tecnologia e cultura'],
+  },
+  {
+    dia: '1', area: 'Linguagens, Códigos e suas Tecnologias', nome: 'Artes',
+    resumo: 'Arte como linguagem, cultura, identidade e manifestação social.',
+    topicos: ['Artes visuais', 'Teatro', 'Música', 'Dança', 'Produção artística', 'Recepção de textos artísticos', 'Interpretação de obras de arte', 'Contexto histórico e cultural da obra', 'Contexto da comunidade na produção artística', 'Elementos estruturais das linguagens artísticas', 'Diversidade artística', 'Multiculturalidade', 'Arte e identidade', 'Arte e cidadania', 'Padrões de beleza e preconceitos', 'Produções artísticas de grupos sociais e étnicos', 'Inclusão e valorização da pluralidade nas artes'],
+  },
+  {
+    dia: '1', area: 'Linguagens, Códigos e suas Tecnologias', nome: 'Educação Física',
+    resumo: 'Linguagem corporal, práticas corporais e relação entre corpo, cultura, saúde e sociedade.',
+    topicos: ['Linguagem corporal', 'Corpo como expressão cultural', 'Corpo e identidade', 'Práticas corporais', 'Esporte', 'Dança', 'Lutas', 'Jogos', 'Brincadeiras', 'Exercício físico e saúde', 'Lazer crítico e emancipado', 'Performance corporal', 'Identidades juvenis', 'Mitos e verdades sobre o corpo masculino e feminino', 'Condicionamento físico', 'Esforço físico', 'Autonomia nas práticas corporais', 'Corpo e expressão artística', 'Corpo como produção da cultura'],
+  },
+  {
+    dia: '1', area: 'Linguagens, Códigos e suas Tecnologias', nome: 'Tecnologias da Informação e Comunicação',
+    resumo: 'Uso social das tecnologias, gêneros digitais e comunicação contemporânea.',
+    topicos: ['Tecnologias da comunicação', 'Tecnologias da informação', 'Função social das tecnologias', 'Impacto social das novas tecnologias', 'Sistemas de comunicação', 'Gêneros digitais', 'Suportes digitais de texto', 'Comunicação tecnológica', 'Caracterização dos interlocutores em ambientes digitais', 'Recursos linguísticos em textos digitais', 'Texto literário em gêneros digitais', 'Relação entre tecnologia, conhecimento e sociedade'],
+  },
+  {
+    dia: '1', area: 'Ciências Humanas e suas Tecnologias', nome: 'História',
+    resumo: 'Análise histórica de sociedades, conflitos, movimentos sociais, política, cultura e formação do Brasil.',
+    topicos: ['Cultura material e imaterial', 'Patrimônio cultural', 'Diversidade cultural no Brasil', 'História dos povos indígenas', 'Formação sociocultural brasileira', 'História dos povos africanos', 'Escravidão indígena e africana na América', 'Resistências indígenas e africanas', 'Negro na formação da sociedade brasileira', 'Conquista da América', 'América colonial', 'Conflitos entre europeus e indígenas', 'Brasil Colônia', 'Economia açucareira', 'Mineração no período colonial', 'Independência das colônias americanas', 'Brasil Império', 'Grupos sociais em conflito no Brasil imperial', 'Construção da nação brasileira', 'Revoluções sociais e políticas na Europa Moderna', 'Revolução Industrial', 'Imperialismo', 'Ocupação da Ásia e da África', 'Primeira Guerra Mundial', 'Segunda Guerra Mundial', 'Guerra Fria', 'Revolução Bolchevique', 'Revolução Chinesa', 'Revolução Cubana', 'Totalitarismos', 'Nazifascismo', 'Franquismo', 'Salazarismo', 'Stalinismo', 'Estado Novo no Brasil', 'Ditaduras na América Latina', 'Conflitos pós-Guerra Fria', 'Nova ordem mundial', 'Organismos multilaterais', 'Movimentos culturais no mundo ocidental', 'Direitos civis, políticos, sociais e humanos', 'Direitos sociais nas constituições brasileiras', 'Políticas afirmativas'],
+  },
+  {
+    dia: '1', area: 'Ciências Humanas e suas Tecnologias', nome: 'Geografia',
+    resumo: 'Espaço geográfico, cartografia, sociedade, natureza, economia, urbanização e impactos ambientais.',
+    topicos: ['Formação territorial brasileira', 'Regiões brasileiras', 'Políticas de reordenamento territorial', 'Cartografia', 'Projeções cartográficas', 'Mapas temáticos', 'Mapas físicos', 'Mapas políticos', 'Tecnologias aplicadas à cartografia', 'Relações de poder entre nações', 'Geopolítica', 'Fluxos populacionais', 'Migração', 'Imigração', 'Emigração', 'Urbanização', 'Redes urbanas', 'Hierarquia urbana', 'Pobreza urbana', 'Segregação espacial', 'Industrialização brasileira', 'Globalização', 'Novas tecnologias de telecomunicação', 'Produção do espaço rural', 'Produção do espaço urbano', 'Modernização da agricultura', 'Estruturas agrárias tradicionais', 'Agronegócio', 'Agricultura familiar', 'Trabalhadores assalariados do campo', 'Lutas sociais no campo', 'Relação campo-cidade', 'Relação sociedade-natureza', 'Apropriação dos recursos naturais', 'Recursos minerais', 'Recursos energéticos', 'Recursos hídricos', 'Bacias hidrográficas', 'Impactos ambientais', 'Mudanças climáticas', 'Ilhas de calor', 'Efeito estufa', 'Chuva ácida', 'Destruição da camada de ozônio', 'Sustentabilidade', 'Políticas ambientais', 'Unidades de conservação', 'Corredores ecológicos', 'Zoneamento ecológico-econômico', 'Estrutura interna da Terra', 'Solos', 'Relevo', 'Agentes internos e externos do relevo', 'Atmosfera', 'Climas do Brasil', 'Vegetação do Brasil e do mundo'],
+  },
+  {
+    dia: '1', area: 'Ciências Humanas e suas Tecnologias', nome: 'Filosofia',
+    resumo: 'Reflexão sobre ética, política, cidadania, democracia e fundamentos da vida em sociedade.',
+    topicos: ['Ética', 'Valores sociais', 'Cidadania', 'Democracia', 'Democracia na Antiguidade', 'Democracia direta', 'Democracia indireta', 'Democracia representativa', 'Estado e direitos do cidadão', 'Direitos humanos', 'Justiça', 'Participação política', 'Fundamentos da cidadania', 'Pensamento político', 'Pensamento liberal', 'Críticas ao capitalismo', 'Relação entre indivíduo e sociedade', 'Valores éticos na organização política', 'Inclusão social', 'Argumentos sobre problemas sociais, políticos e culturais'],
+  },
+  {
+    dia: '1', area: 'Ciências Humanas e suas Tecnologias', nome: 'Sociologia',
+    resumo: 'Sociedade, movimentos sociais, trabalho, desigualdade, cultura, Estado e transformações sociais.',
+    topicos: ['Organização social', 'Instituições sociais', 'Movimentos sociais', 'Ação do Estado', 'Desigualdade social', 'Inclusão social', 'Políticas afirmativas', 'Cidadania e direitos sociais', 'Conflitos sociais', 'Cultura e identidade', 'Diversidade cultural', 'Relações de poder', 'Meios de comunicação e vida social', 'Trabalho e sociedade', 'Transformações no mundo do trabalho', 'Fordismo', 'Toyotismo', 'Novas técnicas de produção', 'Tecnologia e vida social', 'Globalização', 'Capitalismo', 'Socialismo', 'Feudalismo', 'Escravismo', 'Vida urbana', 'Pobreza', 'Segregação espacial', 'Relação campo-cidade', 'Lutas sociais no campo', 'Participação coletiva na transformação da realidade'],
+  },
+  {
+    dia: '1', area: 'Redação', nome: 'Redação', tipo: 'redacao',
+    resumo: 'Produção de texto dissertativo-argumentativo em Língua Portuguesa, avaliado por 5 competências (0 a 1.000 pontos).',
+    topicos: ['Texto dissertativo-argumentativo', 'Compreensão da proposta de redação', 'Desenvolvimento do tema', 'Defesa de ponto de vista', 'Tese', 'Argumentação', 'Repertório sociocultural', 'Organização de ideias', 'Projeto de texto', 'Coesão textual', 'Conectivos', 'Norma-padrão da Língua Portuguesa', 'Clareza e progressão argumentativa', 'Proposta de intervenção', 'Agente da intervenção', 'Ação proposta', 'Meio ou modo de execução', 'Finalidade da intervenção', 'Detalhamento da proposta', 'Respeito aos direitos humanos', 'Problemas sociais, culturais, científicos ou políticos'],
+  },
+  // ─── 2º DIA ───────────────────────────────────────────────────────────
+  {
+    dia: '2', area: 'Matemática e suas Tecnologias', nome: 'Matemática',
+    resumo: 'Resolução de problemas com números, geometria, álgebra, estatística, probabilidade, gráficos e funções.',
+    topicos: ['Números naturais', 'Números inteiros', 'Números racionais', 'Números reais', 'Operações com conjuntos numéricos', 'Desigualdades', 'Divisibilidade', 'Fatoração', 'Razões e proporções', 'Porcentagem', 'Juros simples', 'Juros compostos', 'Relações de dependência entre grandezas', 'Sequências', 'Progressões', 'Progressão aritmética', 'Progressão geométrica', 'Princípios de contagem', 'Figuras geométricas planas', 'Figuras geométricas espaciais', 'Grandezas e medidas', 'Unidades de medida', 'Escalas', 'Comprimentos', 'Áreas', 'Volumes', 'Ângulos', 'Posição de retas', 'Simetrias', 'Congruência de triângulos', 'Semelhança de triângulos', 'Teorema de Tales', 'Relações métricas no triângulo', 'Circunferência', 'Trigonometria do ângulo agudo', 'Representação e análise de dados', 'Tabelas', 'Gráficos', 'Medidas de tendência central', 'Média', 'Moda', 'Mediana', 'Desvios', 'Variância', 'Probabilidade', 'Funções', 'Gráficos de funções', 'Função do 1º grau', 'Função do 2º grau', 'Funções polinomiais', 'Funções racionais', 'Funções exponenciais', 'Funções logarítmicas', 'Equações', 'Inequações', 'Ciclo trigonométrico', 'Funções trigonométricas', 'Plano cartesiano', 'Retas', 'Circunferências', 'Paralelismo', 'Perpendicularidade', 'Sistemas de equações'],
+  },
+  {
+    dia: '2', area: 'Ciências da Natureza e suas Tecnologias', nome: 'Física',
+    resumo: 'Interpretação de fenômenos físicos, mecânica, energia, eletricidade, magnetismo, ondas, óptica e termologia.',
+    topicos: ['Ordem de grandeza', 'Notação científica', 'Sistema Internacional de Unidades', 'Grandezas físicas', 'Grandezas escalares', 'Grandezas vetoriais', 'Operações com vetores', 'Gráficos', 'Movimento', 'Repouso', 'Referencial', 'Velocidade', 'Aceleração', 'Força e movimento', 'Leis de Newton', 'Inércia', 'Massa', 'Quantidade de movimento', 'Impulso', 'Conservação da quantidade de movimento', 'Centro de massa', 'Torque', 'Equilíbrio estático', 'Força peso', 'Força normal', 'Força de atrito', 'Tração', 'Movimento circular', 'Força centrípeta', 'Hidrostática', 'Pressão', 'Empuxo', 'Princípio de Pascal', 'Princípio de Arquimedes', 'Princípio de Stevin', 'Trabalho', 'Energia', 'Potência', 'Energia cinética', 'Energia potencial', 'Conservação da energia mecânica', 'Dissipação de energia', 'Gravitação universal', 'Leis de Kepler', 'Origem e evolução do universo', 'Carga elétrica', 'Corrente elétrica', 'Lei de Coulomb', 'Campo elétrico', 'Potencial elétrico', 'Capacitores', 'Efeito Joule', 'Lei de Ohm', 'Resistência elétrica', 'Tensão elétrica', 'Potência elétrica', 'Circuitos elétricos', 'Corrente contínua', 'Corrente alternada', 'Campo magnético', 'Ímãs', 'Campo magnético terrestre', 'Ondas', 'Oscilações', 'Frequência', 'Período', 'Comprimento de onda', 'Propagação de ondas', 'Reflexão', 'Refração', 'Óptica geométrica', 'Lentes', 'Espelhos', 'Formação de imagens', 'Instrumentos ópticos', 'Calor', 'Temperatura', 'Escalas termométricas', 'Transferência de calor', 'Equilíbrio térmico', 'Calor específico', 'Dilatação térmica', 'Mudanças de estado físico', 'Calor latente', 'Gases ideais', 'Máquinas térmicas', 'Ciclo de Carnot', 'Leis da Termodinâmica'],
+  },
+  {
+    dia: '2', area: 'Ciências da Natureza e suas Tecnologias', nome: 'Química',
+    resumo: 'Matéria, transformações químicas, atomística, tabela periódica, ligações, soluções, termoquímica, equilíbrio, orgânica, eletroquímica e química ambiental.',
+    topicos: ['Transformações químicas', 'Evidências de reações químicas', 'Sistemas gasosos', 'Lei dos gases', 'Equação geral dos gases ideais', 'Princípio de Avogadro', 'Conceito de molécula', 'Massa molar', 'Volume molar dos gases', 'Teoria cinética dos gases', 'Misturas gasosas', 'Modelo corpuscular da matéria', 'Modelo atômico de Dalton', 'Modelo atômico de Thomson', 'Modelo atômico de Rutherford', 'Modelo atômico de Rutherford-Bohr', 'Estrutura do átomo', 'Número atômico', 'Número de massa', 'Isótopos', 'Massa atômica', 'Elementos químicos', 'Tabela periódica', 'Reações químicas', 'Fórmulas químicas', 'Balanceamento de equações', 'Leis ponderais', 'Grandezas químicas', 'Mol', 'Constante de Avogadro', 'Cálculos estequiométricos', 'Propriedades dos materiais', 'Estados físicos da matéria', 'Mudanças de estado físico', 'Misturas', 'Métodos de separação de misturas', 'Substâncias químicas', 'Metais', 'Ligas metálicas', 'Ligação metálica', 'Ligação iônica', 'Substâncias iônicas', 'Ligação covalente', 'Substâncias moleculares', 'Polaridade de moléculas', 'Forças intermoleculares', 'Água', 'Soluções verdadeiras', 'Soluções coloidais', 'Suspensões', 'Solubilidade', 'Concentração das soluções', 'Propriedades coligativas', 'Ácidos', 'Bases', 'Sais', 'Óxidos', 'Indicadores ácido-base', 'Reação de neutralização', 'Termoquímica', 'Calor de reação', 'Entalpia', 'Equações termoquímicas', 'Lei de Hess', 'Oxirredução', 'Potenciais de redução', 'Pilhas', 'Eletrólise', 'Leis de Faraday', 'Radioatividade', 'Fissão nuclear', 'Fusão nuclear', 'Radioisótopos', 'Cinética química', 'Velocidade de reação', 'Energia de ativação', 'Catalisador', 'Equilíbrio químico', 'Constante de equilíbrio', 'Equilíbrio ácido-base', 'pH', 'Hidrólise', 'Química orgânica', 'Compostos de carbono', 'Funções orgânicas', 'Hidrocarbonetos', 'Compostos orgânicos oxigenados', 'Compostos orgânicos nitrogenados', 'Fermentação', 'Polímeros', 'Plásticos', 'Óleos e gorduras', 'Sabões e detergentes', 'Proteínas e enzimas', 'Química no cotidiano', 'Química ambiental', 'Indústria química', 'Poluição da água', 'Tratamento de água', 'Poluição atmosférica', 'Petróleo', 'Gás natural', 'Biocombustíveis', 'Energia nuclear'],
+  },
+  {
+    dia: '2', area: 'Ciências da Natureza e suas Tecnologias', nome: 'Biologia',
+    resumo: 'Citologia, genética, biotecnologia, evolução, ecologia, fisiologia, saúde e meio ambiente.',
+    topicos: ['Moléculas', 'Células', 'Tecidos', 'Membrana plasmática', 'Citoplasma', 'Núcleo', 'Divisão celular', 'Metabolismo celular', 'Fotossíntese', 'Respiração celular', 'Informação genética', 'Síntese proteica', 'Diferenciação celular', 'Tecidos animais', 'Tecidos vegetais', 'Origem e evolução das células', 'Células-tronco', 'Clonagem', 'DNA recombinante', 'Biotecnologia', 'Biotecnologia na produção de alimentos', 'Biotecnologia na produção de fármacos', 'Identificação genética', 'Teste de paternidade', 'Ética na biotecnologia', 'Hereditariedade', 'Transmissão de características hereditárias', 'Genética mendeliana', 'Antígenos', 'Anticorpos', 'Grupos sanguíneos', 'Transplantes', 'Doenças autoimunes', 'Mutações gênicas', 'Mutações cromossômicas', 'Aconselhamento genético', 'Fundamentos genéticos da evolução', 'Diversidade biológica', 'Níveis de organização dos seres vivos', 'Vírus', 'Procariontes', 'Eucariontes', 'Autótrofos', 'Heterótrofos', 'Sistemática', 'Ciclos de vida', 'Evolução dos seres vivos', 'Anatomia humana', 'Fisiologia humana', 'Embriologia', 'Evolução humana', 'Ecologia', 'Ecossistemas', 'Fatores bióticos', 'Fatores abióticos', 'Habitat', 'Nicho ecológico', 'Teia alimentar', 'Sucessão ecológica', 'Dinâmica de populações', 'Relações ecológicas', 'Ciclos biogeoquímicos', 'Fluxo de energia', 'Biomas brasileiros', 'Uso de recursos naturais', 'Mudanças climáticas', 'Efeito estufa', 'Desmatamento', 'Poluição da água', 'Poluição do solo', 'Poluição do ar', 'Conservação de ecossistemas', 'Biodiversidade', 'Saneamento básico', 'Legislação ambiental', 'Origem da vida', 'Teorias da evolução', 'Darwinismo', 'Teoria sintética da evolução', 'Qualidade de vida', 'IDH', 'Doenças que afetam a população brasileira', 'Prevenção e profilaxia', 'Primeiros socorros', 'Infecções sexualmente transmissíveis', 'Uso indevido de drogas', 'Exercício físico e vida saudável', 'Desenvolvimento sustentável'],
+  },
 ];
 
 export function EnemDetalhe({
@@ -156,13 +201,16 @@ export function EnemDetalhe({
   const dia2 = fmtDateBR(meta.prova_data_dia2 || meta.prova_data2 || contest?.prova_data_dia2);
   const dia1Fmt = fmtDateBR(contest?.prova_data);
 
+  const hojeISO = new Date().toISOString().slice(0, 10);
+  const isPast = (iso) => iso && String(iso).slice(0, 10) < hojeISO;
+  const dia2Raw = meta.prova_data_dia2 || meta.prova_data2 || contest?.prova_data_dia2;
   const datas = [
-    contest?.registration_start ? { evento: 'Abertura das inscrições', data: fmtDateBR(contest.registration_start), dot: '#f4d04e' } : null,
-    contest?.registration_end ? { evento: 'Encerramento das inscrições', data: fmtDateBR(contest.registration_end), dot: 'rgba(243,239,229,0.35)' } : null,
-    meta.taxa_pagamento_ate ? { evento: 'Pagamento da taxa', data: fmtDateBR(meta.taxa_pagamento_ate), dot: 'rgba(243,239,229,0.35)' } : null,
-    contest?.prova_data ? { evento: '1º dia de prova', data: fmtDateBR(contest.prova_data), dot: '#f4d04e' } : null,
-    dia2 ? { evento: '2º dia de prova', data: dia2, dot: '#f4d04e' } : null,
-  ].filter(Boolean);
+    contest?.registration_start ? { evento: 'Abertura das inscrições', raw: contest.registration_start, data: fmtDateBR(contest.registration_start), dot: '#f4d04e' } : null,
+    contest?.registration_end ? { evento: 'Encerramento das inscrições', raw: contest.registration_end, data: fmtDateBR(contest.registration_end), dot: 'rgba(243,239,229,0.35)' } : null,
+    meta.taxa_pagamento_ate ? { evento: 'Pagamento da taxa', raw: meta.taxa_pagamento_ate, data: fmtDateBR(meta.taxa_pagamento_ate), dot: 'rgba(243,239,229,0.35)' } : null,
+    contest?.prova_data ? { evento: '1º dia de prova', raw: contest.prova_data, data: fmtDateBR(contest.prova_data), dot: '#f4d04e' } : null,
+    dia2Raw ? { evento: '2º dia de prova', raw: dia2Raw, data: fmtDateBR(dia2Raw), dot: '#f4d04e' } : null,
+  ].filter(Boolean).map((d) => ({ ...d, past: isPast(d.raw) }));
 
   const statusLabel = contest?.status_concurso
     ? (STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto')
@@ -170,62 +218,6 @@ export function EnemDetalhe({
 
   const statusDot = normalizeContestStatus(contest?.status_concurso);
   const isEncerrado = statusDot === 'inscricoes_encerradas';
-
-  const grupos = useMemo(() => {
-    const map = new Map();
-    (contest?.disciplinas || []).forEach((d) => {
-      const nome = typeof d === 'string' ? d : d?.nome;
-      if (!nome) return;
-      const topicos = (Array.isArray(d?.topicos) ? d.topicos : []).map((t) => (typeof t === 'string' ? t : t?.nome)).filter(Boolean);
-      const area = enemAreaOf(nome);
-      if (!map.has(area)) map.set(area, []);
-      map.get(area).push({ nome, topicos });
-    });
-    const ordered = ENEM_AREA_ORDER.filter((a) => map.has(a)).map((a) => [a, map.get(a)]);
-    const extras = [...map.keys()].filter((a) => !ENEM_AREA_ORDER.includes(a)).map((a) => [a, map.get(a)]);
-    return [...ordered, ...extras];
-  }, [contest?.disciplinas]);
-
-  const grupos1 = grupos.filter(([a]) => ENEM_AREA_DAY[a] === '1');
-  const grupos2 = grupos.filter(([a]) => ENEM_AREA_DAY[a] === '2');
-  const totalMaterias = grupos.reduce((acc, [, ms]) => acc + ms.length, 0);
-
-  const renderAreaAccordion = (area, materias, idx, isLast) => {
-    const tint = ENEM_AREA_TINT[area] || '#1e3a5f';
-    const akey = `area-${idx}`;
-    const open = Boolean(expanded[akey]);
-    return (
-      <div key={area} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(20,17,13,0.06)' }}>
-        <button type="button" onClick={() => setExpanded((p) => ({ ...p, [akey]: !p[akey] }))}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 24px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', transition: 'background .1s' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ width: 12, height: 12, borderRadius: 4, background: tint, flexShrink: 0, display: 'inline-block' }} />
-            <div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#14110d', lineHeight: 1.2 }}>{area}</p>
-              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#847b6c' }}>{materias.length} matéria{materias.length !== 1 ? 's' : ''}</p>
-            </div>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#847b6c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', display: 'block', flexShrink: 0 }}>
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        {open && (
-          <div style={{ padding: '0 24px 16px' }}>
-            <div style={{ paddingTop: 12, borderTop: `2px solid ${tint}22`, display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {materias.map((m) => (
-                <span key={m.nome}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, border: `1px solid ${tint}30`, background: `${tint}0d`, fontSize: 12, fontWeight: 600, color: '#3a342c' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: tint, flexShrink: 0, display: 'inline-block' }} />
-                  {m.nome}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 20px 48px' }}>
@@ -403,8 +395,9 @@ export function EnemDetalhe({
       {/* ─── Conteúdo programático — por dia ───────────────────────────── */}
       {(() => {
         const isDia1 = diaProg === '1';
-        const gruposDia = isDia1 ? grupos1 : grupos2;
-        const matsDia = gruposDia.reduce((acc, [, ms]) => acc + ms.length, 0);
+        const materiasDia = ENEM_MATERIAS.filter((m) => m.dia === diaProg);
+        const totalMat = ENEM_MATERIAS.length;
+        const totalAreas = new Set(ENEM_MATERIAS.map((m) => m.area)).size;
         const accent = isDia1 ? '#1e3a5f' : '#3d1e5c';
         const accentSoft = isDia1 ? 'rgba(30,58,95,0.06)' : 'rgba(61,30,92,0.06)';
         return (
@@ -415,11 +408,9 @@ export function EnemDetalhe({
                   <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Matriz de referência</p>
                   <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Conteúdo programático</h2>
                 </div>
-                {totalMaterias > 0 && (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#847b6c', border: '1px solid rgba(20,17,13,0.12)', borderRadius: 6, padding: '4px 10px' }}>
-                    {grupos.length} área{grupos.length !== 1 ? 's' : ''} · {totalMaterias} matéria{totalMaterias !== 1 ? 's' : ''}
-                  </span>
-                )}
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#847b6c', border: '1px solid rgba(20,17,13,0.12)', borderRadius: 6, padding: '4px 10px' }}>
+                  {totalAreas} áreas · {totalMat} matérias
+                </span>
               </div>
 
               {/* Seletor de dia */}
@@ -444,59 +435,81 @@ export function EnemDetalhe({
               </div>
             </div>
 
-            {/* Conteúdo do dia selecionado */}
-            {totalMaterias === 0 ? (
-              <div style={{ padding: '24px' }}>
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Conteúdo em montagem. Admin → Catálogo → ENEM.</p>
+            {/* Faixa do dia + matérias clicáveis */}
+            <div>
+              <div style={{ padding: '10px 24px', background: accentSoft, borderBottom: `1px solid ${accent}1a`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: accent, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+                  {isDia1 ? 'Primeiro dia' : 'Segundo dia'} — {materiasDia.length} matérias
+                </p>
+                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 600, color: '#a99f8d', fontStyle: 'italic' }}>toque para ver o que cai</span>
               </div>
-            ) : (
-              <div>
-                <div style={{ padding: '10px 24px', background: accentSoft, borderBottom: `1px solid ${accent}1a`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: accent, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-                    {isDia1 ? 'Primeiro dia' : 'Segundo dia'} — {gruposDia.length} área{gruposDia.length !== 1 ? 's' : ''} · {matsDia} matéria{matsDia !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                {gruposDia.length === 0 ? (
-                  <div style={{ padding: '24px' }}>
-                    <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Sem matérias cadastradas para este dia ainda.</p>
-                  </div>
-                ) : (
-                  gruposDia.map(([area, materias], idx) =>
-                    renderAreaAccordion(area, materias, `${diaProg}-${idx}`, idx === gruposDia.length - 1 && isDia1)
-                  )
-                )}
 
-                {/* Redação — competências (apenas no 1º dia) */}
-                {isDia1 && (
-                  <div style={{ borderTop: '1px solid rgba(20,17,13,0.07)' }}>
-                    <div style={{ padding: '14px 24px 12px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ width: 12, height: 12, borderRadius: 4, background: ENEM_AREA_TINT['Redação'], flexShrink: 0, display: 'inline-block' }} />
-                        <div>
-                          <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#847b6c' }}>Texto dissertativo-argumentativo</p>
-                          <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#14110d' }}>Redação — 5 competências</p>
+              {materiasDia.map((m, idx) => {
+                const tint = ENEM_AREA_TINT[m.area] || '#1e3a5f';
+                const open = Boolean(expanded[m.nome]);
+                const isLast = idx === materiasDia.length - 1;
+                const isRedacao = m.tipo === 'redacao';
+                return (
+                  <div key={m.nome} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(20,17,13,0.06)' }}>
+                    <button type="button" onClick={() => setExpanded((p) => ({ ...p, [m.nome]: !p[m.nome] }))}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 24px', background: open ? `${tint}08` : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', transition: 'background .1s' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                        <span style={{ width: 12, height: 12, borderRadius: 4, background: tint, flexShrink: 0, display: 'inline-block' }} />
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: '#14110d', lineHeight: 1.25 }}>{m.nome}</p>
+                          <p style={{ margin: '2px 0 0', fontSize: 11, color: '#847b6c' }}>
+                            {ENEM_AREA_SHORTNAME[m.area] || m.area} · {isRedacao ? '5 competências' : `${m.topicos.length} tópicos`}
+                          </p>
                         </div>
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#7a1e2e', background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.2)', borderRadius: 6, padding: '4px 10px' }}>0 – 1.000 pontos</span>
-                    </div>
-                    {COMPETENCIAS_REDACAO.map((comp, i) => (
-                      <div key={comp.num} style={{ display: 'grid', gridTemplateColumns: '44px 1fr 60px', gap: 16, padding: '12px 24px', alignItems: 'center', borderTop: '1px solid rgba(20,17,13,0.05)', background: i % 2 === 0 ? 'transparent' : 'rgba(20,17,13,0.015)' }}>
-                        <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#7a1e2e', flexShrink: 0 }}>
-                          {comp.num}
-                        </span>
-                        <div>
-                          <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 700, color: '#14110d' }}>{comp.titulo}</p>
-                          <p style={{ margin: 0, fontSize: 12, color: '#847b6c', lineHeight: 1.4 }}>{comp.desc}</p>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#847b6c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', display: 'block', flexShrink: 0 }}>
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+
+                    {open && (
+                      <div style={{ padding: '0 24px 18px' }}>
+                        <div style={{ paddingTop: 12, borderTop: `2px solid ${tint}22` }}>
+                          {m.resumo && (
+                            <p style={{ margin: '0 0 14px', fontSize: 13, color: '#3a342c', lineHeight: 1.6, fontWeight: 500 }}>{m.resumo}</p>
+                          )}
+
+                          {isRedacao ? (
+                            <div style={{ borderRadius: 10, border: '1px solid rgba(122,30,46,0.16)', overflow: 'hidden' }}>
+                              <div style={{ padding: '10px 14px', background: 'rgba(122,30,46,0.05)', borderBottom: '1px solid rgba(122,30,46,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a1e2e' }}>Avaliação por competência</p>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#7a1e2e' }}>0 – 1.000 pontos</span>
+                              </div>
+                              {COMPETENCIAS_REDACAO.map((comp, i) => (
+                                <div key={comp.num} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 56px', gap: 12, padding: '11px 14px', alignItems: 'center', borderTop: i > 0 ? '1px solid rgba(20,17,13,0.05)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(20,17,13,0.015)' }}>
+                                  <span style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#7a1e2e', flexShrink: 0 }}>{comp.num}</span>
+                                  <div>
+                                    <p style={{ margin: '0 0 2px', fontSize: 12.5, fontWeight: 700, color: '#14110d' }}>{comp.titulo}</p>
+                                    <p style={{ margin: 0, fontSize: 11.5, color: '#847b6c', lineHeight: 1.4 }}>{comp.desc}</p>
+                                  </div>
+                                  <span style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, color: '#7a1e2e', fontVariantNumeric: 'tabular-nums' }}>{comp.pts} pts</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                              {m.topicos.map((t) => (
+                                <span key={t}
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, border: `1px solid ${tint}30`, background: `${tint}0d`, fontSize: 12, fontWeight: 600, color: '#3a342c' }}>
+                                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: tint, flexShrink: 0, display: 'inline-block' }} />
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: '#7a1e2e', fontVariantNumeric: 'tabular-nums' }}>
-                          {comp.pts} pts
-                        </span>
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         );
       })()}
@@ -554,12 +567,21 @@ export function EnemDetalhe({
           <h2 style={{ margin: '0 0 20px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#f3efe5' }}>Datas importantes</h2>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {datas.map((dt, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '13px 0', borderBottom: i < datas.length - 1 ? '1px solid rgba(243,239,229,0.09)' : 'none' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: dt.dot, flexShrink: 0, display: 'inline-block' }} />
-                  <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.8)' }}>{dt.evento}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '13px 0', borderBottom: i < datas.length - 1 ? '1px solid rgba(243,239,229,0.09)' : 'none', opacity: dt.past ? 0.55 : 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                  {dt.past ? (
+                    <span style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(243,239,229,0.18)', border: '1px solid rgba(243,239,229,0.3)', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#f3efe5" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    </span>
+                  ) : (
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: dt.dot, flexShrink: 0, display: 'inline-block' }} />
+                  )}
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.8)', textDecoration: dt.past ? 'line-through' : 'none', textDecorationColor: 'rgba(243,239,229,0.4)' }}>{dt.evento}</span>
+                  {dt.past && (
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.55)', border: '1px solid rgba(243,239,229,0.22)', borderRadius: 5, padding: '2px 7px', flexShrink: 0 }}>Encerrado</span>
+                  )}
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#f3efe5', whiteSpace: 'nowrap' }}>{dt.data}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#f3efe5', whiteSpace: 'nowrap', textDecoration: dt.past ? 'line-through' : 'none', textDecorationColor: 'rgba(243,239,229,0.4)' }}>{dt.data}</span>
               </div>
             ))}
           </div>
