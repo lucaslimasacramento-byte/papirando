@@ -103,6 +103,30 @@ function enemAreaOf(nome = '') {
   return ENEM_AREA_MAP[key] || 'Outras';
 }
 
+const ENEM_AREA_SHORTNAME = {
+  'Linguagens, Códigos e suas Tecnologias': 'Linguagens',
+  'Ciências Humanas e suas Tecnologias': 'Ciências Humanas',
+  'Ciências da Natureza e suas Tecnologias': 'Ciências da Natureza',
+  'Matemática e suas Tecnologias': 'Matemática',
+  'Redação': 'Redação',
+};
+
+const EIXOS_COGNITIVOS = [
+  { num: 'I',   titulo: 'Dominar linguagens',          desc: 'Usar a norma culta da Língua Portuguesa e compreender linguagens matemática, artística, científica e estrangeira.' },
+  { num: 'II',  titulo: 'Compreender fenômenos',       desc: 'Aplicar conceitos de diferentes áreas para entender fenômenos naturais, históricos, geográficos, tecnológicos e artísticos.' },
+  { num: 'III', titulo: 'Enfrentar situações-problema', desc: 'Selecionar, organizar e interpretar dados para resolver situações-problema do cotidiano.' },
+  { num: 'IV',  titulo: 'Construir argumentação',      desc: 'Relacionar informações e conhecimentos para defender uma posição de forma consistente e fundamentada.' },
+  { num: 'V',   titulo: 'Elaborar propostas',          desc: 'Usar conhecimentos escolares para propor intervenções na realidade, respeitando valores humanos e diversidade sociocultural.' },
+];
+
+const COMPETENCIAS_REDACAO = [
+  { num: 'I',   pts: 200, titulo: 'Modalidade escrita formal',   desc: 'Domínio da norma culta da Língua Portuguesa.' },
+  { num: 'II',  pts: 200, titulo: 'Proposta e gênero textual',   desc: 'Compreensão da proposta e desenvolvimento do tema no texto dissertativo-argumentativo.' },
+  { num: 'III', pts: 200, titulo: 'Seleção de argumentos',       desc: 'Seleção, organização e interpretação de informações, fatos, opiniões e argumentos.' },
+  { num: 'IV',  pts: 200, titulo: 'Mecanismos linguísticos',     desc: 'Uso de recursos coesivos para construir a argumentação.' },
+  { num: 'V',   pts: 200, titulo: 'Proposta de intervenção',     desc: 'Proposta de intervenção que respeite os direitos humanos.' },
+];
+
 export function EnemDetalhe({
   contest,
   onBack,
@@ -129,25 +153,22 @@ export function EnemDetalhe({
   const insEnd = fmtDateBR(contest?.registration_end);
   const inscricaoPeriodo = insStart || insEnd ? `${insStart || '—'} até ${insEnd || 'em aberto'}` : null;
   const dia2 = fmtDateBR(meta.prova_data_dia2 || meta.prova_data2 || contest?.prova_data_dia2);
-
-  const facts = [
-    inscricaoPeriodo ? { label: 'Inscrições', value: inscricaoPeriodo } : null,
-    { label: 'Taxa', value: contest?.inscricao_valor || 'A definir' },
-    { label: '1º dia', value: fmtDateBR(contest?.prova_data) || 'A definir' },
-    dia2 ? { label: '2º dia', value: dia2 } : null,
-    { label: 'Nível', value: contest?.escolaridade || 'Ens. Médio' },
-  ].filter(Boolean);
+  const dia1Fmt = fmtDateBR(contest?.prova_data);
 
   const datas = [
     contest?.registration_start ? { evento: 'Abertura das inscrições', data: fmtDateBR(contest.registration_start), dot: '#f4d04e' } : null,
     contest?.registration_end ? { evento: 'Encerramento das inscrições', data: fmtDateBR(contest.registration_end), dot: 'rgba(243,239,229,0.35)' } : null,
+    meta.taxa_pagamento_ate ? { evento: 'Pagamento da taxa', data: fmtDateBR(meta.taxa_pagamento_ate), dot: 'rgba(243,239,229,0.35)' } : null,
     contest?.prova_data ? { evento: '1º dia de prova', data: fmtDateBR(contest.prova_data), dot: '#f4d04e' } : null,
-    dia2 ? { evento: '2º dia de prova', data: dia2, dot: 'rgba(243,239,229,0.35)' } : null,
+    dia2 ? { evento: '2º dia de prova', data: dia2, dot: '#f4d04e' } : null,
   ].filter(Boolean);
 
   const statusLabel = contest?.status_concurso
     ? (STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] || 'Previsto')
-    : 'A definir';
+    : 'Previsto';
+
+  const statusDot = normalizeContestStatus(contest?.status_concurso);
+  const isEncerrado = statusDot === 'inscricoes_encerradas';
 
   const grupos = useMemo(() => {
     const map = new Map();
@@ -164,7 +185,46 @@ export function EnemDetalhe({
     return [...ordered, ...extras];
   }, [contest?.disciplinas]);
 
+  const grupos1 = grupos.filter(([a]) => ENEM_AREA_DAY[a] === '1');
+  const grupos2 = grupos.filter(([a]) => ENEM_AREA_DAY[a] === '2');
   const totalMaterias = grupos.reduce((acc, [, ms]) => acc + ms.length, 0);
+
+  const renderAreaAccordion = (area, materias, idx, isLast) => {
+    const tint = ENEM_AREA_TINT[area] || '#1e3a5f';
+    const akey = `area-${idx}`;
+    const open = Boolean(expanded[akey]);
+    return (
+      <div key={area} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(20,17,13,0.06)' }}>
+        <button type="button" onClick={() => setExpanded((p) => ({ ...p, [akey]: !p[akey] }))}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 24px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', transition: 'background .1s' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ width: 12, height: 12, borderRadius: 4, background: tint, flexShrink: 0, display: 'inline-block' }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#14110d', lineHeight: 1.2 }}>{area}</p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#847b6c' }}>{materias.length} matéria{materias.length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#847b6c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', display: 'block', flexShrink: 0 }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        {open && (
+          <div style={{ padding: '0 24px 16px' }}>
+            <div style={{ paddingTop: 12, borderTop: `2px solid ${tint}22`, display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {materias.map((m) => (
+                <span key={m.nome}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, border: `1px solid ${tint}30`, background: `${tint}0d`, fontSize: 12, fontWeight: 600, color: '#3a342c' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: tint, flexShrink: 0, display: 'inline-block' }} />
+                  {m.nome}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 20px 48px' }}>
@@ -175,7 +235,7 @@ export function EnemDetalhe({
           <button type="button" onClick={onBack}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 14px 7px 10px', borderRadius: 8, border: '1px solid rgba(20,17,13,0.14)', background: '#fff', color: '#3a342c', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             <ArrowLeft size={15} />
-            Voltar para concursos
+            Voltar
           </button>
           {isAdmin && (
             <button type="button" onClick={() => onEditContest?.(contest)}
@@ -187,33 +247,42 @@ export function EnemDetalhe({
         </div>
       )}
 
-      {/* Hero navy */}
-      <div style={{ borderRadius: 16, overflow: 'hidden', background: '#1e3a5f', boxShadow: '0 8px 32px rgba(30,58,95,0.28)' }}>
-        {/* Eyebrow strip */}
-        <div style={{ padding: '18px 28px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>Exame Nacional</span>
-          <span style={{ color: 'rgba(243,239,229,0.25)' }}>&middot;</span>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>INEP / MEC</span>
+      {/* ─── Hero navy ─────────────────────────────────────────────────── */}
+      <div style={{ borderRadius: 18, overflow: 'hidden', background: '#1e3a5f', boxShadow: '0 12px 40px rgba(30,58,95,0.32)' }}>
+        {/* Eyebrow */}
+        <div style={{ padding: '18px 28px 0', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.4)' }}>Exame Nacional</span>
+          <span style={{ color: 'rgba(243,239,229,0.2)' }}>&middot;</span>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.4)' }}>INEP / MEC</span>
+          {meta.edital_numero && (
+            <>
+              <span style={{ color: 'rgba(243,239,229,0.2)' }}>&middot;</span>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.4)' }}>{meta.edital_numero}</span>
+            </>
+          )}
         </div>
 
-        {/* Main hero body */}
-        <div style={{ padding: '20px 28px 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
-          {/* Wordmark + info */}
+        {/* Body */}
+        <div style={{ padding: '18px 28px 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
+          {/* Wordmark + badges */}
           <div style={{ flex: 1, minWidth: 220 }}>
-            <div style={{ marginBottom: 10 }}>
-              <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 52, fontWeight: 800, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.05em', lineHeight: 1, display: 'block' }}>enem</span>
-            </div>
-            <p style={{ margin: '0 0 0', fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.65)', lineHeight: 1.5 }}>
+            <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 56, fontWeight: 800, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.055em', lineHeight: 1, display: 'block', marginBottom: 12 }}>enem</span>
+            <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.62)', lineHeight: 1.5 }}>
               Acesso ao ensino superior via SiSU, ProUni e Fies
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 999, border: '1px solid rgba(244,208,78,0.4)', background: 'rgba(244,208,78,0.12)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#f4d04e' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f4d04e', display: 'inline-block' }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 999, border: `1px solid ${isEncerrado ? 'rgba(243,239,229,0.25)' : 'rgba(244,208,78,0.4)'}`, background: isEncerrado ? 'rgba(243,239,229,0.07)' : 'rgba(244,208,78,0.12)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: isEncerrado ? 'rgba(243,239,229,0.45)' : '#f4d04e' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: isEncerrado ? 'rgba(243,239,229,0.4)' : '#f4d04e', display: 'inline-block' }} />
                 {statusLabel}
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: '1px solid rgba(243,239,229,0.15)', background: 'rgba(243,239,229,0.07)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.55)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: '1px solid rgba(243,239,229,0.15)', background: 'rgba(243,239,229,0.07)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.5)' }}>
                 {contest?.escolaridade || 'Ensino médio completo'}
               </span>
+              {meta.total_questoes && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: '1px solid rgba(243,239,229,0.15)', background: 'rgba(243,239,229,0.07)', padding: '4px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.5)' }}>
+                  {meta.total_questoes} questões
+                </span>
+              )}
             </div>
           </div>
 
@@ -222,9 +291,9 @@ export function EnemDetalhe({
             <button type="button"
               onClick={() => onImport?.(contest)}
               disabled={importing || limiteAtingido || added}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, background: '#f3efe5', color: '#1e3a5f', border: 'none', padding: '10px 18px', fontSize: 13, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.14)', cursor: importing || limiteAtingido || added ? 'not-allowed' : 'pointer', opacity: importing || limiteAtingido || added ? 0.6 : 1 }}>
-              {added ? 'Já no painel' : limiteAtingido ? 'Limite' : importing ? '...' : 'Adicionar aos estudos'}
-              <ArrowRight size={14} />
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, background: '#f3efe5', color: '#1e3a5f', border: 'none', padding: '11px 20px', fontSize: 13, fontWeight: 700, boxShadow: '0 2px 10px rgba(0,0,0,0.18)', cursor: importing || limiteAtingido || added ? 'not-allowed' : 'pointer', opacity: importing || limiteAtingido || added ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+              {added ? 'Já no painel' : limiteAtingido ? 'Limite atingido' : importing ? 'Adicionando...' : 'Adicionar aos estudos'}
+              {!added && !limiteAtingido && <ArrowRight size={14} />}
             </button>
             <div style={{ display: 'flex', gap: 8 }}>
               {onToggleFavorite && (
@@ -246,113 +315,212 @@ export function EnemDetalhe({
         </div>
 
         {/* Fact strip */}
-        {facts.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${facts.length}, 1fr)`, borderTop: '1px solid rgba(243,239,229,0.1)', background: 'rgba(0,0,0,0.15)' }}>
-            {facts.map((f, i) => (
-              <div key={f.label} style={{ padding: '14px 20px', borderRight: i < facts.length - 1 ? '1px solid rgba(243,239,229,0.07)' : 'none' }}>
-                <p style={{ margin: '0 0 5px', fontSize: 9, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.4)' }}>{f.label}</p>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#f3efe5' }}>{f.value}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', borderTop: '1px solid rgba(243,239,229,0.1)', background: 'rgba(0,0,0,0.18)' }}>
+          {[
+            inscricaoPeriodo && { label: 'Inscrições', value: inscricaoPeriodo },
+            { label: 'Taxa', value: contest?.inscricao_valor || 'A definir' },
+            dia1Fmt && { label: '1º dia', value: dia1Fmt },
+            dia2 && { label: '2º dia', value: dia2 },
+            meta.duracao_dia1 && { label: 'Duração — dia 1', value: meta.duracao_dia1 },
+            meta.duracao_dia2 && { label: 'Duração — dia 2', value: meta.duracao_dia2 },
+          ].filter(Boolean).map((f, i, arr) => (
+            <div key={f.label} style={{ padding: '13px 18px', borderRight: i < arr.length - 1 ? '1px solid rgba(243,239,229,0.07)' : 'none' }}>
+              <p style={{ margin: '0 0 4px', fontSize: 9, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.38)' }}>{f.label}</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#f3efe5', lineHeight: 1.2 }}>{f.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Sobre */}
+      {/* ─── Sobre o exame ─────────────────────────────────────────────── */}
       {contest?.descricao && (
-        <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '24px 28px', boxShadow: '0 1px 4px rgba(20,17,13,0.05)' }}>
-          <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Sobre o exame</p>
+        <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '24px 28px', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
+          <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Sobre o exame</p>
           <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 26, color: '#14110d', lineHeight: 1.15 }}>O principal exame do Brasil</h2>
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.7, color: '#3a342c', fontWeight: 500 }}>{contest.descricao}</p>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.75, color: '#3a342c', fontWeight: 500 }}>{contest.descricao}</p>
         </div>
       )}
 
-      {/* Areas de conhecimento */}
-      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.05)' }}>
-        <div style={{ padding: '22px 28px 16px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', borderBottom: '1px solid rgba(20,17,13,0.07)' }}>
+      {/* ─── Estrutura da prova — dois dias ────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+        {/* Dia 1 */}
+        <div style={{ borderRadius: 14, overflow: 'hidden', background: '#1e3a5f', boxShadow: '0 4px 16px rgba(30,58,95,0.2)' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(243,239,229,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>1º Dia</p>
+              {meta.duracao_dia1 && <span style={{ fontSize: 11, fontWeight: 700, color: '#f4d04e', background: 'rgba(244,208,78,0.12)', border: '1px solid rgba(244,208,78,0.3)', borderRadius: 6, padding: '2px 8px' }}>{meta.duracao_dia1}</span>}
+            </div>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#f3efe5', lineHeight: 1.1 }}>
+              {dia1Fmt ? dia1Fmt : '8 de novembro de 2026'}
+            </p>
+          </div>
+          <div style={{ padding: '14px 22px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { area: 'Linguagens, Códigos e suas Tecnologias', questoes: '45 questões' },
+              { area: 'Ciências Humanas e suas Tecnologias', questoes: '45 questões' },
+              { area: 'Redação', questoes: '1 texto' },
+            ].map((item) => {
+              const tint = ENEM_AREA_TINT[item.area] || '#f3efe5';
+              const lightTint = item.area === 'Redação' ? '#f4d04e' : '#93b4ff';
+              return (
+                <div key={item.area} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 2, background: lightTint, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(243,239,229,0.8)', flex: 1 }}>{ENEM_AREA_SHORTNAME[item.area] || item.area}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(243,239,229,0.4)' }}>{item.questoes}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Dia 2 */}
+        <div style={{ borderRadius: 14, overflow: 'hidden', background: '#1a1017', boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>2º Dia</p>
+              {meta.duracao_dia2 && <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', background: 'rgba(196,181,253,0.12)', border: '1px solid rgba(196,181,253,0.3)', borderRadius: 6, padding: '2px 8px' }}>{meta.duracao_dia2}</span>}
+            </div>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'rgba(255,255,255,0.9)', lineHeight: 1.1 }}>
+              {dia2 ? dia2 : '15 de novembro de 2026'}
+            </p>
+          </div>
+          <div style={{ padding: '14px 22px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { area: 'Ciências da Natureza e suas Tecnologias', questoes: '45 questões' },
+              { area: 'Matemática e suas Tecnologias', questoes: '45 questões' },
+            ].map((item) => (
+              <div key={item.area} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#c4b5fd', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)', flex: 1 }}>{ENEM_AREA_SHORTNAME[item.area] || item.area}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)' }}>{item.questoes}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Conteúdo programático ─────────────────────────────────────── */}
+      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,17,13,0.07)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div>
-            <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Conteúdo programático</p>
-            <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>
-              Áreas de conhecimento
-            </h2>
+            <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Matriz de referência</p>
+            <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Conteúdo programático</h2>
           </div>
           {totalMaterias > 0 && (
             <span style={{ fontSize: 11, fontWeight: 700, color: '#847b6c', border: '1px solid rgba(20,17,13,0.12)', borderRadius: 6, padding: '4px 10px' }}>
-              {grupos.length} área{grupos.length !== 1 ? 's' : ''} &middot; {totalMaterias} matéria{totalMaterias !== 1 ? 's' : ''}
+              {grupos.length} área{grupos.length !== 1 ? 's' : ''} · {totalMaterias} matéria{totalMaterias !== 1 ? 's' : ''}
             </span>
           )}
         </div>
 
         {totalMaterias === 0 ? (
-          <div style={{ padding: '24px 28px' }}>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>
-              Trilha em montagem. (Admin → Catálogo → ENEM → colar o JSON da Matriz de Referência)
-            </p>
+          <div style={{ padding: '24px' }}>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Conteúdo em montagem. Admin → Catálogo → ENEM.</p>
           </div>
-        ) : grupos.map(([area, materias], idx) => {
-          const tint = ENEM_AREA_TINT[area] || '#1e3a5f';
-          const day = ENEM_AREA_DAY[area];
-          const akey = `area-${idx}`;
-          const open = Boolean(expanded[akey]);
-          const isLast = idx === grupos.length - 1;
-          return (
-            <div key={area} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(20,17,13,0.07)' }}>
-              <button type="button" onClick={() => setExpanded((p) => ({ ...p, [akey]: !p[akey] }))}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '15px 28px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 3, background: tint, flexShrink: 0, display: 'inline-block' }} />
-                  <div>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#14110d', lineHeight: 1.2 }}>{area}</p>
-                    <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: '#847b6c' }}>{materias.length} matéria{materias.length !== 1 ? 's' : ''}</p>
-                  </div>
+        ) : (
+          <>
+            {/* Dia 1 */}
+            {grupos1.length > 0 && (
+              <>
+                <div style={{ padding: '10px 24px', background: 'rgba(30,58,95,0.04)', borderBottom: '1px solid rgba(30,58,95,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: 6, background: '#1e3a5f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#f3efe5', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>1</span>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#1e3a5f', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+                    Primeiro dia — {dia1Fmt ? dia1Fmt : '8 nov'} · 5h30
+                  </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  {day && (
-                    <span style={{ fontSize: 11, fontWeight: 700, color: tint, background: `${tint}18`, border: `1px solid ${tint}40`, borderRadius: 6, padding: '3px 10px' }}>
-                      Dia {day}
-                    </span>
-                  )}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#847b6c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', display: 'block', flexShrink: 0 }}>
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
+                {grupos1.map(([area, materias], idx) =>
+                  renderAreaAccordion(area, materias, `d1-${idx}`, idx === grupos1.length - 1 && grupos2.length === 0)
+                )}
+              </>
+            )}
+
+            {/* Dia 2 */}
+            {grupos2.length > 0 && (
+              <>
+                <div style={{ padding: '10px 24px', background: 'rgba(26,16,23,0.05)', borderTop: grupos1.length > 0 ? '1px solid rgba(20,17,13,0.07)' : 'none', borderBottom: '1px solid rgba(26,16,23,0.12)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: 6, background: '#1a1017', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#c4b5fd', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>2</span>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#1a1017', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+                    Segundo dia — {dia2 ? dia2 : '15 nov'} · 5h
+                  </p>
                 </div>
-              </button>
-              {open && (
-                <div style={{ padding: '0 28px 18px' }}>
-                  <div style={{ paddingTop: 12, borderTop: '1px solid rgba(20,17,13,0.07)', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {materias.map((m) => (
-                      <span key={m.nome}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, border: '1px solid rgba(20,17,13,0.1)', background: '#f9f7f0', fontSize: 12, fontWeight: 600, color: '#3a342c' }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: tint, flexShrink: 0, display: 'inline-block' }} />
-                        {m.nome}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                {grupos2.map(([area, materias], idx) =>
+                  renderAreaAccordion(area, materias, `d2-${idx}`, idx === grupos2.length - 1)
+                )}
+              </>
+            )}
+          </>
+        )}
       </div>
 
-      {/* Como o ENEM abre portas */}
-      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '24px 28px', boxShadow: '0 1px 4px rgba(20,17,13,0.05)' }}>
-        <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Ingresso ao ensino superior</p>
-        <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d' }}>Como o ENEM abre portas</h2>
+      {/* ─── Redação — 5 competências ──────────────────────────────────── */}
+      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,17,13,0.07)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ width: 12, height: 12, borderRadius: 4, background: ENEM_AREA_TINT['Redação'], flexShrink: 0, display: 'inline-block' }} />
+            <div>
+              <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>1º dia · texto dissertativo-argumentativo</p>
+              <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Redação — 5 competências</h2>
+            </div>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#7a1e2e', background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.2)', borderRadius: 6, padding: '4px 10px' }}>0 – 1.000 pontos</span>
+        </div>
+        <div>
+          {COMPETENCIAS_REDACAO.map((comp, i) => (
+            <div key={comp.num} style={{ display: 'grid', gridTemplateColumns: '44px 1fr 60px', gap: 16, padding: '14px 24px', alignItems: 'center', borderBottom: i < COMPETENCIAS_REDACAO.length - 1 ? '1px solid rgba(20,17,13,0.06)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(20,17,13,0.015)' }}>
+              <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#7a1e2e', flexShrink: 0 }}>
+                {comp.num}
+              </span>
+              <div>
+                <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 700, color: '#14110d' }}>{comp.titulo}</p>
+                <p style={{ margin: 0, fontSize: 12, color: '#847b6c', lineHeight: 1.4 }}>{comp.desc}</p>
+              </div>
+              <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: '#7a1e2e', fontVariantNumeric: 'tabular-nums' }}>
+                {comp.pts} pts
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── Eixos cognitivos ──────────────────────────────────────────── */}
+      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '22px 24px 24px', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
+        <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Avaliação interdisciplinar</p>
+        <h2 style={{ margin: '0 0 18px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Eixos cognitivos comuns</h2>
+        <p style={{ margin: '0 0 18px', fontSize: 13.5, color: '#3a342c', lineHeight: 1.6, fontWeight: 500 }}>
+          Além dos conteúdos de cada área, o ENEM avalia cinco eixos cognitivos presentes em todas as provas:
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
+          {EIXOS_COGNITIVOS.map((eixo) => (
+            <div key={eixo.num} style={{ padding: '14px 16px', borderRadius: 10, border: '1px solid rgba(30,58,95,0.12)', background: 'rgba(30,58,95,0.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <span style={{ width: 28, height: 28, borderRadius: 8, background: '#1e3a5f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#f3efe5', flexShrink: 0 }}>
+                  {eixo.num}
+                </span>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e3a5f' }}>{eixo.titulo}</p>
+              </div>
+              <p style={{ margin: 0, fontSize: 12, color: '#3a342c', lineHeight: 1.5 }}>{eixo.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── Como o ENEM abre portas ───────────────────────────────────── */}
+      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '22px 24px 24px', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
+        <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Ingresso ao ensino superior</p>
+        <h2 style={{ margin: '0 0 10px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d' }}>Como o ENEM abre portas</h2>
         <p style={{ margin: '0 0 18px', fontSize: 13.5, lineHeight: 1.65, color: '#3a342c', fontWeight: 500 }}>
-          A nota do ENEM é reconhecida como principal porta de entrada ao ensino superior no Brasil, por três caminhos principais:
+          A nota do ENEM é a principal porta de entrada ao ensino superior no Brasil, por três caminhos:
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
           {[
-            { sigla: 'SiSU', nome: 'Sistema Unificado', descricao: 'Vagas em universidades públicas federais e estaduais, com seleção inteiramente pela nota do ENEM.' },
-            { sigla: 'ProU', nome: 'ProUni', descricao: 'Bolsas integrais e parciais em faculdades privadas para candidatos de baixa renda.' },
-            { sigla: 'Fies', nome: 'Fies', descricao: 'Financiamento estudantil do governo federal para custear cursos em instituições privadas credenciadas.' },
+            { sigla: 'SiSU', nome: 'Sistema Unificado de Seleção Unificada', descricao: 'Vagas em universidades públicas federais e estaduais com seleção inteiramente pela nota do ENEM.' },
+            { sigla: 'ProU', nome: 'Programa Universidade para Todos', descricao: 'Bolsas integrais e parciais em faculdades privadas para candidatos de baixa renda.' },
+            { sigla: 'Fies', nome: 'Financiamento Estudantil', descricao: 'Financiamento do governo federal para custear cursos em instituições privadas credenciadas.' },
           ].map((x) => (
-            <div key={x.sigla} style={{ padding: '18px 20px', border: '1px solid rgba(20,17,13,0.1)', borderRadius: 12, background: '#f9f7f0' }}>
+            <div key={x.sigla} style={{ padding: '18px 20px', border: '1px solid rgba(30,58,95,0.12)', borderRadius: 12, background: 'rgba(30,58,95,0.03)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <span style={{ width: 34, height: 34, borderRadius: 10, background: '#1e3a5f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#f3efe5', fontSize: 11, fontWeight: 800, letterSpacing: '-.01em' }}>{x.sigla}</span>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#14110d' }}>{x.nome}</p>
+                <span style={{ width: 36, height: 36, borderRadius: 10, background: '#1e3a5f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#f3efe5', fontSize: 11, fontWeight: 800 }}>{x.sigla}</span>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#14110d', lineHeight: 1.2 }}>{x.nome}</p>
               </div>
               <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, color: '#3a342c', lineHeight: 1.55 }}>{x.descricao}</p>
             </div>
@@ -360,14 +528,14 @@ export function EnemDetalhe({
         </div>
       </div>
 
-      {/* Datas importantes */}
+      {/* ─── Datas importantes ─────────────────────────────────────────── */}
       {datas.length > 0 && (
-        <div style={{ borderRadius: 14, background: '#1e3a5f', padding: '24px 28px', boxShadow: '0 4px 20px rgba(30,58,95,0.2)' }}>
-          <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>Calendário oficial</p>
+        <div style={{ borderRadius: 14, background: '#1e3a5f', padding: '22px 28px 26px', boxShadow: '0 4px 24px rgba(30,58,95,0.22)' }}>
+          <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.4)' }}>Calendário oficial 2026</p>
           <h2 style={{ margin: '0 0 20px', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#f3efe5' }}>Datas importantes</h2>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {datas.map((dt, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '13px 0', borderBottom: i < datas.length - 1 ? '1px solid rgba(243,239,229,0.1)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '13px 0', borderBottom: i < datas.length - 1 ? '1px solid rgba(243,239,229,0.09)' : 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: dt.dot, flexShrink: 0, display: 'inline-block' }} />
                   <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(243,239,229,0.8)' }}>{dt.evento}</span>

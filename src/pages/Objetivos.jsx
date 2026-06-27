@@ -195,7 +195,7 @@ function inferTipo(curso) {
 const TIPOS = [
   { id: 'concurso', label: 'Concurso público', icon: Trophy },
   { id: 'vestibular', label: 'Vestibular', icon: GraduationCap },
-  { id: 'enem', label: 'ENEM', icon: Star },
+  { id: 'enem', label: null, icon: null, wordmark: true },
   { id: 'faculdade', label: 'Faculdade', icon: Building2 },
   { id: 'livre', label: 'Livre', icon: Compass },
 ];
@@ -458,54 +458,88 @@ function EnemView({ cursos, onImport, limiteAtingido, instituicoes = [], onUpdat
     }
   };
 
+  const ENEM_AREAS = [
+    { label: 'Linguagens', color: '#1e3a5f', day: 1 },
+    { label: 'Ciências Humanas', color: '#7c4a1e', day: 1 },
+    { label: 'Redação', color: '#7a1e2e', day: 1 },
+    { label: 'Ciências da Natureza', color: '#1e4d35', day: 2 },
+    { label: 'Matemática', color: '#3d1e5c', day: 2 },
+  ];
+
   return (
-    <div style={{ maxWidth: 480 }}>
-      <div className="pl-card" style={{ padding: 24 }}>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 16 }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-            background: 'var(--pl-accent-soft)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Star size={22} style={{ color: 'var(--pl-accent)' }} />
+    <div>
+      {/* ── Hero navy card ─────────────────────────────────────────── */}
+      <div style={{ borderRadius: 18, overflow: 'hidden', background: '#1e3a5f', boxShadow: '0 10px 36px rgba(30,58,95,0.28)', marginBottom: 12 }}>
+        {/* Eyebrow */}
+        <div style={{ padding: '16px 24px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.38)' }}>Exame Nacional</span>
+          <span style={{ color: 'rgba(243,239,229,0.18)' }}>&middot;</span>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.38)' }}>INEP / MEC</span>
+        </div>
+
+        {/* Main body */}
+        <div style={{ padding: '14px 24px 22px', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20 }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 48, fontWeight: 800, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.055em', lineHeight: 1, display: 'block', marginBottom: 10 }}>enem</span>
+            <p style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 500, color: 'rgba(243,239,229,0.58)', lineHeight: 1.5 }}>
+              Acesso ao ensino superior via SiSU, ProUni e Fies
+            </p>
+            {/* Area chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {ENEM_AREAS.map((a) => (
+                <span key={a.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 999, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.07)', fontSize: 11, fontWeight: 600, color: 'rgba(243,239,229,0.7)' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: 2, background: a.day === 1 ? '#93b4ff' : '#c4b5fd', flexShrink: 0 }} />
+                  {a.label}
+                </span>
+              ))}
+            </div>
           </div>
-          <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)' }}>ENEM</p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>Exame Nacional do Ensino Médio · INEP/MEC</p>
+
+          {/* Action button */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'center', flexShrink: 0 }}>
+            {jaAdicionado ? (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, borderRadius: 10, background: 'rgba(134,239,172,0.15)', border: '1px solid rgba(134,239,172,0.3)', padding: '10px 18px', fontSize: 13, fontWeight: 700, color: '#86efac' }}>
+                <CheckCircle2 size={15} />
+                Nos seus objetivos
+              </div>
+            ) : (
+              <button type="button"
+                onClick={handleAdd}
+                disabled={loading || limiteAtingido}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 10, background: '#f3efe5', color: '#1e3a5f', border: 'none', padding: '11px 20px', fontSize: 13, fontWeight: 700, boxShadow: '0 2px 10px rgba(0,0,0,0.18)', cursor: loading || limiteAtingido ? 'not-allowed' : 'pointer', opacity: loading || limiteAtingido ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+                {loading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                Adicionar aos estudos
+              </button>
+            )}
           </div>
         </div>
 
-        <p style={{ fontSize: 13, color: 'var(--pl-ink-2)', lineHeight: 1.55, marginBottom: 16 }}>
-          O ENEM é a porta de entrada para o ensino superior no Brasil. Adicione para ter
-          um plano de estudos com as 5 áreas do conhecimento e acesso a questões anteriores.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
-          {['Linguagens, Códigos e suas Tecnologias', 'Ciências Humanas e suas Tecnologias', 'Ciências da Natureza e suas Tecnologias', 'Matemática e suas Tecnologias', 'Redação'].map((area) => (
-            <div key={area} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--pl-ink-2)' }}>
-              <BookOpen size={12} style={{ color: 'var(--pl-accent)', flexShrink: 0 }} />
-              {area}
+        {/* Info strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderTop: '1px solid rgba(243,239,229,0.1)', background: 'rgba(0,0,0,0.18)' }}>
+          {[
+            { label: 'Taxa', value: 'R$ 85,00' },
+            { label: '1º dia', value: '08/11/2026' },
+            { label: '2º dia', value: '15/11/2026' },
+            { label: 'Questões', value: '180' },
+          ].map((f, i, arr) => (
+            <div key={f.label} style={{ padding: '11px 16px', borderRight: i < arr.length - 1 ? '1px solid rgba(243,239,229,0.07)' : 'none' }}>
+              <p style={{ margin: '0 0 3px', fontSize: 9, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.35)' }}>{f.label}</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#f3efe5' }}>{f.value}</p>
             </div>
           ))}
         </div>
+      </div>
 
-        {jaAdicionado ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--pl-success)' }}>
-            <CheckCircle2 size={16} />
-            ENEM já adicionado aos seus objetivos.
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="pl-btn pl-btn-primary"
-            disabled={loading || limiteAtingido}
-            onClick={handleAdd}
-            style={{ width: '100%', justifyContent: 'center' }}
-          >
-            {loading ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-            Adicionar ENEM
-          </button>
-        )}
+      {/* Dia legend */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16, padding: '0 4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--pl-ink-3)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#93b4ff', flexShrink: 0 }} />
+          1º dia — Linguagens, Ciências Humanas e Redação
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--pl-ink-3)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#c4b5fd', flexShrink: 0 }} />
+          2º dia — Ciências da Natureza e Matemática
+        </div>
       </div>
 
       {/* Instituições-alvo: o aluno mira até 3 instituições que ingressam pelo ENEM. */}
@@ -776,8 +810,9 @@ export default function Objetivos({
 
         {/* Tabs de tipo */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20, borderBottom: '1px solid var(--pl-rule-2)', paddingBottom: 16 }}>
-          {TIPOS.map(({ id, label, icon: Icon }) => {
+          {TIPOS.map(({ id, label, icon: Icon, wordmark }) => {
             const isActive = tipoAtivo === id;
+            const isEnem = id === 'enem';
             return (
               <button
                 key={id}
@@ -786,16 +821,25 @@ export default function Objetivos({
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '6px 14px', borderRadius: 20,
-                  border: isActive ? '1px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
-                  background: isActive ? 'var(--pl-accent)' : 'var(--pl-surface)',
-                  color: isActive ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+                  border: isActive
+                    ? (isEnem ? '1px solid #1e3a5f' : '1px solid var(--pl-accent)')
+                    : '1px solid var(--pl-rule-2)',
+                  background: isActive
+                    ? (isEnem ? '#1e3a5f' : 'var(--pl-accent)')
+                    : 'var(--pl-surface)',
+                  color: isActive
+                    ? (isEnem ? '#f4d04e' : 'var(--pl-bg)')
+                    : 'var(--pl-ink-2)',
                   fontSize: 12, fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all .12s',
                 }}
               >
-                <Icon size={13} />
-                {label}
+                {wordmark ? (
+                  <span style={{ fontFamily: 'var(--pl-sans)', fontSize: 13, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>enem</span>
+                ) : (
+                  <><Icon size={13} />{label}</>
+                )}
               </button>
             );
           })}
