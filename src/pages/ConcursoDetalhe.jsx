@@ -366,14 +366,14 @@ export function EnemDetalhe({
           </div>
         </div>
 
-        {/* Dia 2 */}
-        <div style={{ borderRadius: 14, overflow: 'hidden', background: '#1a1017', boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
-          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* Dia 2 — mesma base navy ENEM, diferenciado pelo acento amarelo */}
+        <div style={{ borderRadius: 14, overflow: 'hidden', background: '#1e3a5f', boxShadow: '0 4px 16px rgba(30,58,95,0.2)' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(243,239,229,0.1)' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
-              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>2º Dia</p>
-              {meta.duracao_dia2 && <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', background: 'rgba(196,181,253,0.12)', border: '1px solid rgba(196,181,253,0.3)', borderRadius: 6, padding: '2px 8px' }}>{meta.duracao_dia2}</span>}
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>2º Dia</p>
+              {meta.duracao_dia2 && <span style={{ fontSize: 11, fontWeight: 700, color: '#f4d04e', background: 'rgba(244,208,78,0.12)', border: '1px solid rgba(244,208,78,0.3)', borderRadius: 6, padding: '2px 8px' }}>{meta.duracao_dia2}</span>}
             </div>
-            <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'rgba(255,255,255,0.9)', lineHeight: 1.1 }}>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#f3efe5', lineHeight: 1.1 }}>
               {dia2 ? dia2 : '15 de novembro de 2026'}
             </p>
           </div>
@@ -383,9 +383,9 @@ export function EnemDetalhe({
               { area: 'Matemática e suas Tecnologias', questoes: '45 questões' },
             ].map((item) => (
               <div key={item.area} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#c4b5fd', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)', flex: 1 }}>{ENEM_AREA_SHORTNAME[item.area] || item.area}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)' }}>{item.questoes}</span>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#f4d04e', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(243,239,229,0.8)', flex: 1 }}>{ENEM_AREA_SHORTNAME[item.area] || item.area}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(243,239,229,0.4)' }}>{item.questoes}</span>
               </div>
             ))}
           </div>
@@ -398,8 +398,8 @@ export function EnemDetalhe({
         const materiasDia = ENEM_MATERIAS.filter((m) => m.dia === diaProg);
         const totalMat = ENEM_MATERIAS.length;
         const totalAreas = new Set(ENEM_MATERIAS.map((m) => m.area)).size;
-        const accent = isDia1 ? '#1e3a5f' : '#3d1e5c';
-        const accentSoft = isDia1 ? 'rgba(30,58,95,0.06)' : 'rgba(61,30,92,0.06)';
+        const accent = '#1e3a5f';
+        const accentSoft = 'rgba(30,58,95,0.06)';
         return (
           <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,17,13,0.07)' }}>
@@ -417,7 +417,7 @@ export function EnemDetalhe({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[
                   { id: '1', titulo: '1º Dia', data: dia1Fmt || '8 nov', dur: meta.duracao_dia1 || '5h30', areas: 'Linguagens · C. Humanas · Redação', tint: '#1e3a5f' },
-                  { id: '2', titulo: '2º Dia', data: dia2 || '15 nov', dur: meta.duracao_dia2 || '5h', areas: 'C. da Natureza · Matemática', tint: '#3d1e5c' },
+                  { id: '2', titulo: '2º Dia', data: dia2 || '15 nov', dur: meta.duracao_dia2 || '5h', areas: 'C. da Natureza · Matemática', tint: '#1e3a5f' },
                 ].map((d) => {
                   const active = diaProg === d.id;
                   return (
