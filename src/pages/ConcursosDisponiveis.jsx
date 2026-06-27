@@ -539,6 +539,7 @@ export default function ConcursosDisponiveis({
           </div>
         )}
 
+        {tipoAtivo !== 'vestibular' && (
         <section>
           <div style={{ marginBottom: 12 }}>
             <div className="pl-eyebrow">Insights</div>
@@ -559,6 +560,7 @@ export default function ConcursosDisponiveis({
             ))}
           </div>
         </section>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
         {groupedCatalog.length === 0 ? (
