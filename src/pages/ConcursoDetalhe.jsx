@@ -145,6 +145,7 @@ export function EnemDetalhe({
   embedded = false,
 }) {
   const [expanded, setExpanded] = useState({});
+  const [diaProg, setDiaProg] = useState('1');
   const meta = contest?.meta && typeof contest.meta === 'object' ? contest.meta : {};
   const added = cursos.some((c) => c.tipo === 'enem' || (c.nome || '').toLowerCase().includes('enem'));
   const importing = importingId === contest?.id;
@@ -399,88 +400,106 @@ export function EnemDetalhe({
         </div>
       </div>
 
-      {/* ─── Conteúdo programático ─────────────────────────────────────── */}
-      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,17,13,0.07)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Matriz de referência</p>
-            <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Conteúdo programático</h2>
-          </div>
-          {totalMaterias > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#847b6c', border: '1px solid rgba(20,17,13,0.12)', borderRadius: 6, padding: '4px 10px' }}>
-              {grupos.length} área{grupos.length !== 1 ? 's' : ''} · {totalMaterias} matéria{totalMaterias !== 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-
-        {totalMaterias === 0 ? (
-          <div style={{ padding: '24px' }}>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Conteúdo em montagem. Admin → Catálogo → ENEM.</p>
-          </div>
-        ) : (
-          <>
-            {/* Dia 1 */}
-            {grupos1.length > 0 && (
-              <>
-                <div style={{ padding: '10px 24px', background: 'rgba(30,58,95,0.04)', borderBottom: '1px solid rgba(30,58,95,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ width: 20, height: 20, borderRadius: 6, background: '#1e3a5f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#f3efe5', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>1</span>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#1e3a5f', letterSpacing: '.1em', textTransform: 'uppercase' }}>
-                    Primeiro dia — {dia1Fmt ? dia1Fmt : '8 nov'} · 5h30
-                  </p>
+      {/* ─── Conteúdo programático — por dia ───────────────────────────── */}
+      {(() => {
+        const isDia1 = diaProg === '1';
+        const gruposDia = isDia1 ? grupos1 : grupos2;
+        const matsDia = gruposDia.reduce((acc, [, ms]) => acc + ms.length, 0);
+        const accent = isDia1 ? '#1e3a5f' : '#3d1e5c';
+        const accentSoft = isDia1 ? 'rgba(30,58,95,0.06)' : 'rgba(61,30,92,0.06)';
+        return (
+          <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,17,13,0.07)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+                <div>
+                  <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>Matriz de referência</p>
+                  <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Conteúdo programático</h2>
                 </div>
-                {grupos1.map(([area, materias], idx) =>
-                  renderAreaAccordion(area, materias, `d1-${idx}`, idx === grupos1.length - 1 && grupos2.length === 0)
+                {totalMaterias > 0 && (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#847b6c', border: '1px solid rgba(20,17,13,0.12)', borderRadius: 6, padding: '4px 10px' }}>
+                    {grupos.length} área{grupos.length !== 1 ? 's' : ''} · {totalMaterias} matéria{totalMaterias !== 1 ? 's' : ''}
+                  </span>
                 )}
-              </>
-            )}
-
-            {/* Dia 2 */}
-            {grupos2.length > 0 && (
-              <>
-                <div style={{ padding: '10px 24px', background: 'rgba(26,16,23,0.05)', borderTop: grupos1.length > 0 ? '1px solid rgba(20,17,13,0.07)' : 'none', borderBottom: '1px solid rgba(26,16,23,0.12)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ width: 20, height: 20, borderRadius: 6, background: '#1a1017', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#c4b5fd', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>2</span>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#1a1017', letterSpacing: '.1em', textTransform: 'uppercase' }}>
-                    Segundo dia — {dia2 ? dia2 : '15 nov'} · 5h
-                  </p>
-                </div>
-                {grupos2.map(([area, materias], idx) =>
-                  renderAreaAccordion(area, materias, `d2-${idx}`, idx === grupos2.length - 1)
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* ─── Redação — 5 competências ──────────────────────────────────── */}
-      <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,17,13,0.07)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ width: 12, height: 12, borderRadius: 4, background: ENEM_AREA_TINT['Redação'], flexShrink: 0, display: 'inline-block' }} />
-            <div>
-              <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 700, letterSpacing: '.24em', textTransform: 'uppercase', color: '#847b6c' }}>1º dia · texto dissertativo-argumentativo</p>
-              <h2 style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: '#14110d', lineHeight: 1.1 }}>Redação — 5 competências</h2>
-            </div>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#7a1e2e', background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.2)', borderRadius: 6, padding: '4px 10px' }}>0 – 1.000 pontos</span>
-        </div>
-        <div>
-          {COMPETENCIAS_REDACAO.map((comp, i) => (
-            <div key={comp.num} style={{ display: 'grid', gridTemplateColumns: '44px 1fr 60px', gap: 16, padding: '14px 24px', alignItems: 'center', borderBottom: i < COMPETENCIAS_REDACAO.length - 1 ? '1px solid rgba(20,17,13,0.06)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(20,17,13,0.015)' }}>
-              <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#7a1e2e', flexShrink: 0 }}>
-                {comp.num}
-              </span>
-              <div>
-                <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 700, color: '#14110d' }}>{comp.titulo}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#847b6c', lineHeight: 1.4 }}>{comp.desc}</p>
               </div>
-              <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: '#7a1e2e', fontVariantNumeric: 'tabular-nums' }}>
-                {comp.pts} pts
-              </span>
+
+              {/* Seletor de dia */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {[
+                  { id: '1', titulo: '1º Dia', data: dia1Fmt || '8 nov', dur: meta.duracao_dia1 || '5h30', areas: 'Linguagens · C. Humanas · Redação', tint: '#1e3a5f' },
+                  { id: '2', titulo: '2º Dia', data: dia2 || '15 nov', dur: meta.duracao_dia2 || '5h', areas: 'C. da Natureza · Matemática', tint: '#3d1e5c' },
+                ].map((d) => {
+                  const active = diaProg === d.id;
+                  return (
+                    <button key={d.id} type="button" onClick={() => setDiaProg(d.id)}
+                      style={{ textAlign: 'left', borderRadius: 12, border: active ? `1.5px solid ${d.tint}` : '1.5px solid rgba(20,17,13,0.1)', background: active ? d.tint : '#fff', padding: '12px 14px', cursor: 'pointer', transition: 'all .12s', boxShadow: active ? `0 4px 14px ${d.tint}33` : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ width: 20, height: 20, borderRadius: 6, background: active ? 'rgba(255,255,255,0.18)' : d.tint, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: active ? '#fff' : '#f3efe5', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>{d.id}</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: active ? '#fff' : '#14110d', letterSpacing: '.04em' }}>{d.titulo}</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: active ? 'rgba(255,255,255,0.7)' : '#847b6c' }}>{d.data} · {d.dur}</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 11, fontWeight: 500, color: active ? 'rgba(255,255,255,0.75)' : '#847b6c', lineHeight: 1.3 }}>{d.areas}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+
+            {/* Conteúdo do dia selecionado */}
+            {totalMaterias === 0 ? (
+              <div style={{ padding: '24px' }}>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Conteúdo em montagem. Admin → Catálogo → ENEM.</p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ padding: '10px 24px', background: accentSoft, borderBottom: `1px solid ${accent}1a`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: accent, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+                    {isDia1 ? 'Primeiro dia' : 'Segundo dia'} — {gruposDia.length} área{gruposDia.length !== 1 ? 's' : ''} · {matsDia} matéria{matsDia !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                {gruposDia.length === 0 ? (
+                  <div style={{ padding: '24px' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Sem matérias cadastradas para este dia ainda.</p>
+                  </div>
+                ) : (
+                  gruposDia.map(([area, materias], idx) =>
+                    renderAreaAccordion(area, materias, `${diaProg}-${idx}`, idx === gruposDia.length - 1 && isDia1)
+                  )
+                )}
+
+                {/* Redação — competências (apenas no 1º dia) */}
+                {isDia1 && (
+                  <div style={{ borderTop: '1px solid rgba(20,17,13,0.07)' }}>
+                    <div style={{ padding: '14px 24px 12px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ width: 12, height: 12, borderRadius: 4, background: ENEM_AREA_TINT['Redação'], flexShrink: 0, display: 'inline-block' }} />
+                        <div>
+                          <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#847b6c' }}>Texto dissertativo-argumentativo</p>
+                          <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#14110d' }}>Redação — 5 competências</p>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#7a1e2e', background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.2)', borderRadius: 6, padding: '4px 10px' }}>0 – 1.000 pontos</span>
+                    </div>
+                    {COMPETENCIAS_REDACAO.map((comp, i) => (
+                      <div key={comp.num} style={{ display: 'grid', gridTemplateColumns: '44px 1fr 60px', gap: 16, padding: '12px 24px', alignItems: 'center', borderTop: '1px solid rgba(20,17,13,0.05)', background: i % 2 === 0 ? 'transparent' : 'rgba(20,17,13,0.015)' }}>
+                        <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(122,30,46,0.08)', border: '1px solid rgba(122,30,46,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#7a1e2e', flexShrink: 0 }}>
+                          {comp.num}
+                        </span>
+                        <div>
+                          <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 700, color: '#14110d' }}>{comp.titulo}</p>
+                          <p style={{ margin: 0, fontSize: 12, color: '#847b6c', lineHeight: 1.4 }}>{comp.desc}</p>
+                        </div>
+                        <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: '#7a1e2e', fontVariantNumeric: 'tabular-nums' }}>
+                          {comp.pts} pts
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ─── Eixos cognitivos ──────────────────────────────────────────── */}
       <div style={{ borderRadius: 14, background: '#fff', border: '1px solid rgba(20,17,13,0.09)', padding: '22px 24px 24px', boxShadow: '0 1px 4px rgba(20,17,13,0.04)' }}>
