@@ -382,45 +382,29 @@ function AreaItem({ area, isActive, count, onSelect, onRename, onDelete }) {
 // ─── CourseCard ───────────────────────────────────────────────────────────────
 
 function CourseCard({ template, onUpdate, onRemove }) {
-  const [editingName, setEditingName] = useState(false);
-  const inputRef = useRef(null);
-
-  function startEdit() {
-    setEditingName(true);
-    setTimeout(() => inputRef.current?.select(), 0);
-  }
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
-    <div className="pl-card" style={{ padding: '12px 12px 10px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {/* Linha de logo + nome + ações */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <LogoUploader url={template.imagem_url} onChange={(v) => onUpdate({ imagem_url: v })} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {editingName ? (
-            <input
-              ref={inputRef}
-              autoFocus
-              type="text"
-              value={template.nome}
-              placeholder="Nome do curso"
-              onChange={(e) => onUpdate({ nome: e.target.value })}
-              onBlur={() => setEditingName(false)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false); }}
-              className="pl-input"
-              style={{ width: '100%', fontSize: 13, fontWeight: 600 }}
-            />
-          ) : (
+    <>
+      <div className="pl-card" style={{ padding: '12px 12px 10px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* Linha de logo + nome + ações */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <LogoUploader url={template.imagem_url} onChange={(v) => onUpdate({ imagem_url: v })} />
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setEditOpen(true)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditOpen(true); } }}
+              title={template.nome || 'Editar nome do curso'}
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
-                padding: '4px 6px', borderRadius: 6, cursor: 'text',
+                padding: '4px 6px', borderRadius: 6, cursor: 'pointer',
                 border: '1px solid transparent',
                 transition: 'border-color .1s, background .1s',
               }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pl-rule-2)'; e.currentTarget.style.background = 'var(--pl-bg-soft)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }}
-              onClick={startEdit}
-              title="Clique para editar o nome"
             >
               <span style={{
                 flex: 1, fontSize: 13, fontWeight: 600, color: template.nome ? 'var(--pl-ink)' : 'var(--pl-ink-4)',
@@ -431,20 +415,99 @@ function CourseCard({ template, onUpdate, onRemove }) {
               </span>
               <Pencil size={11} style={{ color: 'var(--pl-ink-4)', flexShrink: 0 }} />
             </div>
-          )}
+          </div>
+          <button
+            type="button"
+            onClick={onRemove}
+            title="Excluir curso"
+            style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', padding: 4, flexShrink: 0, lineHeight: 0 }}
+          >
+            <X size={13} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onRemove}
-          title="Excluir curso"
-          style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', padding: 4, flexShrink: 0, lineHeight: 0 }}
-        >
-          <X size={13} />
-        </button>
+        <p style={{ margin: 0, fontSize: 10, color: 'var(--pl-ink-4)', fontStyle: 'italic', lineHeight: 1.4 }}>
+          Disciplinas configuradas pelo aluno.
+        </p>
       </div>
-      <p style={{ margin: 0, fontSize: 10, color: 'var(--pl-ink-4)', fontStyle: 'italic', lineHeight: 1.4 }}>
-        Disciplinas configuradas pelo aluno.
-      </p>
+
+      {editOpen && (
+        <CourseNameModal
+          initial={template.nome}
+          onSave={(v) => { onUpdate({ nome: v }); setEditOpen(false); }}
+          onClose={() => setEditOpen(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// ─── CourseNameModal — edição do nome completo em modal ────────────────────────
+
+function CourseNameModal({ initial, onSave, onClose }) {
+  const [value, setValue] = useState(initial || '');
+  const ref = useRef(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+    ref.current?.select();
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  function save() { onSave((value || '').trim()); }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(20,17,13,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="pl-card"
+        style={{ width: '100%', maxWidth: 480, padding: 20, boxShadow: 'var(--pl-sh-high)' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+          <div>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Curso</p>
+            <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>Editar nome do curso</h4>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            title="Fechar"
+            style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', padding: 4, lineHeight: 0, flexShrink: 0 }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <textarea
+          ref={ref}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') save(); }}
+          placeholder="Nome do curso"
+          rows={3}
+          className="pl-input"
+          style={{ width: '100%', fontSize: 14, fontWeight: 600, lineHeight: 1.5, resize: 'vertical', minHeight: 76 }}
+        />
+        <p style={{ margin: '6px 2px 0', fontSize: 11, color: 'var(--pl-ink-4)' }}>
+          {value.trim().length} caractere{value.trim().length !== 1 ? 's' : ''}
+        </p>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
+          <button type="button" className="pl-btn pl-btn-ghost" onClick={onClose}>Cancelar</button>
+          <button type="button" className="pl-btn pl-btn-primary" onClick={save}>
+            <Check size={14} /> Salvar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
