@@ -336,11 +336,11 @@ export default function AdminAssinaturas() {
                           className="pl-input"
                           style={{ padding: '4px 8px', fontSize: 11, fontWeight: 700 }}
                         >
-                          <option value="active">Active</option>
-                          <option value="trialing">Trialing</option>
-                          <option value="canceled">Canceled</option>
-                          <option value="past_due">Past due</option>
-                          <option value="unpaid">Unpaid</option>
+                          <option value="active">Ativa</option>
+                          <option value="trialing">Em teste</option>
+                          <option value="canceled">Cancelada</option>
+                          <option value="past_due">Pagamento atrasado</option>
+                          <option value="unpaid">Não paga</option>
                         </select>
                       </td>
                       <td style={{ padding: '12px 16px 12px 0', fontSize: 11, color: 'var(--pl-ink-2)' }}>{row.provider}</td>
