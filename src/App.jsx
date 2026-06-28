@@ -5327,6 +5327,17 @@ export default function App() {
     // planName: nome do plano definido pelo aluno ao combinar vários cursos.
     // Quando presente, vira a chave de agrupamento (plano) de todos os cursos
     // escolhidos — e as disciplinas herdam esse mesmo plano (insert abaixo).
+
+    // O catálogo carrega os templates SEM disciplinas (sob demanda). Se o aluno
+    // adiciona pela lista, garantimos o conteúdo programático antes de semear —
+    // senão o Edital do aluno ficaria vazio mesmo com objetivo vinculado.
+    if ((!Array.isArray(template.disciplinas) || template.disciplinas.length === 0) && template.id) {
+      const loaded = await loadTemplateContent(template.id);
+      if (Array.isArray(loaded) && loaded.length > 0) {
+        template = { ...template, disciplinas: loaded };
+      }
+    }
+
     const novoCurso = createCourse({
       slug: template.slug,
       nome: template.nome,
@@ -5719,6 +5730,42 @@ export default function App() {
       disciplinasCriadas: novasDisciplinas.length,
       topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
     };
+  };
+
+  // Abastece o Edital do aluno a partir do conteúdo programático do próprio
+  // objetivo vinculado (catálogo), sem depender de IA. Usado quando um objetivo
+  // foi adicionado antes do conteúdo existir (Edital vazio).
+  const loadDisciplinasFromObjetivo = async (curso) => {
+    const plano = String(curso?.plano || curso?.nome || curso?.concurso || '').trim() || 'Geral';
+    let disciplinas = Array.isArray(curso?.disciplinas) ? curso.disciplinas : [];
+
+    // Sem disciplinas no objetivo → busca o template do catálogo pelo slug.
+    if (disciplinas.length === 0 && curso?.slug) {
+      try {
+        const { data } = await supabase
+          .from('contest_templates')
+          .select('id')
+          .eq('slug', curso.slug)
+          .maybeSingle();
+        if (data?.id) disciplinas = await loadTemplateContent(data.id);
+      } catch (error) {
+        console.warn('[edital] falha ao carregar conteúdo do objetivo', error?.message || error);
+      }
+    }
+
+    const flat = (Array.isArray(disciplinas) ? disciplinas : [])
+      .map((d) => ({
+        nome: typeof d === 'string' ? d : d?.nome,
+        topicos: (Array.isArray(d?.topicos) ? d.topicos : [])
+          .map((t) => (typeof t === 'string' ? t : t?.nome))
+          .filter(Boolean),
+      }))
+      .filter((d) => d.nome);
+
+    if (flat.length === 0) {
+      throw new Error('Este objetivo ainda não tem conteúdo programático no catálogo.');
+    }
+    return handleImportEditalDisciplinas({ disciplinas: flat, plano });
   };
 
   const deleteCourse = async (curso) => {
@@ -7357,12 +7404,16 @@ export default function App() {
           {activeTab === 'edital' && (
             <Edital
               bancoDisciplinas={bancoDisciplinas}
+              cursos={cursos}
+              targetContest={targetContestSummary}
               expandedEditalSubject={expandedEditalSubject}
               setExpandedEditalSubject={setExpandedEditalSubject}
               toggleEditalTopico={toggleEditalTopico}
               setEditingDiscipline={setEditingDiscipline}
               setRegistroEstudoModalOpen={setRegistroEstudoModalOpen}
               setLinkModalOpen={setLinkModalOpen}
+              onImportDisciplinas={handleImportEditalDisciplinas}
+              onLoadFromObjetivo={loadDisciplinasFromObjetivo}
             />
           )}
 

@@ -34,6 +34,7 @@ export default function Edital({
   setRegistroEstudoModalOpen,
   setLinkModalOpen,
   onImportDisciplinas,
+  onLoadFromObjetivo,
 }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
@@ -193,6 +194,26 @@ export default function Edital({
     }
   };
 
+  const [loadingObjetivo, setLoadingObjetivo] = useState(false);
+
+  // Abastece o edital com o conteúdo programático do próprio objetivo vinculado.
+  const handleCarregarObjetivo = async () => {
+    if (!concursoSelecionado || !onLoadFromObjetivo) return;
+    setLoadingObjetivo(true);
+    setImportMsg('');
+    setAiError('');
+    try {
+      const out = await onLoadFromObjetivo(concursoSelecionado);
+      const nDisc = out?.disciplinasCriadas ?? 0;
+      const nTop = out?.topicosCriados ?? 0;
+      setImportMsg(`${nDisc} disciplina(s) carregada(s) do objetivo${nTop ? ` com ${nTop} tópico(s)` : ''}.`);
+    } catch (err) {
+      setAiError(err?.message || 'Não foi possível carregar o conteúdo deste objetivo.');
+    } finally {
+      setLoadingObjetivo(false);
+    }
+  };
+
   return (
     <div className="pl-page">
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -243,6 +264,10 @@ export default function Edital({
               loading={aiLoading}
               onImportarIA={handleImportarComIA}
               onAdicionar={() => setEditingDiscipline?.({ plano: concursoSelecionado?.plano || 'Geral' })}
+              hasObjetivo={Boolean(concursoSelecionado && onLoadFromObjetivo)}
+              objetivoNome={concursoSelecionado?.nome || concursoSelecionado?.concurso || ''}
+              loadingObjetivo={loadingObjetivo}
+              onCarregarObjetivo={handleCarregarObjetivo}
             />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -555,7 +580,7 @@ function Checkbox({ checked }) {
   );
 }
 
-function EditalEmptyState({ canAnalyze, loading, onImportarIA, onAdicionar }) {
+function EditalEmptyState({ canAnalyze, loading, onImportarIA, onAdicionar, hasObjetivo, objetivoNome, loadingObjetivo, onCarregarObjetivo }) {
   return (
     <section className="pl-card-paper" style={{ padding: 32 }}>
       <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--pl-ink)', color: 'var(--pl-bg)', display: 'grid', placeItems: 'center' }}>
@@ -564,20 +589,31 @@ function EditalEmptyState({ canAnalyze, loading, onImportarIA, onAdicionar }) {
       <div className="pl-overline" style={{ marginTop: 18 }}>Edital vazio</div>
       <h3 className="pl-section-title" style={{ marginTop: 8 }}>Comece pela estrutura do conteúdo.</h3>
       <p className="pl-body" style={{ maxWidth: 680, marginTop: 8 }}>
-        Importe o edital com IA ou adicione as disciplinas manualmente para acompanhar tópico por tópico.
+        {hasObjetivo
+          ? `Carregue as disciplinas e tópicos do objetivo${objetivoNome ? ` "${objetivoNome}"` : ''} para acompanhar tópico por tópico — ou adicione manualmente.`
+          : 'Adicione as disciplinas manualmente para acompanhar tópico por tópico.'}
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 22 }}>
-        <span className="btn-ai-aura">
-          <button type="button" className="pl-btn-ai pl-btn" onClick={onImportarIA} disabled={!canAnalyze || loading} style={{ opacity: !canAnalyze || loading ? 0.62 : 1 }}>
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-            Importar com IA
-            <span className="beta">beta</span>
+        {hasObjetivo && (
+          <button type="button" className="pl-btn pl-btn-primary" onClick={onCarregarObjetivo} disabled={loadingObjetivo} style={{ opacity: loadingObjetivo ? 0.62 : 1 }}>
+            {loadingObjetivo ? <Loader2 size={14} className="animate-spin" /> : <BookOpen size={14} />}
+            Carregar conteúdo do objetivo
           </button>
-        </span>
+        )}
         <button type="button" className="pl-btn pl-btn-secondary" onClick={onAdicionar}>
           <Upload size={14} />
           Adicionar manualmente
         </button>
+        {/* Leitura por IA só quando há texto de edital para analisar (raro no fluxo do aluno). */}
+        {canAnalyze && (
+          <span className="btn-ai-aura">
+            <button type="button" className="pl-btn-ai pl-btn" onClick={onImportarIA} disabled={loading} style={{ opacity: loading ? 0.62 : 1 }}>
+              {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              Importar com IA
+              <span className="beta">beta</span>
+            </button>
+          </span>
+        )}
       </div>
     </section>
   );
