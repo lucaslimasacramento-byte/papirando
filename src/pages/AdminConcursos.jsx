@@ -1795,15 +1795,20 @@ export default function AdminConcursos({
       return;
     }
 
-    // Índice dos concursos publicados por chave normalizada (nome → plano → concurso).
+    // Índice dos concursos por chave normalizada (nome → plano → concurso),
+    // incluindo PUBLICADOS e RASCUNHOS. Publicados entram primeiro (prioridade).
     const index = new Map();
-    for (const t of concursoCatalog) {
-      if ((t.tipo || 'concurso') !== 'concurso') continue;
-      for (const candidate of [t.nome, t.plano, t.concurso]) {
-        const key = normalizeCargoKey(candidate);
-        if (key && !index.has(key)) index.set(key, t);
+    const addToIndex = (list) => {
+      for (const t of list) {
+        if ((t.tipo || 'concurso') !== 'concurso') continue;
+        for (const candidate of [t.nome, t.plano, t.concurso]) {
+          const key = normalizeCargoKey(candidate);
+          if (key && !index.has(key)) index.set(key, t);
+        }
       }
-    }
+    };
+    addToIndex(concursoCatalog);
+    addToIndex(localDrafts);
 
     setUpdateJsonWorking(true);
     setUpdateJsonStatus('');
@@ -1822,7 +1827,8 @@ export default function AdminConcursos({
         if (!existing) { naoEncontrados.push(names.nome || norm.nome || norm.concurso || '—'); continue; }
 
         const full = await ensureTemplateContent(existing);
-        const overrides = {};
+        // Preserva o status de publicação (não publica rascunho ao atualizar).
+        const overrides = { is_public: existing.is_public === true };
         const setIf = (field, value) => { const v = cleanImportedValue(value); if (v) overrides[field] = v; };
         setIf('banca', norm.banca);
         setIf('salario', norm.salario);
@@ -2540,8 +2546,24 @@ export default function AdminConcursos({
         );
       })()}
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'rascunhos' &&
-        renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
+      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'rascunhos' && (
+        <>
+          {contestSectionTipo === 'concurso' && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button
+                type="button"
+                className="pl-btn pl-btn-ghost"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                onClick={() => { setUpdateJsonOpen(true); setUpdateJsonStatus(''); }}
+                title="Colar JSON do prompt para atualizar concursos (inclui rascunhos)"
+              >
+                <RefreshCw size={14} /> Atualizar via JSON
+              </button>
+            </div>
+          )}
+          {renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
+        </>
+      )}
 
       {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'publicados' && (
       <div className="pl-card" style={{ padding: 20 }}>
@@ -2673,7 +2695,7 @@ export default function AdminConcursos({
                 <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Atualização em massa</p>
                 <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)' }}>Atualizar concursos via JSON</h2>
                 <p style={{ margin: '6px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', maxWidth: 520, lineHeight: 1.55 }}>
-                  Cole o JSON gerado pelo prompt. Cada concurso é localizado pelo nome (ou plano/sigla) e tem os campos preenchidos sobrescritos — disciplinas só mudam quando o JSON as inclui. Concursos não encontrados são ignorados (use "Novo concurso" para cadastrá-los).
+                  Cole o JSON gerado pelo prompt. Cada concurso é localizado pelo nome (ou plano/sigla), entre publicados e rascunhos, e tem os campos preenchidos sobrescritos — disciplinas só mudam quando o JSON as inclui. O status de publicação é preservado. Concursos não encontrados são ignorados (use "Novo concurso" para cadastrá-los).
                 </p>
               </div>
               <button type="button" onClick={() => { if (!updateJsonWorking) setUpdateJsonOpen(false); }} title="Fechar" style={{ borderRadius: 8, padding: 6, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0, flexShrink: 0 }}>
