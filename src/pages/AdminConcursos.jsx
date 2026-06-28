@@ -20,7 +20,6 @@ import {
   Pencil,
   Plus,
   PlusCircle,
-  RefreshCw,
   Save,
   Search,
   ShieldCheck,
@@ -1072,11 +1071,6 @@ export default function AdminConcursos({
   const [draftQuery, setDraftQuery] = useState('');
   const [selectedDraftIds, setSelectedDraftIds] = useState(new Set());
   const [batchDeleting, setBatchDeleting] = useState(false);
-  // Atualizar concursos em massa colando o mesmo JSON do prompt (match por nome).
-  const [updateJsonOpen, setUpdateJsonOpen] = useState(false);
-  const [updateJsonText, setUpdateJsonText] = useState('');
-  const [updateJsonStatus, setUpdateJsonStatus] = useState('');
-  const [updateJsonWorking, setUpdateJsonWorking] = useState(false);
   // Rascunhos carregados pelo PRÓPRIO AdminConcursos (import direto), sem depender de
   // props vindas do App — o bundler estava dropando essas props no build de produção.
   const [localDrafts, setLocalDrafts] = useState([]);
@@ -1781,104 +1775,6 @@ export default function AdminConcursos({
     }
   };
 
-  // Atualiza concursos JÁ existentes a partir do mesmo JSON do prompt. Faz match
-  // por nome/plano/concurso (chave normalizada) e sobrescreve só os campos que o
-  // JSON traz preenchidos. Disciplinas só são substituídas quando o JSON as inclui.
-  const handleUpdateFromJson = async () => {
-    const text = updateJsonText.trim();
-    if (!text) { warning('Cole o JSON antes de atualizar.'); return; }
-
-    const result = parseContestJsonLocally(text);
-    const templates = Array.isArray(result?.templates) ? result.templates : [];
-    if (templates.length === 0) {
-      setUpdateJsonStatus('Nenhum concurso válido encontrado no JSON. Verifique a estrutura.');
-      return;
-    }
-
-    // Índice dos concursos por chave normalizada (nome → plano → concurso),
-    // incluindo PUBLICADOS e RASCUNHOS. Publicados entram primeiro (prioridade).
-    const index = new Map();
-    const addToIndex = (list) => {
-      for (const t of list) {
-        if ((t.tipo || 'concurso') !== 'concurso') continue;
-        for (const candidate of [t.nome, t.plano, t.concurso]) {
-          const key = normalizeCargoKey(candidate);
-          if (key && !index.has(key)) index.set(key, t);
-        }
-      }
-    };
-    addToIndex(concursoCatalog);
-    addToIndex(localDrafts);
-
-    setUpdateJsonWorking(true);
-    setUpdateJsonStatus('');
-    let updated = 0;
-    const naoEncontrados = [];
-
-    try {
-      for (const tpl of templates) {
-        const norm = normalizeJsonContestTemplate(tpl);
-        const names = buildContestDisplayNames(norm);
-        let existing = null;
-        for (const candidate of [names.nome, norm.nome, names.plano, norm.plano, names.concurso, norm.concurso]) {
-          const key = normalizeCargoKey(candidate);
-          if (key && index.has(key)) { existing = index.get(key); break; }
-        }
-        if (!existing) { naoEncontrados.push(names.nome || norm.nome || norm.concurso || '—'); continue; }
-
-        const full = await ensureTemplateContent(existing);
-        // Preserva o status de publicação (não publica rascunho ao atualizar).
-        const overrides = { is_public: existing.is_public === true };
-        const setIf = (field, value) => { const v = cleanImportedValue(value); if (v) overrides[field] = v; };
-        setIf('banca', norm.banca);
-        setIf('salario', norm.salario);
-        setIf('inscricao_valor', norm.inscricao_valor);
-        setIf('escolaridade', norm.escolaridade);
-        setIf('vagas', norm.vagas);
-        setIf('lotacao', norm.lotacao);
-        setIf('etapas', norm.etapas);
-        setIf('descricao', norm.descricao);
-        setIf('edital_url', norm.edital_url);
-        if (norm.area) overrides.area = normalizeImportedArea(norm.area);
-        if (Array.isArray(norm.etapas_tags) && norm.etapas_tags.length > 0) overrides.etapas_tags = norm.etapas_tags;
-        if (Array.isArray(norm.taf_itens) && norm.taf_itens.length > 0) overrides.taf_itens = norm.taf_itens;
-
-        // Status + data coerentes entre si.
-        const rawData = normalizeImportedDate(norm.prova_data || full.prova_data);
-        const status = resolveContestStatusByDate(norm.status_concurso || full.status_concurso, rawData);
-        overrides.status_concurso = status;
-        overrides.prova_data = resolveContestDateByStatus(status, rawData);
-
-        // Disciplinas: só substitui quando o JSON traz conteúdo (senão preserva o atual).
-        if (Array.isArray(norm.disciplinas) && norm.disciplinas.length > 0) {
-          overrides.disciplinas = norm.disciplinas.map((subject, subjectIndex) => ({
-            nome: subject.nome,
-            ordem: subjectIndex,
-            cor: subject.cor || '',
-            topicos: (subject.topicos || []).map((topic, topicIndex) => ({
-              nome: typeof topic === 'string' ? topic : topic.nome,
-              ordem: topicIndex,
-            })).filter((topic) => topic.nome),
-          }));
-        }
-
-        await onUpdateTemplate?.(buildTemplatePayload(full, overrides));
-        updated += 1;
-      }
-
-      await reloadDrafts();
-      const resumoNao = naoEncontrados.length
-        ? ` ${naoEncontrados.length} não encontrado(s): ${naoEncontrados.slice(0, 5).join(', ')}${naoEncontrados.length > 5 ? '…' : ''}.`
-        : '';
-      setUpdateJsonStatus(`${updated} concurso(s) atualizado(s).${resumoNao}`);
-      if (updated > 0) success(`${updated} concurso(s) atualizado(s) via JSON.`);
-    } catch (error) {
-      toastError(error.message || 'Falha ao atualizar via JSON.', 'Erro ao atualizar');
-    } finally {
-      setUpdateJsonWorking(false);
-    }
-  };
-
   // A lista vem SEM disciplinas/tópicos (carregados sob demanda). Garante que o
   // template tenha disciplinas antes de editar/publicar — senão o save as apagaria.
   const ensureTemplateContent = async (template) => {
@@ -2546,24 +2442,8 @@ export default function AdminConcursos({
         );
       })()}
 
-      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'rascunhos' && (
-        <>
-          {contestSectionTipo === 'concurso' && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-              <button
-                type="button"
-                className="pl-btn pl-btn-ghost"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                onClick={() => { setUpdateJsonOpen(true); setUpdateJsonStatus(''); }}
-                title="Colar JSON do prompt para atualizar concursos (inclui rascunhos)"
-              >
-                <RefreshCw size={14} /> Atualizar via JSON
-              </button>
-            </div>
-          )}
-          {renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
-        </>
-      )}
+      {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'rascunhos' &&
+        renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
 
       {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'publicados' && (
       <div className="pl-card" style={{ padding: 20 }}>
@@ -2587,17 +2467,6 @@ export default function AdminConcursos({
           >
             {contestAreaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
-          {contestSectionTipo === 'concurso' && (
-            <button
-              type="button"
-              className="pl-btn pl-btn-ghost"
-              style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-              onClick={() => { setUpdateJsonOpen(true); setUpdateJsonStatus(''); }}
-              title="Colar JSON do prompt para atualizar concursos já cadastrados"
-            >
-              <RefreshCw size={14} /> Atualizar via JSON
-            </button>
-          )}
           <button
             type="button"
             className="pl-btn pl-btn-primary"
@@ -2678,72 +2547,6 @@ export default function AdminConcursos({
         </div>
       </div>
       )} {/* fim adminSection === 'concursos' */}
-
-      {/* Modal: Atualizar concursos via JSON (mesma estrutura do prompt de cadastro) */}
-      {updateJsonOpen && (
-        <div
-          onClick={() => { if (!updateJsonWorking) setUpdateJsonOpen(false); }}
-          style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,17,13,0.5)', backdropFilter: 'blur(4px)', padding: 20 }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 720, maxHeight: '90vh', overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}
-          >
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule)', padding: '18px 24px' }}>
-              <div>
-                <p className="pl-eyebrow" style={{ marginBottom: 4, color: 'var(--pl-accent)' }}>Atualização em massa</p>
-                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)' }}>Atualizar concursos via JSON</h2>
-                <p style={{ margin: '6px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', maxWidth: 520, lineHeight: 1.55 }}>
-                  Cole o JSON gerado pelo prompt. Cada concurso é localizado pelo nome (ou plano/sigla), entre publicados e rascunhos, e tem os campos preenchidos sobrescritos — disciplinas só mudam quando o JSON as inclui. O status de publicação é preservado. Concursos não encontrados são ignorados (use "Novo concurso" para cadastrá-los).
-                </p>
-              </div>
-              <button type="button" onClick={() => { if (!updateJsonWorking) setUpdateJsonOpen(false); }} title="Fechar" style={{ borderRadius: 8, padding: 6, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0, flexShrink: 0 }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <textarea
-                rows={12}
-                value={updateJsonText}
-                onChange={(e) => { setUpdateJsonText(e.target.value); setUpdateJsonStatus(''); }}
-                placeholder='Cole aqui o JSON no formato { "concursos": [ ... ] }'
-                className="pl-input"
-                style={{ width: '100%', fontFamily: 'var(--pl-mono)', fontSize: 12.5, lineHeight: 1.6, resize: 'vertical', minHeight: 220 }}
-              />
-              {updateJsonStatus && (
-                <p style={{ borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '10px 14px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
-                  {updateJsonStatus}
-                </p>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderTop: '1px solid var(--pl-rule)', padding: '16px 24px', background: 'var(--pl-bg-soft)' }}>
-              <button type="button" onClick={handleDownloadContestPrompt} className="pl-btn pl-btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--pl-accent)' }}>
-                <Download size={15} /> Baixar prompt
-              </button>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button type="button" onClick={() => { if (!updateJsonWorking) setUpdateJsonOpen(false); }} className="pl-btn pl-btn-ghost">
-                  Fechar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleUpdateFromJson}
-                  disabled={updateJsonWorking || !updateJsonText.trim()}
-                  className="pl-btn pl-btn-primary"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                >
-                  {updateJsonWorking ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
-                  {updateJsonWorking ? 'Atualizando…' : 'Atualizar concursos'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {adminSection === 'cursos' && catalogView === 'rascunhos' &&
         renderRascunhos('curso', { singular: 'curso' })}
@@ -2830,18 +2633,20 @@ export default function AdminConcursos({
             </div>
           </div>
 
-          {(form.tipo === 'vestibular' || form.tipo === 'enem' || !form.id) && (
+          {(
           <div className="mb-5 rounded-lg p-4" style={{ border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>Preencher com IA</p>
+                <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>{form.id ? 'Atualizar com JSON / IA' : 'Preencher com IA'}</p>
                 <h4 className="mt-1 text-base font-semibold" style={{ color: 'var(--pl-ink)' }}>
-                  {isVestForm || form.tipo === 'enem' ? 'Colar JSON de matérias' : 'Colar formulário analisado do edital'}
+                  {isVestForm || form.tipo === 'enem' ? 'Colar JSON de matérias' : 'Colar JSON do concurso ou formulário do edital'}
                 </h4>
                 <p className="mt-1 text-xs" style={{ color: 'var(--pl-ink-3)' }}>
                   {isVestForm || form.tipo === 'enem'
-                    ? 'Cole o JSON retornado pela IA (matérias e tópicos) e clique em Preencher — as disciplinas entram no rascunho sem mexer nos demais campos.'
-                    : 'A IA organiza campos, disciplinas e tópicos no rascunho a partir da análise do edital.'}
+                    ? 'Cole o JSON retornado pela IA (matérias e tópicos) e clique em Preencher — as disciplinas entram sem mexer nos demais campos.'
+                    : (form.id
+                      ? 'Cole o JSON deste concurso e clique em Preencher: os campos preenchidos são aplicados a ESTE concurso. Depois clique em Salvar — atualiza direto, sem buscar por nome.'
+                      : 'A IA organiza campos, disciplinas e tópicos no rascunho a partir da análise do edital.')}
                 </p>
               </div>
 
