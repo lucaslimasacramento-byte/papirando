@@ -1113,13 +1113,15 @@ export default function AdminConcursos({
   const [contestQuery, setContestQuery] = useState('');
   const [contestAreaFilter, setContestAreaFilter] = useState('Todos');
   const [customEtapaText, setCustomEtapaText] = useState('');
+  // Sub-seção dentro da aba ENEM: 'exame' (o exame) ou 'instituicoes' (instituições que ingressam pelo ENEM).
+  const [enemSub, setEnemSub] = useState('exame');
 
   // Tipo mostrado na lista do catálogo depende da aba: Concursos = concurso,
   // Vestibulares = vestibular (ambos vêm de contest_templates).
+  // A aba ENEM unifica o exame e as instituições via sub-seletor (enemSub).
   const contestSectionTipo =
     adminSection === 'vestibulares' ? 'vestibular'
-      : adminSection === 'enem' ? 'enem'
-      : adminSection === 'enem_inst' ? 'enem_inst'
+      : adminSection === 'enem' ? (enemSub === 'instituicoes' ? 'enem_inst' : 'enem')
       : 'concurso';
   // Substantivo usado nos rótulos da seção (botão criar, placeholder, estado vazio).
   const contestSectionNoun =
@@ -2334,8 +2336,7 @@ export default function AdminConcursos({
       <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: 20 }}>
         {[
           { id: 'concursos', label: 'Concursos', count: publishedConcursoCount },
-          { id: 'enem', label: 'ENEM', count: publishedEnemCount },
-          { id: 'enem_inst', label: 'Instituições ENEM', count: publishedEnemInstCount },
+          { id: 'enem', label: 'ENEM', count: publishedEnemCount + publishedEnemInstCount },
           { id: 'vestibulares', label: 'Vestibulares', count: publishedVestibularCount },
           { id: 'cursos', label: 'Faculdade', count: faculdadeCount },
         ].map((tab) => (
@@ -2368,10 +2369,44 @@ export default function AdminConcursos({
         ))}
       </div>
 
+      {/* Sub-seletor da aba ENEM: Exame | Instituições (unifica o que antes eram 2 abas) */}
+      {adminSection === 'enem' && (
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+          {[
+            { id: 'exame', label: 'Exame', count: publishedEnemCount },
+            { id: 'instituicoes', label: 'Instituições', count: publishedEnemInstCount },
+          ].map((s) => {
+            const active = enemSub === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => { setEnemSub(s.id); setCatalogView('publicados'); setDraftQuery(''); setContestQuery(''); setContestAreaFilter('Todos'); }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '5px 13px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  borderRadius: 999,
+                  border: active ? '1px solid #1e3a5f' : '1px solid var(--pl-rule-2)',
+                  background: active ? '#1e3a5f' : 'var(--pl-surface)',
+                  color: active ? '#f3efe5' : 'var(--pl-ink-2)',
+                }}
+              >
+                {s.label}
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 10,
+                  background: active ? 'rgba(243,239,229,0.18)' : 'var(--pl-bg-soft)',
+                  color: active ? '#f3efe5' : 'var(--pl-ink-4)',
+                }}>{s.count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Sub-toggle: Publicados | Rascunhos (por módulo) */}
       {(() => {
-        const bucket = adminSection === 'vestibulares' ? 'vestibular' : adminSection === 'enem' ? 'enem' : adminSection === 'enem_inst' ? 'enem_inst' : adminSection === 'cursos' ? 'curso' : 'concurso';
-        const pubCount = adminSection === 'vestibulares' ? publishedVestibularCount : adminSection === 'enem' ? publishedEnemCount : adminSection === 'enem_inst' ? publishedEnemInstCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
+        const bucket = contestSectionTipo === 'vestibular' ? 'vestibular' : contestSectionTipo === 'enem' ? 'enem' : contestSectionTipo === 'enem_inst' ? 'enem_inst' : adminSection === 'cursos' ? 'curso' : 'concurso';
+        const pubCount = contestSectionTipo === 'vestibular' ? publishedVestibularCount : contestSectionTipo === 'enem' ? publishedEnemCount : contestSectionTipo === 'enem_inst' ? publishedEnemInstCount : adminSection === 'cursos' ? faculdadeCount : publishedConcursoCount;
         const draftCount = draftCounts[bucket] || 0;
         return (
           <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
