@@ -27,6 +27,7 @@ const ConcursoDetalhe = lazy(() => import('../pages/ConcursoDetalhe'));
 const LembretesCalendario = lazy(() => import('../pages/LembretesCalendario'));
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
 const AdminConcursos = lazy(() => import('../pages/AdminConcursos'));
+const AdminDesign = lazy(() => import('../pages/AdminDesign'));
 const AdminDisciplinasPadrao = lazy(() => import('../pages/AdminDisciplinasPadrao'));
 const AdminUsuarios = lazy(() => import('../pages/AdminUsuarios'));
 const AdminFinance = lazy(() => import('../pages/AdminFinance'));
@@ -683,6 +684,10 @@ export default function AppTabContent(props) {
         currentUserId={currentUserId}
       />
     );
+  }
+
+  if (activeTab === 'admin_design' && isAdmin) {
+    return <AdminDesign />;
   }
 
   if (activeTab === 'admin_legislacao' && isAdmin) {

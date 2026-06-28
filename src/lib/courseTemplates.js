@@ -1,4 +1,6 @@
-export const DEFAULT_COURSE_TEMPLATES = [
+import { COURSE_LOGOS } from './courseLogos';
+
+const RAW_COURSE_TEMPLATES = [
   // ── Vestibulares — Nacionais ─────────────────────────────────────────────────
   {
     id: 'vestibular-enem',
@@ -146,6 +148,13 @@ export const DEFAULT_COURSE_TEMPLATES = [
   { id: 'grad-gestao-cooperativas',      nome: 'Gestão de Cooperativas',            area: 'Serviços', intent: 'faculdade', imagem_url: '', subjects: [] },
   { id: 'grad-seguranca-trabalho',       nome: 'Segurança do Trabalho',             area: 'Serviços', intent: 'faculdade', imagem_url: '', subjects: [] },
 ];
+
+// Aplica os logos SVG (data URI) por nome de curso. Ver guia em Admin > Design.
+export const DEFAULT_COURSE_TEMPLATES = RAW_COURSE_TEMPLATES.map((t) =>
+  !t.imagem_url && t.intent === 'faculdade' && COURSE_LOGOS[t.nome]
+    ? { ...t, imagem_url: COURSE_LOGOS[t.nome] }
+    : t
+);
 
 export function normalizeCourseTemplate(template, index = 0) {
   const id = String(template?.id || template?.slug || `curso-template-${index + 1}`).trim();

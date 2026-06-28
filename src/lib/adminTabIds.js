@@ -2,6 +2,7 @@
 export const ADMIN_TAB_IDS = [
   'admin_dashboard',
   'admin_concursos',
+  'admin_design',
   'admin_questoes',
   'admin_questoes_import',
   'admin_disciplinas',
@@ -24,6 +25,7 @@ export function isAdminTab(tabId) {
 export const ADMIN_TAB_TITLES = {
   admin_dashboard: 'Dashboard',
   admin_concursos: 'Catálogo',
+  admin_design: 'Design',
   admin_questoes: 'Questões',
   admin_questoes_import: 'Importar questões',
   admin_disciplinas: 'Disciplinas',
@@ -42,6 +44,7 @@ export const ADMIN_TAB_TITLES = {
 export const ADMIN_TAB_GROUP = {
   admin_dashboard: 'Visão Geral',
   admin_concursos: 'Editorial',
+  admin_design: 'Editorial',
   admin_questoes: 'Editorial',
   admin_questoes_import: 'Editorial',
   admin_disciplinas: 'Editorial',
