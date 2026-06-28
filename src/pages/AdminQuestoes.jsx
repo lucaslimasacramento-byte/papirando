@@ -105,7 +105,7 @@ function ErrBanner({ msg }) {
 
 // ─── Question Form ─────────────────────────────────────────────────────────────
 
-function QuestionForm({ initial, onSave, onCancel, saving, err }) {
+function QuestionForm({ initial, onSave, onCancel, saving, err, title }) {
   const [form, setForm] = useState(initial || emptyForm());
 
   function set(field, value) {
@@ -161,17 +161,16 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
     }));
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <ErrBanner msg={err} />
-
+  // ── Coluna esquerda: dados e configuração da questão ──────────────────────
+  const leftColumn = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Field label="Disciplina" required>
+        <input className="pl-input" value={form.disciplina} onChange={(e) => set('disciplina', e.target.value)} placeholder="Ex: Direito Constitucional" />
+      </Field>
+      <Field label="Tópico">
+        <input className="pl-input" value={form.topico} onChange={(e) => set('topico', e.target.value)} placeholder="Ex: Art. 5º" />
+      </Field>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <Field label="Disciplina" required>
-          <input className="pl-input" value={form.disciplina} onChange={(e) => set('disciplina', e.target.value)} placeholder="Ex: Direito Constitucional" />
-        </Field>
-        <Field label="Topico">
-          <input className="pl-input" value={form.topico} onChange={(e) => set('topico', e.target.value)} placeholder="Ex: Art. 5º" />
-        </Field>
         <Field label="Banca">
           <input className="pl-input" value={form.banca} onChange={(e) => set('banca', e.target.value)} placeholder="Ex: CESPE/CEBRASPE" />
         </Field>
@@ -185,7 +184,6 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
           <input className="pl-input" value={form.plano} onChange={(e) => set('plano', e.target.value)} placeholder="Ex: PF 2025" />
         </Field>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <Field label="Tipo" required>
           <select className="pl-input" value={form.tipo} onChange={(e) => handleTipoChange(e.target.value)}>
@@ -198,18 +196,34 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
           </select>
         </Field>
       </div>
+      <label htmlFor="is_public" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)' }}>
+        <input
+          type="checkbox"
+          id="is_public"
+          style={{ width: 16, height: 16, borderRadius: 4, accentColor: 'var(--pl-accent)' }}
+          checked={form.is_public}
+          onChange={(e) => set('is_public', e.target.checked)}
+        />
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Questão pública (visível a todos os alunos)</span>
+      </label>
+    </div>
+  );
 
+  // ── Coluna direita: conteúdo da questão (enunciado, alternativas, gabarito) ─
+  const rightColumn = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <Field label="Enunciado" required>
-        <textarea rows={4} className="pl-input" style={{ resize: 'none' }} value={form.enunciado} onChange={(e) => set('enunciado', e.target.value)} placeholder="Texto completo da questão..." />
+        <textarea rows={6} className="pl-input" style={{ resize: 'vertical', minHeight: 120 }} value={form.enunciado} onChange={(e) => set('enunciado', e.target.value)} placeholder="Texto completo da questão..." />
       </Field>
 
-      <Field label="Alternativas — marque o gabarito clicando no botao a esquerda" required>
+      <Field label="Alternativas — marque o gabarito clicando no botão à esquerda" required>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {form.alternativas.map((alt, idx) => (
             <div key={alt.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
                 type="button"
                 onClick={() => setGabarito(alt.id)}
+                title="Marcar como gabarito"
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   height: 32, width: 32, flexShrink: 0, borderRadius: '50%', border: '2px solid',
@@ -249,34 +263,56 @@ function QuestionForm({ initial, onSave, onCancel, saving, err }) {
         </div>
       </Field>
 
-      <Field label="Explicacao / Gabarito comentado">
-        <textarea rows={3} className="pl-input" style={{ resize: 'none' }} value={form.explicacao} onChange={(e) => set('explicacao', e.target.value)} placeholder="Explique o motivo do gabarito..." />
+      <Field label="Explicação / Gabarito comentado">
+        <textarea rows={5} className="pl-input" style={{ resize: 'vertical', minHeight: 96 }} value={form.explicacao} onChange={(e) => set('explicacao', e.target.value)} placeholder="Explique o motivo do gabarito..." />
       </Field>
+    </div>
+  );
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <input
-          type="checkbox"
-          id="is_public"
-          style={{ width: 16, height: 16, borderRadius: 4, accentColor: 'var(--pl-accent)' }}
-          checked={form.is_public}
-          onChange={(e) => set('is_public', e.target.checked)}
-        />
-        <label htmlFor="is_public" style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Questao publica (visivel a todos os alunos)</label>
-      </div>
+  return (
+    <div
+      onClick={onCancel}
+      style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,17,13,0.5)', backdropFilter: 'blur(4px)', padding: 20 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 1040, maxHeight: '92vh', overflow: 'hidden', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid var(--pl-rule)', padding: '18px 24px' }}>
+          <div>
+            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Banco de questões</p>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--pl-ink)' }}>{title || 'Nova questão'}</h2>
+          </div>
+          <button type="button" onClick={onCancel} title="Fechar" style={{ borderRadius: 8, padding: 6, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 0 }}>
+            <X size={18} />
+          </button>
+        </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 8 }}>
-        <button onClick={onCancel} className="pl-btn pl-btn-ghost">
-          Cancelar
-        </button>
-        <button
-          onClick={() => onSave(form)}
-          disabled={saving}
-          className="pl-btn pl-btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-          Salvar questao
-        </button>
+        {/* Body — duas colunas */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <ErrBanner msg={err} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28 }}>
+            <div style={{ flex: '1 1 300px', minWidth: 0 }}>{leftColumn}</div>
+            <div style={{ flex: '1 1 360px', minWidth: 0 }}>{rightColumn}</div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid var(--pl-rule)', padding: '16px 24px', background: 'var(--pl-bg-soft)' }}>
+          <button onClick={onCancel} className="pl-btn pl-btn-ghost">
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSave(form)}
+            disabled={saving}
+            className="pl-btn pl-btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            Salvar questão
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -592,17 +628,15 @@ export default function AdminQuestoes() {
         )}
       </div>
 
-      {/* Create form */}
+      {/* Create modal */}
       {createOpen && (
-        <div style={{ borderBottom: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '20px 28px' }}>
-          <h3 style={{ marginBottom: 16, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>Nova Questao</h3>
-          <QuestionForm
-            onSave={handleCreate}
-            onCancel={() => setCreateOpen(false)}
-            saving={saving}
-            err={formErr}
-          />
-        </div>
+        <QuestionForm
+          title="Nova questão"
+          onSave={handleCreate}
+          onCancel={() => setCreateOpen(false)}
+          saving={saving}
+          err={formErr}
+        />
       )}
 
       {/* List */}
@@ -624,24 +658,12 @@ export default function AdminQuestoes() {
           <div>
             {questions.map((q) => {
               const isExpanded = expandedId === q.id;
-              const isEditing  = editingId === q.id;
               const alts = Array.isArray(q.alternativas) ? q.alternativas : JSON.parse(q.alternativas || '[]');
               const questionText = cleanQuestionText(q.enunciado || q.statement);
 
               return (
                 <div key={q.id} style={{ padding: '16px 28px', borderBottom: '1px solid var(--pl-rule)' }}>
-                  {isEditing ? (
-                    <div style={{ borderRadius: 12, border: '2px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: 20 }}>
-                      <p style={{ marginBottom: 16, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>Editando questao</p>
-                      <QuestionForm
-                        initial={{ ...q, alternativas: alts }}
-                        onSave={handleEdit}
-                        onCancel={() => setEditingId(null)}
-                        saving={saving}
-                        err={formErr}
-                      />
-                    </div>
-                  ) : (
+                  {(
                     <>
                       {/* Question row */}
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -748,6 +770,23 @@ export default function AdminQuestoes() {
           </div>
         )}
       </div>
+
+      {/* Edit modal */}
+      {editingId && (() => {
+        const q = questions.find((x) => x.id === editingId);
+        if (!q) return null;
+        const alts = Array.isArray(q.alternativas) ? q.alternativas : JSON.parse(q.alternativas || '[]');
+        return (
+          <QuestionForm
+            title="Editar questão"
+            initial={{ ...q, alternativas: alts }}
+            onSave={handleEdit}
+            onCancel={() => setEditingId(null)}
+            saving={saving}
+            err={formErr}
+          />
+        );
+      })()}
 
       {/* Pagination */}
       {totalPages > 1 && (

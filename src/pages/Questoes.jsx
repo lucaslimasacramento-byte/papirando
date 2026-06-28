@@ -181,7 +181,9 @@ export default function Questoes({
   const loadQuestions = useCallback(async () => {
     setDbLoading(true);
     try {
-      let q = supabase.from('questions').select('*').eq('is_active', true);
+      // Questões visíveis ao aluno = públicas. (A coluna is_active não existe;
+      // is_public é a flag real, default true.)
+      let q = supabase.from('questions').select('*').eq('is_public', true);
       if (filterDisc) q = q.eq('disciplina', filterDisc);
       if (filterBanca) q = q.eq('banca', filterBanca);
       if (filterDif) q = q.eq('dificuldade', filterDif);
@@ -190,7 +192,8 @@ export default function Questoes({
       if (error) throw error;
       setDbQuestions((data || []).map(normalizeQuestion));
     } catch {
-      let fallbackQuery = supabase.from('questions').select('*').eq('is_public', true);
+      // Fallback sem filtro de visibilidade (ex.: variação de schema/RLS).
+      let fallbackQuery = supabase.from('questions').select('*');
       if (filterDisc) fallbackQuery = fallbackQuery.eq('disciplina', filterDisc);
       if (filterBanca) fallbackQuery = fallbackQuery.eq('banca', filterBanca);
       if (filterDif) fallbackQuery = fallbackQuery.eq('dificuldade', filterDif);
