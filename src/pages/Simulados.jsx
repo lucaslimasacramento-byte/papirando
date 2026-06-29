@@ -216,8 +216,11 @@ export default function Simulados({
 
   function handleRegistrar() {
     if (simuladoLimitReached) { if (typeof onUpgrade === 'function') onUpgrade(); return; }
-    if (!isPremium) incUsage('simulados_monthly');
-    openSimuladoReviewModal?.('novo');
+    // Cota só é consumida quando o simulado é REALMENTE salvo (callback no save),
+    // não ao abrir o modal — antes, cancelar o modal já queimava 1 cota.
+    openSimuladoReviewModal?.('novo', {
+      onSaved: () => { if (!isPremium) incUsage('simulados_monthly'); },
+    });
   }
 
   return (

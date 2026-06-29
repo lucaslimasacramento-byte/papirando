@@ -5934,7 +5934,14 @@ export default function App() {
     setRegistroEstudoModalOpen(false);
   };
 
+  // Callback de cota: setado ao abrir o modal pela acao "Registrar prova"
+  // (Simulados passa seu incUsage). So dispara APOS um save bem-sucedido, para
+  // que cancelar o modal nao queime cota. Consumido (limpo) a cada save.
+  const simuladoOnSavedRef = useRef(null);
+
   const saveSimuladoNoApp = async (simulado) => {
+    const onSavedQuota = simuladoOnSavedRef.current;
+    simuladoOnSavedRef.current = null;
     const safeRows = Array.isArray(simulado?.rows) ? simulado.rows : [];
     const baseDate = simulado?.data || new Date().toISOString().split('T')[0];
     const baseName = simulado?.nome || 'Simulado externo';
@@ -6003,6 +6010,8 @@ export default function App() {
     if (currentUserId) {
       saveSimulado(currentUserId, novoRegistro)
         .then(async () => {
+          // Cota só conta após o save dar certo (não ao abrir o modal).
+          if (typeof onSavedQuota === 'function') onSavedQuota();
           const [updatedSimulados, updatedStats] = await Promise.all([
             loadSimulados(currentUserId),
             fetchSimuladoStats(currentUserId),
@@ -6017,13 +6026,15 @@ export default function App() {
     setSimuladoDraft(null);
   };
 
-  const openSimuladoReviewModal = (payload = null) => {
+  const openSimuladoReviewModal = (payload = null, options = {}) => {
     const nextDraft = payload && typeof payload === 'object' ? payload : null;
+    simuladoOnSavedRef.current = typeof options?.onSaved === 'function' ? options.onSaved : null;
     setSimuladoDraft(nextDraft);
     setRegistroSimuladoModalOpen(true);
   };
 
   const openBlankSimuladoModal = () => {
+    simuladoOnSavedRef.current = null;
     setSimuladoDraft(null);
     setRegistroSimuladoModalOpen(true);
   };
