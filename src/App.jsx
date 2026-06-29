@@ -4243,25 +4243,18 @@ export default function App() {
     let ignore = false;
 
     const loadUserDisciplines = async () => {
-      if (!isAuthenticated) {
+      if (!isAuthenticated || !currentUserId) {
         if (!ignore) setBancoDisciplinas([]);
         return;
       }
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        if (!ignore) setBancoDisciplinas([]);
-        return;
-      }
-
+      // Usa o id de sessão já conhecido em vez de supabase.auth.getUser()
+      // (que faz uma ida à rede ao servidor de auth a cada carga). A RLS já
+      // garante a segurança server-side, então não precisamos revalidar aqui.
       const { data: subjects, error: subjectsError } = await supabase
         .from('subjects')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', currentUserId)
         .order('created_at', { ascending: true });
 
       if (subjectsError) {
@@ -4320,7 +4313,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [isAuthenticated, currentUserEmail, subjectCatalog, buildUpdatedDiscipline]);
+  }, [isAuthenticated, currentUserId, currentUserEmail, subjectCatalog, buildUpdatedDiscipline]);
 
   const normalizeEdictLine = (line) =>
     String(line || '')
