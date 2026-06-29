@@ -25,6 +25,8 @@ import {
 } from '../lib/contestGrouping';
 import { getContestAreaTheme } from '../lib/contestAreaTheme';
 import { storageThumb } from '../lib/imageUrl';
+import { supabase } from '../lib/supabase';
+import { loadContestTemplateContent } from '../lib/contestCatalogApi';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
@@ -609,6 +611,22 @@ function VestibularDetalhe({
   cursos = [],
 }) {
   const [imageError, setImageError] = useState(false);
+
+  // Carrega o conteúdo programático sob demanda (catálogo vem sem disciplinas).
+  const [loadedDisc, setLoadedDisc] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    setLoadedDisc(null);
+    const id = contest?.id;
+    const hasDisc = Array.isArray(contest?.disciplinas) && contest.disciplinas.length > 0;
+    if (id && !hasDisc) {
+      loadContestTemplateContent(supabase, id)
+        .then((d) => { if (!cancelled && Array.isArray(d) && d.length > 0) setLoadedDisc(d); })
+        .catch(() => {});
+    }
+    return () => { cancelled = true; };
+  }, [contest?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const meta = contest?.meta && typeof contest.meta === 'object' ? contest.meta : {};
   const locality = contest?.scope === 'estadual' && contest?.uf ? String(contest.uf).toUpperCase() : 'Nacional';
   const modalityLabel = VEST_MODALITY_LABEL[contest?.modality] || null;
@@ -621,7 +639,10 @@ function VestibularDetalhe({
   const insEnd = fmtDateBR(contest?.registration_end);
   const inscricaoPeriodo = insStart || insEnd ? `${insStart || '—'} até ${insEnd || 'em aberto'}` : null;
 
-  const subjects = (contest?.disciplinas || []).map((d) => (typeof d === 'string' ? d : d?.nome)).filter(Boolean);
+  const effectiveDisc = (Array.isArray(contest?.disciplinas) && contest.disciplinas.length > 0)
+    ? contest.disciplinas
+    : (loadedDisc || []);
+  const subjects = effectiveDisc.map((d) => (typeof d === 'string' ? d : d?.nome)).filter(Boolean);
   const subjectsSummary = Array.isArray(meta.subjects_summary) && meta.subjects_summary.length ? meta.subjects_summary : subjects;
   const timeline = Array.isArray(meta.timeline) ? meta.timeline.filter((t) => t && t.title) : [];
   const courses = Array.isArray(meta.courses_offered) ? meta.courses_offered.filter((c) => c && (c.name || typeof c === 'string')) : [];
@@ -795,6 +816,24 @@ function ConcursoDetalheBody({
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [imageError, setImageError] = useState(false);
   const [importConfirmOpen, setImportConfirmOpen] = useState(false);
+
+  // O catálogo carrega os concursos SEM disciplinas (sob demanda). Ao abrir o
+  // detalhe, busca o conteúdo programático pelo id se ele não veio carregado —
+  // senão a seção "Conteúdo programático" apareceria vazia mesmo havendo dados.
+  const [loadedSubjects, setLoadedSubjects] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    setLoadedSubjects(null);
+    const id = rawContest?.id;
+    const hasDisc = Array.isArray(rawContest?.disciplinas) && rawContest.disciplinas.length > 0;
+    if (id && !hasDisc) {
+      loadContestTemplateContent(supabase, id)
+        .then((disc) => { if (!cancelled && Array.isArray(disc) && disc.length > 0) setLoadedSubjects(disc); })
+        .catch(() => {});
+    }
+    return () => { cancelled = true; };
+  }, [rawContest?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const roles = useMemo(() => getContestRoles(rawContest || {}), [rawContest]);
   const [selectedRoleId, setSelectedRoleId] = useState('');
   const activeRole = useMemo(
@@ -803,8 +842,13 @@ function ConcursoDetalheBody({
   );
   const contest = useMemo(() => {
     if (!rawContest) return null;
-    return buildContestForRole(rawContest, activeRole);
-  }, [rawContest, activeRole]);
+    const built = buildContestForRole(rawContest, activeRole);
+    // Injeta as disciplinas carregadas sob demanda quando o concurso veio sem elas.
+    if (built && (!Array.isArray(built.disciplinas) || built.disciplinas.length === 0) && Array.isArray(loadedSubjects) && loadedSubjects.length > 0) {
+      return { ...built, disciplinas: loadedSubjects };
+    }
+    return built;
+  }, [rawContest, activeRole, loadedSubjects]);
   const normalizedStatus = normalizeContestStatus(contest?.status_concurso);
   const areaTheme = useMemo(() => getContestAreaTheme(contest?.area || 'Geral'), [contest?.area]);
   const relatedContests = useMemo(
