@@ -205,7 +205,9 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 
 ### Sessão 2026-06-29 (madrugada) — Detalhe do Concurso, perf de imagens, meta diária + re-auditoria
 
-**Detalhe do Concurso (`ConcursoDetalhe.jsx`):** redesign variante D aplicado; quebra de texto longo (URLs) em Resumo/Etapas; `sanitizeHttpUrl` p/ edital_url colado com lixo (markdown/colchetes) em Concurso/ENEM/Vestibular. Diagnóstico do "só 1 cargo": dado pré-fix de slug (PMAL Soldado sobrescreveu Oficial em 21/06; fix de slug é de 28/06) → **re-subir o cargo Oficial** com mesmo edital/data.
+**Detalhe do Concurso (`ConcursoDetalhe.jsx`):** redesign variante D aplicado; quebra de texto longo (URLs) em Resumo/Etapas; `sanitizeHttpUrl` p/ edital_url colado com lixo (markdown/colchetes) em Concurso/ENEM/Vestibular.
+
+**"Só 1 cargo" — CAUSA REAL ENCONTRADA + corrigido (`cc3edd5`):** não era só dado pré-fix. `handleSaveAllContestOptions` (AdminConcursos) tinha 1 try/catch em volta do loop → 1ª falha abortava o resto; e `saveContestTemplate` (App.jsx) relançava erro do `refreshContestLibrary` mesmo com insert OK → perdia o 2º cargo (por isso "ou Soldado ou Oficial"). Fix: save POR cargo (try/catch individual) + refresh best-effort + erro reportado por cargo. ⚠️ Só testável em PRODUÇÃO (a API `/api/contest-templates` é serverless Vercel, não roda no vite dev) após o deploy. Teste: excluir PMAL → re-importar → "Salvar todos" → 2 cargos no mesmo card.
 
 **Edital:** botão "Importar com IA" removido (decisão #2).
 
