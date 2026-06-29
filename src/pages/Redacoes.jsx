@@ -38,6 +38,7 @@ import { RedacaoDicasKitPanel } from '../components/RedacaoDicasKitPanel';
 import { REDACAO_THEME_BANK_DEFAULT } from '../data/redacaoThemeBankDefault';
 import { REDACAO_ESQUELETOS_MILIMETRICOS } from '../data/redacaoEsqueletosMilimetricos';
 import { mergeRedacaoKitBundle } from '../lib/redacaoKitMerge';
+import { showConfirm } from '../lib/dialogs';
 
 const REDACAO_EDITOR_LINE_PX = 28;
 const REDACAO_EDITOR_LINE_MIN = 20;
@@ -390,19 +391,19 @@ export default function Redacoes({
     setPartesLinhas((p) => ({ ...p, [key]: clampParteLinhas(raw) }));
   };
 
-  const aplicarFolhaPartes = () => {
+  const aplicarFolhaPartes = async () => {
     if (corrigindo) return;
     const s = partesLinhas.intro + partesLinhas.d1 + partesLinhas.d2 + partesLinhas.fim;
     const empty = Array(Math.max(1, s)).fill('').join('\n');
     if (redacaoInputMode === 'upload' && uploadStatus === 'review') {
       if (String(transcribedText || '').trim()) {
-        const ok = typeof window !== 'undefined' ? window.confirm('Substituir o texto atual pela folha vazia com guias?') : true;
+        const ok = await showConfirm('Substituir o texto atual pela folha vazia com guias?', { confirmLabel: 'Substituir' });
         if (!ok) return;
       }
       setTranscribedText(empty);
     } else {
       if (String(redacaoText || '').trim()) {
-        const ok = typeof window !== 'undefined' ? window.confirm('Substituir o texto atual pela folha vazia com guias?') : true;
+        const ok = await showConfirm('Substituir o texto atual pela folha vazia com guias?', { confirmLabel: 'Substituir' });
         if (!ok) return;
       }
       setRedacaoText(empty);
@@ -456,7 +457,7 @@ export default function Redacoes({
     if (!onDeleteRedacao) return;
     const r = normalizeRedacaoRecord(raw);
     if (!r.id) return;
-    const ok = typeof window !== 'undefined' ? window.confirm('Remover esta redação do histórico?') : true;
+    const ok = await showConfirm('Remover esta redação do histórico?', { title: 'Remover redação', confirmLabel: 'Remover', danger: true });
     if (!ok) return;
     try {
       await onDeleteRedacao({ id: r.id, attachment_path: r.attachment_path });
@@ -555,14 +556,15 @@ export default function Redacoes({
   const renderFolhaEditor = (mode) => {
     const value = mode === 'upload' ? transcribedText : redacaoText;
     const setValue = mode === 'upload' ? setTranscribedText : setRedacaoText;
-    const onSelectEsqueleto = (item) => {
+    const onSelectEsqueleto = async (item) => {
       if (!item?.corpo || corrigindo) return;
       if (String(value || '').trim()) {
-        const ok = typeof window !== 'undefined'
-          ? window.confirm(mode === 'upload'
-              ? 'Substituir a transcrição pelo esqueleto selecionado?'
-              : 'Substituir o texto atual pelo esqueleto selecionado?')
-          : true;
+        const ok = await showConfirm(
+          mode === 'upload'
+            ? 'Substituir a transcrição pelo esqueleto selecionado?'
+            : 'Substituir o texto atual pelo esqueleto selecionado?',
+          { confirmLabel: 'Substituir' }
+        );
         if (!ok) return;
       }
       setValue(item.corpo);

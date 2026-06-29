@@ -21,6 +21,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import PdfScrollViewer from '../components/PdfScrollViewer';
+import { showToast } from '../lib/dialogs';
 import {
   BASE_VADE_SECTIONS,
   DEFAULT_SECTION_PAGE_MAP,
@@ -442,7 +443,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
 
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     if (!isPdf) {
-      alert('Envie um arquivo PDF.');
+      showToast('Envie um arquivo PDF.', 'warn');
       return;
     }
 
@@ -458,7 +459,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       setDocumentMeta(nextDocument);
       goToPage(nextDocument.sectionPageMap?.[selectedSection] || 1);
     } catch (error) {
-      alert(error.message || 'Não foi possível atualizar o arquivo do Vade Mecum.');
+      showToast(error.message || 'Não foi possível atualizar o arquivo do Vade Mecum.', 'error');
     } finally {
       setIsUploading(false);
     }
@@ -474,7 +475,7 @@ export default function Legislacao({ isAdmin = false, currentUserId = '', onOpen
       setDocumentMeta(nextDocument);
       goToPage(nextDocument.sectionPageMap?.[orderedSections[0]] || 1);
     } catch (error) {
-      alert(error.message || 'Não foi possível restaurar o arquivo oficial.');
+      showToast(error.message || 'Não foi possível restaurar o arquivo oficial.', 'error');
     } finally {
       setIsUploading(false);
     }

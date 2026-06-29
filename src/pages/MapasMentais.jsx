@@ -33,6 +33,7 @@ import { mindGraphToTopicNodes, ROOT_ID } from '../lib/mindMapGraph';
 import { galleryMapFromRow, loadMindMapGalleryRows } from '../lib/mindMapGalleryApi';
 import { canonicalizeSubjectName, normalizeSubjectText } from '../lib/subjectCatalogUtils';
 import { generateMindMap } from '../lib/aiClient';
+import { showToast } from '../lib/dialogs';
 
 const DEFAULT_FILTERS = {
   query: '',
@@ -597,7 +598,7 @@ export default function MapasMentais({
       registerUsage(normalized, 'imported');
     } catch (error) {
       console.error('Erro ao importar mapa mental:', error);
-      alert('Nao foi possivel importar o arquivo. Use um JSON valido exportado da biblioteca.');
+      showToast('Não foi possível importar o arquivo. Use um JSON válido exportado da biblioteca.', 'error');
     }
   };
 

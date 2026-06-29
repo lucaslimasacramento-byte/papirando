@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { buildWeeklyStudyPlan } from '../lib/weeklyPlanner';
+import { showConfirm } from '../lib/dialogs';
 import { supabase } from '../lib/supabase';
 import { getBrazilHolidays } from '../services/brasilApi';
 import { getAreaToken } from '../lib/areaTokens';
@@ -368,9 +369,10 @@ export default function LembretesCalendario({
     setReminderModalOpen(true);
   }
 
-  function handleDeleteReminder(reminderId) {
+  async function handleDeleteReminder(reminderId) {
     if (!reminderId) return;
-    if (typeof window !== 'undefined' && !window.confirm('Excluir este lembrete?')) return;
+    const ok = await showConfirm('Excluir este lembrete?', { title: 'Excluir lembrete', confirmLabel: 'Excluir', danger: true });
+    if (!ok) return;
     onDeleteReminder?.(reminderId);
   }
 

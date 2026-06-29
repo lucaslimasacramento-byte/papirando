@@ -22,6 +22,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { analyzeEdital } from '../lib/aiClient';
+import { showConfirm, showToast } from '../lib/dialogs';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
 import { storageThumb } from '../lib/imageUrl';
@@ -270,7 +271,7 @@ export default function Planos({
   const handlePdfUpload = async (file) => {
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Envie um arquivo PDF.');
+      showToast('Envie um arquivo PDF.', 'warn');
       return;
     }
 
@@ -299,7 +300,7 @@ export default function Planos({
 
   const handleCreateCourse = async () => {
     if (!courseForm.nome.trim()) {
-      alert('Digite o nome do curso.');
+      showToast('Digite o nome do curso.', 'warn');
       return;
     }
 
@@ -314,7 +315,7 @@ export default function Planos({
       });
       closeMode();
     } catch (error) {
-      alert(error.message || 'Não foi possível criar esse objetivo.');
+      showToast(error.message || 'Não foi possível criar esse objetivo.', 'error');
     } finally {
       setIsSavingCourse(false);
     }
@@ -335,7 +336,7 @@ export default function Planos({
       });
       closeMode();
     } catch (error) {
-      alert(error.message || 'Não foi possível criar esse objetivo.');
+      showToast(error.message || 'Não foi possível criar esse objetivo.', 'error');
     } finally {
       setIsSavingCourse(false);
     }
@@ -349,7 +350,7 @@ export default function Planos({
       return;
     }
     if (roles.length === 0) {
-      alert('Esse concurso não tem cargos definidos para importar.');
+      showToast('Esse concurso não tem cargos definidos para importar.', 'warn');
       return;
     }
 
@@ -359,7 +360,7 @@ export default function Planos({
       await onImportCatalogCourse?.(buildContestForRole(template, roles[0]));
       closeMode();
     } catch (error) {
-      alert(error.message || 'Não foi possível importar esse concurso.');
+      showToast(error.message || 'Não foi possível importar esse concurso.', 'error');
     } finally {
       setIsImportingCatalog(false);
     }
@@ -367,7 +368,7 @@ export default function Planos({
 
   const handleImportEdital = async () => {
     if (!iaForm.nome.trim()) {
-      alert('Digite o nome do curso para a importação.');
+      showToast('Digite o nome do curso para a importação.', 'warn');
       return;
     }
 
@@ -389,7 +390,7 @@ export default function Planos({
 
       setImportResult(result || null);
     } catch (error) {
-      alert(error.message || 'Não foi possível importar o edital.');
+      showToast(error.message || 'Não foi possível importar o edital.', 'error');
     } finally {
       setIsImporting(false);
     }
@@ -447,11 +448,7 @@ export default function Planos({
                   setSelectedCoursePlan?.(curso.plano || 'Todos');
                   setActiveTab('disciplinas');
                 }}
-                onApagar={() => {
-                  if (window.confirm(`Excluir o curso "${curso.nome}"? Essa ação não pode ser desfeita.`)) {
-                    onDeleteCourse?.(curso);
-                  }
-                }}
+                onApagar={() => { onDeleteCourse?.(curso); }}
                 onMarcarAlvo={() => {
                   const contest = myContests.find((item) => item.plano === curso.plano || item.nome === curso.nome);
                   if (contest?.id) onSetTargetContest?.(contest.id);

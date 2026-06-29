@@ -34,6 +34,7 @@ import { extractTextFromPdf } from '../lib/redacoesApi';
 import AdminPageHeader from '../components/AdminPageHeader';
 import AdminCourseTemplatesEditor from '../components/AdminCourseTemplatesEditor';
 import { useToast } from '../lib/toast';
+import { showConfirm } from '../lib/dialogs';
 import { supabase } from '../lib/supabase';
 import { loadContestDraftsFromSupabase, loadContestTemplateContent } from '../lib/contestCatalogApi';
 import { CONTEST_STATUS_OPTIONS, normalizeContestStatus } from '../lib/contestGrouping';
@@ -2011,7 +2012,7 @@ export default function AdminConcursos({
   const handleBatchDeleteDrafts = async (idsToDelete) => {
     if (!idsToDelete || idsToDelete.size === 0) return;
     const count = idsToDelete.size;
-    if (!window.confirm(`Excluir ${count} rascunho(s) selecionado(s)? Esta ação não pode ser desfeita.`)) return;
+    if (!(await showConfirm(`Excluir ${count} rascunho(s) selecionado(s)? Esta ação não pode ser desfeita.`, { title: 'Excluir rascunhos', confirmLabel: 'Excluir', danger: true }))) return;
     setBatchDeleting(true);
     try {
       const targets = localDrafts.filter((d) => idsToDelete.has(d.id));

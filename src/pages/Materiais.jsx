@@ -22,6 +22,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { supabase } from '../lib/supabase';
+import { showConfirm, showToast } from '../lib/dialogs';
 import { resolveAiHeaders } from '../lib/aiRuntime';
 import { newCard } from '../lib/fsrs';
 
@@ -246,7 +247,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   async function deleteHighlight(id) {
     const { error } = await supabase.from('material_highlights').delete().eq('id', id);
     if (error) {
-      window.alert(error.message || 'Não foi possível remover o destaque. Tente novamente.');
+      showToast(error.message || 'Não foi possível remover o destaque. Tente novamente.', 'error');
       return;
     }
     setHighlights((prev) => prev.filter((h) => h.id !== id));
@@ -268,7 +269,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   async function deleteNote(id) {
     const { error } = await supabase.from('material_notes').delete().eq('id', id);
     if (error) {
-      window.alert(error.message || 'Não foi possível remover a anotação. Tente novamente.');
+      showToast(error.message || 'Não foi possível remover a anotação. Tente novamente.', 'error');
       return;
     }
     setNotes((prev) => prev.filter((n) => n.id !== id));
@@ -284,7 +285,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
       })
       .select().single();
     if (error) {
-      window.alert(error.message || 'Não foi possível salvar a marcação. No Supabase, execute o script supabase/material_markers.sql e tente de novo.');
+      showToast(error.message || 'Não foi possível salvar a marcação. No Supabase, execute o script supabase/material_markers.sql e tente de novo.', 'error');
       return;
     }
     setMarkers((prev) => [...prev, data].sort((a, b) => {
@@ -297,7 +298,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
   async function deleteMaterialMarker(id) {
     const { error } = await supabase.from('material_markers').delete().eq('id', id);
     if (error) {
-      window.alert(error.message || 'Não foi possível remover a marcação. Tente novamente.');
+      showToast(error.message || 'Não foi possível remover a marcação. Tente novamente.', 'error');
       return;
     }
     setMarkers((prev) => prev.filter((m) => m.id !== id));
@@ -765,13 +766,14 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
   }
 
   async function handleDelete(material) {
-    if (typeof window !== 'undefined' && !window.confirm(`Remover "${material.title}" da sua biblioteca?`)) return;
+    const ok = await showConfirm(`Remover "${material.title}" da sua biblioteca?`, { title: 'Remover material', confirmLabel: 'Remover', danger: true });
+    if (!ok) return;
     // Arquivo no storage é best-effort; o banco é a fonte de verdade da lista, então só
     // removemos da UI se o delete no banco confirmar (antes sumia mesmo com falha e voltava no reload).
     await supabase.storage.from('study-materials').remove([material.storage_path]);
     const { error } = await supabase.from('study_materials').delete().eq('id', material.id);
     if (error) {
-      window.alert(error.message || 'Não foi possível remover esse material. Tente novamente.');
+      showToast(error.message || 'Não foi possível remover esse material. Tente novamente.', 'error');
       return;
     }
     setMaterials((prev) => prev.filter((m) => m.id !== material.id));

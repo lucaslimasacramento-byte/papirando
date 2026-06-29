@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Edit3, FileText, Plus, X } from 'lucide-react';
+import { showToast } from '../lib/dialogs';
 
 const DEFAULT_ROW = { id: 1, disciplina: '', topico: '', peso: 1, brancos: 0, acertos: 0, erros: 0 };
 
@@ -124,7 +125,7 @@ export default function RegistroSimuladoModal({
     const validRows = simuladoRows.filter((row) => row.disciplina && (Number(row.acertos || 0) + Number(row.erros || 0) + Number(row.brancos || 0) > 0));
 
     if (validRows.length === 0) {
-      alert('Preencha pelo menos uma disciplina com resultado.');
+      showToast('Preencha pelo menos uma disciplina com resultado.', 'warn');
       return;
     }
 
