@@ -1317,7 +1317,7 @@ function ConcursoDetalheBody({
         {contest.descricao && (
           <div style={{ marginTop: 18, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 18 }}>
             <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Resumo</p>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{contest.descricao}</p>
           </div>
         )}
 
@@ -1435,7 +1435,7 @@ function ConcursoDetalheBody({
           {(contest.etapas || contest.etapas_tags?.length > 0) && (
             <div className="pl-card" style={{ padding: 18 }}>
               <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Etapas</p>
-              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
+              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                 {contest.etapas || 'Etapas não detalhadas.'}
               </p>
               {contest.etapas_tags?.length > 0 && (
