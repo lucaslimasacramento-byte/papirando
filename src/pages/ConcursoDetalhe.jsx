@@ -5,7 +5,9 @@ import {
   BadgeCheck,
   Bookmark,
   CalendarDays,
+  Check,
   Compass,
+  CreditCard,
   DollarSign,
   ExternalLink,
   GraduationCap,
@@ -1054,7 +1056,11 @@ function ConcursoDetalheBody({
   ].filter((item) => !item.hidden);
 
   const checklistDoneCount = actionChecklist.filter((item) => item.done).length;
+  const checklistPct = actionChecklist.length > 0 ? Math.round((checklistDoneCount / actionChecklist.length) * 100) : 0;
   const logoSrc = contest?.imagem_url && !imageError ? storageThumb(contest.imagem_url, 160) : '';
+  // Cor de acento da área (borda esquerda do hero + marcadores). Navy como fallback.
+  const areaAccent = areaTheme?.accentStart || '#1e3a5f';
+  const isInscricoesAbertas = normalizedStatus === 'inscricoes_abertas';
 
   if (!contest) {
     return (
@@ -1099,80 +1105,92 @@ function ConcursoDetalheBody({
         ) : null}
       </div>
 
-      {/* Hero editorial */}
-      <div className="pl-card" style={{ padding: '24px 28px', background: `linear-gradient(135deg, ${areaTheme.accentStart || 'var(--pl-ink)'} 0%, ${areaTheme.accentEnd || 'var(--pl-ink)'} 100%)`, border: 'none', color: '#f3efe5' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 20 }}>
-          {logoSrc ? (
-            <img
-              src={logoSrc}
-              alt=""
-              onError={() => setImageError(true)}
-              style={{ width: 80, height: 80, objectFit: 'contain', flexShrink: 0, borderRadius: 10, background: 'rgba(255,255,255,0.12)' }}
-              aria-hidden
-            />
-          ) : (
-            <div style={{ width: 64, height: 64, borderRadius: 12, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <LibraryBig size={30} />
-            </div>
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', opacity: 0.65 }}>Concurso</p>
-            <h1 style={{ margin: '6px 0 0', fontSize: 28, fontWeight: 600, lineHeight: 1.1, color: '#f3efe5' }}>{contest.nome}</h1>
-            <p style={{ margin: '6px 0 0', fontSize: 14, fontWeight: 500, opacity: 0.8 }}>{contest.cargo || contest.concurso} · {contest.banca || 'Banca a definir'}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-              <span style={{ borderRadius: 999, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.1)', padding: '3px 12px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                {contest.area || 'Geral'}
-              </span>
-              <span style={{ borderRadius: 999, border: '1px solid rgba(80,220,150,0.35)', background: 'rgba(80,220,150,0.15)', padding: '3px 12px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#b7f5d4' }}>
-                {STATUS_LABELS[normalizedStatus] || 'Previsto'}
-              </span>
+      {/* Hero — ficha clara com borda de acento da área */}
+      <div className="pl-card" style={{ padding: 0, overflow: 'hidden', borderLeft: `5px solid ${areaAccent}` }}>
+        <div style={{ padding: '26px 30px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+          {/* Identidade */}
+          <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flex: 1, minWidth: 260 }}>
+            {logoSrc ? (
+              <img src={logoSrc} alt="" onError={() => setImageError(true)} style={{ width: 64, height: 64, objectFit: 'contain', flexShrink: 0, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)' }} aria-hidden />
+            ) : (
+              <div style={{ width: 56, height: 56, borderRadius: 12, background: `${areaAccent}14`, color: areaAccent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <LibraryBig size={26} />
+              </div>
+            )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 999, background: `${areaAccent}14`, border: `1px solid ${areaAccent}40`, padding: '4px 11px', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: areaAccent }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: areaAccent, display: 'inline-block' }} />
+                  {contest.area || 'Geral'}
+                </span>
+                {contest.banca ? (
+                  <span style={{ borderRadius: 999, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '4px 11px', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>{contest.banca}</span>
+                ) : null}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 999, border: isInscricoesAbertas ? '1px solid var(--pl-success-soft)' : '1px solid var(--pl-rule-2)', background: isInscricoesAbertas ? 'var(--pl-success-soft)' : 'var(--pl-bg-soft)', padding: '4px 11px', fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: isInscricoesAbertas ? 'var(--pl-success)' : 'var(--pl-ink-3)' }}>
+                  {isInscricoesAbertas ? <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--pl-success)', display: 'inline-block' }} /> : null}
+                  {STATUS_LABELS[normalizedStatus] || 'Previsto'}
+                </span>
+              </div>
+              <h1 style={{ margin: 0, fontSize: 30, fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.06, color: 'var(--pl-ink)' }}>{contest.nome}</h1>
+              <p style={{ margin: '6px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-3)' }}>{contest.cargo || contest.concurso}{contest.banca ? ` · ${contest.banca}` : ''}</p>
             </div>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-            <button
-              type="button"
-              onClick={() => onToggleFavorite?.(contest.id)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: isFavorite ? '1px solid rgba(250,100,100,0.4)' : '1px solid rgba(255,255,255,0.2)', background: isFavorite ? 'rgba(250,100,100,0.2)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: isFavorite ? '#ffb3b3' : '#f3efe5', cursor: 'pointer' }}
-            >
-              <Heart size={14} style={{ fill: isFavorite ? 'currentColor' : 'none' }} />
-              {isFavorite ? 'Favoritado' : 'Favoritar'}
-            </button>
-            <button
-              type="button"
-              onClick={() => onToggleInterested?.(contest.id)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: isInterested ? '1px solid rgba(250,180,60,0.4)' : '1px solid rgba(255,255,255,0.2)', background: isInterested ? 'rgba(250,180,60,0.2)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: isInterested ? '#ffd97d' : '#f3efe5', cursor: 'pointer' }}
-            >
-              <Bookmark size={14} style={{ fill: isInterested ? 'currentColor' : 'none' }} />
-              {isInterested ? 'Quero estudar' : 'Interesse'}
-            </button>
-            <button
-              type="button"
-              onClick={() => onSetTargetContest?.(contest.id)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: isTargetContest ? '1px solid rgba(250,220,60,0.4)' : '1px solid rgba(255,255,255,0.2)', background: isTargetContest ? 'rgba(250,220,60,0.2)' : 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: isTargetContest ? '#fff3a3' : '#f3efe5', cursor: 'pointer' }}
-            >
-              <BadgeCheck size={14} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} />
-              {isTargetContest ? 'Alvo' : 'Como alvo'}
-            </button>
+
+          {/* Ações */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'center', flexShrink: 0 }}>
             <button
               type="button"
               onClick={() => setImportConfirmOpen(true)}
               disabled={importingId === contest.id || limiteAtingido}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, background: 'rgba(255,255,255,0.95)', color: 'var(--pl-ink)', padding: '6px 14px', fontSize: 13, fontWeight: 700, border: 'none', cursor: importingId === contest.id || limiteAtingido ? 'not-allowed' : 'pointer', opacity: importingId === contest.id || limiteAtingido ? 0.6 : 1 }}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 10, background: '#1e3a5f', color: '#f3efe5', padding: '11px 20px', fontSize: 13, fontWeight: 700, border: 'none', cursor: importingId === contest.id || limiteAtingido ? 'not-allowed' : 'pointer', opacity: importingId === contest.id || limiteAtingido ? 0.6 : 1, boxShadow: '0 4px 16px rgba(30,58,95,0.28)', whiteSpace: 'nowrap' }}
             >
-              {limiteAtingido ? 'Limite' : importingId === contest.id ? '...' : 'Adicionar aos estudos'}
-              <ArrowRight size={14} />
+              {limiteAtingido ? 'Limite atingido' : importingId === contest.id ? 'Adicionando...' : 'Adicionar aos estudos'}
+              {!limiteAtingido && importingId !== contest.id ? <ArrowRight size={14} /> : null}
             </button>
-            {contest.edital_url ? (
-              <button
-                type="button"
-                onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#f3efe5', cursor: 'pointer' }}
-              >
-                Edital
-                <ExternalLink size={14} />
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button type="button" onClick={() => onToggleFavorite?.(contest.id)}
+                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isFavorite ? '1px solid rgba(220,38,38,0.35)' : '1px solid var(--pl-rule-2)', background: isFavorite ? 'rgba(220,38,38,0.08)' : 'var(--pl-bg-soft)', color: isFavorite ? '#dc2626' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <Heart size={13} style={{ fill: isFavorite ? 'currentColor' : 'none' }} />{isFavorite ? 'Favoritado' : 'Favoritar'}
               </button>
-            ) : null}
+              <button type="button" onClick={() => onSetTargetContest?.(contest.id)}
+                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isTargetContest ? `1px solid ${areaAccent}` : '1px solid var(--pl-rule-2)', background: isTargetContest ? `${areaAccent}14` : 'var(--pl-bg-soft)', color: isTargetContest ? areaAccent : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <BadgeCheck size={13} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} />{isTargetContest ? 'Alvo' : 'Definir alvo'}
+              </button>
+              <button type="button" onClick={() => onToggleInterested?.(contest.id)}
+                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isInterested ? '1px solid rgba(180,83,9,0.35)' : '1px solid var(--pl-rule-2)', background: isInterested ? 'rgba(180,83,9,0.08)' : 'var(--pl-bg-soft)', color: isInterested ? '#b45309' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <Bookmark size={13} style={{ fill: isInterested ? 'currentColor' : 'none' }} />{isInterested ? 'Interesse' : 'Interesse'}
+              </button>
+              {contest.edital_url ? (
+                <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
+                  style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  Edital<ExternalLink size={13} />
+                </button>
+              ) : null}
+            </div>
           </div>
+        </div>
+
+        {/* KPI strip com ícones */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', borderTop: '1px solid var(--pl-rule)' }}>
+          {[
+            { icon: Users, label: 'Vagas', value: contest.vagas || 'A definir', tone: areaAccent },
+            { icon: DollarSign, label: 'Salário', value: formatCurrencyBR(contest.salario), tone: 'var(--pl-success)' },
+            { icon: CreditCard, label: 'Inscrição', value: formatCurrencyBR(contest.inscricao_valor), tone: '#b45309' },
+            { icon: CalendarDays, label: 'Prova', value: formatDateBR(contest.prova_data), tone: '#1e3a5f' },
+          ].map((kpi, i, arr) => {
+            const Icon = kpi.icon;
+            return (
+              <div key={kpi.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderRight: i < arr.length - 1 ? '1px solid var(--pl-rule)' : 'none' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${kpi.tone === 'var(--pl-success)' ? 'var(--pl-success-soft)' : kpi.tone.startsWith('#') ? `${kpi.tone}14` : `${areaAccent}14`}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={15} style={{ color: kpi.tone }} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>{kpi.label}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kpi.value}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -1269,260 +1287,170 @@ function ConcursoDetalheBody({
         </div>
       )}
 
-      <div className="pl-card" style={{ overflow: 'hidden', padding: 0 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '360px minmax(0, 1fr)' }}>
-          <div style={{ borderRight: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)' }}>
-            {contest.imagem_url && !imageError ? (
-              <img
-                src={storageThumb(contest.imagem_url, 320)}
-                alt={contest.nome}
-                loading="lazy"
-                decoding="async"
-                onError={() => setImageError(true)}
-                style={{ height: '100%', minHeight: 260, width: '100%', objectFit: 'contain', background: 'var(--pl-surface)', padding: 24 }}
-              />
-            ) : (
-              <div
-                style={{ display: 'flex', minHeight: 260, width: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--pl-surface)', background: `linear-gradient(135deg, ${contest.cor || 'var(--pl-accent)'} 0%, var(--pl-accent) 100%)` }}
-              >
-                <LibraryBig size={56} />
+      {/* Alertas (prazo/contexto) — banners no estilo D */}
+      {contestAlerts.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {contestAlerts.map((alert) => (
+            <div key={alert.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 12, border: '1px solid', padding: '14px 18px', ...momentToneStyles[alert.tone] }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.75 }}>{alert.title}</p>
+                <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, lineHeight: 1.45 }}>{alert.text}</p>
               </div>
-            )}
-          </div>
-
-          <div style={{ padding: '24px 32px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-              <StatBox label="Inscrição" value={formatCurrencyBR(contest.inscricao_valor)} icon={DollarSign} />
-              <StatBox label="Nível" value={contest.escolaridade || 'A definir'} icon={GraduationCap} />
-              <StatBox label="Vagas" value={contest.vagas || 'A definir'} icon={Users} />
-              <StatBox label="Lotação" value={contest.lotacao || 'A definir'} icon={Compass} />
-            </div>
-
-            {contest.descricao && (
-              <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20 }}>
-                <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Resumo</p>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
-              </div>
-            )}
-
-            <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              <StatusPanel
-                label="Já importado"
-                value={courseMatches.length > 0 ? `${courseMatches.length} curso(s)` : 'Ainda não'}
-                tone={courseMatches.length > 0 ? 'blue' : 'gray'}
-              />
-              <StatusPanel
-                label="Disciplinas iniciadas"
-                value={String(startedSubjectsCount)}
-                tone={startedSubjectsCount > 0 ? 'green' : 'gray'}
-              />
-              <StatusPanel
-                label="Interesse"
-                value={isInterested ? 'Na sua mira' : 'Ainda não marcado'}
-                tone={isInterested ? 'amber' : 'gray'}
-              />
-            </div>
-
-            {contestMoment && (
-              <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid', padding: 20, ...momentToneStyles[contestMoment.tone] }}>
-                <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7 }}>Momento do concurso</p>
-                <p style={{ margin: '10px 0 0', fontSize: 17, fontWeight: 600 }}>{contestMoment.title}</p>
-                <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.6 }}>{contestMoment.text}</p>
-              </div>
-            )}
-
-            {courseMatches.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <button
-                  type="button"
-                  onClick={() => onOpenDisciplinas?.(contest)}
-                  className="pl-btn pl-btn-ghost"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                >
-                  Abrir disciplinas desse concurso
-                  <ArrowRight size={15} />
+              {alert.title === 'Edital disponível' && contest.edital_url ? (
+                <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, border: '1px solid currentColor', background: 'transparent', color: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                  Abrir <ExternalLink size={12} />
                 </button>
-              </div>
-            )}
-          </div>
+              ) : null}
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Status do aluno + momento */}
+      <div className="pl-card" style={{ padding: '20px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+          <StatusPanel label="Já importado" value={courseMatches.length > 0 ? `${courseMatches.length} curso(s)` : 'Ainda não'} tone={courseMatches.length > 0 ? 'blue' : 'gray'} />
+          <StatusPanel label="Disciplinas iniciadas" value={String(startedSubjectsCount)} tone={startedSubjectsCount > 0 ? 'green' : 'gray'} />
+          <StatusPanel label="Interesse" value={isInterested ? 'Na sua mira' : 'Ainda não marcado'} tone={isInterested ? 'amber' : 'gray'} />
+        </div>
+
+        {contest.descricao && (
+          <div style={{ marginTop: 18, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 18 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Resumo</p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>{contest.descricao}</p>
+          </div>
+        )}
+
+        {contestMoment && (
+          <div style={{ marginTop: 18, borderRadius: 12, border: '1px solid', padding: 18, ...momentToneStyles[contestMoment.tone] }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7 }}>Momento do concurso</p>
+            <p style={{ margin: '8px 0 0', fontSize: 16, fontWeight: 700 }}>{contestMoment.title}</p>
+            <p style={{ margin: '6px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.55 }}>{contestMoment.text}</p>
+          </div>
+        )}
+
+        {courseMatches.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <button type="button" onClick={() => onOpenDisciplinas?.(contest)} className="pl-btn pl-btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              Abrir disciplinas desse concurso
+              <ArrowRight size={15} />
+            </button>
+          </div>
+        )}
       </div>
 
-      <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1.05fr 0.95fr' }}>
-        <div className="pl-card" style={{ padding: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0, 1fr) 320px', alignItems: 'start' }}>
+        {/* Disciplinas — accordion estilo D */}
+        <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '18px 24px', borderBottom: '1px solid var(--pl-rule)' }}>
             <div>
-              <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Estrutura do edital</p>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Disciplinas e tópicos</h2>
+              <p className="pl-eyebrow" style={{ marginBottom: 4 }}>Estrutura do edital</p>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--pl-ink)' }}>Disciplinas e tópicos</h2>
             </div>
-            <span className="pl-tag">
+            <span style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
               {contest.disciplinas?.length || 0} disciplinas
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {(contest.disciplinas || []).map((disciplina) => {
+          {(contest.disciplinas || []).length === 0 ? (
+            <p style={{ padding: '20px 24px', margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Conteúdo programático ainda não cadastrado.</p>
+          ) : (
+            (contest.disciplinas || []).map((disciplina, idx, arr) => {
               const isExpanded = Boolean(expandedSubjects[disciplina.nome]);
+              const topicos = disciplina.topicos || [];
               return (
-                <div key={disciplina.nome} className="pl-card" style={{ borderRadius: 12, padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                    <div>
-                      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)' }}>{disciplina.nome}</p>
-                      <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
-                        {disciplina.topicos?.length || 0} tópicos mapeados
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExpandedSubjects((prev) => ({
-                          ...prev,
-                          [disciplina.nome]: !prev[disciplina.nome],
-                        }))
-                      }
-                      style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 8, color: 'var(--pl-ink-2)', cursor: 'pointer' }}
-                    >
-                      <Plus size={16} style={{ transform: isExpanded ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
-                    </button>
-                  </div>
-
+                <div key={disciplina.nome} style={{ borderBottom: idx < arr.length - 1 ? '1px solid var(--pl-rule)' : 'none' }}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedSubjects((prev) => ({ ...prev, [disciplina.nome]: !prev[disciplina.nome] }))}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 24px', background: isExpanded ? `${areaAccent}08` : 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer' }}
+                  >
+                    <span style={{ width: 8, height: 8, borderRadius: 2, background: areaAccent, flexShrink: 0, display: 'inline-block' }} />
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{disciplina.nome}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-3)', whiteSpace: 'nowrap' }}>{topicos.length} tópico{topicos.length !== 1 ? 's' : ''}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: 'var(--pl-ink-4)', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }}>
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
                   {isExpanded && (
-                    <div style={{ marginTop: 16, borderTop: '1px solid var(--pl-rule)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {(disciplina.topicos || []).length > 0 ? (
-                        (disciplina.topicos || []).map((topico) => (
-                          <div
-                            key={topico.id || topico.nome}
-                            style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '8px 12px', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}
-                          >
-                            {topico.nome}
-                          </div>
-                        ))
-                      ) : (
-                        <div style={{ borderRadius: 10, border: '1px dashed var(--pl-rule-2)', background: 'var(--pl-surface)', padding: '8px 12px', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
-                          Nenhum tópico detalhado ainda.
+                    <div style={{ padding: '0 24px 16px 44px' }}>
+                      {topicos.length > 0 ? (
+                        <div style={{ borderTop: `2px solid ${areaAccent}22`, paddingTop: 12, display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                          {topicos.map((topico) => (
+                            <span key={topico.id || topico.nome} style={{ padding: '5px 11px', borderRadius: 7, border: `1px solid ${areaAccent}30`, background: `${areaAccent}0d`, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+                              {topico.nome}
+                            </span>
+                          ))}
                         </div>
+                      ) : (
+                        <p style={{ margin: '12px 0 0', fontSize: 13, color: 'var(--pl-ink-3)', fontStyle: 'italic' }}>Nenhum tópico detalhado ainda.</p>
                       )}
                     </div>
                   )}
                 </div>
               );
-            })}
-          </div>
+            })
+          )}
         </div>
 
-        <div className="pl-card" style={{ padding: 24 }}>
-          <div style={{ marginBottom: 20 }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Etapas e contexto</p>
-            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Leitura rápida</h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <InfoCard label="Banca" value={contest.banca || 'A definir'} />
-            <InfoCard label="Concurso" value={contest.concurso || contest.nome} />
-            <InfoCard label="Cargo" value={contest.cargo || 'A definir'} />
-            <InfoCard label="Área" value={contest.area || 'Geral'} />
-          </div>
-
-          {contestAlerts.length > 0 && (
-            <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20 }}>
-              <p className="pl-eyebrow" style={{ marginBottom: 16 }}>Alertas do concurso</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {contestAlerts.map((alert) => (
-                  <div
-                    key={alert.title}
-                    style={{ borderRadius: 10, border: '1px solid', padding: '16px', ...momentToneStyles[alert.tone] }}
-                  >
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{alert.title}</p>
-                    <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{alert.text}</p>
-                  </div>
-                ))}
-              </div>
+        {/* Sidebar — checklist + agenda + etapas (estilo D) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Checklist */}
+          <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '15px 18px', borderBottom: '1px solid var(--pl-rule)' }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Checklist</p>
+              <span style={{ borderRadius: 999, background: `${areaAccent}14`, color: areaAccent, padding: '3px 9px', fontSize: 10, fontWeight: 700 }}>{checklistDoneCount}/{actionChecklist.length}</span>
             </div>
-          )}
-
-          <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 20 }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 16 }}>Agenda essencial</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              {agendaItems.map((item) => (
-                <div key={item.label} style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
-                  <p style={{ margin: 0, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>{item.label}</p>
-                  <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', padding: 20 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-              <div>
-                <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Próximos passos</p>
-                <p style={{ margin: 0, fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>Checklist de acompanhamento</p>
-              </div>
-              <span className="pl-tag pl-tag-accent">
-                {checklistDoneCount}/{actionChecklist.length} concluído(s)
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ height: 3, background: 'var(--pl-bg-soft)' }}><div style={{ height: 3, background: areaAccent, width: `${checklistPct}%`, transition: 'width .2s' }} /></div>
+            <div style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {actionChecklist.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => onToggleContestTask?.(contest.id, item.key)}
-                  style={{
-                    display: 'flex', width: '100%', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
-                    borderRadius: 10, border: '1px solid', padding: 16, textAlign: 'left', cursor: 'pointer',
-                    ...(item.done
-                      ? { borderColor: 'var(--pl-success)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' }
-                      : { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink)' })
-                  }}
-                >
-                  <div>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{item.label}</p>
-                    <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>{item.hint}</p>
-                  </div>
-                  <span
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 24, height: 24,
-                      borderRadius: 999, border: '1px solid', padding: '0 8px', fontSize: 11, fontWeight: 600, flexShrink: 0,
-                      ...(item.done
-                        ? { borderColor: 'var(--pl-success)', background: 'var(--pl-surface)', color: 'var(--pl-success)' }
-                        : { borderColor: 'var(--pl-rule-2)', background: 'var(--pl-surface)', color: 'var(--pl-ink-3)' })
-                    }}
-                  >
-                    {item.done ? 'OK' : ''}
+                <button key={item.key} type="button" onClick={() => onToggleContestTask?.(contest.id, item.key)}
+                  title={item.hint}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '6px 0', cursor: 'pointer' }}>
+                  <span style={{ width: 20, height: 20, borderRadius: 999, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: item.done ? 'none' : '1.5px solid var(--pl-rule-strong)', background: item.done ? 'var(--pl-success)' : 'var(--pl-surface)' }}>
+                    {item.done ? <Check size={11} color="#fff" strokeWidth={3} /> : null}
                   </span>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink)', textDecoration: item.done ? 'line-through' : 'none', opacity: item.done ? 0.55 : 1 }}>{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Agenda */}
+          <div className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ padding: '15px 18px', borderBottom: '1px solid var(--pl-rule)' }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Agenda</p>
+            </div>
+            <div style={{ padding: '6px 18px 12px' }}>
+              {agendaItems.map((item, i, arr) => (
+                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid var(--pl-rule)' : 'none' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{item.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', textAlign: 'right' }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Etapas + TAF */}
           {(contest.etapas || contest.etapas_tags?.length > 0) && (
-            <div style={{ marginTop: 24, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 20 }}>
-              <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Etapas</p>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)' }}>
+            <div className="pl-card" style={{ padding: 18 }}>
+              <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Etapas</p>
+              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
                 {contest.etapas || 'Etapas não detalhadas.'}
               </p>
-
               {contest.etapas_tags?.length > 0 && (
-                <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                   {contest.etapas_tags.map((tag) => (
-                    <span key={tag} className="pl-tag pl-tag-accent">
-                      {STAGE_LABELS[tag] || tag}
-                    </span>
+                    <span key={tag} className="pl-tag pl-tag-accent" style={{ fontSize: 10 }}>{STAGE_LABELS[tag] || tag}</span>
                   ))}
                 </div>
               )}
-
               {contest.taf_itens?.length > 0 && (
-                <div style={{ marginTop: 16, borderRadius: 10, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', padding: 16 }}>
-                  <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-accent)' }}>Itens do TAF</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ marginTop: 14, borderRadius: 10, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', padding: 14 }}>
+                  <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-accent)' }}>Itens do TAF</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                     {contest.taf_itens.map((item) => (
-                      <span key={item} className="pl-tag">
-                        {item}
-                      </span>
+                      <span key={item} className="pl-tag" style={{ fontSize: 10 }}>{item}</span>
                     ))}
                   </div>
                 </div>

@@ -109,7 +109,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 |---|---|---|---|
 | Concursos Disponíveis | `ConcursosDisponiveis.jsx` | 🔧 | Código auditado ✅ (off-by-one cargos, dark mode estados vazios, código morto). Flag: import/add sem catch |
 | ~~Meus Concursos~~ | ~~`MeusConcursos.jsx`~~ | ✅ | REMOVIDO — página morta (não renderizada); coberto por Objetivos |
-| Detalhe do Concurso | `ConcursoDetalhe.jsx` | 🔧 | Código auditado ✅ (fuso dias-para-prova, import morto). Flag: cores hardcoded no hero (polish) |
+| Detalhe do Concurso | `ConcursoDetalhe.jsx` | ✅ | Código auditado ✅ (fuso dias-para-prova, import morto). Redesign variante D aplicado ✅ — hero ficha clara com borda de acento da área, KPI strip com ícones (vagas/salário/inscrição/prova), grid 2 colunas (disciplinas accordion + sidebar checklist/agenda/etapas), alertas e momento no estilo D. Toda a lógica preservada (papéis, favoritar/alvo/interesse, import, accordion, tracker, relacionados). Compila limpo (esbuild) e todas as referências resolvem |
 | Edital | `Edital.jsx` | 🔧 | Código auditado ✅ (#1 validação: tamanho mínimo + estado "não consegui extrair" + IA sem dados úteis). 🚧 DECISÃO #2: "Importar com IA" só analisa, não importa disciplinas (mesmo handler de "Analisar") — wiring de feature pendente |
 | Questão de Edital | `EditalQuestao.jsx` | 🔧 | Código auditado ✅ (filtro de prioridade escondia "altíssima"; banca exibida com chave errada `bancaLabel`→`banca`; removido TAB_ITEMS + 3 componentes mortos + 9 imports mortos). Flag: `matchesTopicHistory` includes bidirecional pode inflar tempo por tópico de nome genérico (regra de negócio) |
 | Disciplinas | `Disciplinas.jsx` | ✅ | — |
