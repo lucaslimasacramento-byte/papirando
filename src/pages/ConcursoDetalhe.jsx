@@ -55,6 +55,23 @@ const fmtDateBR = (v) => {
   return y && m && d ? `${d}/${m}/${y}` : String(v);
 };
 
+// Sanitiza URLs coladas com lixo (link markdown [txt](url), colchetes, aspas,
+// espaços) e só aceita http(s). Retorna '' se não der pra extrair URL válida.
+const sanitizeHttpUrl = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  let raw = value.trim();
+  const md = raw.match(/\]\((https?:\/\/[^\s)]+)\)/i);
+  if (md) raw = md[1];
+  const m = raw.match(/https?:\/\/[^\s)\]"'<>]+/i);
+  if (!m) return '';
+  try {
+    const url = new URL(m[0]);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch {
+    return '';
+  }
+};
+
 // Roteador: ENEM e vestibular têm layout próprio; concurso segue o corpo completo.
 export default function ConcursoDetalhe(props) {
   if (props?.contest?.tipo === 'enem') return <EnemDetalhe {...props} />;
@@ -300,8 +317,8 @@ export function EnemDetalhe({
                   {isFavorite ? 'Favoritado' : 'Favoritar'}
                 </button>
               )}
-              {contest?.edital_url && (
-                <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
+              {sanitizeHttpUrl(contest?.edital_url) && (
+                <button type="button" onClick={() => window.open(sanitizeHttpUrl(contest?.edital_url), '_blank', 'noopener,noreferrer')}
                   style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 8, border: '1px solid rgba(243,239,229,0.18)', background: 'rgba(243,239,229,0.07)', padding: '7px 12px', fontSize: 12, fontWeight: 600, color: 'rgba(243,239,229,0.75)', cursor: 'pointer' }}>
                   <ExternalLink size={13} />
                   Edital
@@ -651,9 +668,9 @@ function VestibularDetalhe({
   const readings = Array.isArray(meta.required_readings) ? meta.required_readings.filter(Boolean) : [];
   const entryMethods = Array.isArray(meta.entry_methods) ? meta.entry_methods.filter(Boolean) : [];
   const about = meta.about_institution || '';
-  const site = meta.official_url || contest?.official_url || '';
-  const regUrl = meta.registration_url || '';
-  const editalUrl = contest?.edital_url || meta.edital_url || '';
+  const site = sanitizeHttpUrl(meta.official_url || contest?.official_url || '');
+  const regUrl = sanitizeHttpUrl(meta.registration_url || '');
+  const editalUrl = sanitizeHttpUrl(contest?.edital_url || meta.edital_url || '');
 
   const facts = [
     { label: 'Data da prova', value: fmtDateBR(contest?.prova_data) || 'A definir' },
@@ -967,7 +984,7 @@ function ConcursoDetalheBody({
       });
     }
 
-    if (contest.edital_url) {
+    if (sanitizeHttpUrl(contest.edital_url)) {
       alerts.push({
         title: 'Edital disponível',
         text: 'O PDF oficial já está anexado e pode ser consultado a qualquer momento.',
@@ -1058,6 +1075,7 @@ function ConcursoDetalheBody({
   const checklistDoneCount = actionChecklist.filter((item) => item.done).length;
   const checklistPct = actionChecklist.length > 0 ? Math.round((checklistDoneCount / actionChecklist.length) * 100) : 0;
   const logoSrc = contest?.imagem_url && !imageError ? storageThumb(contest.imagem_url, 160) : '';
+  const editalHref = sanitizeHttpUrl(contest?.edital_url);
   // Cor de acento da área (borda esquerda do hero + marcadores). Navy como fallback.
   const areaAccent = areaTheme?.accentStart || '#1e3a5f';
   const isInscricoesAbertas = normalizedStatus === 'inscricoes_abertas';
@@ -1160,8 +1178,8 @@ function ConcursoDetalheBody({
                 style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isInterested ? '1px solid rgba(180,83,9,0.35)' : '1px solid var(--pl-rule-2)', background: isInterested ? 'rgba(180,83,9,0.08)' : 'var(--pl-bg-soft)', color: isInterested ? '#b45309' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 <Bookmark size={13} style={{ fill: isInterested ? 'currentColor' : 'none' }} />{isInterested ? 'Interesse' : 'Interesse'}
               </button>
-              {contest.edital_url ? (
-                <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')}
+              {editalHref ? (
+                <button type="button" onClick={() => window.open(editalHref, '_blank', 'noopener,noreferrer')}
                   style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   Edital<ExternalLink size={13} />
                 </button>
@@ -1296,8 +1314,8 @@ function ConcursoDetalheBody({
                 <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.75 }}>{alert.title}</p>
                 <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, lineHeight: 1.45 }}>{alert.text}</p>
               </div>
-              {alert.title === 'Edital disponível' && contest.edital_url ? (
-                <button type="button" onClick={() => window.open(contest.edital_url, '_blank', 'noopener,noreferrer')} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, border: '1px solid currentColor', background: 'transparent', color: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              {alert.title === 'Edital disponível' && editalHref ? (
+                <button type="button" onClick={() => window.open(editalHref, '_blank', 'noopener,noreferrer')} style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, border: '1px solid currentColor', background: 'transparent', color: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                   Abrir <ExternalLink size={12} />
                 </button>
               ) : null}
