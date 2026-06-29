@@ -33,7 +33,6 @@ export default function Edital({
   setEditingDiscipline,
   setRegistroEstudoModalOpen,
   setLinkModalOpen,
-  onImportDisciplinas,
   onLoadFromObjetivo,
 }) {
   const [aiLoading, setAiLoading] = useState(false);
@@ -167,33 +166,6 @@ export default function Edital({
     }
   };
 
-  // "Importar com IA": analisa e, se houver disciplinas, adiciona-as ao plano do concurso ativo.
-  const handleImportarComIA = async () => {
-    if (!hasEditalText) return;
-    setAiLoading(true);
-    setImportMsg('');
-    try {
-      const resultado = await runAnalysis();
-      if (!resultado) return;
-      const disciplinas = Array.isArray(resultado.disciplinas) ? resultado.disciplinas : [];
-      if (disciplinas.length === 0) {
-        setAiError('A IA leu o edital mas não identificou disciplinas para importar. Você pode adicionar manualmente.');
-        return;
-      }
-      const out = await onImportDisciplinas?.({
-        disciplinas,
-        plano: concursoSelecionado?.plano || 'Geral',
-      });
-      const nDisc = out?.disciplinasCriadas ?? disciplinas.length;
-      const nTop = out?.topicosCriados ?? 0;
-      setImportMsg(`${nDisc} disciplina(s) importada(s)${nTop ? ` com ${nTop} tópico(s)` : ''}.`);
-    } catch (err) {
-      setAiError(err?.message || 'Não foi possível importar as disciplinas do edital.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   const [loadingObjetivo, setLoadingObjetivo] = useState(false);
 
   // Abastece o edital com o conteúdo programático do próprio objetivo vinculado.
@@ -260,9 +232,6 @@ export default function Edital({
 
           {editalAtivo.length === 0 ? (
             <EditalEmptyState
-              canAnalyze={hasEditalText}
-              loading={aiLoading}
-              onImportarIA={handleImportarComIA}
               onAdicionar={() => setEditingDiscipline?.({ plano: concursoSelecionado?.plano || 'Geral' })}
               hasObjetivo={Boolean(concursoSelecionado && onLoadFromObjetivo)}
               objetivoNome={concursoSelecionado?.nome || concursoSelecionado?.concurso || ''}
@@ -580,7 +549,7 @@ function Checkbox({ checked }) {
   );
 }
 
-function EditalEmptyState({ canAnalyze, loading, onImportarIA, onAdicionar, hasObjetivo, objetivoNome, loadingObjetivo, onCarregarObjetivo }) {
+function EditalEmptyState({ onAdicionar, hasObjetivo, objetivoNome, loadingObjetivo, onCarregarObjetivo }) {
   return (
     <section className="pl-card-paper" style={{ padding: 32 }}>
       <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--pl-ink)', color: 'var(--pl-bg)', display: 'grid', placeItems: 'center' }}>
@@ -604,16 +573,6 @@ function EditalEmptyState({ canAnalyze, loading, onImportarIA, onAdicionar, hasO
           <Upload size={14} />
           Adicionar manualmente
         </button>
-        {/* Leitura por IA só quando há texto de edital para analisar (raro no fluxo do aluno). */}
-        {canAnalyze && (
-          <span className="btn-ai-aura">
-            <button type="button" className="pl-btn-ai pl-btn" onClick={onImportarIA} disabled={loading} style={{ opacity: loading ? 0.62 : 1 }}>
-              {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              Importar com IA
-              <span className="beta">beta</span>
-            </button>
-          </span>
-        )}
       </div>
     </section>
   );
