@@ -11,7 +11,7 @@ import {
   Trophy,
   Zap,
 } from 'lucide-react';
-import { buildStudyHistoryOverview, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
+import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
 export default function Dashboard({
   openTimerSetup,
@@ -20,6 +20,7 @@ export default function Dashboard({
   agendaAmanha,
   historicoReal,
   userDisplayName = '',
+  metaHorasSemana,
   targetContest,
   studyRecommendation = null,
   dailyRoutine = [],
@@ -36,9 +37,10 @@ export default function Dashboard({
   const safeRoutine = Array.isArray(dailyRoutine) ? dailyRoutine.slice(0, 6) : [];
   const safeReviewQueue = Array.isArray(studyRecommendation?.reviewQueue) ? studyRecommendation.reviewQueue : [];
 
+  const dayGoalMinutes = dailyGoalMinutesFromWeeklyHours(metaHorasSemana);
   const historyOverview = useMemo(
-    () => buildStudyHistoryOverview(safeHistorico, { dayGoalMinutes: 180 }),
-    [safeHistorico]
+    () => buildStudyHistoryOverview(safeHistorico, { dayGoalMinutes }),
+    [safeHistorico, dayGoalMinutes]
   );
 
   const dayContextLabel = useMemo(

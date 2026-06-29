@@ -98,6 +98,15 @@ export function getHistoryRange(history = [], days = 7, referenceDate = new Date
   });
 }
 
+// Converte a meta semanal de horas do perfil (`meta_horas_semana`, definida no
+// onboarding, default 18h) numa meta DIÁRIA de minutos. Piso de 30 min para
+// evitar metas absurdamente baixas. Fallback 180 quando não há perfil.
+export function dailyGoalMinutesFromWeeklyHours(metaHorasSemana) {
+  const weekly = Number(metaHorasSemana);
+  if (!Number.isFinite(weekly) || weekly <= 0) return 180;
+  return Math.max(30, Math.round((weekly * 60) / 7));
+}
+
 export function buildStudyHistoryOverview(history = [], options = {}) {
   const safeHistory = Array.isArray(history) ? history : [];
   const dayGoalMinutes = Math.max(1, Number(options.dayGoalMinutes || 180));

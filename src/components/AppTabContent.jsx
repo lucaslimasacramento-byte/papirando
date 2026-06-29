@@ -350,6 +350,7 @@ export default function AppTabContent(props) {
         openTimerSetup={openTimerSetup}
         setActiveTab={setActiveTab}
         userDisplayName={greetingName}
+        metaHorasSemana={effectiveProfile?.meta_horas_semana}
         progGeralEdital={progGeralEdital}
         agendaHoje={agendaHoje}
         agendaAmanha={agendaAmanha}
@@ -876,6 +877,7 @@ export default function AppTabContent(props) {
     return (
         <Sessoes
           currentUserId={currentUserId}
+          metaHorasSemana={effectiveProfile?.meta_horas_semana}
           customFocusTime={customFocusTime}
         setCustomFocusTime={setCustomFocusTime}
         customPauseTime={customPauseTime}

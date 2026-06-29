@@ -11,7 +11,7 @@ import {
   Target,
   Timer,
 } from 'lucide-react';
-import { buildStudyHistoryOverview } from '../lib/studyAnalytics';
+import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours } from '../lib/studyAnalytics';
 import { supabase } from '../lib/supabase';
 
 const METODOS = [
@@ -23,6 +23,7 @@ const METODOS = [
 
 export default function Sessoes({
   currentUserId = '',
+  metaHorasSemana,
   customFocusTime,
   startSpecificTimer,
   openTimerSetup,
@@ -43,9 +44,10 @@ export default function Sessoes({
   const [recentSessions, setRecentSessions] = useState([]);
   const [recentSessionsError, setRecentSessionsError] = useState(false);
 
+  const dayGoalMinutes = dailyGoalMinutesFromWeeklyHours(metaHorasSemana);
   const historyOverview = useMemo(
-    () => buildStudyHistoryOverview(historicoReal, { dayGoalMinutes: 180 }),
-    [historicoReal]
+    () => buildStudyHistoryOverview(historicoReal, { dayGoalMinutes }),
+    [historicoReal, dayGoalMinutes]
   );
   const primaryRecommendation = studyRecommendation?.primary || null;
   const urgentReviews = Array.isArray(studyRecommendation?.reviewQueue)
