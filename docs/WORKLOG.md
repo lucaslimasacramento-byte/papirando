@@ -83,7 +83,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 |---|---|---|---|
 | Materiais (upload + processamento) | `Materiais.jsx` | 🔧 | Código auditado ✅ (cota só após upload OK). Falta: testar upload real + endurecer error-handling de deletes/leituras |
 | Questões (banco de questões) | `Questoes.jsx` | 🔧 | Código auditado ✅ (token de borda + no-op + código morto). Falta: confirmar trava do limite diário no backend |
-| Simulados | `Simulados.jsx` | 🔧 | Código auditado ✅ (gating consistente, placeholders). Falta: mover incremento de cota p/ o save do modal; ranking fake |
+| Simulados | `Simulados.jsx` | 🔧 | Código auditado ✅ (gating consistente). Ranking JÁ É REAL ✅ (RPC `get_simulados_leaderboard` + `question_answers` via `simuladosRankingData.js`) — flag "ranking fake" estava desatualizada. Falta confirmar: incremento de cota no momento certo (save do modal) |
 | Flashcards | `Flashcards.jsx` | 🔧 | Código auditado ✅ (try/catch nos handlers, métricas falsas removidas). SRS correto. Falta: testar geração IA no app |
 | Redações (correção por IA) | `Redacoes.jsx` | ✅ | Código auditado — sólido. Bug de cota confirmado corrigido (incrementa só após IA), save com retry+feedback, upload validado |
 | Revisões | `Revisoes.jsx` | ✅ | Código auditado — sólido (4 imports órfãos removidos). Falta: catch silencioso da fila não dá feedback; card "Histórico" é placeholder estático |
@@ -130,13 +130,15 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 ### 🔴 BLOCO 7 — Pós-lançamento (não bloqueia MVP)
 
+> ✅ **JÁ ESCONDIDAS no lançamento** via `src/lib/launchConfig.js` (`LAUNCH_HIDDEN_TABS`: conciliar, bem_estar, audiobooks, instagram, aplicativos). O código permanece; some do menu + busca enquanto `VITE_LAUNCH_MVP !== 'false'`. Voltam ao remover do set.
+
 | Tela | Arquivo | Status | Motivo |
 |---|---|---|---|
-| Audiobooks | `Audiobooks.jsx` | ⏳ | Conteúdo ainda não populado |
-| Bem-Estar | `BemEstar.jsx` | ⏳ | Feature secundária |
-| Conciliador | `Conciliador.jsx` | ⏳ | Feature complexa, pós-MVP |
-| Instagram | `Instagram.jsx` | ⏳ | Integração opcional |
-| Aplicativos | `Aplicativos.jsx` | ⏳ | Diretório pós-MVP |
+| Audiobooks | `Audiobooks.jsx` | ✅ NÃO LANÇA | Escondida (launchConfig). Conteúdo ainda não populado |
+| Bem-Estar | `BemEstar.jsx` | ✅ NÃO LANÇA | Escondida (launchConfig). Feature secundária |
+| Conciliador | `Conciliador.jsx` | ✅ NÃO LANÇA | Escondida (launchConfig). Feature complexa, pós-MVP |
+| Instagram | `Instagram.jsx` | ✅ NÃO LANÇA | Escondida (launchConfig). Integração opcional |
+| Aplicativos | `Aplicativos.jsx` | ✅ NÃO LANÇA | Escondida (launchConfig). Diretório pós-MVP |
 
 ---
 
@@ -173,7 +175,7 @@ Itens que já entram nessa revisão com pendência conhecida:
 - **Esquadrões** — partes mock desativadas; decidir se a feature reduzida FICA ou se NÃO LANÇA inteira.
 - **Edital** — decisão #2 (botão "Importar com IA" só analisa, não importa disciplinas).
 - **Planos** — decisão #4 (formatSalario em faixas salariais).
-- **Bloco 7** (Audiobooks, Bem-Estar, Conciliador, Instagram, Aplicativos) — confirmar quais ficam fora (NÃO LANÇA) no MVP.
+- ~~**Bloco 7** (Audiobooks, Bem-Estar, Conciliador, Instagram, Aplicativos)~~ — ✅ RESOLVIDO: todas NÃO LANÇAM, escondidas via `launchConfig.js`.
 - Revisar features pela metade flagadas nos blocos 2–4 (cronograma IA, Ciclos, Lembretes, Simulados) — FICA / NÃO LANÇA.
 
 Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida no menu/navegação.
