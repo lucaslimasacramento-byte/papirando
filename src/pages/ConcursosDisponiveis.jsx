@@ -1250,7 +1250,7 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, sel
     { label: hasMultipleRoles ? 'Inscrições' : 'Inscrição', value: formatCurrencyBR(concurso.inscricao_valor), tone: 'warn' },
     { label: 'Nível', value: concurso.escolaridade || 'A definir', tone: 'accent' },
     { label: hasMultipleRoles ? 'Vagas totais' : 'Vagas', value: concurso.vagas || 'A definir' },
-    { label: hasMultipleRoles ? 'Cargos' : 'Disciplinas', value: hasMultipleRoles ? cargos.length : concurso.disciplinas?.length || 0 },
+    { label: hasMultipleRoles ? 'Cargos' : 'Disciplinas', value: hasMultipleRoles ? cargos.length : (concurso.disciplinas?.length || concurso.subjects_count || 0) },
   ].filter((item) => item.value !== '' && item.value != null);
 
   return (
@@ -1587,7 +1587,7 @@ function ContestPreviewModal({
               <InfoPill icon={GraduationCap} label={contest.escolaridade || 'Nível a definir'} />
               {contest.vagas && <InfoPill icon={Users} label={contest.vagas} />}
               {contest.lotacao && <InfoPill icon={Compass} label={contest.lotacao} />}
-              <InfoPill icon={Layers3} label={`${contest.disciplinas?.length || 0} disciplinas`} />
+              <InfoPill icon={Layers3} label={`${contest.disciplinas?.length || contest.subjects_count || 0} disciplinas`} />
               <InfoPill icon={BadgeCheck} label={`${topicosCount} tópicos`} />
             </div>
           </div>
@@ -1646,7 +1646,7 @@ function ContestPreviewModal({
                   <h4 style={{ fontSize: 18, fontWeight: 600, color: 'var(--pl-ink)' }}>Disciplinas do concurso</h4>
                 </div>
                 <span style={{ borderRadius: 999, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '4px 12px', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
-                  {contest.disciplinas?.length || 0} disciplinas
+                  {contest.disciplinas?.length || contest.subjects_count || 0} disciplinas
                 </span>
               </div>
 

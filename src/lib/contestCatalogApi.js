@@ -96,6 +96,9 @@ export function normalizeContestTemplate(template, index = 0) {
     registration_start: template.registration_start || null,
     registration_end: template.registration_end || null,
     meta: template.meta && typeof template.meta === 'object' ? template.meta : {},
+    // Contagem denormalizada (trigger no banco) — a lista vem sem disciplinas,
+    // então o card usa subjects_count para mostrar o total sem carregá-las.
+    subjects_count: Number(template.subjects_count ?? (Array.isArray(disciplinas) ? disciplinas.length : 0)) || 0,
     disciplinas,
   };
 }
