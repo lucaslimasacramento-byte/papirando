@@ -2776,12 +2776,9 @@ export default function App() {
         return;
       }
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
+      // Usa o usuário já em sessão (sem ida à rede do auth.getUser()).
+      const user = currentAuthUser;
+      if (!user) {
         if (!ignore) setCurrentProfile(null);
         return;
       }
@@ -2872,7 +2869,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [isAuthenticated, currentUserEmail, currentUserId]);
+  }, [isAuthenticated, currentUserEmail, currentUserId, currentAuthUser]);
 
   useEffect(() => {
     let ignore = false;
@@ -3364,9 +3361,7 @@ export default function App() {
     }));
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = currentAuthUser;
 
       if (user?.id) {
         await supabase.auth.updateUser({
@@ -4645,12 +4640,8 @@ export default function App() {
       return novoCurso;
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) throw userError;
+    // Usa o usuário em sessão (sem ida à rede do auth.getUser()).
+    const user = currentAuthUser;
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
@@ -5366,12 +5357,8 @@ export default function App() {
       }).catch(console.warn);
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) throw userError;
+    // Usa o usuário em sessão (sem ida à rede do auth.getUser()).
+    const user = currentAuthUser;
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
@@ -5510,12 +5497,8 @@ export default function App() {
       origem: 'ia',
     });
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) throw userError;
+    // Usa o usuário em sessão (sem ida à rede do auth.getUser()).
+    const user = currentAuthUser;
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const novasDisciplinas = [];
@@ -5599,12 +5582,8 @@ export default function App() {
       origem: 'ia',
     });
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) throw userError;
+    // Usa o usuário em sessão (sem ida à rede do auth.getUser()).
+    const user = currentAuthUser;
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const novasDisciplinas = [];
@@ -5673,11 +5652,7 @@ export default function App() {
       throw new Error('A IA não identificou disciplinas para importar.');
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
+    const user = currentAuthUser;
     if (!user) throw new Error('Sessão expirada. Faça login novamente.');
 
     const planoAlvo = String(plano || '').trim() || 'Geral';
