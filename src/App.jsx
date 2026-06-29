@@ -4983,7 +4983,14 @@ export default function App() {
         accessToken: adminSession?.access_token || currentUserAccessToken,
         adminEmail: adminSession?.user?.email || currentUserEmail || currentProfile?.email || '',
       });
-      await refreshContestLibrary();
+      // Refresh é best-effort: uma falha aqui NÃO pode invalidar um save que já deu
+      // certo (antes, um hiccup no reload derrubava o loop de "Salvar todos" e o
+      // 2º cargo do concurso se perdia).
+      try {
+        await refreshContestLibrary();
+      } catch (refreshError) {
+        console.warn('[contest_templates] refresh pós-save falhou (save OK):', refreshError?.message || refreshError);
+      }
       return saved;
     } catch (apiError) {
       console.error('[contest_templates] API admin falhou:', apiError?.message || apiError);

@@ -1758,21 +1758,47 @@ export default function AdminConcursos({
     if (contestFormOptions.length <= 1) return;
     setIsSaving(true);
 
+    // Cada opção é salva de forma INDEPENDENTE: se uma falhar (ou o refresh pós-save
+    // der hiccup), as outras ainda são tentadas. Antes, um único try/catch em volta
+    // do loop abortava tudo na 1ª falha — por isso só 1 cargo (ou Soldado ou Oficial)
+    // sobrevivia. Falhas são reportadas por cargo com o erro real.
+    const saved = [];
+    const failed = [];
+
     try {
       for (const [index, template] of contestFormOptions.entries()) {
         const payload = normalizeImportedTemplateToPayload(template, index);
-        if (!payload.nome) continue;
-        await onCreateTemplate?.(payload);
+        const label = payload.nome || template?.nome || template?.cargo || `Opção ${index + 1}`;
+        if (!payload.nome) {
+          failed.push({ label, reason: 'sem nome identificado' });
+          continue;
+        }
+        try {
+          await onCreateTemplate?.(payload);
+          saved.push(label);
+        } catch (error) {
+          failed.push({ label, reason: error?.message || 'erro desconhecido' });
+        }
       }
+    } finally {
+      setIsSaving(false);
+    }
 
-      success(`${contestFormOptions.length} cadastro(s) salvos no catálogo. Concursos diferentes ficam separados; cargos do mesmo concurso ficam agrupados.`);
+    if (saved.length > 0) {
+      success(
+        `${saved.length} cadastro(s) salvos: ${saved.join(', ')}.` +
+        (failed.length === 0 ? ' Cargos do mesmo concurso ficam agrupados no mesmo card.' : '')
+      );
       resetForm();
       setContestFormOptions([]);
       setContestFormImportStatus('');
-    } catch (error) {
-      toastError(error.message || 'Não foi possível salvar todos os cargos.', 'Erro ao salvar');
-    } finally {
-      setIsSaving(false);
+    }
+
+    if (failed.length > 0) {
+      toastError(
+        `${failed.length} não salvo(s): ${failed.map((f) => `${f.label} — ${f.reason}`).join(' · ')}`,
+        'Falha ao salvar parte dos cargos',
+      );
     }
   };
 
