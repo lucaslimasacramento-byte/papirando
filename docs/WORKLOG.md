@@ -70,7 +70,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Dashboard | `Dashboard.jsx` | 🔧 | Código auditado ✅ (mobile corrigido). Falta: "Meta diária" usa 180min fixo (não a meta real) + validar dados no app |
+| Dashboard | `Dashboard.jsx` | 🔧 | Código auditado ✅ (mobile corrigido). "Meta diária" CORRIGIDA ✅ — deriva de `meta_horas_semana` do perfil via `dailyGoalMinutesFromWeeklyHours` (semana×60/7, piso 30, fallback 180); aplicado no Dashboard e Sessões. Falta só: validar dados no app (browser) |
 | Estatísticas | `Estatisticas.jsx` | 🔧 | Código auditado ✅ (simulados placeholder ocultados). Falta: validar gráficos com dados reais |
 | Histórico | `Historico.jsx` | ✅ | — |
 | Sessões de Estudo | `Sessoes.jsx` | 🔧 | Código auditado ✅ (aba "Guiada" morta removida). Falta: validar timer/gravação no app |
@@ -83,7 +83,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 |---|---|---|---|
 | Materiais (upload + processamento) | `Materiais.jsx` | 🔧 | Código auditado ✅ (cota só após upload OK). Falta: testar upload real + endurecer error-handling de deletes/leituras |
 | Questões (banco de questões) | `Questoes.jsx` | 🔧 | Código auditado ✅ (token de borda + no-op + código morto). Falta: confirmar trava do limite diário no backend |
-| Simulados | `Simulados.jsx` | 🔧 | Código auditado ✅ (gating consistente). Ranking JÁ É REAL ✅ (RPC `get_simulados_leaderboard` + `question_answers` via `simuladosRankingData.js`) — flag "ranking fake" estava desatualizada. Falta confirmar: incremento de cota no momento certo (save do modal) |
+| Simulados | `Simulados.jsx` | 🔧 | Código auditado ✅ (gating consistente). Ranking JÁ É REAL ✅ (RPC `get_simulados_leaderboard` + `question_answers`). 🐛 BUG CONFIRMADO (não corrigido — sensível a cobrança): `handleRegistrar` (linha ~219) chama `incUsage('simulados_monthly')` ao ABRIR o modal, não ao salvar → cancelar o modal queima 1 cota. Correção certa: remover do `handleRegistrar` e incrementar só no save bem-sucedido de um simulado NOVO (sem `simulado.id`). Cuidado: o gate/contador vive no hook `usePlanLimits` dentro de Simulados; mover o increment p/ `saveSimuladoNoApp` (App.jsx) dessincroniza o contador da sessão. Melhor: passar callback de "salvou" do modal → Simulados. NÃO feito sem validação no browser (gate de plano free) |
 | Flashcards | `Flashcards.jsx` | 🔧 | Código auditado ✅ (try/catch nos handlers, métricas falsas removidas). SRS correto. Falta: testar geração IA no app |
 | Redações (correção por IA) | `Redacoes.jsx` | ✅ | Código auditado — sólido. Bug de cota confirmado corrigido (incrementa só após IA), save com retry+feedback, upload validado |
 | Revisões | `Revisoes.jsx` | ✅ | Código auditado — sólido (4 imports órfãos removidos). Falta: catch silencioso da fila não dá feedback; card "Histórico" é placeholder estático |
@@ -98,7 +98,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 | Planejamento | `Planejamento.jsx` | 🔧 | Código auditado ✅ (label, no-op, código morto). Flag: "Gerar com IA" não persiste/não vira plano (#1); questoes_meta derivado (#4) |
 | Ciclos de Estudo | `Ciclos.jsx` | 🔧 | Código auditado ✅ (no-op + campo morto). Flag: modo de edição decorativo, marcar-concluída sem UI, "Ciclos completos" sempre ≤1 |
 | Metas da Semana | `MetasSemana.jsx` | ✅ | — |
-| Objetivos | `Objetivos.jsx` | ✅ | Código auditado — sólido. Flag: 4 handlers async sem catch (falha silenciosa ao estourar limite de cursos) → entra no passe de error-handling |
+| Objetivos | `Objetivos.jsx` | ✅ | Código auditado — sólido. Error-handling VERIFICADO ✅ — os handlers das views-filhas chamam `handleCreateCourse`, que captura o erro e mostra no banner `importError` (renderizado, linha ~802) + rethrow p/ pular o estado de sucesso. Erro NÃO é silencioso (flag estava desatualizada). Resíduo mínimo: rethrow gera unhandled-rejection no console (cosmético) |
 | Lembretes e Calendário | `LembretesCalendario.jsx` | 🔧 | Código auditado ✅ (bugs históricos resolvidos, código morto removido). Flag: sem UI de editar/excluir lembrete manual (componentes existem mas não renderizados) |
 
 ---
@@ -107,7 +107,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Concursos Disponíveis | `ConcursosDisponiveis.jsx` | 🔧 | Código auditado ✅ (off-by-one cargos, dark mode estados vazios, código morto). Flag: import/add sem catch |
+| Concursos Disponíveis | `ConcursosDisponiveis.jsx` | 🔧 | Código auditado ✅ (off-by-one cargos, dark mode estados vazios, código morto). Error-handling VERIFICADO ✅ — `handleImport`/`handleAddSelectedAsPlan` têm catch + `setImportError` (banner renderizado, linha ~420). Flag "import/add sem catch" estava desatualizada. PERF DE IMAGENS aplicada ✅ (thumbs travados em 128/256 via `imageUrl.js` + CDN pré-aquecido). Falta só: validar no app |
 | ~~Meus Concursos~~ | ~~`MeusConcursos.jsx`~~ | ✅ | REMOVIDO — página morta (não renderizada); coberto por Objetivos |
 | Detalhe do Concurso | `ConcursoDetalhe.jsx` | ✅ | Código auditado ✅ (fuso dias-para-prova, import morto). Redesign variante D aplicado ✅ — hero ficha clara com borda de acento da área, KPI strip com ícones (vagas/salário/inscrição/prova), grid 2 colunas (disciplinas accordion + sidebar checklist/agenda/etapas), alertas e momento no estilo D. Toda a lógica preservada (papéis, favoritar/alvo/interesse, import, accordion, tracker, relacionados). Compila limpo (esbuild) e todas as referências resolvem |
 | Edital | `Edital.jsx` | ✅ | Código auditado ✅ (#1 validação: tamanho mínimo + estado "não consegui extrair" + IA sem dados úteis). DECISÃO #2 RESOLVIDA ✅ — botão "Importar com IA" removido (decisão de produto: fluxo do aluno = carregar do objetivo ou adicionar manual). Handler + prop mortos removidos. "Analisar edital com IA" permanece |
@@ -202,6 +202,21 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 ---
 
 ## Registro de sessões
+
+### Sessão 2026-06-29 (madrugada) — Detalhe do Concurso, perf de imagens, meta diária + re-auditoria
+
+**Detalhe do Concurso (`ConcursoDetalhe.jsx`):** redesign variante D aplicado; quebra de texto longo (URLs) em Resumo/Etapas; `sanitizeHttpUrl` p/ edital_url colado com lixo (markdown/colchetes) em Concurso/ENEM/Vestibular. Diagnóstico do "só 1 cargo": dado pré-fix de slug (PMAL Soldado sobrescreveu Oficial em 21/06; fix de slug é de 28/06) → **re-subir o cargo Oficial** com mesmo edital/data.
+
+**Edital:** botão "Importar com IA" removido (decisão #2).
+
+**Performance de imagens (A):** `storageThumb` agora trava em escada 128/256 (antes 5 tamanhos → 5 transforms frias/logo). CDN pré-aquecido p/ as 64 logos públicas (warm ~0.17s vs cold ~1.0s). Causa do "5s": transform cold + boot storm + imagens em HTTP/1.1.
+
+**Meta diária (B):** Dashboard/Sessões derivam de `meta_horas_semana` (era 180 fixo).
+
+**Re-auditoria (pedido do Lucas — WORKLOG estava stale):** Bloco 7 já escondido via `launchConfig.js`; ranking dos Simulados já é real; error-handling de Objetivos/ConcursosDisponiveis/Materiais já feito. Corrigidos no WORKLOG.
+
+**Pendências reais que sobraram:** (1) BUG de cota dos Simulados — não corrigido por ser sensível a cobrança e sem validação no browser (ver linha da tabela); (2) PMAL Oficial (ação do Lucas); (3) validações "no app" que exigem login+browser.
+
 
 ### Sessão 2026-06-20 — Importação do catálogo (rascunhos) + área de revisão no admin
 
