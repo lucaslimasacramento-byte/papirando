@@ -197,9 +197,22 @@ async function saveContestTemplate(supabaseAdmin, templateData = {}, existingId 
     if (error) throw error;
     template = data;
   } else {
+    // Slug é UNIQUE. Ao salvar vários cargos do mesmo concurso, dois podem gerar
+    // o mesmo slug e o 2º falharia na constraint (sumindo do catálogo). Garante
+    // um slug livre acrescentando sufixo numérico.
+    let uniqueSlug = slug;
+    for (let i = 2; i <= 50; i += 1) {
+      const { data: clash } = await supabaseAdmin
+        .from('contest_templates')
+        .select('id')
+        .eq('slug', uniqueSlug)
+        .maybeSingle();
+      if (!clash) break;
+      uniqueSlug = `${slug}-${i}`.slice(0, 80);
+    }
     const { data, error } = await supabaseAdmin
       .from('contest_templates')
-      .insert({ ...basePayload, created_at: now })
+      .insert({ ...basePayload, slug: uniqueSlug, created_at: now })
       .select('*')
       .single();
     if (error) throw error;
