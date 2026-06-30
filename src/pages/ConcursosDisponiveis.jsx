@@ -216,45 +216,60 @@ export default function ConcursosDisponiveis({
     });
   }, [areasSelecionadas, groupedCatalog, cursos, favoriteContestIds, interestedContestIds, query, sortMode, statusFiltro]);
 
-  const smartSections = useMemo(() => {
-    const enriched = concursosFiltrados
-      .map((contest) => {
-        const importedCount = cursos.filter(
-          (curso) =>
-            curso.plano === contest.plano ||
-            curso.nome === contest.nome ||
-            curso.concurso === contest.concurso
-        ).length;
+  // Destaque editorial: "o mais aguardado agora". Prioriza inscrições abertas
+  // (e quanto mais perto de fechar, mais alto), depois favoritos/interesses e prova próxima.
+  const featuredHighlights = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysFrom = (value) => {
+      if (!value) return null;
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return null;
+      return Math.round((date.getTime() - today.getTime()) / 86400000);
+    };
 
-        const provaDate = contest.prova_data ? new Date(`${contest.prova_data}T00:00:00`) : null;
-        const today = new Date();
-        const daysToExam = provaDate ? Math.ceil((provaDate.getTime() - today.getTime()) / 86400000) : null;
+    const enriched = concursosFiltrados.map((contest) => {
+      const status = normalizeContestStatus(contest.status_concurso);
+      const regStartDays = daysFrom(contest.registration_start);
+      const regEndDays = daysFrom(contest.registration_end);
+      const examDays = daysFrom(contest.prova_data);
+      const inscricoesAbertas =
+        status === 'inscricoes_abertas' ||
+        (regStartDays !== null && regStartDays <= 0 && regEndDays !== null && regEndDays >= 0);
+      const importedCount = cursos.filter(
+        (curso) =>
+          curso.plano === contest.plano ||
+          curso.nome === contest.nome ||
+          curso.concurso === contest.concurso
+      ).length;
+      return { ...contest, status, regStartDays, regEndDays, examDays, inscricoesAbertas, importedCount };
+    });
 
-        return {
-          ...contest,
-          importedCount,
-          daysToExam,
-        };
-      });
+    const score = (c) => {
+      let s = 0;
+      if (c.inscricoesAbertas) {
+        s += 1000;
+        // Janela fechando = mais urgente.
+        if (c.regEndDays !== null && c.regEndDays >= 0) s += Math.max(0, 120 - c.regEndDays) * 6;
+      }
+      if (favoriteContestIds.includes(c.id)) s += 350;
+      if (interestedContestIds.includes(c.id)) s += 220;
+      if (c.status === 'prova_marcada') s += 140;
+      if (c.status === 'edital_publicado') s += 120;
+      if (c.status === 'edital_iminente') s += 90;
+      if (c.examDays !== null && c.examDays >= 0) s += Math.max(0, 180 - c.examDays);
+      return s;
+    };
 
-    const recomendados = enriched
-      .filter((item) => favoriteContestIds.includes(item.id) || interestedContestIds.includes(item.id))
-      .slice(0, 4);
-
-    const proximosDaProva = enriched
-      .filter((item) => item.daysToExam !== null && item.daysToExam >= 0)
-      .sort((a, b) => a.daysToExam - b.daysToExam)
-      .slice(0, 4);
-
-    const jaEmAndamento = enriched
-      .filter((item) => item.importedCount > 0)
-      .sort((a, b) => b.importedCount - a.importedCount)
-      .slice(0, 4);
+    const ranked = enriched
+      .map((c) => ({ contest: c, value: score(c) }))
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .map((item) => item.contest);
 
     return {
-      recomendados,
-      proximosDaProva,
-      jaEmAndamento,
+      destaque: ranked[0] || null,
+      outros: ranked.slice(1, 4),
     };
   }, [concursosFiltrados, cursos, favoriteContestIds, interestedContestIds]);
 
@@ -302,24 +317,6 @@ export default function ConcursosDisponiveis({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [groupedCatalog, isVest]
   );
-  const recommendationBuckets = useMemo(() => {
-    const itens = tipoAtivo === 'vestibular' ? 'vestibulares' : 'concursos';
-    return [
-      {
-        id: 'recomendado',
-        title: 'Recomendado',
-        emptyText: `Marque ${itens} como favoritos ou interessados para receber recomendações aqui.`,
-        items: smartSections.recomendados.length > 0 ? smartSections.recomendados : smartSections.proximosDaProva,
-      },
-      {
-        id: 'andamento',
-        title: 'Já em andamento',
-        emptyText: `Quando você adicionar ${itens}, eles passam a aparecer aqui.`,
-        items: smartSections.jaEmAndamento,
-      },
-    ];
-  }, [smartSections, tipoAtivo]);
-
   const toggleArea = (area) => {
     if (area === 'Todas') {
       setAreasSelecionadas(['Todas']);
@@ -539,27 +536,110 @@ export default function ConcursosDisponiveis({
           </div>
         )}
 
-        {tipoAtivo !== 'vestibular' && (
-        <section>
-          <div style={{ marginBottom: 12 }}>
-            <div className="pl-eyebrow">Insights</div>
-            <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, color: 'var(--pl-ink)' }}>
-              Onde vale olhar primeiro
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
-            {recommendationBuckets.map((section) => (
-              <RecommendationPanel
-                key={section.id}
-                title={section.title}
-                emptyText={section.emptyText}
-                items={section.items}
-                onOpen={handleOpenContest}
-                formatDateBR={formatDateBR}
-              />
-            ))}
-          </div>
-        </section>
+        {tipoAtivo !== 'vestibular' && featuredHighlights.destaque && (
+          <section>
+            {/* Cabeçalho — mantido igual */}
+            <div style={{ marginBottom: 14 }}>
+              <div className="pl-eyebrow">Insights</div>
+              <h2 style={{ margin: '5px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 30, color: 'var(--pl-ink)' }}>
+                Onde vale olhar primeiro
+              </h2>
+            </div>
+
+            {/* Strip unificado */}
+            <div style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 14, background: 'var(--pl-surface)', overflow: 'hidden' }}>
+
+              {/* Linha de cabeçalho das colunas */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', borderBottom: '1px solid var(--pl-rule)' }}>
+                <div style={{ padding: '10px 16px', borderRight: '1px solid var(--pl-rule)' }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>Recomendado</span>
+                </div>
+                <div style={{ padding: '10px 16px' }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>Já em andamento</span>
+                </div>
+              </div>
+
+              {/* Conteúdo */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', alignItems: 'start' }}>
+
+                {/* Coluna esquerda: destaque + outros */}
+                <div style={{ borderRight: '1px solid var(--pl-rule)', padding: '6px 0' }}>
+                  {[featuredHighlights.destaque, ...featuredHighlights.outros].map((contest, i) => {
+                    const u = contestUrgency(contest);
+                    const tone = URGENCY_TONES[u.tone] || URGENCY_TONES.blue;
+                    // Badge de data curta: inscrição ou prova
+                    const shortDate = (() => {
+                      const raw = contest.inscricoesAbertas
+                        ? contest.registration_end
+                        : contest.prova_data;
+                      if (!raw) return null;
+                      const [, m, d] = String(raw).split('-');
+                      return m && d ? `${d}/${m}` : null;
+                    })();
+                    return (
+                      <button
+                        key={contest.id}
+                        type="button"
+                        onClick={() => handleOpenContest(contest)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          gap: 12, padding: '9px 16px', width: '100%', textAlign: 'left',
+                          border: 0, cursor: 'pointer',
+                          background: i % 2 === 1 ? 'var(--pl-bg)' : 'var(--pl-surface)',
+                          transition: 'background .1s',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--pl-accent-soft)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = i % 2 === 1 ? 'var(--pl-bg)' : 'var(--pl-surface)'; }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: 2, background: tone.color, flexShrink: 0, display: 'block' }} />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {contest.nome}
+                          </span>
+                          {(contest.cargo || contest.concurso) && (
+                            <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                              {contest.cargo || contest.concurso}
+                            </span>
+                          )}
+                        </div>
+                        {shortDate && (
+                          <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: tone.color, background: tone.soft, borderRadius: 20, padding: '2px 9px' }}>
+                            {shortDate}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Coluna direita: cursos em andamento */}
+                <div style={{ padding: '6px 0' }}>
+                  {cursos && cursos.length > 0 ? (
+                    cursos.slice(0, 5).map((curso, i) => (
+                      <div
+                        key={curso.id}
+                        style={{
+                          padding: '9px 16px',
+                          background: i % 2 === 1 ? 'var(--pl-bg)' : 'var(--pl-surface)',
+                        }}
+                      >
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {curso.nome || curso.concurso}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ padding: '14px 16px' }}>
+                      <p style={{ fontSize: 12, color: 'var(--pl-ink-4)', lineHeight: 1.55, margin: 0 }}>
+                        Quando você adicionar concursos, eles passam a aparecer aqui.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </section>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
@@ -1462,62 +1542,33 @@ function InfoPill({ icon: Icon, label }) {
   );
 }
 
-function QuickTag({ children, tone = 'blue' }) {
-  const toneStyles = {
-    blue: { border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', color: 'var(--pl-accent)' },
-    amber: { border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)' },
-    rose: { border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)' },
-    green: { border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
-  };
+const URGENCY_TONES = {
+  rose: { color: 'var(--pl-danger)', soft: 'var(--pl-danger-soft)' },
+  amber: { color: 'var(--pl-warn)', soft: 'var(--pl-warn-soft)' },
+  green: { color: 'var(--pl-success)', soft: 'var(--pl-success-soft)' },
+  blue: { color: 'var(--pl-accent)', soft: 'var(--pl-accent-soft)' },
+};
 
-  return (
-    <span style={{ borderRadius: 999, padding: '4px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.16em', ...(toneStyles[tone] || toneStyles.blue) }}>
-      {children}
-    </span>
-  );
+// Traduz o estado do concurso enriquecido em um rótulo de urgência (kicker + chamada).
+function contestUrgency(contest) {
+  const { inscricoesAbertas, regEndDays, examDays, status } = contest;
+
+  if (inscricoesAbertas && regEndDays !== null && regEndDays >= 0) {
+    if (regEndDays === 0) return { tone: 'rose', kicker: 'Última chamada', label: 'Inscrições encerram hoje' };
+    if (regEndDays <= 7) return { tone: 'rose', kicker: 'Inscrições fechando', label: `Encerra em ${regEndDays} ${regEndDays === 1 ? 'dia' : 'dias'}` };
+    if (regEndDays <= 30) return { tone: 'amber', kicker: 'Inscrições abertas', label: `Faltam ${regEndDays} dias` };
+    return { tone: 'green', kicker: 'Inscrições abertas', label: `Faltam ${regEndDays} dias` };
+  }
+  if (inscricoesAbertas) return { tone: 'green', kicker: 'Inscrições abertas', label: 'Inscreva-se já' };
+  if (status === 'prova_marcada' && examDays !== null && examDays >= 0)
+    return { tone: 'blue', kicker: 'Prova marcada', label: `Prova em ${examDays} dias` };
+  if (status === 'edital_publicado') return { tone: 'blue', kicker: 'Recém-saiu', label: 'Edital publicado' };
+  if (status === 'edital_iminente') return { tone: 'amber', kicker: 'Fique de olho', label: 'Edital iminente' };
+  if (examDays !== null && examDays >= 0) return { tone: 'blue', kicker: 'No radar', label: `Prova em ${examDays} dias` };
+  return { tone: 'blue', kicker: 'No radar', label: STATUS_LABELS[status] || 'No radar' };
 }
 
-function RecommendationPanel({ title, items = [], emptyText, onOpen, formatDateBR }) {
-  const isHorizontal = title === 'Provas mais próximas';
-  const visibleItems = isHorizontal ? items.slice(0, 3) : items;
-
-  return (
-    <section className="pl-card" style={{ padding: 16, borderRadius: 24 }}>
-      {!isHorizontal && (
-        <div style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)' }}>{title}</h3>
-        </div>
-      )}
-
-      {visibleItems.length === 0 ? (
-        <div style={{ borderRadius: 22, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-bg-soft)', padding: '24px 16px', fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
-          {emptyText}
-        </div>
-      ) : (
-        <div style={{ display: isHorizontal ? 'grid' : 'flex', flexDirection: isHorizontal ? undefined : 'column', gridTemplateColumns: isHorizontal ? 'repeat(auto-fit, minmax(200px, 1fr))' : undefined, gap: 12 }}>
-          {visibleItems.map((item) => (
-            <button
-              key={`rec-${title}-${item.id}`}
-              type="button"
-              onClick={() => onOpen(item)}
-              style={{ width: '100%', borderRadius: 22, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', textAlign: 'left', padding: 16, minHeight: 120, cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--pl-sh-low)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-            >
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.nome}</p>
-              <p style={{ marginTop: 4, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)' }}>{item.cargo || item.concurso}</p>
-              <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {item.prova_data && <QuickTag tone="blue">{formatDateBR(item.prova_data)}</QuickTag>}
-                {item.importedCount > 0 && <QuickTag tone="green">Já importado</QuickTag>}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
+// Destaque principal — "o mais aguardado agora". Card editorial largo que chama atenção.
 function ContestPreviewModal({
   contest,
   onClose,
