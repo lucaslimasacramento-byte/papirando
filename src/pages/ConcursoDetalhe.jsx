@@ -836,22 +836,8 @@ function ConcursoDetalheBody({
   const [imageError, setImageError] = useState(false);
   const [importConfirmOpen, setImportConfirmOpen] = useState(false);
 
-  // O catálogo carrega os concursos SEM disciplinas (sob demanda). Ao abrir o
-  // detalhe, busca o conteúdo programático pelo id se ele não veio carregado —
-  // senão a seção "Conteúdo programático" apareceria vazia mesmo havendo dados.
+  // O catálogo carrega os concursos SEM disciplinas (sob demanda).
   const [loadedSubjects, setLoadedSubjects] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    setLoadedSubjects(null);
-    const id = rawContest?.id;
-    const hasDisc = Array.isArray(rawContest?.disciplinas) && rawContest.disciplinas.length > 0;
-    if (id && !hasDisc) {
-      loadContestTemplateContent(supabase, id)
-        .then((disc) => { if (!cancelled && Array.isArray(disc) && disc.length > 0) setLoadedSubjects(disc); })
-        .catch(() => {});
-    }
-    return () => { cancelled = true; };
-  }, [rawContest?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const roles = useMemo(() => getContestRoles(rawContest || {}), [rawContest]);
   const [selectedRoleId, setSelectedRoleId] = useState('');
@@ -859,6 +845,28 @@ function ConcursoDetalheBody({
     () => roles.find((role) => role.id === selectedRoleId) || getPrimaryContestRole(rawContest || {}),
     [roles, selectedRoleId, rawContest]
   );
+
+  // Busca o conteúdo programático sob demanda pelo id REAL do cargo ativo. Num
+  // concurso agrupado (vários cargos), rawContest.id é sintético ("group-...") e
+  // não acha disciplinas — por isso usamos activeRole.templateId. Recarrega ao
+  // trocar de cargo.
+  const contentTemplateId =
+    activeRole?.templateId ||
+    activeRole?.sourceTemplate?.id ||
+    (String(rawContest?.id || '').startsWith('group-') ? '' : rawContest?.id) ||
+    '';
+  useEffect(() => {
+    let cancelled = false;
+    setLoadedSubjects(null);
+    const roleDisc = activeRole?.disciplinas;
+    const hasDisc = Array.isArray(roleDisc) && roleDisc.length > 0;
+    if (contentTemplateId && !hasDisc) {
+      loadContestTemplateContent(supabase, contentTemplateId)
+        .then((disc) => { if (!cancelled && Array.isArray(disc) && disc.length > 0) setLoadedSubjects(disc); })
+        .catch(() => {});
+    }
+    return () => { cancelled = true; };
+  }, [contentTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
   const contest = useMemo(() => {
     if (!rawContest) return null;
     const built = buildContestForRole(rawContest, activeRole);
