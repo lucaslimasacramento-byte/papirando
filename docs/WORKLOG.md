@@ -207,7 +207,9 @@ Saída esperada: uma lista única tela-a-tela com o destino marcado, refletida n
 
 **Detalhe do Concurso (`ConcursoDetalhe.jsx`):** redesign variante D aplicado; quebra de texto longo (URLs) em Resumo/Etapas; `sanitizeHttpUrl` p/ edital_url colado com lixo (markdown/colchetes) em Concurso/ENEM/Vestibular.
 
-**"Só 1 cargo" — CAUSA REAL ENCONTRADA + corrigido (`cc3edd5`):** não era só dado pré-fix. `handleSaveAllContestOptions` (AdminConcursos) tinha 1 try/catch em volta do loop → 1ª falha abortava o resto; e `saveContestTemplate` (App.jsx) relançava erro do `refreshContestLibrary` mesmo com insert OK → perdia o 2º cargo (por isso "ou Soldado ou Oficial"). Fix: save POR cargo (try/catch individual) + refresh best-effort + erro reportado por cargo. ⚠️ Só testável em PRODUÇÃO (a API `/api/contest-templates` é serverless Vercel, não roda no vite dev) após o deploy. Teste: excluir PMAL → re-importar → "Salvar todos" → 2 cargos no mesmo card.
+**"Só 1 cargo" — CAUSA REAL (após 1ª tentativa errada):** o per-item try/catch (`cc3edd5`) NÃO resolveu (deploy estava live e ainda salvava 1). Causa real = **contenção do lock de auth do supabase-js**: cada save chamava `getSession()` 2x (`ensureAdminSession` + `getAdminToken`); 2 saves em sequência rápida → o 2º vinha sem token → **401** → só 1 salvava (variando Soldado/Oficial pela ordem). Fix (`eb80df5`): `createManyContestTemplates` resolve a sessão **1x** e reusa o token no lote; `saveContestTemplateAdmin` usa o token passado; resultado por cargo fica **persistente** no painel. ⚠️ Só testável em PRODUÇÃO (API serverless Vercel) após deploy: excluir PMAL → re-importar → "Salvar todos".
+
+**Etapas/edital_url corrompidos (`a274771`):** JSON de origem com link markdown quebrado vazava fragmentos url-encoded (`%22`) p/ os campos. `sanitizeImportedUrl` + `sanitizeImportedEtapas` em `normalizeJsonContestTemplate` limpam no import (testado contra o dado real). Linhas já salvas continuam sujas até re-importar.
 
 **Edital:** botão "Importar com IA" removido (decisão #2).
 
