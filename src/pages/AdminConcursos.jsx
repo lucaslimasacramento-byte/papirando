@@ -1722,6 +1722,14 @@ export default function AdminConcursos({
   );
 
   const handleSave = async () => {
+    // Se o import achou vários cargos do mesmo concurso, "Salvar concurso" salva
+    // TODOS (não só o cargo carregado no form) — antes, clicar aqui salvava 1 só e
+    // o usuário perdia o outro cargo sem perceber.
+    if (contestFormOptions.length > 1) {
+      await handleSaveAllContestOptions();
+      return;
+    }
+
     const payload = normalizeDraftToPayload();
 
     if (!payload.nome) {
@@ -1751,6 +1759,12 @@ export default function AdminConcursos({
 
   // Salva já tornando público — usado pelo botão "Publicar" do modal (valida nas abas → publica).
   const handleSaveAndPublish = async () => {
+    // Vários cargos detectados → salva todos (respeita o toggle Publicado/Rascunho).
+    if (contestFormOptions.length > 1) {
+      await handleSaveAllContestOptions();
+      return;
+    }
+
     const payload = { ...normalizeDraftToPayload(), is_public: true };
 
     if (!payload.nome) {
