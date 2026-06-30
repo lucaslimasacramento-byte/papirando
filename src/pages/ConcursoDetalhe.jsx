@@ -29,6 +29,7 @@ import { getContestAreaTheme } from '../lib/contestAreaTheme';
 import { storageThumb } from '../lib/imageUrl';
 import { supabase } from '../lib/supabase';
 import { loadContestTemplateContent } from '../lib/contestCatalogApi';
+import { ImportConfirmModal } from '../components/ImportConfirmModal';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
@@ -1221,10 +1222,10 @@ function ConcursoDetalheBody({
       </div>
 
       {importConfirmOpen ? (
-        <ImportContestModal
+        <ImportConfirmModal
           contest={contest}
-          isLoading={importingId === contest.id}
-          limiteAtingido={limiteAtingido}
+          loading={importingId === contest.id}
+          dark={typeof document !== 'undefined' && document.documentElement.classList.contains('pl-theme-dark')}
           onCancel={() => setImportConfirmOpen(false)}
           onConfirm={() => {
             onImport?.(contest);
@@ -1513,58 +1514,6 @@ function CargoInfo({ label, value, tone = 'slate' }) {
     <div style={{ borderRadius: 10, padding: '8px 12px', ...toneStyles[tone] }}>
       <p style={{ margin: 0, fontSize: 9, fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.6 }}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 800, lineHeight: 1.3, wordBreak: 'break-word' }}>{value}</p>
-    </div>
-  );
-}
-
-function ImportContestModal({ contest, isLoading, limiteAtingido, onCancel, onConfirm }) {
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)', padding: '24px 16px', backdropFilter: 'blur(4px)' }}>
-      <div style={{ width: '100%', maxWidth: 520, overflow: 'hidden', borderRadius: 24, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}>
-        <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%)', padding: '24px 28px', color: '#f3efe5' }}>
-          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#93b4ff' }}>Adicionar aos estudos</p>
-          <h3 style={{ margin: '8px 0 0', fontSize: 22, fontWeight: 700, lineHeight: 1.2 }}>{contest?.nome || 'Concurso selecionado'}</h3>
-          <p style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'rgba(243,239,229,0.7)' }}>
-            Isso cria um curso na sua área de estudos com as disciplinas, tópicos e dados do edital.
-          </p>
-        </div>
-        <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {limiteAtingido ? (
-            <div style={{ borderRadius: 12, border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
-              Seu limite de cursos foi atingido. Remova algum curso ou ajuste seu plano antes de adicionar este concurso.
-            </div>
-          ) : (
-            <div style={{ borderRadius: 12, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)' }}>
-              Depois de adicionar, você encontra esse concurso em Meus cursos e pode estudar pelo edital verticalizado.
-            </div>
-          )}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
-            <span style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>Banca: {contest?.banca || 'A definir'}</span>
-            <span style={{ borderRadius: 10, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 16px' }}>Área: {contest?.area || 'Geral'}</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="pl-btn pl-btn-ghost"
-              style={{ minHeight: 44 }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={onConfirm}
-              disabled={isLoading || limiteAtingido}
-              className="pl-btn pl-btn-primary"
-              style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 8 }}
-            >
-              {isLoading ? 'Adicionando...' : 'Adicionar agora'}
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
