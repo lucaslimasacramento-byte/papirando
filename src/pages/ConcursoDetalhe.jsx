@@ -1248,16 +1248,19 @@ function ConcursoDetalheBody({
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' }}>
             {roles.map((role) => {
               const selected = activeRole?.id === role.id;
+              const discCount = Number(role.sourceTemplate?.subjects_count ?? (role.disciplinas?.length || 0)) || 0;
               return (
                 <button
                   key={role.id}
                   type="button"
                   onClick={() => setSelectedRoleId(role.id)}
                   style={{
-                    minHeight: 155,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
                     borderRadius: 16,
                     border: selected ? '1.5px solid var(--pl-accent)' : '1px solid var(--pl-rule-2)',
                     background: selected ? 'var(--pl-accent-soft)' : 'var(--pl-bg-soft)',
@@ -1269,14 +1272,21 @@ function ConcursoDetalheBody({
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                     <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', lineHeight: 1.3 }}>{role.nome}</p>
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: selected ? 'var(--pl-accent)' : 'var(--pl-rule-strong)', flexShrink: 0, marginTop: 3 }} />
+                    <span style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: selected ? 'none' : '1.5px solid var(--pl-rule-strong)', background: selected ? 'var(--pl-accent)' : 'transparent' }}>
+                      {selected ? <Check size={12} color="#fff" strokeWidth={3} /> : null}
+                    </span>
                   </div>
-                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    {role.salario && <CargoInfo label="Salário" value={role.salario} tone="green" />}
-                    {role.vagas && <CargoInfo label="Vagas" value={role.vagas} />}
-                    {role.escolaridade && <CargoInfo label="Nível" value={role.escolaridade} tone="blue" />}
-                    {role.lotacao && <CargoInfo label="Lotação" value={role.lotacao} />}
+                  <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <CargoInfo label="Salário" value={role.salario || 'A definir'} tone="green" />
+                    <CargoInfo label="Vagas" value={role.vagas || 'A definir'} />
+                    <CargoInfo label="Nível" value={role.escolaridade || 'A definir'} tone="blue" />
+                    <CargoInfo label="Disciplinas" value={discCount > 0 ? String(discCount) : '—'} />
                   </div>
+                  {role.lotacao && (
+                    <p style={{ margin: '12px 0 0', fontSize: 11, fontWeight: 500, color: 'var(--pl-ink-3)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--pl-ink-2)' }}>Lotação: </span>{role.lotacao}
+                    </p>
+                  )}
                 </button>
               );
             })}
@@ -1335,7 +1345,7 @@ function ConcursoDetalheBody({
       {/* Status do aluno + momento */}
       <div className="pl-card" style={{ padding: '20px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
-          <StatusPanel label="Já importado" value={courseMatches.length > 0 ? `${courseMatches.length} curso(s)` : 'Ainda não'} tone={courseMatches.length > 0 ? 'blue' : 'gray'} />
+          <StatusPanel label="Nos seus estudos" value={courseMatches.length > 0 ? 'Adicionado' : 'Ainda não'} tone={courseMatches.length > 0 ? 'blue' : 'gray'} />
           <StatusPanel label="Disciplinas iniciadas" value={String(startedSubjectsCount)} tone={startedSubjectsCount > 0 ? 'green' : 'gray'} />
           <StatusPanel label="Interesse" value={isInterested ? 'Na sua mira' : 'Ainda não marcado'} tone={isInterested ? 'amber' : 'gray'} />
         </div>
@@ -1474,9 +1484,12 @@ function ConcursoDetalheBody({
               {contest.taf_itens?.length > 0 && (
                 <div style={{ marginTop: 14, borderRadius: 10, border: '1px solid var(--pl-accent-ring)', background: 'var(--pl-accent-soft)', padding: 14 }}>
                   <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-accent)' }}>Itens do TAF</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {contest.taf_itens.map((item) => (
-                      <span key={item} className="pl-tag" style={{ fontSize: 10 }}>{item}</span>
+                      <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--pl-accent)', flexShrink: 0, marginTop: 7 }} />
+                        <span style={{ minWidth: 0, fontSize: 11.5, fontWeight: 600, lineHeight: 1.4, color: 'var(--pl-ink-2)', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{item}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
