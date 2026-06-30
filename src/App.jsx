@@ -5004,6 +5004,44 @@ export default function App() {
     await saveContestTemplate(templateData);
   };
 
+  // Salva vários cargos do mesmo concurso de uma vez. Resolve a sessão admin UMA
+  // única vez e reusa o token em todos os saves — antes, cada save chamava
+  // getSession() e o lock de auth do supabase-js sob chamadas rápidas em sequência
+  // fazia o 2º cargo vir sem token (401), salvando só 1 ("ou Soldado ou Oficial").
+  // Cada cargo é independente: a falha de um não derruba os outros.
+  const createManyContestTemplates = async (payloads = []) => {
+    const list = Array.isArray(payloads) ? payloads.filter((p) => p && p.nome) : [];
+    if (list.length === 0) return [];
+
+    const adminSession = await ensureAdminSession();
+    const accessToken = adminSession?.access_token || currentUserAccessToken;
+    const adminEmail = adminSession?.user?.email || currentUserEmail || currentProfile?.email || '';
+
+    const results = [];
+    for (const payload of list) {
+      try {
+        const saved = await saveContestTemplateAdmin({
+          templateData: payload,
+          existingId: null,
+          accessToken,
+          adminEmail,
+        });
+        results.push({ ok: true, nome: payload.nome, saved });
+      } catch (error) {
+        results.push({ ok: false, nome: payload.nome, error: error?.message || 'erro desconhecido' });
+      }
+    }
+
+    // Refresh único best-effort no fim (não invalida saves que já deram certo).
+    try {
+      await refreshContestLibrary();
+    } catch (refreshError) {
+      console.warn('[contest_templates] refresh pós-lote falhou:', refreshError?.message || refreshError);
+    }
+
+    return results;
+  };
+
   const updateContestTemplate = async (templateData) => {
     if (!templateData?.id) throw new Error('Template invalido para edicao.');
     await saveContestTemplate(
@@ -6802,6 +6840,7 @@ export default function App() {
     handleSaveProgressConfig,
     subjectCatalog,
     createContestTemplate,
+    createManyContestTemplates,
     updateContestTemplate,
     duplicateContestTemplate,
     promoteContestTemplate,
@@ -7269,6 +7308,7 @@ export default function App() {
               onLoadTemplateContent={loadTemplateContent}
               subjectCatalog={subjectCatalog}
               onCreateTemplate={createContestTemplate}
+              onSaveManyTemplates={createManyContestTemplates}
               onUpdateTemplate={updateContestTemplate}
               onDuplicateTemplate={duplicateContestTemplate}
               onPromoteTemplate={promoteContestTemplate}

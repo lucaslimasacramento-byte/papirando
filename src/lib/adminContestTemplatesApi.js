@@ -13,8 +13,11 @@ async function getAdminToken() {
   }
 }
 
-export async function saveContestTemplateAdmin({ templateData, existingId = null, adminEmail = '' } = {}) {
-  const token = await getAdminToken();
+export async function saveContestTemplateAdmin({ templateData, existingId = null, adminEmail = '', accessToken = '' } = {}) {
+  // Reusa o token já resolvido (ex: salvar vários cargos de uma vez) em vez de
+  // chamar getSession() a cada save — o lock de auth do supabase-js sob chamadas
+  // rápidas em sequência fazia o 2º save vir sem token e tomar 401.
+  const token = accessToken || await getAdminToken();
   const response = await fetch('/api/contest-templates', {
     method: 'POST',
     credentials: 'omit',

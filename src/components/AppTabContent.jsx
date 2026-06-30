@@ -179,6 +179,7 @@ export default function AppTabContent(props) {
     handleSaveProgressConfig,
     subjectCatalog,
     createContestTemplate,
+    createManyContestTemplates,
     updateContestTemplate,
     duplicateContestTemplate,
     promoteContestTemplate,
@@ -600,6 +601,7 @@ export default function AppTabContent(props) {
         concursoCatalog={contestLibrary}
         subjectCatalog={subjectCatalog}
         onCreateTemplate={createContestTemplate}
+        onSaveManyTemplates={createManyContestTemplates}
         onUpdateTemplate={updateContestTemplate}
         onDuplicateTemplate={duplicateContestTemplate}
         onPromoteTemplate={promoteContestTemplate}

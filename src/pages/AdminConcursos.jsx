@@ -1052,6 +1052,7 @@ export default function AdminConcursos({
   concursoCatalog = [],
   subjectCatalog = [],
   onCreateTemplate,
+  onSaveManyTemplates,
   onUpdateTemplate,
   onDuplicateTemplate,
   onPromoteTemplate,
@@ -1781,48 +1782,66 @@ export default function AdminConcursos({
     if (contestFormOptions.length <= 1) return;
     setIsSaving(true);
 
-    // Cada opção é salva de forma INDEPENDENTE: se uma falhar (ou o refresh pós-save
-    // der hiccup), as outras ainda são tentadas. Antes, um único try/catch em volta
-    // do loop abortava tudo na 1ª falha — por isso só 1 cargo (ou Soldado ou Oficial)
-    // sobrevivia. Falhas são reportadas por cargo com o erro real.
+    // Cada opção é salva de forma INDEPENDENTE. Caminho preferido: onSaveManyTemplates,
+    // que resolve a sessão admin UMA vez e reusa o token (evita a contenção do lock de
+    // auth do supabase-js que fazia o 2º cargo cair em 401 — só 1 sobrevivia). Fallback:
+    // loop com onCreateTemplate. Falhas são reportadas por cargo com o erro real.
     const saved = [];
     const failed = [];
 
     try {
-      for (const [index, template] of contestFormOptions.entries()) {
-        const payload = normalizeImportedTemplateToPayload(template, index);
-        const label = payload.nome || template?.nome || template?.cargo || `Opção ${index + 1}`;
-        if (!payload.nome) {
-          failed.push({ label, reason: 'sem nome identificado' });
-          continue;
-        }
-        try {
-          await onCreateTemplate?.(payload);
-          saved.push(label);
-        } catch (error) {
-          failed.push({ label, reason: error?.message || 'erro desconhecido' });
+      const payloads = contestFormOptions.map((template, index) => ({
+        payload: normalizeImportedTemplateToPayload(template, index),
+        label: template?.nome || template?.cargo || `Opção ${index + 1}`,
+      }));
+
+      if (typeof onSaveManyTemplates === 'function') {
+        const validPayloads = payloads.filter((p) => p.payload.nome).map((p) => p.payload);
+        payloads.filter((p) => !p.payload.nome).forEach((p) => failed.push({ label: p.label, reason: 'sem nome identificado' }));
+        const results = await onSaveManyTemplates(validPayloads);
+        (Array.isArray(results) ? results : []).forEach((r) => {
+          if (r?.ok) saved.push(r.nome);
+          else failed.push({ label: r?.nome || 'Cargo', reason: r?.error || 'erro desconhecido' });
+        });
+      } else {
+        for (const { payload, label } of payloads) {
+          if (!payload.nome) {
+            failed.push({ label, reason: 'sem nome identificado' });
+            continue;
+          }
+          try {
+            await onCreateTemplate?.(payload);
+            saved.push(payload.nome || label);
+          } catch (error) {
+            failed.push({ label: payload.nome || label, reason: error?.message || 'erro desconhecido' });
+          }
         }
       }
     } finally {
       setIsSaving(false);
     }
 
-    if (saved.length > 0) {
+    if (failed.length === 0) {
       success(
-        `${saved.length} cadastro(s) salvos: ${saved.join(', ')}.` +
-        (failed.length === 0 ? ' Cargos do mesmo concurso ficam agrupados no mesmo card.' : '')
+        `${saved.length} cadastro(s) salvos: ${saved.join(', ')}. Cargos do mesmo concurso ficam agrupados no mesmo card.`
       );
       resetForm();
       setContestFormOptions([]);
       setContestFormImportStatus('');
+      return;
     }
 
-    if (failed.length > 0) {
-      toastError(
-        `${failed.length} não salvo(s): ${failed.map((f) => `${f.label} — ${f.reason}`).join(' · ')}`,
-        'Falha ao salvar parte dos cargos',
-      );
-    }
+    // Mantém o painel aberto e mostra o resultado detalhado de forma PERSISTENTE
+    // (o toast some rápido). Assim dá pra ver exatamente qual cargo falhou e por quê.
+    const summary = [
+      saved.length ? `Salvos: ${saved.join(', ')}.` : '',
+      `Não salvos: ${failed.map((f) => `${f.label} — ${f.reason}`).join(' · ')}`,
+    ].filter(Boolean).join(' ');
+    setContestFormImportStatus(summary);
+    toastError(
+      `${failed.length} cargo(s) não salvo(s). Veja o motivo no painel de import.`,
+      'Falha ao salvar parte dos cargos',
+    );
   };
 
   // A lista vem SEM disciplinas/tópicos (carregados sob demanda). Garante que o
