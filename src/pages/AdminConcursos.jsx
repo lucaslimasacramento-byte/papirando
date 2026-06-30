@@ -1092,6 +1092,7 @@ export default function AdminConcursos({
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
   const [publishingDraftId, setPublishingDraftId] = useState('');
+  const [unpublishingId, setUnpublishingId] = useState('');
   const [uploadingLogoDraftId, setUploadingLogoDraftId] = useState('');
   const [draftQuery, setDraftQuery] = useState('');
   const [selectedDraftIds, setSelectedDraftIds] = useState(new Set());
@@ -2127,6 +2128,28 @@ export default function AdminConcursos({
     }
   };
 
+  // Inverso de publicar: tira do catálogo público e devolve para a fila de rascunhos.
+  const handleUnpublishTemplate = async (template) => {
+    if (!template?.id) return;
+    const ok = await showConfirm(
+      `Tornar "${template.nome}" um rascunho? Ele sai do catálogo público e volta para a fila de rascunhos (pode publicar de novo depois).`,
+      { title: 'Reverter publicação', confirmLabel: 'Tornar rascunho' },
+    );
+    if (!ok) return;
+    setUnpublishingId(template.id);
+    try {
+      // Carrega disciplinas/tópicos antes (a lista vem sem eles) pra não apagá-los ao salvar.
+      const full = await ensureTemplateContent(template);
+      await onUpdateTemplate?.(buildTemplatePayload(full, { is_public: false }));
+      await reloadDrafts();
+      success(`"${template.nome}" voltou para rascunho.`);
+    } catch (error) {
+      toastError(error.message || 'Não foi possível reverter a publicação.', 'Erro ao reverter');
+    } finally {
+      setUnpublishingId('');
+    }
+  };
+
   const handleDraftLogoUpload = async (draft, file) => {
     if (!draft?.id || !file) return;
     if (!file.type.startsWith('image/')) {
@@ -2611,9 +2634,21 @@ export default function AdminConcursos({
                     </button>
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{template.cargo || '—'}</p>
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{template.banca || '—'}</p>
-                    <span className={template.is_public ? 'pl-tag pl-tag-success' : 'pl-tag pl-tag-warn'} style={{ fontSize: 10, justifySelf: 'start' }}>
-                      {template.is_public ? 'Publicado' : 'Rascunho'}
-                    </span>
+                    {template.is_public ? (
+                      <button
+                        type="button"
+                        onClick={() => handleUnpublishTemplate(template)}
+                        disabled={unpublishingId === template.id}
+                        title="Clique para tornar rascunho (sai do catálogo público)"
+                        className="pl-tag pl-tag-success"
+                        style={{ fontSize: 10, justifySelf: 'start', border: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                      >
+                        {unpublishingId === template.id ? <Loader2 size={10} className="animate-spin" /> : <EyeOff size={10} />}
+                        Publicado
+                      </button>
+                    ) : (
+                      <span className="pl-tag pl-tag-warn" style={{ fontSize: 10, justifySelf: 'start' }}>Rascunho</span>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleDeleteSelected(template)}
