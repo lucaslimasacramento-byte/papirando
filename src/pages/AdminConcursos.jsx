@@ -319,6 +319,29 @@ function cleanImportedValue(value = '') {
   return UNCERTAIN_PATTERN.test(text) ? '' : text;
 }
 
+// Extrai uma URL http(s) limpa de um valor importado sujo. Lida com links
+// markdown quebrados (ex: "[https://...pdf") e lixo url-encoded de JSON
+// malformado que vaza no parser solto (ex: "...pdf%22,%22etapas%22:%22").
+function sanitizeImportedUrl(value = '') {
+  const raw = String(value || '').trim();
+  const match = raw.match(/https?:\/\/[^\s)\]"'<>]+/i);
+  if (!match) return '';
+  const url = match[0].split('%22')[0].replace(/[)\].,"']+$/, '');
+  return UNCERTAIN_PATTERN.test(url) ? '' : url;
+}
+
+// Limpa o texto de etapas de fragmentos vazados quando o JSON de origem tinha
+// um link markdown ("Provas](https://...%22,%22etapas%22:%22Provas) objetivas..."
+// vira "Provas objetivas...").
+function sanitizeImportedEtapas(value = '') {
+  const text = String(value || '')
+    .replace(/\]\([^)]*\)/g, ' ')
+    .replace(/%22[\s\S]*?%22\s*:\s*%22/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return cleanImportedValue(text);
+}
+
 function normalizeImportedArea(value = '') {
   const raw = String(value || '').trim();
   const normalized = raw
@@ -760,13 +783,13 @@ function normalizeJsonContestTemplate(raw = {}) {
     escolaridade: normalizeImportedEducationForCargo(template.escolaridade || '', template.cargo || ''),
     vagas: normalizeImportedVacancies(template.vagas || ''),
     lotacao: normalizeImportedLocationForCargo(template.lotacao || '', template.cargo || ''),
-    etapas: cleanImportedValue(template.etapas || ''),
-    etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : parseEtapaTagsFromText(template.etapas || ''),
+    etapas: sanitizeImportedEtapas(template.etapas || ''),
+    etapas_tags: Array.isArray(template.etapas_tags) ? template.etapas_tags : parseEtapaTagsFromText(sanitizeImportedEtapas(template.etapas || '')),
     taf_itens: Array.isArray(template.taf_itens) ? template.taf_itens : [],
     descricao: cleanImportedValue(template.descricao || template.descricao_curta || ''),
     status_concurso: statusConcurso,
     prova_data: provaData,
-    edital_url: cleanImportedValue(template.edital_url || template.url_edital_pdf || ''),
+    edital_url: sanitizeImportedUrl(template.edital_url || template.url_edital_pdf || ''),
     imagem_url: cleanImportedValue(template.imagem_url || template.image_url || template.capa_url || ''),
     // Campos do modelo híbrido (vestibular/ENEM): preservados para o cadastro.
     scope: template.scope || '',
