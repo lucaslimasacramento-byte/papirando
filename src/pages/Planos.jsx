@@ -1080,7 +1080,7 @@ function TargetInfoLine({ label, value, accent = false }) {
 }
 
 function ConcursosAcompanhadosCard({ items = [], onDefinirAlvo, onAbrir }) {
-  const visible = items.slice(0, 4);
+  const visible = items;
 
   return (
     <div style={{ background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 10, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -1103,7 +1103,7 @@ function ConcursosAcompanhadosCard({ items = [], onDefinirAlvo, onAbrir }) {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 560, overflowY: 'auto', paddingRight: 4, marginRight: -4 }}>
           {visible.map((contest) => {
             const areaToken = getAreaToken(contest.area || '');
             const statusLabel = contest.status_concurso ? CONTEST_STATUS_LABELS[normalizeContestStatus(contest.status_concurso)] : null;
@@ -1195,12 +1195,6 @@ function ConcursosAcompanhadosCard({ items = [], onDefinirAlvo, onAbrir }) {
               </div>
             );
           })}
-
-          {items.length > 4 && (
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-3)', textAlign: 'center' }}>
-              +{items.length - 4} mais em <button className="pl-btn-link" style={{ fontSize: 12 }}>Meus concursos</button>
-            </p>
-          )}
         </div>
       )}
     </div>
