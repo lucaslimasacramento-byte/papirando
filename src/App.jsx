@@ -1556,7 +1556,15 @@ export default function App() {
 
   const isPremiumPlan = isAdmin || isStripeActive || hasPaidProfilePlan;
 
-  const selectedContestDetail = findGroupedContestById(contestLibrary, selectedContestDetailId);
+  // Memoizado: sem isto, `findGroupedContestById` roda a cada render e devolve
+  // um objeto NOVO toda vez. Como ConcursoDetalhe tem um efeito com dep
+  // `[rawContest]`, esse efeito disparava a cada re-render (inclusive o causado
+  // pelo próprio clique), resetando o cargo selecionado e impedindo os botões
+  // de interesse/alvo de refletirem o novo estado.
+  const selectedContestDetail = useMemo(
+    () => findGroupedContestById(contestLibrary, selectedContestDetailId),
+    [contestLibrary, selectedContestDetailId]
+  );
   const communityRankings = useMemo(
     () =>
       buildCommunityRankings({

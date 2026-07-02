@@ -917,10 +917,12 @@ function ConcursoDetalheBody({
     [concursoCatalog, rawContest]
   );
 
+  // Reseta o cargo selecionado só quando o CONCURSO muda de verdade (id estável),
+  // não a cada re-render — senão o efeito atropelava a seleção do aluno.
   useEffect(() => {
     setSelectedRoleId(getPrimaryContestRole(rawContest || {})?.id || '');
     setExpandedSubjects({});
-  }, [rawContest]);
+  }, [rawContest?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
