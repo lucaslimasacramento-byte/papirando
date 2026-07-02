@@ -18,6 +18,14 @@
 
 ---
 
+## Sessão 2026-07-02 (parte 2) — Onboarding & catálogo 🔧→✅
+
+- **Conciliador (compatibilidade) — escondido de propósito, NÃO é bug:** `conciliar` está em `LAUNCH_HIDDEN_TABS` (oculto no MVP de lançamento, `src/lib/launchConfig.js`) **e** em `CONCURSO_ONLY_TABS`. Pra reativar no lançamento, remover de `LAUNCH_HIDDEN_TABS`.
+- **Onboarding não trazia vestibulares/faculdades publicados (RESOLVIDO):** `buildObjectiveLibrary` marcava TODO item do `contestLibrary` como `objectiveType: 'Concurso'`. Mas o catálogo publicado (`contest_templates`) guarda concurso/vestibular/graduação no mesmo lugar, distintos pelo campo `tipo`. Fix: classificar por `tipo` (`vestibular`/`enem` → Vestibular; `faculdade`/`gradua`/`superior` → Faculdade; resto → Concurso).
+- **Seleção múltipla no passo 1 (até 3, misturando categorias) ✅:** `StepContest` virou multi-select (máx. 3 — bate com `folha.max_courses`; papiro é ilimitado). Chips de selecionados removíveis, contador N/3, item bloqueia ao atingir o teto. Trocar de categoria NÃO limpa a seleção. Quando há 2+, aparece seletor de **foco principal** (radio) — decisão do dono: "perguntar ao aluno".
+- **Onboarding cria os objetivos de verdade ✅:** ao concluir, cada objetivo escolhido é criado em Meus cursos via `onImportObjective={createCourseFromCatalog}` (id/slug reais restaurados); o foco vira `study_goal` e, se for concurso, `targetContestId`.
+- ⚠️ *Nota de produto:* limite de cursos hoje é `folha` (free) = **3**, `papiro` (pago) = **ilimitado** (`src/lib/planConfig.js`) — o oposto do "pago = máx 3". Onboarding usa cap fixo de 3. Confirmar se o modelo de planos está correto.
+
 ## Sessão 2026-07-02 — Planos / card "Concurso-alvo" 🔧→✅
 
 Ajustes no card de alvo da tela **Meus cursos** (`src/pages/Planos.jsx` + `src/App.jsx`):

@@ -6923,6 +6923,7 @@ export default function App() {
             courseTemplates={courseTemplates}
             currentUserId={currentUserId}
             setTargetContestId={setTargetContestId}
+            onImportObjective={createCourseFromCatalog}
             onComplete={(updates) => {
               setCurrentProfile((prev) => ({ ...(prev || {}), ...(updates || {}), onboarding_done: true }));
               // start-trial criou a assinatura trialing — recarrega para liberar o premium.

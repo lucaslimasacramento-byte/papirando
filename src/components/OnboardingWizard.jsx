@@ -167,13 +167,26 @@ function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
   const contests = (contestLibrary || [])
     .map((contest, index) => {
       const rawId = contest.id || contest.slug || contest.plano || contest.nome || contest.name;
+      // O catálogo publicado (contest_templates) guarda concursos, vestibulares e
+      // graduações no mesmo lugar, distintos pelo campo `tipo`. Antes tudo virava
+      // "Concurso" e os vestibulares/faculdades publicados sumiam das outras abas.
+      const tipo = String(contest.tipo || '').toLowerCase();
+      const nome = String(contest.nome || contest.name || '').toLowerCase();
+      const objectiveType = (tipo.includes('vestibular') || tipo === 'enem' || nome.includes('vestibular') || nome.includes('enem'))
+        ? 'Vestibular'
+        : (tipo.includes('faculdade') || tipo.includes('gradua') || tipo.includes('superior'))
+          ? 'Faculdade'
+          : 'Concurso';
+      const defaultOrgao = objectiveType === 'Vestibular' ? 'Vestibular'
+        : objectiveType === 'Faculdade' ? (contest.area || 'Faculdade')
+        : 'Concurso público';
       return {
         ...contest,
         id: makeObjectiveId('contest', rawId, index),
         rawId,
         nome: contest.nome || contest.name || 'Objetivo',
-        orgao: contest.orgao || contest.organization || 'Concurso público',
-        objectiveType: 'Concurso',
+        orgao: contest.orgao || contest.organization || defaultOrgao,
+        objectiveType,
         sourceKind: 'contest',
       };
     });
@@ -188,11 +201,18 @@ function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
 }
 
 const OBJECTIVE_TYPES = ['Faculdade', 'Vestibular', 'Concurso'];
+const MAX_OBJECTIVES = 3;
 
-function StepContest({ objectiveLibrary, selectedId, onSelect }) {
-  const [activeType, setActiveType] = useState('Faculdade');
+function StepContest({ objectiveLibrary, selectedIds, onToggle, focusId, onSetFocus }) {
+  const [activeType, setActiveType] = useState('Concurso');
   const [activeArea, setActiveArea] = useState('');
   const [query, setQuery] = useState('');
+
+  const selectedObjectives = useMemo(
+    () => selectedIds.map((id) => objectiveLibrary.find((item) => item.id === id)).filter(Boolean),
+    [selectedIds, objectiveLibrary]
+  );
+  const atMax = selectedIds.length >= MAX_OBJECTIVES;
 
   const typeCounts = useMemo(() => (
     OBJECTIVE_TYPES.reduce((acc, type) => {
@@ -226,10 +246,10 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
   }, [activeArea, activeType, objectiveLibrary, query]);
 
   const handleTypeChange = (type) => {
+    // Não limpa a seleção — o aluno pode misturar categorias (ex.: 1 concurso + 1 faculdade).
     setActiveType(type);
     setActiveArea('');
     setQuery('');
-    onSelect('');
   };
 
   return (
@@ -240,9 +260,76 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
           O que você está estudando?
         </h2>
         <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
-          Isso orienta seu plano, suas questões e sua rotina. Pode pular se quiser.
+          Escolha até {MAX_OBJECTIVES} objetivos — pode misturar concurso, vestibular e faculdade. Pode pular.
         </p>
       </div>
+
+      {/* Selecionados + foco principal */}
+      {selectedObjectives.length > 0 && (
+        <div className="pl-card-paper" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <span className="pl-eyebrow" style={{ margin: 0 }}>Seus objetivos</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: atMax ? 'var(--pl-warn)' : 'var(--pl-ink-3)' }}>
+              {selectedObjectives.length}/{MAX_OBJECTIVES}
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {selectedObjectives.map((obj) => (
+              <button
+                key={obj.id}
+                type="button"
+                onClick={() => onToggle(obj.id)}
+                title="Remover"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  border: '1px solid var(--pl-accent)', background: 'var(--pl-accent-soft)',
+                  color: 'var(--pl-accent)', borderRadius: 999, padding: '4px 10px',
+                  fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                {obj.nome}
+                <span style={{ fontSize: 13, lineHeight: 1 }}>×</span>
+              </button>
+            ))}
+          </div>
+          {selectedObjectives.length > 1 && (
+            <div>
+              <p className="pl-eyebrow" style={{ margin: '2px 0 6px' }}>Foco principal</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {selectedObjectives.map((obj) => {
+                  const active = focusId === obj.id;
+                  return (
+                    <button
+                      key={obj.id}
+                      type="button"
+                      onClick={() => onSetFocus(obj.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left',
+                        border: `1px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                        background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                        borderRadius: 8, padding: '7px 10px', cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{
+                        width: 15, height: 15, borderRadius: '50%', flexShrink: 0,
+                        border: `2px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-strong)'}`,
+                        background: active ? 'var(--pl-accent)' : 'transparent',
+                        boxShadow: active ? 'inset 0 0 0 2px var(--pl-surface)' : 'none',
+                      }} />
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {obj.nome}
+                      </span>
+                      <span style={{ marginLeft: 'auto', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>
+                        {obj.objectiveType}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6 }}>
         {OBJECTIVE_TYPES.map((type) => {
@@ -336,33 +423,32 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
         />
       </div>
 
-      <button
-        type="button"
-        onClick={() => onSelect('')}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          padding: '11px 14px',
-          border: '1px solid var(--pl-rule-2)',
-          borderRadius: 8,
-          background: !selectedId ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
-          cursor: 'pointer',
-          textAlign: 'left',
-        }}
-      >
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
-            Pular escolha por enquanto
-          </p>
-          <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', margin: '2px 0 0' }}>
-            Você pode escolher curso, faculdade, vestibular ou concurso depois.
-          </p>
+      {selectedIds.length === 0 && (
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '11px 14px',
+            border: '1px solid var(--pl-rule-2)',
+            borderRadius: 8,
+            background: 'var(--pl-accent-soft)',
+            textAlign: 'left',
+          }}
+        >
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
+              Nada selecionado — tudo bem
+            </p>
+            <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', margin: '2px 0 0' }}>
+              Você pode escolher curso, faculdade, vestibular ou concurso depois.
+            </p>
+          </div>
+          <CheckCircle2 size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />
         </div>
-        {!selectedId && <CheckCircle2 size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />}
-      </button>
+      )}
 
       <div style={{
         maxHeight: 240, overflowY: 'auto',
@@ -380,18 +466,22 @@ function StepContest({ objectiveLibrary, selectedId, onSelect }) {
             const org = c.orgao || c.organization || '';
             const logo = c.imagem_url || c.logo_url || '';
             const type = c.objectiveType || 'Objetivo';
-            const isSelected = selectedId === id;
+            const isSelected = selectedIds.includes(id);
+            const blocked = !isSelected && atMax;
             return (
               <button
                 key={id}
                 type="button"
-                onClick={() => onSelect(isSelected ? '' : id)}
+                onClick={() => { if (!blocked) onToggle(id); }}
+                disabled={blocked}
+                title={blocked ? `Limite de ${MAX_OBJECTIVES} objetivos — remova um para trocar` : undefined}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                   padding: '10px 14px', border: 0,
                   borderBottom: '1px solid var(--pl-rule)',
                   background: isSelected ? 'var(--pl-accent-soft)' : 'transparent',
-                  cursor: 'pointer', textAlign: 'left',
+                  cursor: blocked ? 'not-allowed' : 'pointer', textAlign: 'left',
+                  opacity: blocked ? 0.45 : 1,
                   transition: 'background .1s',
                 }}
               >
@@ -672,11 +762,13 @@ export default function OnboardingWizard({
   courseTemplates = [],
   currentUserId,
   setTargetContestId,
+  onImportObjective,
   onComplete,
   isPreview = false,
 }) {
   const [step, setStep] = useState(1);
-  const [contestId, setContestId] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [focusId, setFocusId] = useState('');
   const [daily, setDaily] = useState({ ...EMPTY_DAILY });
   const [profileName, setProfileName] = useState(() => String(profile?.nome || profile?.name || profile?.full_name || '').trim());
   const [birthDate, setBirthDate] = useState(() => normalizeDateInput(profile?.birth_date || profile?.data_nascimento || ''));
@@ -690,10 +782,30 @@ export default function OnboardingWizard({
     () => buildObjectiveLibrary(contestLibrary, courseTemplates),
     [contestLibrary, courseTemplates]
   );
-  const selectedObjective = useMemo(
-    () => objectiveLibrary.find((item) => item.id === contestId) || null,
-    [objectiveLibrary, contestId]
+  const selectedObjectives = useMemo(
+    () => selectedIds.map((id) => objectiveLibrary.find((item) => item.id === id)).filter(Boolean),
+    [objectiveLibrary, selectedIds]
   );
+  // Foco principal: o escolhido pelo aluno; se só houver um, é ele.
+  const focusObjective = useMemo(() => {
+    if (selectedObjectives.length === 0) return null;
+    if (selectedObjectives.length === 1) return selectedObjectives[0];
+    return selectedObjectives.find((o) => o.id === focusId) || selectedObjectives[0];
+  }, [selectedObjectives, focusId]);
+
+  const toggleObjective = (id) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) {
+        const next = prev.filter((x) => x !== id);
+        if (focusId === id) setFocusId(next[0] || '');
+        return next;
+      }
+      if (prev.length >= MAX_OBJECTIVES) return prev;
+      const next = [...prev, id];
+      if (!focusId) setFocusId(id);
+      return next;
+    });
+  };
 
   const canAdvance = () => true;
 
@@ -743,9 +855,9 @@ export default function OnboardingWizard({
     setSaveError('');
 
     try {
-      const studyGoal = selectedObjective?.objectiveType === 'Concurso' ? 'concurso'
-        : selectedObjective?.objectiveType === 'Vestibular' ? 'vestibular'
-        : selectedObjective?.objectiveType === 'Faculdade' ? 'faculdade'
+      const studyGoal = focusObjective?.objectiveType === 'Concurso' ? 'concurso'
+        : focusObjective?.objectiveType === 'Vestibular' ? 'vestibular'
+        : focusObjective?.objectiveType === 'Faculdade' ? 'faculdade'
         : null;
 
       const updates = {
@@ -779,8 +891,22 @@ export default function OnboardingWizard({
         console.warn('[onboarding] start-trial falhou:', trialErr?.message || trialErr);
       }
 
-      if (selectedObjective?.sourceKind === 'contest') {
-        setTargetContestId?.(selectedObjective.rawId || contestId.replace(/^contest:/, ''));
+      // Cria cada objetivo escolhido como curso em "Meus cursos". O item da
+      // biblioteca teve o id reescrito (composto) — restauramos o id/slug reais
+      // antes de importar. Falha em um não impede os demais nem o onboarding.
+      if (typeof onImportObjective === 'function') {
+        for (const obj of selectedObjectives) {
+          try {
+            await onImportObjective({ ...obj, id: obj.rawId, slug: obj.slug || obj.rawId });
+          } catch (importErr) {
+            console.warn('[onboarding] falha ao criar objetivo:', obj?.nome, importErr?.message || importErr);
+          }
+        }
+      }
+
+      // Alvo/foco: só concurso vira "concurso alvo".
+      if (focusObjective?.sourceKind === 'contest') {
+        setTargetContestId?.(focusObjective.rawId);
       }
 
       showToast('Configuração salva! Seu mês grátis do Papiro está ativo.', 'success');
@@ -795,7 +921,7 @@ export default function OnboardingWizard({
 
   const stepContent = () => {
     if (step === 1) return <StepWelcome profile={profile} />;
-    if (step === 2) return <StepContest objectiveLibrary={objectiveLibrary} selectedId={contestId} onSelect={setContestId} />;
+    if (step === 2) return <StepContest objectiveLibrary={objectiveLibrary} selectedIds={selectedIds} onToggle={toggleObjective} focusId={focusId} onSetFocus={setFocusId} />;
     if (step === 3) return <StepGoal daily={daily} onChange={setDaily} onSkip={handleSkipRoutine} />;
     if (step === 4) {
       return (
@@ -872,7 +998,7 @@ export default function OnboardingWizard({
             {saving
               ? <Loader2 size={14} className="animate-spin" />
               : <ChevronRight size={14} />}
-            {step === 1 ? 'Começar' : (step === 2 && !contestId) || (step === 3 && totalHours === 0) ? 'Pular etapa' : isLastStep ? 'Finalizar' : 'Próximo'}
+            {step === 1 ? 'Começar' : (step === 2 && selectedIds.length === 0) || (step === 3 && totalHours === 0) ? 'Pular etapa' : isLastStep ? 'Finalizar' : 'Próximo'}
           </button>
         </div>
       </div>
