@@ -14,7 +14,7 @@
 //   dark         — boolean (tema escuro)
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Check, Loader2, Layers } from 'lucide-react';
+import { Check, Loader2, Layers, ChevronDown } from 'lucide-react';
 
 const normSubject = (value) =>
   String(value || '')
@@ -41,8 +41,10 @@ export function ImportConfirmModal({
     return new Set(initial ? [initial] : []);
   });
   // Disciplinas por cargo (carregadas sob demanda) para medir a sobreposição.
+  // Guardamos { key: nome normalizado (comparação), label: nome original (exibição) }.
   const [subjectsByRole, setSubjectsByRole] = useState({});
   const [compatLoading, setCompatLoading] = useState(false);
+  const [showCompatDetail, setShowCompatDetail] = useState(false);
 
   const selectedKey = Array.from(selected).sort().join('|');
 
@@ -58,16 +60,19 @@ export function ImportConfirmModal({
     Promise.all(
       missing.map(async (role) => {
         const disc = await loadRoleSubjects(role);
-        const names = (Array.isArray(disc) ? disc : [])
-          .map((d) => normSubject(typeof d === 'string' ? d : d?.nome))
-          .filter(Boolean);
-        return [role.id, Array.from(new Set(names))];
+        const byKey = new Map();
+        (Array.isArray(disc) ? disc : []).forEach((d) => {
+          const label = String(typeof d === 'string' ? d : d?.nome || '').trim();
+          const key = normSubject(label);
+          if (key && !byKey.has(key)) byKey.set(key, label);
+        });
+        return [role.id, Array.from(byKey, ([key, label]) => ({ key, label }))];
       })
     ).then((pairs) => {
       if (cancelled) return;
       setSubjectsByRole((prev) => {
         const next = { ...prev };
-        pairs.forEach(([id, names]) => { next[id] = names; });
+        pairs.forEach(([id, list]) => { next[id] = list; });
         return next;
       });
       setCompatLoading(false);
@@ -82,13 +87,36 @@ export function ImportConfirmModal({
     const chosen = roles.filter((role) => selected.has(role.id));
     if (chosen.length < 2) return null;
     if (!chosen.every((role) => Array.isArray(subjectsByRole[role.id]))) return null;
-    const sets = chosen.map((role) => new Set(subjectsByRole[role.id]));
+
+    const sets = chosen.map((role) => new Set(subjectsByRole[role.id].map((s) => s.key)));
+    // Rótulo por chave (primeiro cargo que a define) para exibição.
+    const labelByKey = new Map();
+    chosen.forEach((role) => subjectsByRole[role.id].forEach((s) => {
+      if (!labelByKey.has(s.key)) labelByKey.set(s.key, s.label);
+    }));
+
     const union = new Set();
-    sets.forEach((set) => set.forEach((name) => union.add(name)));
+    sets.forEach((set) => set.forEach((key) => union.add(key)));
     if (union.size === 0) return null;
-    let shared = 0;
-    union.forEach((name) => { if (sets.every((set) => set.has(name))) shared += 1; });
-    return { shared, total: union.size, pct: Math.round((shared / union.size) * 100) };
+
+    const shared = [];
+    union.forEach((key) => { if (sets.every((set) => set.has(key))) shared.push(labelByKey.get(key)); });
+
+    const perRole = chosen.map((role, index) => {
+      const own = subjectsByRole[role.id];
+      const others = sets.filter((_, i) => i !== index);
+      const only = own
+        .filter((s) => others.every((set) => !set.has(s.key)))
+        .map((s) => s.label);
+      return { role, only };
+    });
+
+    return {
+      shared: shared.sort((a, b) => a.localeCompare(b, 'pt-BR')),
+      total: union.size,
+      pct: Math.round((shared.length / union.size) * 100),
+      perRole,
+    };
   }, [multi, selectedKey, subjectsByRole, roles]);
 
   if (!contest) return null;
@@ -257,35 +285,86 @@ export function ImportConfirmModal({
               borderRadius: 12, border: `1px solid ${t.chipBorder}`, background: t.chipBg,
               padding: '12px 14px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: compat ? 10 : 0 }}>
-                <Layers size={14} color={t.chipDot2} />
-                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: t.chipInk }}>
-                  Compatibilidade dos cargos
-                </span>
-                {compat && (
-                  <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: compat.pct >= 58 ? '#15803d' : compat.pct >= 32 ? '#b45309' : t.chipInk }}>
-                    {compat.pct}%
-                  </span>
-                )}
-              </div>
-              {compatLoading && !compat ? (
-                <p style={{ fontSize: 12, color: t.subtitle, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                  <Loader2 size={13} className="animate-spin" /> Calculando matérias em comum…
-                </p>
-              ) : compat ? (
-                <>
-                  <div style={{ height: 6, borderRadius: 999, background: t.divider, overflow: 'hidden', marginBottom: 8 }}>
-                    <div style={{ height: '100%', width: `${compat.pct}%`, borderRadius: 999, background: compat.pct >= 58 ? '#15803d' : compat.pct >= 32 ? '#b45309' : t.chipDot2, transition: 'width .3s ease' }} />
+              {(() => {
+                const compatColor = compat
+                  ? (compat.pct >= 58 ? '#15803d' : compat.pct >= 32 ? '#b45309' : t.chipDot2)
+                  : t.chipDot2;
+                const header = (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+                    <Layers size={14} color={compatColor} />
+                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: t.chipInk }}>
+                      Compatibilidade dos cargos
+                    </span>
+                    {compat && (
+                      <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: compatColor }}>{compat.pct}%</span>
+                        <ChevronDown size={15} color={t.subtitle} style={{ transform: showCompatDetail ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }} />
+                      </span>
+                    )}
                   </div>
-                  <p style={{ fontSize: 12, color: t.noteInk, lineHeight: 1.5, margin: 0 }}>
-                    <strong style={{ color: t.noteStrong }}>{compat.shared}</strong> de {compat.total} matérias em comum — estudadas uma vez só no plano combinado.
-                  </p>
-                </>
-              ) : (
-                <p style={{ fontSize: 12, color: t.subtitle, margin: 0 }}>
-                  Selecione 2+ cargos para ver a sobreposição de matérias.
-                </p>
-              )}
+                );
+
+                if (compatLoading && !compat) {
+                  return (
+                    <p style={{ fontSize: 12, color: t.subtitle, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                      <Loader2 size={13} className="animate-spin" /> Calculando matérias em comum…
+                    </p>
+                  );
+                }
+                if (!compat) {
+                  return (
+                    <>
+                      <div style={{ marginBottom: 0 }}>{header}</div>
+                      <p style={{ fontSize: 12, color: t.subtitle, margin: '10px 0 0' }}>
+                        Selecione 2+ cargos para ver a sobreposição de matérias.
+                      </p>
+                    </>
+                  );
+                }
+                return (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowCompatDetail((v) => !v)}
+                      aria-expanded={showCompatDetail}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', marginBottom: 10 }}
+                    >
+                      {header}
+                    </button>
+                    <div style={{ height: 6, borderRadius: 999, background: t.divider, overflow: 'hidden', marginBottom: 8 }}>
+                      <div style={{ height: '100%', width: `${compat.pct}%`, borderRadius: 999, background: compatColor, transition: 'width .3s ease' }} />
+                    </div>
+                    <p style={{ fontSize: 12, color: t.noteInk, lineHeight: 1.5, margin: 0 }}>
+                      <strong style={{ color: t.noteStrong }}>{compat.shared.length}</strong> de {compat.total} matérias em comum — estudadas uma vez só no plano combinado.{' '}
+                      <button type="button" onClick={() => setShowCompatDetail((v) => !v)} style={{ background: 'transparent', border: 0, padding: 0, color: t.chipDot2, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                        {showCompatDetail ? 'ocultar detalhes' : 'ver detalhes'}
+                      </button>
+                    </p>
+
+                    {showCompatDetail && (
+                      <div style={{ marginTop: 12, borderTop: `1px solid ${t.divider}`, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 220, overflowY: 'auto' }}>
+                        <CompatGroup
+                          title={`Em comum (${compat.shared.length})`}
+                          dotColor="#15803d"
+                          subjects={compat.shared}
+                          t={t}
+                          emptyText="Nenhuma matéria em comum."
+                        />
+                        {compat.perRole.map(({ role, only }) => (
+                          <CompatGroup
+                            key={role.id}
+                            title={`Só em ${role.nome} (${only.length})`}
+                            dotColor={t.chipDot2}
+                            subjects={only.slice().sort((a, b) => a.localeCompare(b, 'pt-BR'))}
+                            t={t}
+                            emptyText="Todas as matérias deste cargo também aparecem nos outros."
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -368,6 +447,34 @@ export function ImportConfirmModal({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Lista de matérias de um grupo (em comum / exclusivas de um cargo) no detalhe.
+function CompatGroup({ title, subjects = [], dotColor, t, emptyText }) {
+  return (
+    <div>
+      <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: t.subtitle, margin: '0 0 7px' }}>
+        {title}
+      </p>
+      {subjects.length === 0 ? (
+        <p style={{ fontSize: 11.5, color: t.subtitle, margin: 0, fontStyle: 'italic' }}>{emptyText}</p>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {subjects.map((name, i) => (
+            <span key={`${name}-${i}`} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: 11.5, fontWeight: 600, color: t.chipInk,
+              background: t.bg, border: `1px solid ${t.chipBorder}`,
+              borderRadius: 8, padding: '4px 9px', lineHeight: 1.2,
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: dotColor, display: 'block', flexShrink: 0 }} />
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
