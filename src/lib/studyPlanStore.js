@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { computePlanAdjustments } from './planAdjustmentEngine';
 
 /**
  * Persistencia do plano de estudos aprovado no Supabase (Passo 1 da trilha).
@@ -168,4 +169,83 @@ export async function loadActiveStudyPlan({ userId, mode = 'fixo' }) {
   if (blocksError) throw blocksError;
 
   return rebuildScheduleFromRows(plan, blockRows || []);
+}
+
+/**
+ * Passo 3 — roda o motor de recalculo DETERMINISTICO sobre o plano ativo e
+ * persiste as mudancas (status/dia/modo/order_index dos blocos alterados) +
+ * grava o log em `study_plan_adjustments`. Nao chama IA.
+ *
+ * @returns {Promise<{ summary: object, adjustments: Array<object> } | null>}
+ *   null se nao houver plano ativo.
+ */
+export async function runPlanAdjustments({
+  userId,
+  mode = 'fixo',
+  todayDia,
+  accuracyByDiscipline = {},
+  lowAccuracyThreshold = 0.6,
+}) {
+  if (!userId) throw new Error('Usuario nao identificado.');
+  const normalizedMode = mode === 'flexivel' ? 'flexivel' : 'fixo';
+
+  const { data: plan, error: planError } = await supabase
+    .from('study_plans')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('mode', normalizedMode)
+    .eq('status', 'approved')
+    .maybeSingle();
+  if (planError) throw planError;
+  if (!plan) return null;
+
+  const { data: blockRows, error: blocksError } = await supabase
+    .from('study_plan_blocks')
+    .select('id, dia, order_index, status, modo, disciplina, topico, duracao')
+    .eq('plan_id', plan.id)
+    .order('order_index', { ascending: true });
+  if (blocksError) throw blocksError;
+
+  const original = new Map((blockRows || []).map((b) => [b.id, b]));
+  const { updatedBlocks, adjustments, summary } = computePlanAdjustments({
+    blocks: blockRows || [],
+    todayDia,
+    accuracyByDiscipline,
+    lowAccuracyThreshold,
+  });
+
+  // Persiste so os blocos que realmente mudaram (dia/status/modo/order_index).
+  const changed = updatedBlocks.filter((b) => {
+    const prev = original.get(b.id);
+    return (
+      prev &&
+      (prev.dia !== b.dia ||
+        prev.status !== b.status ||
+        prev.modo !== b.modo ||
+        prev.order_index !== b.order_index)
+    );
+  });
+  for (const b of changed) {
+    const { error: updErr } = await supabase
+      .from('study_plan_blocks')
+      .update({ dia: b.dia, status: b.status, modo: b.modo, order_index: b.order_index })
+      .eq('id', b.id);
+    if (updErr) throw updErr;
+  }
+
+  if (adjustments.length > 0) {
+    const rows = adjustments.map((adj) => ({
+      user_id: userId,
+      plan_id: plan.id,
+      block_id: adj.block_id,
+      adjustment_type: adj.adjustment_type,
+      reason: adj.reason,
+      payload: adj.payload || {},
+      triggered_by: 'system',
+    }));
+    const { error: logErr } = await supabase.from('study_plan_adjustments').insert(rows);
+    if (logErr) throw logErr;
+  }
+
+  return { summary, adjustments };
 }

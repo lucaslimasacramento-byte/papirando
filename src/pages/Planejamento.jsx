@@ -21,7 +21,10 @@ import { mergeDisciplinesByCanonical } from '../lib/studyRecommendation';
 import { supabase } from '../lib/supabase';
 import { getSubjectColor } from '../lib/subjectPalette';
 import { generateScheduleWithAI, DIA_LABELS, MODO_COLORS } from '../lib/scheduleAiClient';
-import { approveStudyPlan, loadActiveStudyPlan } from '../lib/studyPlanStore';
+import { approveStudyPlan, loadActiveStudyPlan, runPlanAdjustments } from '../lib/studyPlanStore';
+
+// Codigo do dia da semana de hoje (getDay: 0=domingo) alinhado ao WEEKDAY_ORDER.
+const TODAY_DIA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][new Date().getDay()];
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -319,6 +322,8 @@ function PlanejamentoContent({
   const [planApproving, setPlanApproving] = useState(false);
   const [planApprovedAt, setPlanApprovedAt] = useState(null);
   const [planApproveError, setPlanApproveError] = useState('');
+  const [planAdjusting, setPlanAdjusting] = useState(false);
+  const [planAdjustMessage, setPlanAdjustMessage] = useState('');
   const [remotePlanningLoaded, setRemotePlanningLoaded] = useState(false);
   const calViewMode = sharedCalendarViewMode || localCalViewMode;
   const setCalViewMode = setSharedCalendarViewMode || setLocalCalViewMode;
@@ -758,6 +763,48 @@ function PlanejamentoContent({
     }
   }
 
+  async function handleReavaliarPlano() {
+    if (planAdjusting || !aiSchedule?.planId) return;
+    setPlanAdjusting(true);
+    setPlanAdjustMessage('');
+    try {
+      const result = await runPlanAdjustments({
+        userId: currentUserId,
+        mode: planejamentoMode,
+        todayDia: TODAY_DIA,
+        // accuracyByDiscipline entra quando a acuracia por disciplina estiver
+        // disponivel aqui; sem ela o motor so aplica atraso/conclusao antecipada.
+        accuracyByDiscipline: {},
+      });
+
+      if (!result) {
+        setPlanAdjustMessage('Nenhum plano aprovado para reavaliar.');
+      } else {
+        const total =
+          result.summary.atraso + result.summary.erro + result.summary.conclusao_antecipada;
+        if (total === 0) {
+          setPlanAdjustMessage('Seu plano já está em dia — nenhum ajuste necessário.');
+        } else {
+          const partes = [];
+          if (result.summary.atraso) partes.push(`${result.summary.atraso} atrasado(s) remarcado(s)`);
+          if (result.summary.conclusao_antecipada) partes.push(`${result.summary.conclusao_antecipada} antecipado(s)`);
+          if (result.summary.erro) partes.push(`${result.summary.erro} repriorizado(s) por desempenho`);
+          setPlanAdjustMessage(`Plano reajustado: ${partes.join(', ')}.`);
+          // Recarrega o plano do banco para refletir a nova ordem/dias.
+          const refreshed = await loadActiveStudyPlan({ userId: currentUserId, mode: planejamentoMode });
+          if (refreshed) {
+            setAiSchedule(refreshed);
+            persistAiSchedule(currentUserId, refreshed);
+          }
+        }
+      }
+    } catch (error) {
+      setPlanAdjustMessage(error?.message || 'Não foi possível reavaliar o plano.');
+    } finally {
+      setPlanAdjusting(false);
+    }
+  }
+
   async function handleGenerateAiSchedule() {
     if (aiScheduleLoading) return;
 
@@ -815,6 +862,9 @@ function PlanejamentoContent({
             approved={Boolean(aiSchedule?.planId)}
             approveError={planApproveError}
             justApproved={Boolean(planApprovedAt)}
+            onReavaliar={handleReavaliarPlano}
+            adjusting={planAdjusting}
+            adjustMessage={planAdjustMessage}
             onClose={() => {
               setAiSchedule(null);
               setAiScheduleError('');
@@ -1292,9 +1342,13 @@ function PlSchedulePanel({
   approved = false,
   approveError = '',
   justApproved = false,
+  onReavaliar,
+  adjusting = false,
+  adjustMessage = '',
 }) {
   const semana = Array.isArray(schedule?.semana) ? schedule.semana : [];
   const canApprove = !loading && semana.length > 0 && typeof onApprove === 'function';
+  const canReavaliar = approved && typeof onReavaliar === 'function';
 
   return (
     <section className="pl-card-ai" style={{ padding: 22, border: '1px solid var(--pl-accent-soft)' }}>
@@ -1320,6 +1374,18 @@ function PlSchedulePanel({
               {approved ? 'Plano aprovado' : approving ? 'Salvando' : 'Aprovar plano'}
             </button>
           ) : null}
+          {canReavaliar ? (
+            <button
+              type="button"
+              className="pl-btn pl-btn-sm"
+              onClick={onReavaliar}
+              disabled={adjusting}
+              title="Reajusta o plano com base no que você atrasou, adiantou ou errou — sem IA"
+            >
+              {adjusting ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+              {adjusting ? 'Reavaliando' : 'Reavaliar plano'}
+            </button>
+          ) : null}
           <button type="button" className="pl-btn pl-btn-sm" onClick={onRetry} disabled={loading}>
             {loading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
             Regerar
@@ -1341,6 +1407,13 @@ function PlSchedulePanel({
         <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: '12px 14px', color: 'var(--pl-success)', fontSize: 13, fontWeight: 700 }}>
           <Check size={15} />
           Plano salvo como sua referência ativa. Ele volta automaticamente quando você reabrir o planejamento.
+        </div>
+      ) : null}
+
+      {adjustMessage ? (
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: '12px 14px', color: 'var(--pl-ink-2)', fontSize: 13, fontWeight: 700 }}>
+          <RefreshCw size={15} />
+          {adjustMessage}
         </div>
       ) : null}
 
