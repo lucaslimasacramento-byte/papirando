@@ -816,6 +816,7 @@ function ConcursoDetalheBody({
   contest: rawContest,
   onBack,
   onImport,
+  onImportRoles,
   onToggleFavorite,
   onToggleInterested,
   onOpenDisciplinas,
@@ -837,6 +838,7 @@ function ConcursoDetalheBody({
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [imageError, setImageError] = useState(false);
   const [importConfirmOpen, setImportConfirmOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // O catálogo carrega os concursos SEM disciplinas (sob demanda).
   const [loadedSubjects, setLoadedSubjects] = useState(null);
@@ -1229,12 +1231,44 @@ function ConcursoDetalheBody({
       {importConfirmOpen ? (
         <ImportConfirmModal
           contest={contest}
-          loading={importingId === contest.id}
+          roles={roles}
+          activeRoleId={activeRole?.id}
+          groupName={rawContest?.nome || contest?.nome}
+          loading={importing}
           dark={typeof document !== 'undefined' && document.documentElement.classList.contains('pl-theme-dark')}
-          onCancel={() => setImportConfirmOpen(false)}
-          onConfirm={() => {
-            onImport?.(contest);
-            setImportConfirmOpen(false);
+          onCancel={() => { if (!importing) setImportConfirmOpen(false); }}
+          onConfirm={async (selectedRoleIds) => {
+            // Cargos escolhidos: quando há mais de um, respeita o que veio marcado
+            // no modal; num concurso de cargo único, importa o próprio cargo.
+            const chosen =
+              roles.length > 1
+                ? roles.filter((r) => (selectedRoleIds || []).includes(r.id))
+                : roles;
+            const list = chosen.length > 0 ? chosen : [activeRole].filter(Boolean);
+            if (list.length === 0) return;
+
+            setImporting(true);
+            try {
+              if (onImportRoles) {
+                await onImportRoles({
+                  roles: list,
+                  baseMeta: rawContest,
+                  planName: list.length > 1 ? (rawContest?.nome || contest?.nome) : null,
+                });
+              } else {
+                await onImport?.(contest);
+              }
+              toast.success(
+                list.length > 1
+                  ? `${list.length} cargos adicionados aos seus estudos.`
+                  : 'Concurso adicionado aos seus estudos.'
+              );
+              setImportConfirmOpen(false);
+            } catch (err) {
+              toast.error(err?.message || 'Não foi possível adicionar agora. Tente de novo.');
+            } finally {
+              setImporting(false);
+            }
           }}
         />
       ) : null}

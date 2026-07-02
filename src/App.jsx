@@ -5520,6 +5520,85 @@ export default function App() {
     };
   };
 
+  // Adiciona 1+ cargos do mesmo concurso agrupado num único plano combinado.
+  // Regras (decisão de produto): as matérias iguais entre cargos são fundidas
+  // pelo nome canônico e os tópicos são somados (união) — tópicos que só existem
+  // em um dos cargos NÃO se perdem. Cria um único curso, consumindo 1 slot.
+  const createCourseFromRoles = async ({ roles = [], baseMeta = {}, planName = null }) => {
+    if (!Array.isArray(roles) || roles.length === 0) return null;
+    const multi = roles.length > 1;
+    const plano =
+      (planName && planName.trim()) ||
+      (multi
+        ? baseMeta.nome || baseMeta.plano
+        : roles[0].plano || roles[0].sourceTemplate?.plano || baseMeta.nome);
+
+    // 1. Carrega (sob demanda) e funde as disciplinas de todos os cargos.
+    const bySubject = new Map(); // nome canônico -> { nome, cor, topicos: Map }
+    const topicKey = (value) =>
+      String(value || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    for (const role of roles) {
+      let disc =
+        Array.isArray(role.disciplinas) && role.disciplinas.length ? role.disciplinas : [];
+      if (disc.length === 0 && role.templateId) {
+        try {
+          disc = (await loadTemplateContent(role.templateId)) || [];
+        } catch {
+          disc = [];
+        }
+      }
+      for (const d of disc) {
+        const rawNome = typeof d === 'string' ? d : d?.nome;
+        const nome = normalizeSubjectNameForApp(rawNome);
+        if (!nome) continue;
+        if (!bySubject.has(nome)) {
+          bySubject.set(nome, {
+            nome,
+            cor: (typeof d === 'object' && d?.cor) || null,
+            topicos: new Map(),
+          });
+        }
+        const entry = bySubject.get(nome);
+        const tops = typeof d === 'string' ? [] : d?.topicos || [];
+        for (const t of tops) {
+          const tnome = String(typeof t === 'string' ? t : t?.nome || '').trim();
+          if (!tnome) continue;
+          const key = topicKey(tnome);
+          if (!entry.topicos.has(key)) {
+            entry.topicos.set(key, { nome: tnome, ordem: entry.topicos.size });
+          }
+        }
+      }
+    }
+
+    const disciplinas = Array.from(bySubject.values()).map((s) => ({
+      nome: s.nome,
+      cor: s.cor,
+      topicos: Array.from(s.topicos.values()),
+    }));
+
+    // 2. Monta um template fundido a partir da metadata do grupo (multi) ou do
+    //    próprio cargo (single) e delega ao criador de curso existente.
+    const primary = roles[0].sourceTemplate || {};
+    const mergedTemplate = {
+      ...baseMeta,
+      ...(multi ? {} : primary),
+      slug: multi ? `${baseMeta.slug || 'plano'}-combo` : roles[0].slug || primary.slug,
+      nome: multi ? baseMeta.nome || plano : primary.nome || baseMeta.nome,
+      plano,
+      cargo: multi ? roles.map((r) => r.nome).join(' + ') : roles[0].cargo || primary.cargo,
+      disciplinas,
+    };
+
+    return createCourseFromCatalog(mergedTemplate, plano);
+  };
+
   const _importEditalWithAI = async ({ courseData, editalText }) => {
     const normalizedText = String(editalText || '').replace(/\r/g, '').trim();
     if (!normalizedText) {
@@ -7287,6 +7366,7 @@ export default function App() {
                 setActiveTab('concursos');
               }}
               onImport={createCourseFromCatalog}
+              onImportRoles={createCourseFromRoles}
               importingId=""
               limiteAtingido={!isAdmin && remainingCourseSlots <= 0}
               cursos={cursos}
