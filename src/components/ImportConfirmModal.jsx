@@ -13,14 +13,23 @@
 //   loading      — boolean (desativa botões e mostra estado de carregamento)
 //   dark         — boolean (tema escuro)
 
-import React, { useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Check, Loader2, Layers } from 'lucide-react';
+
+const normSubject = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
 
 export function ImportConfirmModal({
   contest,
   roles = [],
   activeRoleId = '',
   groupName = '',
+  loadRoleSubjects,
   onConfirm,
   onCancel,
   loading = false,
@@ -31,6 +40,56 @@ export function ImportConfirmModal({
     const initial = activeRoleId || roles?.[0]?.id;
     return new Set(initial ? [initial] : []);
   });
+  // Disciplinas por cargo (carregadas sob demanda) para medir a sobreposição.
+  const [subjectsByRole, setSubjectsByRole] = useState({});
+  const [compatLoading, setCompatLoading] = useState(false);
+
+  const selectedKey = Array.from(selected).sort().join('|');
+
+  useEffect(() => {
+    if (!multi || typeof loadRoleSubjects !== 'function') return;
+    const chosen = roles.filter((role) => selected.has(role.id));
+    if (chosen.length < 2) return;
+    const missing = chosen.filter((role) => !subjectsByRole[role.id]);
+    if (missing.length === 0) return;
+
+    let cancelled = false;
+    setCompatLoading(true);
+    Promise.all(
+      missing.map(async (role) => {
+        const disc = await loadRoleSubjects(role);
+        const names = (Array.isArray(disc) ? disc : [])
+          .map((d) => normSubject(typeof d === 'string' ? d : d?.nome))
+          .filter(Boolean);
+        return [role.id, Array.from(new Set(names))];
+      })
+    ).then((pairs) => {
+      if (cancelled) return;
+      setSubjectsByRole((prev) => {
+        const next = { ...prev };
+        pairs.forEach(([id, names]) => { next[id] = names; });
+        return next;
+      });
+      setCompatLoading(false);
+    }).catch(() => { if (!cancelled) setCompatLoading(false); });
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [multi, selectedKey, loadRoleSubjects]);
+
+  const compat = useMemo(() => {
+    if (!multi) return null;
+    const chosen = roles.filter((role) => selected.has(role.id));
+    if (chosen.length < 2) return null;
+    if (!chosen.every((role) => Array.isArray(subjectsByRole[role.id]))) return null;
+    const sets = chosen.map((role) => new Set(subjectsByRole[role.id]));
+    const union = new Set();
+    sets.forEach((set) => set.forEach((name) => union.add(name)));
+    if (union.size === 0) return null;
+    let shared = 0;
+    union.forEach((name) => { if (sets.every((set) => set.has(name))) shared += 1; });
+    return { shared, total: union.size, pct: Math.round((shared / union.size) * 100) };
+  }, [multi, selectedKey, subjectsByRole, roles]);
 
   if (!contest) return null;
 
@@ -188,6 +247,46 @@ export function ImportConfirmModal({
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {/* Compatibilidade entre os cargos selecionados */}
+        {multi && selectedCount >= 2 && (
+          <div style={{ padding: '0 24px 14px' }}>
+            <div style={{
+              borderRadius: 12, border: `1px solid ${t.chipBorder}`, background: t.chipBg,
+              padding: '12px 14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: compat ? 10 : 0 }}>
+                <Layers size={14} color={t.chipDot2} />
+                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: t.chipInk }}>
+                  Compatibilidade dos cargos
+                </span>
+                {compat && (
+                  <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: compat.pct >= 58 ? '#15803d' : compat.pct >= 32 ? '#b45309' : t.chipInk }}>
+                    {compat.pct}%
+                  </span>
+                )}
+              </div>
+              {compatLoading && !compat ? (
+                <p style={{ fontSize: 12, color: t.subtitle, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                  <Loader2 size={13} className="animate-spin" /> Calculando matérias em comum…
+                </p>
+              ) : compat ? (
+                <>
+                  <div style={{ height: 6, borderRadius: 999, background: t.divider, overflow: 'hidden', marginBottom: 8 }}>
+                    <div style={{ height: '100%', width: `${compat.pct}%`, borderRadius: 999, background: compat.pct >= 58 ? '#15803d' : compat.pct >= 32 ? '#b45309' : t.chipDot2, transition: 'width .3s ease' }} />
+                  </div>
+                  <p style={{ fontSize: 12, color: t.noteInk, lineHeight: 1.5, margin: 0 }}>
+                    <strong style={{ color: t.noteStrong }}>{compat.shared}</strong> de {compat.total} matérias em comum — estudadas uma vez só no plano combinado.
+                  </p>
+                </>
+              ) : (
+                <p style={{ fontSize: 12, color: t.subtitle, margin: 0 }}>
+                  Selecione 2+ cargos para ver a sobreposição de matérias.
+                </p>
+              )}
+            </div>
           </div>
         )}
 

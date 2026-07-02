@@ -893,6 +893,19 @@ function ConcursoDetalheBody({
   // enviado nos onClick — para o estado do botão refletir a ação. Antes o estado
   // vinha do id do grupo ("group-..."), que nunca batia num concurso combinado.
   const activeContestId = contest?.id || rawContest?.id || '';
+
+  // Carrega (sob demanda) as disciplinas de um cargo — usado pelo modal de
+  // importação para calcular a compatibilidade entre os cargos selecionados.
+  const loadRoleSubjects = React.useCallback(async (role) => {
+    if (Array.isArray(role?.disciplinas) && role.disciplinas.length > 0) return role.disciplinas;
+    const templateId = role?.templateId || role?.sourceTemplate?.id || role?.id;
+    if (!templateId) return [];
+    try {
+      return (await loadContestTemplateContent(supabase, templateId)) || [];
+    } catch {
+      return [];
+    }
+  }, []);
   const resolvedInterested = Array.isArray(interestedContestIds)
     ? interestedContestIds.includes(activeContestId)
     : isInterested;
@@ -1260,6 +1273,7 @@ function ConcursoDetalheBody({
           roles={roles}
           activeRoleId={activeRole?.id}
           groupName={rawContest?.nome || contest?.nome}
+          loadRoleSubjects={loadRoleSubjects}
           loading={importing}
           dark={typeof document !== 'undefined' && document.documentElement.classList.contains('pl-theme-dark')}
           onCancel={() => { if (!importing) setImportConfirmOpen(false); }}

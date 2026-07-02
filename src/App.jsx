@@ -5613,11 +5613,22 @@ export default function App() {
     const contest = contestLibrary.find((item) => item.id === contestId);
     if (!contest) return;
 
-    const jaImportado = cursos.some(
-      (curso) =>
-        curso.plano === contest.plano ||
-        curso.nome === contest.nome ||
-        curso.concurso === contest.concurso
+    // Modelo: o objetivo é o CONCURSO (plano combinado quando há vários cargos);
+    // o alvo é o CARGO escolhido dentro dele. Então só importamos um curso novo
+    // se o concurso ainda NÃO tem objetivo — se o aluno já montou o plano
+    // combinado (ou importou um cargo irmão), não duplicamos.
+    const grupo = findGroupedContestById(contestLibrary, contestId);
+    const norm = (value) => String(value || '').trim().toLowerCase();
+    const idsDoConcurso = new Set(
+      [
+        contest.plano, contest.nome, contest.concurso,
+        grupo?.nome, grupo?.concurso, grupo?.plano,
+      ].filter(Boolean).map(norm)
+    );
+    const jaImportado = cursos.some((curso) =>
+      [curso.plano, curso.nome, curso.concurso]
+        .filter(Boolean)
+        .some((value) => idsDoConcurso.has(norm(value)))
     );
     if (jaImportado) return;
 
