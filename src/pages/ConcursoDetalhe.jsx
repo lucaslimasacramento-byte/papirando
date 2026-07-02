@@ -28,6 +28,7 @@ import {
 import { getContestAreaTheme } from '../lib/contestAreaTheme';
 import { storageThumb } from '../lib/imageUrl';
 import { supabase } from '../lib/supabase';
+import { toast } from '../lib/toast';
 import { loadContestTemplateContent } from '../lib/contestCatalogApi';
 import { ImportConfirmModal } from '../components/ImportConfirmModal';
 
@@ -1114,7 +1115,7 @@ function ConcursoDetalheBody({
           type="button"
           onClick={onBack}
           className="pl-btn pl-btn-ghost"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-low)' }}
         >
           <ArrowLeft size={16} />
           Voltar
@@ -1175,17 +1176,21 @@ function ConcursoDetalheBody({
               {!limiteAtingido && importingId !== contest.id ? <ArrowRight size={14} /> : null}
             </button>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button type="button" onClick={() => onToggleFavorite?.(contest.id)}
-                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isFavorite ? '1px solid rgba(220,38,38,0.35)' : '1px solid var(--pl-rule-2)', background: isFavorite ? 'rgba(220,38,38,0.08)' : 'var(--pl-bg-soft)', color: isFavorite ? '#dc2626' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                <Heart size={13} style={{ fill: isFavorite ? 'currentColor' : 'none' }} />{isFavorite ? 'Favoritado' : 'Favoritar'}
-              </button>
-              <button type="button" onClick={() => onSetTargetContest?.(contest.id)}
-                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isTargetContest ? `1px solid ${areaAccent}` : '1px solid var(--pl-rule-2)', background: isTargetContest ? `${areaAccent}14` : 'var(--pl-bg-soft)', color: isTargetContest ? areaAccent : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                <BadgeCheck size={13} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} />{isTargetContest ? 'Alvo' : 'Definir alvo'}
-              </button>
-              <button type="button" onClick={() => onToggleInterested?.(contest.id)}
+              <button type="button"
+                onClick={() => {
+                  onToggleInterested?.(contest.id);
+                  toast.success(isInterested ? 'Removido dos seus interesses.' : 'Salvo nos seus interesses.');
+                }}
                 style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isInterested ? '1px solid rgba(180,83,9,0.35)' : '1px solid var(--pl-rule-2)', background: isInterested ? 'rgba(180,83,9,0.08)' : 'var(--pl-bg-soft)', color: isInterested ? '#b45309' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                <Bookmark size={13} style={{ fill: isInterested ? 'currentColor' : 'none' }} />{isInterested ? 'Interesse' : 'Interesse'}
+                <Bookmark size={13} style={{ fill: isInterested ? 'currentColor' : 'none' }} />{isInterested ? 'Interesse salvo' : 'Tenho interesse'}
+              </button>
+              <button type="button"
+                onClick={() => {
+                  onSetTargetContest?.(isTargetContest ? '' : contest.id);
+                  toast.success(isTargetContest ? 'Removido dos concursos alvo.' : 'Definido como seu concurso alvo.');
+                }}
+                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isTargetContest ? `1px solid ${areaAccent}` : '1px solid var(--pl-rule-2)', background: isTargetContest ? `${areaAccent}14` : 'var(--pl-bg-soft)', color: isTargetContest ? areaAccent : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <BadgeCheck size={13} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} />{isTargetContest ? 'Concurso alvo' : 'Definir alvo'}
               </button>
               {editalHref ? (
                 <button type="button" onClick={() => window.open(editalHref, '_blank', 'noopener,noreferrer')}
