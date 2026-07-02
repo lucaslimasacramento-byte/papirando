@@ -420,6 +420,7 @@ export default function Planos({
             target={targetContest}
             cursoStats={cursoStats}
             onTrocar={() => setActiveTab('concursos')}
+            onLimparAlvo={() => onSetTargetContest?.('')}
             onAbrir={() => targetContest?.id && onOpenContestDetail?.(targetContest.id)}
           />
           <ConcursosAcompanhadosCard
@@ -794,7 +795,7 @@ function PlanosHeader({ onCriarCurso, onAbrirBiblioteca, onImportarIA }) {
   );
 }
 
-function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
+function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onAbrir }) {
   const targetStats = cursoStats.find(
     (c) => c.plano === target?.plano || c.nome === target?.nome
   ) || null;
@@ -896,17 +897,29 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
             <Target size={10} strokeWidth={2.5} style={{ color: 'rgba(243,239,229,0.45)', flexShrink: 0 }} />
             <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.24em', textTransform: 'uppercase', color: 'rgba(243,239,229,0.45)' }}>Objetivo-alvo</span>
-            {daysToExam !== null && (
-              <span style={{
-                marginLeft: 'auto', padding: '2px 8px', borderRadius: 4, whiteSpace: 'nowrap',
-                background: daysToExam < 0 ? 'rgba(0,0,0,0.25)' : 'rgba(243,239,229,0.12)',
-                border: '1px solid rgba(243,239,229,0.18)',
-                color: daysToExam < 0 ? 'rgba(243,239,229,0.4)' : daysToExam < 30 ? 'var(--pl-danger)' : daysToExam < 90 ? 'var(--pl-warn)' : 'rgba(243,239,229,0.9)',
-                fontSize: 9.5, fontWeight: 800, letterSpacing: '0.04em',
-              }}>
-                {daysToExam < 0 ? 'Prova encerrada' : `${daysToExam}d para a prova`}
-              </span>
-            )}
+            {daysToExam !== null && (() => {
+              // O selo fica sobre o banner escuro (independe do tema claro/escuro),
+              // então usamos fundos sólidos por urgência com texto claro de alto contraste,
+              // em vez dos tokens --pl-warn/--pl-danger (calibrados p/ fundo de página, ilegíveis aqui).
+              const tone = daysToExam < 0
+                ? { bg: 'rgba(0,0,0,0.32)', fg: 'rgba(243,239,229,0.6)', border: 'rgba(243,239,229,0.14)' }
+                : daysToExam < 30
+                  ? { bg: '#dc2626', fg: '#fff', border: 'rgba(255,255,255,0.28)' }
+                  : daysToExam < 90
+                    ? { bg: '#b45309', fg: '#fff', border: 'rgba(255,255,255,0.24)' }
+                    : { bg: 'rgba(243,239,229,0.16)', fg: '#f3efe5', border: 'rgba(243,239,229,0.22)' };
+              return (
+                <span style={{
+                  marginLeft: 'auto', padding: '3px 9px', borderRadius: 5, whiteSpace: 'nowrap',
+                  background: tone.bg,
+                  border: `1px solid ${tone.border}`,
+                  color: tone.fg,
+                  fontSize: 10, fontWeight: 800, letterSpacing: '0.03em',
+                }}>
+                  {daysToExam < 0 ? 'Prova encerrada' : `${daysToExam}d para a prova`}
+                </span>
+              );
+            })()}
           </div>
           <h2 style={{
             margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300,
@@ -1040,6 +1053,11 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onAbrir }) {
             {/* Ações */}
             <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
               <button className="pl-btn pl-btn-sm" onClick={onTrocar}>Trocar alvo</button>
+              {onLimparAlvo && (
+                <button className="pl-btn pl-btn-sm" onClick={onLimparAlvo} title="Estudar sem um alvo definido">
+                  Remover alvo
+                </button>
+              )}
               <button className="pl-btn pl-btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={onAbrir}>
                 Abrir curso <ArrowRight size={13} />
               </button>

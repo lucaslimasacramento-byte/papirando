@@ -5599,6 +5599,41 @@ export default function App() {
     return createCourseFromCatalog(mergedTemplate, plano);
   };
 
+  // Define (ou limpa) o concurso-alvo. Ao definir, garante que o alvo também
+  // vire um objetivo em "Meus cursos": se ainda não foi importado do catálogo,
+  // importa automaticamente para o painel começar a acompanhar disciplinas e rota.
+  const handleSetTargetContest = async (contestId) => {
+    if (!contestId) {
+      setTargetContestId('');
+      return;
+    }
+
+    setTargetContestId(contestId);
+
+    const contest = contestLibrary.find((item) => item.id === contestId);
+    if (!contest) return;
+
+    const jaImportado = cursos.some(
+      (curso) =>
+        curso.plano === contest.plano ||
+        curso.nome === contest.nome ||
+        curso.concurso === contest.concurso
+    );
+    if (jaImportado) return;
+
+    if (remainingCourseSlots <= 0) {
+      showToast('Alvo definido, mas você atingiu o limite de cursos do seu plano. Libere um espaço para criar o objetivo.', 'warn');
+      return;
+    }
+
+    try {
+      await createCourseFromCatalog(contest);
+      showToast(`"${contest.nome}" agora é seu alvo e virou um objetivo em Meus cursos.`, 'success');
+    } catch (error) {
+      showToast(error?.message || 'Alvo definido, mas não foi possível criar o objetivo agora.', 'warn');
+    }
+  };
+
   const _importEditalWithAI = async ({ courseData, editalText }) => {
     const normalizedText = String(editalText || '').replace(/\r/g, '').trim();
     if (!normalizedText) {
@@ -7288,7 +7323,7 @@ export default function App() {
               bancoDisciplinas={bancoDisciplinas}
               myContests={myContests}
               targetContest={targetContestSummary}
-              onSetTargetContest={setTargetContestId}
+              onSetTargetContest={handleSetTargetContest}
               onOpenContestDetail={(contestId) => {
                 setSelectedContestDetailId(contestId);
                 setActiveTab('concurso_detalhe');
@@ -7402,7 +7437,7 @@ export default function App() {
                 }))
               }
               isTargetContest={selectedContestDetail?.id === targetContestId}
-              onSetTargetContest={setTargetContestId}
+              onSetTargetContest={handleSetTargetContest}
             />
           )}
 
@@ -7814,7 +7849,7 @@ export default function App() {
               bancoDisciplinas={bancoDisciplinas}
               historicoReal={historicoReal}
               targetContestId={targetContestId}
-              onSetTargetContest={setTargetContestId}
+              onSetTargetContest={handleSetTargetContest}
               onOpenContestDetail={(contestId) => {
                 setSelectedContestDetailId(contestId);
                 setActiveTab('concurso_detalhe');

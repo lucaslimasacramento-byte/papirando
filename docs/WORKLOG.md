@@ -18,6 +18,16 @@
 
 ---
 
+## Sessão 2026-07-02 — Planos / card "Concurso-alvo" 🔧→✅
+
+Ajustes no card de alvo da tela **Meus cursos** (`src/pages/Planos.jsx` + `src/App.jsx`):
+
+- **Selo "Nd para a prova" legível nos 2 temas:** trocado dos tokens `--pl-warn`/`--pl-danger` (calibrados p/ fundo de página → ilegíveis sobre o banner azul escuro) para fundos sólidos por urgência com texto branco de alto contraste: `< 30d` vermelho `#dc2626`, `< 90d` âmbar `#b45309`, `> 90d` creme translúcido, encerrada preto suave.
+- **Botão "Remover alvo":** permite estudar sem um curso-alvo definido — chama `onSetTargetContest('')`.
+- **Definir alvo → vira objetivo:** novo `handleSetTargetContest` em `App.jsx` — ao marcar um concurso como alvo, se ainda não foi importado, cria automaticamente o curso/objetivo em Meus cursos (respeita o limite de cursos do plano). Aplicado em Planos, ConcursoDetalhe e Conciliador.
+
+---
+
 ## PAGAMENTOS — Status atual (2026-06-17) — ✅ FUNCIONANDO E TESTADO
 
 Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produção**.
