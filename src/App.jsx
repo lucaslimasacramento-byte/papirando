@@ -2421,6 +2421,48 @@ export default function App() {
     setPlanWizardStep(0);
   };
 
+  // Chave canônica da matéria alinhada ao buildCycleRows do Planejamento
+  // (canonicalName tem prioridade; senão cai para materia/nome).
+  const resolveCycleGroupKey = (item, index) =>
+    String(item?.canonicalName || item?.materia || item?.nome || `Matéria ${index + 1}`);
+
+  // Passo 2 — Ciclo Flexível: marca a PRÓXIMA sessão ainda não concluída da
+  // matéria (grupo) como feita. Isso faz a fila avançar sozinha, pois a matéria
+  // ativa é a primeira com tempo feito < previsto. 100% determinístico.
+  const concluirProximaSessaoCiclo = (groupKey) => {
+    const alvo = (Array.isArray(activeCycle) ? activeCycle : []).find(
+      (item, index) => resolveCycleGroupKey(item, index) === groupKey && !item?.concluido
+    );
+    if (alvo && alvo.id != null) toggleSessionConcluida(alvo.id);
+  };
+
+  // Passo 2 — reordena a rotação movendo o BLOCO da matéria (todas as suas
+  // sessões) uma posição para cima/baixo, preservando a ordem interna. Como o
+  // buildCycleRows agrupa por primeira aparição, reordenar activeCycle reordena
+  // as linhas exibidas.
+  const reorderCycleDiscipline = (groupKey, direction) => {
+    setActiveCycle((prev) => {
+      const list = Array.isArray(prev) ? prev : [];
+      const order = [];
+      list.forEach((item, index) => {
+        const key = resolveCycleGroupKey(item, index);
+        if (!order.includes(key)) order.push(key);
+      });
+      const from = order.indexOf(groupKey);
+      const to = direction === 'up' ? from - 1 : from + 1;
+      if (from < 0 || to < 0 || to >= order.length) return prev;
+      [order[from], order[to]] = [order[to], order[from]];
+
+      const byKey = new Map();
+      list.forEach((item, index) => {
+        const key = resolveCycleGroupKey(item, index);
+        if (!byKey.has(key)) byKey.set(key, []);
+        byKey.get(key).push(item);
+      });
+      return order.flatMap((key) => byKey.get(key) || []);
+    });
+  };
+
   const finalizeCycleWizard = () => {
     const nextCycle = buildCycleFromWizardSelection({
       wizardData: wizData,
@@ -7492,6 +7534,8 @@ export default function App() {
                 setShowFinishedSessions,
                 activeCycle,
                 toggleSessionConcluida,
+                onConcluirSessao: concluirProximaSessaoCiclo,
+                onReorderCycle: reorderCycleDiscipline,
                 openTimerSetup,
                 setRegistroEstudoModalOpen,
                 donutData,

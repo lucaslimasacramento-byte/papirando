@@ -2,8 +2,10 @@
 import {
   CalendarDays,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Edit3,
   Loader2,
   Play,
@@ -838,6 +840,8 @@ function PlanejamentoContent({
             onStart={onStartRecommendedSession || safeCycleProps.openTimerSetup}
             onManual={() => safeCycleProps.setRegistroEstudoModalOpen?.(true)}
             onHistory={onOpenRecommendedDiscipline}
+            onConcluir={(row) => safeCycleProps.onConcluirSessao?.(row.key)}
+            onReorder={(row, direction) => safeCycleProps.onReorderCycle?.(row.key, direction)}
           />
         ) : (
           <PlanejamentoFixo
@@ -1417,6 +1421,8 @@ function CicloFlexivel({
   onStart,
   onManual,
   onHistory,
+  onConcluir,
+  onReorder,
 }) {
   const activeIndex = disciplinas.findIndex((disciplina) => disciplina.feitaMin < disciplina.previstaMin);
   const currentIndex = activeIndex >= 0 ? activeIndex : 0;
@@ -1442,6 +1448,8 @@ function CicloFlexivel({
           onStart={onStart}
           onManual={onManual}
           onHistory={onHistory}
+          onConcluir={onConcluir}
+          onReorder={onReorder}
         />
         <DistribuicaoDonutCard disciplinas={disciplinas} totalMin={totalPrevistoMin} />
       </section>
@@ -1505,7 +1513,7 @@ function CicloActions({ onRecomecar, onReplanejar, onRemover, disabled, complete
   );
 }
 
-function SequenciaDosEstudosCard({ disciplinas, activeIndex, onEditar, onStart, onManual, onHistory }) {
+function SequenciaDosEstudosCard({ disciplinas, activeIndex, onEditar, onStart, onManual, onHistory, onConcluir, onReorder }) {
   return (
     <section className="pl-card" style={{ padding: 22 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'end' }}>
@@ -1524,9 +1532,13 @@ function SequenciaDosEstudosCard({ disciplinas, activeIndex, onEditar, onStart, 
               key={disciplina.key}
               disciplina={disciplina}
               active={index === activeIndex}
+              isFirst={index === 0}
+              isLast={index === disciplinas.length - 1}
               onStart={onStart}
               onManual={onManual}
               onHistory={onHistory}
+              onConcluir={onConcluir}
+              onReorder={onReorder}
             />
           ))
         )}
@@ -1540,8 +1552,23 @@ function SequenciaDosEstudosCard({ disciplinas, activeIndex, onEditar, onStart, 
   );
 }
 
-function CicloRow({ disciplina, active, onStart, onManual, onHistory }) {
+function CicloRow({ disciplina, active, isFirst = false, isLast = false, onStart, onManual, onHistory, onConcluir, onReorder }) {
   const pct = disciplina.previstaMin > 0 ? Math.round((disciplina.feitaMin / disciplina.previstaMin) * 100) : 0;
+  const done = disciplina.previstaMin > 0 && disciplina.feitaMin >= disciplina.previstaMin;
+  const showReorder = typeof onReorder === 'function';
+
+  const reorderBtnStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 22,
+    height: 18,
+    borderRadius: 5,
+    border: '1px solid var(--pl-rule-2)',
+    background: 'var(--pl-surface)',
+    color: 'var(--pl-ink-3)',
+    cursor: 'pointer',
+  };
 
   return (
     <article className={active ? 'planning-cycle-row is-active' : 'planning-cycle-row'}>
@@ -1551,6 +1578,7 @@ function CicloRow({ disciplina, active, onStart, onManual, onHistory }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <strong>{disciplina.nome}</strong>
             {active && <span className="pl-tag pl-tag-highlight">Agora</span>}
+            {done && <span className="pl-tag pl-tag-success">Concluída</span>}
           </div>
           {active && (
             <div className="pl-progress-track" style={{ marginTop: 9 }}>
@@ -1558,7 +1586,33 @@ function CicloRow({ disciplina, active, onStart, onManual, onHistory }) {
             </div>
           )}
         </div>
-        <span className="planning-time-label">{formatMinutes(disciplina.feitaMin)} / {formatMinutes(disciplina.previstaMin)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="planning-time-label">{formatMinutes(disciplina.feitaMin)} / {formatMinutes(disciplina.previstaMin)}</span>
+          {showReorder && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <button
+                type="button"
+                style={{ ...reorderBtnStyle, opacity: isFirst ? 0.4 : 1 }}
+                disabled={isFirst}
+                onClick={() => onReorder(disciplina, 'up')}
+                title="Subir na rotação"
+                aria-label={`Subir ${disciplina.nome} na rotação`}
+              >
+                <ChevronUp size={13} />
+              </button>
+              <button
+                type="button"
+                style={{ ...reorderBtnStyle, opacity: isLast ? 0.4 : 1 }}
+                disabled={isLast}
+                onClick={() => onReorder(disciplina, 'down')}
+                title="Descer na rotação"
+                aria-label={`Descer ${disciplina.nome} na rotação`}
+              >
+                <ChevronDown size={13} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {active && (
@@ -1567,6 +1621,12 @@ function CicloRow({ disciplina, active, onStart, onManual, onHistory }) {
             <Play size={13} fill="currentColor" />
             Iniciar estudo
           </button>
+          {typeof onConcluir === 'function' && (
+            <button type="button" className="pl-btn pl-btn-sm" onClick={() => onConcluir(disciplina)} title="Marca esta sessão como estudada e avança a rotação">
+              <Check size={13} />
+              Concluir sessão
+            </button>
+          )}
           <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={onManual}>Adicionar manual</button>
           <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={() => onHistory?.(disciplina.nome)}>Últimos estudos</button>
         </div>
