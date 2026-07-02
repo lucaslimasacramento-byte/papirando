@@ -95,7 +95,7 @@ Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produçã
 
 | Tela | Arquivo | Status | O que falta |
 |---|---|---|---|
-| Planejamento | `Planejamento.jsx` | 🔧 | Código auditado ✅ (label, no-op, código morto). Flag: "Gerar com IA" não persiste/não vira plano (#1); questoes_meta derivado (#4) |
+| Planejamento | `Planejamento.jsx` | 🔧 | Código auditado ✅ (label, no-op, código morto). ✅ **Passo 1 trilha (2026-07-02):** cronograma IA agora vira PLANO APROVADO versionado no Supabase (`study_plans` + `study_plan_blocks`, migration `202607020001`; helper `src/lib/studyPlanStore.js`; botão "Aprovar plano" no painel; carga do plano ativo no mount, localStorage vira só cache). **PENDENTE: aplicar migration `202607020001` no banco de prod.** Próximos passos da trilha: #2 Ciclo Flexível (marcar/reordenar), #3 recálculo determinístico, #4 FSRS, #5 trilha DAG. questoes_meta derivado (#4-antigo) |
 | Ciclos de Estudo | `Ciclos.jsx` | 🔧 | Código auditado ✅ (no-op + campo morto). Flag: modo de edição decorativo, marcar-concluída sem UI, "Ciclos completos" sempre ≤1 |
 | Metas da Semana | `MetasSemana.jsx` | ✅ | — |
 | Objetivos | `Objetivos.jsx` | ✅ | Código auditado — sólido. Error-handling VERIFICADO ✅ — os handlers das views-filhas chamam `handleCreateCourse`, que captura o erro e mostra no banner `importError` (renderizado, linha ~802) + rethrow p/ pular o estado de sucesso. Erro NÃO é silencioso (flag estava desatualizada). Resíduo mínimo: rethrow gera unhandled-rejection no console (cosmético) |

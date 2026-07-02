@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   CalendarDays,
+  Check,
   ChevronLeft,
   ChevronRight,
   Edit3,
@@ -18,6 +19,7 @@ import { mergeDisciplinesByCanonical } from '../lib/studyRecommendation';
 import { supabase } from '../lib/supabase';
 import { getSubjectColor } from '../lib/subjectPalette';
 import { generateScheduleWithAI, DIA_LABELS, MODO_COLORS } from '../lib/scheduleAiClient';
+import { approveStudyPlan, loadActiveStudyPlan } from '../lib/studyPlanStore';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -312,6 +314,9 @@ function PlanejamentoContent({
   const [aiSchedule, setAiSchedule] = useState(() => readSavedAiSchedule(currentUserId));
   const [aiScheduleLoading, setAiScheduleLoading] = useState(false);
   const [aiScheduleError, setAiScheduleError] = useState('');
+  const [planApproving, setPlanApproving] = useState(false);
+  const [planApprovedAt, setPlanApprovedAt] = useState(null);
+  const [planApproveError, setPlanApproveError] = useState('');
   const [remotePlanningLoaded, setRemotePlanningLoaded] = useState(false);
   const calViewMode = sharedCalendarViewMode || localCalViewMode;
   const setCalViewMode = setSharedCalendarViewMode || setLocalCalViewMode;
@@ -702,6 +707,55 @@ function PlanejamentoContent({
     pace: summary.paceLabel || 'ritmo sob controle',
   };
 
+  // Prefere o plano aprovado no banco sobre o cache do localStorage. Roda ao
+  // montar e quando o modo muda; so aplica se houver plano remoto (nao apaga
+  // uma geracao ainda nao aprovada).
+  useEffect(() => {
+    if (!currentUserId) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const remotePlan = await loadActiveStudyPlan({ userId: currentUserId, mode: planejamentoMode });
+        if (cancelled || !remotePlan) return;
+        setAiSchedule(remotePlan);
+        persistAiSchedule(currentUserId, remotePlan);
+      } catch {
+        /* sem plano remoto ou tabela ausente — segue com o cache local */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, planejamentoMode]);
+
+  async function handleApprovePlan() {
+    if (planApproving || !aiSchedule) return;
+    setPlanApproving(true);
+    setPlanApproveError('');
+    try {
+      const meta = [
+        targetContest?.nome || targetContest?.titulo || targetContest?.concurso,
+        targetContest?.cargo,
+      ].filter(Boolean).join(' - ');
+
+      const { planId, version } = await approveStudyPlan({
+        userId: currentUserId,
+        schedule: aiSchedule,
+        mode: planejamentoMode,
+        meta,
+      });
+
+      const approved = { ...aiSchedule, planId, version };
+      setAiSchedule(approved);
+      persistAiSchedule(currentUserId, approved);
+      setPlanApprovedAt(new Date().toISOString());
+    } catch (error) {
+      setPlanApproveError(error?.message || 'Não foi possível salvar o plano aprovado.');
+    } finally {
+      setPlanApproving(false);
+    }
+  }
+
   async function handleGenerateAiSchedule() {
     if (aiScheduleLoading) return;
 
@@ -728,6 +782,8 @@ function PlanejamentoContent({
 
       setAiSchedule(result);
       persistAiSchedule(currentUserId, result);
+      setPlanApprovedAt(null);
+      setPlanApproveError('');
     } catch (error) {
       setAiScheduleError(error?.message || 'Não foi possível gerar o cronograma com IA.');
     } finally {
@@ -752,9 +808,16 @@ function PlanejamentoContent({
             loading={aiScheduleLoading}
             error={aiScheduleError}
             onRetry={handleGenerateAiSchedule}
+            onApprove={handleApprovePlan}
+            approving={planApproving}
+            approved={Boolean(aiSchedule?.planId)}
+            approveError={planApproveError}
+            justApproved={Boolean(planApprovedAt)}
             onClose={() => {
               setAiSchedule(null);
               setAiScheduleError('');
+              setPlanApprovedAt(null);
+              setPlanApproveError('');
               persistAiSchedule(currentUserId, null);
             }}
           />
@@ -1214,8 +1277,20 @@ function PlanejamentoHeader({ mode, setMode, onConfigurar, onGenerateAiSchedule,
   );
 }
 
-function PlSchedulePanel({ schedule, loading, error, onRetry, onClose }) {
+function PlSchedulePanel({
+  schedule,
+  loading,
+  error,
+  onRetry,
+  onClose,
+  onApprove,
+  approving = false,
+  approved = false,
+  approveError = '',
+  justApproved = false,
+}) {
   const semana = Array.isArray(schedule?.semana) ? schedule.semana : [];
+  const canApprove = !loading && semana.length > 0 && typeof onApprove === 'function';
 
   return (
     <section className="pl-card-ai" style={{ padding: 22, border: '1px solid var(--pl-accent-soft)' }}>
@@ -1230,6 +1305,17 @@ function PlSchedulePanel({ schedule, loading, error, onRetry, onClose }) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {canApprove ? (
+            <button
+              type="button"
+              className="pl-btn pl-btn-primary pl-btn-sm"
+              onClick={onApprove}
+              disabled={approving || approved}
+            >
+              {approving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+              {approved ? 'Plano aprovado' : approving ? 'Salvando' : 'Aprovar plano'}
+            </button>
+          ) : null}
           <button type="button" className="pl-btn pl-btn-sm" onClick={onRetry} disabled={loading}>
             {loading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
             Regerar
@@ -1240,6 +1326,19 @@ function PlSchedulePanel({ schedule, loading, error, onRetry, onClose }) {
           </button>
         </div>
       </div>
+
+      {approveError ? (
+        <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', padding: 14, color: 'var(--pl-danger)', fontSize: 13, fontWeight: 700 }}>
+          {approveError}
+        </div>
+      ) : null}
+
+      {(approved || justApproved) && !approveError ? (
+        <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: '12px 14px', color: 'var(--pl-success)', fontSize: 13, fontWeight: 700 }}>
+          <Check size={15} />
+          Plano salvo como sua referência ativa. Ele volta automaticamente quando você reabrir o planejamento.
+        </div>
+      ) : null}
 
       {error ? (
         <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-danger-soft)', background: 'var(--pl-danger-soft)', padding: 14, color: 'var(--pl-danger)', fontSize: 13, fontWeight: 700 }}>
