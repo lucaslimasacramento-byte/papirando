@@ -18,6 +18,16 @@
 
 ---
 
+## Sessão 2026-07-02 (parte 3) — Conciliador reativado + limites de plano editáveis 🔧→✅
+
+- **Conciliador reativado (só concurso):** removido de `LAUNCH_HIDDEN_TABS` (`src/lib/launchConfig.js`). Continua em `CONCURSO_ONLY_TABS`, então só aparece para quem tem objetivo de concurso.
+- **Admin > Configurações > "Planos · limites" (NOVO):** página pra editar `max_courses` e `max_questions_per_day` de cada plano sem mexer em código.
+  - Config lib `src/lib/planLimitsConfig.js` (defaults de `planConfig.js` + normalizador + `resolvePlanKey`).
+  - Persistência em `redacao_site_content.plan_limits_json` (fetch dedicado + `upsertPlanLimits` em `redacaoSiteContentApi.js`, mesmo padrão de course_templates/notification_settings). Degrada com defaults se a coluna não existir.
+  - `getCourseLimitFromProfile` agora lê de `planLimits` (state carregado do banco). `null` = ilimitado (representado como 999 p/ UI de vagas).
+  - Editor: nº por campo + toggle "Ilimitado" (null); `max_questions_per_day` marcado "em breve" (ainda não travado no app).
+  - ⚠️ **Falta rodar a migração:** `supabase/redacao_site_content_plan_limits.sql` (`add column if not exists plan_limits_json jsonb`). Até rodar, salvar dá erro claro pedindo pra rodar o SQL; leitura usa defaults.
+
 ## Sessão 2026-07-02 (parte 2) — Onboarding & catálogo 🔧→✅
 
 - **Conciliador (compatibilidade) — escondido de propósito, NÃO é bug:** `conciliar` está em `LAUNCH_HIDDEN_TABS` (oculto no MVP de lançamento, `src/lib/launchConfig.js`) **e** em `CONCURSO_ONLY_TABS`. Pra reativar no lançamento, remover de `LAUNCH_HIDDEN_TABS`.

@@ -293,6 +293,8 @@ export default function AppTabContent(props) {
     handleSaveSidebarLabels,
     notificationSettings,
     handleSaveNotificationSettings,
+    planLimits,
+    handleSavePlanLimits,
     selectedCoursePlan,
     openStudyRegisterForDiscipline,
     communityRankings,
@@ -731,6 +733,8 @@ export default function AppTabContent(props) {
         onSaveSidebarLabels={handleSaveSidebarLabels}
         notificationSettings={notificationSettings}
         onSaveNotificationSettings={handleSaveNotificationSettings}
+        planLimits={planLimits}
+        onSavePlanLimits={handleSavePlanLimits}
       />
     );
   }

@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 
 import { normalizeNotificationSettings } from './notificationSettings';
 import { normalizeCourseTemplates } from './courseTemplates';
+import { normalizePlanLimits, planLimitsForSave } from './planLimitsConfig';
 
 const SELECT_FULL = 'theme_bank_json, kit_json, audiobook_catalog_json, sidebar_labels_json, notification_settings_json, course_templates_json';
 const SELECT_NO_SIDEBAR_LABELS = 'theme_bank_json, kit_json, audiobook_catalog_json';
@@ -86,11 +87,35 @@ async function fetchCourseTemplatesOnly() {
   }
 }
 
+// SELECT dedicado de plan_limits_json — isolado do SELECT principal para não
+// ser afetado por schema cache. Retorna a linha ou null (coluna ausente).
+async function fetchPlanLimitsOnly() {
+  try {
+    const { data, error } = await supabase
+      .from('redacao_site_content')
+      .select('plan_limits_json')
+      .eq('id', 'global')
+      .maybeSingle();
+    if (error || !data) return null;
+    return data; // { plan_limits_json: {...} | null }
+  } catch {
+    return null;
+  }
+}
+
+function parsePlanLimitsFromRow(data) {
+  if (!data || !Object.prototype.hasOwnProperty.call(data, 'plan_limits_json')) return null;
+  const raw = data.plan_limits_json;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  return normalizePlanLimits(raw);
+}
+
 export async function fetchRedacaoSiteContent() {
   try {
-    const [{ data, error }, courseRow] = await Promise.all([
+    const [{ data, error }, courseRow, planLimitsRow] = await Promise.all([
       fetchRedacaoSiteRow(),
       fetchCourseTemplatesOnly(),
+      fetchPlanLimitsOnly(),
     ]);
     if (error) {
       return {
@@ -102,9 +127,10 @@ export async function fetchRedacaoSiteContent() {
         sidebarLabels: null,
         notificationSettings: null,
         courseTemplates: null,
+        planLimits: null,
       };
     }
-    if (!data) return { ok: true, themeBank: null, kit: null, audiobookCatalog: null, sidebarLabels: null, notificationSettings: null, courseTemplates: null };
+    if (!data) return { ok: true, themeBank: null, kit: null, audiobookCatalog: null, sidebarLabels: null, notificationSettings: null, courseTemplates: null, planLimits: null };
     const themeBank = Array.isArray(data.theme_bank_json) ? data.theme_bank_json : null;
     const kit = data.kit_json && typeof data.kit_json === 'object' && !Array.isArray(data.kit_json) ? data.kit_json : null;
     const rawAb = data.audiobook_catalog_json;
@@ -119,6 +145,7 @@ export async function fetchRedacaoSiteContent() {
       sidebarLabels: parseSidebarLabelsFromRow(data),
       notificationSettings: parseNotificationSettingsFromRow(data),
       courseTemplates: parseCourseTemplatesFromRow(merged),
+      planLimits: parsePlanLimitsFromRow(planLimitsRow || data),
     };
   } catch (e) {
     return {
@@ -130,6 +157,7 @@ export async function fetchRedacaoSiteContent() {
       sidebarLabels: null,
       notificationSettings: null,
       courseTemplates: null,
+      planLimits: null,
     };
   }
 }
@@ -285,6 +313,31 @@ export async function upsertNotificationSettings(settingsJson) {
     throw new Error(error.message);
   }
   return { ok: true, notificationSettings: sanitized };
+}
+
+export async function upsertPlanLimits(limitsJson) {
+  const sanitized = planLimitsForSave(limitsJson);
+  const payload = {
+    plan_limits_json: sanitized,
+    updated_at: new Date().toISOString(),
+  };
+
+  // UPDATE (não INSERT) para respeitar a RLS de admin.
+  const { error } = await supabase
+    .from('redacao_site_content')
+    .update(payload)
+    .eq('id', 'global');
+
+  if (error) {
+    if (String(error.message || '').includes('plan_limits_json')) {
+      throw new Error(
+        'Coluna plan_limits_json ausente. Rode no Supabase o script supabase/redacao_site_content_plan_limits.sql'
+      );
+    }
+    throw new Error(error.message);
+  }
+
+  return { ok: true, planLimits: normalizePlanLimits(sanitized) };
 }
 
 export async function upsertCourseTemplates(templatesJson) {

@@ -9,7 +9,7 @@ export const LAUNCH_MVP_MODE = import.meta.env.VITE_LAUNCH_MVP !== 'false';
 // Telas escondidas no lançamento (decisão da Revisão Final de Telas, 2026-06-19):
 // Comunidade FICA; Esquadrões foi removido de vez (SAI).
 export const LAUNCH_HIDDEN_TABS = new Set([
-  'conciliar',
+  // 'conciliar' reativado — visível apenas para quem estuda p/ concurso (CONCURSO_ONLY_TABS).
   'bem_estar',
   'audiobooks',
   'instagram',

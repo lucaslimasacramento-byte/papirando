@@ -39,6 +39,7 @@ import { AdminSidebarLabelsEditor } from '../components/AdminSidebarLabelsEditor
 import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
 import { NOTIFICATION_SETTING_OPTIONS, normalizeNotificationSettings } from '../lib/notificationSettings';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
+import { EDITABLE_PLAN_KEYS, PLAN_LIMIT_FIELDS, normalizePlanLimits, planLabel } from '../lib/planLimitsConfig';
 
 function normalizeThemeBanca(banca) {
   const b = String(banca || '').trim();
@@ -90,6 +91,8 @@ export default function AdminConfiguracoes({
   onSaveSidebarLabels,
   notificationSettings = null,
   onSaveNotificationSettings,
+  planLimits = null,
+  onSavePlanLimits,
   initialSection = 'conteudo',
 }) {
   const [activeSection, setActiveSection] = useState(initialSection || 'conteudo');
@@ -113,6 +116,8 @@ export default function AdminConfiguracoes({
   const [audiobookCatalogDraft, setAudiobookCatalogDraft] = useState(() => []);
   const [notificationDraft, setNotificationDraft] = useState(() => normalizeNotificationSettings(notificationSettings));
   const [notificationSaving, setNotificationSaving] = useState(false);
+  const [planLimitsDraft, setPlanLimitsDraft] = useState(() => normalizePlanLimits(planLimits));
+  const [planLimitsSaving, setPlanLimitsSaving] = useState(false);
   const [redacaoSiteSaving, setRedacaoSiteSaving] = useState(false);
   const [aiStatus, setAiStatus] = useState({ provider: 'offline', status: 'offline', model: '' });
   const [aiLoading, setAiLoading] = useState(false);
@@ -154,6 +159,10 @@ export default function AdminConfiguracoes({
   useEffect(() => {
     setNotificationDraft(normalizeNotificationSettings(notificationSettings));
   }, [notificationSettings]);
+
+  useEffect(() => {
+    setPlanLimitsDraft(normalizePlanLimits(planLimits));
+  }, [planLimits]);
 
   useEffect(() => {
     refreshAiHealth();
@@ -279,6 +288,11 @@ export default function AdminConfiguracoes({
             active={activeSection === 'notifications'}
             onClick={() => setActiveSection('notifications')}
             label="Notificações"
+          />
+          <ConfigTab
+            active={activeSection === 'planos'}
+            onClick={() => setActiveSection('planos')}
+            label="Planos · limites"
           />
           <ConfigTab active={activeSection === 'xp'} onClick={() => setActiveSection('xp')} label="XP e níveis" />
           <ConfigTab active={activeSection === 'badges'} onClick={() => setActiveSection('badges')} label="Selos" />
@@ -523,6 +537,102 @@ export default function AdminConfiguracoes({
                 </div>
               );
             })}
+          </div>
+        </section>
+      ) : null}
+
+      {activeSection === 'planos' ? (
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+            <div>
+              <p className="pl-eyebrow">Planos</p>
+              <h3 style={{ margin: '6px 0 0', fontSize: 26, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
+                Limites de cada plano
+              </h3>
+              <p style={{ margin: '8px 0 0', maxWidth: 760, color: 'var(--pl-ink-2)', fontSize: 13.5, lineHeight: 1.55 }}>
+                Defina quantos objetivos e questões cada plano permite, sem mexer no código. Deixe o campo vazio (ou marque "Ilimitado") para não limitar.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="pl-btn pl-btn-primary"
+              disabled={planLimitsSaving || !onSavePlanLimits}
+              onClick={async () => {
+                if (!onSavePlanLimits) return;
+                setPlanLimitsSaving(true);
+                try {
+                  const result = await onSavePlanLimits(planLimitsDraft);
+                  setSaveFeedback(result?.ok ? 'Limites de plano salvos.' : `Erro: ${result?.error || 'falha'}`);
+                  window.setTimeout(() => setSaveFeedback(''), 3200);
+                } finally {
+                  setPlanLimitsSaving(false);
+                }
+              }}
+            >
+              <Save size={14} />
+              {planLimitsSaving ? 'Salvando...' : 'Salvar limites'}
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
+            {EDITABLE_PLAN_KEYS.map((planKey) => (
+              <div key={planKey} className="pl-card-paper" style={{ padding: 16 }}>
+                <p style={{ margin: '0 0 12px', color: 'var(--pl-ink)', fontSize: 15, fontWeight: 800 }}>
+                  {planLabel(planKey)}
+                </p>
+                <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                  {PLAN_LIMIT_FIELDS.map((field) => {
+                    const value = planLimitsDraft?.[planKey]?.[field.key];
+                    const unlimited = value === null || value === undefined;
+                    return (
+                      <div key={field.key}>
+                        <p style={{ margin: '0 0 6px', fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                          {field.label}
+                          {!field.enforced && (
+                            <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: 'var(--pl-warn)', textTransform: 'uppercase' }}>
+                              em breve
+                            </span>
+                          )}
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            className="pl-input"
+                            disabled={unlimited}
+                            value={unlimited ? '' : value}
+                            placeholder="0"
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              const next = raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+                              setPlanLimitsDraft((prev) => ({
+                                ...prev,
+                                [planKey]: { ...(prev[planKey] || {}), [field.key]: next },
+                              }));
+                            }}
+                            style={{ width: 100 }}
+                          />
+                          <ToggleChip
+                            label="Ilimitado"
+                            checked={unlimited}
+                            onChange={(checked) =>
+                              setPlanLimitsDraft((prev) => ({
+                                ...prev,
+                                [planKey]: { ...(prev[planKey] || {}), [field.key]: checked ? null : 0 },
+                              }))
+                            }
+                          />
+                        </div>
+                        <p style={{ margin: '6px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', lineHeight: 1.4 }}>
+                          {field.help}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       ) : null}

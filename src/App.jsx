@@ -107,7 +107,9 @@ import {
   upsertSidebarLabels,
   upsertNotificationSettings,
   upsertCourseTemplates,
+  upsertPlanLimits,
 } from './lib/redacaoSiteContentApi';
+import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -894,6 +896,7 @@ export default function App() {
   const [sidebarLabelsOverride, setSidebarLabelsOverride] = useState(null);
   const [notificationSettings, setNotificationSettings] = useState(() => normalizeNotificationSettings(null));
   const [courseTemplates, setCourseTemplates] = useState(null); // null = ainda carregando do Supabase
+  const [planLimits, setPlanLimits] = useState(() => normalizePlanLimits(null)); // limites por plano (defaults até carregar)
 
   useEffect(() => {
     let cancelled = false;
@@ -923,6 +926,9 @@ export default function App() {
       );
       if (r.notificationSettings) {
         setNotificationSettings(normalizeNotificationSettings(r.notificationSettings));
+      }
+      if (r.planLimits) {
+        setPlanLimits(normalizePlanLimits(r.planLimits));
       }
       // r.courseTemplates === null → coluna não existe ou SELECT falhou → usar DEFAULT como ponto de partida
       // r.courseTemplates === []   → usuário apagou tudo intencionalmente → respeitar []
@@ -3631,6 +3637,17 @@ export default function App() {
     }
   };
 
+  const handleSavePlanLimits = async (limits) => {
+    try {
+      const { planLimits: saved } = await upsertPlanLimits(limits);
+      setPlanLimits(normalizePlanLimits(saved ?? limits));
+      return { ok: true };
+    } catch (error) {
+      console.error('Erro ao salvar limites de plano:', error);
+      return { ok: false, error: String(error?.message || error) };
+    }
+  };
+
   const handleStartWellnessTrack = (trackId) => {
     if (!trackId) return;
     setActiveWellnessTrackId(trackId);
@@ -4903,17 +4920,20 @@ export default function App() {
   };
 
   const getCourseLimitFromProfile = (profile) => {
-    if (!profile) return 3;
-    if ((profile.role || 'student') === 'admin') return 999;
+    const UNLIMITED = 999; // limite "ilimitado" representado como número p/ manter a UI (vagas) sã
+    if (!profile) return planLimits?.folha?.max_courses ?? 3;
+    if ((profile.role || 'student') === 'admin') return UNLIMITED;
 
+    // Override manual por perfil (admin definiu um limite específico p/ este aluno).
     if (typeof profile.max_courses === 'number' && !Number.isNaN(profile.max_courses)) {
       return profile.max_courses;
     }
 
-    const plan = String(profile.subscription_plan || 'gratuito').toLowerCase();
-    if (['papiro', 'elite', 'beta'].includes(plan)) return 30;
-    if (plan === 'tatico') return 8; // alias legado (tier intermediário antigo)
-    return 3;
+    // Limite do plano — configurável no Admin > Configurações (plan_limits_json).
+    const planKey = resolvePlanKey(profile);
+    const configured = planLimits?.[planKey]?.max_courses;
+    if (configured === null || configured === undefined) return UNLIMITED; // null = ilimitado
+    return configured;
   };
 
   const assertCourseLimitAvailable = () => {
@@ -7125,6 +7145,8 @@ export default function App() {
     handleSaveSidebarLabels,
     notificationSettings,
     handleSaveNotificationSettings,
+    planLimits,
+    handleSavePlanLimits,
     courseTemplates,
     handleSaveCourseTemplates,
     saveSimuladoNoApp,
