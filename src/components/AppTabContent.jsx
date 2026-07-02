@@ -140,8 +140,10 @@ export default function AppTabContent(props) {
     bancoDisciplinas,
     myContests,
     setTargetContestId,
+    handleSetTargetContest,
     createCourse,
     createCourseFromCatalog,
+    createCourseFromRoles,
     importSelectedEditalWithAI,
     analyzeEditalDocument,
     deleteCourse,
@@ -450,7 +452,7 @@ export default function AppTabContent(props) {
         bancoDisciplinas={bancoDisciplinas}
         myContests={myContests}
         targetContest={targetContestSummary}
-        onSetTargetContest={setTargetContestId}
+        onSetTargetContest={handleSetTargetContest || setTargetContestId}
         onOpenContestDetail={(contestId) => {
           setSelectedContestDetailId(contestId);
           setActiveTab('concurso_detalhe');
@@ -532,6 +534,7 @@ export default function AppTabContent(props) {
           setActiveTab('concursos');
         }}
         onImport={createCourseFromCatalog}
+        onImportRoles={createCourseFromRoles}
         importingId=""
         limiteAtingido={!isAdmin && remainingCourseSlots <= 0}
         cursos={cursos}
@@ -539,6 +542,9 @@ export default function AppTabContent(props) {
         isAdmin={isAdmin}
         isFavorite={favoriteContestIds.includes(selectedContestDetail?.id)}
         isInterested={interestedContestIds.includes(selectedContestDetail?.id)}
+        interestedContestIds={interestedContestIds}
+        favoriteContestIds={favoriteContestIds}
+        targetContestId={targetContestId}
         onToggleFavorite={(contestId) =>
           setFavoriteContestIds((prev) =>
             prev.includes(contestId) ? prev.filter((id) => id !== contestId) : [...prev, contestId]
@@ -568,7 +574,7 @@ export default function AppTabContent(props) {
           }))
         }
         isTargetContest={selectedContestDetail?.id === targetContestId}
-        onSetTargetContest={setTargetContestId}
+        onSetTargetContest={handleSetTargetContest || setTargetContestId}
         onEditContest={(contest) => {
           if (contest?.id) localStorage.setItem('papirando_admin_edit_contest_id', contest.id);
           setActiveTab('admin_concursos');
@@ -1109,7 +1115,7 @@ export default function AppTabContent(props) {
         bancoDisciplinas={bancoDisciplinas}
         historicoReal={historicoReal}
         targetContestId={targetContestId}
-        onSetTargetContest={setTargetContestId}
+        onSetTargetContest={handleSetTargetContest || setTargetContestId}
         onOpenContestDetail={(contestId) => {
           setSelectedContestDetailId(contestId);
           setActiveTab('concurso_detalhe');
