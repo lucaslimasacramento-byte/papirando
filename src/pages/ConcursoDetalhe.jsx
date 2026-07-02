@@ -833,6 +833,8 @@ function ConcursoDetalheBody({
   isAdmin = false,
   isFavorite = false,
   isInterested = false,
+  interestedContestIds,
+  targetContestId,
   onEditContest,
 }) {
   const [expandedSubjects, setExpandedSubjects] = useState({});
@@ -882,6 +884,21 @@ function ConcursoDetalheBody({
   }, [rawContest, activeRole, loadedSubjects]);
   const normalizedStatus = normalizeContestStatus(contest?.status_concurso);
   const areaTheme = useMemo(() => getContestAreaTheme(contest?.area || 'Geral'), [contest?.area]);
+
+  // Concurso agrupado = mais de um cargo sob o mesmo edital. Nesse caso o
+  // tratamento é por CONCURSO, e o aluno escolhe qual CARGO é o alvo.
+  const isGrouped = roles.length > 1;
+  const groupTitleLabel = rawContest?.nome || contest?.nome || 'concurso';
+  // Interesse/alvo são casados pelo id do cargo ATIVO (contest.id) — o mesmo id
+  // enviado nos onClick — para o estado do botão refletir a ação. Antes o estado
+  // vinha do id do grupo ("group-..."), que nunca batia num concurso combinado.
+  const activeContestId = contest?.id || rawContest?.id || '';
+  const resolvedInterested = Array.isArray(interestedContestIds)
+    ? interestedContestIds.includes(activeContestId)
+    : isInterested;
+  const resolvedTarget = targetContestId !== undefined && targetContestId !== null
+    ? String(targetContestId) === String(activeContestId)
+    : isTargetContest;
   const relatedContests = useMemo(
     () => findRelatedContests(concursoCatalog, rawContest || {}),
     [concursoCatalog, rawContest]
@@ -1180,19 +1197,28 @@ function ConcursoDetalheBody({
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <button type="button"
                 onClick={() => {
-                  onToggleInterested?.(contest.id);
-                  toast.success(isInterested ? 'Removido dos seus interesses.' : 'Salvo nos seus interesses.');
+                  onToggleInterested?.(activeContestId);
+                  toast.success(resolvedInterested ? 'Removido dos seus interesses.' : 'Salvo nos seus interesses.');
                 }}
-                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isInterested ? '1px solid rgba(180,83,9,0.35)' : '1px solid var(--pl-rule-2)', background: isInterested ? 'rgba(180,83,9,0.08)' : 'var(--pl-bg-soft)', color: isInterested ? '#b45309' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                <Bookmark size={13} style={{ fill: isInterested ? 'currentColor' : 'none' }} />{isInterested ? 'Interesse salvo' : 'Tenho interesse'}
+                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: resolvedInterested ? '1px solid rgba(180,83,9,0.35)' : '1px solid var(--pl-rule-2)', background: resolvedInterested ? 'rgba(180,83,9,0.08)' : 'var(--pl-bg-soft)', color: resolvedInterested ? '#b45309' : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <Bookmark size={13} style={{ fill: resolvedInterested ? 'currentColor' : 'none' }} />{resolvedInterested ? 'Interesse salvo' : 'Tenho interesse'}
               </button>
               <button type="button"
                 onClick={() => {
-                  onSetTargetContest?.(isTargetContest ? '' : contest.id);
-                  toast.success(isTargetContest ? 'Removido dos concursos alvo.' : 'Definido como seu concurso alvo.');
+                  onSetTargetContest?.(resolvedTarget ? '' : activeContestId);
+                  if (resolvedTarget) {
+                    toast.success(isGrouped ? 'Cargo-alvo removido.' : 'Removido dos concursos alvo.');
+                  } else {
+                    toast.success(
+                      isGrouped
+                        ? `${activeRole?.cargo || activeRole?.nome || 'Cargo'} definido como cargo-alvo do concurso.`
+                        : 'Definido como seu concurso alvo.'
+                    );
+                  }
                 }}
-                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: isTargetContest ? `1px solid ${areaAccent}` : '1px solid var(--pl-rule-2)', background: isTargetContest ? `${areaAccent}14` : 'var(--pl-bg-soft)', color: isTargetContest ? areaAccent : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                <BadgeCheck size={13} style={{ fill: isTargetContest ? 'currentColor' : 'none' }} />{isTargetContest ? 'Concurso alvo' : 'Definir alvo'}
+                title={isGrouped ? `Define o cargo-alvo dentro de ${groupTitleLabel}` : undefined}
+                style={{ flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 12px', borderRadius: 8, border: resolvedTarget ? `1px solid ${areaAccent}` : '1px solid var(--pl-rule-2)', background: resolvedTarget ? `${areaAccent}14` : 'var(--pl-bg-soft)', color: resolvedTarget ? areaAccent : 'var(--pl-ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <BadgeCheck size={13} style={{ fill: resolvedTarget ? 'currentColor' : 'none' }} />{resolvedTarget ? (isGrouped ? 'Cargo alvo' : 'Concurso alvo') : (isGrouped ? 'Definir cargo alvo' : 'Definir alvo')}
               </button>
               {editalHref ? (
                 <button type="button" onClick={() => window.open(editalHref, '_blank', 'noopener,noreferrer')}

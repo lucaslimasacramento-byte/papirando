@@ -7408,6 +7408,9 @@ export default function App() {
               bancoDisciplinas={bancoDisciplinas}
               isFavorite={favoriteContestIds.includes(selectedContestDetail?.id)}
               isInterested={interestedContestIds.includes(selectedContestDetail?.id)}
+              interestedContestIds={interestedContestIds}
+              favoriteContestIds={favoriteContestIds}
+              targetContestId={targetContestId}
               onToggleFavorite={(contestId) =>
                 setFavoriteContestIds((prev) =>
                   prev.includes(contestId) ? prev.filter((id) => id !== contestId) : [...prev, contestId]

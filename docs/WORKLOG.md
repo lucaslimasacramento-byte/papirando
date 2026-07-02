@@ -26,6 +26,12 @@ Ajustes no card de alvo da tela **Meus cursos** (`src/pages/Planos.jsx` + `src/A
 - **Botão "Remover alvo":** permite estudar sem um curso-alvo definido — chama `onSetTargetContest('')`.
 - **Definir alvo → vira objetivo:** novo `handleSetTargetContest` em `App.jsx` — ao marcar um concurso como alvo, se ainda não foi importado, cria automaticamente o curso/objetivo em Meus cursos (respeita o limite de cursos do plano). Aplicado em Planos, ConcursoDetalhe e Conciliador.
 
+### ConcursoDetalhe — botões de interesse/alvo (2ª rodada)
+
+- **Bug de feedback dos botões (RESOLVIDO):** "Tenho interesse" e "Definir alvo" não mudavam de estado ao clicar. Causa: o `onClick` usava o id do **cargo ativo** (`contest.id`), mas os props `isInterested`/`isTargetContest` vinham de `App.jsx` calculados pelo id do **grupo** (`selectedContestDetail.id` = `"group-..."`). Em concurso de cargo único coincidiam; em concurso combinado (vários cargos) nunca batiam. Fix: passar `interestedContestIds`/`targetContestId` crus e recalcular no corpo contra o cargo ativo.
+- **Linguagem concurso vs. cargo:** quando o concurso tem +1 cargo (combinado, mesmo edital), o botão vira "Definir cargo alvo" / "Cargo alvo" e o toast diz `"<Cargo> definido como cargo-alvo do concurso"`. Em concurso de cargo único mantém "Definir alvo" / "Concurso alvo". Modelo: tratamento por **concurso**, aluno escolhe o **cargo-alvo**.
+- **Página de compatibilidade — NÃO foi removida:** é o **Conciliador** (Apoio → Conciliador na sidebar, `activeTab === 'conciliar'`, `src/pages/Conciliador.jsx`). Calcula % de compatibilidade entre concursos. ⏳ *Pendente (enhancement):* mostrar a compatibilidade/sobreposição de matérias inline ao selecionar +1 cargo no `ImportConfirmModal`.
+
 ---
 
 ## PAGAMENTOS — Status atual (2026-06-17) — ✅ FUNCIONANDO E TESTADO
