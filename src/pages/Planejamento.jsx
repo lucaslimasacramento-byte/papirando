@@ -768,13 +768,23 @@ function PlanejamentoContent({
     setPlanAdjusting(true);
     setPlanAdjustMessage('');
     try {
+      // Acuracia por disciplina vem do studyRecommendation (escala 0-100, ou
+      // null quando sem historico). O motor espera fracao 0..1; limiar 0.65
+      // espelha o "<65" que o resto do app ja usa para "desempenho baixo".
+      const accuracyByDiscipline = {};
+      const ranked = Array.isArray(studyRecommendation?.ranked) ? studyRecommendation.ranked : [];
+      for (const item of ranked) {
+        if (item?.nome && Number.isFinite(Number(item?.accuracy))) {
+          accuracyByDiscipline[item.nome] = Number(item.accuracy) / 100;
+        }
+      }
+
       const result = await runPlanAdjustments({
         userId: currentUserId,
         mode: planejamentoMode,
         todayDia: TODAY_DIA,
-        // accuracyByDiscipline entra quando a acuracia por disciplina estiver
-        // disponivel aqui; sem ela o motor so aplica atraso/conclusao antecipada.
-        accuracyByDiscipline: {},
+        accuracyByDiscipline,
+        lowAccuracyThreshold: 0.65,
       });
 
       if (!result) {
