@@ -43,17 +43,16 @@ Estamos em fase de **revisão página por página** para identificar o que está
 
 | Item | Caminho |
 |---|---|
-| Projeto principal | `C:\Users\lucas\Desktop\App_Estudos\papirando` |
-| Worktree ativo (branch de redesign) | `C:\Users\lucas\Desktop\App_Estudos\papirando\.claude\worktrees\mystifying-meitner-f6e09b` |
+| **Projeto principal (trabalhe AQUI)** | `C:\Users\lucas\Desktop\App_Estudos\papirando` |
 | CSS tokens (fonte da verdade) | `src/index.css` |
 | Páginas | `src/pages/` |
 | Componentes | `src/components/` |
-| Dev server | `http://localhost:5176` (launch.json já configurado) |
+| Dev server | `http://localhost:5177` (launch.json já configurado; roda a partir do projeto principal) |
 | **Identidade visual (handoff completo)** | `docs/brand/` — ler `docs/brand/00-INDEX.md` antes de criar qualquer UI |
 | Roadmap | `docs/ROADMAP.md` |
 | SVGs de marca | `docs/brand/brand/` (favicon, lockups, mark, wordmarks) |
 
-> **Sempre trabalhe no worktree**, não no projeto principal, salvo orientação explícita do usuário.
+> **Trabalhe no projeto principal** (`C:\Users\lucas\Desktop\App_Estudos\papirando`). É o que o dev server (`launch.json`) roda e o que o usuário vê. O `.claude/worktrees/` contém branches antigas de redesign — **não** edite lá, pois as mudanças não aparecem no app rodando.
 
 ---
 
@@ -234,10 +233,10 @@ O CSS já define `pl-ai-shimmer`, `pl-live-pulse`, `pl-gabarito-reveal`. Garanti
 ## Como rodar
 
 ```bash
-# No worktree:
-cd "C:\Users\lucas\Desktop\App_Estudos\papirando\.claude\worktrees\mystifying-meitner-f6e09b"
+# No projeto principal:
+cd "C:\Users\lucas\Desktop\App_Estudos\papirando"
 npm run dev
-# → http://localhost:5176
+# → http://localhost:5177
 ```
 
-Ou usar o launch.json já configurado em `.claude/launch.json` (server "Frontend (Vite)").
+Ou usar o launch.json já configurado em `.claude/launch.json` (server "Frontend (Vite)", porta 5177).
