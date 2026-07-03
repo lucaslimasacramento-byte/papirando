@@ -18,6 +18,16 @@
 
 ---
 
+## Sessão 2026-07-02 (parte 4) — Onboarding/catálogo: épico de flexibilidade 🚧
+
+Decisões do dono: mostrar só o publicado; ENEM fora do seletor; aluno CRIA objetivos personalizados (aparecem pro admin); sequência **2→3→5→4**.
+
+- **WS1 · Números certos ✅:** parou de exibir/contar os 110 templates embutidos (`DEFAULT_COURSE_TEMPLATES`: 100 faculdade + 10 vestibular). App e onboarding usam só o `course_templates_json` publicado. *Efeito:* editor de templates no admin começa vazio (sem os 110 de partida) — se quiser botão "carregar modelos base", pedir.
+- **WS2 · ENEM fora do seletor ✅:** `buildObjectiveLibrary` filtra `tipo` `enem`/`enem_inst` — ENEM não é objetivo genérico; segue no fluxo próprio de instituição-alvo.
+- **WS3 · Objetivo personalizado no onboarding ✅:** aluno digita e cria concurso/vestibular/graduação próprio quando não acha no catálogo. Entra na seleção (teto 3), vira curso `origem: 'personalizado'` ao concluir; foco define `study_goal`.
+- **WS5 · Editar matérias/tópicos ao adicionar ⏳ PRÓXIMO:** surfar o editor de disciplinas no momento em que o aluno adiciona o objetivo (add/remover matérias e tópicos).
+- **WS4 · Página admin de demanda ⏳ (precisa de tabela nova):** persistir os objetivos personalizados criados pelos alunos (nome, tipo, user_id, data) numa tabela `custom_objectives` + RLS + tela admin. Decisão do dono: é "criou" (autonomia), não "pediu". Falta: migração + API de insert-na-criação + página. Hoje o objetivo personalizado já vira curso do aluno, mas ainda **não** é registrado pro admin.
+
 ## Sessão 2026-07-02 (parte 3) — Conciliador reativado + limites de plano editáveis 🔧→✅
 
 - **Conciliador reativado (só concurso):** removido de `LAUNCH_HIDDEN_TABS` (`src/lib/launchConfig.js`). Continua em `CONCURSO_ONLY_TABS`, então só aparece para quem tem objetivo de concurso.
