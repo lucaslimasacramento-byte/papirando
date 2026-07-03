@@ -11,7 +11,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { DEFAULT_COURSE_TEMPLATES, normalizeCourseTemplates } from '../lib/courseTemplates';
+import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { updateProfile } from '../lib/profileApi';
 import { normalizeCpf, isValidCpf } from '../lib/profileProgress';
 import { showToast } from '../lib/dialogs';
@@ -143,9 +143,8 @@ function makeObjectiveId(kind, rawId, index) {
 }
 
 function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
-  const templateSource = Array.isArray(courseTemplates) && courseTemplates.length
-    ? courseTemplates
-    : DEFAULT_COURSE_TEMPLATES;
+  // Só o que o admin publicou de verdade — sem os templates embutidos (decisão do dono).
+  const templateSource = Array.isArray(courseTemplates) ? courseTemplates : [];
   const templates = normalizeCourseTemplates(templateSource)
     .map((template, index) => {
       const rawId = template.id || template.slug || template.nome || template.name;

@@ -930,15 +930,14 @@ export default function App() {
       if (r.planLimits) {
         setPlanLimits(normalizePlanLimits(r.planLimits));
       }
-      // r.courseTemplates === null → coluna não existe ou SELECT falhou → usar DEFAULT como ponto de partida
-      // r.courseTemplates === []   → usuário apagou tudo intencionalmente → respeitar []
-      // r.courseTemplates === [...] → dados salvos → normalizar e usar
-      if (r.courseTemplates !== null) {
-        // Preserva [] como array vazio real (não normaliza para DEFAULT)
-        setCourseTemplates(r.courseTemplates.length ? normalizeCourseTemplates(r.courseTemplates) : []);
+      // Decisão do dono: NÃO usar mais os 110 templates embutidos como conteúdo.
+      // O aluno vê/conta só o que o admin publicou de verdade.
+      // r.courseTemplates === [...] → dados salvos → normaliza e usa
+      // r.courseTemplates === [] ou null (coluna ausente/vazia) → começa vazio
+      if (Array.isArray(r.courseTemplates) && r.courseTemplates.length) {
+        setCourseTemplates(normalizeCourseTemplates(r.courseTemplates));
       } else {
-        // Coluna ausente ou falha no SELECT: normalizeCourseTemplates(null) retorna DEFAULT
-        setCourseTemplates(normalizeCourseTemplates(null));
+        setCourseTemplates([]);
       }
     })();
     return () => {
