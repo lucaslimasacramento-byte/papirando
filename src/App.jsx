@@ -6943,6 +6943,15 @@ export default function App() {
             currentUserId={currentUserId}
             setTargetContestId={setTargetContestId}
             onImportObjective={createCourseFromCatalog}
+            onCreateCustomObjective={({ nome, objectiveType }) => {
+              const intent = objectiveType === 'Concurso' ? 'concurso'
+                : objectiveType === 'Vestibular' ? 'vestibular' : 'faculdade';
+              try {
+                createCourse({ nome, intent, origem: 'personalizado' });
+              } catch (err) {
+                console.warn('[onboarding] falha ao criar objetivo personalizado:', err?.message || err);
+              }
+            }}
             onComplete={(updates) => {
               setCurrentProfile((prev) => ({ ...(prev || {}), ...(updates || {}), onboarding_done: true }));
               // start-trial criou a assinatura trialing — recarrega para liberar o premium.

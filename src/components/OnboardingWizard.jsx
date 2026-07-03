@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Loader2,
+  Plus,
   Search,
   Target,
   Timer,
@@ -164,6 +165,12 @@ function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
     });
 
   const contests = (contestLibrary || [])
+    // ENEM e instituições-ENEM NÃO entram como objetivo genérico aqui — o ENEM
+    // é exame único, tratado no seu próprio fluxo (aluno escolhe a instituição-alvo).
+    .filter((contest) => {
+      const t = String(contest.tipo || '').toLowerCase();
+      return t !== 'enem' && t !== 'enem_inst';
+    })
     .map((contest, index) => {
       const rawId = contest.id || contest.slug || contest.plano || contest.nome || contest.name;
       // O catálogo publicado (contest_templates) guarda concursos, vestibulares e
@@ -171,7 +178,7 @@ function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
       // "Concurso" e os vestibulares/faculdades publicados sumiam das outras abas.
       const tipo = String(contest.tipo || '').toLowerCase();
       const nome = String(contest.nome || contest.name || '').toLowerCase();
-      const objectiveType = (tipo.includes('vestibular') || tipo === 'enem' || nome.includes('vestibular') || nome.includes('enem'))
+      const objectiveType = (tipo.includes('vestibular') || nome.includes('vestibular'))
         ? 'Vestibular'
         : (tipo.includes('faculdade') || tipo.includes('gradua') || tipo.includes('superior'))
           ? 'Faculdade'
@@ -202,16 +209,14 @@ function buildObjectiveLibrary(contestLibrary = [], courseTemplates = []) {
 const OBJECTIVE_TYPES = ['Faculdade', 'Vestibular', 'Concurso'];
 const MAX_OBJECTIVES = 3;
 
-function StepContest({ objectiveLibrary, selectedIds, onToggle, focusId, onSetFocus }) {
+function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onToggle, onAddCustom, focusId, onSetFocus }) {
   const [activeType, setActiveType] = useState('Concurso');
   const [activeArea, setActiveArea] = useState('');
   const [query, setQuery] = useState('');
+  const [customName, setCustomName] = useState('');
 
-  const selectedObjectives = useMemo(
-    () => selectedIds.map((id) => objectiveLibrary.find((item) => item.id === id)).filter(Boolean),
-    [selectedIds, objectiveLibrary]
-  );
   const atMax = selectedIds.length >= MAX_OBJECTIVES;
+  const customTypeLabel = activeType === 'Concurso' ? 'concurso' : activeType === 'Vestibular' ? 'vestibular' : 'graduação';
 
   const typeCounts = useMemo(() => (
     OBJECTIVE_TYPES.reduce((acc, type) => {
@@ -420,6 +425,43 @@ function StepContest({ objectiveLibrary, selectedIds, onToggle, focusId, onSetFo
           className="pl-input"
           style={{ width: '100%', paddingLeft: 30, boxSizing: 'border-box' }}
         />
+      </div>
+
+      {/* Criar objetivo personalizado — quando não está no catálogo ainda. */}
+      <div style={{ border: '1px dashed var(--pl-rule-2)', borderRadius: 8, background: 'var(--pl-bg-soft)', padding: '11px 12px' }}>
+        <p style={{ margin: '0 0 8px', fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+          Não achou? Crie o seu {customTypeLabel}
+        </p>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            type="text"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && customName.trim() && !atMax) {
+                e.preventDefault();
+                onAddCustom(customName, activeType);
+                setCustomName('');
+              }
+            }}
+            placeholder={`Ex.: ${activeType === 'Concurso' ? 'Prefeitura de...' : activeType === 'Vestibular' ? 'Vestibular UF...' : 'Medicina — UF...'}`}
+            className="pl-input"
+            style={{ flex: 1, boxSizing: 'border-box' }}
+            disabled={atMax}
+          />
+          <button
+            type="button"
+            className="pl-btn pl-btn-primary pl-btn-sm"
+            disabled={!customName.trim() || atMax}
+            onClick={() => { onAddCustom(customName, activeType); setCustomName(''); }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
+          >
+            <Plus size={14} /> Criar
+          </button>
+        </div>
+        <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--pl-ink-3)', lineHeight: 1.4 }}>
+          {atMax ? `Limite de ${MAX_OBJECTIVES} atingido.` : 'Entra como objetivo seu — você adiciona as matérias depois.'}
+        </p>
       </div>
 
       {selectedIds.length === 0 && (
@@ -762,12 +804,16 @@ export default function OnboardingWizard({
   currentUserId,
   setTargetContestId,
   onImportObjective,
+  onCreateCustomObjective,
   onComplete,
   isPreview = false,
 }) {
   const [step, setStep] = useState(1);
   const [selectedIds, setSelectedIds] = useState([]);
   const [focusId, setFocusId] = useState('');
+  // Objetivos que o aluno CRIA na hora (não estão no catálogo). Viram curso ao concluir.
+  const [customObjectives, setCustomObjectives] = useState([]);
+  const [customSeq, setCustomSeq] = useState(0);
   const [daily, setDaily] = useState({ ...EMPTY_DAILY });
   const [profileName, setProfileName] = useState(() => String(profile?.nome || profile?.name || profile?.full_name || '').trim());
   const [birthDate, setBirthDate] = useState(() => normalizeDateInput(profile?.birth_date || profile?.data_nascimento || ''));
@@ -781,10 +827,36 @@ export default function OnboardingWizard({
     () => buildObjectiveLibrary(contestLibrary, courseTemplates),
     [contestLibrary, courseTemplates]
   );
-  const selectedObjectives = useMemo(
-    () => selectedIds.map((id) => objectiveLibrary.find((item) => item.id === id)).filter(Boolean),
-    [objectiveLibrary, selectedIds]
+  // Pool completo = catálogo publicado + os personalizados criados pelo aluno.
+  const allObjectives = useMemo(
+    () => [...objectiveLibrary, ...customObjectives],
+    [objectiveLibrary, customObjectives]
   );
+  const selectedObjectives = useMemo(
+    () => selectedIds.map((id) => allObjectives.find((item) => item.id === id)).filter(Boolean),
+    [allObjectives, selectedIds]
+  );
+
+  // Cria um objetivo personalizado e já o seleciona (respeita o teto de 3).
+  const addCustomObjective = (nome, objectiveType) => {
+    const clean = String(nome || '').trim();
+    if (!clean) return;
+    if (selectedIds.length >= MAX_OBJECTIVES) return;
+    const rawId = `custom-${customSeq}`;
+    const id = `custom:${rawId}`;
+    const item = {
+      id,
+      rawId,
+      nome: clean,
+      orgao: `${objectiveType} (personalizado)`,
+      objectiveType,
+      sourceKind: 'custom',
+    };
+    setCustomSeq((n) => n + 1);
+    setCustomObjectives((prev) => [...prev, item]);
+    setSelectedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setFocusId((prev) => prev || id);
+  };
   // Foco principal: o escolhido pelo aluno; se só houver um, é ele.
   const focusObjective = useMemo(() => {
     if (selectedObjectives.length === 0) return null;
@@ -797,6 +869,10 @@ export default function OnboardingWizard({
       if (prev.includes(id)) {
         const next = prev.filter((x) => x !== id);
         if (focusId === id) setFocusId(next[0] || '');
+        // Se for personalizado, some da lista ao desmarcar (não fica órfão).
+        if (String(id).startsWith('custom:')) {
+          setCustomObjectives((list) => list.filter((c) => c.id !== id));
+        }
         return next;
       }
       if (prev.length >= MAX_OBJECTIVES) return prev;
@@ -893,13 +969,17 @@ export default function OnboardingWizard({
       // Cria cada objetivo escolhido como curso em "Meus cursos". O item da
       // biblioteca teve o id reescrito (composto) — restauramos o id/slug reais
       // antes de importar. Falha em um não impede os demais nem o onboarding.
-      if (typeof onImportObjective === 'function') {
-        for (const obj of selectedObjectives) {
-          try {
+      for (const obj of selectedObjectives) {
+        try {
+          if (obj.sourceKind === 'custom') {
+            // Objetivo criado pelo aluno: vira curso personalizado (sem matérias
+            // ainda — ele edita depois). Também é registrado como criação p/ o admin.
+            await onCreateCustomObjective?.({ nome: obj.nome, objectiveType: obj.objectiveType });
+          } else if (typeof onImportObjective === 'function') {
             await onImportObjective({ ...obj, id: obj.rawId, slug: obj.slug || obj.rawId });
-          } catch (importErr) {
-            console.warn('[onboarding] falha ao criar objetivo:', obj?.nome, importErr?.message || importErr);
           }
+        } catch (importErr) {
+          console.warn('[onboarding] falha ao criar objetivo:', obj?.nome, importErr?.message || importErr);
         }
       }
 
@@ -920,7 +1000,7 @@ export default function OnboardingWizard({
 
   const stepContent = () => {
     if (step === 1) return <StepWelcome profile={profile} />;
-    if (step === 2) return <StepContest objectiveLibrary={objectiveLibrary} selectedIds={selectedIds} onToggle={toggleObjective} focusId={focusId} onSetFocus={setFocusId} />;
+    if (step === 2) return <StepContest objectiveLibrary={objectiveLibrary} selectedObjectives={selectedObjectives} selectedIds={selectedIds} onToggle={toggleObjective} onAddCustom={addCustomObjective} focusId={focusId} onSetFocus={setFocusId} />;
     if (step === 3) return <StepGoal daily={daily} onChange={setDaily} onSkip={handleSkipRoutine} />;
     if (step === 4) {
       return (
