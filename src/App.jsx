@@ -6934,6 +6934,8 @@ export default function App() {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '24px 16px',
+            maxHeight: '100vh',
+            overflowY: 'auto',
           }}
         >
           <OnboardingWizard

@@ -214,9 +214,10 @@ function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onTogg
   const [activeArea, setActiveArea] = useState('');
   const [query, setQuery] = useState('');
   const [customName, setCustomName] = useState('');
+  // Tipo do objetivo personalizado — o aluno escolhe (não herda a aba ativa).
+  const [customType, setCustomType] = useState('Concurso');
 
   const atMax = selectedIds.length >= MAX_OBJECTIVES;
-  const customTypeLabel = activeType === 'Concurso' ? 'concurso' : activeType === 'Vestibular' ? 'vestibular' : 'graduação';
 
   const typeCounts = useMemo(() => (
     OBJECTIVE_TYPES.reduce((acc, type) => {
@@ -430,8 +431,32 @@ function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onTogg
       {/* Criar objetivo personalizado — quando não está no catálogo ainda. */}
       <div style={{ border: '1px dashed var(--pl-rule-2)', borderRadius: 8, background: 'var(--pl-bg-soft)', padding: '11px 12px' }}>
         <p style={{ margin: '0 0 8px', fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
-          Não achou? Crie o seu {customTypeLabel}
+          Não achou? Crie o seu
         </p>
+        {/* Tipo do personalizado: o aluno escolhe qual dos 3 é. */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+          {OBJECTIVE_TYPES.map((type) => {
+            const active = customType === type;
+            const label = type === 'Concurso' ? 'Concurso' : type === 'Vestibular' ? 'Vestibular' : 'Graduação';
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setCustomType(type)}
+                style={{
+                  flex: 1, minWidth: 0,
+                  border: `1px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                  borderRadius: 999,
+                  background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                  color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+                  padding: '5px 8px', fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             type="text"
@@ -440,11 +465,11 @@ function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onTogg
             onKeyDown={(e) => {
               if (e.key === 'Enter' && customName.trim() && !atMax) {
                 e.preventDefault();
-                onAddCustom(customName, activeType);
+                onAddCustom(customName, customType);
                 setCustomName('');
               }
             }}
-            placeholder={`Ex.: ${activeType === 'Concurso' ? 'Prefeitura de...' : activeType === 'Vestibular' ? 'Vestibular UF...' : 'Medicina — UF...'}`}
+            placeholder={`Ex.: ${customType === 'Concurso' ? 'Prefeitura de...' : customType === 'Vestibular' ? 'Vestibular UF...' : 'Medicina — UF...'}`}
             className="pl-input"
             style={{ flex: 1, boxSizing: 'border-box' }}
             disabled={atMax}
@@ -453,14 +478,14 @@ function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onTogg
             type="button"
             className="pl-btn pl-btn-primary pl-btn-sm"
             disabled={!customName.trim() || atMax}
-            onClick={() => { onAddCustom(customName, activeType); setCustomName(''); }}
+            onClick={() => { onAddCustom(customName, customType); setCustomName(''); }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
           >
             <Plus size={14} /> Criar
           </button>
         </div>
         <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--pl-ink-3)', lineHeight: 1.4 }}>
-          {atMax ? `Limite de ${MAX_OBJECTIVES} atingido.` : 'Entra como objetivo seu — você adiciona as matérias depois.'}
+          {atMax ? `Limite de ${MAX_OBJECTIVES} atingido.` : 'Entra como objetivo seu — você personaliza foto, matérias e datas depois.'}
         </p>
       </div>
 
@@ -1023,6 +1048,9 @@ export default function OnboardingWizard({
   return (
     <div className="pl-card" style={{
       width: '100%', maxWidth: 560,
+      // Limita a altura ao viewport (desconta o padding 24px do wrapper) para o
+      // conteúdo rolar por dentro em vez de o modal crescer e sumir da tela.
+      maxHeight: 'calc(100vh - 48px)',
       display: 'flex', flexDirection: 'column',
       borderRadius: 12,
       overflow: 'hidden',
