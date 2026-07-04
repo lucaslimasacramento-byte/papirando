@@ -99,6 +99,29 @@ export async function uploadAvatar(userId, file) {
   throw lastError || new Error('Nao foi possivel enviar o avatar.');
 }
 
+// Sobe uma imagem do usuário (ex.: foto de um objetivo/curso) e devolve a URL
+// pública — reusa os buckets do avatar (o aluno já tem permissão de escrita no
+// próprio prefixo userId/). NÃO altera o avatar do perfil.
+export async function uploadUserImage(userId, file) {
+  if (!userId || !file) return '';
+  const type = String(file.type || '').toLowerCase();
+  if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(type)) {
+    throw new Error('Envie uma imagem PNG, JPG, WebP ou GIF.');
+  }
+  if (Number(file.size || 0) > 5 * 1024 * 1024) {
+    throw new Error('A imagem deve ter no máximo 5 MB.');
+  }
+  let lastError = null;
+  for (const bucket of AVATAR_BUCKET_CANDIDATES) {
+    try {
+      return await uploadAvatarToBucket(bucket, userId, file);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Nao foi possivel enviar a imagem.');
+}
+
 // B-045: limite conservador de 1 000 registros para evitar estouro de memória/timeout
 // em produção. Quando a base crescer acima desse valor, implementar paginação com cursor.
 const LOAD_ALL_PROFILES_LIMIT = 999;

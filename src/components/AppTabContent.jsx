@@ -145,6 +145,7 @@ export default function AppTabContent(props) {
     createCourseFromCatalog,
     createCourseFromRoles,
     updateCourse,
+    uploadCourseImage,
     importSelectedEditalWithAI,
     analyzeEditalDocument,
     deleteCourse,
@@ -466,6 +467,7 @@ export default function AppTabContent(props) {
         onAnalyzeEdital={analyzeEditalDocument}
         onDeleteCourse={deleteCourse}
         onUpdateCourse={updateCourse}
+        onUploadImage={uploadCourseImage}
         setSelectedCoursePlan={setSelectedCoursePlan}
         concursoCatalog={contestLibrary}
         currentCourseLimit={currentCourseLimit}

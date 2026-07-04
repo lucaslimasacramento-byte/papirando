@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   Book,
@@ -75,6 +75,7 @@ export default function Planos({
   onAnalyzeEdital,
   onDeleteCourse,
   onUpdateCourse,
+  onUploadImage,
   setSelectedCoursePlan,
   concursoCatalog = [],
   remainingCourseSlots = 3,
@@ -469,6 +470,7 @@ export default function Planos({
         <EditObjectiveModal
           curso={editingCourse}
           onClose={() => setEditingCourse(null)}
+          onUploadImage={onUploadImage}
           onSave={(patch) => onUpdateCourse?.(editingCourse.id, patch)}
           onOpenDisciplinas={(curso) => {
             setSelectedCoursePlan?.(curso.plano || curso.nome || 'Todos');
@@ -1430,19 +1432,38 @@ function ModalShell({ title, subtitle, children, onClose }) {
   );
 }
 
-function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas }) {
+function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploadImage }) {
   const EDIT_TYPES = [
     { id: 'concurso', label: 'Concurso' },
     { id: 'vestibular', label: 'Vestibular' },
     { id: 'faculdade', label: 'Graduação' },
     { id: 'livre', label: 'Livre' },
   ];
+  const fileInputRef = useRef(null);
   const [nome, setNome] = useState(curso?.nome || '');
   const [intent, setIntent] = useState(curso?.intent || curso?.tipo || 'livre');
   const [provaData, setProvaData] = useState(curso?.prova_data || '');
   const [imagemUrl, setImagemUrl] = useState(curso?.imagem_url || '');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const canSave = Boolean(nome.trim());
+
+  const handlePickFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // permite reenviar o mesmo arquivo
+    if (!file || !onUploadImage) return;
+    setUploadError('');
+    setUploading(true);
+    try {
+      const url = await onUploadImage(file);
+      if (url) setImagemUrl(url);
+    } catch (err) {
+      setUploadError(err?.message || 'Falha ao enviar a imagem.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <ModalShell
@@ -1490,13 +1511,43 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas }) {
         </div>
 
         <div>
-          <InputField label="Foto (URL da imagem, opcional)" value={imagemUrl} onChange={setImagemUrl} placeholder="https://..." />
-          {imagemUrl ? (
-            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <img src={imagemUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--pl-rule-2)' }} />
-              <span style={{ fontSize: 11.5, color: 'var(--pl-ink-3)' }}>Pré-visualização</span>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Foto (opcional)</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
+              border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {imagemUrl
+                ? <img src={imagemUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <BookOpen size={20} style={{ color: 'var(--pl-ink-4)' }} />}
             </div>
-          ) : null}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {onUploadImage && (
+                <>
+                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handlePickFile} style={{ display: 'none' }} />
+                  <button
+                    type="button"
+                    className="pl-btn pl-btn-sm"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Upload size={14} /> {uploading ? 'Enviando…' : 'Enviar foto'}
+                  </button>
+                </>
+              )}
+              {imagemUrl && (
+                <button type="button" className="pl-btn pl-btn-sm" disabled={uploading} onClick={() => setImagemUrl('')}>
+                  Remover
+                </button>
+              )}
+            </div>
+          </div>
+          {uploadError && <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{uploadError}</p>}
+          <div style={{ marginTop: 10 }}>
+            <InputField label="Ou cole a URL de uma imagem" value={imagemUrl} onChange={setImagemUrl} placeholder="https://..." />
+          </div>
         </div>
 
         <div style={{ borderTop: '1px solid var(--pl-rule)', paddingTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>

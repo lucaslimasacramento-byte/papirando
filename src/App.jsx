@@ -118,7 +118,7 @@ import { mergeRedacaoKitBundle, sanitizeRedacaoKitForSave } from './lib/redacaoK
 import { saveStudySession, loadStudySessions, syncLocalToSupabase } from './lib/studySessionsApi';
 import { loadUserContests, addUserContest, setTargetContest, removeUserContest as _removeUserContest } from './lib/userContestsApi';
 import { loadSimulados, saveSimulado, fetchSimuladoStats } from './lib/simuladosApi';
-import { loadProfile, updateProfile, uploadAvatar, loadAllProfiles } from './lib/profileApi';
+import { loadProfile, updateProfile, uploadAvatar, uploadUserImage, loadAllProfiles } from './lib/profileApi';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Estatisticas = lazy(() => import('./pages/Estatisticas'));
@@ -4719,6 +4719,9 @@ export default function App() {
     }));
   };
 
+  // Upload da foto de um objetivo/curso do aluno → devolve a URL pública.
+  const uploadCourseImage = (file) => uploadUserImage(currentUserId, file);
+
   // Atualiza as instituições-alvo de um objetivo (usado no ENEM). Máx. 3.
   const updateCourseTargets = (courseId, instituicoesAlvo) => {
     const list = Array.isArray(instituicoesAlvo) ? instituicoesAlvo.slice(0, 3) : [];
@@ -7042,6 +7045,7 @@ export default function App() {
     analyzeEditalDocument,
     deleteCourse,
     updateCourse,
+    uploadCourseImage,
     setSelectedCoursePlan,
     contestLibrary,
     currentCourseLimit,
