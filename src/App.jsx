@@ -4692,6 +4692,25 @@ export default function App() {
     return novoCurso;
   };
 
+  // Edita os campos de um objetivo/curso (nome, tipo, foto, data da prova, cor).
+  // Usado pela tela de personalização do aluno (objetivos personalizados e demais).
+  const updateCourse = (courseId, patch = {}) => {
+    if (!courseId) return;
+    setCursos((prev) => prev.map((c) => {
+      if (c.id !== courseId) return c;
+      const next = { ...c };
+      if (patch.nome !== undefined) {
+        const nome = String(patch.nome || '').trim();
+        if (nome) { next.nome = nome; next.concurso = c.concurso === c.nome ? nome : (c.concurso || nome); }
+      }
+      if (patch.intent !== undefined && patch.intent) { next.intent = patch.intent; next.tipo = patch.intent; }
+      if (patch.prova_data !== undefined) next.prova_data = patch.prova_data || '';
+      if (patch.imagem_url !== undefined) next.imagem_url = String(patch.imagem_url || '').trim();
+      if (patch.cor !== undefined && patch.cor) next.cor = patch.cor;
+      return next;
+    }));
+  };
+
   // Atualiza as instituições-alvo de um objetivo (usado no ENEM). Máx. 3.
   const updateCourseTargets = (courseId, instituicoesAlvo) => {
     const list = Array.isArray(instituicoesAlvo) ? instituicoesAlvo.slice(0, 3) : [];
@@ -7014,6 +7033,7 @@ export default function App() {
     importSelectedEditalWithAI,
     analyzeEditalDocument,
     deleteCourse,
+    updateCourse,
     setSelectedCoursePlan,
     contestLibrary,
     currentCourseLimit,

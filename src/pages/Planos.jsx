@@ -11,6 +11,7 @@ import {
   Layers3,
   LibraryBig,
   Loader2,
+  Pencil,
   Play,
   Sparkles,
   Target,
@@ -73,6 +74,7 @@ export default function Planos({
   onImportEdital,
   onAnalyzeEdital,
   onDeleteCourse,
+  onUpdateCourse,
   setSelectedCoursePlan,
   concursoCatalog = [],
   remainingCourseSlots = 3,
@@ -80,6 +82,7 @@ export default function Planos({
   courseTemplates = [],
 }) {
   const [mode, setMode] = useState(null);
+  const [editingCourse, setEditingCourse] = useState(null);
   const [courseForm, setCourseForm] = useState(EMPTY_COURSE_FORM);
   const [iaForm, setIaForm] = useState({
     nome: '',
@@ -450,6 +453,7 @@ export default function Planos({
                   setActiveTab('disciplinas');
                 }}
                 onApagar={() => { onDeleteCourse?.(curso); }}
+                onEditar={onUpdateCourse ? () => setEditingCourse(curso) : undefined}
                 onMarcarAlvo={() => {
                   const contest = myContests.find((item) => item.plano === curso.plano || item.nome === curso.nome);
                   if (contest?.id) onSetTargetContest?.(contest.id);
@@ -460,6 +464,18 @@ export default function Planos({
         </section>
 
       </div>
+
+      {editingCourse && (
+        <EditObjectiveModal
+          curso={editingCourse}
+          onClose={() => setEditingCourse(null)}
+          onSave={(patch) => onUpdateCourse?.(editingCourse.id, patch)}
+          onOpenDisciplinas={(curso) => {
+            setSelectedCoursePlan?.(curso.plano || curso.nome || 'Todos');
+            setActiveTab('disciplinas');
+          }}
+        />
+      )}
 
       {mode === 'intent' && (
         <ModalShell title="Novo objetivo de estudo" subtitle="Escolha o contexto. O Papirando adapta a linguagem e a estrutura sem prender todo mundo em concurso." onClose={closeMode}>
@@ -1277,7 +1293,7 @@ function SectionHeader({ eyebrow, title, meta, cta }) {
   );
 }
 
-function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlvo }) {
+function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, onMarcarAlvo }) {
   const isLibrary = curso.origem === 'catalogo' || curso.origem === 'biblioteca';
   const intent = curso.intent || curso.tipo || (isLibrary || curso.origem === 'ia' ? 'concurso' : 'livre');
   const tipoLabel = isLibrary ? 'Biblioteca' : curso.origem === 'ia' ? 'Importado por IA' : INTENT_LABELS[intent] || 'Personalizado';
@@ -1295,9 +1311,16 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onMarcarAlv
             </span>
             {isTarget && <span className="pl-tag pl-tag-warn">Alvo</span>}
           </div>
-          <button onClick={onApagar} title="Excluir curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
-            <Trash2 size={15} />
-          </button>
+          <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+            {onEditar && (
+              <button onClick={onEditar} title="Personalizar objetivo" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
+                <Pencil size={15} />
+              </button>
+            )}
+            <button onClick={onApagar} title="Excluir curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
+              <Trash2 size={15} />
+            </button>
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, minWidth: 0 }}>
           <div style={{
@@ -1404,6 +1427,95 @@ function ModalShell({ title, subtitle, children, onClose }) {
         <div style={{ overflowY: 'auto', padding: '20px 24px' }}>{children}</div>
       </div>
     </div>
+  );
+}
+
+function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas }) {
+  const EDIT_TYPES = [
+    { id: 'concurso', label: 'Concurso' },
+    { id: 'vestibular', label: 'Vestibular' },
+    { id: 'faculdade', label: 'Graduação' },
+    { id: 'livre', label: 'Livre' },
+  ];
+  const [nome, setNome] = useState(curso?.nome || '');
+  const [intent, setIntent] = useState(curso?.intent || curso?.tipo || 'livre');
+  const [provaData, setProvaData] = useState(curso?.prova_data || '');
+  const [imagemUrl, setImagemUrl] = useState(curso?.imagem_url || '');
+
+  const canSave = Boolean(nome.trim());
+
+  return (
+    <ModalShell
+      title="Personalizar objetivo"
+      subtitle="Ajuste o nome, o tipo, a foto e a data da prova. As matérias e tópicos você edita em Disciplinas."
+      onClose={onClose}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <InputField label="Nome do objetivo" value={nome} onChange={setNome} placeholder="Ex.: Prefeitura de..." />
+
+        <div>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Tipo</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {EDIT_TYPES.map((t) => {
+              const active = intent === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setIntent(t.id)}
+                  style={{
+                    border: `1px solid ${active ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                    borderRadius: 999,
+                    background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                    color: active ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+                    padding: '7px 14px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Data da prova (opcional)</label>
+          <input
+            type="date"
+            value={provaData ? String(provaData).slice(0, 10) : ''}
+            onChange={(e) => setProvaData(e.target.value)}
+            className="pl-input"
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div>
+          <InputField label="Foto (URL da imagem, opcional)" value={imagemUrl} onChange={setImagemUrl} placeholder="https://..." />
+          {imagemUrl ? (
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <img src={imagemUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--pl-rule-2)' }} />
+              <span style={{ fontSize: 11.5, color: 'var(--pl-ink-3)' }}>Pré-visualização</span>
+            </div>
+          ) : null}
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--pl-rule)', paddingTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+          <button className="pl-btn pl-btn-ghost pl-btn-sm" onClick={() => onOpenDisciplinas?.(curso)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <BookOpen size={14} /> Editar matérias e tópicos
+          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="pl-btn pl-btn-sm" onClick={onClose}>Cancelar</button>
+            <button
+              className="pl-btn pl-btn-primary pl-btn-sm"
+              disabled={!canSave}
+              onClick={() => { onSave?.({ nome, intent, prova_data: provaData, imagem_url: imagemUrl }); onClose?.(); }}
+            >
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </ModalShell>
   );
 }
 
