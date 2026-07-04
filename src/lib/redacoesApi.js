@@ -474,6 +474,9 @@ export async function loadRedacoesFromSupabase({ userId, fallbackRecords = [] })
   }
 }
 
+const REDACAO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const REDACAO_MAX_BYTES = 10 * 1024 * 1024; // 10MB
+
 export async function uploadRedacaoAttachment({ file, userId, existingUrl = '' }) {
   if (!file || !userId) {
     return {
@@ -482,6 +485,16 @@ export async function uploadRedacaoAttachment({ file, userId, existingUrl = '' }
       attachment_name: '',
       attachment_type: '',
     };
+  }
+
+  // Blindagem: valida tipo real e tamanho antes do upload. O accept do <input>
+  // e' apenas cosmetico e burlavel; o bucket e' publico, entao um .html/.svg
+  // com script seria servido como conteudo executavel sob a marca.
+  if (!REDACAO_ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Tipo de arquivo nao permitido. Envie uma imagem (JPG, PNG, WEBP) ou PDF.');
+  }
+  if (file.size > REDACAO_MAX_BYTES) {
+    throw new Error('Arquivo muito grande. O limite e 10MB.');
   }
 
   const extension = file.name.split('.').pop()?.toLowerCase() || 'bin';
