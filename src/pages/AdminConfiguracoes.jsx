@@ -40,6 +40,7 @@ import { buildDefaultAudiobookCatalog } from '../lib/audiobooks';
 import { NOTIFICATION_SETTING_OPTIONS, normalizeNotificationSettings } from '../lib/notificationSettings';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { EDITABLE_PLAN_KEYS, PLAN_LIMIT_FIELDS, normalizePlanLimits, planLabel } from '../lib/planLimitsConfig';
+import { loadCustomObjectives, aggregateCustomObjectives } from '../lib/customObjectivesApi';
 
 function normalizeThemeBanca(banca) {
   const b = String(banca || '').trim();
@@ -118,6 +119,9 @@ export default function AdminConfiguracoes({
   const [notificationSaving, setNotificationSaving] = useState(false);
   const [planLimitsDraft, setPlanLimitsDraft] = useState(() => normalizePlanLimits(planLimits));
   const [planLimitsSaving, setPlanLimitsSaving] = useState(false);
+  const [demandItems, setDemandItems] = useState([]);
+  const [demandLoading, setDemandLoading] = useState(false);
+  const [demandMissingTable, setDemandMissingTable] = useState(false);
   const [redacaoSiteSaving, setRedacaoSiteSaving] = useState(false);
   const [aiStatus, setAiStatus] = useState({ provider: 'offline', status: 'offline', model: '' });
   const [aiLoading, setAiLoading] = useState(false);
@@ -163,6 +167,20 @@ export default function AdminConfiguracoes({
   useEffect(() => {
     setPlanLimitsDraft(normalizePlanLimits(planLimits));
   }, [planLimits]);
+
+  useEffect(() => {
+    if (activeSection !== 'demanda') return;
+    let cancelled = false;
+    setDemandLoading(true);
+    setDemandMissingTable(false);
+    loadCustomObjectives().then((r) => {
+      if (cancelled) return;
+      setDemandItems(Array.isArray(r.items) ? r.items : []);
+      setDemandMissingTable(Boolean(r.missingTable));
+      setDemandLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [activeSection]);
 
   useEffect(() => {
     refreshAiHealth();
@@ -293,6 +311,11 @@ export default function AdminConfiguracoes({
             active={activeSection === 'planos'}
             onClick={() => setActiveSection('planos')}
             label="Planos · limites"
+          />
+          <ConfigTab
+            active={activeSection === 'demanda'}
+            onClick={() => setActiveSection('demanda')}
+            label="Objetivos dos alunos"
           />
           <ConfigTab active={activeSection === 'xp'} onClick={() => setActiveSection('xp')} label="XP e níveis" />
           <ConfigTab active={activeSection === 'badges'} onClick={() => setActiveSection('badges')} label="Selos" />
@@ -634,6 +657,65 @@ export default function AdminConfiguracoes({
               </div>
             ))}
           </div>
+        </section>
+      ) : null}
+
+      {activeSection === 'demanda' ? (
+        <section className="pl-card" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+            <div>
+              <p className="pl-eyebrow">Demanda</p>
+              <h3 style={{ margin: '6px 0 0', fontSize: 26, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
+                Objetivos criados pelos alunos
+              </h3>
+              <p style={{ margin: '8px 0 0', maxWidth: 760, color: 'var(--pl-ink-2)', fontSize: 13.5, lineHeight: 1.55 }}>
+                O que os alunos criaram por conta própria (não estava no catálogo). Use como pista do que publicar — quanto mais gente criou o mesmo, mais demanda.
+              </p>
+            </div>
+          </div>
+
+          {demandMissingTable ? (
+            <div className="pl-card-paper" style={{ padding: 16, marginTop: 18 }}>
+              <p style={{ margin: 0, color: 'var(--pl-ink-2)', fontSize: 13.5, lineHeight: 1.55 }}>
+                A tabela <strong>custom_objectives</strong> ainda não existe. Rode no Supabase o script
+                {' '}<code>supabase/custom_objectives.sql</code> para começar a registrar.
+              </p>
+            </div>
+          ) : demandLoading ? (
+            <p style={{ margin: '18px 0 0', color: 'var(--pl-ink-3)', fontSize: 13 }}>Carregando…</p>
+          ) : demandItems.length === 0 ? (
+            <p style={{ margin: '18px 0 0', color: 'var(--pl-ink-3)', fontSize: 13 }}>
+              Nenhum objetivo personalizado criado ainda.
+            </p>
+          ) : (
+            <div style={{ marginTop: 18, overflowX: 'auto' }}>
+              <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: 'var(--pl-ink-3)' }}>
+                {demandItems.length} criação(ões) · {aggregateCustomObjectives(demandItems).length} objetivo(s) distinto(s)
+              </p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', color: 'var(--pl-ink-3)' }}>
+                    <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule-2)' }}>Objetivo</th>
+                    <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule-2)' }}>Tipo</th>
+                    <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule-2)', textAlign: 'center' }}>Criações</th>
+                    <th style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule-2)' }}>Última</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aggregateCustomObjectives(demandItems).map((row, i) => (
+                    <tr key={`${row.tipo}-${row.nome}-${i}`}>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule)', color: 'var(--pl-ink)', fontWeight: 600 }}>{row.nome}</td>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule)', textTransform: 'capitalize', color: 'var(--pl-ink-2)' }}>{row.tipo}</td>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule)', textAlign: 'center', fontWeight: 800, color: 'var(--pl-ink)' }}>{row.count}</td>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid var(--pl-rule)', color: 'var(--pl-ink-3)' }}>
+                        {row.lastAt ? new Date(row.lastAt).toLocaleDateString('pt-BR') : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       ) : null}
 

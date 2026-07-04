@@ -110,6 +110,7 @@ import {
   upsertPlanLimits,
 } from './lib/redacaoSiteContentApi';
 import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
+import { recordCustomObjective } from './lib/customObjectivesApi';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -4689,6 +4690,13 @@ export default function App() {
     };
 
     setCursos((prev) => [novoCurso, ...prev]);
+
+    // Objetivo criado pelo aluno (fora do catálogo) → registra como demanda p/ o admin.
+    // Não vale para importações de catálogo/IA. Fire-and-forget (não bloqueia).
+    if (currentUserId && !['catalogo', 'ia', 'biblioteca'].includes(novoCurso.origem)) {
+      recordCustomObjective(currentUserId, { nome: novoCurso.nome, tipo: novoCurso.intent }).catch(() => {});
+    }
+
     return novoCurso;
   };
 
