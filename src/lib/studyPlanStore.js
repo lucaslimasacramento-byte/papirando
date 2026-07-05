@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { computePlanAdjustments } from './planAdjustmentEngine';
+import { ensureTopicReviewCards } from './topicReviewApi';
 
 /**
  * Persistencia do plano de estudos aprovado no Supabase (Passo 1 da trilha).
@@ -138,6 +139,20 @@ export async function approveStudyPlan({ userId, schedule, mode = 'fixo', meta =
   if (blocks.length > 0) {
     const { error: blocksError } = await supabase.from('study_plan_blocks').insert(blocks);
     if (blocksError) throw blocksError;
+  }
+
+  // Passo 4 — inscreve na repeticao espacada os topicos que o plano ja agenda
+  // como "Revisao" (conjunto intencional, evita inundar com tudo). Falha aqui
+  // nao deve derrubar a aprovacao do plano.
+  try {
+    const reviewTopics = blocks
+      .filter((b) => b.modo === 'Revisao' && b.topico)
+      .map((b) => ({ disciplina: b.disciplina, topico: b.topico }));
+    if (reviewTopics.length > 0) {
+      await ensureTopicReviewCards({ userId, topics: reviewTopics });
+    }
+  } catch (err) {
+    console.warn('Nao foi possivel inscrever topicos na revisao espacada:', err);
   }
 
   return { planId: planRow.id, version: planRow.version };

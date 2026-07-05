@@ -22,6 +22,8 @@ import { supabase } from '../lib/supabase';
 import { getSubjectColor } from '../lib/subjectPalette';
 import { generateScheduleWithAI, DIA_LABELS, MODO_COLORS } from '../lib/scheduleAiClient';
 import { approveStudyPlan, loadActiveStudyPlan, runPlanAdjustments } from '../lib/studyPlanStore';
+import { getDueTopicReviews, submitTopicReview } from '../lib/topicReviewApi';
+import { RATING_LABELS, formatNextInterval } from '../lib/fsrs';
 
 // Codigo do dia da semana de hoje (getDay: 0=domingo) alinhado ao WEEKDAY_ORDER.
 const TODAY_DIA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][new Date().getDay()];
@@ -324,6 +326,8 @@ function PlanejamentoContent({
   const [planApproveError, setPlanApproveError] = useState('');
   const [planAdjusting, setPlanAdjusting] = useState(false);
   const [planAdjustMessage, setPlanAdjustMessage] = useState('');
+  const [dueReviews, setDueReviews] = useState([]);
+  const [reviewBusyId, setReviewBusyId] = useState(null);
   const [remotePlanningLoaded, setRemotePlanningLoaded] = useState(false);
   const calViewMode = sharedCalendarViewMode || localCalViewMode;
   const setCalViewMode = setSharedCalendarViewMode || setLocalCalViewMode;
@@ -763,6 +767,37 @@ function PlanejamentoContent({
     }
   }
 
+  // Passo 4 — carrega os topicos com revisao vencida (FSRS) ao montar.
+  useEffect(() => {
+    if (!currentUserId) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const due = await getDueTopicReviews(currentUserId);
+        if (!cancelled) setDueReviews(Array.isArray(due) ? due : []);
+      } catch {
+        /* tabela ausente ou sem revisoes — painel some */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId]);
+
+  async function handleRateReview(card, rating) {
+    if (reviewBusyId) return;
+    setReviewBusyId(card.id);
+    try {
+      await submitTopicReview({ card, rating });
+      // Sai da fila de hoje (o proximo due foi empurrado pelo FSRS).
+      setDueReviews((prev) => prev.filter((c) => c.id !== card.id));
+    } catch {
+      /* mantem o card na lista para nova tentativa */
+    } finally {
+      setReviewBusyId(null);
+    }
+  }
+
   async function handleReavaliarPlano() {
     if (planAdjusting || !aiSchedule?.planId) return;
     setPlanAdjusting(true);
@@ -883,6 +918,10 @@ function PlanejamentoContent({
               persistAiSchedule(currentUserId, null);
             }}
           />
+        ) : null}
+
+        {dueReviews.length > 0 ? (
+          <TopicReviewPanel reviews={dueReviews} busyId={reviewBusyId} onRate={handleRateReview} />
         ) : null}
 
         {planejamentoMode === 'flexivel' ? (
@@ -1338,6 +1377,97 @@ function PlanejamentoHeader({ mode, setMode, onConfigurar, onGenerateAiSchedule,
           </button>
         </div>
     </header>
+  );
+}
+
+// Cores semanticas por rating FSRS (1 Errei / 2 Dificil / 3 Lembrei / 4 Facil).
+const REVIEW_RATING_STYLES = {
+  1: { color: 'var(--pl-danger)', bg: 'var(--pl-danger-soft)' },
+  2: { color: 'var(--pl-warn)', bg: 'var(--pl-warn-soft)' },
+  3: { color: 'var(--pl-success)', bg: 'var(--pl-success-soft)' },
+  4: { color: 'var(--pl-accent)', bg: 'var(--pl-accent-soft)' },
+};
+
+// Passo 4 — painel de revisao espacada por topico. So aparece quando ha
+// revisao vencida; avaliar empurra o proximo due via FSRS e tira o card da fila.
+function TopicReviewPanel({ reviews, busyId, onRate }) {
+  return (
+    <section className="pl-card" style={{ padding: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div>
+          <span className="pl-tag pl-tag-warn">Revisão espaçada</span>
+          <h2 className="pl-section-title" style={{ marginTop: 10 }}>
+            {reviews.length === 1 ? '1 tópico para revisar hoje' : `${reviews.length} tópicos para revisar hoje`}
+          </h2>
+          <p className="pl-muted" style={{ margin: '8px 0 0', maxWidth: 760, lineHeight: 1.6 }}>
+            Tópicos do seu plano que venceram a revisão. Depois de revisar, avalie como foi — o próximo encontro é agendado sozinho.
+          </p>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {reviews.map((card) => {
+          const busy = busyId === card.id;
+          return (
+            <div
+              key={card.id}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 16,
+                flexWrap: 'wrap',
+                borderRadius: 12,
+                border: '1px solid var(--pl-rule)',
+                background: 'var(--pl-bg-soft)',
+                padding: '12px 16px',
+                opacity: busy ? 0.6 : 1,
+              }}
+            >
+              <div style={{ minWidth: 200 }}>
+                {card.disciplina ? (
+                  <p className="pl-eyebrow" style={{ margin: 0, marginBottom: 2 }}>{card.disciplina}</p>
+                ) : null}
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{card.topico}</p>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {[1, 2, 3, 4].map((rating) => {
+                  const style = REVIEW_RATING_STYLES[rating];
+                  return (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => onRate(card, rating)}
+                      disabled={Boolean(busyId)}
+                      title={`Próxima revisão em ${formatNextInterval(card, rating)}`}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 2,
+                        minWidth: 72,
+                        borderRadius: 10,
+                        border: `1px solid ${style.bg}`,
+                        background: style.bg,
+                        padding: '7px 12px',
+                        cursor: busyId ? 'default' : 'pointer',
+                      }}
+                    >
+                      <span style={{ fontSize: 12.5, fontWeight: 800, color: style.color }}>
+                        {busy ? <Loader2 size={13} className="animate-spin" /> : RATING_LABELS[rating]?.label}
+                      </span>
+                      <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+                        {formatNextInterval(card, rating)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
