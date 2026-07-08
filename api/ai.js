@@ -14,6 +14,7 @@ import {
   getPublicHealth,
   handleOptions,
   enforceAiRateLimit,
+  enforceAiPlan,
   readJson,
   requireAiAuth,
   sendJson,
@@ -55,6 +56,7 @@ export default async function handler(req, res) {
     enforceAiRateLimit(req, route);
     const user = await requireAiAuth(req);
     if (user?.id) enforceAiRateLimit(req, route, `user:${user.id}`);
+    await enforceAiPlan(req);
 
     const body = await readJson(req);
 

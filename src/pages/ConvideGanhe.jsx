@@ -164,25 +164,10 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
           { data: referralRows, error: referralError },
           { data: bonusRows, error: bonusError },
           { data: referredProfilesRows, error: referredProfilesError },
-          { count: referredProfilesCount, error: referredCountError },
         ] = await Promise.all([
           supabase
             .from('referrals')
-            .select(
-              `
-                  id,
-                  referral_code,
-                  status,
-                  created_at,
-                  confirmed_at,
-                  referred_profile_id,
-                  referred_profile:referred_profile_id (
-                    nome,
-                    email,
-                    username
-                  )
-                `
-            )
+            .select('id, referral_code, status, created_at, confirmed_at, referred_profile_id')
             .eq('referrer_profile_id', userId)
             .order('created_at', { ascending: false }),
           supabase
@@ -190,26 +175,28 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
             .select('id, milestone, reward_title, created_at')
             .eq('referrer_profile_id', userId)
             .order('created_at', { ascending: false }),
-          supabase
-            .from('profiles')
-            .select('id, nome, email, username, created_at')
-            .eq('referred_by_code', ensuredCode)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('profiles')
-            .select('id', { count: 'exact', head: true })
-            .eq('referred_by_code', ensuredCode),
+          // RPC seguro: retorna so id/nome/username/created_at de quem eu indiquei
+          // (sem expor CPF/e-mail/celular como a policy antiga fazia).
+          supabase.rpc('get_referred_display'),
         ]);
 
         if (referralError) throw referralError;
         if (bonusError) throw bonusError;
         if (referredProfilesError) throw referredProfilesError;
-        if (referredCountError) throw referredCountError;
+
+        // Mapa id -> nome (dados seguros do RPC) para exibir o historico.
+        const nameById = new Map(
+          (Array.isArray(referredProfilesRows) ? referredProfilesRows : []).map((r) => [
+            String(r.id || ''),
+            String(r.nome || r.username || 'Novo usuário').trim(),
+          ])
+        );
+        const referredProfilesCount = Array.isArray(referredProfilesRows) ? referredProfilesRows.length : 0;
 
         const mappedHistory = (referralRows || []).map((row) => ({
             id: `ref-${row.id}`,
             profileId: row.referred_profile_id || '',
-            name: resolveInviteName(row),
+            name: nameById.get(String(row.referred_profile_id || '')) || 'Novo usuário',
             status: mapReferralStatus(row.status),
             date: formatReferralDate(row.confirmed_at || row.created_at),
             rawDate: row.confirmed_at || row.created_at || null,
@@ -223,7 +210,7 @@ export default function ConvideGanhe({ profile = {}, currentUserId = '', current
           .map((row) => ({
             id: `profile-${row.id}`,
             profileId: row.id,
-            name: String(row.nome || row.username || row.email || 'Novo usuário').trim(),
+            name: String(row.nome || row.username || 'Novo usuário').trim(),
             status: 'Confirmado',
             date: formatReferralDate(row.created_at),
             rawDate: row.created_at || null,

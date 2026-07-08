@@ -15,10 +15,29 @@ Legenda: ✅ corrigido · 🟡 corrigido no repo, falta aplicar no banco · ⏳ 
 
 - ℹ️ **"Escalada a admin via `profiles.email`"** — **NÃO existe em produção.** O `is_app_admin()` real é role-only (sem cláusula de e-mail — mudado em 21/06). O arquivo `admin_rls_helpers.sql` do repo estava stale. Escalada de `role` já bloqueada por 2 triggers (`protect_profile_privileged_fields` + `profiles_block_sensitive_self_update`). Migration NÃO mexe em is_app_admin (seria retrocesso).
 
-## 🔴 P0 restantes (bloqueiam lançamento)
+## ✅ FASE 1 — APLICADA E VERIFICADA (2026-07-07)
 
-- ⏳ **`ai-server.mjs` sem validação de JWT/plano** — token estático compartilhado; `return true` se `AI_SERVER_TOKEN` vazio. IA sem controle de plano server-side. Precisa validar JWT Supabase + `usage_counters`.
-- ⏳ **Limites de plano só no frontend** — usuário free cria flashcards/mapas/questões/redações ilimitados via API direta (RLS só checa posse, não plano). Precisa RPC `security definer` de criação OU policy com checagem de plano.
+Produção real: a IA de produção passa pelo `api/_ai.js` (Vercel), que **já validava JWT**
+(`requireAiAuth`). O `ai-server.mjs` é só dev local. O que faltava era **plano/cota**.
+
+- ✅ **IA sem controle de plano** — `api/_ai.js` agora chama `is_premium_user()` + cota diária
+  de backstop (`increment_usage('ai_backstop')`) para não-premium; premium ilimitado; fail-open
+  pra nunca travar quem paga. Migration `202607070001` cria `is_premium_user()`.
+- ✅ **`mind_maps` criável por free** — INSERT agora exige `is_premium_user()` (feature 100% premium).
+- ✅ **PII de indicação** — removida a policy `profiles_referral_related_read`; criado RPC
+  `get_referred_display()` (só nome/username); `ConvideGanhe.jsx` migrado.
+- ✅ **`essay-uploads` sem limite** — bucket agora com `allowed_mime_types` + `file_size_limit` 10MB.
+- ✅ **`npm audit`** — 0 vulnerabilidades (dev deps atualizadas via `npm audit fix`).
+
+### Adiado com justificativa (não é lacuna esquecida)
+- ⏳ **Limites CONTÁVEIS de conteúdo server-side** (questões/redações/uploads/posts) — enforcement
+  por contagem de linhas via RLS foi avaliado e **adiado por risco**: a semântica de insert varia
+  por tabela (ex.: um simulado insere N `question_answers` de uma vez) e poderia travar uso legítimo
+  pós-trial. Durante o trial (30 dias) todos são premium, então não morde no lançamento. Mantido no
+  frontend + backstop de IA no servidor. Revisitar com RPCs de criação dedicadas.
+- ⏳ **`essay-uploads` privado + URL assinada** — bucket segue público (a URL fica salva e exibida);
+  tornar privado exige trocar `getPublicUrl` por URL assinada em todas as telas de exibição. Limites
+  de tipo/tamanho já fecham o vetor de upload executável + DoS.
 
 ## 🟠 P1 — Altos restantes (1ª versão)
 - ✅ **`essay-uploads` sem validação de tipo/tamanho** — bucket público servia .html/.svg com script. **Fix aplicado:** validação de MIME + 10MB em `redacoesApi.js`. (Follow-up: setar `allowed_mime_types`/`file_size_limit` no bucket + torná-lo privado.)

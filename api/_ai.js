@@ -92,6 +92,51 @@ export async function requireAiAuth(req) {
   return user;
 }
 
+async function callSupabaseRpc(fnName, token, args = {}) {
+  const { url, anonKey } = getSupabaseApiConfig();
+  if (!url || !anonKey) throw new Error('Supabase REST nao configurado.');
+  const response = await fetch(`${url}/rest/v1/rpc/${fnName}`, {
+    method: 'POST',
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(args),
+  });
+  if (!response.ok) throw new Error(`rpc ${fnName} respondeu ${response.status}`);
+  return response.json().catch(() => null);
+}
+
+// Enforcement de plano no servidor: premium (assinatura/trial/admin) tem uso
+// ilimitado; nao-premium tem uma cota diaria de backstop para evitar abuso de
+// custo de IA por chamada direta a API. Fail-open em erro de infra para nunca
+// bloquear um usuario pagante por falha transitoria.
+export async function enforceAiPlan(req) {
+  if (!envFlag('AI_ENFORCE_PLAN', true)) return;
+  const token = normalizeBearerToken(req.headers.authorization);
+  if (!token) return; // requireAiAuth ja barrou; defensivo
+
+  const freeDailyCap = Math.max(1, Number(env('AI_FREE_DAILY_CAP')) || 12);
+  try {
+    const premium = await callSupabaseRpc('is_premium_user', token, {});
+    if (premium === true) return; // premium: sem limite
+
+    const period = `daily:${new Date().toISOString().slice(0, 10)}`;
+    const count = Number(await callSupabaseRpc('increment_usage', token, { p_feature: 'ai_backstop', p_period: period }));
+    if (Number.isFinite(count) && count > freeDailyCap) {
+      throw httpError(
+        429,
+        `Cota diaria de IA do plano gratuito excedida (${count}/${freeDailyCap}).`,
+        'Voce atingiu o limite diario de IA do plano gratuito. Assine o Papiro para uso ilimitado.'
+      );
+    }
+  } catch (error) {
+    if (error.status === 429) throw error;
+    console.warn('[api/ai] enforceAiPlan fail-open:', error.message);
+  }
+}
+
 export function enforceAiRateLimit(req, route = '', identity = '') {
   if (!envFlag('AI_RATE_LIMIT_ENABLED', true)) return;
 
