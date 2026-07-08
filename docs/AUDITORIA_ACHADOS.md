@@ -2,17 +2,25 @@
 
 Legenda: ✅ corrigido · 🟡 corrigido no repo, falta aplicar no banco · ⏳ pendente · ℹ️ falso alarme
 
-## 🔴 P0 — Críticos (bloqueiam lançamento)
+> **ATUALIZAÇÃO 2026-07-04 (aplicação):** verificado contra o banco REAL via Management API.
+> Repo estava dessincronizado do banco. Reconciliado e aplicado. Ver abaixo.
 
-- 🟡 **Escalada a admin via `profiles.email`** — usuário comum podia `update profiles set email='x@papirando.com'` e virar admin (`is_app_admin()` confia no domínio + trigger não protegia email). **Fix:** `migrations/202607040001_blindagem_rls.sql` (is_app_admin não confia mais em profiles.email para domínio; trigger bloqueia email institucional). Falta aplicar no banco.
-- 🟡 **`admin_notices`: qualquer usuário reescrevia broadcasts globais** (phishing pra toda a base). **Fix:** policy de UPDATE restrita ao próprio aviso. Falta aplicar no banco.
+## ✅ APLICADO NO BANCO DE PRODUÇÃO (verificado)
+
+- ✅ **`admin_notices`: qualquer usuário reescrevia broadcasts globais** — CONFIRMADO no banco (`user_id IS NULL` no UPDATE). **Corrigido:** policy restrita a `user_id = auth.uid()`. Frontend ajustado: dispensar broadcast agora usa localStorage (App.jsx).
+- ✅ **`community_comments` USING(true)** — CONFIRMADO. **Corrigido:** SELECT condicionado à visibilidade do post pai.
+- ✅ **`resolve_squad_invite` exposto a anônimo** — CONFIRMADO (anon + PUBLIC com EXECUTE). **Corrigido:** revogado de PUBLIC/anon; só authenticated.
+
+## ℹ️ FALSO POSITIVO (repo desatualizado ≠ banco real)
+
+- ℹ️ **"Escalada a admin via `profiles.email`"** — **NÃO existe em produção.** O `is_app_admin()` real é role-only (sem cláusula de e-mail — mudado em 21/06). O arquivo `admin_rls_helpers.sql` do repo estava stale. Escalada de `role` já bloqueada por 2 triggers (`protect_profile_privileged_fields` + `profiles_block_sensitive_self_update`). Migration NÃO mexe em is_app_admin (seria retrocesso).
+
+## 🔴 P0 restantes (bloqueiam lançamento)
+
 - ⏳ **`ai-server.mjs` sem validação de JWT/plano** — token estático compartilhado; `return true` se `AI_SERVER_TOKEN` vazio. IA sem controle de plano server-side. Precisa validar JWT Supabase + `usage_counters`.
 - ⏳ **Limites de plano só no frontend** — usuário free cria flashcards/mapas/questões/redações ilimitados via API direta (RLS só checa posse, não plano). Precisa RPC `security definer` de criação OU policy com checagem de plano.
 
-## 🟠 P1 — Altos (1ª versão)
-
-- 🟡 **`community_comments` USING(true)** — comentários de posts privados legíveis por qualquer um (até anônimo). **Fix:** SELECT condicionado à visibilidade do post pai. Falta aplicar no banco.
-- 🟡 **`resolve_squad_invite` exposto a anônimo** — enumeração de esquadrões + payload completo. **Fix:** grant só a authenticated. Falta aplicar no banco.
+## 🟠 P1 — Altos restantes (1ª versão)
 - ✅ **`essay-uploads` sem validação de tipo/tamanho** — bucket público servia .html/.svg com script. **Fix aplicado:** validação de MIME + 10MB em `redacoesApi.js`. (Follow-up: setar `allowed_mime_types`/`file_size_limit` no bucket + torná-lo privado.)
 - ⏳ **`profiles_referral_related_read` expõe PII completa** (CPF/telefone/IP do par de indicação). Precisa RPC/view com só nome/username/avatar.
 - ⏳ **`npm audit`: vitest/vite/ws** com vulnerabilidades (dev-only, não afetam produção). Rodar `npm audit fix` e testar.

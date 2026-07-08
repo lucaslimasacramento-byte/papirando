@@ -1733,13 +1733,32 @@ export default function App() {
       .order('sent_at', { ascending: false })
       .limit(10)
       .then(({ data }) => {
-        if (!cancelled && Array.isArray(data)) setAdminNotices(data);
+        if (!cancelled && Array.isArray(data)) {
+          // Broadcasts (user_id null) sao dispensados localmente: a linha e
+          // compartilhada e nao pode ser escrita por usuarios (ver RLS).
+          let dismissed;
+          try { dismissed = new Set(JSON.parse(localStorage.getItem('papirando:dismissed_broadcasts') || '[]')); }
+          catch { dismissed = new Set(); }
+          setAdminNotices(data.filter((n) => !(n.user_id == null && dismissed.has(n.id))));
+        }
       });
     return () => { cancelled = true; };
   }, [currentUserId]);
 
   const handleDismissNotice = async (noticeId) => {
+    const notice = adminNotices.find((n) => n.id === noticeId);
     setAdminNotices((prev) => prev.filter((n) => n.id !== noticeId));
+    // Broadcast: nao escrevemos na linha compartilhada (seria brecha de seguranca);
+    // guardamos o "dispensar" no proprio navegador.
+    if (notice && notice.user_id == null) {
+      try {
+        const key = 'papirando:dismissed_broadcasts';
+        const set = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+        set.add(noticeId);
+        localStorage.setItem(key, JSON.stringify([...set]));
+      } catch { /* ignore */ }
+      return;
+    }
     await supabase.from('admin_notices').update({ read_at: new Date().toISOString() }).eq('id', noticeId);
   };
 
