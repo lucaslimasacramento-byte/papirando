@@ -121,8 +121,14 @@ export default function EditarDisciplinaModal({
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
 
   const courseOptions = useMemo(() => {
-    const planos = [...new Set((cursos || []).map((curso) => curso.plano).filter(Boolean))];
-    return ['Geral', ...planos];
+    return [
+      ...new Set(
+        (cursos || [])
+          .filter((curso) => curso.status !== 'arquivado')
+          .map((curso) => curso.plano || curso.nome)
+          .filter(Boolean)
+      ),
+    ];
   }, [cursos]);
 
   const subjectSuggestions = useMemo(
@@ -155,14 +161,17 @@ export default function EditarDisciplinaModal({
   useEffect(() => {
     if (!isOpen) return;
     setNome(initialData.nome);
-    setPlano(initialData.plano);
+    // Disciplina precisa estar vinculada a um objetivo do aluno. Se o plano atual
+    // nao corresponder a nenhum objetivo (ex.: legado "Geral" ou disciplina nova),
+    // pre-seleciona o primeiro objetivo disponivel.
+    setPlano(courseOptions.includes(initialData.plano) ? initialData.plano : (courseOptions[0] || ''));
     setCor(initialData.cor);
     setTopicos(initialData.topicos);
     setTopicForm(EMPTY_TOPIC_FORM);
     setEditingTopicId(null);
     setRemovedTopicIds([]);
     setIsSuggestionOpen(false);
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, courseOptions]);
 
   if (!isOpen) return null;
 
@@ -269,11 +278,16 @@ export default function EditarDisciplinaModal({
 
   const handleSave = async () => {
     const nomeTratado = canonicalizeSubjectName(nome.trim(), subjectCatalog);
-    const planoTratado = plano.trim() || 'Geral';
+    const planoTratado = plano.trim();
     const subjectCatalogId = resolveSubjectCatalogEntry(nomeTratado, subjectCatalog)?.id || null;
 
     if (!nomeTratado) {
       showToast('Digite o nome da disciplina.', 'error');
+      return;
+    }
+
+    if (!planoTratado || !courseOptions.includes(planoTratado)) {
+      showToast('Vincule a disciplina a um dos seus objetivos.', 'error');
       return;
     }
 
@@ -637,7 +651,7 @@ export default function EditarDisciplinaModal({
               {/* Curso / plano */}
               <div>
                 <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
-                  Curso / plano
+                  Objetivo vinculado
                 </label>
                 <select
                   value={plano}
@@ -645,12 +659,18 @@ export default function EditarDisciplinaModal({
                   className="pl-input"
                   style={{ width: '100%' }}
                 >
+                  <option value="" disabled>
+                    Selecione um objetivo
+                  </option>
                   {courseOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
                   ))}
                 </select>
+                <p style={{ marginTop: 6, fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                  Toda disciplina pertence a um objetivo do aluno.
+                </p>
               </div>
 
               {/* Cor */}

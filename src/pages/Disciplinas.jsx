@@ -23,6 +23,7 @@ import {
 import { getAreaToken } from '../lib/areaTokens';
 
 export default function Disciplinas({
+  cursos = [],
   bancoDisciplinas = [],
   setBancoDisciplinas,
   setEditingDiscipline,
@@ -155,7 +156,14 @@ export default function Disciplinas({
     return enrichedDisciplinas.filter((disciplina) => allowed.has(disciplina.id || disciplina.nome));
   }, [disciplinasFiltradas, enrichedDisciplinas]);
 
+  const objetivosAtivos = useMemo(
+    () => (cursos || []).filter((curso) => curso.status !== 'arquivado'),
+    [cursos]
+  );
+  const hasObjetivos = objetivosAtivos.length > 0;
+
   const isEmpty = !loadingDisciplinas && bancoDisciplinas.length === 0;
+  const bloqueadoSemObjetivo = !loadingDisciplinas && !hasObjetivos;
 
   const handleDeleteDiscipline = async (disciplina) => {
     const totalTopicosDisciplina = disciplina.topicos?.length || 0;
@@ -190,6 +198,7 @@ export default function Disciplinas({
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
         <DisciplinasHeader
           avancoGlobal={progressoGeral}
+          hasObjetivos={hasObjetivos}
           onRegistrarEstudo={() => setRegistroEstudoModalOpen?.(true)}
           onNovaDisciplina={() => setEditingDiscipline?.({})}
         />
@@ -201,10 +210,12 @@ export default function Disciplinas({
           progressoGeral={progressoGeral}
         />
 
-        {isEmpty ? (
+        {bloqueadoSemObjetivo ? (
+          <SemObjetivoState onIrParaObjetivos={() => setActiveTab?.('objetivos')} />
+        ) : isEmpty ? (
           <DisciplinasEmptyState
             onNovaDisciplina={() => setEditingDiscipline?.({})}
-            onAbrirBiblioteca={() => setActiveTab?.('concursos')}
+            onAbrirBiblioteca={() => setActiveTab?.('objetivos')}
             onRegistrarEstudo={() => setRegistroEstudoModalOpen?.(true)}
           />
         ) : (
@@ -236,7 +247,7 @@ export default function Disciplinas({
   );
 }
 
-function DisciplinasHeader({ avancoGlobal, onRegistrarEstudo, onNovaDisciplina }) {
+function DisciplinasHeader({ avancoGlobal, hasObjetivos, onRegistrarEstudo, onNovaDisciplina }) {
   return (
     <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
       <div>
@@ -262,10 +273,12 @@ function DisciplinasHeader({ avancoGlobal, onRegistrarEstudo, onNovaDisciplina }
             <Play size={15} fill="currentColor" />
             Registrar estudo
           </button>
-          <button type="button" className="pl-btn pl-btn-secondary" onClick={onNovaDisciplina}>
-            <Plus size={15} />
-            Nova disciplina
-          </button>
+          {hasObjetivos && (
+            <button type="button" className="pl-btn pl-btn-secondary" onClick={onNovaDisciplina}>
+              <Plus size={15} />
+              Nova disciplina
+            </button>
+          )}
         </div>
     </header>
   );
@@ -537,6 +550,42 @@ function SuggestionRow({ disciplina, index }) {
       </div>
       <span className="pl-area-dot" style={{ background: token.cover }} />
     </div>
+  );
+}
+
+function SemObjetivoState({ onIrParaObjetivos }) {
+  return (
+    <section className="pl-card-paper" style={{ padding: 36, textAlign: 'center' }}>
+      <div
+        style={{
+          width: 56,
+          height: 56,
+          margin: '0 auto 18px',
+          borderRadius: 16,
+          display: 'grid',
+          placeItems: 'center',
+          background: 'var(--pl-accent-soft)',
+          color: 'var(--pl-accent)',
+        }}
+      >
+        <Crosshair size={24} />
+      </div>
+      <div className="pl-overline" style={{ justifyContent: 'center' }}>Comece pelo objetivo</div>
+      <h2 className="pl-section-title" style={{ marginTop: 10 }}>
+        Suas disciplinas vêm dos seus objetivos.
+      </h2>
+      <p className="pl-body" style={{ margin: '10px auto 0', maxWidth: 560 }}>
+        Você ainda não tem nenhum objetivo cadastrado. Escolha um concurso, vestibular, ENEM,
+        faculdade ou estudo livre — as disciplinas serão alimentadas a partir dele. Sem objetivo,
+        não há edital para organizar.
+      </p>
+      <div style={{ marginTop: 22, display: 'flex', justifyContent: 'center' }}>
+        <button type="button" className="pl-btn pl-btn-primary" onClick={onIrParaObjetivos}>
+          <Crosshair size={15} />
+          Definir meu objetivo
+        </button>
+      </div>
+    </section>
   );
 }
 

@@ -746,6 +746,7 @@ export default function AppTabContent(props) {
   if (activeTab === 'disciplinas' && !viewingDiscipline) {
     return (
       <Disciplinas
+        cursos={cursos}
         bancoDisciplinas={bancoDisciplinas}
         setBancoDisciplinas={setBancoDisciplinas}
         setViewingDiscipline={setViewingDiscipline}
