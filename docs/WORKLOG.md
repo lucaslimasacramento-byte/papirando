@@ -82,6 +82,37 @@ Ajustes no card de alvo da tela **Meus cursos** (`src/pages/Planos.jsx` + `src/A
 
 ---
 
+## Sessão 2026-06-26 (aprox.) — Categoria ENEM + faxina do catálogo de vestibulares 🔧→✅ (código; parte superada depois)
+
+> ⚠️ Sessão registrada fora de ordem. **Fundação** da vertical ENEM e da limpeza do catálogo; sessões posteriores (~07-02) superaram parte disto — ver "Pendências/Superado".
+
+- **O que foi feito:**
+  - **ENEM virou categoria própria** (`tipo = 'enem'`) ao lado de Concursos/Vestibulares/Faculdade — no admin (aba), na vitrine (`ConcursosDisponiveis`) e em Objetivos (`EnemView` já existia).
+  - **Novo tipo `enem_inst`** para instituições que ingressam via ENEM/SiSU (federais + IFs). Admin ganhou aba "Instituições ENEM" **(depois UNIFICADA com a aba ENEM — commit `035fd7a`, sessão posterior)**.
+  - **Objetivo ENEM do aluno:** campo `instituicoes_alvo` (até 3 marcadores), persistido no curso (localStorage) via `updateCourseTargets`. Seletor com busca no `EnemView`.
+  - **Página de detalhe dedicada ao ENEM** (`EnemDetalhe` em `ConcursoDetalhe.jsx`) + abre direto na biblioteca (sem vitrine de 1 card) **(depois redesenhada — commits `468005f`/`7c359a0`/`bf33d48`/`2fe2585`)**.
+  - **Escolaridade multi-seleção** (Fundamental/Médio/Técnico/Superior) gravada como string legível ("Níveis médio e superior").
+  - **Campo "Plano interno" removido** do cadastro (concurso/vestibular/ENEM); o nome do plano passa a ser do aluno.
+  - **Vitrine: multi-seleção** de cursos + aluno nomeia UM plano combinado (mesmo `plano` agrupa as disciplinas).
+  - **"Colar JSON de matérias"** liberado para vestibular/ENEM (antes só concurso-novo); parser passou a aceitar JSON só com `disciplinas`.
+- **Bug corrigido (raiz):** `promoteContestTemplate` e `updateContestTemplate` (`src/App.jsx`) montavam o payload com whitelist e **descartavam `tipo`/`scope`/`uf`/`modality`/`institution_type`/`registration_*`/`meta`** → vestibular/ENEM salvo caía em Concursos. Fix: repassar esses campos (o endpoint `/api/contest-templates` já os gravava).
+- **Dados (SQL rodado pelo DONO no SQL Editor — sem service_role no ambiente):**
+  - `supabase/retag_enem_category.sql` — ENEM (vestibular→enem).
+  - `supabase/limpeza_catalogo_categorias.sql` — libera `enem_inst` no CHECK de `tipo`; IFs + "SiSU - UF…" → `enem_inst`; despublica SiSU/ProUni/Fies genéricos + 21 vestibulares "de mentira" (faculdades particulares c/ ingresso agendado/online) + duplicados; consolida ENEM (despublica ENEM PPL). **Conferido:** vestibular=75 pub, enem=1, enem_inst=99, concurso=13 pub.
+  - `supabase/materias_vestibular_lote1.sql` / `lote2.sql` — disciplinas+tópicos dos vestibulares (lote1: COMVEST, Fatec, Insper, ITA, Univesp; lote2: FUVEST, PAES UEMA, PAS UEM, PAS UnB, PSS UEPG). **Lotes 3-13 vieram depois (commit `3fb296a`).**
+- **Descobertas / gotchas:**
+  - Catálogo `contest_templates` é carregado **sem disciplinas**; elas vêm sob demanda via `loadContestTemplateContent`. Por isso a página ENEM da vitrine carrega o conteúdo on-demand.
+  - `plano` é a **chave de agrupamento** de disciplinas (`Planos.jsx`: `disciplina.plano === curso.plano`); cursos do aluno persistem só em **localStorage** (`papirando_cursos`), sem tabela.
+  - Pesquisa de matérias por IA num bloco único de 75 vestibulares → o modelo "preguiça" (só 5 vieram preenchidos). Solução: **blocos de 10** (prompts em `docs/prompts/materias-vestibular-blocos.md`).
+  - `api.supabase.com` (Management API) **é alcançável** do ambiente; com um PAT em `.env.local` dá pra rodar SQL via `POST /v1/projects/{ref}/database/query` — não usado nesta sessão (dono preferiu rodar no SQL Editor).
+- **Decisões (e porquê):** ENEM é **um só** (sem PPL/Digital como itens separados — conteúdo idêntico); vestibular = **só quem tem prova própria** (IFs/federais via ENEM viram instituição-alvo, não vestibular); instituição-alvo é **só marcador** (a trilha continua sendo a única do ENEM).
+- **Arquivos-chave:** `src/pages/AdminConcursos.jsx`, `src/pages/ConcursosDisponiveis.jsx`, `src/pages/ConcursoDetalhe.jsx`, `src/pages/Objetivos.jsx`, `src/App.jsx`, `supabase/{retag_enem_category,limpeza_catalogo_categorias,materias_vestibular_lote1,materias_vestibular_lote2}.sql`, `docs/prompts/{pesquisa-enem-categoria,extracao-enem-json,materias-vestibular-json,materias-vestibular-blocos}.md`.
+- **Pendências / Superado:**
+  - Restam ~70 vestibulares sem matérias — pesquisar em **blocos de 10** e gerar `lote_N.sql` (posteriormente feito, lotes 3-13, em `3fb296a`).
+  - ⚠️ **Superado por sessões ~07-02:** aba "Instituições ENEM" foi **unificada** com a aba ENEM (`035fd7a`); página ENEM **redesenhada** (`468005f`+); ENEM **tirado do seletor** de objetivos, seguindo fluxo próprio de instituição-alvo (`02fde6b`). Os `docs/prompts/*` e os `supabase/*.sql` desta sessão continuam válidos.
+
+---
+
 ## PAGAMENTOS — Status atual (2026-06-17) — ✅ FUNCIONANDO E TESTADO
 
 Plataforma: **Asaas** (Stripe abandonado). Ciclo completo **provado em produção**.
