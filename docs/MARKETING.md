@@ -1,6 +1,6 @@
 # Papirando — Direção de Marketing
 
-Doc **dedicado à estratégia de marketing**. Posicionamento, voz, canais, campanhas, calendário e copy vivem aqui — **não** no `docs/CONTEXT.md` (esse é produto/código).
+Doc **dedicado à estratégia de marketing**. Posicionamento, voz, canais, campanhas, calendário e copy vivem aqui — **não** no `docs/context.md` (esse é produto/código).
 
 > **Escopo:** estratégia e execução de marketing.
 > **Fora de escopo (vai em outro doc):** integração técnica de canais → `docs/instagram-setup.md`, `docs/email-strategy.md`.
