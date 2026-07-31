@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { showConfirm } from '../lib/dialogs';
+import { showConfirm, showToast } from '../lib/dialogs';
 import {
   ArrowBigUp,
   Bookmark,
@@ -813,8 +813,43 @@ export default function Comunidades({
     }
   }
 
+  // Remove a publicação do estado local, sem recarregar a página/comunidade.
+  function removePostLocally(postId) {
+    setCommunityData((prev) => {
+      const norm = normalizeCommunityState(prev);
+      return normalizeCommunityState({
+        ...norm,
+        forumPosts: norm.forumPosts.filter((p) => String(p.id) !== String(postId)),
+      });
+    });
+    setExpandedPostId((current) => (String(current) === String(postId) ? '' : current));
+  }
+
+  // Remove o comentário do estado local, sem recarregar a página/comunidade.
+  function removeCommentLocally(postId, commentId) {
+    setCommunityData((prev) => {
+      const norm = normalizeCommunityState(prev);
+      return normalizeCommunityState({
+        ...norm,
+        forumPosts: norm.forumPosts.map((p) => {
+          if (String(p.id) !== String(postId)) return p;
+          const list = Array.isArray(p.comments) ? p.comments : [];
+          const nextComments = list.filter((c) => String(c.id) !== String(commentId));
+          return { ...p, comments: nextComments, commentsCount: nextComments.length };
+        }),
+      });
+    });
+  }
+
   async function handleAdminPostAction(post, action) {
     if (!isAdmin || !post?.id) return;
+    if (action === 'delete') {
+      const ok = await showConfirm(
+        `Excluir a publicação “${String(post.title || 'sem título').slice(0, 80)}”? Essa ação não pode ser desfeita.`,
+        { title: 'Excluir publicação', confirmLabel: 'Excluir', danger: true }
+      );
+      if (!ok) return;
+    }
     setAdminBusyId(post.id);
     setAdminNotice('');
     try {
@@ -834,6 +869,9 @@ export default function Comunidades({
           });
         } else if (action === 'delete') {
           await adminDeleteCommunityPost(post.id);
+          removePostLocally(post.id);
+          showToast('Publicação excluída.', 'success');
+          return;
         }
         await onReloadCommunity?.();
       } else if (typeof onSaveCommunityState === 'function') {
@@ -880,9 +918,14 @@ export default function Comunidades({
           }
           return norm;
         });
+        if (action === 'delete') {
+          removePostLocally(post.id);
+          showToast('Publicação excluída.', 'success');
+        }
       }
     } catch (e) {
       setAdminNotice(String(e?.message || e));
+      if (action === 'delete') showToast('Não foi possível excluir a publicação.', 'error');
     } finally {
       setAdminBusyId('');
     }
@@ -890,6 +933,14 @@ export default function Comunidades({
 
   async function handleAdminCommentAction(postId, comment, action) {
     if (!isAdmin || !comment?.id || !postId) return;
+    if (action === 'delete') {
+      const ok = await showConfirm('Excluir este comentário? Essa ação não pode ser desfeita.', {
+        title: 'Excluir comentário',
+        confirmLabel: 'Excluir',
+        danger: true,
+      });
+      if (!ok) return;
+    }
     setAdminBusyId(comment.id);
     setAdminNotice('');
     try {
@@ -899,6 +950,9 @@ export default function Comunidades({
           await adminUpdateCommunityComment(comment.id, { content: COMMUNITY_COMMENT_MODERATION_TEXT });
         } else if (action === 'delete') {
           await adminDeleteCommunityComment(comment.id);
+          removeCommentLocally(postId, comment.id);
+          showToast('Comentário excluído.', 'success');
+          return;
         }
         await onReloadCommunity?.();
       } else if (typeof onSaveCommunityState === 'function') {
@@ -921,9 +975,14 @@ export default function Comunidades({
             }),
           });
         });
+        if (action === 'delete') {
+          removeCommentLocally(postId, comment.id);
+          showToast('Comentário excluído.', 'success');
+        }
       }
     } catch (e) {
       setAdminNotice(String(e?.message || e));
+      if (action === 'delete') showToast('Não foi possível excluir o comentário.', 'error');
     } finally {
       setAdminBusyId('');
     }
