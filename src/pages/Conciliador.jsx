@@ -27,6 +27,7 @@ import { canonicalizeSubjectName } from '../lib/subjectCatalogUtils';
 import { buildDisciplineSummaryFromHistory } from '../lib/studyAnalytics';
 import { supabase } from '../lib/supabase';
 import { analyzeContestCompatibility } from '../lib/aiClient';
+import { showConfirm, showToast } from '../lib/dialogs';
 
 
 const INTERNAL_NAV = [
@@ -1117,8 +1118,15 @@ export default function Conciliador({
     setActivePanel('visao');
   };
 
-  const handleDeleteHistory = (entryId) => {
+  const handleDeleteHistory = async (entryId) => {
+    const ok = await showConfirm('Excluir esta comparação do histórico?', {
+      title: 'Excluir comparação',
+      confirmLabel: 'Excluir',
+      danger: true,
+    });
+    if (!ok) return;
     setComparisonHistory((prev) => prev.filter((item) => item.id !== entryId));
+    showToast('Comparação excluída.', 'success');
   };
 
   return (
