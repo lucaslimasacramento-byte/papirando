@@ -884,7 +884,8 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
   async function handleDeleteDeck(deckId) {
     try {
       await deleteDeck(deckId);
-      await refreshDecks();
+      // Tira da lista localmente — refetch aqui fazia a tela inteira voltar ao estado de loading.
+      setDecks((prev) => prev.filter((d) => d.id !== deckId));
       if (activeDeck?.id === deckId) {
         setActiveDeck(null);
         setCards([]);
@@ -901,7 +902,14 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     try {
       await deleteCard(cardId);
       setCards((prev) => prev.filter((c) => c.id !== cardId));
-      await refreshDecks();
+      // Só ajusta o contador do deck; refetch aqui piscava a lista toda.
+      setDecks((prev) =>
+        prev.map((d) =>
+          d.id === (activeDeck?.id || '')
+            ? { ...d, total_cards: Math.max(0, Number(d.total_cards || 0) - 1) }
+            : d
+        )
+      );
     } catch (error) {
       console.error('[Flashcards] erro ao excluir card:', error?.message || error);
     } finally {

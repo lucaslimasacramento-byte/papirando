@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getSubjectColor } from '../lib/subjectPalette';
-import { showToast } from '../lib/dialogs';
+import { showConfirm, showToast } from '../lib/dialogs';
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
@@ -364,12 +364,19 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
   }
 
   async function handleDeleteGoal(goal) {
+    const ok = await showConfirm(`Excluir a meta de ${String(goal?.disciplina || 'estudo').slice(0, 60)} desta semana?`, {
+      title: 'Excluir meta',
+      confirmLabel: 'Excluir',
+      danger: true,
+    });
+    if (!ok) return;
     // PostgREST resolve com { error } — não lança; sem o check, a meta sumia da
     // tela mas continuava no banco e reaparecia no F5.
     try {
       const { error } = await supabase.from('weekly_goals').delete().eq('id', goal.id);
       if (error) throw error;
       setGoals((prev) => prev.filter((g) => g.id !== goal.id));
+      showToast('Meta excluída.', 'success');
     } catch (error) {
       console.error('[MetasSemana] erro ao excluir meta:', error?.message || error);
       showToast('Não foi possível excluir a meta. Verifique a conexão e tente de novo.', 'error');

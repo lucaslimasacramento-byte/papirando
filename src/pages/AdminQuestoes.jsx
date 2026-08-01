@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { showConfirm, showToast } from '../lib/dialogs';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -443,14 +444,22 @@ export default function AdminQuestoes() {
   }
 
   async function handleDelete(id) {
+    const ok = await showConfirm('Excluir esta questão? Essa ação não pode ser desfeita.', {
+      title: 'Excluir questão',
+      confirmLabel: 'Excluir',
+      danger: true,
+    });
+    if (!ok) return;
     setDeleteErr('');
     const { error } = await supabase.from('questions').delete().eq('id', id);
     if (error) {
       setDeleteErr(error.message || 'Nao foi possivel excluir a questao.');
+      showToast('Não foi possível excluir a questão.', 'error');
       return;
     }
     setQuestions((prev) => prev.filter((q) => q.id !== id));
     setTotal((t) => Math.max(0, t - 1));
+    showToast('Questão excluída.', 'success');
   }
 
   const handleBatchPublish = async (isPublic) => {

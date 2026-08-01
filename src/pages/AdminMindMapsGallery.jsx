@@ -90,7 +90,9 @@ export default function AdminMindMapsGallery({
     setSavingId(id);
     try {
       await deleteMindMapGalleryItem(id);
-      await refresh();
+      // Some da lista localmente; o refetch fazia a galeria inteira voltar ao loading.
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      showToast('Mapa removido da galeria.', 'success');
     } catch (e) {
       showToast(e?.message || 'Nao foi possivel remover.', 'error');
     } finally {

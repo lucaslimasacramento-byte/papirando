@@ -21,6 +21,7 @@ import { buildCanonicalHistory, buildStudyHistoryOverview } from '../lib/studyAn
 import { loadExamBoardsFromSupabase } from '../lib/examBoardsApi';
 import { supabase } from '../lib/supabase';
 import { submitAnswer } from '../lib/questoesApi';
+import { showConfirm, showToast } from '../lib/dialogs';
 
 // Normalizes a Supabase question row to the format the UI expects
 function normalizeQuestion(row) {
@@ -447,9 +448,17 @@ export default function Questoes({
             setCurrentQuestionIndex(0);
           }}
           onCreate={() => setCadernoBuilderOpen(true)}
-          onDelete={(id) => {
+          onDelete={async (id) => {
+            const alvo = cadernos.find((item) => item.id === id);
+            const ok = await showConfirm(`Excluir o caderno “${String(alvo?.title || 'sem nome').slice(0, 60)}”?`, {
+              title: 'Excluir caderno',
+              confirmLabel: 'Excluir',
+              danger: true,
+            });
+            if (!ok) return;
             setCadernos((prev) => prev.filter((item) => item.id !== id));
             if (activeCadernoId === id) setActiveCadernoId('');
+            showToast('Caderno excluído.', 'success');
           }}
         />
       </div>
