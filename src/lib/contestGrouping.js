@@ -41,6 +41,11 @@ export function normalizeContestStatus(value = '') {
     .replace(/^_+|_+$/g, '');
 
   if (!normalized) return 'edital_publicado';
+  // "inscricoes_encerradas" tem que ser testado ANTES do /inscric/ genérico — senão
+  // um certame com inscrição fechada aparecia para o aluno como "Inscrições abertas".
+  if (/encerrad|fechad|prorrog.*encerr/.test(normalized)) {
+    return /inscric/.test(normalized) ? 'prova_marcada' : 'homologado';
+  }
   if (/inscric|abert/.test(normalized)) return 'inscricoes_abertas';
   if (/prova|data_marcada|marcad/.test(normalized)) return 'prova_marcada';
   if (/homolog|encerr/.test(normalized)) return 'homologado';

@@ -74,12 +74,12 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
 | `etapas` | não | Frase curta listando as fases |
 | `etapas_tags` | não | Array de slugs em minúsculo sem acento: `objetiva`, `discursiva`, `redacao`, `taf`, `oral`, `titulos`, `investigacao_social`, `psicotecnico`, `medico` |
 | `taf_itens` | não | Array de strings. Só se houver teste físico. Senão, `[]` |
-| `status_concurso` | sim | Um de: `previsto`, `autorizado`, `comissao_formada`, `banca_em_definicao`, `banca_definida`, `edital_iminente`, `edital_publicado`, `inscricoes_abertas`, `prova_marcada`, `em_andamento`, `homologado` |
-| `prova_data` | não | **Formato `YYYY-MM-DD` ou omitido.** Qualquer outro formato vira nulo silenciosamente |
+| `status_concurso` | sim | Um de: `previsto`, `autorizado`, `comissao_formada`, `banca_em_definicao`, `banca_definida`, `edital_iminente`, `edital_publicado`, `inscricoes_abertas`, `prova_marcada`. **`em_andamento` e `homologado` são proibidos** — significam certame em curso ou encerrado |
+| `prova_data` | não | **`YYYY-MM-DD` ou omitido**, e a prova precisa estar **pelo menos 60 dias no futuro** (ver regra 6). Outro formato vira nulo silenciosamente |
 | `edital_url` | sim | URL direta do edital ou da página oficial. É a prova de que o dado é real |
-| `descricao` | não | 1–2 frases |
+| `descricao` | **sim** | 1–2 frases, mínimo 40 caracteres. É o texto do card no catálogo |
 | `cor` | não | Hex `#RRGGBB`. Se não souber, omita |
-| `disciplinas` | sim | Array. Cada item: `{ "nome": "...", "topicos": ["...", "..."] }`. É o campo mais valioso — vem do conteúdo programático do edital |
+| `disciplinas` | sim | Array, **mínimo 3 disciplinas** e **mínimo 10 tópicos em cada uma** (ver regra 5). Formato: `{ "nome": "...", "topicos": ["...", "..."] }` |
 
 ## Regras de conteúdo (importantes)
 
@@ -91,12 +91,23 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
 4. **Não copie texto do edital.** De `disciplinas`/`topicos`, extraia apenas os **nomes** das
    matérias e dos tópicos do conteúdo programático — nada de parágrafos, ementas longas ou
    trechos transcritos.
-5. **Um item por cargo**, não por edital. Se o edital tem 5 cargos com conteúdos diferentes,
+5. **O conteúdo programático é o item mais importante da coleta — abra o anexo do edital.**
+   Mínimo de **10 tópicos por disciplina**, na granularidade em que o edital lista
+   (`"Direitos e garantias fundamentais"`, `"Controle de constitucionalidade"`, ...).
+   Resumir a disciplina em 2 ou 3 tópicos genéricos **invalida o item**: é esse array que vira
+   a trilha de estudo do aluno dentro do app. Se você não conseguiu abrir o PDF e ler o anexo,
+   **não entregue o item** — reporte no resumo que a fonte não foi acessível.
+6. **A prova tem que estar no futuro, com folga.** `prova_data` no mínimo **60 dias à frente**
+   da data de hoje. Concurso cuja prova já aconteceu, ou acontece em duas semanas, é inútil
+   para quem vai começar a estudar agora — não importa quão bem documentado esteja.
+   Pelo mesmo motivo, `status_concurso` **nunca** pode ser `em_andamento` nem `homologado`.
+7. **Um item por cargo**, não por edital. Se o edital tem 5 cargos com conteúdos diferentes,
    são 5 itens. Se os cargos compartilham exatamente o mesmo conteúdo, pode ser 1 item com o
    cargo mais representativo.
-6. **Prefira concursos vivos:** com edital publicado, inscrições abertas ou prova marcada.
-   Concursos `previsto` só se forem grandes e muito aguardados.
-7. **Dados de 2026 em diante.** Nada de edital vencido.
+8. **Prefira editais recém-publicados**, com inscrições abertas ou a abrir. Concursos
+   `previsto` só se forem grandes e muito aguardados.
+9. **Nada de edital vencido.** Se ao pesquisar você só achar certames já aplicados, diga isso
+   no resumo e entregue menos itens — não preencha cota com concurso morto.
 
 ## Entrega
 
@@ -114,11 +125,11 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
 Você pode e deve rodar o pipeline você mesmo, em vez de só entregar o JSON:
 
 1. Salve o JSON em `scratchpad/` (não em `Downloads`, não em `src/`).
-2. Crie `scripts/validate_catalog_json.mjs` se ele ainda não existir: um validador que lê um
-   ou mais JSONs e falha listando, por item, o que está fora da spec acima (`tipo` inválido,
-   `status_concurso` inválido, `prova_data` fora de `YYYY-MM-DD`, `edital_url` ausente,
-   `etapas_tags`/`taf_itens` que não são array, `disciplinas` vazio). Sem dependências novas.
-3. Rode o validador. Conserte o JSON até passar limpo.
+2. **O validador já existe: `scripts/validate_catalog_json.mjs`.** Não reescreva.
+   Ele checa tudo que está na spec acima, incluindo a janela de 60 dias e o mínimo de tópicos.
+3. Rode `node scripts/validate_catalog_json.mjs <caminho do json>` e conserte o JSON até passar
+   limpo. **Erro é bloqueio; aviso é informação.** Se você acha que uma regra está errada para
+   um caso específico, diga no resumo — não afrouxe o validador para o seu lote passar.
 4. Rode o gerador que **já existe** — não reescreva, não "melhore":
    `CATALOG_FILES="<caminho do json>" node scripts/gen_catalog_drafts_sql.mjs`
 5. Entregue: o JSON, o SQL gerado e a saída do validador.
@@ -126,8 +137,9 @@ Você pode e deve rodar o pipeline você mesmo, em vez de só entregar o JSON:
 **Limites (não negociáveis):**
 
 - **Não toque em `src/`, `api/`, `supabase/migrations/`.** Seu escopo é `scripts/` e os dados.
-- **Não altere `scripts/gen_catalog_drafts_sql.mjs`.** Ele já está validado contra o schema de
-  produção. Se algo não encaixa, ajuste o JSON, não o gerador — e avise no resumo.
+- **Não altere `scripts/gen_catalog_drafts_sql.mjs` nem `scripts/validate_catalog_json.mjs`.**
+  Os dois já estão validados contra o schema de produção. Se algo não encaixa, ajuste o JSON,
+  nunca as ferramentas — e avise no resumo.
 - **Não rode SQL em banco nenhum.** Você entrega o arquivo `.sql`; quem aplica em produção é o
   dono do projeto.
 - **Não instale dependências** nem adicione libs de scraping ao `package.json`.
@@ -136,8 +148,10 @@ Você pode e deve rodar o pipeline você mesmo, em vez de só entregar o JSON:
 ## Lote pedido agora
 
 <!-- edite esta seção a cada pedido -->
-Lote 04 — Tribunais (TJ, TRF, TRT, TRE) com edital publicado ou inscrições abertas em 2026.
-Meta: 40 a 60 itens.
+Lote 05 — editais **recém-publicados**, com prova a partir de outubro de 2026 (de preferência
+2027), em qualquer área: policial, fiscal, tribunais, bancária, saúde, educação.
+Meta: 30 a 50 itens — mas **quantidade não vale nada aqui**. Prefiro 15 itens com o conteúdo
+programático completo do que 50 rasos. Itens rasos são descartados na revisão.
 
 --- FIM DO PROMPT ---
 
