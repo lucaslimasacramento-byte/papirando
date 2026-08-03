@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "timezone": "America/Bahia",
+  "policy": {
+    "only_official_sources": true,
+    "lookback_hours": 48,
+    "new_items_per_run": "0-5",
+    "auto_publish": false,
+    "minimum_days_before_exam": 60
+  },
+  "sources": [
+    {
+      "id": "fgv-concursos",
+      "name": "FGV Conhecimento — Concursos",
+      "url": "https://conhecimento.fgv.br/concursos",
+      "kind": "banca",
+      "priority": 1
+    },
+    {
+      "id": "cebraspe-concursos",
+      "name": "Cebraspe — Concursos",
+      "url": "https://www.cebraspe.org.br/concursos/",
+      "kind": "banca",
+      "priority": 1
+    },
+    {
+      "id": "fcc-concursos",
+      "name": "Fundação Carlos Chagas — Concursos",
+      "url": "https://www.concursosfcc.com.br/",
+      "kind": "banca",
+      "priority": 1
+    },
+    {
+      "id": "ibfc-concursos",
+      "name": "IBFC — Concursos",
+      "url": "https://www.ibfc.org.br/concursos/",
+      "kind": "banca",
+      "priority": 2
+    },
+    {
+      "id": "aocp-concursos",
+      "name": "Instituto AOCP — Concursos",
+      "url": "https://www.institutoaocp.org.br/concursos/",
+      "kind": "banca",
+      "priority": 2
+    },
+    {
+      "id": "vunesp-concursos",
+      "name": "Vunesp — Concursos",
+      "url": "https://www.vunesp.com.br/",
+      "kind": "banca",
+      "priority": 2
+    },
+    {
+      "id": "dou-concursos",
+      "name": "Diário Oficial da União",
+      "url": "https://www.in.gov.br/leiturajornal",
+      "kind": "diario_oficial",
+      "priority": 1
+    },
+    {
+      "id": "tjsc-concursos",
+      "name": "TJSC — Concursos",
+      "url": "https://www.tjsc.jus.br/web/concursos",
+      "kind": "orgao",
+      "priority": 2
+    },
+    {
+      "id": "tjce-concursos",
+      "name": "TJCE — Concursos e Seleções",
+      "url": "https://www.tjce.jus.br/concursos-e-selecoes/",
+      "kind": "orgao",
+      "priority": 2
+    },
+    {
+      "id": "tjsp-concursos",
+      "name": "TJSP — Concursos",
+      "url": "https://www.tjsp.jus.br/Concursos",
+      "kind": "orgao",
+      "priority": 2
+    },
+    {
+      "id": "trf6-concursos",
+      "name": "TRF6 — Concursos",
+      "url": "https://portal.trf6.jus.br/concursos/",
+      "kind": "orgao",
+      "priority": 2
+    }
+  ]
+}
