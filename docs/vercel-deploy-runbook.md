@@ -33,7 +33,7 @@ Na Vercel, cadastre em `Settings > Environment Variables` para `Production` e `P
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_PUBLIC_APP_ORIGIN`, se quiser forcar links canonicos de convite para um dominio especifico
 - `VITE_AI_SERVER_URL`, se a IA estiver hospedada fora do gateway `/api/ai`
-- `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `GOOGLE_API_KEY` ou `OPENAI_API_KEY` somente como variaveis server-side
+- `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `GOOGLE_API_KEY` ou `OPENAI_API_KEY` somente como variaveis server-side
 
 Nunca cadastrar chaves `service_role`, Stripe ou provider de IA como variaveis `VITE_`.
 
@@ -79,7 +79,9 @@ Para manter IA ativa em producao, hospede o `ai-server` em um servico proprio:
 Variaveis esperadas pelo `ai-server`:
 
 ```env
-AI_PROVIDER=gemini
+AI_PROVIDER=anthropic
+ANTHROPIC_API_KEY=cole_a_chave_da_anthropic_aqui
+ANTHROPIC_MODEL=claude-sonnet-4-6
 AI_FALLBACK_PROVIDER=openai
 AI_ALLOWED_ORIGINS=https://SEU-PROJETO.vercel.app
 AI_SERVER_TOKEN=

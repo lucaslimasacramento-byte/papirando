@@ -81,6 +81,43 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
 | `cor` | não | Hex `#RRGGBB`. Se não souber, omita |
 | `disciplinas` | sim | Array, **mínimo 3 disciplinas** e **mínimo 10 tópicos em cada uma** (ver regra 5). Formato: `{ "nome": "...", "topicos": ["...", "..."] }` |
 
+## Os dois perfis de item
+
+**Perfil A — com edital publicado.** `status_concurso` é `edital_publicado`,
+`inscricoes_abertas` ou `prova_marcada`. `edital_url` aponta para o edital, e disciplinas e
+tópicos saem do anexo de conteúdo programático **desse** edital. É o caso padrão.
+
+**Perfil B — pré-edital.** O certame já existe oficialmente mas o edital ainda não saiu:
+`previsto`, `autorizado`, `comissao_formada`, `banca_em_definicao`, `banca_definida` ou
+`edital_iminente`. **Este perfil é tão valioso quanto o A** — o concurseiro começa a estudar
+no pré-edital, e é aí que o app faz mais diferença pra ele. Exige três coisas a mais:
+
+| campo | o que é |
+|---|---|
+| `edital_url` | O **ato oficial** que prova que o certame existe: autorização publicada no diário, portaria de comissão, extrato de contrato da banca, aviso oficial do órgão. Mesma lista branca de domínios |
+| `conteudo_fonte_url` | O link do **edital anterior** do mesmo órgão/cargo, de onde você tirou o conteúdo programático. Também tem que ser domínio oficial |
+| `conteudo_provisorio` | `true`, sempre, neste perfil |
+
+No perfil B, `prova_data` normalmente não existe — pode omitir. Se houver data prevista
+oficialmente, ela vale as mesmas regras (mínimo 60 dias à frente).
+
+Exemplo — PMBA com edital iminente:
+
+```json
+{
+  "nome": "PMBA — Soldado 2026",
+  "status_concurso": "edital_iminente",
+  "edital_url": "https://www.ba.gov.br/... (autorização publicada no DOE)",
+  "conteudo_fonte_url": "https://www.ibfc.org.br/... (edital PMBA 2023)",
+  "conteudo_provisorio": true,
+  "disciplinas": [{ "nome": "Língua Portuguesa", "topicos": ["...", "..."] }]
+}
+```
+
+O conteúdo do edital anterior é aceito **desde que declarado**. O que não se aceita é
+conteúdo inventado, nem conteúdo do edital anterior apresentado como se fosse o novo — o
+aluno vai ver um aviso na tela dizendo que aquela lista pode mudar.
+
 ## Regras de conteúdo (importantes)
 
 1. **Nunca invente.** Se não achou o dado, **omita o campo** ou use `null`. Um campo vazio é
@@ -103,10 +140,11 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
    Resumir a disciplina em 2 ou 3 tópicos genéricos **invalida o item**: é esse array que vira
    a trilha de estudo do aluno dentro do app. Se você não conseguiu abrir o PDF e ler o anexo,
    **não entregue o item** — reporte no resumo que a fonte não foi acessível.
-6. **A prova tem que estar no futuro, com folga.** `prova_data` no mínimo **60 dias à frente**
-   da data de hoje. Concurso cuja prova já aconteceu, ou acontece em duas semanas, é inútil
-   para quem vai começar a estudar agora — não importa quão bem documentado esteja.
-   Pelo mesmo motivo, `status_concurso` **nunca** pode ser `em_andamento` nem `homologado`.
+6. **A prova tem que estar no futuro, com folga.** Quando houver `prova_data`, no mínimo
+   **60 dias à frente** de hoje. Concurso cuja prova já aconteceu, ou acontece em duas
+   semanas, é inútil para quem vai começar a estudar agora. Pelo mesmo motivo,
+   `status_concurso` **nunca** pode ser `em_andamento` nem `homologado`.
+   Item de **perfil B (pré-edital) sem data é bem-vindo** — é o melhor momento pro aluno.
 7. **Um item por cargo**, não por edital. Se o edital tem 5 cargos com conteúdos diferentes,
    são 5 itens. Se os cargos compartilham exatamente o mesmo conteúdo, pode ser 1 item com o
    cargo mais representativo.

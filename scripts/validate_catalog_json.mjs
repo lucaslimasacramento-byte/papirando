@@ -24,6 +24,14 @@ const STATUS = new Set([
 // Status que afirmam que a prova ja aconteceu ou o certame acabou — nao servem
 // para um app de estudos, onde o aluno precisa de tempo para se preparar.
 const STATUS_ENCERRADOS = new Set(['homologado', 'em_andamento']);
+// PRE-EDITAL: o certame existe oficialmente mas o edital ainda nao saiu. E o item
+// mais valioso do catalogo (o aluno estuda antes do edital), com regras proprias:
+// a fonte e um ATO oficial (autorizacao, portaria de comissao, contrato de banca) e
+// o conteudo programatico vem do EDITAL ANTERIOR, marcado como provisorio.
+const STATUS_PRE_EDITAL = new Set([
+  'previsto', 'autorizado', 'comissao_formada', 'banca_em_definicao',
+  'banca_definida', 'edital_iminente',
+]);
 const TAGS_CONHECIDAS = new Set([
   'objetiva', 'discursiva', 'redacao', 'taf', 'oral',
   'titulos', 'investigacao_social', 'psicotecnico', 'medico',
@@ -157,8 +165,28 @@ for (const file of files) {
       fail(`status "${item.status_concurso}" indica certame ja em curso/encerrado — nao entra no catalogo`);
     }
 
+    // ── Perfil PRE-EDITAL: fonte e ato oficial, conteudo vem do edital anterior ──
+    const preEdital = STATUS_PRE_EDITAL.has(item.status_concurso);
+    if (preEdital) {
+      if (item.conteudo_provisorio !== true) {
+        fail('status pre-edital exige "conteudo_provisorio": true — sem edital novo, o conteudo programatico e do edital anterior e pode mudar');
+      }
+      const fonteConteudo = typeof item.conteudo_fonte_url === 'string' ? item.conteudo_fonte_url.trim() : '';
+      if (!fonteConteudo) {
+        fail('status pre-edital exige conteudo_fonte_url — o link do EDITAL ANTERIOR de onde saiu o conteudo programatico');
+      } else {
+        const problema = checarFonte(fonteConteudo);
+        if (problema) fail(`conteudo_fonte_url: ${problema}`);
+        if (fonteConteudo === String(item.edital_url || '').trim()) {
+          warn('conteudo_fonte_url igual a edital_url — confira: um deve ser o ato oficial do novo certame, o outro o edital anterior');
+        }
+      }
+    } else if (item.conteudo_provisorio === true) {
+      fail('conteudo_provisorio=true so vale para status pre-edital; com edital publicado o conteudo tem que sair do edital vigente');
+    }
+
     if (item.prova_data === undefined || item.prova_data === null || item.prova_data === '') {
-      warn('sem prova_data (aceito, mas o aluno fica sem contagem regressiva)');
+      if (!preEdital) warn('sem prova_data (aceito, mas o aluno fica sem contagem regressiva)');
     } else if (!ISO_DATE.test(String(item.prova_data))) {
       fail(`prova_data fora de YYYY-MM-DD: ${JSON.stringify(item.prova_data)}`);
     } else {

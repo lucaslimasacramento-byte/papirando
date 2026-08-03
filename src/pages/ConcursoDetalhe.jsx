@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
@@ -1469,6 +1470,20 @@ function ConcursoDetalheBody({
               {contest.disciplinas?.length || 0} disciplinas
             </span>
           </div>
+
+          {/* Pré-edital: o conteúdo veio do edital anterior. O aluno tem que saber. */}
+          {contest.conteudo_provisorio && (contest.disciplinas || []).length > 0 && (
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 24px', background: 'var(--pl-warn-soft)', borderBottom: '1px solid var(--pl-rule)' }}>
+              <AlertTriangle size={15} style={{ color: 'var(--pl-warn)', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
+                O edital deste concurso ainda não saiu. As disciplinas abaixo são as do{' '}
+                {contest.conteudo_fonte_url ? (
+                  <a href={contest.conteudo_fonte_url} target="_blank" rel="noreferrer" style={{ color: 'var(--pl-accent)', fontWeight: 700 }}>edital anterior</a>
+                ) : 'edital anterior'}
+                {' '}e podem mudar — servem para começar a estudar, não como lista definitiva.
+              </p>
+            </div>
+          )}
 
           {(contest.disciplinas || []).length === 0 ? (
             <p style={{ padding: '20px 24px', margin: 0, fontSize: 13, color: 'var(--pl-ink-3)' }}>Conteúdo programático ainda não cadastrado.</p>

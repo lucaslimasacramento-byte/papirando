@@ -126,6 +126,9 @@ for (const it of all) {
     ['edital_url', q(it.edital_url)],
     ['prova_data', qdate(it.prova_data)],
     ['status_concurso', qstr(it.status_concurso || 'edital_publicado')],
+    // Pre-edital: conteudo veio do edital anterior. Exige a migration 202608030001.
+    ['conteudo_provisorio', it.conteudo_provisorio === true ? 'true' : 'false'],
+    ['conteudo_fonte_url', q(it.conteudo_fonte_url)],
   ];
 
   const colNames = cols.map((c) => c[0]).join(', ');

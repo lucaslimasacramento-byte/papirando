@@ -81,6 +81,10 @@ export function normalizeContestTemplate(template, index = 0) {
     status_concurso: normalizeContestStatus(template.status_concurso || 'edital_publicado'),
     prova_data: template.prova_data || '',
     edital_url: template.edital_url || '',
+    // Pre-edital: conteudo programatico veio do edital ANTERIOR e pode mudar quando o
+    // novo sair. A tela precisa avisar o aluno — ver docs/CATALOGO-ESTRATEGIA.md.
+    conteudo_provisorio: template.conteudo_provisorio === true,
+    conteudo_fonte_url: template.conteudo_fonte_url || '',
     imagem_url: template.imagem_url || '',
     origem: template.origem || 'catalogo',
     cor: template.cor || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
