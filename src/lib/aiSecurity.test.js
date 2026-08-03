@@ -2,14 +2,19 @@
 
 import { describe, expect, it, afterEach } from 'vitest';
 
-import { enforceAiRateLimit, getPublicHealth, transcribeEssayImage } from '../../api/_ai.js';
+import { enforceAiRateLimit, generateFlashcards, getPublicHealth, transcribeEssayImage } from '../../api/_ai.js';
 
 const savedEnv = {
   AI_RATE_LIMIT_ENABLED: process.env.AI_RATE_LIMIT_ENABLED,
   AI_RATE_LIMIT_MAX: process.env.AI_RATE_LIMIT_MAX,
   AI_TRANSCRIBE_RATE_LIMIT_MAX: process.env.AI_TRANSCRIBE_RATE_LIMIT_MAX,
   AI_RATE_LIMIT_WINDOW_MS: process.env.AI_RATE_LIMIT_WINDOW_MS,
+  AI_PROVIDER: process.env.AI_PROVIDER,
+  AI_FALLBACK_PROVIDER: process.env.AI_FALLBACK_PROVIDER,
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+  ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
 };
+const savedFetch = globalThis.fetch;
 
 afterEach(() => {
   for (const [key, value] of Object.entries(savedEnv)) {
@@ -20,6 +25,7 @@ afterEach(() => {
     }
   }
   delete globalThis.__papirandoAiRateLimit;
+  globalThis.fetch = savedFetch;
 });
 
 describe('guardas de seguranca de IA', () => {
@@ -68,5 +74,30 @@ describe('guardas de seguranca de IA', () => {
         dataUrl: 'data:image/jpeg;base64,aGVsbG8=',
       })
     ).rejects.toThrow(/formato de imagem/i);
+  });
+
+  it('usa Claude como provedor principal para geracao estruturada', async () => {
+    process.env.AI_PROVIDER = 'anthropic';
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    process.env.ANTHROPIC_MODEL = 'claude-sonnet-4-6';
+    let request;
+    globalThis.fetch = async (url, options) => {
+      request = { url, options };
+      return new Response(JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        content: [{ type: 'text', text: '{"flashcards":[{"front":"Pergunta","back":"Resposta"}]}' }],
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    };
+
+    const result = await generateFlashcards({ text: 'Direito administrativo', maxCards: 1 });
+
+    expect(request.url).toBe('https://api.anthropic.com/v1/messages');
+    expect(request.options.headers['x-api-key']).toBe('test-key');
+    expect(JSON.parse(request.options.body)).toMatchObject({
+      model: 'claude-sonnet-4-6',
+      messages: [{ role: 'user' }],
+    });
+    expect(result).toMatchObject({ provider: 'anthropic', model: 'claude-sonnet-4-6' });
+    expect(result.flashcards).toEqual([{ frente: 'Pergunta', verso: 'Resposta' }]);
   });
 });

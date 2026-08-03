@@ -31,6 +31,13 @@ function loadEnvFile(filePath) {
 const envFromFile = loadEnvFile(ENV_PATH);
 const env = { ...envFromFile, ...process.env };
 
+// O gateway compartilhado le process.env. Mantem o carregamento local de .env
+// deste servidor e evita divergencia quando Claude for o provedor selecionado.
+for (const [key, value] of Object.entries(envFromFile)) {
+  if (process.env[key] === undefined) process.env[key] = value;
+}
+const sharedAiGateway = await import('./api/_ai.js');
+
 const PORT = Number(env.AI_SERVER_PORT || 8787);
 const AI_PROVIDER = String(env.AI_PROVIDER || 'ollama').toLowerCase();
 const OLLAMA_BASE_URL = env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
@@ -41,6 +48,7 @@ const GOOGLE_API_KEY = env.GOOGLE_API_KEY;
 const GOOGLE_MODEL = env.GOOGLE_MODEL || 'gemini-1.5-pro';
 const AI_FALLBACK_PROVIDER = String(env.AI_FALLBACK_PROVIDER || 'ollama').toLowerCase();
 const AI_SERVER_TOKEN = String(env.AI_SERVER_TOKEN || '').trim();
+const usesSharedAnthropicGateway = () => AI_PROVIDER === 'anthropic';
 const AI_ALLOWED_ORIGINS = String(
   env.AI_ALLOWED_ORIGINS || 'http://127.0.0.1:5173,http://localhost:5173'
 )
@@ -2324,6 +2332,11 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'GET' && (req.url === '/api/health' || req.url === '/api/ai/health')) {
+    if (usesSharedAnthropicGateway()) {
+      const health = await sharedAiGateway.getHealth();
+      return jsonResponse(req, res, 200, { ...health, service: 'edital-ai' });
+    }
+
     return jsonResponse(req, res, 200, {
       ok: true,
       service: 'edital-ai',
@@ -2350,7 +2363,9 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Cole ou envie um edital para analise.' });
       }
 
-      const result = await analyzeEdital(editalText);
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.analyzeEdital(editalText)
+        : analyzeEdital(editalText));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, {
@@ -2368,7 +2383,9 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Cole o formulario analisado do concurso.' });
       }
 
-      const result = await analyzeContestForm({ text });
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.analyzeContestForm({ text })
+        : analyzeContestForm({ text }));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, {
@@ -2391,7 +2408,9 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Envie o texto da redacao para correcao.' });
       }
 
-      const result = await analyzeEssay({ text, tema, banca });
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.analyzeEssay({ text, tema, banca })
+        : analyzeEssay({ text, tema, banca }));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, {
@@ -2413,10 +2432,12 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Envie uma imagem valida para transcricao.' });
       }
 
-      const result = await transcribeEssayImage({
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.transcribeEssayImage({ dataUrl, mimeType })
+        : transcribeEssayImage({
         dataUrl,
         mimeType,
-      });
+      }));
 
       return jsonResponse(req, res, 200, result);
     } catch (error) {
@@ -2440,7 +2461,9 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Envie o texto para gerar flashcards.' });
       }
 
-      const result = await generateFlashcards({ text, disciplina, maxCards });
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.generateFlashcards({ text, disciplina, maxCards })
+        : generateFlashcards({ text, disciplina, maxCards }));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, { error: error.message || 'Falha ao gerar flashcards.' });
@@ -2458,7 +2481,9 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Envie o texto para resumir.' });
       }
 
-      const result = await summarizeTopic({ text, topico, disciplina });
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.summarizeTopic({ text, topico, disciplina })
+        : summarizeTopic({ text, topico, disciplina }));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, { error: error.message || 'Falha ao resumir o topico.' });
@@ -2474,7 +2499,9 @@ const server = http.createServer(async (req, res) => {
         return jsonResponse(req, res, 400, { error: 'Envie o enunciado da questao para explicar.' });
       }
 
-      const result = await explainQuestion(body);
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.explainQuestion(body)
+        : explainQuestion(body));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, { error: error.message || 'Falha ao explicar a questao.' });
@@ -2484,7 +2511,9 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'POST' && (req.url === '/api/generate-schedule' || req.url === '/api/ai/generate-schedule')) {
     try {
       const body = await readBody(req);
-      const result = await generateStudySchedule(body);
+      const result = await (usesSharedAnthropicGateway()
+        ? sharedAiGateway.generateStudySchedule(body)
+        : generateStudySchedule(body));
       return jsonResponse(req, res, 200, result);
     } catch (error) {
       return jsonResponse(req, res, 500, { error: error.message || 'Falha ao gerar cronograma.' });

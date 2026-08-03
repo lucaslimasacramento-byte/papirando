@@ -17,6 +17,8 @@ export function getAiConfig() {
   return {
     provider,
     fallbackProvider,
+    anthropicKey: env('ANTHROPIC_API_KEY'),
+    anthropicModel: env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
     openAiKey: env('OPENAI_API_KEY'),
     openAiModel: env('OPENAI_MODEL', 'gpt-4.1-mini'),
     googleKey: env('GOOGLE_API_KEY') || env('GEMINI_API_KEY'),
@@ -256,25 +258,116 @@ function extractJson(text) {
 
 function providerOrder(config = getAiConfig()) {
   const preferred =
-    ['openrouter', 'groq', 'openai', 'gemini'].includes(config.provider)
+    ['anthropic', 'openrouter', 'groq', 'openai', 'gemini'].includes(config.provider)
       ? config.provider
-      : config.openRouterKey
-        ? 'openrouter'
-        : config.groqKey
-          ? 'groq'
-          : config.googleKey
-        ? 'gemini'
-        : config.openAiKey
-          ? 'openai'
-          : 'offline';
+      : config.anthropicKey
+        ? 'anthropic'
+        : config.openRouterKey
+          ? 'openrouter'
+          : config.groqKey
+            ? 'groq'
+            : config.googleKey
+              ? 'gemini'
+              : config.openAiKey
+                ? 'openai'
+                : 'offline';
 
   return [
     ...new Set(
-      [preferred, config.fallbackProvider, 'openrouter', 'groq', 'gemini', 'openai'].filter(
+      [preferred, config.fallbackProvider, 'anthropic', 'openrouter', 'groq', 'gemini', 'openai'].filter(
         (provider) => provider && provider !== 'offline'
       )
     ),
   ];
+}
+
+function anthropicText(payload) {
+  return (Array.isArray(payload?.content) ? payload.content : [])
+    .filter((block) => block?.type === 'text')
+    .map((block) => block?.text || '')
+    .join('\n')
+    .trim();
+}
+
+async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
+  const config = getAiConfig();
+  if (!config.anthropicKey) throw new Error('ANTHROPIC_API_KEY nao configurada.');
+
+  const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': config.anthropicKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: config.anthropicModel,
+      max_tokens: 4096,
+      temperature: 0.25,
+      system: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.`,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+}
+
+async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_ai' } = {}) {
+  const config = getAiConfig();
+  if (!config.anthropicKey) throw new Error('ANTHROPIC_API_KEY nao configurada.');
+
+  const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': config.anthropicKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: config.anthropicModel,
+      max_tokens: 4096,
+      temperature: 0.25,
+      system: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.`,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+          { type: 'text', text: prompt },
+        ],
+      }],
+    }),
+  });
+
+  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+}
+
+async function runAnthropicWithImage(prompt, base64, mimeType) {
+  const config = getAiConfig();
+  if (!config.anthropicKey) throw new Error('ANTHROPIC_API_KEY nao configurada.');
+
+  const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': config.anthropicKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: config.anthropicModel,
+      max_tokens: 2048,
+      temperature: 0.1,
+      system: 'Responda somente com JSON valido. Nao use markdown.',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+        ],
+      }],
+    }),
+  });
+
+  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
 }
 
 async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai' } = {}) {
@@ -405,14 +498,14 @@ async function runJson(prompt, options = {}) {
   const config = getAiConfig();
   let order = providerOrder(config);
 
-  // preferFast: put Groq first (1-2s response), then others.
-  // Used for time-sensitive endpoints (e.g. Vercel 10s hobby limit).
-  if (options.preferFast && config.groqKey) {
+  // Preferir Groq apenas quando ele nao substituir explicitamente o Claude selecionado.
+  if (options.preferFast && config.groqKey && order[0] !== 'anthropic') {
     order = ['groq', ...order.filter((p) => p !== 'groq')];
   }
 
   for (const provider of order) {
     try {
+      if (provider === 'anthropic') return await runAnthropicJson(prompt, options);
       if (provider === 'openrouter') return await runOpenRouterJson(prompt, options);
       if (provider === 'groq') return await runGroqJson(prompt, options);
       if (provider === 'gemini') return await runGeminiJson(prompt, options);
@@ -433,11 +526,13 @@ export async function getHealth() {
   const config = getAiConfig();
   const order = providerOrder(config);
   return {
-    ok: Boolean(config.openRouterKey || config.groqKey || config.googleKey || config.openAiKey),
+    ok: Boolean(config.anthropicKey || config.openRouterKey || config.groqKey || config.googleKey || config.openAiKey),
     service: 'papirando-ai',
     provider: order[0] || 'offline',
     model:
-      order[0] === 'openrouter'
+      order[0] === 'anthropic'
+        ? config.anthropicModel
+        : order[0] === 'openrouter'
         ? config.openRouterModel
         : order[0] === 'groq'
           ? config.groqModel
@@ -1186,8 +1281,21 @@ export async function analyzeContestPdf({ pdfBase64 = '' } = {}) {
   if (sizeBytes > 18 * 1024 * 1024) throw new Error('PDF muito grande. O limite e de 18 MB por envio.');
 
   const prompt = contestFormPrompt('\nO edital esta no PDF em anexo. Extraia todas as informacoes diretamente do documento.');
-  const result = await runGeminiWithPdf(prompt, pdfBase64);
-  return buildContestFormResponse(result);
+  const errors = [];
+  for (const provider of providerOrder()) {
+    try {
+      if (provider === 'anthropic') {
+        return buildContestFormResponse(await runAnthropicWithPdf(prompt, pdfBase64, { schemaName: 'contest_form_template' }));
+      }
+      if (provider === 'gemini') {
+        return buildContestFormResponse(await runGeminiWithPdf(prompt, pdfBase64));
+      }
+    } catch (error) {
+      errors.push(`[${provider}] ${error.message}`);
+    }
+  }
+
+  throw new Error(`Nao foi possivel analisar o PDF com IA. ${errors.join(' | ')}`);
 }
 export async function analyzeEdital(editalText = '') {
   const text = String(editalText || '').trim();
@@ -1271,73 +1379,85 @@ export async function transcribeEssayImage({ dataUrl = '', mimeType = '' } = {})
   }
 
   const config = getAiConfig();
-  if (config.openRouterKey) {
-    const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.openRouterKey}`,
-        'HTTP-Referer': 'https://papirando.vercel.app',
-        'X-Title': 'Papirando',
-      },
-      body: JSON.stringify({
-        model: config.openRouterModel,
-        temperature: 0.1,
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Transcreva fielmente esta redacao. Responda em JSON: {"text":"transcricao"}' },
-              { type: 'image_url', image_url: { url: dataUrl } },
-            ],
+  const prompt = 'Transcreva fielmente esta redacao. Responda em JSON: {"text":"transcricao"}';
+  const errors = [];
+
+  for (const provider of providerOrder(config)) {
+    try {
+      if (provider === 'anthropic') {
+        const result = await runAnthropicWithImage(prompt, base64, safeMimeType);
+        return {
+          provider: result.provider,
+          source: result.provider,
+          sourceLabel: 'Claude',
+          model: result.model,
+          text: String(result.json?.text || '').trim(),
+        };
+      }
+
+      if (provider === 'openrouter' && config.openRouterKey) {
+        const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.openRouterKey}`,
+            'HTTP-Referer': 'https://papirando.vercel.app',
+            'X-Title': 'Papirando',
           },
-        ],
-      }),
-    });
+          body: JSON.stringify({
+            model: config.openRouterModel,
+            temperature: 0.1,
+            response_format: { type: 'json_object' },
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: prompt },
+                { type: 'image_url', image_url: { url: dataUrl } },
+              ],
+            }],
+          }),
+        });
 
-    const content = payload?.choices?.[0]?.message?.content;
-    const parsed = extractJson(content);
-    return {
-      provider: 'openrouter',
-      source: 'openrouter',
-      sourceLabel: 'OpenRouter',
-      model: payload?.model || config.openRouterModel,
-      text: String(parsed?.text || '').trim(),
-    };
-  }
+        const parsed = extractJson(payload?.choices?.[0]?.message?.content);
+        return {
+          provider: 'openrouter',
+          source: 'openrouter',
+          sourceLabel: 'OpenRouter',
+          model: payload?.model || config.openRouterModel,
+          text: String(parsed?.text || '').trim(),
+        };
+      }
 
-  if (!config.googleKey) {
-    throw new Error('Transcricao de imagem requer GOOGLE_API_KEY/GEMINI_API_KEY configurada.');
-  }
-
-  const payload = await fetchJson(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
+      if (provider === 'gemini' && config.googleKey) {
+        const payload = await fetchJson(
+          `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
           {
-            role: 'user',
-            parts: [
-              { text: 'Transcreva fielmente esta redacao. Responda em JSON: {"text":"transcricao"}' },
-              { inlineData: { mimeType, data: base64 } },
-            ],
-          },
-        ],
-        generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
-      }),
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                role: 'user',
+                parts: [{ text: prompt }, { inlineData: { mimeType: safeMimeType, data: base64 } }],
+              }],
+              generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
+            }),
+          }
+        );
+
+        const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
+        const parsed = extractJson(content);
+        return {
+          provider: 'gemini',
+          source: 'gemini',
+          sourceLabel: 'Gemini',
+          model: config.googleModel,
+          text: String(parsed?.text || '').trim(),
+        };
+      }
+    } catch (error) {
+      errors.push(`[${provider}] ${error.message}`);
     }
-  );
+  }
 
-  const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-  const parsed = extractJson(content);
-  return {
-    provider: 'gemini',
-    source: 'gemini',
-    sourceLabel: 'Gemini',
-    model: config.googleModel,
-    text: String(parsed?.text || '').trim(),
-  };
+  throw new Error(`Nao foi possivel transcrever a imagem com IA. ${errors.join(' | ')}`);
 }
