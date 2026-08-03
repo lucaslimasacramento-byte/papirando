@@ -29,6 +29,47 @@ const TAGS_CONHECIDAS = new Set([
   'titulos', 'investigacao_social', 'psicotecnico', 'medico',
 ]);
 
+// ── Lista branca de fontes ────────────────────────────────────────────────────
+// `edital_url` so vale se apontar para dominio oficial: orgao, banca ou diario.
+// Sufixo de dominio — "jus.br" cobre tjsc.jus.br, djea-con.tjce.jus.br etc.
+// Estender sem editar o arquivo: EXTRA_DOMINIOS="banca.org.br,orgao.br"
+const DOMINIOS_OFICIAIS = [
+  // Poder publico
+  'gov.br', 'jus.br', 'leg.br', 'mp.br', 'mpu.mp.br', 'def.br', 'mil.br', 'edu.br',
+  // Bancas
+  'cebraspe.org.br', 'fgv.br', 'fcc.org.br', 'ibfc.org.br', 'institutoaocp.org.br',
+  'aocp.com.br', 'vunesp.com.br', 'quadrix.org.br', 'idecan.org.br', 'consulplan.net',
+  'ibade.org.br', 'cesgranrio.org.br', 'cetroconcursos.org.br', 'selecon.org.br',
+  'legalle.com.br', 'objetivas.com.br', 'fundatec.org.br', 'unesc.net',
+];
+// Agregadores: uteis para DESCOBRIR um edital, nunca como fonte do dado.
+const AGREGADORES = [
+  'pciconcursos.com.br', 'estrategiaconcursos.com.br', 'grancursosonline.com.br',
+  'qconcursos.com', 'folhadirigida.com.br', 'jcconcursos.com.br', 'direcaoconcursos.com.br',
+  'concursosnobrasil.com.br', 'tecconcursos.com.br',
+];
+
+const extra = (process.env.EXTRA_DOMINIOS || '').split(',').map((s) => s.trim()).filter(Boolean);
+const permitidos = [...DOMINIOS_OFICIAIS, ...extra];
+
+// Retorna null se a fonte e valida, ou a mensagem de erro.
+function checarFonte(url) {
+  let host;
+  try {
+    host = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return 'edital_url nao e uma URL valida';
+  }
+  const casa = (d) => host === d || host.endsWith(`.${d}`);
+  if (AGREGADORES.some(casa)) {
+    return `fonte "${host}" e agregador — serve para DESCOBRIR o edital, nunca para preencher os dados. Use o link do orgao, da banca ou do diario oficial`;
+  }
+  if (!permitidos.some(casa)) {
+    return `fonte "${host}" fora da lista branca de dominios oficiais (orgao, banca ou diario). Se o dominio for legitimo, rode com EXTRA_DOMINIOS="${host}" e avise no resumo`;
+  }
+  return null;
+}
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const num = (name, fallback) => {
   const raw = Number(process.env[name]);
@@ -99,6 +140,10 @@ for (const file of files) {
     // ── Fonte ──────────────────────────────────────────────────────────────
     if (!item.edital_url || typeof item.edital_url !== 'string') fail('edital_url ausente');
     else if (!/^https?:\/\/\S+$/i.test(item.edital_url)) fail('edital_url nao e uma URL http(s)');
+    else {
+      const problema = checarFonte(item.edital_url);
+      if (problema) fail(problema);
+    }
 
     // ── Descricao (vira o texto do card no catalogo) ───────────────────────
     const descricao = typeof item.descricao === 'string' ? item.descricao.trim() : '';

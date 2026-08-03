@@ -85,9 +85,15 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
 
 1. **Nunca invente.** Se não achou o dado, **omita o campo** ou use `null`. Um campo vazio é
    corrigível depois; um dado errado destrói a confiança do usuário e é invisível pra gente.
-2. **Só fonte oficial.** Site do órgão, site da banca, diário oficial ou PDF do edital.
-   Blog de cursinho serve só pra *encontrar* o edital, nunca como fonte do dado.
-3. **`edital_url` é obrigatório.** Item sem link não entra.
+2. **Só fonte da lista branca.** `edital_url` tem que apontar para domínio oficial — órgão
+   (`*.jus.br`, `*.gov.br`, ...) ou banca (Cebraspe, FGV, FCC, IBFC, AOCP, Vunesp...).
+   **PCI, Estratégia, Gran, QConcursos e afins servem só pra DESCOBRIR que existe um edital**
+   — nunca para preencher o dado. O validador recusa esses domínios automaticamente.
+   Se um domínio oficial estiver faltando na lista, rode com `EXTRA_DOMINIOS="dominio.br"`
+   e avise no resumo (não edite o validador).
+3. **`edital_url` é obrigatório.** Item sem link não entra. Antes de usar o link, confirme:
+   é domínio oficial; o documento é edital/retificação/comunicado identificável; **o cargo
+   aparece no documento**; e datas, salário, vagas, banca e status batem com ele.
 4. **Não copie texto do edital.** De `disciplinas`/`topicos`, extraia apenas os **nomes** das
    matérias e dos tópicos do conteúdo programático — nada de parágrafos, ementas longas ou
    trechos transcritos.
