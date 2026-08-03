@@ -26,6 +26,25 @@ Implementado em [`scripts/validate_catalog_json.mjs`](../scripts/validate_catalo
 - Domínio legítimo faltando na lista: rodar com `EXTRA_DOMINIOS="dominio.br"` e avisar, para
   a lista crescer de forma consciente.
 
+## Cobrir o funil inteiro, com exigência proporcional
+
+Os 11 `status_concurso` já existiam no app (filtro, badge e peso no ranking de
+[ConcursosDisponiveis](../src/pages/ConcursosDisponiveis.jsx)). O que faltava era regra de
+prova para cada fase. São três perfis, e o que muda é **o que serve de evidência**:
+
+| perfil | status | evidência (`edital_url`) | conteúdo programático |
+|---|---|---|---|
+| **A — com edital** | `edital_publicado`, `inscricoes_abertas`, `prova_marcada` | o edital | do edital vigente, obrigatório |
+| **B — pré-edital** | `comissao_formada`, `banca_*`, `edital_iminente` (e `previsto`/`autorizado` que tenham conteúdo) | ato oficial do certame | do **edital anterior**, com `conteudo_provisorio` + `conteudo_fonte_url` |
+| **C — radar** | `previsto`, `autorizado` sem conteúdo | anúncio/autorização oficial | **nenhum** — o item existe para o aluno achar e acompanhar |
+
+O que decide entre B e C é o conteúdo, não o status: sem disciplinas é radar; com
+disciplinas, tem que cumprir B por inteiro. Não há meio-termo — conteúdo raso sem fonte é
+justamente o que corrompe o catálogo.
+
+A lista branca vale nos três. Um `previsto` que só existe em post de cursinho **não entra**:
+se nenhuma fonte oficial falou, o concurso não existe ainda.
+
 ## Os três estágios
 
 ### Estágio 0 — lista branca ✅ (feito)

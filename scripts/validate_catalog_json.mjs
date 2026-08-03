@@ -32,6 +32,11 @@ const STATUS_PRE_EDITAL = new Set([
   'previsto', 'autorizado', 'comissao_formada', 'banca_em_definicao',
   'banca_definida', 'edital_iminente',
 ]);
+// RADAR: a ponta mais crua do funil. O orgao anunciou/autorizou, mas ainda nao ha
+// comissao nem banca — muitas vezes nem existe edital anterior comparavel. O item
+// entra SEM conteudo programatico, so para o aluno achar, favoritar e ser avisado
+// quando evoluir. Se vier com disciplinas, cai nas regras de pre-edital.
+const STATUS_RADAR = new Set(['previsto', 'autorizado']);
 const TAGS_CONHECIDAS = new Set([
   'objetiva', 'discursiva', 'redacao', 'taf', 'oral',
   'titulos', 'investigacao_social', 'psicotecnico', 'medico',
@@ -165,8 +170,15 @@ for (const file of files) {
       fail(`status "${item.status_concurso}" indica certame ja em curso/encerrado — nao entra no catalogo`);
     }
 
+    // ── Perfil RADAR: previsto/autorizado sem conteudo programatico ──────────
+    const temDisciplinas = Array.isArray(item.disciplinas) && item.disciplinas.length > 0;
+    const radar = STATUS_RADAR.has(item.status_concurso) && !temDisciplinas;
+    if (radar && item.conteudo_provisorio === true) {
+      fail('item de radar (sem disciplinas) nao pode declarar conteudo_provisorio');
+    }
+
     // ── Perfil PRE-EDITAL: fonte e ato oficial, conteudo vem do edital anterior ──
-    const preEdital = STATUS_PRE_EDITAL.has(item.status_concurso);
+    const preEdital = !radar && STATUS_PRE_EDITAL.has(item.status_concurso);
     if (preEdital) {
       if (item.conteudo_provisorio !== true) {
         fail('status pre-edital exige "conteudo_provisorio": true — sem edital novo, o conteudo programatico e do edital anterior e pode mudar');
@@ -186,7 +198,7 @@ for (const file of files) {
     }
 
     if (item.prova_data === undefined || item.prova_data === null || item.prova_data === '') {
-      if (!preEdital) warn('sem prova_data (aceito, mas o aluno fica sem contagem regressiva)');
+      if (!preEdital && !radar) warn('sem prova_data (aceito, mas o aluno fica sem contagem regressiva)');
     } else if (!ISO_DATE.test(String(item.prova_data))) {
       fail(`prova_data fora de YYYY-MM-DD: ${JSON.stringify(item.prova_data)}`);
     } else {
@@ -200,7 +212,11 @@ for (const file of files) {
     // ── Conteudo programatico: o campo mais valioso do catalogo ────────────
     const discs = Array.isArray(item.disciplinas) ? item.disciplinas : null;
     if (!discs || !discs.length) {
-      fail('disciplinas vazio');
+      if (radar) {
+        warn('item de radar: entra sem conteudo programatico, so para o aluno acompanhar');
+      } else {
+        fail('disciplinas vazio');
+      }
     } else {
       if (discs.length < MIN_DISCIPLINAS) fail(`so ${discs.length} disciplina(s) — minimo ${MIN_DISCIPLINAS}`);
       const nomesDisc = new Set();

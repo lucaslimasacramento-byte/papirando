@@ -79,7 +79,7 @@ Um array JSON. Cada item é um concurso (um cargo específico, não o edital int
 | `edital_url` | sim | URL direta do edital ou da página oficial. É a prova de que o dado é real |
 | `descricao` | **sim** | 1–2 frases, mínimo 40 caracteres. É o texto do card no catálogo |
 | `cor` | não | Hex `#RRGGBB`. Se não souber, omita |
-| `disciplinas` | sim | Array, **mínimo 3 disciplinas** e **mínimo 10 tópicos em cada uma** (ver regra 5). Formato: `{ "nome": "...", "topicos": ["...", "..."] }` |
+| `disciplinas` | sim* | Array, **mínimo 3 disciplinas** e **mínimo 10 tópicos em cada uma** (ver regra 5). Formato: `{ "nome": "...", "topicos": ["...", "..."] }`. *Opcional só no perfil C (radar) |
 
 ## Os dois perfis de item
 
@@ -100,6 +100,20 @@ no pré-edital, e é aí que o app faz mais diferença pra ele. Exige três cois
 
 No perfil B, `prova_data` normalmente não existe — pode omitir. Se houver data prevista
 oficialmente, ela vale as mesmas regras (mínimo 60 dias à frente).
+
+**Perfil C — radar.** A ponta mais crua do funil: `previsto` ou `autorizado`, quando o órgão
+anunciou/autorizou mas ainda não há comissão, banca, nem edital anterior comparável.
+**Entra sem `disciplinas`** — serve para o aluno achar o concurso, favoritar e ser avisado
+quando ele evoluir, não para estudar. Exige só o básico + `edital_url` apontando para o **ato
+ou anúncio oficial** (autorização no diário, notícia no site do órgão, previsão orçamentária).
+
+A regra que decide entre B e C é o conteúdo, não o status: **`previsto`/`autorizado` sem
+disciplinas = radar; com disciplinas = tem que cumprir as regras do perfil B** (provisório
+declarado, edital anterior linkado, 10+ tópicos). Não existe meio-termo — conteúdo raso e
+sem fonte é exatamente o que a gente não quer.
+
+Do `comissao_formada` em diante o item já é concreto o bastante para ter edital anterior:
+aí `disciplinas` volta a ser obrigatório.
 
 Exemplo — PMBA com edital iminente:
 
