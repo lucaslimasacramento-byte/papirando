@@ -542,8 +542,10 @@ function EnemView({ cursos, onImport, limiteAtingido, instituicoes = [], onUpdat
         </div>
       </div>
 
-      {/* Instituições-alvo: o aluno mira até 3 instituições que ingressam pelo ENEM. */}
-      {jaAdicionado && (
+      {/* Instituições-alvo: some quando não há instituições publicadas — decisão de
+          produto (2026-08-03): sem catálogo, o aluno foca no ENEM em si; prometer
+          uma escolha que pode não ter a instituição dele é pior do que não ter. */}
+      {jaAdicionado && (instituicoes || []).length > 0 && (
         <div className="pl-card" style={{ padding: 24, marginTop: 16 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>Minhas instituições-alvo</p>
           <p style={{ margin: '4px 0 14px', fontSize: 12, color: 'var(--pl-ink-3)' }}>
