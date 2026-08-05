@@ -1,4 +1,40 @@
 {
   "version": 1,
-  "items": []
+  "items": [
+    {
+      "source_identity": "camara-governador-valadares|edital-01-2026|administrador",
+      "slug": "camara-de-governador-valadares-administrador-2026",
+      "nome": "Câmara de Governador Valadares — Administrador 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-abertura-do-concurso-publico-para-a-camara-municipal-de-governador-valadares_retificado_17_06_2026_0.pdf",
+      "first_delivered_at": "2026-08-03T11:13:36.809Z"
+    },
+    {
+      "source_identity": "camara-governador-valadares|edital-01-2026|comunicador-social-jornalista",
+      "slug": "camara-de-governador-valadares-comunicador-social-jornalista-2026",
+      "nome": "Câmara de Governador Valadares — Comunicador Social Jornalista 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-abertura-do-concurso-publico-para-a-camara-municipal-de-governador-valadares_retificado_17_06_2026_0.pdf",
+      "first_delivered_at": "2026-08-03T11:13:36.809Z"
+    },
+    {
+      "source_identity": "camara-governador-valadares|edital-01-2026|contador",
+      "slug": "camara-de-governador-valadares-contador-2026",
+      "nome": "Câmara de Governador Valadares — Contador 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-abertura-do-concurso-publico-para-a-camara-municipal-de-governador-valadares_retificado_17_06_2026_0.pdf",
+      "first_delivered_at": "2026-08-03T11:13:36.809Z"
+    },
+    {
+      "source_identity": "camara-governador-valadares|edital-01-2026|tecnico-superior-em-informatica",
+      "slug": "camara-de-governador-valadares-tecnico-superior-em-informatica-2026",
+      "nome": "Câmara de Governador Valadares — Técnico Superior em Informática 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-abertura-do-concurso-publico-para-a-camara-municipal-de-governador-valadares_retificado_17_06_2026_0.pdf",
+      "first_delivered_at": "2026-08-03T11:13:36.809Z"
+    },
+    {
+      "source_identity": "camara-governador-valadares|edital-01-2026|assistente-legislativo",
+      "slug": "camara-de-governador-valadares-assistente-legislativo-2026",
+      "nome": "Câmara de Governador Valadares — Assistente Legislativo 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-abertura-do-concurso-publico-para-a-camara-municipal-de-governador-valadares_retificado_17_06_2026_0.pdf",
+      "first_delivered_at": "2026-08-03T11:13:36.809Z"
+    }
+  ]
 }
