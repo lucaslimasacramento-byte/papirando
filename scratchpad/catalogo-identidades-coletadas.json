@@ -72,6 +72,126 @@
       "nome": "Prefeitura de Nova Erechim — Assistente Administrativo 2026",
       "edital_url": "https://www.ibam-concursos.org.br/documento/edit.cpne26.pdf",
       "first_delivered_at": "2026-08-05T01:59:55.552Z"
+    },
+    {
+      "source_identity": "pcpr|edital-01-2026|delegado-de-policia",
+      "slug": "pcpr-delegado-de-policia-2026",
+      "nome": "PCPR — Delegado de Polícia 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-pcpr-publicacao.docx-1.pdf",
+      "catalog_batch": "Lote 07 — Polícia Civil do Paraná — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:12:22.298Z"
+    },
+    {
+      "source_identity": "pcpr|edital-01-2026|agente-de-policia-judiciaria",
+      "slug": "pcpr-agente-de-policia-judiciaria-2026",
+      "nome": "PCPR — Agente de Polícia Judiciária 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-pcpr-publicacao.docx-1.pdf",
+      "catalog_batch": "Lote 07 — Polícia Civil do Paraná — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:12:22.298Z"
+    },
+    {
+      "source_identity": "pcpr|edital-01-2026|papiloscopista-policial",
+      "slug": "pcpr-papiloscopista-policial-2026",
+      "nome": "PCPR — Papiloscopista Policial 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-pcpr-publicacao.docx-1.pdf",
+      "catalog_batch": "Lote 07 — Polícia Civil do Paraná — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:12:22.298Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-artes",
+      "slug": "seduc-al-professor-de-artes-2026",
+      "nome": "SEDUC AL — Professor de Artes 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-biologia",
+      "slug": "seduc-al-professor-de-biologia-2026",
+      "nome": "SEDUC AL — Professor de Biologia 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-educacao-fisica",
+      "slug": "seduc-al-professor-de-educacao-fisica-2026",
+      "nome": "SEDUC AL — Professor de Educação Física 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-filosofia",
+      "slug": "seduc-al-professor-de-filosofia-2026",
+      "nome": "SEDUC AL — Professor de Filosofia 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-fisica",
+      "slug": "seduc-al-professor-de-fisica-2026",
+      "nome": "SEDUC AL — Professor de Física 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-geografia",
+      "slug": "seduc-al-professor-de-geografia-2026",
+      "nome": "SEDUC AL — Professor de Geografia 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-historia",
+      "slug": "seduc-al-professor-de-historia-2026",
+      "nome": "SEDUC AL — Professor de História 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-lingua-inglesa",
+      "slug": "seduc-al-professor-de-lingua-inglesa-2026",
+      "nome": "SEDUC AL — Professor de Língua Inglesa 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-matematica",
+      "slug": "seduc-al-professor-de-matematica-2026",
+      "nome": "SEDUC AL — Professor de Matemática 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-lingua-portuguesa",
+      "slug": "seduc-al-professor-de-lingua-portuguesa-2026",
+      "nome": "SEDUC AL — Professor de Língua Portuguesa 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-quimica",
+      "slug": "seduc-al-professor-de-quimica-2026",
+      "nome": "SEDUC AL — Professor de Química 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
+    },
+    {
+      "source_identity": "seduc-al|edital-01-2026|professor-sociologia",
+      "slug": "seduc-al-professor-de-sociologia-2026",
+      "nome": "SEDUC AL — Professor de Sociologia 2026",
+      "edital_url": "https://cdn.cebraspe.org.br/concursos/seduc_al_26/arquivos/E9F0858F05F833F1827ECE48AF6D88D25981998B1D638E20A05D82248DFC71B0.pdf",
+      "catalog_batch": "Lote 08 — Professores SEDUC Alagoas — 05/08/2026",
+      "first_delivered_at": "2026-08-05T03:16:28.456Z"
     }
   ]
 }
