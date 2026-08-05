@@ -12,6 +12,9 @@ Enquanto `phase` for `reconstrucao_inicial`, a coleta busca concursos vivos mesm
 o edital não tenha sido publicado nas últimas 48 horas. Depois da base inicial, a fase
 `daily` aplica a janela de 48 horas.
 
+A reconstrução inicial trabalha em lotes de até 30 cargos. A rotina `daily` permanece
+pequena (até 5) porque acompanha somente novidades e retificações recentes.
+
 ## Resultado da execução
 
 - Sem fonte nova e sem falha: não cria arquivo e responde `sem editais novos hoje`.
