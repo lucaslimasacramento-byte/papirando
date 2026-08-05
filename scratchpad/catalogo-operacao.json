@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "phase": "reconstrucao_inicial",
+  "baseline": {
+    "accept": "Concursos com edital oficial publicado e ainda úteis ao estudante: inscrições abertas ou prova futura com antecedência mínima definida no brief.",
+    "exclude": "Certames encerrados, homologados, com prova passada ou sem fonte oficial verificável.",
+    "max_items_per_run": 5
+  },
+  "daily": {
+    "lookback_hours": 48,
+    "accept": "Editais ou retificações oficiais recentes e mudanças oficiais de fase.",
+    "max_items_per_run": 5
+  },
+  "publication": "manual_batch_review"
+}

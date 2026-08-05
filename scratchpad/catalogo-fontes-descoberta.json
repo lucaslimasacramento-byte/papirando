@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "purpose": "Radar de cobertura. Nenhuma URL deste arquivo pode ser usada como edital_url ou prova final de um item.",
+  "sources": [
+    {
+      "id": "concursos-no-brasil",
+      "name": "Concursos no Brasil",
+      "url": "https://concursosnobrasil.com/",
+      "kind": "agregador",
+      "role": "descoberta",
+      "priority": 1,
+      "required_next_step": "Localizar o edital ou ato correspondente no órgão, na banca ou no diário oficial antes de criar qualquer rascunho."
+    }
+  ]
+}

@@ -1,6 +1,16 @@
 # Operação diária do catálogo
 
-Cada execução consulta somente as fontes de `../catalogo-fontes-monitoradas.json` e lê o brief atual antes de coletar.
+Cada execução lê o brief atual, `../catalogo-operacao.json`, as fontes oficiais de
+`../catalogo-fontes-monitoradas.json` e as fontes de descoberta de
+`../catalogo-fontes-descoberta.json`.
+
+As fontes de descoberta ampliam a cobertura nacional, mas nunca são fonte final:
+todo item precisa terminar em edital, órgão, banca ou diário oficial permitido pelo
+brief. `edital_url` de agregador é proibido.
+
+Enquanto `phase` for `reconstrucao_inicial`, a coleta busca concursos vivos mesmo que
+o edital não tenha sido publicado nas últimas 48 horas. Depois da base inicial, a fase
+`daily` aplica a janela de 48 horas.
 
 ## Resultado da execução
 
