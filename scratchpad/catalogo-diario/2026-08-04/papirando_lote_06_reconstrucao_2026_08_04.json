@@ -1,0 +1,147 @@
+[
+  {
+    "nome": "SES TO — Administrador Hospitalar 2026",
+    "tipo": "concurso",
+    "plano": "SES TO — Administrador Hospitalar 2026",
+    "concurso": "Secretaria de Estado da Saúde do Tocantins",
+    "area": "Saúde",
+    "cargo": "Administrador Hospitalar",
+    "banca": "FGV",
+    "salario": "R$ 5.980,71",
+    "inscricao_valor": "R$ 150,00",
+    "escolaridade": "Superior em Administração com pós-graduação em Administração Hospitalar",
+    "lotacao": "Tocantins",
+    "etapas": "Prova objetiva",
+    "etapas_tags": ["objetiva"],
+    "taf_itens": [],
+    "status_concurso": "edital_publicado",
+    "prova_data": "2026-11-01",
+    "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/minuta-do-edital-ses-to-vf.pdf",
+    "descricao": "Concurso da Secretaria de Estado da Saúde do Tocantins para Administrador Hospitalar, com prova objetiva prevista para novembro de 2026.",
+    "cor": "#2563EB",
+    "source_identity": "ses-to|edital-001-2026-secad-ses-to|administrador-hospitalar",
+    "disciplinas": [
+      {
+        "nome": "Língua Portuguesa",
+        "topicos": ["Leitura, compreensão e interpretação de textos", "Tipologia e gêneros textuais", "Ortografia oficial", "Acentuação gráfica", "Emprego da pontuação", "Classes de palavras e suas flexões", "Estrutura e formação de palavras", "Concordância verbal e nominal", "Regência verbal e nominal", "Colocação pronominal"]
+      },
+      {
+        "nome": "Raciocínio Lógico e Matemático",
+        "topicos": ["Conjuntos numéricos", "Razões e proporções", "Regra de três simples e composta", "Porcentagem", "Juros simples e compostos", "Equações, inequações e sistemas de equações", "Funções", "Sequências", "Matrizes e determinantes", "Probabilidade"]
+      },
+      {
+        "nome": "Administração Hospitalar",
+        "topicos": ["Administração geral e comportamento organizacional", "Teoria das organizações", "Administração de recursos humanos", "Técnicas de planejamento e controle", "Administração contábil e financeira", "Administração contábil hospitalar", "Análise e gestão de custos hospitalares", "Administração financeira aplicada", "Planejamento físico-funcional do hospital", "Administração de serviços hospitalares", "Serviços de enfermagem", "Centro cirúrgico", "Serviço de prontuário do paciente", "Gestão de materiais hospitalares", "Farmácia hospitalar", "Qualidade e segurança do paciente"]
+      }
+    ]
+  },
+  {
+    "nome": "SES TO — Tecnólogo em Tecnologia da Informação 2026",
+    "tipo": "concurso",
+    "plano": "SES TO — Tecnólogo em Tecnologia da Informação 2026",
+    "concurso": "Secretaria de Estado da Saúde do Tocantins",
+    "area": "Tecnologia",
+    "cargo": "Tecnólogo em Tecnologia da Informação",
+    "banca": "FGV",
+    "salario": "R$ 4.917,01",
+    "inscricao_valor": "R$ 150,00",
+    "escolaridade": "Superior tecnólogo com pós-graduação em Tecnologia da Informação ou Saúde",
+    "lotacao": "Tocantins",
+    "etapas": "Prova objetiva",
+    "etapas_tags": ["objetiva"],
+    "taf_itens": [],
+    "status_concurso": "edital_publicado",
+    "prova_data": "2026-11-01",
+    "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/minuta-do-edital-ses-to-vf.pdf",
+    "descricao": "Concurso da Secretaria de Estado da Saúde do Tocantins para Tecnólogo em Tecnologia da Informação, com prova objetiva prevista para novembro de 2026.",
+    "cor": "#2563EB",
+    "source_identity": "ses-to|edital-001-2026-secad-ses-to|tecnologo-tecnologia-informacao",
+    "disciplinas": [
+      {
+        "nome": "Língua Portuguesa",
+        "topicos": ["Leitura, compreensão e interpretação de textos", "Tipologia e gêneros textuais", "Ortografia oficial", "Acentuação gráfica", "Emprego da pontuação", "Classes de palavras e suas flexões", "Estrutura e formação de palavras", "Concordância verbal e nominal", "Regência verbal e nominal", "Colocação pronominal"]
+      },
+      {
+        "nome": "Raciocínio Lógico e Matemático",
+        "topicos": ["Conjuntos numéricos", "Razões e proporções", "Regra de três simples e composta", "Porcentagem", "Juros simples e compostos", "Equações, inequações e sistemas de equações", "Funções", "Sequências", "Matrizes e determinantes", "Probabilidade"]
+      },
+      {
+        "nome": "Tecnologia da Informação em Saúde",
+        "topicos": ["Conceitos de hardware e software", "Sistemas operacionais Windows e Linux", "Modelos OSI e TCP/IP", "Protocolos de comunicação e redes locais", "Computação em nuvem e virtualização", "Bancos de dados relacionais e não relacionais", "Linguagens de programação e scripts", "Integração de sistemas e APIs", "Sistemas de Informação em Saúde", "Prontuário Eletrônico do Paciente", "Interoperabilidade de sistemas de informação", "Padrões HL7, FHIR, DICOM, LOINC e SNOMED CT", "Rede Nacional de Dados em Saúde", "LGPD aplicada à saúde"]
+      }
+    ]
+  },
+  {
+    "nome": "SES TO — Técnico em Enfermagem 2026",
+    "tipo": "concurso",
+    "plano": "SES TO — Técnico em Enfermagem 2026",
+    "concurso": "Secretaria de Estado da Saúde do Tocantins",
+    "area": "Saúde",
+    "cargo": "Técnico em Enfermagem",
+    "banca": "FGV",
+    "salario": "R$ 2.008,18",
+    "inscricao_valor": "R$ 100,00",
+    "escolaridade": "Técnico em Enfermagem com registro profissional",
+    "lotacao": "Tocantins",
+    "etapas": "Prova objetiva",
+    "etapas_tags": ["objetiva"],
+    "taf_itens": [],
+    "status_concurso": "edital_publicado",
+    "prova_data": "2026-11-01",
+    "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/minuta-do-edital-ses-to-vf.pdf",
+    "descricao": "Concurso da Secretaria de Estado da Saúde do Tocantins para Técnico em Enfermagem, com prova objetiva prevista para novembro de 2026.",
+    "cor": "#2563EB",
+    "source_identity": "ses-to|edital-001-2026-secad-ses-to|tecnico-enfermagem",
+    "disciplinas": [
+      {
+        "nome": "Língua Portuguesa",
+        "topicos": ["Leitura, compreensão e interpretação de textos", "Sinônimos e antônimos", "Sentido próprio e figurado das palavras", "Pontuação", "Substantivos", "Adjetivos", "Numerais", "Pronomes", "Concordância verbal e nominal", "Regência verbal e nominal"]
+      },
+      {
+        "nome": "Matemática e Raciocínio Lógico",
+        "topicos": ["Conjuntos numéricos", "Porcentagem", "Razões e proporções", "Regra de três simples e composta", "Grandezas e medidas", "Mínimo múltiplo comum e máximo divisor comum", "Equações do primeiro grau", "Média aritmética e ponderada", "Análise combinatória e probabilidade", "Proposições e conectivos lógicos", "Diagramas lógicos", "Sequências lógicas"]
+      },
+      {
+        "nome": "Conhecimentos Específicos de Enfermagem",
+        "topicos": ["Fundamentos de enfermagem", "Anatomia, fisiologia e semiologia", "Assistência em Centro Cirúrgico", "Central de Material e Esterilização", "Assistência em Clínica Médico-Cirúrgica", "Assistência em Unidade de Terapia Intensiva", "Urgência, emergência e suporte básico de vida", "Assistência em saúde mental", "Enfermagem materno-infantil", "Programa Nacional de Imunizações", "Processo de enfermagem e registros", "Enfermagem em saúde pública", "Epidemiologia e vigilância", "Biossegurança e prevenção de infecções", "Farmacologia aplicada à enfermagem", "Segurança do paciente"]
+      }
+    ]
+  },
+  {
+    "nome": "Prefeitura de Nova Erechim — Assistente Administrativo 2026",
+    "tipo": "concurso",
+    "plano": "Prefeitura de Nova Erechim — Assistente Administrativo 2026",
+    "concurso": "Prefeitura Municipal de Nova Erechim",
+    "area": "Administrativa",
+    "cargo": "Assistente Administrativo",
+    "banca": "IBAM",
+    "salario": "R$ 3.683,47",
+    "inscricao_valor": "R$ 120,00",
+    "escolaridade": "Nível médio",
+    "vagas": "1",
+    "lotacao": "Nova Erechim/SC",
+    "etapas": "Prova objetiva",
+    "etapas_tags": ["objetiva"],
+    "taf_itens": [],
+    "status_concurso": "edital_publicado",
+    "prova_data": "2026-10-18",
+    "edital_url": "https://www.ibam-concursos.org.br/documento/edit.cpne26.pdf",
+    "descricao": "Concurso da Prefeitura Municipal de Nova Erechim para Assistente Administrativo, com uma vaga e prova objetiva prevista para outubro de 2026.",
+    "cor": "#2563EB",
+    "source_identity": "prefeitura-nova-erechim|edital-001-2026|assistente-administrativo",
+    "disciplinas": [
+      {
+        "nome": "Português",
+        "topicos": ["Interpretação, compreensão e inferência de textos", "Tipos e gêneros textuais", "Significação das palavras", "Coesão e coerência", "Funções da linguagem", "Figuras de linguagem", "Classes gramaticais", "Formação de palavras", "Flexão de nomes e verbos", "Concordância nominal e verbal", "Regência nominal e verbal", "Uso do acento grave", "Pontuação", "Acentuação gráfica", "Ortografia"]
+      },
+      {
+        "nome": "Legislação Constitucional, Municipal e Raciocínio Lógico",
+        "topicos": ["Princípios fundamentais da Constituição", "Direitos e garantias fundamentais", "Organização do Estado", "Tripartição de poderes", "Princípios da Administração Pública", "Administração direta e indireta", "Concessão e permissão de serviços públicos", "Lei de Acesso à Informação", "Lei de Improbidade Administrativa", "Estatuto dos Servidores Públicos Municipais", "Lei Orgânica do Município", "Razão e proporção", "Sistema métrico", "Interpretação de gráficos e tabelas", "Resolução de situações-problema"]
+      },
+      {
+        "nome": "Conhecimentos Específicos de Administração",
+        "topicos": ["Administração Pública Municipal", "Estrutura organizacional do Poder Executivo Municipal", "Atribuições dos órgãos municipais", "Impostos e taxas", "Atendimento e comunicação", "Rotinas e controles administrativos", "Técnicas e ferramentas de gestão", "Fases de projetos", "Avaliação e indicadores", "Organograma e fluxograma", "Relações humanas no trabalho", "Organização do local de trabalho", "Protocolo e arquivo de documentos", "Atos de comunicação oficial", "Sistema Operacional Windows 10", "Microsoft Word, Excel e PowerPoint", "Internet e correio eletrônico", "Noções de hardware e software"]
+      }
+    ]
+  }
+]

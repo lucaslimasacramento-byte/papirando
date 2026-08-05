@@ -35,6 +35,34 @@
       "nome": "Câmara de Governador Valadares — Assistente Legislativo 2026",
       "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/edital-01-2026-abertura-do-concurso-publico-para-a-camara-municipal-de-governador-valadares_retificado_17_06_2026_0.pdf",
       "first_delivered_at": "2026-08-03T11:13:36.809Z"
+    },
+    {
+      "source_identity": "ses-to|edital-001-2026-secad-ses-to|administrador-hospitalar",
+      "slug": "ses-to-administrador-hospitalar-2026",
+      "nome": "SES TO — Administrador Hospitalar 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/minuta-do-edital-ses-to-vf.pdf",
+      "first_delivered_at": "2026-08-05T01:59:55.552Z"
+    },
+    {
+      "source_identity": "ses-to|edital-001-2026-secad-ses-to|tecnologo-tecnologia-informacao",
+      "slug": "ses-to-tecnologo-em-tecnologia-da-informacao-2026",
+      "nome": "SES TO — Tecnólogo em Tecnologia da Informação 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/minuta-do-edital-ses-to-vf.pdf",
+      "first_delivered_at": "2026-08-05T01:59:55.552Z"
+    },
+    {
+      "source_identity": "ses-to|edital-001-2026-secad-ses-to|tecnico-enfermagem",
+      "slug": "ses-to-tecnico-em-enfermagem-2026",
+      "nome": "SES TO — Técnico em Enfermagem 2026",
+      "edital_url": "https://conhecimento.fgv.br/sites/default/files/concursos/minuta-do-edital-ses-to-vf.pdf",
+      "first_delivered_at": "2026-08-05T01:59:55.552Z"
+    },
+    {
+      "source_identity": "prefeitura-nova-erechim|edital-001-2026|assistente-administrativo",
+      "slug": "prefeitura-de-nova-erechim-assistente-administrativo-2026",
+      "nome": "Prefeitura de Nova Erechim — Assistente Administrativo 2026",
+      "edital_url": "https://www.ibam-concursos.org.br/documento/edit.cpne26.pdf",
+      "first_delivered_at": "2026-08-05T01:59:55.552Z"
     }
   ]
 }
