@@ -96,6 +96,7 @@ if (newItems.length) {
       slug,
       nome: item.nome,
       edital_url: item.edital_url,
+      catalog_batch: item.catalog_batch || null,
       first_delivered_at: today,
     }))],
   };

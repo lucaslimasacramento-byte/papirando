@@ -86,6 +86,8 @@ export function normalizeContestTemplate(template, index = 0) {
     conteudo_provisorio: template.conteudo_provisorio === true,
     conteudo_fonte_url: template.conteudo_fonte_url || '',
     imagem_url: template.imagem_url || '',
+    // Identifica a importação para a revisão e publicação manual por lote no Admin.
+    catalog_batch: template.catalog_batch || '',
     origem: template.origem || 'catalogo',
     cor: template.cor || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
     descricao: template.descricao || '',

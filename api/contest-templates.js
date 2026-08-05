@@ -170,6 +170,7 @@ async function saveContestTemplate(supabaseAdmin, templateData = {}, existingId 
     is_public: isPublished,
     descricao: templateData.descricao || null,
     imagem_url: templateData.imagem_url || null,
+    catalog_batch: String(templateData.catalog_batch || '').trim() || null,
     edital_url: templateData.edital_url || null,
     prova_data: templateData.prova_data || null,
     status_concurso: templateData.status_concurso || 'edital_publicado',

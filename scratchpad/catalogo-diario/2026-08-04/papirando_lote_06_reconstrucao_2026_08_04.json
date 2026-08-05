@@ -20,6 +20,7 @@
     "descricao": "Concurso da Secretaria de Estado da Saúde do Tocantins para Administrador Hospitalar, com prova objetiva prevista para novembro de 2026.",
     "cor": "#2563EB",
     "source_identity": "ses-to|edital-001-2026-secad-ses-to|administrador-hospitalar",
+    "catalog_batch": "Lote 06 — Reconstrução inicial — 04/08/2026",
     "disciplinas": [
       {
         "nome": "Língua Portuguesa",
@@ -56,6 +57,7 @@
     "descricao": "Concurso da Secretaria de Estado da Saúde do Tocantins para Tecnólogo em Tecnologia da Informação, com prova objetiva prevista para novembro de 2026.",
     "cor": "#2563EB",
     "source_identity": "ses-to|edital-001-2026-secad-ses-to|tecnologo-tecnologia-informacao",
+    "catalog_batch": "Lote 06 — Reconstrução inicial — 04/08/2026",
     "disciplinas": [
       {
         "nome": "Língua Portuguesa",
@@ -92,6 +94,7 @@
     "descricao": "Concurso da Secretaria de Estado da Saúde do Tocantins para Técnico em Enfermagem, com prova objetiva prevista para novembro de 2026.",
     "cor": "#2563EB",
     "source_identity": "ses-to|edital-001-2026-secad-ses-to|tecnico-enfermagem",
+    "catalog_batch": "Lote 06 — Reconstrução inicial — 04/08/2026",
     "disciplinas": [
       {
         "nome": "Língua Portuguesa",
@@ -129,6 +132,7 @@
     "descricao": "Concurso da Prefeitura Municipal de Nova Erechim para Assistente Administrativo, com uma vaga e prova objetiva prevista para outubro de 2026.",
     "cor": "#2563EB",
     "source_identity": "prefeitura-nova-erechim|edital-001-2026|assistente-administrativo",
+    "catalog_batch": "Lote 06 — Reconstrução inicial — 04/08/2026",
     "disciplinas": [
       {
         "nome": "Português",

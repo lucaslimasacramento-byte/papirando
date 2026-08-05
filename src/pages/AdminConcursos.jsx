@@ -296,6 +296,7 @@ const EMPTY_FORM = {
   status_concurso: 'edital_publicado',
   prova_data: '',
   imagem_url: '',
+  catalog_batch: '',
   edital_url: '',
   // Campos do modelo de vestibulares (híbrido)
   uf: '',
@@ -1030,6 +1031,7 @@ function buildFormFromTemplate(template) {
     status_concurso: normalizeImportedStatus(template.status_concurso || 'edital_publicado'),
     prova_data: template.prova_data || '',
     imagem_url: template.imagem_url || '',
+    catalog_batch: template.catalog_batch || '',
     edital_url: template.edital_url || '',
     tipo: template.tipo || 'concurso',
     uf: template.uf || '',
@@ -1092,9 +1094,11 @@ export default function AdminConcursos({
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
   const [publishingDraftId, setPublishingDraftId] = useState('');
+  const [publishingBatchId, setPublishingBatchId] = useState('');
   const [unpublishingId, setUnpublishingId] = useState('');
   const [uploadingLogoDraftId, setUploadingLogoDraftId] = useState('');
   const [draftQuery, setDraftQuery] = useState('');
+  const [draftBatchFilter, setDraftBatchFilter] = useState('todos');
   const [selectedDraftIds, setSelectedDraftIds] = useState(new Set());
   const [batchDeleting, setBatchDeleting] = useState(false);
   // Rascunhos carregados pelo PRÓPRIO AdminConcursos (import direto), sem depender de
@@ -1643,6 +1647,7 @@ export default function AdminConcursos({
     status_concurso: form.status_concurso,
     prova_data: form.prova_data,
     imagem_url: form.imagem_url.trim(),
+    catalog_batch: form.catalog_batch.trim() || null,
     edital_url: form.edital_url.trim(),
     tipo: form.tipo || 'concurso',
     uf: form.tipo === 'vestibular' && form.scope === 'estadual' ? (form.uf || '').toUpperCase().slice(0, 2) : null,
@@ -1701,6 +1706,7 @@ export default function AdminConcursos({
       status_concurso: statusConcurso,
       prova_data: provaData,
       imagem_url: cleanImportedValue(normalized.imagem_url || form.imagem_url),
+      catalog_batch: cleanImportedValue(normalized.catalog_batch || form.catalog_batch),
       edital_url: cleanImportedValue(normalized.edital_url || form.edital_url),
       disciplinas: (normalized.disciplinas || []).map((subject, subjectIndex) => ({
         nome: subject.nome,
@@ -2067,6 +2073,7 @@ export default function AdminConcursos({
     cor: template.cor || '#1e3a5f',
     descricao: template.descricao || '',
     imagem_url: template.imagem_url || '',
+    catalog_batch: template.catalog_batch || null,
     edital_url: template.edital_url || '',
     prova_data: template.prova_data || '',
     status_concurso: template.status_concurso || 'edital_publicado',
@@ -2128,6 +2135,45 @@ export default function AdminConcursos({
     }
   };
 
+  const handlePublishBatch = async (batch, drafts) => {
+    if (!batch || batch === 'Sem lote (legado)' || !drafts?.length) return;
+    const approved = await showConfirm(
+      `Publicar os ${drafts.length} rascunho(s) do lote "${batch}"? Eles ficarão visíveis para os alunos.`,
+      { title: 'Publicar lote revisado', confirmLabel: `Publicar ${drafts.length} itens` },
+    );
+    if (!approved) return;
+
+    setPublishingBatchId(batch);
+    const failures = [];
+    let published = 0;
+    try {
+      // A lista de rascunhos é leve; carrega cada conteúdo antes de salvar para não
+      // substituir disciplinas/tópicos por uma lista incompleta durante a publicação.
+      for (const draft of drafts) {
+        try {
+          const full = await ensureTemplateContent(draft);
+          await onUpdateTemplate?.(buildTemplatePayload(full, { is_public: true }));
+          published += 1;
+        } catch (error) {
+          failures.push(`${draft.nome}: ${error.message || 'erro desconhecido'}`);
+        }
+      }
+      setSelectedDraftIds((previous) => {
+        const next = new Set(previous);
+        drafts.forEach((draft) => next.delete(draft.id));
+        return next;
+      });
+      await reloadDrafts();
+      if (failures.length) {
+        toastError(`${published} item(ns) publicados; ${failures.length} falharam. ${failures[0]}`, 'Publicação parcial');
+      } else {
+        success(`Lote "${batch}" publicado: ${published} item(ns).`);
+      }
+    } finally {
+      setPublishingBatchId('');
+    }
+  };
+
   // Inverso de publicar: tira do catálogo público e devolve para a fila de rascunhos.
   const handleUnpublishTemplate = async (template) => {
     if (!template?.id) return;
@@ -2186,6 +2232,8 @@ export default function AdminConcursos({
     return 'outros';
   };
 
+  const draftBatchOf = (draft) => String(draft.catalog_batch || '').trim() || 'Sem lote (legado)';
+
   // Contagem por tipo (independe da busca/filtro) — para os botões de filtro.
   const draftCounts = React.useMemo(() => {
     const c = { todos: localDrafts.length, vestibular: 0, enem: 0, enem_inst: 0, concurso: 0, curso: 0, outros: 0 };
@@ -2193,40 +2241,50 @@ export default function AdminConcursos({
     return c;
   }, [localDrafts]);
 
-  // Rascunhos filtrados por busca, separados por bucket de tipo e sub-agrupados por área.
-  // Cada módulo (Concursos/Vestibulares/Faculdade) lê só o seu bucket.
+  // Rascunhos filtrados por busca, separados por tipo e agrupados por lote.
+  // O lote é a unidade de revisão/publicação; itens antigos sem marcação continuam acessíveis.
   const draftsByBucket = React.useMemo(() => {
     const q = draftQuery.trim().toLowerCase();
     const buckets = { vestibular: [], enem: [], enem_inst: [], concurso: [], curso: [], outros: [] };
     for (const d of localDrafts) {
       if (q && ![d.nome, d.concurso, d.cargo, d.banca, d.area].some((v) => String(v || '').toLowerCase().includes(q))) continue;
+      if (draftBatchFilter !== 'todos' && draftBatchOf(d) !== draftBatchFilter) continue;
       buckets[draftBucketOf(d)].push(d);
     }
     const grouped = {};
     let total = 0;
     for (const [key, items] of Object.entries(buckets)) {
       total += items.length;
-      const byArea = new Map();
+      const byBatch = new Map();
       for (const d of items) {
-        const a = String(d.area || '').trim() || 'Sem área';
-        if (!byArea.has(a)) byArea.set(a, []);
-        byArea.get(a).push(d);
+        const batch = draftBatchOf(d);
+        if (!byBatch.has(batch)) byBatch.set(batch, []);
+        byBatch.get(batch).push(d);
       }
       grouped[key] = {
         count: items.length,
-        areaGroups: [...byArea.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])),
+        batchGroups: [...byBatch.entries()].sort((a, b) => {
+          if (a[0] === 'Sem lote (legado)') return 1;
+          if (b[0] === 'Sem lote (legado)') return -1;
+          return a[0].localeCompare(b[0], 'pt-BR');
+        }),
       };
     }
     grouped.total = total;
     return grouped;
-  }, [localDrafts, draftQuery]);
+  }, [localDrafts, draftQuery, draftBatchFilter]);
 
   // Sub-página de rascunhos de um módulo (concurso | vestibular | curso).
   // Itens importados via código caem aqui — admin valida (edita) e publica.
   const renderRascunhos = (bucket, { singular = 'item' } = {}) => {
-    const data = draftsByBucket[bucket] || { count: 0, areaGroups: [] };
+    const data = draftsByBucket[bucket] || { count: 0, batchGroups: [] };
     const totalInBucket = localDrafts.filter((d) => draftBucketOf(d) === bucket).length;
-    const allVisibleIds = data.areaGroups.flatMap(([, items]) => items.map((d) => d.id));
+    const availableBatches = [...new Set(
+      localDrafts
+        .filter((draft) => draftBucketOf(draft) === bucket)
+        .map(draftBatchOf),
+    )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const allVisibleIds = data.batchGroups.flatMap(([, items]) => items.map((d) => d.id));
     const allVisibleSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedDraftIds.has(id));
     const someSelected = selectedDraftIds.size > 0;
     return (
@@ -2242,6 +2300,16 @@ export default function AdminConcursos({
               style={{ paddingLeft: 32, width: '100%' }}
             />
           </div>
+          <select
+            className="pl-input"
+            value={availableBatches.includes(draftBatchFilter) ? draftBatchFilter : 'todos'}
+            onChange={(event) => setDraftBatchFilter(event.target.value)}
+            aria-label="Filtrar rascunhos por lote"
+            style={{ flex: '0 1 280px', minWidth: 180 }}
+          >
+            <option value="todos">Todos os lotes</option>
+            {availableBatches.map((batch) => <option key={batch} value={batch}>{batch}</option>)}
+          </select>
           <p style={{ margin: 0, fontSize: 12, color: 'var(--pl-ink-3)' }}>
             {draftsLoading ? 'carregando…' : `${data.count} de ${totalInBucket} rascunho(s)`}
           </p>
@@ -2264,7 +2332,7 @@ export default function AdminConcursos({
 
         <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginBottom: 14, lineHeight: 1.5 }}>
           Itens importados ficam aqui como rascunho — <strong>invisíveis para os alunos</strong> até você publicar.
-          Clique no nome para revisar, envie a logotipo e clique em <strong>Publicar</strong> quando estiver pronto.
+          Revise um lote, envie logotipos se desejar e publique cada item ou o <strong>lote inteiro</strong> quando estiver pronto.
         </p>
 
         <div style={{ maxHeight: 520, overflowY: 'auto', borderRadius: 6, border: '1px solid var(--pl-rule-2)' }}>
@@ -2296,24 +2364,37 @@ export default function AdminConcursos({
                   {someSelected ? `${selectedDraftIds.size} selecionado(s)` : 'Selecionar todos'}
                 </span>
               </div>
-              {data.areaGroups.map(([area, items]) => (
-              <div key={area}>
-                {data.areaGroups.length > 1 && (
-                  <div style={{
+              {data.batchGroups.map(([batch, items]) => (
+              <div key={batch}>
+                <div style={{
                     position: 'sticky', top: 0, zIndex: 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '6px 14px',
                     background: 'var(--pl-bg-soft)',
                     borderBottom: '1px solid var(--pl-rule)',
                   }}>
-                    <p className="pl-eyebrow" style={{ margin: 0 }}>{area}</p>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--pl-ink-4)' }}>{items.length}</span>
-                  </div>
-                )}
+                    <div style={{ minWidth: 0 }}>
+                      <p className="pl-eyebrow" style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{batch}</p>
+                      <span style={{ fontSize: 10, color: 'var(--pl-ink-4)' }}>{items.length} rascunho(s)</span>
+                    </div>
+                    {batch !== 'Sem lote (legado)' && (
+                      <button
+                        type="button"
+                        className="pl-btn pl-btn-primary pl-btn-sm"
+                        onClick={() => handlePublishBatch(batch, items)}
+                        disabled={batchDeleting || Boolean(publishingBatchId) || Boolean(publishingDraftId)}
+                        title="Publicar todos os itens deste lote após revisão"
+                      >
+                        {publishingBatchId === batch ? <Loader2 size={13} className="pl-spin" /> : <Layers3 size={13} />}
+                        Publicar lote
+                      </button>
+                    )}
+                </div>
                 {items.map((draft) => {
                   const isPublishing = publishingDraftId === draft.id;
                   const isUploading = uploadingLogoDraftId === draft.id;
-                  const busy = isPublishing || isUploading || batchDeleting;
+                  const isBatchPublishing = publishingBatchId === batch;
+                  const busy = isPublishing || isUploading || batchDeleting || Boolean(publishingBatchId);
                   const isChecked = selectedDraftIds.has(draft.id);
                   return (
                     <div
@@ -2381,7 +2462,7 @@ export default function AdminConcursos({
                           <Pencil size={13} /> Editar
                         </button>
                         <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={() => handlePublishDraft(draft)} disabled={busy} title="Publicar no catálogo">
-                          {isPublishing ? <Loader2 size={13} className="pl-spin" /> : <Eye size={13} />} Publicar
+                          {isPublishing || isBatchPublishing ? <Loader2 size={13} className="pl-spin" /> : <Eye size={13} />} Publicar
                         </button>
                         <button type="button" onClick={() => handleDeleteSelected(draft)} disabled={busy} title={`Excluir ${draft.nome}`} style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', borderRadius: 4, padding: 4, lineHeight: 0 }}>
                           <Trash2 size={13} />

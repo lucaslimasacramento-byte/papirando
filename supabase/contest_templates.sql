@@ -23,6 +23,7 @@ create table if not exists public.contest_templates (
   prova_data date,
   edital_url text,
   imagem_url text,
+  catalog_batch text,
   origem text not null default 'catalogo',
   descricao text,
   is_public boolean not null default true,
@@ -36,6 +37,7 @@ alter table public.contest_templates add column if not exists status_concurso te
 alter table public.contest_templates add column if not exists prova_data date;
 alter table public.contest_templates add column if not exists edital_url text;
 alter table public.contest_templates add column if not exists imagem_url text;
+alter table public.contest_templates add column if not exists catalog_batch text;
 alter table public.contest_templates add column if not exists salario text;
 alter table public.contest_templates add column if not exists inscricao_valor text;
 alter table public.contest_templates add column if not exists escolaridade text;

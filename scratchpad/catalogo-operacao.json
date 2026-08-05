@@ -4,6 +4,7 @@
   "baseline": {
     "accept": "Concursos com edital oficial publicado e ainda úteis ao estudante: inscrições abertas ou prova futura com antecedência mínima definida no brief.",
     "exclude": "Certames encerrados, homologados, com prova passada ou sem fonte oficial verificável.",
+    "target_items_per_batch": "20-30",
     "max_items_per_run": 30
   },
   "daily": {
