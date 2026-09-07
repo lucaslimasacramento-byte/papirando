@@ -18,6 +18,80 @@
 
 ---
 
+## Sessão 2026-09-07 — Integração das branches de segurança + worklog em dia 🔧→✅
+
+O worklog estava parado em 2026-07-05 enquanto o código andou até 2026-08-05. Esta sessão fecha a lacuna (entradas abaixo, de 07/07 a 05/08) e resolve a dívida das branches de segurança.
+
+- **`security/mfa-ui` (SEC-008) integrada ✅** — merge na `catalogo/diario` (commit `137a738`). Traz `SecurityMFAPanel` (enroll TOTP na aba Segurança do Perfil) e `MFAChallengePanel` (challenge no login). A branch era de 21/05 e conflitava com 3 meses de mudanças; conflitos resolvidos **mantendo o código atual como base**:
+  - `Login.jsx`: preservado o login Google/username/CPF atual. Da branch entrou só a checagem de AAL (`getAuthenticatorAssuranceLevel`; `aal1` → `aal2` abre o challenge antes de `setIsAuthenticated`) e o render do painel.
+  - `Perfil.jsx`: preservado o layout atual da aba Segurança; `<SecurityMFAPanel />` entra acima do grid de cards.
+  - `SecurityMFAPanel`: card raiz migrado de classes hardcoded (`bg-white`, `border-slate-200`) para o token `pl-card`.
+  - Build OK.
+- **Auditoria das demais branches de segurança** — já estavam na `master`, não eram dívida:
+
+  | Branch | Situação real |
+  |---|---|
+  | `security/fase-1b-allowlist`, `security/fase-1b-para-main` | ✅ já em `master` |
+  | `security/fase-2-hardening` | ✅ já em `master` |
+  | `sec/csp-report-uri`, `sec/storage-buckets-versioning` | ✅ já em `master` |
+  | `sec/squad-invite-hardening` | ✅ conteúdo já aplicado — o único commit fora da linha principal (`1672042`) é o `storage_buckets.sql`, **idêntico** ao arquivo já versionado |
+  | `security/mfa-ui` | ✅ integrada nesta sessão |
+
+- ⚠️ **Ponto de atenção — `main` está morta.** O tronco real é a `master` (`origin/HEAD → master`), mas a `main` parou em 18/05 e as antigas PRs de segurança foram mergeadas nela. Ninguém deve trabalhar a partir da `main`; candidata a ser apagada ou re-apontada.
+- ⏳ **Falta para o MFA ficar de pé em produção:** validar o fluxo enroll → logout → login com challenge em conta real, e conferir se o Supabase Auth está com TOTP habilitado no projeto.
+- ⏳ **Polimento visual pendente:** a tipografia interna do `SecurityMFAPanel` ainda usa `slate-*` hardcoded (o card já usa token). Precisa de passada `pl-*` para ficar correto no dark mode.
+
+## Sessão 2026-08-02→05 — Reconstrução do catálogo de concursos por fontes oficiais 🚧
+
+Linha de trabalho mais recente antes desta sessão. Decisão registrada em [`docs/CATALOGO-ESTRATEGIA.md`](CATALOGO-ESTRATEGIA.md) para não ser rediscutida do zero.
+
+- **Princípio:** o catálogo **nunca** é alterado destrutivamente por processo automático. Coleta nova, correção de aluno e diff de robô geram sempre o mesmo artefato — proposta de revisão com evidência, esperando aprovação humana.
+- **Validador `scripts/validate_catalog_json.mjs`** — ganhou lista branca de fontes (`DOMINIOS_OFICIAIS`/`AGREGADORES`): `edital_url` só é aceito de órgão, banca ou diário oficial. Agregador (PCI, Gran, QConcursos, Estratégia...) é recusado com mensagem própria — serve para *descobrir* que existe edital, nunca para preencher dado. Domínio legítimo faltando: rodar com `EXTRA_DOMINIOS="dominio.br"`. Também ganhou janela de prova, profundidade mínima de tópicos e status `encerrado`.
+- **Três perfis de item, com exigência proporcional** (cobre o funil inteiro, não só quem já tem edital):
+  - **A · com edital** — `edital_publicado`/`inscricoes_abertas`/`prova_marcada`; conteúdo programático do edital vigente, obrigatório.
+  - **B · pré-edital** — `comissao_formada`/`banca_*`/`edital_iminente`; aceita conteúdo do **edital anterior**, marcado com `conteudo_provisorio` + `conteudo_fonte_url` (migration `202608030001_conteudo_provisorio.sql`; selo exibido em `ConcursoDetalhe.jsx`).
+  - **C · radar** — `previsto`/`autorizado` sem conteúdo; o item existe só para o aluno achar e acompanhar.
+- **Operação de coleta diária** — `scripts/catalog_daily_state.mjs` + estado em `scratchpad/` (`catalogo-fontes-monitoradas.json`, `catalogo-fontes-descoberta.json`, `catalogo-ja-coletado.json`, `catalogo-identidades-coletadas.json`, `catalogo-operacao.json`). Fase atual: `reconstrucao_inicial` (20–30 itens/lote, teto 30/rodada); rotina diária depois com janela de 48 h e teto de 5. Publicação sempre `manual_batch_review`.
+- **Reset + lotes importados** — `reset_catalogo_concursos_2026_08_04.sql` limpou a base para reconstruir com fonte verificável. Lotes 05 (base inicial), 06 (SES-TO + Nova Erechim), 07 (PCPR) e 08 (SEDUC-AL) gerados e organizados por data em `scratchpad/catalogo-diario/<data>/`, com gerador `scripts/gen_catalog_batch_sql.mjs`.
+- **Admin** — `AdminConcursos.jsx` passou a organizar rascunhos **por lote** (`api/contest-templates.js`, `contestCatalogApi.js`).
+- **Brief do Codex** — [`docs/BRIEF-CODEX-CATALOGO.md`](BRIEF-CODEX-CATALOGO.md) mantido em sincronia com as regras do validador; é o contrato de quem coleta.
+- ⚠️ **Não commitado (fica em `scratchpad/`, sem versionar):** `backup_catalogo_pre_faxina.json`, `faxina_catalogo.sql`, `zerar_catalogo_publico.sql`, `catalog_drafts_lote_04.sql`, `papirando_lote_04_tribunais_2026_08_02.json`. Decidir se entram no git ou se o backup vai para outro lugar.
+
+## Sessão 2026-08-03 — IA: Anthropic como provider principal 🔧→✅
+
+- `api/_ai.js` e `ai-server.mjs` reescritos com **Anthropic como provider principal**, modelo Sonnet 5. `.env.example` atualizado com as novas chaves.
+- `src/lib/aiSecurity.test.js` ampliado para cobrir o novo caminho.
+- **ENEM:** `Objetivos.jsx` esconde a escolha de instituição-alvo quando não há catálogo de instituições publicado (evitava seletor vazio).
+
+## Sessão 2026-07-31 — Exclusões com confirmação 🔧→✅
+
+Padronização do gesto destrutivo em três telas — sempre confirma antes e **não recarrega a página** depois (remove do state local):
+
+- `Comunidades.jsx` — exclusão de post.
+- Exclusões gerais — confirmação sem refetch da tela.
+- `Conciliador` — exclusão de comparação do histórico.
+
+## Sessão 2026-07-23 — Documentação de contexto reescrita 📄
+
+- `docs/context.md` reescrito para o estado atual do produto; referência de nome corrigida.
+- `docs/MARKETING.md` criado como documento dedicado (o conteúdo de marketing saiu do context.md).
+
+## Sessão 2026-07-14 — Disciplina só existe alimentada por um objetivo 🔧→✅
+
+- `Disciplinas.jsx` + `EditarDisciplinaModal.jsx`: disciplina solta deixa de existir — toda disciplina nasce vinculada a um objetivo. Fecha a inconsistência de disciplinas órfãs que não apareciam em plano nenhum.
+
+## Sessão 2026-07-07 — Auditoria de segurança: blindagem RLS + fase 1 🔧→✅
+
+Fecha o épico aberto pelo mega prompt de auditoria (`docs/AUDITORIA_ACHADOS.md`).
+
+- **RLS reconciliada com o banco real** — a migration `202607040001_blindagem_rls.sql` foi reescrita (de 132 para ~50 linhas): a versão original assumia tabelas/colunas que não existem no projeto. `src/App.jsx` ajustado junto.
+- **Migration `202607070001_blindagem_fase1.sql`** com os achados da fase 1:
+  - **Plano validado no servidor de IA** (`api/_ai.js`, `api/ai.js`) — o gate de plano deixa de ser só client-side.
+  - **`mind_maps` como recurso premium** no banco.
+  - **PII de indicação** — `ConvideGanhe.jsx` parou de expor dado pessoal de quem foi indicado.
+  - Dependências atualizadas (`package-lock.json`).
+- Validação de upload de redação endurecida (commit `1cbdfbc`).
+
 ## Sessão 2026-07-05 — Passo 4 da trilha: revisão espaçada por tópico (FSRS) 🚧→✅ (código)
 
 Retomado o plano pendente da trilha do Planejamento (Passos 1–3 já estavam ✅). Implementação estava pela metade no working tree; concluída nesta sessão:
@@ -621,4 +695,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-06-20 — import do catálogo CONCLUÍDO: 376 exames como rascunho no banco + área "Rascunhos" no admin para revisar/publicar*
+*Última atualização: 2026-09-07 — worklog reconciliado com os commits de jul/ago; branch security/mfa-ui (SEC-008) integrada; demais branches de segurança auditadas e já na master.*
