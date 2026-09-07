@@ -18,6 +18,23 @@
 
 ---
 
+## Sessão 2026-09-07 (parte 2) — Fila de propostas de revisão do catálogo 🚧
+
+Primeira metade do sistema de "trazer as atualizações dos concursos". Fecha a lacuna que o `catalog_daily_state.mjs` já apontava: ele detectava item alterado e escrevia em `scratchpad/catalogo-diario/atualizacoes-pendentes/`, mas o README dizia *"não gera SQL até existir suporte a revisões no catálogo"* — a atualização morria ali.
+
+**Decisão seguida:** a de `docs/CATALOGO-ESTRATEGIA.md` — robô de monitoramento e correção comunitária entregam o **mesmo artefato**, então é **uma** tabela e **uma** tela servindo os dois. Não construir duas.
+
+- **Migration `202609070001_contest_revisions.sql` (⚠️ NÃO APLICADA):**
+  - Tabela `contest_revisions`: alvo (`contest_template_id` ou `source_identity` no formato `orgao|edital|cargo` que o coletor já usa), `origem` (`robo`/`aluno`/`import`), `status` (`pendente`/`aprovada`/`recusada`), `changes` jsonb (patch proposto), `evidencia_url` + `evidencia_nota`, trilha de revisão (`reviewed_by`/`reviewed_at`/`review_nota`).
+  - Índice único parcial: **uma proposta pendente por (item, origem)** — o robô repropor a mesma coisa todo dia não infla a fila.
+  - RLS: admin faz tudo (`is_app_admin()`); aluno lê só o que propôs e só insere com `origem='aluno'` + `status='pendente'` — não dá para forjar proposta de robô pelo cliente.
+  - `apply_contest_revision(uuid, text)` — security definer, admin-only, com **allowlist de colunas** (mesmo padrão do SEC-001 no profileApi): `slug`, `id`, `is_public` e `origem` ficam fora do alcance do patch. `reject_contest_revision(uuid, text)` para recusa.
+- **`src/lib/contestRevisionsApi.js`:** `loadContestRevisions`, `countPendingRevisions`, `approveContestRevision`, `rejectContestRevision`, `proposeContestRevision` (caminho do aluno) + `buildRevisionDiff`, que compara proposto x atual e **descarta campo igual** — robô reenviar o registro inteiro não vira 20 linhas de "sem mudança".
+- **`src/components/AdminRevisoesPanel.jsx`:** terceira visão em Admin → Concursos, ao lado de Publicados/Rascunhos, com contador de pendentes. Diff campo a campo (antes riscado → depois), selo de origem, link para a fonte oficial, Aprovar/Recusar com `showConfirm`. Aprovar fica bloqueado se a proposta não tem item correspondente ou não difere em nada. Sem a migration aplicada, mostra aviso pedindo para rodar o SQL em vez de quebrar o admin.
+- Lint e build limpos. **Não verificado visualmente** — a tela fica atrás de login de admin.
+
+**Próximo passo (a segunda metade):** o coletor. Cron diário → lê `catalogo-fontes-monitoradas.json` → valida com `validate_catalog_json.mjs` → grava proposta em `contest_revisions` em vez de SQL no scratchpad. Motor de IA ainda a definir (a infra já existe em `api/_ai.js`, com Anthropic/Sonnet como provider principal). Restrição: Vercel Hobby roda cron 1x/dia — casa com a fase `daily` de 48 h já definida em `catalogo-operacao.json`.
+
 ## Sessão 2026-09-07 — Integração das branches de segurança + worklog em dia 🔧→✅
 
 O worklog estava parado em 2026-07-05 enquanto o código andou até 2026-08-05. Esta sessão fecha a lacuna (entradas abaixo, de 07/07 a 05/08) e resolve a dívida das branches de segurança.
@@ -699,4 +716,4 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS study_goal text;
 
 ---
 
-*Última atualização: 2026-09-07 — worklog reconciliado com os commits de jul/ago; branch security/mfa-ui (SEC-008) integrada; demais branches de segurança auditadas e já na master.*
+*Última atualização: 2026-09-07 — fila de propostas de revisão do catálogo (tabela + tela); migration 202609070001 pendente de aplicar.*

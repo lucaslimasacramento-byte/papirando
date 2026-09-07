@@ -39,6 +39,8 @@ import { supabase } from '../lib/supabase';
 import { loadContestDraftsFromSupabase, loadContestTemplateContent } from '../lib/contestCatalogApi';
 import { CONTEST_STATUS_OPTIONS, normalizeContestStatus } from '../lib/contestGrouping';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
+import AdminRevisoesPanel from '../components/AdminRevisoesPanel';
+import { countPendingRevisions } from '../lib/contestRevisionsApi';
 
 const DRAFT_STORAGE_KEY = 'papirando_admin_concurso_draft';
 const EDIT_TEMPLATE_STORAGE_KEY = 'papirando_admin_edit_contest_id';
@@ -1076,7 +1078,13 @@ export default function AdminConcursos({
   const [isContestModalOpen, setIsContestModalOpen] = useState(false);
   const [adminSection, setAdminSection] = useState('concursos');
   // Sub-visão de cada módulo: itens já no ar vs. rascunhos aguardando validação.
-  const [catalogView, setCatalogView] = useState('publicados'); // 'publicados' | 'rascunhos'
+  const [catalogView, setCatalogView] = useState('publicados'); // 'publicados' | 'rascunhos' | 'revisoes'
+  // Fila de propostas de correcao do catalogo (robo + aluno).
+  const [pendingRevisions, setPendingRevisions] = useState(0);
+  const refreshPendingRevisions = React.useCallback(() => {
+    countPendingRevisions(supabase).then(setPendingRevisions);
+  }, []);
+  useEffect(() => { refreshPendingRevisions(); }, [refreshPendingRevisions]);
   // Aba interna do modal de edição: 'dados' | 'midia' | 'etapas' | 'conteudo'.
   const [modalTab, setModalTab] = useState('dados');
   // null = prop ainda não chegou do Supabase; [] ou [...] = já carregou
@@ -2600,6 +2608,7 @@ export default function AdminConcursos({
             {[
               { id: 'publicados', label: 'Publicados', count: pubCount },
               { id: 'rascunhos', label: 'Rascunhos', count: draftCount },
+              { id: 'revisoes', label: 'Revisões', count: pendingRevisions },
             ].map((v) => {
               const active = catalogView === v.id;
               return (
@@ -2631,6 +2640,13 @@ export default function AdminConcursos({
 
       {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'rascunhos' &&
         renderRascunhos(contestSectionTipo, { singular: contestSectionNoun })}
+
+      {catalogView === 'revisoes' && (
+        <AdminRevisoesPanel
+          supabase={supabase}
+          onApplied={refreshPendingRevisions}
+        />
+      )}
 
       {(adminSection === 'concursos' || adminSection === 'vestibulares' || adminSection === 'enem' || adminSection === 'enem_inst') && catalogView === 'publicados' && (
       <div className="pl-card" style={{ padding: 20 }}>
