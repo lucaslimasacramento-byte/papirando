@@ -39,7 +39,11 @@ O worklog estava parado em 2026-07-05 enquanto o código andou até 2026-08-05. 
 
 - ⚠️ **Ponto de atenção — `main` está morta.** O tronco real é a `master` (`origin/HEAD → master`), mas a `main` parou em 18/05 e as antigas PRs de segurança foram mergeadas nela. Ninguém deve trabalhar a partir da `main`; candidata a ser apagada ou re-apontada.
 - ⏳ **Falta para o MFA ficar de pé em produção:** validar o fluxo enroll → logout → login com challenge em conta real, e conferir se o Supabase Auth está com TOTP habilitado no projeto.
-- ⏳ **Polimento visual pendente:** a tipografia interna do `SecurityMFAPanel` ainda usa `slate-*` hardcoded (o card já usa token). Precisa de passada `pl-*` para ficar correto no dark mode.
+- ✅ **Polimento visual concluído (mesma sessão):** os dois painéis do SEC-008 saíram do Tailwind hardcoded e passaram para o design system.
+  - `SecurityMFAPanel`: `pl-card` / `pl-card-paper`, `pl-eyebrow`, `pl-tag-success`/`pl-tag-warn` no selo Ativa/Inativa, `pl-input` no campo de 6 dígitos, `pl-btn`/`pl-btn-primary` nos botões, feedback em `--pl-success-soft`/`--pl-danger-soft`, tipografia em `--pl-ink`/`--pl-ink-3` e código secreto em `--pl-mono`. O fundo do QR fica branco fixo de propósito (leitor precisa do contraste no tema escuro) — comentado no código.
+  - `window.confirm` na remoção do fator trocado por `showConfirm` de `lib/dialogs` (`danger: true`), fechando o último diálogo nativo fora do padrão.
+  - **Bug de layering corrigido:** o `MFAChallengePanel` é um modal `fixed inset-0` com scrim, mas o merge o deixou como `return` antecipado do `Login` — o scrim cobria uma tela vazia. Agora ele renderiza **sobreposto** à tela de login, que fica visível atrás. O painel também foi migrado para `pl-*` (o Login já usa os tokens desde o redesign).
+  - Lint e build limpos.
 
 ## Sessão 2026-08-02→05 — Reconstrução do catálogo de concursos por fontes oficiais 🚧
 

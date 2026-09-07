@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { showConfirm } from '../lib/dialogs';
 
-const PRIMARY_BTN =
-  'inline-flex w-full items-center justify-center rounded-2xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:opacity-60 sm:w-auto';
-const SECONDARY_BTN =
-  'inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:opacity-60 sm:w-auto';
-const DANGER_BTN =
-  'rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60';
+const SOFT_BOX = {
+  borderRadius: 12,
+  border: '1px solid var(--pl-rule-2)',
+  background: 'var(--pl-bg-soft)',
+};
 
 function formatSecret(secret) {
   if (!secret) return '';
@@ -114,9 +114,10 @@ export default function SecurityMFAPanel() {
   const handleRemove = useCallback(
     async (factorId) => {
       if (!factorId) return;
-      const ok =
-        typeof window !== 'undefined' &&
-        window.confirm('Remover este fator de autenticação? Sua conta vai voltar a usar só senha.');
+      const ok = await showConfirm(
+        'Remover este fator de autenticação? Sua conta vai voltar a usar só senha.',
+        { title: 'Remover 2FA', confirmLabel: 'Remover', danger: true },
+      );
       if (!ok) return;
       setRemoveBusy(factorId);
       setFeedback({ type: '', message: '' });
@@ -136,47 +137,60 @@ export default function SecurityMFAPanel() {
 
   return (
     <div className="pl-card" style={{ padding: 20 }}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Segurança</p>
-          <h3 className="mt-2 text-xl font-bold text-slate-950">Autenticação em duas etapas (2FA)</h3>
-          <p className="mt-1 text-sm text-slate-600">
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 2 }}>Segurança</p>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', marginBottom: 4 }}>
+            Autenticação em duas etapas (2FA)
+          </h3>
+          <p style={{ fontSize: 12.5, color: 'var(--pl-ink-3)', lineHeight: 1.5 }}>
             Use um app autenticador (Google Authenticator, Authy, 1Password) para adicionar uma camada extra além da senha.
           </p>
         </div>
-        <span
-          className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
-            verified.length > 0 ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-          }`}
-        >
-          {verified.length > 0 ? 'ATIVA' : 'INATIVA'}
+        <span className={`pl-tag ${verified.length > 0 ? 'pl-tag-success' : 'pl-tag-warn'}`}>
+          {verified.length > 0 ? 'Ativa' : 'Inativa'}
         </span>
       </div>
 
       {feedback.message ? (
         <div
-          className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
-            feedback.type === 'success'
-              ? 'border-green-200 bg-green-50 text-green-800'
-              : 'border-red-200 bg-red-50 text-red-800'
-          }`}
+          style={{
+            marginTop: 14,
+            borderRadius: 12,
+            padding: '10px 14px',
+            fontSize: 12.5,
+            lineHeight: 1.5,
+            border: '1px solid var(--pl-rule-2)',
+            background: feedback.type === 'success' ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)',
+            color: feedback.type === 'success' ? 'var(--pl-success)' : 'var(--pl-danger)',
+          }}
         >
           {feedback.message}
         </div>
       ) : null}
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-500">Carregando...</p>
+        <p style={{ marginTop: 14, fontSize: 12.5, color: 'var(--pl-ink-3)' }}>Carregando...</p>
       ) : verified.length > 0 && !enrollment ? (
-        <div className="mt-5 space-y-3">
+        <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {verified.map((f) => (
             <div
               key={f.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+              style={{
+                ...SOFT_BOX,
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10,
+                padding: '10px 14px',
+              }}
             >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-900">{f.friendly_name || 'TOTP'}</p>
-                <p className="text-xs text-slate-500">
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {f.friendly_name || 'TOTP'}
+                </p>
+                <p style={{ marginTop: 3, fontSize: 11, color: 'var(--pl-ink-3)' }}>
                   Adicionado em {f.created_at ? new Date(f.created_at).toLocaleDateString('pt-BR') : '—'}
                 </p>
               </div>
@@ -184,31 +198,59 @@ export default function SecurityMFAPanel() {
                 type="button"
                 onClick={() => handleRemove(f.id)}
                 disabled={removeBusy === f.id}
-                className={DANGER_BTN}
+                className="pl-btn pl-btn-sm"
+                style={{ color: 'var(--pl-danger)', opacity: removeBusy === f.id ? 0.6 : 1 }}
               >
                 {removeBusy === f.id ? 'Removendo...' : 'Remover'}
               </button>
             </div>
           ))}
-          <p className="text-xs text-slate-500">
+          <p style={{ fontSize: 11, color: 'var(--pl-ink-3)' }}>
             Para trocar de app autenticador, remova o fator atual e ative novamente.
           </p>
         </div>
       ) : enrollment ? (
-        <div className="mt-5 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <p className="text-sm font-semibold text-slate-900">1. Escaneie o QR no seu app autenticador</p>
+        <div className="pl-card-paper" style={{ marginTop: 14, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
+            1. Escaneie o QR no seu app autenticador
+          </p>
+          {/* Fundo branco fixo de propósito: leitor de QR precisa do contraste, inclusive no tema escuro. */}
           <div
-            className="mx-auto flex max-w-[220px] items-center justify-center rounded-2xl bg-white p-3"
+            style={{
+              margin: '0 auto',
+              display: 'flex',
+              maxWidth: 220,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+              border: '1px solid var(--pl-rule-2)',
+              background: '#ffffff',
+              padding: 12,
+            }}
             dangerouslySetInnerHTML={{ __html: enrollment.qr }}
           />
-          <details className="text-xs text-slate-600">
-            <summary className="cursor-pointer">Não consegue escanear? Cole este código no app</summary>
-            <p className="mt-2 break-all rounded-2xl bg-white px-3 py-2 font-mono text-xs text-slate-900">
+          <details style={{ fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            <summary style={{ cursor: 'pointer' }}>Não consegue escanear? Cole este código no app</summary>
+            <p
+              style={{
+                marginTop: 8,
+                wordBreak: 'break-all',
+                borderRadius: 10,
+                border: '1px solid var(--pl-rule-2)',
+                background: 'var(--pl-surface)',
+                padding: '8px 12px',
+                fontFamily: 'var(--pl-mono)',
+                fontSize: 12,
+                color: 'var(--pl-ink)',
+              }}
+            >
               {formatSecret(enrollment.secret)}
             </p>
           </details>
 
-          <p className="text-sm font-semibold text-slate-900">2. Digite o código de 6 dígitos exibido no app</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
+            2. Digite o código de 6 dígitos exibido no app
+          </p>
           <input
             type="text"
             inputMode="numeric"
@@ -217,26 +259,41 @@ export default function SecurityMFAPanel() {
             value={verifyCode}
             onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
-            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-center font-mono text-lg tracking-[0.4em] text-slate-900 focus:border-blue-500 focus:outline-none"
+            className="pl-input"
+            style={{
+              width: '100%',
+              height: 42,
+              textAlign: 'center',
+              fontFamily: 'var(--pl-mono)',
+              fontSize: 17,
+              letterSpacing: '0.4em',
+            }}
             autoComplete="one-time-code"
           />
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={cancelEnroll} className={SECONDARY_BTN} disabled={verifyBusy}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' }}>
+            <button type="button" onClick={cancelEnroll} className="pl-btn" disabled={verifyBusy} style={{ opacity: verifyBusy ? 0.6 : 1 }}>
               Cancelar
             </button>
             <button
               type="button"
               onClick={submitVerify}
               disabled={verifyBusy || verifyCode.length !== 6}
-              className={PRIMARY_BTN}
+              className="pl-btn pl-btn-primary"
+              style={{ opacity: verifyBusy || verifyCode.length !== 6 ? 0.6 : 1 }}
             >
               {verifyBusy ? 'Verificando...' : 'Ativar 2FA'}
             </button>
           </div>
         </div>
       ) : (
-        <div className="mt-5">
-          <button type="button" onClick={startEnroll} disabled={enrollBusy} className={PRIMARY_BTN}>
+        <div style={{ marginTop: 14 }}>
+          <button
+            type="button"
+            onClick={startEnroll}
+            disabled={enrollBusy}
+            className="pl-btn pl-btn-primary"
+            style={{ opacity: enrollBusy ? 0.6 : 1 }}
+          >
             {enrollBusy ? 'Preparando...' : 'Ativar autenticação em duas etapas'}
           </button>
         </div>

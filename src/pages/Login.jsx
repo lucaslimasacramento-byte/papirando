@@ -371,21 +371,6 @@ export default function Login({
     }
   };
 
-if (mfaChallengeRequired) {
-  return (
-    <MFAChallengePanel
-      onSuccess={() => {
-        setMfaChallengeRequired(false);
-        setIsAuthenticated(true);
-      }}
-      onCancel={() => {
-        setMfaChallengeRequired(false);
-      }}
-    />
-  );
-}
-
-
   return (
     <>
     <style>{`
@@ -1015,6 +1000,18 @@ if (mfaChallengeRequired) {
       </div>
       </div>
     </div>
+      {/* SEC-008: challenge TOTP sobreposto a tela de login, preservando o fundo da marca */}
+      {mfaChallengeRequired && (
+        <MFAChallengePanel
+          onSuccess={() => {
+            setMfaChallengeRequired(false);
+            setIsAuthenticated(true);
+          }}
+          onCancel={() => {
+            setMfaChallengeRequired(false);
+          }}
+        />
+      )}
     </>
   );
 }
