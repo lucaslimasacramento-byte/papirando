@@ -17,7 +17,9 @@
     "supabase:login": "npx supabase login",
     "supabase:link": "npx supabase link",
     "vercel:preview": "npx --yes vercel",
-    "vercel:prod": "npx --yes vercel --prod"
+    "vercel:prod": "npx --yes vercel --prod",
+    "catalogo:coletar": "node scripts/catalog_collect.mjs",
+    "catalogo:coletar:seco": "node scripts/catalog_collect.mjs --dry-run"
   },
   "dependencies": {
     "@sentry/react": "^10.51.0",
