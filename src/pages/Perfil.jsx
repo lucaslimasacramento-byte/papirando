@@ -26,6 +26,7 @@ import { isValidCpf, normalizeCpf, PROGRESS_METRIC_OPTIONS } from '../lib/profil
 import { normalizeUsername, validateUsername, USERNAME_MAX_LENGTH } from '../lib/usernameRules';
 import { startCheckout } from '../lib/subscriptionApi';
 import { showAlert, showConfirm, showToast } from '../lib/dialogs';
+import SecurityMFAPanel from '../components/SecurityMFAPanel';
 
 const navItems = [
   { id: 'overview', label: 'Visão geral', icon: User2 },
@@ -1192,6 +1193,10 @@ export default function Perfil(props) {
                 />
 
                 <div style={{ minHeight: 0, overflowY: 'auto', overflowX: 'hidden', paddingRight: 4, paddingBottom: 16 }}>
+                  <div style={{ marginBottom: 12 }}>
+                    <SecurityMFAPanel />
+                  </div>
+
                   <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)' }}>
 
                     {/* Identidade + LGPD + Perigo */}

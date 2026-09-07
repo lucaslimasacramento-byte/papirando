@@ -3,6 +3,7 @@ import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Bookmark, MessageSquar
 import { supabase } from '../lib/supabase';
 import { normalizeReferralCode } from '../lib/referrals';
 import { registerFreeAccount } from '../lib/registerApi';
+import MFAChallengePanel from '../components/MFAChallengePanel';
 import { updateProfile } from '../lib/profileApi';
 import { normalizeUsername, validateUsername, USERNAME_MAX_LENGTH } from '../lib/usernameRules';
 
@@ -144,6 +145,7 @@ export default function Login({
   const [googleReady, setGoogleReady] = useState(false);
   const googleButtonRef = useRef(null);
   const googleNonceRef = useRef({ raw: '', hashed: '' });
+  const [mfaChallengeRequired, setMfaChallengeRequired] = useState(false);
 
   useEffect(() => {
     const normalizedInitialCode = normalizeReferralCode(initialReferralCode);
@@ -326,6 +328,18 @@ export default function Login({
       if (isLoginMode) {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
+
+        // SEC-008: se a conta exige aal2 (MFA TOTP), abre o challenge antes de liberar acesso
+        try {
+          const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (aal?.currentLevel === 'aal1' && aal?.nextLevel === 'aal2') {
+            setMfaChallengeRequired(true);
+            return;
+          }
+        } catch (mfaError) {
+          console.warn('[Login] falha ao verificar AAL, prosseguindo:', mfaError);
+        }
+
         setIsAuthenticated(true);
         return;
       }
@@ -356,6 +370,21 @@ export default function Login({
       setLoading(false);
     }
   };
+
+if (mfaChallengeRequired) {
+  return (
+    <MFAChallengePanel
+      onSuccess={() => {
+        setMfaChallengeRequired(false);
+        setIsAuthenticated(true);
+      }}
+      onCancel={() => {
+        setMfaChallengeRequired(false);
+      }}
+    />
+  );
+}
+
 
   return (
     <>
