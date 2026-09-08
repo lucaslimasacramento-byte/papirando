@@ -113,7 +113,17 @@ async function pedirLote() {
       max_tokens: 16000,
       // Busca na web é o que torna a coleta possível: sem ela o modelo inventa
       // edital, que é exatamente o que a lista branca de fontes existe para barrar.
-      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 40 }],
+      //
+      // Custo: US$ 10 por 1.000 buscas + os resultados entram como input token e
+      // se acumulam a cada iteração do turno. Por isso duas escolhas aqui:
+      // - _20260209 filtra os resultados por código ANTES de entrarem no contexto
+      //   (dynamic filtering), que é o que segura a conta de token;
+      // - max_uses amarrado ao teto de itens da fase, em vez de um número fixo alto.
+      tools: [{
+        type: 'web_search_20260209',
+        name: 'web_search',
+        max_uses: Number(env('MAX_BUSCAS', Math.min(40, maxItens * 3))),
+      }],
       messages: [{ role: 'user', content: montarPrompt() }],
     }),
   });
