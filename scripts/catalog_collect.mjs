@@ -37,6 +37,24 @@ const HOJE = new Date().toISOString().slice(0, 10);
 const readJson = (file, fallback = null) =>
   fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback;
 
+// Node puro não lê .env/.env.local sozinho e o projeto não usa dotenv — mesmo
+// carregador manual do ai-server.mjs. Variável já exportada no shell vence o
+// arquivo; .env.local vence .env.
+function carregarEnv(arquivo) {
+  if (!fs.existsSync(arquivo)) return;
+  for (const linha of fs.readFileSync(arquivo, 'utf8').split(/\r?\n/)) {
+    const texto = linha.trim();
+    if (!texto || texto.startsWith('#')) continue;
+    const corte = texto.indexOf('=');
+    if (corte === -1) continue;
+    const chave = texto.slice(0, corte).trim();
+    const valor = texto.slice(corte + 1).trim().replace(/^['"]|['"]$/g, '');
+    if (chave && process.env[chave] === undefined) process.env[chave] = valor;
+  }
+}
+carregarEnv(path.join(ROOT, '.env.local'));
+carregarEnv(path.join(ROOT, '.env'));
+
 const env = (name, fallback = '') => String(process.env[name] || fallback).trim();
 
 function abortar(mensagem) {
