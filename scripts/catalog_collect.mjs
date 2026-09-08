@@ -70,7 +70,15 @@ const fase = operacao.phase === 'daily' ? 'daily' : 'reconstrucao_inicial';
 const regras = operacao[fase === 'daily' ? 'daily' : 'baseline'] || {};
 const maxItens = Number(env('MAX_ITENS', regras.max_items_per_run || 5));
 
-const monitoradas = readJson(path.join(SCRATCH, 'catalogo-fontes-monitoradas.json'), []);
+const monitoradasTodas = readJson(path.join(SCRATCH, 'catalogo-fontes-monitoradas.json'), []);
+// docs/CATALOGO-ESTRATEGIA.md, estágio 2: "começar com 3 a 5 fontes HTML, não 20 a 30 —
+// e preferir bancas a órgãos". Mandar a lista inteira faz o modelo gastar o orçamento de
+// busca em largura e voltar de mãos vazias. Bancas primeiro, teto configurável.
+const ehBanca = (f) => /banca|cebraspe|fgv|fcc|ibfc|aocp|vunesp|quadrix|idecan|consulplan|cesgranrio/i
+  .test(JSON.stringify(f));
+const TETO_FONTES = Number(env('MAX_FONTES', 5));
+const listaMonitoradas = Array.isArray(monitoradasTodas) ? monitoradasTodas : (monitoradasTodas?.fontes || []);
+const monitoradas = [...listaMonitoradas].sort((a, b) => Number(ehBanca(b)) - Number(ehBanca(a))).slice(0, TETO_FONTES);
 const descoberta = readJson(path.join(SCRATCH, 'catalogo-fontes-descoberta.json'), []);
 const jaColetado = readJson(path.join(SCRATCH, 'catalogo-ja-coletado.json'), []);
 
@@ -110,8 +118,20 @@ function montarPrompt() {
     jaColetado.join(', ') || '(nada ainda)',
     '',
     '## Formato da resposta',
-    'Responda APENAS com o array JSON, sem cercas de código, sem comentário antes ou depois.',
-    'Todo item precisa de "source_identity" no formato orgao|numero-do-edital|cargo.',
+    'Responda APENAS com um objeto JSON, sem cercas de código e sem texto fora dele:',
+    '{ "itens": [...], "resumo": "...", "descartados": [{ "nome": "...", "motivo": "..." }] }',
+    '- "itens": os concursos no formato do brief. Todo item precisa de "source_identity"',
+    '  no formato orgao|numero-do-edital|cargo.',
+    '- "resumo": uma frase sobre o que voce encontrou. Se "itens" vier vazio, explique',
+    '  aqui POR QUE: acabaram as buscas, nada passou nas regras, fonte fora do ar, etc.',
+    '- "descartados": o que voce achou mas nao entregou, com o motivo de cada um.',
+    '',
+    'Use web_search para DESCOBRIR o edital e web_fetch para ABRIR o documento e ler o',
+    'anexo de conteúdo programático. Não tente extrair tópicos de trecho de busca nem de',
+    'blog de cursinho: abra o edital oficial.',
+    '',
+    'Prefira POUCOS itens completos a muitos rasos. Se as buscas acabarem antes de',
+    'completar um item, entregue o que estiver completo e diga isso no resumo.',
   ].filter(Boolean).join('\n');
 }
 
@@ -125,10 +145,19 @@ async function pedirLote() {
       'content-type': 'application/json',
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
+      // Chave de organização (não presa a um workspace) exige dizer qual usar.
+      // Chave criada dentro de um workspace dispensa o header.
+      ...(env('ANTHROPIC_WORKSPACE_ID')
+        ? { 'anthropic-workspace-id': env('ANTHROPIC_WORKSPACE_ID') }
+        : {}),
     },
     body: JSON.stringify({
       model: env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
       max_tokens: 16000,
+      // Streaming não é enfeite: a coleta com dezenas de buscas passa dos 300 s
+      // que o Node dá para os headers da resposta, e sem stream o fetch estoura
+      // com UND_ERR_HEADERS_TIMEOUT antes de o modelo terminar.
+      stream: true,
       // Busca na web é o que torna a coleta possível: sem ela o modelo inventa
       // edital, que é exatamente o que a lista branca de fontes existe para barrar.
       //
@@ -137,11 +166,24 @@ async function pedirLote() {
       // - _20260209 filtra os resultados por código ANTES de entrarem no contexto
       //   (dynamic filtering), que é o que segura a conta de token;
       // - max_uses amarrado ao teto de itens da fase, em vez de um número fixo alto.
-      tools: [{
-        type: 'web_search_20260209',
-        name: 'web_search',
-        max_uses: Number(env('MAX_BUSCAS', Math.min(40, maxItens * 3))),
-      }],
+      tools: [
+        {
+          type: 'web_search_20260209',
+          name: 'web_search',
+          max_uses: Number(env('MAX_BUSCAS', Math.min(60, maxItens * 10))),
+        },
+        // Busca devolve trecho, não documento. Sem web_fetch o modelo nunca abre o
+        // Anexo III do edital, e o brief exige 10+ tópicos por disciplina vindos do
+        // anexo — foi exatamente onde as primeiras rodadas travaram. max_content_tokens
+        // limita o quanto de cada PDF entra no contexto.
+        {
+          type: 'web_fetch_20260209',
+          name: 'web_fetch',
+          max_uses: Number(env('MAX_FETCHES', Math.min(30, maxItens * 6))),
+          max_content_tokens: Number(env('MAX_TOKENS_DOC', 40000)),
+          citations: { enabled: true },
+        },
+      ],
       messages: [{ role: 'user', content: montarPrompt() }],
     }),
   });
@@ -150,26 +192,71 @@ async function pedirLote() {
     abortar(`Anthropic respondeu ${resposta.status}: ${(await resposta.text()).slice(0, 400)}`);
   }
 
-  const payload = await resposta.json();
-  const texto = (payload.content || [])
-    .filter((bloco) => bloco.type === 'text')
-    .map((bloco) => bloco.text)
-    .join('\n')
-    .trim();
+  // Junta os text_delta do SSE. Os blocos de busca passam por aqui também, mas
+  // só o texto interessa — o JSON final sai nele.
+  let texto = '';
+  let buscas = 0;
+  let motivoParada = '';
+  let restante = '';
+  const decoder = new TextDecoder();
+
+  for await (const pedaco of resposta.body) {
+    restante += decoder.decode(pedaco, { stream: true });
+    const linhas = restante.split('\n');
+    restante = linhas.pop() || '';
+
+    for (const linha of linhas) {
+      if (!linha.startsWith('data:')) continue;
+      const dados = linha.slice(5).trim();
+      if (!dados || dados === '[DONE]') continue;
+
+      let evento;
+      try {
+        evento = JSON.parse(dados);
+      } catch {
+        continue;
+      }
+
+      if (evento.type === 'content_block_delta' && evento.delta?.type === 'text_delta') {
+        texto += evento.delta.text;
+      } else if (evento.type === 'content_block_start' && evento.content_block?.name === 'web_search') {
+        buscas += 1;
+        process.stdout.write(`\rbuscas: ${buscas}`);
+      } else if (evento.type === 'message_delta' && evento.delta?.stop_reason) {
+        motivoParada = evento.delta.stop_reason;
+      } else if (evento.type === 'error') {
+        abortar(`stream interrompido: ${JSON.stringify(evento.error).slice(0, 300)}`);
+      }
+    }
+  }
+  if (buscas) process.stdout.write('\n');
+  texto = texto.trim();
 
   // O modelo às vezes embrulha em cerca de código mesmo sendo instruído a não fazer.
   const limpo = texto.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
-  const inicio = limpo.indexOf('[');
-  const fim = limpo.lastIndexOf(']');
-  if (inicio === -1 || fim === -1) abortar(`resposta sem array JSON:\n${limpo.slice(0, 500)}`);
+  // Aceita o envelope { itens, resumo, descartados } e também um array puro,
+  // que é o formato que o brief descreve para entrega manual.
+  const abre = limpo.search(/[[{]/);
+  const fecha = Math.max(limpo.lastIndexOf(']'), limpo.lastIndexOf('}'));
+  if (abre === -1 || fecha === -1) abortar(`resposta sem JSON:\n${limpo.slice(0, 500)}`);
 
+  let dados;
   try {
-    const itens = JSON.parse(limpo.slice(inicio, fim + 1));
-    if (!Array.isArray(itens)) abortar('a raiz da resposta não é um array.');
-    return itens;
+    dados = JSON.parse(limpo.slice(abre, fecha + 1));
   } catch (error) {
     abortar(`JSON inválido na resposta: ${error.message}`);
   }
+
+  const itens = Array.isArray(dados) ? dados : dados?.itens;
+  if (!Array.isArray(itens)) abortar(`resposta sem a lista "itens":\n${limpo.slice(0, 500)}`);
+
+  return {
+    itens,
+    resumo: Array.isArray(dados) ? '' : String(dados?.resumo || ''),
+    descartados: Array.isArray(dados?.descartados) ? dados.descartados : [],
+    textoBruto: texto,
+    buscas,
+  };
 }
 
 // ── 2. Validação: roda o validador existente, sem tocar nele ────────────────
@@ -267,9 +354,19 @@ async function gravarPropostas(itens) {
 }
 
 // ── Execução ────────────────────────────────────────────────────────────────
-const itens = await pedirLote();
+const { itens, resumo, descartados, textoBruto, buscas } = await pedirLote();
+console.log(`\n${buscas} busca(s) · custo estimado das buscas: US$ ${(buscas * 0.01).toFixed(2)}`);
+if (resumo) console.log(`resumo do coletor: ${resumo}`);
+for (const d of descartados || []) console.log(`  descartado — ${d?.nome || '?'}: ${d?.motivo || 'sem motivo'}`);
+
 if (itens.length === 0) {
-  console.log('sem editais novos hoje');
+  // Lote vazio depois de dezenas de buscas quase sempre é regra apertada demais,
+  // não ausência de edital. Guarda a resposta crua para dar para inspecionar.
+  const destinoVazio = path.join(SCRATCH, 'catalogo-diario', HOJE);
+  fs.mkdirSync(destinoVazio, { recursive: true });
+  const bruto = path.join(destinoVazio, `resposta_vazia_${HOJE}.txt`);
+  fs.writeFileSync(bruto, textoBruto, 'utf8');
+  console.log(`sem editais novos hoje — resposta crua em ${path.relative(ROOT, bruto)}`);
   process.exit(0);
 }
 
