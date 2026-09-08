@@ -135,7 +135,7 @@ function montarPrompt() {
   ].filter(Boolean).join('\n');
 }
 
-async function pedirLote() {
+async function chamarModelo(mensagens) {
   const apiKey = env('ANTHROPIC_API_KEY');
   if (!apiKey) abortar('ANTHROPIC_API_KEY não configurada.');
 
@@ -158,24 +158,21 @@ async function pedirLote() {
       // que o Node dá para os headers da resposta, e sem stream o fetch estoura
       // com UND_ERR_HEADERS_TIMEOUT antes de o modelo terminar.
       stream: true,
-      // Busca na web é o que torna a coleta possível: sem ela o modelo inventa
-      // edital, que é exatamente o que a lista branca de fontes existe para barrar.
-      //
-      // Custo: US$ 10 por 1.000 buscas + os resultados entram como input token e
-      // se acumulam a cada iteração do turno. Por isso duas escolhas aqui:
-      // - _20260209 filtra os resultados por código ANTES de entrarem no contexto
-      //   (dynamic filtering), que é o que segura a conta de token;
-      // - max_uses amarrado ao teto de itens da fase, em vez de um número fixo alto.
       tools: [
+        // Busca na web é o que torna a coleta possível: sem ela o modelo inventa
+        // edital, que é o que a lista branca de fontes existe para barrar.
+        //
+        // Custo: US$ 10 por 1.000 buscas + os resultados entram como input token.
+        // A variante _20260209 filtra os resultados por código antes de entrarem
+        // no contexto (dynamic filtering), que é o que segura a conta de token.
         {
           type: 'web_search_20260209',
           name: 'web_search',
           max_uses: Number(env('MAX_BUSCAS', Math.min(60, maxItens * 10))),
         },
-        // Busca devolve trecho, não documento. Sem web_fetch o modelo nunca abre o
-        // Anexo III do edital, e o brief exige 10+ tópicos por disciplina vindos do
-        // anexo — foi exatamente onde as primeiras rodadas travaram. max_content_tokens
-        // limita o quanto de cada PDF entra no contexto.
+        // Busca devolve trecho, não documento. Sem web_fetch o modelo nunca abre
+        // o Anexo III do edital, e o brief exige 10+ tópicos por disciplina vindos
+        // do anexo — foi exatamente onde as primeiras rodadas travaram.
         {
           type: 'web_fetch_20260209',
           name: 'web_fetch',
@@ -184,7 +181,7 @@ async function pedirLote() {
           citations: { enabled: true },
         },
       ],
-      messages: [{ role: 'user', content: montarPrompt() }],
+      messages: mensagens,
     }),
   });
 
@@ -192,11 +189,12 @@ async function pedirLote() {
     abortar(`Anthropic respondeu ${resposta.status}: ${(await resposta.text()).slice(0, 400)}`);
   }
 
-  // Junta os text_delta do SSE. Os blocos de busca passam por aqui também, mas
-  // só o texto interessa — o JSON final sai nele.
-  let texto = '';
-  let buscas = 0;
-  let motivoParada = '';
+  // Remonta os content blocks a partir do SSE. Precisa ser fiel: para continuar
+  // um pause_turn a mensagem do assistente volta INTEIRA, e os resultados de
+  // busca carregam encrypted_content que a API recusa se vier alterado.
+  const blocos = [];
+  const jsonParcial = new Map();
+  let stopReason = '';
   let restante = '';
   const decoder = new TextDecoder();
 
@@ -217,19 +215,89 @@ async function pedirLote() {
         continue;
       }
 
-      if (evento.type === 'content_block_delta' && evento.delta?.type === 'text_delta') {
-        texto += evento.delta.text;
-      } else if (evento.type === 'content_block_start' && evento.content_block?.name === 'web_search') {
-        buscas += 1;
-        process.stdout.write(`\rbuscas: ${buscas}`);
-      } else if (evento.type === 'message_delta' && evento.delta?.stop_reason) {
-        motivoParada = evento.delta.stop_reason;
-      } else if (evento.type === 'error') {
-        abortar(`stream interrompido: ${JSON.stringify(evento.error).slice(0, 300)}`);
+      switch (evento.type) {
+        case 'content_block_start': {
+          blocos[evento.index] = JSON.parse(JSON.stringify(evento.content_block));
+          if (evento.content_block?.type === 'tool_use' || evento.content_block?.type === 'server_tool_use') {
+            jsonParcial.set(evento.index, '');
+            if (evento.content_block?.name === 'web_search') process.stdout.write('.');
+            if (evento.content_block?.name === 'web_fetch') process.stdout.write('o');
+          }
+          break;
+        }
+        case 'content_block_delta': {
+          const bloco = blocos[evento.index];
+          if (!bloco) break;
+          if (evento.delta?.type === 'text_delta') {
+            bloco.text = (bloco.text || '') + evento.delta.text;
+          } else if (evento.delta?.type === 'input_json_delta') {
+            jsonParcial.set(evento.index, (jsonParcial.get(evento.index) || '') + evento.delta.partial_json);
+          }
+          break;
+        }
+        case 'content_block_stop': {
+          const cru = jsonParcial.get(evento.index);
+          if (cru !== undefined && blocos[evento.index]) {
+            try {
+              blocos[evento.index].input = cru ? JSON.parse(cru) : {};
+            } catch {
+              blocos[evento.index].input = {};
+            }
+            jsonParcial.delete(evento.index);
+          }
+          break;
+        }
+        case 'message_delta': {
+          if (evento.delta?.stop_reason) stopReason = evento.delta.stop_reason;
+          break;
+        }
+        case 'error':
+          abortar(`stream interrompido: ${JSON.stringify(evento.error).slice(0, 300)}`);
+          break;
+        default:
+          break;
       }
     }
   }
-  if (buscas) process.stdout.write('\n');
+
+  return { blocos: blocos.filter(Boolean), stopReason };
+}
+
+async function pedirLote() {
+  const mensagens = [{ role: 'user', content: montarPrompt() }];
+  const MAX_RETOMADAS = Number(env('MAX_RETOMADAS', 8));
+
+  let texto = '';
+  let buscas = 0;
+  let fetches = 0;
+  let retomadas = 0;
+  let stopReason = '';
+
+  // pause_turn: a API interrompe um turno longo e devolve a resposta pela metade.
+  // Para continuar, a mensagem do assistente volta inalterada e o modelo retoma
+  // de onde parou. Repete até end_turn (ou até o teto, para não rodar sem fim).
+  for (;;) {
+    const resultado = await chamarModelo(mensagens);
+    stopReason = resultado.stopReason;
+
+    for (const bloco of resultado.blocos) {
+      if (bloco.type === 'text') texto += bloco.text || '';
+      if (bloco.type === 'server_tool_use' && bloco.name === 'web_search') buscas += 1;
+      if (bloco.type === 'server_tool_use' && bloco.name === 'web_fetch') fetches += 1;
+    }
+
+    if (stopReason !== 'pause_turn') break;
+
+    retomadas += 1;
+    if (retomadas > MAX_RETOMADAS) {
+      console.error(`\nAVISO: ${MAX_RETOMADAS} retomadas sem concluir; seguindo com o que veio.`);
+      break;
+    }
+    process.stdout.write(`\n[pause_turn ${retomadas}/${MAX_RETOMADAS}] retomando\n`);
+    mensagens.push({ role: 'assistant', content: resultado.blocos });
+  }
+
+  process.stdout.write('\n');
   texto = texto.trim();
 
   // O modelo às vezes embrulha em cerca de código mesmo sendo instruído a não fazer.
@@ -238,7 +306,12 @@ async function pedirLote() {
   // que é o formato que o brief descreve para entrega manual.
   const abre = limpo.search(/[[{]/);
   const fecha = Math.max(limpo.lastIndexOf(']'), limpo.lastIndexOf('}'));
-  if (abre === -1 || fecha === -1) abortar(`resposta sem JSON:\n${limpo.slice(0, 500)}`);
+  if (abre === -1 || fecha === -1) {
+    abortar(
+      `resposta sem JSON (stop_reason: ${stopReason || 'desconhecido'}, ` +
+      `${retomadas} retomada(s)). Texto recebido: ${limpo.slice(0, 300) || '(vazio)'}`
+    );
+  }
 
   let dados;
   try {
@@ -256,8 +329,11 @@ async function pedirLote() {
     descartados: Array.isArray(dados?.descartados) ? dados.descartados : [],
     textoBruto: texto,
     buscas,
+    fetches,
+    retomadas,
   };
 }
+
 
 // ── 2. Validação: roda o validador existente, sem tocar nele ────────────────
 function validar(arquivo) {
