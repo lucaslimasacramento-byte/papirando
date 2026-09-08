@@ -18,6 +18,17 @@
 
 ---
 
+## Sessão 2026-09-07 (parte 3) — Coletor automático: PARADO por custo ⛔
+
+Tentativa de automatizar a coleta com a API da Anthropic (busca web + web_fetch). **Não seguir por aqui sem antes resolver o custo.**
+
+- **O que custou:** ~7 rodadas de teste, ~160 buscas, **~US$ 15**, e **zero itens entregues**. O dinheiro foi em depurar o script, não em coletar.
+- **Por que a estimativa errou:** a conta inicial (US$ 0,20/rodada) considerou só a taxa de busca (US$ 0,01 cada). O que domina é o token: dentro de uma rodada cada iteração reenvia o contexto acumulado, então 40 buscas viram ~160k tokens relidos a cada passo — custo aproximadamente quadrático, não linear. Somar `web_fetch` a 40k tokens por documento piora.
+- **Lição para a próxima tentativa:** medir pelo campo `usage` da própria resposta antes de estimar qualquer coisa, e pôr teto em dólar que aborta a rodada.
+- **O código ficou** em `scripts/catalog_collect.mjs` (commits `6068e7c` → `669bdf9`), funcional até onde deu para testar: streaming, `web_fetch`, retomada de `pause_turn`, contrato `{ itens, resumo, descartados }`. Parou por saldo insuficiente, não por bug conhecido.
+- **O que sobrou de útil:** o coletor chegou a identificar SEFAZ-SC (FCC, edital 01/2026) e TCDF (Cebraspe) com dados corretos e **se recusou a inventar** os tópicos que não conseguiu ler no anexo — comportamento certo, caro demais.
+- **A fila de revisão (parte 2) continua valendo** e não depende disso: serve a correção do aluno e o lote manual do Codex, que é como o catálogo já era alimentado.
+
 ## Sessão 2026-09-07 (parte 2) — Fila de propostas de revisão do catálogo 🚧
 
 Primeira metade do sistema de "trazer as atualizações dos concursos". Fecha a lacuna que o `catalog_daily_state.mjs` já apontava: ele detectava item alterado e escrevia em `scratchpad/catalogo-diario/atualizacoes-pendentes/`, mas o README dizia *"não gera SQL até existir suporte a revisões no catálogo"* — a atualização morria ali.
