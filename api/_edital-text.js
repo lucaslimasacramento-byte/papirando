@@ -16,6 +16,10 @@
 const RE_CABECALHO_CONTEUDO =
   /(conte[úu]dos?\s*program[áa]ticos?|objetos?\s*de\s*avalia[çc][ãa]o|programas?\s*[-–—]?\s*(prova|conhecimentos)|programas?\s*das?\s*provas?|mat[ée]rias?\s*e\s*programas?)/i;
 
+// Piso para o documento passar por edital de abertura. Os 13 editais reais do teste têm de
+// 115k a 561k caracteres; os 3 não-editais que caíram na amostra tinham 1,3k, 4k e 18,6k.
+export const CHARS_MINIMO_EDITAL = 20000;
+
 // Orçamento de caracteres. O cabeçalho carrega concurso/órgão/banca/cargos/datas, que a
 // análise também precisa devolver — mandar só o anexo perderia esses campos.
 //
@@ -74,6 +78,7 @@ export function acharLinhaDoConteudo(linhas) {
 // conteúdo programático nem no cabeçalho: nos 13 editais do teste aparece entre 1,9% e 51,6%
 // do documento, ou seja, bem no miolo de regras que este recorte descarta. Sem esta janela o
 // dado se perde em 11 dos 13.
+//
 // Só 4 dos 13 editais nomeiam a coisa de "quadro demonstrativo" / "composição das provas".
 // O resto descreve a composição dentro da seção numerada "DAS PROVAS" — às vezes em tabela
 // ("Língua Portuguesa 10 1"), às vezes em prosa ("a prova será composta de 120 itens, sendo
@@ -137,7 +142,7 @@ export function prepararTextoEdital(textoBruto, opcoes = {}) {
     // Documento curto demais para ser edital de abertura: ~19% dos arquivos que se
     // anunciam como "edital" são comunicado, retificação ou resultado. Quem chama decide
     // o que fazer, mas precisa saber antes de gastar uma análise.
-    pareceEdital: texto.length >= 20000,
+    pareceEdital: texto.length >= CHARS_MINIMO_EDITAL,
   };
 
   if (!texto) {

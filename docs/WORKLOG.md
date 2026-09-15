@@ -91,9 +91,26 @@ não é preciso manter 1.200 concursos atualizados. O N1 vira conveniência de d
 que chega ao modelo e o formato exigido dele; rodar `npm run ai:server` com a chave no `.env`
 para medir o que o modelo devolve de fato.
 
-**Pendente:** (1) tela de revisão — decidida, não implementada; (2) `pareceEdital` exposto mas
-não ligado no `Edital.jsx`; (3) `createCourse` e as telas ainda ignoram `prova[]`, `etapas[]` e
-os dados de cargo; (4) versão do edital — retificação posterior não chega a quem já montou.
+### Pendências fechadas ✅ (as quatro)
+
+- **Campos novos chegam à tela** — `normalizeOpenAiAnalysis` descartava tudo que não fosse
+  disciplina; passa a repassar os dados de cargo, `prova[]`, `inscricaoValor` e `etapas[]`.
+- **Aviso antes de gastar a análise** — novo `src/lib/edital.js`. Avisa (nunca bloqueia) para
+  documento curto demais, edital que se declara retificado e nome de arquivo suspeito. O
+  limiar vem do módulo do backend, para não haver duas verdades.
+- **Tela de revisão** — `src/components/RevisaoEditalPanel.jsx` no modo IA do `Planos.jsx`:
+  dados do cargo, quadro de provas e disciplinas com caixa de inclusão, nome editável e
+  tópicos marcáveis um a um. O botão virou "Confirmar e criar" e o que vai para a importação
+  é a revisão do aluno (`disciplinasRevisadas`), não a proposta crua da IA.
+- **Curso e versão do edital** — `createCourse` ganhou `carga_horaria`, `prova[]`,
+  `edital_arquivo`, `edital_lido_em`, `edital_impressao`; o import preenche cargo, vagas,
+  salário, escolaridade, lotação, taxa, etapas e a data da prova (`parseEditalDate` converte
+  o formato do edital para ISO). No card do curso aparecem o total de questões e "Edital lido
+  em dd/mm"; na tela do Edital, cada disciplina mostra `10 questões · peso 2`.
+
+120 testes passando, lint sem erros (16 warnings pré-existentes), build limpo.
+
+**Continua não verificado:** a saída da IA — sem chave de API no ambiente remoto.
 
 ---
 

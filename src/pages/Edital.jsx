@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
+import { acharLinhaDaProva } from '../lib/edital';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -406,6 +407,9 @@ function DisciplinaAccordion({
   const total = topicos.length;
   const pct = total > 0 ? Math.round((concluidos / total) * 100) : Number(disciplina.percentual || 0);
   const area = getAreaToken(disciplina.area || concurso?.area || inferAreaFromText(`${disciplina.nome} ${disciplina.plano}`));
+  // Peso desta disciplina na prova, vindo do quadro de provas do edital. Sem isso todas as
+  // disciplinas parecem valer o mesmo e o aluno estuda o que gosta, não o que pontua.
+  const naProva = acharLinhaDaProva(concurso?.prova, disciplina.nome);
 
   return (
     <article className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -420,6 +424,11 @@ function DisciplinaAccordion({
           area={area}
           meta={`${concluidos} de ${total} tópicos`}
         />
+        {naProva && (
+          <span className="pl-tag pl-tag-accent" style={{ whiteSpace: 'nowrap' }}>
+            {naProva.questoes} questões{Number(naProva.peso) > 1 ? ` · peso ${naProva.peso}` : ''}
+          </span>
+        )}
         <ProgressInline pct={pct} color={area.cover} />
         <span className="pl-tag">{isExpanded ? 'Recolher' : 'Expandir'}</span>
       </button>

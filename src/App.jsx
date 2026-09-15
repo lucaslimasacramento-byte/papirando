@@ -30,6 +30,7 @@ import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
 import { normalizeLead } from './lib/adminCrm';
+import { parseEditalDate, impressaoDoEdital } from './lib/edital';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from './lib/subjectCatalogUtils';
 import { buildCanonicalHistory, normalizeStudyRecord } from './lib/studyAnalytics';
 import { buildSmartStudyPlan, mergeDisciplinesByCanonical } from './lib/studyRecommendation';
@@ -4697,6 +4698,15 @@ export default function App() {
       etapas: courseData.etapas || '',
       etapas_tags: courseData.etapas_tags || [],
       taf_itens: courseData.taf_itens || [],
+      carga_horaria: courseData.carga_horaria || '',
+      // Quadro de provas do cargo: [{disciplina, questoes, peso}]. É o que permite a
+      // plataforma dizer onde estão os pontos, em vez de tratar toda disciplina como igual.
+      prova: Array.isArray(courseData.prova) ? courseData.prova : [],
+      // Qual versão do edital gerou este curso. A plataforma inteira fica pendurada num PDF,
+      // e retificação posterior não chega a quem já montou — sem isto não há nem como avisar.
+      edital_arquivo: courseData.edital_arquivo || '',
+      edital_lido_em: courseData.edital_lido_em || '',
+      edital_impressao: courseData.edital_impressao || '',
       status_concurso: isContestCourse ? normalizeContestStatus(courseData.status_concurso || 'edital_publicado') : '',
       prova_data: courseData.prova_data || '',
       imagem_url: courseData.imagem_url || '',
@@ -5845,18 +5855,25 @@ export default function App() {
     editalText,
     selectedContestId,
     analysisResult,
+    // Disciplinas como o aluno deixou na tela de revisão. Sem catálogo para cair de volta,
+    // é a revisão dele que vale — não a proposta crua da IA.
+    disciplinasRevisadas = null,
   }) => {
     const analysis =
       analysisResult?.contests?.length > 0 ? analysisResult : analyzeEditalDocument(editalText);
-    const contestSelecionado =
+    const contestBase =
       analysis.contests.find((contest) => contest.id === selectedContestId) || analysis.contests[0];
 
-    if (!contestSelecionado) {
+    if (!contestBase) {
       throw new Error('A IA não conseguiu identificar um concurso válido para importar.');
     }
 
+    const contestSelecionado = Array.isArray(disciplinasRevisadas)
+      ? { ...contestBase, disciplinas: disciplinasRevisadas }
+      : contestBase;
+
     if (!contestSelecionado.disciplinas || contestSelecionado.disciplinas.length === 0) {
-      throw new Error('A IA não conseguiu identificar disciplinas reais nesse edital.');
+      throw new Error('Nenhuma disciplina ficou marcada para importar. Revise a lista antes de confirmar.');
     }
 
     const nomeCurso =
@@ -5869,6 +5886,21 @@ export default function App() {
       plano: courseData?.plano || nomeCurso,
       concurso: courseData?.concurso || contestSelecionado.title || nomeCurso,
       banca: courseData?.banca || analysis.banca || 'A definir',
+      // A plataforma inteira se monta a partir do edital, então o curso puxa daqui o que
+      // antes vinha do catálogo ou era preenchido na mão.
+      cargo: courseData?.cargo || contestSelecionado.roleName || '',
+      vagas: courseData?.vagas || contestSelecionado.vagas || '',
+      salario: courseData?.salario || contestSelecionado.salario || '',
+      escolaridade: courseData?.escolaridade || contestSelecionado.escolaridade || '',
+      lotacao: courseData?.lotacao || contestSelecionado.lotacao || '',
+      carga_horaria: courseData?.carga_horaria || contestSelecionado.cargaHoraria || '',
+      inscricao_valor: courseData?.inscricao_valor || analysis.inscricaoValor || '',
+      etapas_tags: courseData?.etapas_tags?.length ? courseData.etapas_tags : (analysis.etapas || []),
+      prova: Array.isArray(contestSelecionado.prova) ? contestSelecionado.prova : [],
+      prova_data: courseData?.prova_data || parseEditalDate(contestSelecionado.examDate),
+      edital_arquivo: courseData?.edital_arquivo || '',
+      edital_lido_em: new Date().toISOString().slice(0, 10),
+      edital_impressao: impressaoDoEdital(editalText),
       origem: 'ia',
     });
 

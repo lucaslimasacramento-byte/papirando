@@ -28,6 +28,8 @@ import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
 import { storageThumb } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
+import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
+import { avisosDoDocumento } from '../lib/edital';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -101,6 +103,10 @@ export default function Planos({
   const [analysisResult, setAnalysisResult] = useState(null);
   const [selectedContestId, setSelectedContestId] = useState('');
   const [analysisError, setAnalysisError] = useState('');
+  // Revisão do aluno em cima do que a IA leu. É ela que vai para a importação, não a
+  // proposta crua — sem catálogo de fallback, uma leitura ruim quebraria o app inteiro.
+  const [revisao, setRevisao] = useState(null);
+  const [avisosDaLeitura, setAvisosDaLeitura] = useState([]);
   const [expandedCatalogAreas, setExpandedCatalogAreas] = useState({});
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
   const facultyTemplates = useMemo(
@@ -205,6 +211,37 @@ export default function Planos({
     return pages.join('\n');
   };
 
+  // Estado editavel da revisao: uma linha por disciplina, com os topicos dentro. Tudo
+  // marcado por padrao — o aluno desmarca o que nao cai na prova dele.
+  const montarRevisao = (contest) => (
+    (contest?.disciplinas || []).map((disciplina) => ({
+      nomeOriginal: disciplina.nome,
+      nome: disciplina.nome,
+      incluir: true,
+      topicos: (disciplina.topicos || []).map((topico) => ({ nome: topico, incluir: true })),
+    }))
+  );
+
+  // Uma unica porta de edicao da revisao: marcar/desmarcar disciplina, renomear, e
+  // marcar/desmarcar um topico dela.
+  const alterarDisciplinaRevisada = (indice, patch) => {
+    setRevisao((prev) => {
+      if (!Array.isArray(prev)) return prev;
+      return prev.map((item, i) => {
+        if (i !== indice) return item;
+        if (patch.topicoIndice !== undefined) {
+          return {
+            ...item,
+            topicos: item.topicos.map((topico, t) => (
+              t === patch.topicoIndice ? { ...topico, incluir: patch.incluirTopico } : topico
+            )),
+          };
+        }
+        return { ...item, ...patch };
+      });
+    });
+  };
+
   const applyAnalysisToForm = (analysis, options = {}) => {
     if (!analysis?.contests?.length) return;
 
@@ -213,6 +250,7 @@ export default function Planos({
     const contest = analysis.contests.find((item) => item.id === selectedId) || analysis.contests[0];
 
     setSelectedContestId(selectedId);
+    setRevisao(montarRevisao(contest));
     setIaForm((prev) => ({
       ...prev,
       nome: overwriteFields ? contest.title : prev.nome || contest.title,
@@ -229,8 +267,15 @@ export default function Planos({
       setAnalysisResult(null);
       setSelectedContestId('');
       setAnalysisError('');
+      setRevisao(null);
+      setAvisosDaLeitura([]);
       return null;
     }
+
+    // Avisa ANTES de gastar a analise: ~19% dos arquivos anunciados como edital sao
+    // comunicado, retificacao ou resultado. Avisa, nao bloqueia — o aluno pode ter colado
+    // so o conteudo programatico, que e curto e legitimo.
+    setAvisosDaLeitura(avisosDoDocumento(normalizedText, { nomeDoArquivo: options.nomeDoArquivo || '' }));
 
     setIsAnalyzing(true);
     setAnalysisError('');
@@ -293,7 +338,7 @@ export default function Planos({
       }
       setIaForm((prev) => ({ ...prev, editalText: extractedText }));
       setUploadedFileName(file.name);
-      await runAnalysis(extractedText, { overwriteFields: true });
+      await runAnalysis(extractedText, { overwriteFields: true, nomeDoArquivo: file.name });
     } catch (error) {
       console.error('[Planos] erro ao ler PDF:', error?.message || error);
       setAnalysisError('Não foi possível ler esse PDF. Tente outro arquivo ou cole o texto do edital.');
@@ -386,10 +431,18 @@ export default function Planos({
           plano: iaForm.plano.trim() || iaForm.nome.trim(),
           concurso: iaForm.concurso.trim() || iaForm.nome.trim(),
           banca: iaForm.banca.trim() || 'A definir',
+          edital_arquivo: uploadedFileName,
         },
         editalText: iaForm.editalText,
         selectedContestId,
         analysisResult,
+        // O que vale e a revisao do aluno, nao a proposta crua da IA.
+        disciplinasRevisadas: (revisao || [])
+          .filter((item) => item.incluir && String(item.nome || '').trim())
+          .map((item) => ({
+            nome: String(item.nome).trim(),
+            topicos: item.topicos.filter((topico) => topico.incluir).map((topico) => topico.nome),
+          })),
       });
 
       setImportResult(result || null);
@@ -407,6 +460,15 @@ export default function Planos({
     if (curso.salario) chips.push({ key: 'salario', tone: 'success', label: curso.salario });
     if (curso.escolaridade) chips.push({ key: 'escolaridade', tone: '', label: curso.escolaridade });
     if (curso.inscricao_valor) chips.push({ key: 'inscricao', tone: 'warn', label: `Inscrição ${curso.inscricao_valor}` });
+    // Quantas questões a prova tem, somando o quadro de provas do cargo. É o que dá noção
+    // de peso — sem isso toda disciplina parece valer a mesma coisa.
+    const totalQuestoes = (curso.prova || []).reduce((acc, linha) => acc + (Number(linha?.questoes) || 0), 0);
+    if (totalQuestoes > 0) chips.push({ key: 'questoes', tone: 'accent', label: `${totalQuestoes} questões` });
+    // De qual leitura do edital este plano nasceu. A plataforma inteira fica pendurada
+    // naquele PDF, e retificação posterior não chega sozinha a quem já montou.
+    if (curso.edital_lido_em) {
+      chips.push({ key: 'edital', tone: '', label: `Edital lido ${formatDateDisplay(curso.edital_lido_em)}` });
+    }
     return chips;
   };
 
@@ -713,6 +775,17 @@ export default function Planos({
             </div>
           )}
 
+          {analysisResult && (
+            <RevisaoEditalPanel
+              contest={analysisResult.contests.find((item) => item.id === selectedContestId) || analysisResult.contests[0]}
+              analysis={analysisResult}
+              revisao={revisao}
+              onAlterarDisciplina={alterarDisciplinaRevisada}
+              avisos={avisosDaLeitura}
+              nomeDoArquivo={uploadedFileName}
+            />
+          )}
+
           {importResult && (
             <div style={{ marginTop: 20, borderRadius: 12, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--pl-success)' }}>
@@ -736,7 +809,7 @@ export default function Planos({
               ) : (
                 <>
                   <Wand2 size={16} />
-                  Importar edital
+                  Confirmar e criar
                 </>
               )}
             </PrimaryButton>

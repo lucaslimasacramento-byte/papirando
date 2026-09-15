@@ -247,3 +247,70 @@ respeita a granularidade, só rodando: `npm run ai:server` com a chave no `.env`
    ignora `prova[]`, `etapas[]` e os dados de cargo.
 4. **Versão do edital.** Toda a plataforma fica pendurada num PDF; retificação posterior não
    chega a quem já montou. Guardar arquivo e data, no mínimo.
+
+---
+
+# Pendências fechadas — 2026-09-15
+
+As quatro pendências da rodada anterior, implementadas.
+
+## 1. Os campos novos chegam à tela
+
+`normalizeOpenAiAnalysis` ([`src/lib/editalAiClient.js`](../src/lib/editalAiClient.js)) descartava
+tudo que não fosse disciplina. Passa a repassar `vagas`, `salario`, `escolaridade`, `lotacao`,
+`cargaHoraria`, `roleName` e `prova[]` por cargo, e `inscricaoValor` e `etapas[]` do certame.
+Sem isso o schema ampliado não servia para nada — o dado morria no cliente.
+
+## 2. Aviso antes de gastar a análise
+
+[`src/lib/edital.js`](../src/lib/edital.js) concentra a leitura do edital do lado do aluno.
+`avisosDoDocumento()` **avisa, nunca bloqueia** — o aluno pode legitimamente colar só o anexo
+de conteúdo programático, que é curto. Três avisos:
+
+- documento curto demais para um edital de abertura (limiar `CHARS_MINIMO_EDITAL`, importado do
+  módulo do backend para não existirem duas verdades);
+- edital que se declara retificado no cabeçalho — o plano fica pendurado na versão enviada;
+- nome de arquivo que sugere comunicado, resultado, gabarito ou convocação.
+
+## 3. Tela de revisão
+
+[`src/components/RevisaoEditalPanel.jsx`](../src/components/RevisaoEditalPanel.jsx), renderizada
+no modo IA do [`Planos.jsx`](../src/pages/Planos.jsx). Mostra os dados do cargo, o quadro de
+provas e a lista de disciplinas — cada uma com caixa de inclusão, nome editável e os tópicos
+abertos para marcar um a um. O rodapé diz quantas disciplinas e tópicos vão ser criados, e o
+botão virou **"Confirmar e criar"**.
+
+O que a importação recebe é `disciplinasRevisadas` — a revisão do aluno, não a proposta crua da
+IA. `importSelectedEditalWithAI` passou a aceitar esse override, e falha com mensagem própria
+quando o aluno desmarca tudo.
+
+## 4. Campos no curso, e a versão do edital
+
+`createCourse` ganhou `carga_horaria`, `prova[]`, `edital_arquivo`, `edital_lido_em` e
+`edital_impressao`. O import por edital passou a preencher cargo, vagas, salário, escolaridade,
+lotação, carga horária, taxa, etapas e a data da prova — que antes vinham do catálogo ou da mão.
+
+`parseEditalDate()` converte o que a IA devolve (`26/04/2026`, `26 de abril de 2026`, ISO) para
+o formato que o curso guarda. A data da prova é o eixo de Planejamento, Metas e Revisões: sem
+ela metade do app não se orienta.
+
+`impressaoDoEdital()` guarda uma impressão do texto lido, insensível a espaço em branco (a
+extração do pdfjs varia no espaçamento, e isso não é versão nova). É o mínimo para um dia
+detectar que o aluno está com um edital diferente do que gerou o plano dele.
+
+Onde aparece para o aluno:
+
+- card do curso: total de questões da prova e "Edital lido em dd/mm";
+- tela do Edital: cada disciplina mostra `10 questões · peso 2`, casando o nome da disciplina
+  com a linha do quadro por comparação frouxa (sem acento, sem caixa, com `includes` nos dois
+  sentidos) — o nome passa por canonicalização ao entrar no app e nem sempre bate caractere a
+  caractere com o que o edital escreveu.
+
+## Verificação
+
+120 testes passando, lint sem erros (16 warnings, todos pré-existentes, conferido com stash),
+build limpo. Os 32 testes de `src/lib/edital.test.js` cobrem os avisos, o parser de data, a
+impressão e o casamento de disciplina com o quadro.
+
+**Continua não verificado:** a saída da IA. Sem chave de API no ambiente, o que está provado é
+o texto que chega ao modelo, o formato exigido dele e o caminho do dado da resposta até a tela.

@@ -50,10 +50,31 @@ function normalizeOpenAiAnalysis(payload) {
           .filter((subject) => subject.nome)
       : [];
 
+    // Quadro de provas: quantas questões e que peso cada disciplina tem NESTE cargo.
+    // É o que permite a plataforma priorizar em vez de tratar tudo como igual.
+    const prova = Array.isArray(contest.prova)
+      ? contest.prova
+          .map((linha) => ({
+            disciplina: String(linha?.disciplina || '').trim(),
+            questoes: String(linha?.questoes || '').trim(),
+            peso: String(linha?.peso || '').trim() || '1',
+          }))
+          .filter((linha) => linha.disciplina && linha.questoes)
+      : [];
+
     return {
       id: String(contest.id || contest.title || 'opcao').trim(),
       title: String(contest.title || contest.role_name || analysis.exam_name || 'Edital completo').trim(),
+      roleName: String(contest.role_name || contest.title || '').trim(),
       institution: String(contest.institution || analysis.organization || 'Não encontrado').trim(),
+      // Dados do cargo — o curso do aluno (App.jsx createCourse) já carrega todos eles.
+      vagas: String(contest.vagas || '').trim(),
+      salario: String(contest.salario || '').trim(),
+      escolaridade: String(contest.escolaridade || '').trim(),
+      lotacao: String(contest.lotacao || '').trim(),
+      cargaHoraria: String(contest.carga_horaria || '').trim(),
+      prova,
+      totalQuestoes: prova.reduce((acc, linha) => acc + (Number(linha.questoes) || 0), 0),
       examDate: String(contest.exam_date || analysis?.dates?.exam_date || 'Não encontrado').trim(),
       publicationDate: String(
         contest.publication_date || analysis?.dates?.publication_date || 'Não encontrado'
@@ -75,6 +96,12 @@ function normalizeOpenAiAnalysis(payload) {
     examName: String(analysis.exam_name || 'Não encontrado').trim(),
     organization: String(analysis.organization || 'Não encontrado').trim(),
     examType: String(analysis.exam_type || 'Não encontrado').trim(),
+    inscricaoValor: String(analysis.inscricao_valor || '').trim(),
+    // Etapas do certame — decidem o que a plataforma mostra ou esconde para este aluno
+    // (Redações só faz sentido se houver discursiva; TAF idem).
+    etapas: Array.isArray(analysis.etapas)
+      ? analysis.etapas.map((etapa) => String(etapa || '').trim()).filter(Boolean)
+      : [],
     dates: {
       publicationDate: String(analysis?.dates?.publication_date || 'Não encontrado').trim(),
       examDate: String(analysis?.dates?.exam_date || 'Não encontrado').trim(),
