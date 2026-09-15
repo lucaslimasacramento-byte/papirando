@@ -75,12 +75,16 @@ const OLLAMA_MODEL_CANDIDATES = [
 const ANALYSIS_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['banca', 'exam_name', 'organization', 'exam_type', 'dates', 'contests'],
+  required: ['banca', 'exam_name', 'organization', 'exam_type', 'inscricao_valor', 'etapas', 'dates', 'contests'],
   properties: {
     banca: { type: 'string' },
     exam_name: { type: 'string' },
     organization: { type: 'string' },
     exam_type: { type: 'string' },
+    inscricao_valor: { type: 'string' },
+    // Etapas do certame: "Objetiva", "Discursiva", "Redacao", "TAF", "Titulos", "Pratica".
+    // Decidem o que a plataforma mostra ou esconde para este aluno.
+    etapas: { type: 'array', items: { type: 'string' } },
     dates: {
       type: 'object',
       additionalProperties: false,
@@ -104,6 +108,12 @@ const ANALYSIS_SCHEMA = {
           'exam_date',
           'publication_date',
           'registration_period',
+          'vagas',
+          'salario',
+          'escolaridade',
+          'lotacao',
+          'carga_horaria',
+          'prova',
           'subjects',
         ],
         properties: {
@@ -114,6 +124,31 @@ const ANALYSIS_SCHEMA = {
           exam_date: { type: 'string' },
           publication_date: { type: 'string' },
           registration_period: { type: 'string' },
+          // Dados do cargo. A plataforma inteira se monta em cima do edital do aluno, entao
+          // o curso dele (App.jsx createCourse) precisa desses campos preenchidos daqui —
+          // antes vinham do catalogo ou na mao. Todos existem nos 13 editais do teste.
+          vagas: { type: 'string' },
+          salario: { type: 'string' },
+          escolaridade: { type: 'string' },
+          lotacao: { type: 'string' },
+          carga_horaria: { type: 'string' },
+          // Quadro de provas: quantas questoes e que peso cada disciplina tem NESTE cargo.
+          // E o que permite a plataforma dizer onde vale a pena gastar tempo, em vez de
+          // tratar todas as disciplinas como iguais. Presente em 11 dos 13 editais como
+          // tabela; nos outros, descrito em prosa na secao "DAS PROVAS".
+          prova: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['disciplina', 'questoes', 'peso'],
+              properties: {
+                disciplina: { type: 'string' },
+                questoes: { type: 'string' },
+                peso: { type: 'string' },
+              },
+            },
+          },
           subjects: {
             type: 'array',
             items: {
@@ -257,6 +292,24 @@ IMPORTANT RULES:
 - If there are multiple cargos with different subjects, separate them clearly by cargo.
 - Never invent dates, subjects, banca, or cargo names.
 - Prefer exact extraction over paraphrasing.
+
+TOPIC GRANULARITY (matters — the app creates one row per topic, and each row is a unit of
+progress, spaced repetition and flashcards):
+- Split each subject's content block into separate topics. A block like
+  "Lingua Portuguesa: Interpretacao de texto. Ortografia. Crase." becomes three topics.
+- Aim for 8 to 15 topics per subject. If the edital lists far more, group the finest ones
+  under the concept they belong to; if it lists fewer, keep what is there — do not invent.
+- A topic is a study unit, not a sentence: drop "conforme a legislacao vigente" style tails.
+
+EXAM COMPOSITION ("prova"):
+- For each cargo, extract how many questions each subject has and its weight, from the
+  "quadro demonstrativo de provas" / "composicao das provas" table or from the prose in the
+  "DAS PROVAS" section ("a prova sera composta de 120 itens, sendo 50 de conhecimentos
+  basicos" also counts).
+- questoes and peso are strings holding the number as written. If the edital gives no weight,
+  leave peso empty — do not assume.
+- This is what lets the app tell the student where the points are. Extract it whenever the
+  document states it, and leave the array empty when it does not.
 
 HOW TO SEARCH:
 Look for:
@@ -638,6 +691,10 @@ function sanitizeAnalysis(rawAnalysis) {
     exam_name: sanitizeValue(normalizedAnalysis?.exam_name),
     organization: sanitizeValue(normalizedAnalysis?.organization),
     exam_type: sanitizeValue(normalizedAnalysis?.exam_type),
+    inscricao_valor: sanitizeValue(normalizedAnalysis?.inscricao_valor, ''),
+    etapas: Array.isArray(normalizedAnalysis?.etapas)
+      ? normalizedAnalysis.etapas.map((etapa) => sanitizeValue(etapa, '')).filter(Boolean)
+      : [],
     dates: {
       publication_date: sanitizeValue(dates.publication_date),
       exam_date: sanitizeValue(dates.exam_date),
@@ -652,6 +709,22 @@ function sanitizeAnalysis(rawAnalysis) {
         exam_date: sanitizeValue(contest?.exam_date),
         publication_date: sanitizeValue(contest?.publication_date),
         registration_period: sanitizeValue(contest?.registration_period),
+        vagas: sanitizeValue(contest?.vagas, ''),
+        salario: sanitizeValue(contest?.salario, ''),
+        escolaridade: sanitizeValue(contest?.escolaridade, ''),
+        lotacao: sanitizeValue(contest?.lotacao, ''),
+        carga_horaria: sanitizeValue(contest?.carga_horaria, ''),
+        // Uma linha do quadro so serve se tiver disciplina E numero de questoes; peso em
+        // branco vira 1, que e o padrao quando o edital nao diferencia.
+        prova: Array.isArray(contest?.prova)
+          ? contest.prova
+              .map((linha) => ({
+                disciplina: sanitizeValue(linha?.disciplina, ''),
+                questoes: sanitizeValue(linha?.questoes, ''),
+                peso: sanitizeValue(linha?.peso, '') || '1',
+              }))
+              .filter((linha) => linha.disciplina && linha.questoes)
+          : [],
         subjects: Array.isArray(contest?.subjects)
           ? contest.subjects
               .map((subject) => ({

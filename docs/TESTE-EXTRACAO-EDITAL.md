@@ -167,3 +167,83 @@ baixar para 60.000 leva a mediana para ~17k tokens, ao preço de mandar o anexo 
 Regressão coberta em [`api/_edital-text.test.js`](../api/_edital-text.test.js) (11 testes):
 os três vocabulários de banca, a armadilha do sumário, o letter-spacing e os quatro modos de
 recorte.
+
+---
+
+# Pacote completo — 2026-09-15
+
+Decisões do dono nesta rodada: a plataforma inteira se monta a partir do edital que o aluno
+sobe (um concurso só, no início); **leitura única** (a IA devolve todos os cargos e o aluno
+escolhe na lista); **pacote completo** de extração; **tela de revisão** obrigatória antes de
+o resultado virar o eixo do app; telas sem acervo viram **container do que o aluno sobe**.
+
+## Duas passadas: testado e descartado
+
+A ideia era uma primeira leitura barata só para listar os cargos, o aluno escolher, e uma
+segunda leitura recortando o trecho daquele cargo. Resolveria os editais que truncam.
+
+Não se sustenta: **localizar a tabela de cargos é 8/13**. A heurística de densidade de `R$`
+acha a tabela em 8 editais e falha nos dois da Cebraspe (que declaram a remuneração uma vez,
+em prosa: `REMUNERAÇÃO: R$ 6.858,78`), no `pref_catanduvas_pr` e em mais dois. Construir a
+primeira passada em cima disso deixaria 5 de 13 alunos sem lista de cargos.
+
+Fica a leitura única, como decidido. **Custo aceito:** 3 dos 13 editais continuam com o anexo
+truncado — são os que listam dezenas de cargos (anexo de 131k a 210k caracteres).
+
+## A janela que faltava: o quadro de provas
+
+Investigando o pacote completo apareceu um buraco no recorte anterior. O quadro de provas —
+quantas questões e que peso cada disciplina tem — **não fica nem no cabeçalho nem no anexo**:
+nos 13 editais aparece entre 1,9% e 51,6% do documento, ou seja, no miolo de regras que o
+recorte descartava. Só 2 dos 13 caíam dentro do cabeçalho.
+
+Sem ele, todas as disciplinas parecem iguais e a plataforma não tem o que dizer sobre
+prioridade. Com ele, dá para dizer que Conhecimentos Específicos vale 15 questões com peso 2,
+metade dos pontos da prova.
+
+Localizar exigiu dois sinais, porque só 4 dos 13 nomeiam a seção:
+
+| sinal | cobertura |
+|---|---|
+| título explícito (`quadro demonstrativo de provas`, `composição das provas`) | 4/13 |
+| seção numerada `DAS PROVAS` / `DAS PROVAS OBJETIVAS` / `DA ETAPA` | +7/13 |
+| **combinados** | **11/13** |
+
+Os 2 que a busca não localiza têm a composição dentro do cabeçalho ou do anexo, que já vão
+no recorte. Resultado final: **composição presente no texto enviado em 13/13**, ao custo de
+~26k tokens de mediana (era ~26k antes também — a janela do quadro coube no orçamento).
+
+## Schema ampliado
+
+`ANALYSIS_SCHEMA` (`ai-server.mjs`) e o prompt de produção (`api/_ai.js`) passaram a pedir,
+além de disciplinas e tópicos:
+
+- **por certame:** `inscricao_valor`, `etapas[]` (Objetiva, Discursiva, TAF, Títulos, Prática)
+- **por cargo:** `vagas`, `salario`, `escolaridade`, `lotacao`, `carga_horaria`
+- **por cargo:** `prova[]` — `{disciplina, questoes, peso}`, o quadro de provas
+
+São exatamente os campos que `createCourse` (`src/App.jsx`) já carrega e que hoje vinham do
+catálogo ou preenchidos à mão. O modelo do app já era edital-shaped; faltava a IA preencher.
+
+**Granularidade de tópico** entrou no prompt como regra explícita: quebrar o bloco da
+disciplina em tópicos separados, mirando 8 a 15 por disciplina. Sem isso cada edital gera uma
+estrutura diferente — fino demais intimida, grosso demais faz a barra de progresso não andar.
+O número é um chute calibrado, não medido; é o primeiro botão a girar quando houver uso real.
+
+## Não verificado
+
+**A saída da IA não foi testada.** Não há chave de API neste ambiente — nem Anthropic, nem
+OpenAI, nem Gemini. O que está validado é o texto que chega ao modelo (13/13 com anexo, 13/13
+com composição) e o formato que se exige dele. Se a IA de fato preenche o quadro de provas e
+respeita a granularidade, só rodando: `npm run ai:server` com a chave no `.env`.
+
+## Pendente
+
+1. **Tela de revisão** — decidida, não implementada. Sem catálogo para cair de volta, uma
+   leitura ruim quebra o produto inteiro; o aluno precisa conferir antes de confirmar.
+2. **`pareceEdital` não está ligado** no `Edital.jsx`. ~19% dos arquivos anunciados como
+   edital são comunicado ou retificação.
+3. **Consumir os campos novos** em `createCourse` e nas telas — o schema devolve, o app ainda
+   ignora `prova[]`, `etapas[]` e os dados de cargo.
+4. **Versão do edital.** Toda a plataforma fica pendurada num PDF; retificação posterior não
+   chega a quem já montou. Guardar arquivo e data, no mínimo.

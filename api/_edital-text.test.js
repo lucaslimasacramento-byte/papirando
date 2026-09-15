@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { acharLinhaDoConteudo, prepararTextoEdital, CHARS_TOTAL } from './_edital-text.js';
+import {
+  acharLinhaDoConteudo,
+  acharLinhaDoQuadro,
+  prepararTextoEdital,
+  CHARS_TOTAL,
+} from './_edital-text.js';
 
 // Monta um edital sintético com o mesmo formato dos reais: um miolo longo de regras de
 // inscrição e o anexo de conteúdo programático lá no fim.
@@ -85,5 +90,67 @@ describe('prepararTextoEdital', () => {
     // ~19% dos arquivos anunciados como "edital" sao comunicado, retificacao ou resultado
     expect(prepararTextoEdital('Comunicado de prazo de recurso.').pareceEdital).toBe(false);
     expect(prepararTextoEdital('a'.repeat(20000)).pareceEdital).toBe(true);
+  });
+});
+
+describe('acharLinhaDoQuadro', () => {
+  it('acha o quadro pelo titulo explicito', () => {
+    const linhas = [
+      'Anexo II - Composicao da Prova;', // sumario, sem numeros depois
+      'texto de regras',
+      'Composicao da Prova:',
+      'Lingua Portuguesa 10 1',
+      'Matematica 5 1',
+    ];
+    expect(acharLinhaDoQuadro(linhas)).toBe(2);
+  });
+
+  it('cai na secao numerada DAS PROVAS quando nao ha titulo de quadro', () => {
+    // 9 dos 13 editais do teste nao nomeiam "quadro"/"composicao" — descrevem na secao.
+    const linhas = [
+      '1. DAS DISPOSICOES PRELIMINARES',
+      'texto',
+      '8 DAS PROVAS OBJETIVAS',
+      '8.1 A prova sera composta de 120 questoes.',
+    ];
+    expect(acharLinhaDoQuadro(linhas)).toBe(2);
+  });
+
+  it('nao aceita o titulo quando nada de composicao vem depois', () => {
+    expect(acharLinhaDoQuadro(['Composicao da Prova:', 'ver o anexo respectivo.'])).toBeNull();
+  });
+});
+
+describe('prepararTextoEdital — janela do quadro de provas', () => {
+  // O quadro fica no miolo de regras que o recorte descarta: nos 13 editais reais ele
+  // aparece entre 1,9% e 51,6% do documento, e so 2 caiam dentro do cabecalho.
+  function editalComQuadro() {
+    const encher = (n, txt) => Array.from({ length: n }, () => txt).join('\n');
+    return [
+      'EDITAL DE ABERTURA N 01/2026',
+      encher(400, '2.1 Das condicoes de inscricao e da documentacao exigida do candidato.'),
+      '8 DAS PROVAS OBJETIVAS',
+      'Lingua Portuguesa 10 1',
+      'Matematica 5 2',
+      encher(2000, '9.1 Dos recursos e dos prazos para interposicao contra o gabarito.'),
+      'ANEXO IV - CONTEUDO PROGRAMATICO',
+      'Lingua Portuguesa: Interpretacao de texto. Ortografia.',
+    ].join('\n');
+  }
+
+  it('leva o quadro junto do cabecalho e do anexo', () => {
+    const r = prepararTextoEdital(editalComQuadro(), { charsCabecalho: 500, charsTotal: 20000 });
+    expect(r.achouQuadro).toBe(true);
+    expect(r.texto).toContain('Lingua Portuguesa 10 1'); // o quadro
+    expect(r.texto).toContain('Interpretacao de texto'); // o anexo
+    expect(r.texto).toContain('EDITAL DE ABERTURA'); // o cabecalho
+    // e descarta o miolo de regras que separa o cabecalho do quadro
+    expect(r.texto.split('Das condicoes de inscricao').length - 1).toBeLessThan(20);
+  });
+
+  it('nao gasta orcamento repetindo o quadro que ja veio no cabecalho', () => {
+    const r = prepararTextoEdital(editalComQuadro(), { charsCabecalho: 40000, charsTotal: 60000 });
+    const ocorrencias = r.texto.split('Lingua Portuguesa 10 1').length - 1;
+    expect(ocorrencias).toBe(1);
   });
 });

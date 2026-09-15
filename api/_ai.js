@@ -1307,11 +1307,29 @@ export async function analyzeEdital(editalText = '') {
   // alcancava o anexo de conteudo programatico. Ver docs/TESTE-EXTRACAO-EDITAL.md.
   const preparado = prepararTextoEdital(text);
 
-  const prompt = `Analise este edital de concurso e extraia cargos, disciplinas e topicos.
-Mantenha nomes em portugues e evite inventar dados ausentes.
+  const prompt = `Analise este edital de concurso. A plataforma de estudos do aluno se monta
+inteira a partir do que voce devolver, entao extraia o pacote completo: dados do certame,
+um item em "contests" por CARGO, e para cada cargo os dados dele, o quadro de provas e o
+conteudo programatico.
+
+Mantenha nomes em portugues. Nunca invente: campo ausente no edital fica "Nao encontrado"
+(ou lista vazia).
+
+TOPICOS: o app cria uma linha por topico, e cada linha e unidade de progresso e de revisao
+espacada. Quebre o bloco da disciplina em topicos separados — "Lingua Portuguesa:
+Interpretacao de texto. Ortografia. Crase." vira tres topicos. Mire 8 a 15 topicos por
+disciplina: agrupe os mais finos quando o edital detalhar demais, e nunca complete o que
+nao estiver la.
+
+QUADRO DE PROVAS ("prova"): quantas questoes e que peso cada disciplina tem NAQUELE cargo.
+Vem da tabela de composicao das provas ou da prosa da secao "DAS PROVAS" ("a prova sera
+composta de 120 itens, sendo 50 de conhecimentos basicos" tambem conta). Sem peso declarado,
+deixe "peso" vazio. Sem informacao nenhuma, devolva lista vazia.
+
+ETAPAS: as fases do certame — Objetiva, Discursiva, Redacao, TAF, Titulos, Pratica.
 
 JSON esperado:
-{"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
+{"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","inscricao_valor":"valor ou Nao encontrado","etapas":["Objetiva"],"dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","vagas":"","salario":"","escolaridade":"","lotacao":"","carga_horaria":"","prova":[{"disciplina":"","questoes":"","peso":""}],"subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
 
 Edital:
 ${preparado.texto}`;
@@ -1327,6 +1345,8 @@ ${preparado.texto}`;
       exam_name: String(analysis.exam_name || 'Nao encontrado').trim(),
       organization: String(analysis.organization || 'Nao encontrado').trim(),
       exam_type: String(analysis.exam_type || 'Nao encontrado').trim(),
+      inscricao_valor: String(analysis.inscricao_valor || '').trim(),
+      etapas: clampList(analysis.etapas, 10),
       dates: {
         publication_date: String(analysis?.dates?.publication_date || 'Nao encontrado').trim(),
         exam_date: String(analysis?.dates?.exam_date || 'Nao encontrado').trim(),
@@ -1342,6 +1362,20 @@ ${preparado.texto}`;
         registration_period: String(
           contest?.registration_period || analysis?.dates?.registration_period || 'Nao encontrado'
         ).trim(),
+        vagas: String(contest?.vagas || '').trim(),
+        salario: String(contest?.salario || '').trim(),
+        escolaridade: String(contest?.escolaridade || '').trim(),
+        lotacao: String(contest?.lotacao || '').trim(),
+        carga_horaria: String(contest?.carga_horaria || '').trim(),
+        // Linha do quadro so vale com disciplina E numero de questoes. Peso em branco vira
+        // "1", que e o que o edital quer dizer quando nao diferencia.
+        prova: (Array.isArray(contest?.prova) ? contest.prova : [])
+          .map((linha) => ({
+            disciplina: String(linha?.disciplina || '').trim(),
+            questoes: String(linha?.questoes || '').trim(),
+            peso: String(linha?.peso || '').trim() || '1',
+          }))
+          .filter((linha) => linha.disciplina && linha.questoes),
         subjects: (Array.isArray(contest?.subjects) ? contest.subjects : [])
           .map((subject) => ({
             name: String(subject?.name || '').trim(),

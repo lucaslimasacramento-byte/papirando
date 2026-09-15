@@ -69,11 +69,59 @@ export function acharLinhaDoConteudo(linhas) {
   return candidatos[candidatos.length - 1];
 }
 
+// O quadro de provas — quantas questões e que peso cada disciplina tem — é o que permite à
+// plataforma ter opinião sobre onde o aluno deve gastar tempo. Ele NÃO fica no anexo de
+// conteúdo programático nem no cabeçalho: nos 13 editais do teste aparece entre 1,9% e 51,6%
+// do documento, ou seja, bem no miolo de regras que este recorte descarta. Sem esta janela o
+// dado se perde em 11 dos 13.
+// Só 4 dos 13 editais nomeiam a coisa de "quadro demonstrativo" / "composição das provas".
+// O resto descreve a composição dentro da seção numerada "DAS PROVAS" — às vezes em tabela
+// ("Língua Portuguesa 10 1"), às vezes em prosa ("a prova será composta de 120 itens, sendo
+// 50 de conhecimentos básicos"). Por isso são dois sinais: o título explícito, quando existe,
+// e a seção de provas como rede de segurança.
+const RE_CABECALHO_QUADRO =
+  /(quadro\s*demonstrativo\s*d[eo]s?\s*provas?|composi[çc][ãa]o\s*d[ao]s?\s*provas?|estrutura\s*d[ao]s?\s*provas?)/i;
+const RE_SECAO_PROVAS = /^\s*\d{1,2}(\.\d{1,2})?\.?\s*(D[AO]S?\s+)?(PROVAS?|ETAPAS?|EXAMES?)\b/i;
+
+export const CHARS_QUADRO = 10000;
+
+// O título sozinho costuma ser a citação no sumário. O que confirma a seção é o que vem
+// depois: números em sequência, valores, ou a palavra "questões".
+function pareceComposicaoDeProva(trecho) {
+  return /\b\d{1,3}\s+\d{1,3}\b/.test(trecho) || /R\$/.test(trecho) || /quest[õo]es/i.test(trecho);
+}
+
+/**
+ * Índice da linha em que começa a descrição da composição das provas, ou null.
+ */
+export function acharLinhaDoQuadro(linhas) {
+  const confirma = (i) => pareceComposicaoDeProva(linhas.slice(i, i + 80).join('\n'));
+
+  for (let i = 0; i < linhas.length; i += 1) {
+    const s = linhas[i].trim();
+    if (s.length > 120) continue;
+    // Mesma armadilha do anexo: "Anexo II - Composicao da Prova;" e linha de sumario.
+    if (/^\s*anexo\b.*[.;]\s*$/i.test(s)) continue;
+    if (RE_CABECALHO_QUADRO.test(normalizarParaDeteccao(s)) && confirma(i)) return i;
+  }
+
+  for (let i = 0; i < linhas.length; i += 1) {
+    const s = linhas[i].trim();
+    if (s.length > 70) continue;
+    if (RE_SECAO_PROVAS.test(s) && confirma(i)) return i;
+  }
+
+  return null;
+}
+
 /**
  * Prepara o texto do edital para a IA.
  *
+ * Monta até três janelas: cabeçalho de identificação, quadro de provas e anexo de conteúdo
+ * programático — descartando o miolo de regras de inscrição, que não alimenta nada no app.
+ *
  * @returns {{texto: string, recorte: string, chars: number, charsOriginais: number,
- *            achouConteudo: boolean, pareceEdital: boolean}}
+ *            achouConteudo: boolean, achouQuadro: boolean, pareceEdital: boolean}}
  *   recorte: 'inteiro'        — edital curto, cabe sem cortar
  *            'cabecalho+anexo'— o caso normal: identificação + conteúdo programático
  *            'anexo-truncado' — o anexo sozinho estourou o orçamento, cortado no fim
@@ -97,7 +145,7 @@ export function prepararTextoEdital(textoBruto, opcoes = {}) {
   }
 
   if (texto.length <= charsTotal) {
-    return { ...base, texto, recorte: 'inteiro', chars: texto.length, achouConteudo: true };
+    return { ...base, texto, recorte: 'inteiro', chars: texto.length, achouConteudo: true, achouQuadro: true };
   }
 
   const linhas = texto.split('\n');
@@ -105,18 +153,34 @@ export function prepararTextoEdital(textoBruto, opcoes = {}) {
 
   if (linhaConteudo === null) {
     const recortado = texto.slice(0, charsTotal);
-    return { ...base, texto: recortado, recorte: 'cabecalho', chars: recortado.length, achouConteudo: false };
+    return {
+      ...base, texto: recortado, recorte: 'cabecalho', chars: recortado.length,
+      achouConteudo: false, achouQuadro: false,
+    };
   }
 
   const cabecalho = texto.slice(0, charsCabecalho);
   const anexoCompleto = linhas.slice(linhaConteudo).join('\n');
-  const orcamentoAnexo = Math.max(charsTotal - cabecalho.length, 0);
+
+  // O quadro só vira janela própria se cair fora do que cabeçalho e anexo já cobrem —
+  // senão gastaríamos orçamento repetindo texto.
+  const linhaQuadro = acharLinhaDoQuadro(linhas);
+  let quadro = '';
+  if (linhaQuadro !== null && linhaQuadro < linhaConteudo) {
+    const offsetQuadro = linhas.slice(0, linhaQuadro).reduce((acc, l) => acc + l.length + 1, 0);
+    if (offsetQuadro >= cabecalho.length) {
+      quadro = linhas.slice(linhaQuadro).join('\n').slice(0, CHARS_QUADRO);
+    }
+  }
+
+  const orcamentoAnexo = Math.max(charsTotal - cabecalho.length - quadro.length, 0);
   // Truncar o anexo pelo FIM perde as últimas matérias; truncar pelo começo perderia todas.
   const anexo = anexoCompleto.slice(0, orcamentoAnexo);
 
   const montado = [
     cabecalho,
     '\n\n[...trecho de regras omitido...]\n\n',
+    quadro ? `${quadro}\n\n[...trecho de regras omitido...]\n\n` : '',
     anexo,
   ].join('');
 
@@ -126,5 +190,7 @@ export function prepararTextoEdital(textoBruto, opcoes = {}) {
     recorte: anexo.length < anexoCompleto.length ? 'anexo-truncado' : 'cabecalho+anexo',
     chars: montado.length,
     achouConteudo: true,
+    // O quadro pode ter vindo dentro do cabeçalho ou do anexo, sem janela própria.
+    achouQuadro: Boolean(quadro) || linhaQuadro !== null,
   };
 }

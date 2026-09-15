@@ -64,11 +64,36 @@ voltava vazio; e é ~3,2× mais barato que mandar o edital inteiro. `CHARS_TOTAL
 ajuste. 11 testes de regressão em `api/_edital-text.test.js`; `vite.config.js` passou a
 incluir `api/**/*.test.js`. Suíte cheia: 83 testes passando, lint limpo.
 
-**Pendente:** (1) 3 de 13 ainda truncam o anexo — anexo de 131k a 210k chars por listar
-dezenas de cargos; o certo é recortar só o cargo do aluno, o que exige duas passadas;
-(2) `pareceEdital` está exposto mas não ligado no `Edital.jsx` (avisar antes de gastar
-análise com comunicado/retificação); (3) medir a qualidade da estruturação da IA — agora é
-possível.
+### Pacote completo — a plataforma gira em torno do edital ✅ (backend)
+
+**Decisão do dono:** o aluno sobe UM edital e a plataforma inteira se monta em cima dele.
+Leitura única (a IA devolve todos os cargos, o aluno escolhe na lista), extração do pacote
+completo, tela de revisão obrigatória, e as telas sem acervo viram container do que o aluno
+sobe. Consequência: **o catálogo deixa de ser dependência** — se o aluno traz o edital dele,
+não é preciso manter 1.200 concursos atualizados. O N1 vira conveniência de descoberta.
+
+- **Duas passadas testadas e descartadas.** Localizar a tabela de cargos para uma primeira
+  leitura barata dá 8/13 — falha nos dois Cebraspe (remuneração em prosa), no Catanduvas e em
+  mais dois. Ficou a leitura única; custo aceito: 3 de 13 seguem com anexo truncado.
+- **Achado: o quadro de provas estava sendo jogado fora.** Nº de questões e peso por
+  disciplina não fica no cabeçalho nem no anexo — aparece entre 1,9% e 51,6% do documento, no
+  miolo que o recorte descartava (só 2 de 13 caíam no cabeçalho). Virou terceira janela, com
+  dois sinais: título explícito (4/13) + seção numerada `DAS PROVAS` (+7/13) = 11/13
+  localizados, e **composição presente no texto enviado em 13/13**. Mediana segue ~26k tokens.
+- **Schema ampliado** nos dois backends: `inscricao_valor` e `etapas[]` por certame; `vagas`,
+  `salario`, `escolaridade`, `lotacao`, `carga_horaria` e `prova[]` (`{disciplina, questoes,
+  peso}`) por cargo. São os campos que `createCourse` já carregava e que vinham do catálogo.
+- **Granularidade de tópico** virou regra no prompt (8 a 15 por disciplina). Número calibrado
+  no olho, não medido — primeiro botão a girar com uso real.
+- 88 testes passando (16 no `api/_edital-text.test.js`), lint limpo.
+
+**Não verificado:** a saída da IA. Não há chave de API no ambiente remoto. Validado é o texto
+que chega ao modelo e o formato exigido dele; rodar `npm run ai:server` com a chave no `.env`
+para medir o que o modelo devolve de fato.
+
+**Pendente:** (1) tela de revisão — decidida, não implementada; (2) `pareceEdital` exposto mas
+não ligado no `Edital.jsx`; (3) `createCourse` e as telas ainda ignoram `prova[]`, `etapas[]` e
+os dados de cargo; (4) versão do edital — retificação posterior não chega a quem já montou.
 
 ---
 
