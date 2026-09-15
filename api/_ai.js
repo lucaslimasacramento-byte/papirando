@@ -1,3 +1,5 @@
+import { prepararTextoEdital } from './_edital-text.js';
+
 const DEFAULT_TIMEOUT_MS = 90_000;
 const DEFAULT_AI_RATE_LIMIT = 30;
 const DEFAULT_AI_RATE_WINDOW_MS = 10 * 60 * 1000;
@@ -1301,6 +1303,10 @@ export async function analyzeEdital(editalText = '') {
   const text = String(editalText || '').trim();
   if (!text) throw new Error('Cole ou envie um edital para analise.');
 
+  // O corte antigo era text.slice(0, 24000) — pegava capa e regras de inscricao e nunca
+  // alcancava o anexo de conteudo programatico. Ver docs/TESTE-EXTRACAO-EDITAL.md.
+  const preparado = prepararTextoEdital(text);
+
   const prompt = `Analise este edital de concurso e extraia cargos, disciplinas e topicos.
 Mantenha nomes em portugues e evite inventar dados ausentes.
 
@@ -1308,7 +1314,7 @@ JSON esperado:
 {"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
 
 Edital:
-${text.slice(0, 24000)}`;
+${preparado.texto}`;
 
   const result = await runJson(prompt, { schemaName: 'edital_analysis' });
   const analysis = result.json?.analysis || result.json || {};

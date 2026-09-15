@@ -47,7 +47,28 @@ Verbena/UFG, INEPAM, Selecao.net, prefeituras). 3 não eram edital de abertura �
 (recortando o anexo, não aumentando o limite: mediana de 83k tokens por edital) é o
 pré-requisito para medir a qualidade da estruturação da IA.
 
-**Pendente:** correção do corte não implementada — tem impacto de custo por análise, decisão do dono.
+### Correção do corte — aplicada ✅
+
+Novo `api/_edital-text.js`, compartilhado pelos dois backends (antes cada um cortava do seu
+jeito). Acha a linha do cabeçalho do anexo e manda **identificação + conteúdo programático**,
+descartando o miolo de regras. Nos mesmos 13 editais:
+
+| | antes | depois |
+|---|---|---|
+| Anexo chegando à IA | 1/13 (e era falso positivo) | **13/13** |
+| Disciplinas identificáveis (soma) | 214 | **893** |
+| Mediana enviada | 24.000 chars (~6,9k tokens) | 89.659 chars (~26k tokens) |
+
+Custo por análise sobe ~3,7× contra o corte antigo — que não comprava nada, porque o plano
+voltava vazio; e é ~3,2× mais barato que mandar o edital inteiro. `CHARS_TOTAL` é o botão de
+ajuste. 11 testes de regressão em `api/_edital-text.test.js`; `vite.config.js` passou a
+incluir `api/**/*.test.js`. Suíte cheia: 83 testes passando, lint limpo.
+
+**Pendente:** (1) 3 de 13 ainda truncam o anexo — anexo de 131k a 210k chars por listar
+dezenas de cargos; o certo é recortar só o cargo do aluno, o que exige duas passadas;
+(2) `pareceEdital` está exposto mas não ligado no `Edital.jsx` (avisar antes de gastar
+análise com comunicado/retificação); (3) medir a qualidade da estruturação da IA — agora é
+possível.
 
 ---
 

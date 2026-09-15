@@ -117,3 +117,53 @@ quebrado é uma linha de corte no backend, não o pipeline de PDF.
 
 Ordem sugerida: corrigir o corte (recortando o anexo em vez de aumentar o limite), colocar a
 checagem de sanidade do documento, e só então medir a qualidade da estruturação da IA.
+
+---
+
+# Correção aplicada — 2026-09-15
+
+O recorte passou a ser por **posição do anexo**, não por tamanho do começo.
+Implementado em [`api/_edital-text.js`](../api/_edital-text.js) e usado pelos dois backends
+(`api/_ai.js` em produção, `ai-server.mjs` em dev), que antes cortavam cada um do seu jeito.
+
+Regra: acha a linha do cabeçalho do anexo de conteúdo programático (nos três vocabulários de
+banca) e monta **cabeçalho de identificação + anexo**, jogando fora o miolo de regras de
+inscrição. O cabeçalho vai junto porque a análise também devolve concurso, órgão, banca,
+cargos e datas — mandar só o anexo perderia esses campos.
+
+A detecção roda linha a linha sobre uma cópia normalizada e o recorte sai sempre do texto
+original: a normalização que desfaz o letter-spacing do pdfjs é lossy e cola palavras.
+
+## Antes e depois, nos mesmos 13 editais
+
+| | antes (`slice(0, 24000)`) | depois |
+|---|---|---|
+| Anexo presente no texto enviado à IA | **1/13** | **13/13** |
+| Disciplinas identificáveis (soma) | 214 | 893 |
+| Caracteres enviados (mediana) | 24.000 (~6.9k tokens) | 89.659 (~26k tokens) |
+
+O único "1/13" do antes é falso positivo do medidor: era a linha de sumário do
+`pref_minacu_verbena`, não o anexo — as disciplinas visíveis ali eram 4, contra 35 depois.
+
+**O custo por análise sobe ~3,7× em relação ao corte antigo** — que é um custo que não
+comprava nada, já que o plano voltava vazio. Contra a alternativa de mandar o edital inteiro
+(~83k tokens), o recorte é ~3,2× mais barato. `CHARS_TOTAL` em `api/_edital-text.js` é o botão:
+baixar para 60.000 leva a mediana para ~17k tokens, ao preço de mandar o anexo inteiro em só
+4 dos 13.
+
+## O que ficou de fora
+
+- **3 de 13 ainda truncam o anexo** (IFC/Fundatec, SAEB/AOCP, Sta. Isabel/INEPAM): o anexo
+  deles tem de 131k a 210k caracteres porque lista o conteúdo de dezenas de cargos. Aumentar o
+  orçamento é remédio caro e parcial — o certo é recortar **só o cargo que o aluno escolheu**,
+  o que exige duas passadas (primeiro identificar o cargo, depois recortar). Fica para quando
+  a tela do aluno souber o cargo antes da análise.
+- **`pareceEdital` está exposto mas não é usado por ninguém ainda.** É a checagem de sanidade
+  do risco 3 (documento curto demais para ser edital de abertura). Ligar em `Edital.jsx` para
+  avisar o aluno antes de gastar uma análise.
+- **A qualidade da estruturação da IA continua não medida.** Agora é possível medir, que era o
+  ponto de fazer esta correção primeiro.
+
+Regressão coberta em [`api/_edital-text.test.js`](../api/_edital-text.test.js) (11 testes):
+os três vocabulários de banca, a armadilha do sumário, o letter-spacing e os quatro modos de
+recorte.

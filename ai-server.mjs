@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
+import { prepararTextoEdital } from './api/_edital-text.js';
 import { resolve } from 'node:path';
 
 const ROOT_DIR = process.cwd();
@@ -666,24 +667,13 @@ function sanitizeAnalysis(rawAnalysis) {
   };
 }
 
+// A versao anterior montava cabeca + linhas por palavra-chave + rabo. Duas falhas medidas
+// em docs/TESTE-EXTRACAO-EDITAL.md: as palavras-chave estavam SEM acento contra texto
+// acentuado (nao casavam em nenhum dos 13 editais) e a linha de disciplina
+// ("Lingua Portuguesa: ...") nao batia em palavra-chave nenhuma, sobrevivendo em 2 de 13.
+// Agora o recorte e por posicao do anexo, compartilhado com o backend de producao.
 function prepareEditalText(rawText) {
-  const normalized = String(rawText || '').replace(/\r/g, '').trim();
-  if (!normalized) return '';
-
-  if (normalized.length <= 120000) {
-    return normalized;
-  }
-
-  const lines = normalized.split('\n').map((line) => line.trim());
-  const keywordRegex =
-    /concurso|cargo|cargos|especialidade|area|banca|conhecimentos basicos|conhecimentos especificos|conteudo programatico|objetos de avaliacao|cronograma|prova objetiva|anexo/i;
-
-  const importantLines = lines.filter((line) => keywordRegex.test(line));
-  const head = lines.slice(0, 350).join('\n');
-  const middle = importantLines.slice(0, 1200).join('\n');
-  const tail = lines.slice(-220).join('\n');
-
-  return [head, middle, tail].filter(Boolean).join('\n');
+  return prepararTextoEdital(rawText).texto;
 }
 
 function extractJsonFromText(text) {
