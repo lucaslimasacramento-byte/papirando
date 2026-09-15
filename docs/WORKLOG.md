@@ -18,6 +18,39 @@
 
 ---
 
+## Sessão 2026-09-15 — Teste de extração de PDF de editais 🔧
+
+Feito para validar a aposta do catálogo N1 (publicar concurso raso + o aluno sobe o edital e a
+IA monta o plano) antes de escrever a regra. Laudo completo em
+[TESTE-EXTRACAO-EDITAL.md](TESTE-EXTRACAO-EDITAL.md); harness reproduzível em
+`scripts/testar-extracao-edital.mjs`.
+
+Amostra: 16 PDFs de domínio oficial, 2026, 8 operadores (Cebraspe, AOCP, Fundatec, IBFC,
+Verbena/UFG, INEPAM, Selecao.net, prefeituras). 3 não eram edital de abertura → 13 válidos.
+
+- **O medo do PDF ilegível não se confirmou** — 13/13 extraíram texto legível (2.713 a 5.765
+  chars/página, todos born-digital), 13/13 com conteúdo programático no mesmo PDF, 13/13 com
+  todos os campos de catálogo. Zero escaneados na amostra. A extração via pdfjs que já está no
+  app dá conta.
+- **O problema real é outro: o corte de texto do backend.** O conteúdo programático começa
+  entre 51% e 97% do edital (posição 81.088 a 545.060). `api/_ai.js` → `analyzeEdital()` corta
+  em `slice(0, 24000)` — **0 de 13** editais têm as disciplinas chegando ao modelo em produção.
+  O caminho de dev (`ai-server.mjs`, 120.000) salva 4 de 13. Não é o modelo errando: é o texto
+  não chegando.
+- **Vocabulário varia por banca** — Cebraspe usa "OBJETOS DE AVALIAÇÃO", Fundatec usa
+  "ANEXO IX – PROGRAMAS". Procurar só "conteúdo programático" erra em ~40% dos editais.
+- Defeitos menores no mesmo lugar: o `keywordRegex` de `prepareEditalText` busca termos **sem
+  acento** contra texto acentuado (não casa em nenhum dos 13); ~19% dos links "de edital" são
+  comunicado/retificação/resultado e precisam de checagem de sanidade antes de chamar a IA.
+
+**Conclusão:** a aposta do N1 se sustenta — o insumo existe e é legível. Corrigir o corte
+(recortando o anexo, não aumentando o limite: mediana de 83k tokens por edital) é o
+pré-requisito para medir a qualidade da estruturação da IA.
+
+**Pendente:** correção do corte não implementada — tem impacto de custo por análise, decisão do dono.
+
+---
+
 ## Sessão 2026-09-07 — Integração das branches de segurança + worklog em dia 🔧→✅
 
 O worklog estava parado em 2026-07-05 enquanto o código andou até 2026-08-05. Esta sessão fecha a lacuna (entradas abaixo, de 07/07 a 05/08) e resolve a dívida das branches de segurança.
