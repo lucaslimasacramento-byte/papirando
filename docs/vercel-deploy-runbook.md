@@ -153,3 +153,30 @@ npm run build
 - Aplicar SQL/RLS no Supabase quando necessario.
 - Hospedar `ai-server.mjs` em servico Node.
 - Configurar dominio proprio, se houver.
+
+## IA em produção — variáveis e limite de duração
+
+A análise de edital manda ~26k tokens para o modelo e não responde em poucos segundos. Sem
+`maxDuration` declarado, a Vercel encerra a função no padrão dela e o sintoma é "a IA não
+responde" ou 504 — o que faz procurar defeito na chave, que não é o problema.
+
+`vercel.json` declara `functions."api/ai.js".maxDuration = 60`. O teto real depende do plano
+(o projeto está no Hobby hoje); se o deploy recusar o valor, baixar até passar.
+
+Variáveis obrigatórias no projeto da Vercel:
+
+| variável | observação |
+|---|---|
+| `ANTHROPIC_API_KEY` | provider preferido por padrão em `providerOrder` (`api/_ai.js`) |
+| `VITE_AI_ENABLED=true` | **build-time** — salvar não basta, precisa de redeploy |
+| `SUPABASE_URL` + `SUPABASE_ANON_KEY` | `requireAiAuth` valida o token do aluno; sem isso a IA responde 500 |
+
+`ANTHROPIC_MODEL` é opcional (há default no código).
+
+**Se ainda der timeout no Hobby:** baixar `CHARS_TOTAL` em
+[`api/_edital-text.js`](../api/_edital-text.js) de 120.000 para 60.000. Corta o texto enviado
+quase pela metade (~17k tokens) e a resposta vem mais rápido, ao preço de mandar o anexo
+inteiro em 4 dos 13 editais do teste em vez de 10.
+
+Dois limites que atrapalham teste em lote: `AI_RATE_LIMIT_MAX` (padrão 30 por 10 min) e
+`AI_FREE_DAILY_CAP`.
