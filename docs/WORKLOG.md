@@ -18,6 +18,34 @@
 
 ---
 
+## Sessão 2026-09-16 — Responsividade por altura (notebook) 🔧
+
+O app adaptava por **largura** e nunca por **altura**. Em notebook a largura passa e a altura
+não, então conteúdo era cortado sem rolagem para alcançá-lo. Antes desta sessão havia **zero**
+media queries por altura em todo o projeto.
+
+- **Login** — a página era travada em `100vh` com `overflow: hidden` e o card pede 760px.
+  Medido em 1366x660: card precisava de 703px, tinha 594px → **109px cortados**, levando junto
+  "Continuar com Google" e o link de criar conta, e a página não rolava. Novo media query em
+  `max-height: 820px`: página rola, card cresce, capa vira sticky, respiro do cabeçalho cai de
+  52px para 26px. Verificado com o app buildado em 1366x660, 1536x720, 1920x1080 e 390x844.
+- **ImportConfirmModal** — não tinha teto de altura nem rolagem. Reproduzido em 1366x660: card
+  de 784px começando em -62 e terminando fora da janela, nada rolava, botão inalcançável.
+  Ganhou `maxHeight: calc(100dvh - 32px)` + `overflow: auto`, e o rodapé virou sticky para as
+  ações não sumirem na rolagem.
+- **LinkModal, MetasSemana, MFAChallengePanel** — mesmo padrão sem teto; ganharam o mesmo
+  tratamento.
+
+**O que foi auditado e está correto:** o esqueleto do app (`overflow-y-auto` na área de
+conteúdo), Histórico/Questões/Comunidades (rolagem interna com `flex:1; min-height:0`),
+`ModalShell` do Planos e `.simulados-modal-shell` (ambos com teto em vh e corpo rolável).
+
+**Pendente:** os overlays de admin (`AdminUsuarios`, `AdminCourseTemplatesEditor`) seguem sem
+teto de altura — não vão para o aluno, ficaram para depois. E as telas autenticadas não foram
+abertas num navegador aqui (exigem login); a auditoria delas foi por código.
+
+---
+
 ## Sessão 2026-09-15 — Teste de extração de PDF de editais 🔧
 
 Feito para validar a aposta do catálogo N1 (publicar concurso raso + o aluno sobe o edital e a

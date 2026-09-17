@@ -6,7 +6,13 @@ export default function LinkModal({ linkModalOpen, setLinkModalOpen }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(26,54,93,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ background: 'var(--pl-surface)', borderRadius: 20, boxShadow: 'var(--pl-sh-high)', width: '100%', maxWidth: 520, padding: '28px 28px 24px', position: 'relative' }}>
+      <div style={{
+        background: 'var(--pl-surface)', borderRadius: 20, boxShadow: 'var(--pl-sh-high)',
+        width: '100%', maxWidth: 520, padding: '28px 28px 24px', position: 'relative',
+        // Notebook tem tela baixa: sem teto o painel estoura para fora da janela e o botao
+        // de acao fica inalcancavel, porque overlay fixo nao gera rolagem de pagina.
+        maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto',
+      }}>
         <button
           onClick={() => setLinkModalOpen(false)}
           style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pl-ink-3)', borderRadius: 8, padding: 4 }}

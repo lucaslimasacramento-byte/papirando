@@ -80,6 +80,9 @@ export default function MFAChallengePanel({ onSuccess, onCancel }) {
           padding: 24,
           borderRadius: 18,
           boxShadow: 'var(--pl-sh-high)',
+          // Ver LinkModal: overlay fixo nao rola sozinho em tela baixa.
+          maxHeight: 'calc(100dvh - 32px)',
+          overflowY: 'auto',
         }}
       >
         <p className="pl-eyebrow" style={{ marginBottom: 2 }}>Segurança</p>

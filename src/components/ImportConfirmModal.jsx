@@ -205,7 +205,11 @@ export function ImportConfirmModal({
           border: `1px solid ${t.border}`,
           borderRadius: 20,
           boxShadow: t.shadow,
-          overflow: 'hidden',
+          // Sem limite de altura o card estourava a tela em notebook: medido em 1366x660,
+          // ele ficava com 784px, comecando em -62 e terminando depois do fim da janela,
+          // e nada rolava — o botao de confirmar ficava inalcancavel.
+          maxHeight: 'calc(100dvh - 32px)',
+          overflow: 'auto',
         }}
       >
         {/* Barra de acento */}
@@ -409,8 +413,11 @@ export function ImportConfirmModal({
           </p>
         </div>
 
-        {/* Footer: ações */}
-        <div style={{ padding: '4px 24px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+        {/* Footer: ações — sticky para as acoes nao sumirem quando o card rola. */}
+        <div style={{
+          position: 'sticky', bottom: 0, background: t.bg,
+          padding: '4px 24px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10,
+        }}>
           <button
             type="button"
             onClick={onCancel}
