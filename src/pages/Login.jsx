@@ -491,6 +491,45 @@ export default function Login({
         color: var(--pl-ink);
       }
 
+      /* Notebook: a tela cabia na largura, mas nao na altura. O card pede 760px e a pagina
+         era travada em 100vh com overflow hidden — entao em tela baixa o rodape do
+         formulario (inclusive o botao de entrar) era simplesmente cortado, sem rolagem.
+         Todos os ajustes daqui eram por largura; faltava um por altura.
+         Os !important sao necessarios: os valores equivalentes vem de style inline. */
+      @media (max-height: 820px) {
+        .pl-login-page {
+          height: auto !important;
+          min-height: 100svh !important;
+          overflow: auto !important;
+        }
+
+        .pl-login-cover {
+          /* A capa acompanha a rolagem em vez de esticar a pagina sozinha. */
+          position: sticky !important;
+          top: 0;
+          max-height: 100svh;
+          padding: 32px 40px !important;
+        }
+
+        .pl-login-form-shell {
+          height: auto !important;
+          overflow: visible !important;
+          padding: 24px 28px !important;
+        }
+
+        .pl-login-card {
+          height: auto !important;
+          max-height: none !important;
+          overflow: visible !important;
+          padding: 30px 34px !important;
+        }
+
+        /* O respiro do cabecalho do card sozinho comia 52px de uma tela que ja falta. */
+        .pl-login-card-header {
+          margin-bottom: 26px !important;
+        }
+      }
+
       @media (max-width: 980px) {
         .pl-login-page {
           grid-template-columns: 1fr !important;
