@@ -213,12 +213,12 @@ export default function Planos({
 
   // Estado editavel da revisao: uma linha por disciplina, com os topicos dentro. Tudo
   // marcado por padrao — o aluno desmarca o que nao cai na prova dele.
-  const montarRevisao = (contest) => (
+  const montarRevisao = (contest, preMarcar = true) => (
     (contest?.disciplinas || []).map((disciplina) => ({
       nomeOriginal: disciplina.nome,
       nome: disciplina.nome,
-      incluir: true,
-      topicos: (disciplina.topicos || []).map((topico) => ({ nome: topico, incluir: true })),
+      incluir: preMarcar,
+      topicos: (disciplina.topicos || []).map((topico) => ({ nome: topico, incluir: preMarcar })),
     }))
   );
 
@@ -245,12 +245,12 @@ export default function Planos({
   const applyAnalysisToForm = (analysis, options = {}) => {
     if (!analysis?.contests?.length) return;
 
-    const { overwriteFields = false, preferredContestId = '' } = options;
+    const { overwriteFields = false, preferredContestId = '', preMarcar = true } = options;
     const selectedId = preferredContestId || analysis.contests[0].id || '';
     const contest = analysis.contests.find((item) => item.id === selectedId) || analysis.contests[0];
 
     setSelectedContestId(selectedId);
-    setRevisao(montarRevisao(contest));
+    setRevisao(montarRevisao(contest, preMarcar));
     setIaForm((prev) => ({
       ...prev,
       nome: overwriteFields ? contest.title : prev.nome || contest.title,
@@ -298,13 +298,17 @@ export default function Planos({
           : null;
 
         setAnalysisResult(heuristicAnalysis);
-        applyAnalysisToForm(heuristicAnalysis, options);
-        // Quando o fallback heurístico produz um resultado, não assustar o usuário com o
-        // erro técnico da IA — só avisar que é a análise interna. Sem fallback, mostrar o erro.
+        // O parser interno acerta a estrutura de um edital simples, mas em edital de verdade
+        // devolve lixo com cara de leitura boa ("REMUNERAÇÃO BRUTA" como disciplina). Como a
+        // plataforma inteira se monta em cima desta leitura, ele NÃO preenche os campos
+        // sozinho nem vem com tudo marcado: o aluno escolhe o que aproveitar.
+        applyAnalysisToForm(heuristicAnalysis, { ...options, overwriteFields: false, preMarcar: false });
+        // Esconder o motivo real deixava a gente sem saber se era chave, timeout ou sessão.
+        const motivo = String(realAiError?.message || '').trim();
         setAnalysisError(
           heuristicAnalysis
-            ? 'A IA de produção não respondeu agora — exibimos a análise interna (heurística). Revise os campos antes de importar.'
-            : (realAiError.message || 'Não foi possível analisar o edital.')
+            ? `A IA não respondeu — mostramos abaixo a leitura do parser interno, que costuma errar em edital longo. Confira tudo antes de confirmar.${motivo ? ` (motivo: ${motivo})` : ''}`
+            : (motivo || 'Não foi possível analisar o edital.')
         );
         return heuristicAnalysis;
       } catch {
@@ -761,7 +765,12 @@ export default function Planos({
                 <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>Qual concurso deseja importar?</label>
                 <select
                   value={selectedContestId}
-                  onChange={(e) => applyAnalysisToForm(analysisResult, { overwriteFields: true, preferredContestId: e.target.value })}
+                  onChange={(e) => applyAnalysisToForm(analysisResult, {
+                    // parser interno nunca reescreve os campos nem vem pre-marcado
+                    overwriteFields: analysisResult.source !== 'heuristic',
+                    preMarcar: analysisResult.source !== 'heuristic',
+                    preferredContestId: e.target.value,
+                  })}
                   className="pl-input"
                   style={{ width: '100%', boxSizing: 'border-box' }}
                 >
@@ -781,7 +790,11 @@ export default function Planos({
               analysis={analysisResult}
               revisao={revisao}
               onAlterarDisciplina={alterarDisciplinaRevisada}
-              avisos={avisosDaLeitura}
+              avisos={analysisResult.source === 'heuristic'
+                ? ['Esta leitura NÃO veio da IA — é do parser interno, que erra bastante em edital longo. '
+                   + 'Nada vem marcado de propósito: marque só o que estiver certo, ou feche e tente de novo.',
+                   ...avisosDaLeitura]
+                : avisosDaLeitura}
               nomeDoArquivo={uploadedFileName}
             />
           )}

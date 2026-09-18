@@ -18,6 +18,31 @@
 
 ---
 
+## Sessão 2026-09-18 — Primeiro teste real em produção 🔧
+
+Primeiro edital subido em produção (SEPLAG/AL, 70 páginas, Cebraspe). Três achados.
+
+- **A IA não respondeu e o motivo estava sendo escondido.** O `catch` de `runAnalysis`
+  descartava `realAiError.message` quando o fallback heurístico produzia algo, e mostrava só
+  "a IA de produção não respondeu agora". Sem o motivo não dá para saber se é chave, timeout,
+  sessão ou limite. Agora a mensagem real aparece junto.
+- **O parser interno devolve lixo com cara de leitura boa.** No edital real ele detectou 50
+  "concursos", nomeou o curso com uma frase solta do meio do texto e trouxe "REMUNERAÇÃO
+  BRUTA" e "DESCRIÇÃO SUMÁRIA DAS ATIVIDADES" como disciplinas. Era aceitável quando o edital
+  era só um caminho entre vários; agora que a plataforma inteira se monta em cima da leitura,
+  é armadilha. Passou a não preencher os campos sozinho, não vir pré-marcado e exibir aviso
+  próprio no painel de revisão.
+- **Todo textarea do app estava espremido em 38px.** `.pl-input` fixa `height: 38px` e existe
+  `.pl-textarea` para liberar — só o `AdminConcursos` lembrava de usar. Corrigido na raiz com
+  `textarea.pl-input`, que vale para os 23 textareas de uma vez. Verificado no navegador:
+  `rows=12` passou de 38px para 282px.
+
+Nosso recorte lê esse edital bem: 70 páginas, 202.992 chars, anexo localizado a 78% do
+documento, 66.023 chars (~19k tokens) enviados com anexo e quadro de provas dentro. Ou seja,
+o problema não é o texto — é a chamada da IA falhando.
+
+---
+
 ## Sessão 2026-09-16 — Responsividade por altura (notebook) 🔧
 
 O app adaptava por **largura** e nunca por **altura**. Em notebook a largura passa e a altura
