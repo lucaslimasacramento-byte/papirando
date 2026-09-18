@@ -557,8 +557,16 @@ export async function getHealth() {
 // auditoria ja decidiu que health nao expoe nem provider nem modelo (aiSecurity.test.js).
 // Entao classificamos: diagnostico util, nada de interno.
 export function motivoDaFalhaDeIa(mensagem) {
-  const texto = String(mensagem || '').toLowerCase();
-  if (!texto) return '';
+  const bruto = String(mensagem || '');
+  if (!bruto.trim()) return '';
+
+  // runJson junta o erro de TODOS os provedores numa string so
+  // ("[anthropic] ... | [openrouter] ... | [groq] ..."). Classificar a string inteira faz
+  // o motivo de um provedor secundario virar o diagnostico do principal — e manda o dono
+  // resolver o problema errado. So o primeiro segmento importa: e o provedor preferido.
+  const primeiro = bruto.match(/\[[a-z]+\]\s*([\s\S]*?)(?=\s*\|\s*\[[a-z]+\]|$)/i);
+  const texto = (primeiro ? primeiro[1] : bruto).toLowerCase();
+  if (!texto.trim()) return '';
   if (/401|unauthoriz|invalid[\s_-]*api[\s_-]*key|authentication|x-api-key/.test(texto)) {
     return 'A chave da IA foi rejeitada pelo provedor.';
   }

@@ -40,3 +40,30 @@ describe('motivoDaFalhaDeIa', () => {
     expect(motivo).toMatch(/chave da IA foi rejeitada/i);
   });
 });
+
+// runJson junta o erro de todos os provedores numa string só. Classificar a string inteira
+// fazia o motivo de um provedor secundário virar o diagnóstico do principal — foi o que
+// mandou o dono do app caçar crédito quando o Anthropic reclamava de outra coisa.
+describe('motivoDaFalhaDeIa — só o provedor principal conta', () => {
+  it('ignora o credito de um provedor secundario', () => {
+    const erro = 'Nao foi possivel obter resposta de IA. [anthropic] 404 model not_found'
+      + ' | [openrouter] 402 insufficient credits | [openai] 429 quota exceeded';
+    expect(motivoDaFalhaDeIa(erro)).toMatch(/modelo de IA configurado/i);
+  });
+
+  it('ignora a chave invalida de um provedor secundario', () => {
+    const erro = 'Nao foi possivel obter resposta de IA. [anthropic] Your credit balance is too low'
+      + ' | [groq] 401 invalid api key';
+    expect(motivoDaFalhaDeIa(erro)).toMatch(/credito ou limite de gasto/i);
+  });
+
+  it('respeita o primeiro segmento mesmo com varios provedores depois', () => {
+    const erro = 'Nao foi possivel obter resposta de IA. [anthropic] 401 authentication_error'
+      + ' | [openrouter] 529 overloaded | [groq] timeout | [gemini] 404 model';
+    expect(motivoDaFalhaDeIa(erro)).toMatch(/chave da IA foi rejeitada/i);
+  });
+
+  it('classifica normalmente quando nao ha prefixo de provedor', () => {
+    expect(motivoDaFalhaDeIa('Your credit balance is too low')).toMatch(/credito ou limite/i);
+  });
+});
