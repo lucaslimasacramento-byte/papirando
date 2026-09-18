@@ -227,11 +227,14 @@ async function fetchJson(url, options = {}) {
     if (!response.ok) {
       const message =
         payload?.error?.message ||
+        payload?.error?.type ||
         payload?.error ||
         payload?.message ||
         response.statusText ||
         'Falha no provedor de IA.';
-      throw new Error(message);
+      // O status era descartado, e sem ele "o provedor recusou a chamada" nao diz nada:
+      // 401, 403, 400 e 404 pedem acoes completamente diferentes.
+      throw new Error(`HTTP ${response.status}: ${message}`);
     }
 
     return payload;
@@ -590,7 +593,16 @@ export function motivoDaFalhaDeIa(mensagem) {
   if (/not[\s_-]*found|404|model/.test(texto)) {
     return 'O modelo de IA configurado nao foi encontrado no provedor.';
   }
-  return 'O provedor de IA recusou a chamada.';
+  // 403 e permissao: a chave e valida mas nao pode usar este recurso (escopo do workspace,
+  // modelo bloqueado para a conta, organizacao restrita).
+  if (/403|permission|forbidden|not[\s_-]*allowed|access[\s_-]*denied/.test(texto)) {
+    return 'A chave da IA nao tem permissao para este recurso.';
+  }
+  // Sem categoria conhecida, o status HTTP e o unico fio da meada que sobra.
+  const status = texto.match(/http\s*(\d{3})/);
+  return status
+    ? `O provedor de IA recusou a chamada (HTTP ${status[1]}).`
+    : 'O provedor de IA recusou a chamada.';
 }
 
 export async function getPublicHealth() {

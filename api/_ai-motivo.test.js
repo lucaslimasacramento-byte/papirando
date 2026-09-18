@@ -67,3 +67,29 @@ describe('motivoDaFalhaDeIa — só o provedor principal conta', () => {
     expect(motivoDaFalhaDeIa('Your credit balance is too low')).toMatch(/credito ou limite/i);
   });
 });
+
+// fetchJson passou a prefixar o status ("HTTP 403: permission_error"). Sem ele, "o provedor
+// recusou a chamada" não dizia nada: 400, 403 e 500 pedem ações completamente diferentes.
+describe('motivoDaFalhaDeIa — status HTTP', () => {
+  it('reconhece falta de permissao', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 403: permission_error')).toMatch(/nao tem permissao/i);
+  });
+
+  it('devolve o status quando nao ha categoria conhecida', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 400: invalid_request_error')).toBe(
+      'O provedor de IA recusou a chamada (HTTP 400).'
+    );
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 500: internal')).toBe(
+      'O provedor de IA recusou a chamada (HTTP 500).'
+    );
+  });
+
+  it('a categoria conhecida ainda ganha do status', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 404: model not_found')).toMatch(/modelo de IA/i);
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 401: authentication_error')).toMatch(/chave da IA foi rejeitada/i);
+  });
+
+  it('segue generico quando nem status existe', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] algo inesperado')).toBe('O provedor de IA recusou a chamada.');
+  });
+});
