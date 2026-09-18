@@ -1316,6 +1316,73 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   100% { background-position: 200% center; }
 }
 
+/* ── Leitura do edital: progresso com etapas ──────────────────────────────
+   Antes era só o texto "Lendo PDF e analisando com IA...", parado. Numa espera de
+   dezenas de segundos, texto estático não distingue "processando" de "travou". */
+.pl-leitura {
+  border: 1px solid var(--pl-accent-soft);
+  border-radius: 12px;
+  background: var(--pl-accent-soft);
+  padding: 16px 18px;
+  overflow: hidden;
+  position: relative;
+}
+.pl-leitura::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+  background-size: 200% 100%;
+  animation: pl-ai-shimmer 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.pl-leitura-barra {
+  height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--pl-accent) 20%, transparent);
+  overflow: hidden;
+  margin-top: 12px;
+}
+.pl-leitura-barra > i {
+  display: block;
+  height: 100%;
+  width: 38%;
+  border-radius: 2px;
+  background: var(--pl-accent);
+  animation: pl-leitura-desliza 1.5s ease-in-out infinite;
+}
+@keyframes pl-leitura-desliza {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(340%); }
+}
+.pl-leitura-etapa {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--pl-ink-3);
+  padding: 3px 0;
+}
+.pl-leitura-etapa[data-estado="ativa"] { color: var(--pl-accent); }
+.pl-leitura-etapa[data-estado="feita"] { color: var(--pl-ink-2); }
+.pl-leitura-ponto {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0; opacity: 0.35;
+}
+.pl-leitura-etapa[data-estado="ativa"] .pl-leitura-ponto {
+  opacity: 1;
+  animation: pl-live-pulse 1.2s ease-in-out infinite;
+}
+.pl-leitura-etapa[data-estado="feita"] .pl-leitura-ponto { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-leitura::after,
+  .pl-leitura-barra > i,
+  .pl-leitura-etapa[data-estado="ativa"] .pl-leitura-ponto { animation: none; }
+  .pl-leitura-barra > i { width: 100%; }
+}
+
 /* ── Selo de plano Papiro — dourado vivo ── */
 .seal-plan-elite {
   background-size: 200% 200% !important;

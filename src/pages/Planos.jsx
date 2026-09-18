@@ -29,6 +29,7 @@ import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupConte
 import { storageThumb } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
+import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
 import { avisosDoDocumento } from '../lib/edital';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -725,9 +726,21 @@ export default function Planos({
             <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>PDF do edital</label>
             <label style={{ marginBottom: 16, display: 'flex', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 14, border: '2px dashed var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '20px', fontSize: 13, fontWeight: 700, color: 'var(--pl-accent)' }}>
               <Upload size={18} />
-              {isAnalyzing ? 'Lendo PDF e analisando com IA...' : uploadedFileName ? `PDF carregado: ${uploadedFileName}` : 'Selecionar PDF'}
-              <input type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={(e) => handlePdfUpload(e.target.files?.[0])} />
+              {uploadedFileName ? `PDF carregado: ${uploadedFileName}` : 'Selecionar PDF'}
+              <input
+                type="file"
+                accept="application/pdf,.pdf"
+                style={{ display: 'none' }}
+                disabled={isAnalyzing}
+                onChange={(e) => handlePdfUpload(e.target.files?.[0])}
+              />
             </label>
+
+            {isAnalyzing && (
+              <div style={{ marginBottom: 16 }}>
+                <LeituraEditalProgresso />
+              </div>
+            )}
 
             <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>Texto do edital</label>
             <textarea
