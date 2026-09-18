@@ -25,10 +25,14 @@ export async function analyzeEditalWithRealAI(editalText) {
   }
 
   if (!response.ok) {
-    throw new Error(
+    // O backend manda a mensagem publica em `error` e o motivo tecnico em `detail`.
+    // Sem o detail, "falha temporaria no servico de IA" nao distingue chave invalida de
+    // modelo inexistente, cota estourada ou timeout.
+    const base =
       payload?.error ||
-        (responseText ? 'Não foi possível analisar o edital com IA.' : 'O servidor de IA não retornou resposta.')
-    );
+      (responseText ? 'Não foi possível analisar o edital com IA.' : 'O servidor de IA não retornou resposta.');
+    const detalhe = String(payload?.detail || '').trim();
+    throw new Error(detalhe && detalhe !== base ? `${base} — ${detalhe}` : base);
   }
 
   return normalizeOpenAiAnalysis(payload);

@@ -16,6 +16,7 @@ import {
   enforceAiRateLimit,
   enforceAiPlan,
   readJson,
+  motivoDaFalhaDeIa,
   requireAiAuth,
   sendJson,
   summarizeTopic,
@@ -124,10 +125,15 @@ export default async function handler(req, res) {
       status,
       message: error.message || 'Falha interna na IA.',
     });
+    // O motivo real so existia no log da Vercel. Classificado (nunca o texto cru do
+    // provedor, que vazaria interno) ele diz se e chave, cota, modelo ou timeout.
+    const detalhe = status >= 500 ? motivoDaFalhaDeIa(error.message) : '';
+
     return sendJson(res, status, {
       error:
         error.publicMessage ||
         (status >= 500 ? 'Falha temporaria no servico de IA.' : error.message || 'Falha na requisicao de IA.'),
+      detail: detalhe || undefined,
     });
   }
 }

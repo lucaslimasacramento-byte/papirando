@@ -1,0 +1,38 @@
+import { describe, it, expect } from 'vitest';
+import { motivoDaFalhaDeIa } from './_ai.js';
+
+// O backend responde "Falha temporaria no servico de IA" para qualquer 500, e o motivo real
+// so ficava no log da Vercel. Isto classifica sem repassar o texto cru do provedor — a
+// auditoria ja decidiu que o cliente nao ve interno (ver src/lib/aiSecurity.test.js).
+describe('motivoDaFalhaDeIa', () => {
+  it.each([
+    ['401 {"type":"error","error":{"type":"authentication_error"}}', /chave da IA foi rejeitada/i],
+    ['invalid x-api-key', /chave da IA foi rejeitada/i],
+    ['429 rate_limit_error', /limite ou credito/i],
+    ['Your credit balance is too low', /limite ou credito/i],
+    ['prompt is too long: 250000 tokens > max_tokens', /grande demais para o modelo/i],
+    ['The operation was aborted due to timeout', /demorou demais/i],
+    ['socket hang up', /demorou demais/i],
+    ['404 model: claude-inexistente not_found', /modelo de IA configurado/i],
+  ])('classifica %s', (bruto, esperado) => {
+    expect(motivoDaFalhaDeIa(bruto)).toMatch(esperado);
+  });
+
+  it('nao devolve motivo quando nao ha mensagem', () => {
+    expect(motivoDaFalhaDeIa('')).toBe('');
+    expect(motivoDaFalhaDeIa(null)).toBe('');
+  });
+
+  it('cai num motivo generico para erro desconhecido', () => {
+    expect(motivoDaFalhaDeIa('algo totalmente inesperado')).toBe('O provedor de IA recusou a chamada.');
+  });
+
+  it('nunca repassa o texto cru do provedor', () => {
+    // O ponto do classificador: o que sai e sempre uma das frases fixas.
+    const cru = 'Nao foi possivel obter resposta de IA. [anthropic] 401 sk-ant-api03-SEGREDO invalid';
+    const motivo = motivoDaFalhaDeIa(cru);
+    expect(motivo).not.toContain('sk-ant');
+    expect(motivo).not.toContain('anthropic');
+    expect(motivo).toMatch(/chave da IA foi rejeitada/i);
+  });
+});

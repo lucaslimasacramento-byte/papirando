@@ -549,6 +549,34 @@ export async function getHealth() {
   };
 }
 
+// Traduz o erro cru do provedor num motivo curto e seguro.
+//
+// O backend respondia so "Falha temporaria no servico de IA", e ai nao da para distinguir
+// chave rejeitada de modelo inexistente, cota estourada ou timeout — o dono do app fica
+// adivinhando. Repassar o texto cru resolveria, mas vazaria interno para o cliente, e a
+// auditoria ja decidiu que health nao expoe nem provider nem modelo (aiSecurity.test.js).
+// Entao classificamos: diagnostico util, nada de interno.
+export function motivoDaFalhaDeIa(mensagem) {
+  const texto = String(mensagem || '').toLowerCase();
+  if (!texto) return '';
+  if (/401|unauthoriz|invalid[\s_-]*api[\s_-]*key|authentication|x-api-key/.test(texto)) {
+    return 'A chave da IA foi rejeitada pelo provedor.';
+  }
+  if (/429|rate[\s_-]*limit|quota|credit|billing|insufficient|overloaded/.test(texto)) {
+    return 'Limite ou credito do provedor de IA esgotado.';
+  }
+  if (/context[\s_-]*length|max[\s_-]*tokens|too[\s_-]*(long|large)|413/.test(texto)) {
+    return 'O texto do edital ficou grande demais para o modelo.';
+  }
+  if (/timeout|timed[\s_-]*out|abort|socket hang up|etimedout|econnreset/.test(texto)) {
+    return 'O provedor de IA demorou demais para responder.';
+  }
+  if (/not[\s_-]*found|404|model/.test(texto)) {
+    return 'O modelo de IA configurado nao foi encontrado no provedor.';
+  }
+  return 'O provedor de IA recusou a chamada.';
+}
+
 export async function getPublicHealth() {
   const health = await getHealth();
   return {
