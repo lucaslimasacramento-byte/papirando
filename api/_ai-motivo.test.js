@@ -8,8 +8,12 @@ describe('motivoDaFalhaDeIa', () => {
   it.each([
     ['401 {"type":"error","error":{"type":"authentication_error"}}', /chave da IA foi rejeitada/i],
     ['invalid x-api-key', /chave da IA foi rejeitada/i],
-    ['429 rate_limit_error', /limite ou credito/i],
-    ['Your credit balance is too low', /limite ou credito/i],
+    ['429 rate_limit_error', /limite de chamadas por minuto/i],
+    ['Your credit balance is too low', /credito ou limite de gasto/i],
+    ['spend limit reached for this workspace', /credito ou limite de gasto/i],
+    // Sobrecarga e passageira: nao pode virar "compre credito".
+    ['529 {"type":"overloaded_error"}', /sobrecarregado/i],
+    ['503 Service Unavailable', /sobrecarregado/i],
     ['prompt is too long: 250000 tokens > max_tokens', /grande demais para o modelo/i],
     ['The operation was aborted due to timeout', /demorou demais/i],
     ['socket hang up', /demorou demais/i],

@@ -562,8 +562,16 @@ export function motivoDaFalhaDeIa(mensagem) {
   if (/401|unauthoriz|invalid[\s_-]*api[\s_-]*key|authentication|x-api-key/.test(texto)) {
     return 'A chave da IA foi rejeitada pelo provedor.';
   }
-  if (/429|rate[\s_-]*limit|quota|credit|billing|insufficient|overloaded/.test(texto)) {
-    return 'Limite ou credito do provedor de IA esgotado.';
+  // Sobrecarga do provedor e genuinamente passageira e pede "tente de novo" — juntar com
+  // credito esgotado mandava o dono comprar credito que ele talvez ja tenha.
+  if (/overloaded|529|503|temporarily unavailable|service unavailable/.test(texto)) {
+    return 'O provedor de IA esta sobrecarregado agora. Tente de novo em instantes.';
+  }
+  if (/credit|billing|insufficient|payment|spend[\s_-]*limit|quota/.test(texto)) {
+    return 'Credito ou limite de gasto da conta de IA esgotado.';
+  }
+  if (/429|rate[\s_-]*limit|too many requests/.test(texto)) {
+    return 'Limite de chamadas por minuto do provedor de IA atingido.';
   }
   if (/context[\s_-]*length|max[\s_-]*tokens|too[\s_-]*(long|large)|413/.test(texto)) {
     return 'O texto do edital ficou grande demais para o modelo.';
