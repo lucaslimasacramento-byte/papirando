@@ -318,6 +318,20 @@ function providerOrder(config = getAiConfig()) {
 // "resposta vazia" sem ter como saber o motivo.
 const ANTHROPIC_MAX_TOKENS = 16000;
 
+// Esforco de raciocinio das chamadas Anthropic.
+//
+// O modelo atual raciocina por padrao no nivel "high" — calibrado para problemas dificeis,
+// nao para ler um documento e transcrever o que esta escrito nele. Era isso que estourava
+// o prazo: a chamada gastava os 50s inteiros pensando e o app abortava antes da resposta.
+//
+// Ler edital e extracao, nao deducao: a resposta esta no texto. Com esforco "low" o modelo
+// responde direto. Se a qualidade cair (disciplina faltando, topico inventado), o primeiro
+// ajuste e subir para "medium" — nao voltar ao padrao.
+const ANTHROPIC_RACIOCINIO = {
+  thinking: { type: 'adaptive' },
+  output_config: { effort: 'low' },
+};
+
 function anthropicText(payload) {
   return (Array.isArray(payload?.content) ? payload.content : [])
     .filter((block) => block?.type === 'text')
@@ -375,6 +389,7 @@ async function runAnthropicJson(prompt, { schemaName = 'papirando_ai', timeoutMs
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: ANTHROPIC_MAX_TOKENS,
+      ...ANTHROPIC_RACIOCINIO,
       // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
       // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
       // ja e amarrado pelo system prompt, entao nao se perde nada.
@@ -396,6 +411,7 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: ANTHROPIC_MAX_TOKENS,
+      ...ANTHROPIC_RACIOCINIO,
       // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
       // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
       // ja e amarrado pelo system prompt, entao nao se perde nada.
@@ -423,6 +439,7 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: ANTHROPIC_MAX_TOKENS,
+      ...ANTHROPIC_RACIOCINIO,
       // Ver acima: temperature e rejeitado pelos modelos atuais da Anthropic.
       system: 'Responda somente com JSON valido. Nao use markdown.',
       messages: [{
