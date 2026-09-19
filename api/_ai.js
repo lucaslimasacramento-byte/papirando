@@ -598,10 +598,16 @@ export function motivoDaFalhaDeIa(mensagem) {
   if (/403|permission|forbidden|not[\s_-]*allowed|access[\s_-]*denied/.test(texto)) {
     return 'A chave da IA nao tem permissao para este recurso.';
   }
-  // Sem categoria conhecida, o status HTTP e o unico fio da meada que sobra.
+  // Sem categoria conhecida, sobram dois fios: o status HTTP e o tipo de erro do provedor.
+  // O tipo ("invalid_request_error", "api_error"...) e um enum fixo, nao texto livre —
+  // diagnostica sem vazar o conteudo da resposta.
   const status = texto.match(/http\s*(\d{3})/);
-  return status
-    ? `O provedor de IA recusou a chamada (HTTP ${status[1]}).`
+  // O underscore e caractere de palavra, entao \b nao separa "invalid_request_error";
+  // precisa casar o identificador inteiro.
+  const tipo = texto.match(/([a-z]+(?:_[a-z]+)*_error)/);
+  const pistas = [status && `HTTP ${status[1]}`, tipo && tipo[1]].filter(Boolean);
+  return pistas.length
+    ? `O provedor de IA recusou a chamada (${pistas.join(' · ')}).`
     : 'O provedor de IA recusou a chamada.';
 }
 

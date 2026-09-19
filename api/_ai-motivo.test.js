@@ -93,3 +93,23 @@ describe('motivoDaFalhaDeIa — status HTTP', () => {
     expect(motivoDaFalhaDeIa('[anthropic] algo inesperado')).toBe('O provedor de IA recusou a chamada.');
   });
 });
+
+describe('motivoDaFalhaDeIa — tipo de erro do provedor', () => {
+  // O tipo é um enum fixo do provedor, não texto livre: diagnostica sem vazar conteúdo.
+  it('inclui o tipo junto do status', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 400: invalid_request_error')).toBe(
+      'O provedor de IA recusou a chamada (HTTP 400 · invalid_request_error).'
+    );
+  });
+
+  it('acha o tipo dentro do corpo JSON do provedor', () => {
+    const erro = '[anthropic] HTTP 400: {"type":"error","error":{"type":"invalid_request_error"}}';
+    expect(motivoDaFalhaDeIa(erro)).toMatch(/invalid_request_error/);
+  });
+
+  it('fica só com o status quando não há tipo', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 400: nada reconhecivel')).toBe(
+      'O provedor de IA recusou a chamada (HTTP 400).'
+    );
+  });
+});
