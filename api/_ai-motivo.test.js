@@ -76,9 +76,7 @@ describe('motivoDaFalhaDeIa — status HTTP', () => {
   });
 
   it('devolve o status quando nao ha categoria conhecida', () => {
-    expect(motivoDaFalhaDeIa('[anthropic] HTTP 400: invalid_request_error')).toBe(
-      'O provedor de IA recusou a chamada (HTTP 400).'
-    );
+    // Com tipo de erro no texto ele entra junto — coberto na suite do tipo, abaixo.
     expect(motivoDaFalhaDeIa('[anthropic] HTTP 500: internal')).toBe(
       'O provedor de IA recusou a chamada (HTTP 500).'
     );
