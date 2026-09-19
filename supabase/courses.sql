@@ -37,10 +37,25 @@ CREATE POLICY "Aluno gerencia os proprios cursos"
   WITH CHECK (auth.uid() = user_id);
 
 -- Admin lê tudo (suporte: ver o que o aluno montou sem pedir print).
-DROP POLICY IF EXISTS "Admin le todos os cursos" ON courses;
-CREATE POLICY "Admin le todos os cursos"
-  ON courses FOR SELECT
-  USING (public.is_app_admin());
+-- Condicional de propósito: is_app_admin() vem de supabase/admin_rls_helpers.sql, e se esse
+-- script ainda não tiver rodado no projeto o CREATE POLICY derrubaria o arquivo inteiro —
+-- deixando o aluno sem a política que realmente importa, que é a de cima.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.proname = 'is_app_admin'
+  ) THEN
+    DROP POLICY IF EXISTS "Admin le todos os cursos" ON courses;
+    CREATE POLICY "Admin le todos os cursos"
+      ON courses FOR SELECT
+      USING (public.is_app_admin());
+  ELSE
+    RAISE NOTICE 'is_app_admin() nao existe: politica de admin nao criada. Rode supabase/admin_rls_helpers.sql e este arquivo de novo.';
+  END IF;
+END
+$$;
 
 CREATE OR REPLACE FUNCTION public.courses_touch_updated_at()
 RETURNS TRIGGER
