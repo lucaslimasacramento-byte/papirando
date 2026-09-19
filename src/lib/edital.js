@@ -116,3 +116,46 @@ export function acharLinhaDaProva(prova, nomeDaDisciplina) {
     return chave && (chave === alvo || chave.includes(alvo) || alvo.includes(chave));
   }) || null;
 }
+
+// Compatibilidade entre os cargos que o aluno escolheu do mesmo edital.
+//
+// Quando ele marca dois cargos, a pergunta que importa é uma só: estudar os dois é quase
+// dobrar o esforço, ou boa parte se aproveita? Sem responder isso na hora da escolha, ele só
+// descobre depois de ter dois cursos montados.
+//
+// É a mesma conta do Conciliador (disciplinas em comum sobre a união), feita aqui na tela
+// porque os dados já estão em memória: é instantâneo e não gasta uma chamada de IA.
+export function compatibilidadeDeCargos(cargos) {
+  const mapas = (cargos || []).map(
+    (cargo) =>
+      new Map(
+        (cargo?.disciplinas || [])
+          .map((disciplina) => [chaveDeDisciplina(disciplina?.nome), String(disciplina?.nome || '').trim()])
+          .filter(([chave, nome]) => chave && nome)
+      )
+  );
+
+  if (mapas.length < 2) return { percentual: 0, comuns: [], exclusivos: mapas.map(() => 0), uniao: 0 };
+
+  const [primeiro, ...resto] = mapas;
+  // Comum = está em TODOS os cargos escolhidos. Com três cargos, o que aparece em dois não
+  // conta: o número tem que significar "isto eu estudo uma vez e vale para tudo".
+  const comuns = [...primeiro.entries()]
+    .filter(([chave]) => resto.every((mapa) => mapa.has(chave)))
+    .map(([, nome]) => nome);
+
+  const chavesComuns = new Set(
+    [...primeiro.keys()].filter((chave) => resto.every((mapa) => mapa.has(chave)))
+  );
+  const exclusivos = mapas.map(
+    (mapa) => [...mapa.keys()].filter((chave) => !chavesComuns.has(chave)).length
+  );
+  const uniao = new Set(mapas.flatMap((mapa) => [...mapa.keys()])).size;
+
+  return {
+    percentual: uniao > 0 ? Math.round((comuns.length / uniao) * 100) : 0,
+    comuns,
+    exclusivos,
+    uniao,
+  };
+}

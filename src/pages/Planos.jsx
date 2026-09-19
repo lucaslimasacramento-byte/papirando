@@ -30,9 +30,16 @@ import { storageThumb } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
-import { avisosDoDocumento } from '../lib/edital';
+import { avisosDoDocumento, compatibilidadeDeCargos } from '../lib/edital';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+// A IA devolve "Não encontrado" quando o campo não está no edital. Renderizar isso como
+// dado produzia chips do tipo "Nao encontrado vagas".
+const semValor = (valor) => {
+  const texto = String(valor || '').trim();
+  return !texto || /^n[ãa]o\s*encontrado$/i.test(texto);
+};
 
 const EMPTY_COURSE_FORM = {
   nome: '',
@@ -137,6 +144,16 @@ export default function Planos({
   const vagasParaCargos = isAdmin
     ? (analysisResult?.contests.length || 1)
     : Math.max(0, remainingCourseSlots);
+
+  // Quanto dois (ou tres) cargos do mesmo edital se aproveitam. Calculado na hora da
+  // escolha, que e quando a resposta muda a decisao — depois vira arrependimento.
+  const compatibilidadeEscolhida = useMemo(() => {
+    if (!analysisResult || cargosEscolhidos.length < 2) return null;
+    const cargos = cargosEscolhidos
+      .map((id) => analysisResult.contests.find((item) => item.id === id))
+      .filter(Boolean);
+    return cargos.length < 2 ? null : compatibilidadeDeCargos(cargos);
+  }, [analysisResult, cargosEscolhidos]);
   const facultyTemplates = useMemo(
     () => normalizeCourseTemplates(courseTemplates).filter((template) => template.intent === 'faculdade'),
     [courseTemplates]
@@ -1029,9 +1046,11 @@ export default function Planos({
                             cargo em vez de outro — o nome sozinho nao decide nada. */}
                         <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                           {[
-                            contest.vagas && `${contest.vagas} vagas`,
-                            contest.salario,
-                            contest.escolaridade,
+                            // "Não encontrado" é a IA dizendo que o campo não estava no
+                            // edital — virava o chip "Nao encontrado vagas" na tela.
+                            semValor(contest.vagas) ? '' : `${contest.vagas} vagas`,
+                            semValor(contest.salario) ? '' : contest.salario,
+                            semValor(contest.escolaridade) ? '' : contest.escolaridade,
                             contest.totalQuestoes ? `${contest.totalQuestoes} questões` : '',
                             `${contest.disciplinasCount} disciplinas`,
                           ]
@@ -1045,6 +1064,77 @@ export default function Planos({
                   );
                 })}
               </div>
+
+              {/* Com dois cargos marcados, a pergunta que importa e uma so: estudar os dois
+                  e quase dobrar o esforco, ou boa parte se aproveita? Responder aqui, na
+                  escolha, e o que evita descobrir isso com dois cursos ja montados. */}
+              {compatibilidadeEscolhida && (
+                <div
+                  className="pl-card"
+                  style={{
+                    padding: '14px 16px',
+                    borderColor: compatibilidadeEscolhida.percentual >= 58
+                      ? 'var(--pl-success)'
+                      : compatibilidadeEscolhida.percentual >= 32
+                        ? 'var(--pl-warn)'
+                        : 'var(--pl-danger)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                    <span
+                      className="pl-num"
+                      style={{
+                        fontSize: 26,
+                        color: compatibilidadeEscolhida.percentual >= 58
+                          ? 'var(--pl-success)'
+                          : compatibilidadeEscolhida.percentual >= 32
+                            ? 'var(--pl-warn)'
+                            : 'var(--pl-danger)',
+                      }}
+                    >
+                      {compatibilidadeEscolhida.percentual}%
+                    </span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                      de compatibilidade entre os cargos marcados
+                    </span>
+                  </div>
+
+                  <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>
+                    {compatibilidadeEscolhida.comuns.length === 0
+                      ? 'Nenhuma disciplina se repete. Na prática são dois estudos separados.'
+                      : compatibilidadeEscolhida.percentual >= 58
+                        ? `${compatibilidadeEscolhida.comuns.length} disciplinas caem nos dois — a maior parte do que você estudar serve para ambos.`
+                        : compatibilidadeEscolhida.percentual >= 32
+                          ? `${compatibilidadeEscolhida.comuns.length} disciplinas caem nos dois, mas boa parte do conteúdo é exclusiva de cada um.`
+                          : `Só ${compatibilidadeEscolhida.comuns.length} disciplinas se repetem. Levar os dois é quase dobrar o esforço.`}
+                  </p>
+
+                  {compatibilidadeEscolhida.comuns.length > 0 && (
+                    <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {compatibilidadeEscolhida.comuns.slice(0, 8).map((nome) => (
+                        <span key={nome} className="pl-tag pl-tag-success" style={{ fontSize: 11 }}>{nome}</span>
+                      ))}
+                      {compatibilidadeEscolhida.comuns.length > 8 && (
+                        <span className="pl-tag" style={{ fontSize: 11 }}>
+                          +{compatibilidadeEscolhida.comuns.length - 8}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Quanto sobra fora do comum é o custo real de levar os dois. */}
+                  <p style={{ margin: '10px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                    Exclusivas de cada cargo:{' '}
+                    {cargosEscolhidos
+                      .map((id, idx) => {
+                        const cargo = analysisResult.contests.find((item) => item.id === id);
+                        const nome = cargo?.roleName || cargo?.title || `Cargo ${idx + 1}`;
+                        return `${nome} (${compatibilidadeEscolhida.exclusivos[idx] ?? 0})`;
+                      })
+                      .join(' · ')}
+                  </p>
+                </div>
+              )}
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', paddingTop: 16, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12.5, color: 'var(--pl-ink-3)' }}>

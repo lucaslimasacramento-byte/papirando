@@ -5,6 +5,7 @@ import {
   parseEditalDate,
   impressaoDoEdital,
   acharLinhaDaProva,
+  compatibilidadeDeCargos,
 } from './edital';
 
 const EDITAL = 'a'.repeat(25000);
@@ -129,5 +130,62 @@ describe('acharLinhaDaProva', () => {
     expect(acharLinhaDaProva([], 'Língua Portuguesa')).toBeNull();
     expect(acharLinhaDaProva(undefined, 'Língua Portuguesa')).toBeNull();
     expect(acharLinhaDaProva(PROVA, '')).toBeNull();
+  });
+});
+
+// A escolha de dois cargos do mesmo edital é a hora de dizer se eles se aproveitam. Mesma
+// conta do Conciliador (comuns sobre a união), feita localmente porque os dados já estão
+// em memória.
+describe('compatibilidadeDeCargos', () => {
+  const cargo = (nome, disciplinas) => ({ title: nome, disciplinas: disciplinas.map((d) => ({ nome: d })) });
+
+  it('nao compara um cargo sozinho', () => {
+    const resultado = compatibilidadeDeCargos([cargo('A', ['Português'])]);
+    expect(resultado.percentual).toBe(0);
+    expect(resultado.comuns).toEqual([]);
+  });
+
+  it('calcula comuns sobre a uniao', () => {
+    const resultado = compatibilidadeDeCargos([
+      cargo('A', ['Português', 'Matemática', 'Direito Penal']),
+      cargo('B', ['Português', 'Matemática', 'Informática']),
+    ]);
+    // 2 comuns numa união de 4 disciplinas
+    expect(resultado.comuns).toEqual(['Português', 'Matemática']);
+    expect(resultado.uniao).toBe(4);
+    expect(resultado.percentual).toBe(50);
+  });
+
+  it('ignora acento e caixa ao casar os nomes', () => {
+    const resultado = compatibilidadeDeCargos([
+      cargo('A', ['LÍNGUA PORTUGUESA']),
+      cargo('B', ['Lingua Portuguesa']),
+    ]);
+    expect(resultado.percentual).toBe(100);
+    expect(resultado.comuns).toHaveLength(1);
+  });
+
+  // Com tres cargos, o que aparece em dois nao e "comum": o numero precisa significar
+  // "estudo uma vez e vale para todos".
+  it('com tres cargos so conta o que esta nos tres', () => {
+    const resultado = compatibilidadeDeCargos([
+      cargo('A', ['Português', 'Matemática']),
+      cargo('B', ['Português', 'Matemática']),
+      cargo('C', ['Português', 'Direito']),
+    ]);
+    expect(resultado.comuns).toEqual(['Português']);
+  });
+
+  it('conta quantas disciplinas sao exclusivas de cada cargo', () => {
+    const resultado = compatibilidadeDeCargos([
+      cargo('A', ['Português', 'Direito Penal', 'Direito Civil']),
+      cargo('B', ['Português', 'Informática']),
+    ]);
+    expect(resultado.exclusivos).toEqual([2, 1]);
+  });
+
+  it('nao quebra com cargo sem disciplinas', () => {
+    const resultado = compatibilidadeDeCargos([cargo('A', ['Português']), { title: 'B' }]);
+    expect(resultado.percentual).toBe(0);
   });
 });

@@ -53,6 +53,18 @@ confirmar — um formulário cheio antes de existir o que preencher. Virou quatr
    revisão. "Enviar outro edital" volta sem fechar o modal.
 4. **Pronto** — só a confirmação, e o botão leva de fato ao curso criado.
 
+### Escolha de cargo com compatibilidade ✅
+
+Quando o edital traz mais de um cargo, entra uma tela própria de escolha (cards com vagas,
+salário, escolaridade, questões e nº de disciplinas) entre a leitura e a revisão. Seleção
+múltipla limitada às vagas de curso do plano; cada cargo é revisado e confirmado um por vez.
+
+Marcando dois ou mais, aparece a **compatibilidade entre eles** — mesma conta do Conciliador
+(disciplinas em comum sobre a união), calculada localmente em `compatibilidadeDeCargos`
+(`src/lib/edital.js`, 6 testes). É instantânea e não gasta chamada de IA, porque os dados já
+estão em memória. Responde na hora da escolha a única pergunta que importa ali: estudar os
+dois é quase dobrar o esforço, ou boa parte se aproveita?
+
 **Falta medir a qualidade da leitura:** quadro de provas preenchido, disciplinas reais,
 8–15 tópicos por disciplina, dados do cargo. `docs/TESTE-EXTRACAO-EDITAL.md` ainda diz que a
 saída da IA não foi verificada.
