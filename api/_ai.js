@@ -225,10 +225,18 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!response.ok) {
+      // payload.error costuma ser objeto: cair nele direto virava "[object Object]" na
+      // mensagem, que nao tem palavra nenhuma para classificar — exatamente o sintoma de
+      // um 400 que chega sem categoria. Serializa em vez de deixar o template fazer isso.
+      const descreve = (valor) => {
+        if (!valor) return '';
+        if (typeof valor === 'string') return valor;
+        try { return JSON.stringify(valor); } catch { return String(valor); }
+      };
       const message =
-        payload?.error?.message ||
-        payload?.error ||
-        payload?.message ||
+        descreve(payload?.error?.message) ||
+        descreve(payload?.error) ||
+        descreve(payload?.message) ||
         response.statusText ||
         'Falha no provedor de IA.';
       // Tipo E mensagem, nao um ou outro: o tipo e o enum ("invalid_request_error") e a
