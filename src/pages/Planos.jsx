@@ -109,7 +109,30 @@ export default function Planos({
   const [revisao, setRevisao] = useState(null);
   const [avisosDaLeitura, setAvisosDaLeitura] = useState([]);
   const [expandedCatalogAreas, setExpandedCatalogAreas] = useState({});
+  // Escotilha para quem nao tem o PDF em maos (edital so em HTML, print, copia do DOU).
+  // Fica escondida ate ser pedida: o caminho normal e o arquivo.
+  const [modoTexto, setModoTexto] = useState(false);
+  // Em que ponto a leitura esta de verdade. A animacao usava tempo cronometrado para
+  // adivinhar; agora ela recebe o sinal real de quando a extracao do PDF terminou.
+  const [faseDaLeitura, setFaseDaLeitura] = useState('pdf');
+  const [arrastando, setArrastando] = useState(false);
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
+
+  // O modal do edital tem quatro momentos e cada um pede a tela inteira. Antes tudo
+  // aparecia junto — dados do curso, area de texto, upload, revisao e o botao de confirmar
+  // — e quem abria via um formulario cheio de campos sem saber por onde comecar. Agora:
+  // enviar o PDF, esperar a leitura, conferir o que a IA achou, confirmar.
+  const etapaEdital = importResult
+    ? 'pronto'
+    : isAnalyzing
+      ? 'lendo'
+      : analysisResult
+        ? 'revisao'
+        : 'envio';
+
+  const contestSelecionado = analysisResult
+    ? analysisResult.contests.find((item) => item.id === selectedContestId) || analysisResult.contests[0]
+    : null;
   const facultyTemplates = useMemo(
     () => normalizeCourseTemplates(courseTemplates).filter((template) => template.intent === 'faculdade'),
     [courseTemplates]
@@ -158,6 +181,25 @@ export default function Planos({
     setSelectedContestId('');
     setAnalysisError('');
     setExpandedCatalogAreas({});
+    setModoTexto(false);
+    setArrastando(false);
+    setFaseDaLeitura('pdf');
+  };
+
+  // Voltar do resultado para o envio sem fechar o modal: trocar de arquivo era so possivel
+  // fechando e abrindo tudo de novo.
+  const reiniciarLeituraDoEdital = () => {
+    setAnalysisResult(null);
+    setSelectedContestId('');
+    setAnalysisError('');
+    setRevisao(null);
+    setAvisosDaLeitura([]);
+    setImportResult(null);
+    setUploadedFileName('');
+    setModoTexto(false);
+    setArrastando(false);
+    setFaseDaLeitura('pdf');
+    setIaForm({ nome: '', plano: '', concurso: '', banca: '', editalText: '' });
   };
 
   const openMode = (nextMode) => {
@@ -330,11 +372,13 @@ export default function Planos({
     }
 
     setIsAnalyzing(true);
+    setFaseDaLeitura('pdf');
     setImportResult(null);
     setAnalysisError('');
 
     try {
       const extractedText = await extractPdfText(file);
+      setFaseDaLeitura('ia');
       // PDF escaneado (só imagem) extrai "com sucesso" mas vem vazio — sem este check,
       // nada acontecia na tela e o usuário ficava sem feedback.
       if (String(extractedText || '').trim().length < 40) {
@@ -712,134 +756,260 @@ export default function Planos({
 
       {mode === 'ia' && (
         <ModalShell
-          title="Importar edital com IA"
-          subtitle="Cole o texto do edital ou envie o PDF e a IA gera automaticamente disciplinas, tópicos e estrutura de estudo."
+          title={
+            etapaEdital === 'lendo'
+              ? 'Lendo o seu edital'
+              : etapaEdital === 'revisao'
+                ? 'Confira o que a IA encontrou'
+                : etapaEdital === 'pronto'
+                  ? 'Curso criado'
+                  : 'Montar o curso pelo edital'
+          }
+          subtitle={
+            etapaEdital === 'lendo'
+              ? 'Leva alguns segundos. Pode deixar aberto.'
+              : etapaEdital === 'revisao'
+                ? 'Nada é criado antes de você confirmar. Desmarque o que não for do seu cargo.'
+                : etapaEdital === 'pronto'
+                  ? ''
+                  : 'Envie o PDF do edital e a IA monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
+          }
           onClose={closeMode}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 20 }}>
-            <InputField label="Nome do curso" value={iaForm.nome} onChange={(value) => setIaForm((prev) => ({ ...prev, nome: value }))} />
-            <InputField label="Concurso/órgão" value={iaForm.concurso} onChange={(value) => setIaForm((prev) => ({ ...prev, concurso: value }))} />
-            <InputField label="Banca" value={iaForm.banca} onChange={(value) => setIaForm((prev) => ({ ...prev, banca: value }))} />
-          </div>
+          {/* ETAPA 1 — só o envio. Nada de formulário antes de existir o que preencher. */}
+          {etapaEdital === 'envio' && (
+            <div style={{ display: 'grid', gap: 18 }}>
+              <label
+                onDragOver={(e) => { e.preventDefault(); setArrastando(true); }}
+                onDragLeave={() => setArrastando(false)}
+                onDrop={(e) => {
+                  // A borda tracejada promete arrastar-e-soltar. Sem isso o arquivo solto
+                  // abria no navegador e o aluno perdia o que tinha feito na tela.
+                  e.preventDefault();
+                  setArrastando(false);
+                  handlePdfUpload(e.dataTransfer?.files?.[0]);
+                }}
+                style={{
+                  display: 'flex',
+                  cursor: 'pointer',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: 10,
+                  borderRadius: 14,
+                  border: `2px dashed ${arrastando ? 'var(--pl-accent)' : 'var(--pl-accent-ring)'}`,
+                  background: 'var(--pl-accent-soft)',
+                  padding: '44px 24px',
+                  transition: 'border-color 120ms ease, transform 120ms ease',
+                  transform: arrastando ? 'scale(1.01)' : 'none',
+                }}
+              >
+                <Upload size={26} style={{ color: 'var(--pl-accent)' }} />
+                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-accent)' }}>
+                  {arrastando ? 'Solte o arquivo aqui' : 'Selecionar o PDF do edital'}
+                </span>
+                <span style={{ fontSize: 12.5, lineHeight: 1.55, color: 'var(--pl-ink-2)', maxWidth: 400 }}>
+                  Use o edital de abertura — é o que traz o conteúdo programático. A partir dele a
+                  plataforma inteira se organiza: disciplinas, pesos e datas.
+                </span>
+                <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  style={{ display: 'none' }}
+                  onChange={(e) => handlePdfUpload(e.target.files?.[0])}
+                />
+              </label>
 
-          <div style={{ marginTop: 20 }}>
-            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>PDF do edital</label>
-            <label style={{ marginBottom: 16, display: 'flex', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 14, border: '2px dashed var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '20px', fontSize: 13, fontWeight: 700, color: 'var(--pl-accent)' }}>
-              <Upload size={18} />
-              {uploadedFileName ? `PDF carregado: ${uploadedFileName}` : 'Selecionar PDF'}
-              <input
-                type="file"
-                accept="application/pdf,.pdf"
-                style={{ display: 'none' }}
-                disabled={isAnalyzing}
-                onChange={(e) => handlePdfUpload(e.target.files?.[0])}
-              />
-            </label>
-
-            {isAnalyzing && (
-              <div style={{ marginBottom: 16 }}>
-                <LeituraEditalProgresso />
-              </div>
-            )}
-
-            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>Texto do edital</label>
-            <textarea
-              rows={12}
-              value={iaForm.editalText}
-              onChange={(e) => {
-                const value = e.target.value;
-                setIaForm((prev) => ({ ...prev, editalText: value }));
-                setAnalysisError('');
-              }}
-              className="pl-input"
-              style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
-            />
-            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-              <SecondaryButton onClick={() => runAnalysis(iaForm.editalText, { overwriteFields: true })} disabled={isAnalyzing}>
-                {isAnalyzing ? 'Analisando...' : 'Analisar texto com IA'}
-              </SecondaryButton>
-            </div>
-          </div>
-
-          {analysisError && (
-            <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-warn)' }}>
-              {analysisError}
-            </div>
-          )}
-
-          {analysisResult && (
-            <div style={{ marginTop: 20, borderRadius: 12, border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: 20 }}>
-              <p className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>{analysisResult.sourceLabel || 'Leitura da IA'}</p>
-              <p style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--pl-accent)' }}>
-                Banca detectada: {analysisResult.banca}. Concursos detectados: {analysisResult.detectedContests}. Motor: {analysisResult.model}.
-              </p>
-
-              <div style={{ marginTop: 16 }}>
-                <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>Qual concurso deseja importar?</label>
-                <select
-                  value={selectedContestId}
-                  onChange={(e) => applyAnalysisToForm(analysisResult, {
-                    // parser interno nunca reescreve os campos nem vem pre-marcado
-                    overwriteFields: analysisResult.source !== 'heuristic',
-                    preMarcar: analysisResult.source !== 'heuristic',
-                    preferredContestId: e.target.value,
-                  })}
-                  className="pl-input"
-                  style={{ width: '100%', boxSizing: 'border-box' }}
-                >
-                  {analysisResult.contests.map((contest, idx) => (
-                    <option key={contest.id ?? idx} value={contest.id}>
-                      {contest.title} - {contest.disciplinasCount} disciplinas / {contest.topicosCount} tópicos
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {analysisResult && (
-            <RevisaoEditalPanel
-              contest={analysisResult.contests.find((item) => item.id === selectedContestId) || analysisResult.contests[0]}
-              analysis={analysisResult}
-              revisao={revisao}
-              onAlterarDisciplina={alterarDisciplinaRevisada}
-              avisos={analysisResult.source === 'heuristic'
-                ? ['Esta leitura NÃO veio da IA — é do parser interno, que erra bastante em edital longo. '
-                   + 'Nada vem marcado de propósito: marque só o que estiver certo, ou feche e tente de novo.',
-                   ...avisosDaLeitura]
-                : avisosDaLeitura}
-              nomeDoArquivo={uploadedFileName}
-            />
-          )}
-
-          {importResult && (
-            <div style={{ marginTop: 20, borderRadius: 12, border: '1px solid var(--pl-success-soft)', background: 'var(--pl-success-soft)', padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--pl-success)' }}>
-                <CheckCircle2 size={18} />
-                <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Importação concluída</p>
-              </div>
-              <p style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--pl-success)' }}>
-                {importResult.disciplinasCriadas} disciplinas e {importResult.topicosCriados} tópicos criados no curso {importResult.curso?.nome}.
-              </p>
-            </div>
-          )}
-
-          <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-            <SecondaryButton onClick={closeMode}>Fechar</SecondaryButton>
-            <PrimaryButton onClick={handleImportEdital} disabled={isImporting}>
-              {isImporting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Processando IA...
-                </>
-              ) : (
-                <>
-                  <Wand2 size={16} />
-                  Confirmar e criar
-                </>
+              {analysisError && (
+                <div style={{ borderRadius: 12, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-warn)' }}>
+                  {analysisError}
+                </div>
               )}
-            </PrimaryButton>
-          </div>
+
+              {/* A escotilha do texto colado fica fechada: PDF é o caminho normal, e a área de
+                  texto aberta sempre fazia o modal parecer um formulário de digitação. */}
+              {modoTexto ? (
+                <div>
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
+                    Texto do edital
+                  </label>
+                  <textarea
+                    rows={10}
+                    autoFocus
+                    value={iaForm.editalText}
+                    placeholder="Cole aqui o conteúdo programático do edital."
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setIaForm((prev) => ({ ...prev, editalText: value }));
+                      setAnalysisError('');
+                    }}
+                    className="pl-input"
+                    style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                    <button className="pl-btn pl-btn-link" onClick={() => setModoTexto(false)}>
+                      Voltar para o envio do PDF
+                    </button>
+                    <SecondaryButton
+                      onClick={() => {
+                        setFaseDaLeitura('texto');
+                        runAnalysis(iaForm.editalText, { overwriteFields: true });
+                      }}
+                      disabled={!iaForm.editalText.trim()}
+                    >
+                      Analisar texto com IA
+                    </SecondaryButton>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <button className="pl-btn pl-btn-link" onClick={() => setModoTexto(true)}>
+                    Não tenho o PDF — colar o texto do edital
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ETAPA 2 — só a espera. */}
+          {etapaEdital === 'lendo' && (
+            <div style={{ padding: '8px 0 4px' }}>
+              <LeituraEditalProgresso fase={faseDaLeitura} />
+              {uploadedFileName && (
+                <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
+                  {uploadedFileName}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ETAPA 3 — o que a IA achou, do resumo ao detalhe. */}
+          {etapaEdital === 'revisao' && contestSelecionado && (
+            <div style={{ display: 'grid', gap: 20 }}>
+              {analysisError && (
+                <div style={{ borderRadius: 12, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-warn)' }}>
+                  {analysisError}
+                </div>
+              )}
+
+              {/* O resumo em números vem antes da lista: é o que diz num relance se a leitura
+                  faz sentido. Uma disciplina e três tópicos denunciam edital mal lido. */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
+                {[
+                  { label: 'Disciplinas', valor: contestSelecionado.disciplinasCount },
+                  { label: 'Tópicos', valor: contestSelecionado.topicosCount },
+                  { label: 'Questões', valor: contestSelecionado.totalQuestoes || '—' },
+                  { label: 'Banca', valor: analysisResult.banca },
+                ].map((kpi) => (
+                  <div key={kpi.label} className="pl-card" style={{ padding: '12px 16px' }}>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{kpi.label}</p>
+                    <p
+                      className="pl-num"
+                      style={{
+                        margin: 0,
+                        fontSize: typeof kpi.valor === 'number' ? 22 : 15,
+                        lineHeight: 1.3,
+                        color: 'var(--pl-ink)',
+                      }}
+                    >
+                      {kpi.valor}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* O seletor de cargo só aparece quando há escolha a fazer. */}
+              {analysisResult.contests.length > 1 && (
+                <div>
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
+                    O edital tem {analysisResult.contests.length} cargos — qual é o seu?
+                  </label>
+                  <select
+                    value={selectedContestId}
+                    onChange={(e) => applyAnalysisToForm(analysisResult, {
+                      // parser interno nunca reescreve os campos nem vem pre-marcado
+                      overwriteFields: analysisResult.source !== 'heuristic',
+                      preMarcar: analysisResult.source !== 'heuristic',
+                      preferredContestId: e.target.value,
+                    })}
+                    className="pl-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  >
+                    {analysisResult.contests.map((contest, idx) => (
+                      <option key={contest.id ?? idx} value={contest.id}>
+                        {contest.title} - {contest.disciplinasCount} disciplinas / {contest.topicosCount} tópicos
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Os campos do curso vêm preenchidos pela leitura: aqui é correção, não digitação. */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
+                <InputField label="Nome do curso" value={iaForm.nome} onChange={(value) => setIaForm((prev) => ({ ...prev, nome: value }))} />
+                <InputField label="Concurso/órgão" value={iaForm.concurso} onChange={(value) => setIaForm((prev) => ({ ...prev, concurso: value }))} />
+                <InputField label="Banca" value={iaForm.banca} onChange={(value) => setIaForm((prev) => ({ ...prev, banca: value }))} />
+              </div>
+
+              <RevisaoEditalPanel
+                contest={contestSelecionado}
+                analysis={analysisResult}
+                revisao={revisao}
+                onAlterarDisciplina={alterarDisciplinaRevisada}
+                avisos={analysisResult.source === 'heuristic'
+                  ? ['Esta leitura NÃO veio da IA — é do parser interno, que erra bastante em edital longo. '
+                     + 'Nada vem marcado de propósito: marque só o que estiver certo, ou feche e tente de novo.',
+                     ...avisosDaLeitura]
+                  : avisosDaLeitura}
+                nomeDoArquivo={uploadedFileName}
+              />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', paddingTop: 16 }}>
+                <SecondaryButton onClick={reiniciarLeituraDoEdital} disabled={isImporting}>
+                  Enviar outro edital
+                </SecondaryButton>
+                <PrimaryButton onClick={handleImportEdital} disabled={isImporting}>
+                  {isImporting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Criando o curso...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 size={16} />
+                      Confirmar e criar
+                    </>
+                  )}
+                </PrimaryButton>
+              </div>
+            </div>
+          )}
+
+          {/* ETAPA 4 — fim. Sem a revisão por baixo, que já não serve para nada. */}
+          {etapaEdital === 'pronto' && (
+            <div style={{ display: 'grid', gap: 18, justifyItems: 'center', textAlign: 'center', padding: '20px 0 8px' }}>
+              <CheckCircle2 size={34} style={{ color: 'var(--pl-success)' }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                  {importResult.curso?.nome || iaForm.nome} está pronto.
+                </p>
+                <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                  {importResult.disciplinasCriadas} disciplinas e {importResult.topicosCriados} tópicos criados a partir do edital.
+                </p>
+              </div>
+              <PrimaryButton
+                onClick={() => {
+                  // O rotulo promete navegacao; fechar o modal e deixar o aluno na lista
+                  // seria mentira. Abre o curso recem-criado nas disciplinas.
+                  setSelectedCoursePlan?.(iaForm.plano || iaForm.nome || 'Todos');
+                  setActiveTab('disciplinas');
+                  closeMode();
+                }}
+              >
+                Ir para o curso
+              </PrimaryButton>
+            </div>
+          )}
         </ModalShell>
       )}
     </div>

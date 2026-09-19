@@ -18,6 +18,47 @@
 
 ---
 
+## Sessão 2026-09-19 — A IA respondeu em produção ✅
+
+O primeiro edital foi lido de ponta a ponta em produção. Quatro correções encadeadas, cada
+uma revelada só depois que a anterior saiu do caminho:
+
+- **Chave de escopo de organização** exigia o cabeçalho `anthropic-workspace-id`, que o
+  código não mandava. (Sessão anterior.)
+- **`temperature` não é mais aceito** pelos modelos atuais — HTTP 400. (Sessão anterior.)
+- **Resposta vazia com HTTP 200.** O modelo raciocina por padrão e os blocos de raciocínio
+  consomem o mesmo `max_tokens` da resposta; com 4096 e um edital inteiro na entrada, o teto
+  acabava antes do primeiro bloco de texto. Subiu para 16000, e a falha passou a informar
+  `stop_reason` e os tipos de bloco recebidos em vez de "resposta vazia".
+- **Função morta pela Vercel.** O tempo limite era por provedor, não pela requisição: o
+  principal gastava 55s e a cadeia ainda tentava os outros quatro, passando do `maxDuration`
+  de 60s. A invocação morria no meio e o navegador recebia a página de erro da plataforma —
+  o app dizia "formato inválido", que não diagnostica nada. Agora há prazo para a cadeia
+  inteira (50s), cada provedor recebe o que sobrou, e o cliente mostra o status HTTP.
+- **Esforço de raciocínio.** Com tudo acima resolvido, a chamada ainda estourava o prazo: o
+  modelo usa esforço `high` por padrão. Ler edital é extração, não dedução — passou a pedir
+  `effort: low` e voltou dentro do tempo.
+
+### Modal do edital reorganizado ✅
+
+Estava tudo na mesma tela: campos do curso, área de texto, upload, revisão e o botão de
+confirmar — um formulário cheio antes de existir o que preencher. Virou quatro momentos:
+
+1. **Envio** — só o alvo do PDF, agora aceitando arrastar-e-soltar (a borda tracejada já
+   prometia isso). Colar texto virou escotilha fechada, para quem não tem o arquivo.
+2. **Leitura** — só a animação, com as etapas reais: ela recebe o sinal de quando a extração
+   do PDF termina, em vez de cronometrar por tempo fixo.
+3. **Revisão** — resumo em números (disciplinas, tópicos, questões, banca) antes da lista, o
+   seletor de cargo só quando há mais de um, os campos do curso já preenchidos e o painel de
+   revisão. "Enviar outro edital" volta sem fechar o modal.
+4. **Pronto** — só a confirmação, e o botão leva de fato ao curso criado.
+
+**Falta medir a qualidade da leitura:** quadro de provas preenchido, disciplinas reais,
+8–15 tópicos por disciplina, dados do cargo. `docs/TESTE-EXTRACAO-EDITAL.md` ainda diz que a
+saída da IA não foi verificada.
+
+---
+
 ## Sessão 2026-09-18 — Primeiro teste real em produção 🔧
 
 Primeiro edital subido em produção (SEPLAG/AL, 70 páginas, Cebraspe). Três achados.

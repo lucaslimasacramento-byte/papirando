@@ -4,21 +4,19 @@
 // o modelo. Antes havia só o texto "Lendo PDF e analisando com IA...", parado: numa espera
 // longa, texto estático não distingue "processando" de "travou", e o aluno fecha o modal.
 //
-// As etapas são informativas, não medidas: o app não tem como saber o progresso real dentro
-// da chamada à IA. Por isso a última etapa não "completa" sozinha — ela fica pulsando até a
-// resposta chegar, em vez de fingir uma barra que enche até 100%.
+// As etapas são as reais, não um cronômetro disfarçado: a página avisa quando a extração do
+// PDF termina e a chamada à IA começa. A etapa da IA não "completa" sozinha — fica pulsando
+// até a resposta chegar, em vez de fingir uma barra que enche até 100%.
 
 import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 const ETAPAS = [
-  { id: 'pdf', label: 'Lendo o PDF', segundos: 4 },
-  { id: 'recorte', label: 'Localizando o conteúdo programático', segundos: 3 },
-  { id: 'ia', label: 'A IA está estruturando as disciplinas', segundos: Infinity },
+  { id: 'pdf', label: 'Lendo o arquivo' },
+  { id: 'ia', label: 'A IA está montando as disciplinas' },
 ];
 
-export function LeituraEditalProgresso({ etapaInicial = 0 }) {
-  const [etapaAtual, setEtapaAtual] = useState(etapaInicial);
+export function LeituraEditalProgresso({ fase = 'pdf' }) {
   const [segundos, setSegundos] = useState(0);
 
   useEffect(() => {
@@ -26,12 +24,10 @@ export function LeituraEditalProgresso({ etapaInicial = 0 }) {
     return () => clearInterval(relogio);
   }, []);
 
-  useEffect(() => {
-    if (etapaAtual >= ETAPAS.length - 1) return undefined;
-    const espera = ETAPAS[etapaAtual].segundos * 1000;
-    const proxima = setTimeout(() => setEtapaAtual((i) => Math.min(i + 1, ETAPAS.length - 1)), espera);
-    return () => clearTimeout(proxima);
-  }, [etapaAtual]);
+  // Texto colado não passa pela extração: começar em "lendo o arquivo" seria inventar uma
+  // etapa que não aconteceu.
+  const etapas = fase === 'texto' ? ETAPAS.slice(1) : ETAPAS;
+  const indiceAtual = fase === 'pdf' ? 0 : etapas.length - 1;
 
   return (
     <div className="pl-leitura" role="status" aria-live="polite">
@@ -47,11 +43,11 @@ export function LeituraEditalProgresso({ etapaInicial = 0 }) {
           </span>
         </div>
 
-        {ETAPAS.map((etapa, indice) => (
+        {etapas.map((etapa, indice) => (
           <div
             key={etapa.id}
             className="pl-leitura-etapa"
-            data-estado={indice < etapaAtual ? 'feita' : indice === etapaAtual ? 'ativa' : 'espera'}
+            data-estado={indice < indiceAtual ? 'feita' : indice === indiceAtual ? 'ativa' : 'espera'}
           >
             <span className="pl-leitura-ponto" />
             {etapa.label}
