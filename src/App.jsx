@@ -112,6 +112,7 @@ import {
 } from './lib/redacaoSiteContentApi';
 import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { recordCustomObjective } from './lib/customObjectivesApi';
+import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -1036,9 +1037,17 @@ export default function App() {
     return [];
   });
 
+  // O localStorage deixa de ser a morada do curso e vira cache: o banco e a verdade, mas o
+  // que ja esta aqui precisa continuar aparecendo enquanto o carregamento nao volta — e
+  // serve de fonte para a migracao inicial.
   useEffect(() => {
     localStorage.setItem('papirando_cursos', JSON.stringify(cursos));
   }, [cursos]);
+
+  // Enquanto isto e falso, a sincronizacao nao roda: sincronizar antes de carregar mandaria
+  // uma lista vazia (ou so a do navegador) para o banco e apagaria os cursos do aluno.
+  const [cursosCarregados, setCursosCarregados] = useState(false);
+  const cursosSincronizadosRef = useRef(null);
 
   const [contestLibrary, setContestLibrary] = useState(() => localConcursoCatalog);
   const [contestDrafts, setContestDrafts] = useState([]);
@@ -4320,6 +4329,65 @@ export default function App() {
       topicos: topicosOrdenados,
     };
   }, [formatMinutesToDisplay]);
+
+  // Carrega os cursos do aluno e, na primeira vez, sobe o que existia so no navegador.
+  //
+  // O curso vivia apenas no localStorage enquanto as disciplinas dele ja ficavam no
+  // Supabase. Trocar de aparelho fazia os cursos sumirem e as disciplinas ficarem orfas —
+  // aparecendo no Inicio e no Plano sem curso nenhum para explica-las.
+  useEffect(() => {
+    let ignore = false;
+
+    const carregarCursos = async () => {
+      if (!isAuthenticated || !currentUserId) {
+        setCursosCarregados(false);
+        cursosSincronizadosRef.current = null;
+        return;
+      }
+
+      const { ok, courses } = await fetchCourses(currentUserId);
+      if (ignore) return;
+
+      // Sem leitura boa (rede, RLS, tabela ainda nao criada) o app segue com o que esta no
+      // navegador — mas a sincronizacao fica desligada, senao apagaria o que nao leu.
+      if (!ok) return;
+
+      const doNavegador = sanitizeStoredCourses(readJsonStorage('papirando_cursos', []) || []);
+
+      if (!courses.length && doNavegador.length) {
+        // Migracao silenciosa: o aluno nao tem por que saber que o curso mudou de lugar.
+        const salvou = await upsertCourses(currentUserId, doNavegador);
+        if (ignore) return;
+        cursosSincronizadosRef.current = salvou.ok ? doNavegador : null;
+        setCursos(doNavegador);
+        setCursosCarregados(salvou.ok);
+        return;
+      }
+
+      const limpos = sanitizeStoredCourses(courses);
+      cursosSincronizadosRef.current = limpos;
+      setCursos(limpos);
+      setCursosCarregados(true);
+    };
+
+    carregarCursos();
+    return () => { ignore = true; };
+  }, [isAuthenticated, currentUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Espelha no banco toda mudanca na lista de cursos.
+  //
+  // A sincronizacao olha a lista inteira em vez de salvar em cada ponto de edicao: cursos
+  // nascem em cinco lugares diferentes deste arquivo (criar, catalogo, edital, inferencia
+  // por disciplina orfa, deduplicacao) e um deles esqueceria de salvar.
+  useEffect(() => {
+    if (!cursosCarregados || !currentUserId) return;
+
+    const anterior = cursosSincronizadosRef.current;
+    cursosSincronizadosRef.current = cursos;
+    sincronizarCursos(currentUserId, anterior, cursos).catch((error) => {
+      console.warn('[courses] falha ao sincronizar:', error?.message || error);
+    });
+  }, [cursos, cursosCarregados, currentUserId]);
 
   useEffect(() => {
     let ignore = false;

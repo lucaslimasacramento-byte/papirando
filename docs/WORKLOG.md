@@ -18,6 +18,38 @@
 
 ---
 
+## Sessão 2026-09-19 (noite) — Cursos saem do navegador 🚧
+
+**Achado do dono, olhando a tela inicial com zero cursos cadastrados:** o Dashboard mostrava
+"História do Brasil", "Matemática" e "Noções de Direito Penal Militar" (esta última do edital
+da PM/AL importado no mesmo dia).
+
+Causa: **o curso vivia só no `localStorage`**, enquanto disciplinas e tópicos já ficavam no
+Supabase. Não existia tabela `courses`. Trocar de navegador, abrir anônima ou limpar dados do
+site fazia os cursos sumirem e as disciplinas ficarem — órfãs, aparecendo no Início e no Plano
+sem curso que as explicasse, e sem porta de saída (a exclusão de objetivo casa disciplina com
+curso pelo nome do plano; sem o curso, não há o que casar).
+
+Grave porque a plataforma passou a se montar inteira a partir do edital: o curso virou o
+objeto raiz do produto e era o que estava no armazenamento mais frágil.
+
+- `supabase/courses.sql` — tabela com RLS por aluno (admin lê para suporte). O curso é
+  guardado como documento JSONB: o app sempre carrega todos de uma vez, nunca filtra por
+  campo no SQL, e a forma muda toda semana.
+- `src/lib/coursesApi.js` (12 testes) — carga, upsert, delete e o diff entre duas listas.
+- `App.jsx` — carrega do banco na abertura e, na primeira vez, sobe em silêncio o que estava
+  no navegador. A sincronização compara a lista inteira em vez de salvar em cada ponto de
+  edição: cursos nascem em cinco lugares do arquivo e um deles esqueceria de salvar.
+
+**⚠️ Pendente: rodar `supabase/courses.sql` no projeto.** Até lá o app segue funcionando com o
+localStorage — a leitura falha, a sincronização não liga e nada é perdido.
+
+Falta ainda decidir o que fazer com as disciplinas órfãs que já existem (as do print). A
+inferência de curso a partir do plano da disciplina ignora `plano = 'Geral'`, então se as
+órfãs estiverem nesse plano elas continuam invisíveis como curso.
+
+---
+
 ## Sessão 2026-09-19 — A IA respondeu em produção ✅
 
 O primeiro edital foi lido de ponta a ponta em produção. Quatro correções encadeadas, cada
