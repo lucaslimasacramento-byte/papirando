@@ -111,3 +111,25 @@ describe('motivoDaFalhaDeIa — tipo de erro do provedor', () => {
     );
   });
 });
+
+// fetchJson passou a mandar tipo E mensagem ("invalid_request_error - Input is too long").
+// Preferir só a mensagem descartava o tipo, e a classificação ficava cega no caso em que
+// mais precisava dele — um HTTP 400, onde a categoria está justamente no tipo.
+describe('motivoDaFalhaDeIa — tipo e mensagem juntos', () => {
+  it.each([
+    ['HTTP 400: invalid_request_error - messages.0.content: Input is too long', /grande demais para o modelo/i],
+    ['HTTP 400: invalid_request_error - model: claude-inexistente', /modelo de IA configurado/i],
+    ['HTTP 401: authentication_error - invalid x-api-key', /chave da IA foi rejeitada/i],
+    ['HTTP 403: permission_error - not allowed', /nao tem permissao/i],
+    ['HTTP 429: rate_limit_error - too many requests', /chamadas por minuto/i],
+    ['HTTP 529: overloaded_error - overloaded', /sobrecarregado/i],
+  ])('classifica %s', (erro, esperado) => {
+    expect(motivoDaFalhaDeIa(`[anthropic] ${erro}`)).toMatch(esperado);
+  });
+
+  it('cai no tipo quando a mensagem nao ajuda', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 400: some_weird_error - ???')).toBe(
+      'O provedor de IA recusou a chamada (HTTP 400 · some_weird_error).'
+    );
+  });
+});

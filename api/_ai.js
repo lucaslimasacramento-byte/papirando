@@ -227,14 +227,17 @@ async function fetchJson(url, options = {}) {
     if (!response.ok) {
       const message =
         payload?.error?.message ||
-        payload?.error?.type ||
         payload?.error ||
         payload?.message ||
         response.statusText ||
         'Falha no provedor de IA.';
-      // O status era descartado, e sem ele "o provedor recusou a chamada" nao diz nada:
-      // 401, 403, 400 e 404 pedem acoes completamente diferentes.
-      throw new Error(`HTTP ${response.status}: ${message}`);
+      // Tipo E mensagem, nao um ou outro: o tipo e o enum ("invalid_request_error") e a
+      // mensagem e o texto humano. Preferir a mensagem descartava o tipo, e ai a
+      // classificacao ficava cega justamente no caso em que mais precisava dele.
+      const tipo = payload?.error?.type ? `${payload.error.type} - ` : '';
+      // O status era descartado tambem, e sem ele "o provedor recusou a chamada" nao diz
+      // nada: 400, 401, 403 e 404 pedem acoes completamente diferentes.
+      throw new Error(`HTTP ${response.status}: ${tipo}${message}`);
     }
 
     return payload;
