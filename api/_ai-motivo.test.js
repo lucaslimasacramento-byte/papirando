@@ -133,3 +133,20 @@ describe('motivoDaFalhaDeIa — tipo e mensagem juntos', () => {
     );
   });
 });
+
+// O erro que custou uma noite de diagnóstico: chave de escopo "Organização" não pertence a
+// workspace nenhum, e a API exige o cabeçalho anthropic-workspace-id nesse caso.
+describe('motivoDaFalhaDeIa — chave de organizacao sem workspace', () => {
+  it('reconhece a mensagem da Anthropic e diz o que fazer', () => {
+    const erro = '[anthropic] HTTP 400: invalid_request_error - This API key is not scoped to a'
+      + ' workspace, so this request must include the anthropic-workspace-id header with the ID'
+      + ' of the workspace to use.';
+    const motivo = motivoDaFalhaDeIa(erro);
+    expect(motivo).toMatch(/ANTHROPIC_WORKSPACE_ID/);
+    expect(motivo).toMatch(/chave de workspace/i);
+  });
+
+  it('nao confunde com falta de permissao', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 403: permission_error')).toMatch(/nao tem permissao/i);
+  });
+});

@@ -20,6 +20,10 @@ export function getAiConfig() {
     provider,
     fallbackProvider,
     anthropicKey: env('ANTHROPIC_API_KEY'),
+    // Chave de escopo "Organizacao" nao pertence a workspace nenhum, e a API exige o
+    // cabecalho anthropic-workspace-id nesse caso — sem ele responde 400. Chave de escopo
+    // "Workspace" dispensa. Manter vazio quando a chave ja for de workspace.
+    anthropicWorkspaceId: env('ANTHROPIC_WORKSPACE_ID'),
     anthropicModel: env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
     openAiKey: env('OPENAI_API_KEY'),
     openAiModel: env('OPENAI_MODEL', 'gpt-4.1-mini'),
@@ -305,17 +309,24 @@ function anthropicText(payload) {
     .trim();
 }
 
+// Um lugar so para os cabecalhos da Anthropic: eram tres copias identicas, e o
+// anthropic-workspace-id que faltava teria que ser adicionado em todas.
+function anthropicHeaders(config) {
+  return {
+    'Content-Type': 'application/json',
+    'x-api-key': config.anthropicKey,
+    'anthropic-version': '2023-06-01',
+    ...(config.anthropicWorkspaceId ? { 'anthropic-workspace-id': config.anthropicWorkspaceId } : {}),
+  };
+}
+
 async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
   const config = getAiConfig();
   if (!config.anthropicKey) throw new Error('ANTHROPIC_API_KEY nao configurada.');
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: 4096,
@@ -334,11 +345,7 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: 4096,
@@ -363,11 +370,7 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: 2048,
@@ -603,6 +606,11 @@ export function motivoDaFalhaDeIa(mensagem) {
   }
   if (/not[\s_-]*found|404|model/.test(texto)) {
     return 'O modelo de IA configurado nao foi encontrado no provedor.';
+  }
+  // Chave de organizacao sem o cabecalho de workspace. Custou horas de diagnostico uma vez;
+  // agora diz o que fazer.
+  if (/not scoped to a workspace|anthropic-workspace-id/.test(texto)) {
+    return 'A chave da IA e de organizacao e exige ANTHROPIC_WORKSPACE_ID, ou troque por uma chave de workspace.';
   }
   // 403 e permissao: a chave e valida mas nao pode usar este recurso (escopo do workspace,
   // modelo bloqueado para a conta, organizacao restrita).

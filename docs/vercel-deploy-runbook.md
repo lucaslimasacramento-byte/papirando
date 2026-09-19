@@ -195,3 +195,21 @@ que o plano Hobby não libera pela API (403). Para não depender disso:
 
 Lembrete que já custou horas: **apagar ou alterar variável exige redeploy.** Sem ele a função
 continua rodando com o valor antigo, e o sintoma é idêntico ao de não ter mexido em nada.
+
+### Escopo da chave da Anthropic
+
+A chave tem dois escopos possíveis e eles não são intercambiáveis:
+
+| escopo da chave | o que a API exige |
+|---|---|
+| **Workspace** | nada — funciona direto |
+| **Organização** | o cabeçalho `anthropic-workspace-id`; sem ele responde **400** |
+
+O código envia esse cabeçalho quando `ANTHROPIC_WORKSPACE_ID` está definida nas variáveis do
+projeto. Então valem as duas configurações:
+
+- chave de **workspace** → não defina `ANTHROPIC_WORKSPACE_ID`
+- chave de **organização** → defina `ANTHROPIC_WORKSPACE_ID` com o ID do workspace a usar
+
+O erro correspondente é reconhecido por `motivoDaFalhaDeIa()` e já diz o que fazer, em vez de
+aparecer como "o provedor recusou a chamada".
