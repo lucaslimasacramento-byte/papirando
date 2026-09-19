@@ -1,6 +1,9 @@
 import { prepararTextoEdital } from './_edital-text.js';
 
-const DEFAULT_TIMEOUT_MS = 90_000;
+// Abaixo do maxDuration de 60s da funcao em vercel.json: com 90s, a Vercel matava a
+// funcao antes do nosso timeout disparar e o aluno recebia um 504 sem mensagem nenhuma.
+// Com 55s a falha vira "o provedor demorou demais", que diz o que aconteceu.
+const DEFAULT_TIMEOUT_MS = 55_000;
 const DEFAULT_AI_RATE_LIMIT = 30;
 const DEFAULT_AI_RATE_WINDOW_MS = 10 * 60 * 1000;
 
@@ -301,12 +304,48 @@ function providerOrder(config = getAiConfig()) {
   ];
 }
 
+// Orcamento de saida das chamadas Anthropic.
+//
+// Estava em 4096 e a resposta vinha vazia: os modelos atuais raciocinam por padrao
+// (adaptive thinking) e os blocos de thinking, que nem chegam na resposta, consomem esse
+// mesmo orcamento. Com um edital inteiro na entrada, o teto acabava antes do primeiro
+// bloco de texto — `payload.content` voltava sem nenhum `type: 'text'` e o app dizia
+// "resposta vazia" sem ter como saber o motivo.
+const ANTHROPIC_MAX_TOKENS = 16000;
+
 function anthropicText(payload) {
   return (Array.isArray(payload?.content) ? payload.content : [])
     .filter((block) => block?.type === 'text')
     .map((block) => block?.text || '')
     .join('\n')
     .trim();
+}
+
+// Sem isso, uma resposta 200 sem bloco de texto caia no generico "resposta vazia" do
+// extractJson — que nao distingue teto de tokens estourado, recusa do modelo ou resposta
+// so de thinking. O stop_reason e os tipos de bloco presentes dizem exatamente qual foi.
+function anthropicJson(payload, config) {
+  const texto = anthropicText(payload);
+
+  if (!texto) {
+    const tipos = (Array.isArray(payload?.content) ? payload.content : [])
+      .map((block) => block?.type)
+      .filter(Boolean);
+    const motivo = payload?.stop_reason || 'desconhecido';
+    const detalhe = tipos.length ? `blocos recebidos: ${tipos.join(', ')}` : 'nenhum bloco de conteudo';
+    const dica =
+      motivo === 'max_tokens'
+        ? ' O teto de tokens estourou antes do texto — reduza a entrada ou aumente ANTHROPIC_MAX_TOKENS em api/_ai.js.'
+        : motivo === 'refusal'
+          ? ' O modelo recusou a solicitacao.'
+          : '';
+
+    throw new Error(
+      `A IA retornou uma resposta sem texto (stop_reason: ${motivo}; ${detalhe}).${dica}`
+    );
+  }
+
+  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(texto) };
 }
 
 // Um lugar so para os cabecalhos da Anthropic: eram tres copias identicas, e o
@@ -329,7 +368,7 @@ async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
     headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
-      max_tokens: 4096,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
       // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
       // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
       // ja e amarrado pelo system prompt, entao nao se perde nada.
@@ -338,7 +377,7 @@ async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
     }),
   });
 
-  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+  return anthropicJson(payload, config);
 }
 
 async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_ai' } = {}) {
@@ -350,7 +389,7 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
     headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
-      max_tokens: 4096,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
       // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
       // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
       // ja e amarrado pelo system prompt, entao nao se perde nada.
@@ -365,7 +404,7 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
     }),
   });
 
-  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+  return anthropicJson(payload, config);
 }
 
 async function runAnthropicWithImage(prompt, base64, mimeType) {
@@ -377,7 +416,7 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
     headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
-      max_tokens: 2048,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
       // Ver acima: temperature e rejeitado pelos modelos atuais da Anthropic.
       system: 'Responda somente com JSON valido. Nao use markdown.',
       messages: [{
@@ -390,7 +429,7 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
     }),
   });
 
-  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+  return anthropicJson(payload, config);
 }
 
 async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai' } = {}) {
@@ -601,6 +640,12 @@ export function motivoDaFalhaDeIa(mensagem) {
   }
   if (/429|rate[\s_-]*limit|too many requests/.test(texto)) {
     return 'Limite de chamadas por minuto do provedor de IA atingido.';
+  }
+  // Resposta 200 sem nenhum bloco de texto (ver anthropicJson). Quando o stop_reason foi
+  // max_tokens, a regra de tamanho logo abaixo ja diz a coisa certa; nos outros casos o
+  // edital nao tem nada a ver com a falha e culpa-lo manda o dono cortar o PDF em vao.
+  if (/resposta sem texto/.test(texto) && !/stop_reason: max_tokens/.test(texto)) {
+    return 'A IA respondeu sem texto utilizavel. Tente de novo.';
   }
   if (/context[\s_-]*length|max[\s_-]*tokens|too[\s_-]*(long|large)|413/.test(texto)) {
     return 'O texto do edital ficou grande demais para o modelo.';

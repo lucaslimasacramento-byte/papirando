@@ -169,3 +169,29 @@ describe('motivoDaFalhaDeIa — parametro depreciado', () => {
     );
   });
 });
+
+// Uma resposta HTTP 200 sem nenhum bloco de texto caía no catch-all "o provedor recusou a
+// chamada" — que é falso: o provedor aceitou. E quando o motivo real era o teto de tokens,
+// a mensagem não dizia nada sobre tamanho.
+describe('motivoDaFalhaDeIa — resposta sem bloco de texto', () => {
+  it('nao culpa o edital quando o modelo devolveu so thinking', () => {
+    const motivo = motivoDaFalhaDeIa(
+      '[anthropic] A IA retornou uma resposta sem texto (stop_reason: end_turn; blocos recebidos: thinking).'
+    );
+    expect(motivo).toBe('A IA respondeu sem texto utilizavel. Tente de novo.');
+  });
+
+  it('aponta o tamanho quando o teto de tokens estourou', () => {
+    const motivo = motivoDaFalhaDeIa(
+      '[anthropic] A IA retornou uma resposta sem texto (stop_reason: max_tokens; blocos recebidos: thinking).'
+    );
+    expect(motivo).toMatch(/grande demais/i);
+  });
+
+  it('nao vira "recusou a chamada" quando o provedor respondeu 200', () => {
+    const motivo = motivoDaFalhaDeIa(
+      '[anthropic] A IA retornou uma resposta sem texto (stop_reason: desconhecido; nenhum bloco de conteudo).'
+    );
+    expect(motivo).not.toMatch(/recusou a chamada/i);
+  });
+});
