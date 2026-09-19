@@ -17,7 +17,23 @@ export async function analyzeEditalWithRealAI(editalText) {
       payload = JSON.parse(responseText);
     } catch {
       if (!response.ok) {
-        throw new Error('O servidor de IA respondeu em formato inválido.');
+        // O status era descartado aqui — o mesmo erro que o fetchJson do backend cometia.
+        // Sem ele, "formato inválido" cobre coisas com soluções opostas: 504 é a função
+        // estourando o tempo, 413 é o PDF grande demais, 5xx é a função quebrando. Quando
+        // não é o nosso JSON, a resposta vem da própria Vercel, que carrega o código do
+        // erro no corpo (FUNCTION_INVOCATION_TIMEOUT e afins) — vale repassar.
+        const codigo = responseText.match(/[A-Z][A-Z_]{8,}/)?.[0] || '';
+        const pista =
+          response.status === 504 || codigo.includes('TIMEOUT')
+            ? ' A análise passou do tempo limite do servidor.'
+            : response.status === 413
+              ? ' O arquivo enviado é grande demais para o servidor.'
+              : '';
+
+        throw new Error(
+          `O servidor de IA respondeu em formato inválido (HTTP ${response.status}` +
+            `${codigo ? ` · ${codigo}` : ''}).${pista}`
+        );
       }
 
       throw new Error('A resposta da análise do edital veio vazia ou inválida.');

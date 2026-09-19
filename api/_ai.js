@@ -4,6 +4,11 @@ import { prepararTextoEdital } from './_edital-text.js';
 // funcao antes do nosso timeout disparar e o aluno recebia um 504 sem mensagem nenhuma.
 // Com 55s a falha vira "o provedor demorou demais", que diz o que aconteceu.
 const DEFAULT_TIMEOUT_MS = 55_000;
+// Prazo da cadeia inteira de provedores, com folga para a funcao ainda montar e enviar a
+// resposta antes do maxDuration de 60s de vercel.json.
+const DEFAULT_BUDGET_MS = 50_000;
+// Abaixo disso nao vale acordar um provedor: ele so gastaria o resto do prazo para falhar.
+const MIN_TENTATIVA_MS = 3_000;
 const DEFAULT_AI_RATE_LIMIT = 30;
 const DEFAULT_AI_RATE_WINDOW_MS = 10 * 60 * 1000;
 
@@ -359,12 +364,13 @@ function anthropicHeaders(config) {
   };
 }
 
-async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
+async function runAnthropicJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
   const config = getAiConfig();
   if (!config.anthropicKey) throw new Error('ANTHROPIC_API_KEY nao configurada.');
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    timeoutMs,
     headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
@@ -432,12 +438,13 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
   return anthropicJson(payload, config);
 }
 
-async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai' } = {}) {
+async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
   const config = getAiConfig();
   if (!config.openRouterKey) throw new Error('OPENROUTER_API_KEY nao configurada.');
 
   const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
+    timeoutMs,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.openRouterKey}`,
@@ -459,12 +466,13 @@ async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai' } = {}) {
   return { provider: 'openrouter', model: payload?.model || config.openRouterModel, json: extractJson(content) };
 }
 
-async function runGroqJson(prompt, { schemaName = 'papirando_ai' } = {}) {
+async function runGroqJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
   const config = getAiConfig();
   if (!config.groqKey) throw new Error('GROQ_API_KEY nao configurada.');
 
   const payload = await fetchJson('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
+    timeoutMs,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.groqKey}`,
@@ -484,12 +492,13 @@ async function runGroqJson(prompt, { schemaName = 'papirando_ai' } = {}) {
   return { provider: 'groq', model: payload?.model || config.groqModel, json: extractJson(content) };
 }
 
-async function runOpenAiJson(prompt, { schemaName = 'papirando_ai' } = {}) {
+async function runOpenAiJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
   const config = getAiConfig();
   if (!config.openAiKey) throw new Error('OPENAI_API_KEY nao configurada.');
 
   const payload = await fetchJson('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
+    timeoutMs,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.openAiKey}`,
@@ -509,7 +518,7 @@ async function runOpenAiJson(prompt, { schemaName = 'papirando_ai' } = {}) {
   return { provider: 'openai', model: payload?.model || config.openAiModel, json: extractJson(content) };
 }
 
-async function runGeminiJson(prompt) {
+async function runGeminiJson(prompt, { timeoutMs } = {}) {
   const config = getAiConfig();
   if (!config.googleKey) throw new Error('GOOGLE_API_KEY/GEMINI_API_KEY nao configurada.');
 
@@ -517,6 +526,7 @@ async function runGeminiJson(prompt) {
     `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
     {
       method: 'POST',
+      timeoutMs,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nResponda somente com JSON valido.` }] }],
@@ -565,13 +575,30 @@ async function runJson(prompt, options = {}) {
     order = ['groq', ...order.filter((p) => p !== 'groq')];
   }
 
+  // Prazo para a cadeia inteira, nao para cada provedor.
+  //
+  // Sem isso, o principal podia gastar o timeout todo e a cadeia ainda tentava os outros
+  // quatro: a soma passava do maxDuration da funcao, a Vercel matava a invocacao no meio e
+  // o navegador recebia uma pagina de erro da propria Vercel — nao o nosso JSON. O app
+  // dizia "o servidor de IA respondeu em formato invalido", que nao e diagnostico de nada.
+  // Com prazo, sempre sobra tempo para responder com o motivo real de cada falha.
+  const prazoFinal = Date.now() + (options.budgetMs || DEFAULT_BUDGET_MS);
+
   for (const provider of order) {
+    const restante = prazoFinal - Date.now();
+    if (restante <= MIN_TENTATIVA_MS) {
+      errors.push(`[${provider}] Sem tempo para tentar: o prazo da requisicao acabou.`);
+      continue;
+    }
+
+    const tentativa = { ...options, timeoutMs: Math.min(restante, options.timeoutMs || DEFAULT_TIMEOUT_MS) };
+
     try {
-      if (provider === 'anthropic') return await runAnthropicJson(prompt, options);
-      if (provider === 'openrouter') return await runOpenRouterJson(prompt, options);
-      if (provider === 'groq') return await runGroqJson(prompt, options);
-      if (provider === 'gemini') return await runGeminiJson(prompt, options);
-      if (provider === 'openai') return await runOpenAiJson(prompt, options);
+      if (provider === 'anthropic') return await runAnthropicJson(prompt, tentativa);
+      if (provider === 'openrouter') return await runOpenRouterJson(prompt, tentativa);
+      if (provider === 'groq') return await runGroqJson(prompt, tentativa);
+      if (provider === 'gemini') return await runGeminiJson(prompt, tentativa);
+      if (provider === 'openai') return await runOpenAiJson(prompt, tentativa);
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }
