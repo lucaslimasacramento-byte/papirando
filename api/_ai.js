@@ -330,7 +330,9 @@ async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: 4096,
-      temperature: 0.25,
+      // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
+      // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
+      // ja e amarrado pelo system prompt, entao nao se perde nada.
       system: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.`,
       messages: [{ role: 'user', content: prompt }],
     }),
@@ -349,7 +351,9 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: 4096,
-      temperature: 0.25,
+      // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
+      // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
+      // ja e amarrado pelo system prompt, entao nao se perde nada.
       system: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.`,
       messages: [{
         role: 'user',
@@ -374,7 +378,7 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
     body: JSON.stringify({
       model: config.anthropicModel,
       max_tokens: 2048,
-      temperature: 0.1,
+      // Ver acima: temperature e rejeitado pelos modelos atuais da Anthropic.
       system: 'Responda somente com JSON valido. Nao use markdown.',
       messages: [{
         role: 'user',
@@ -603,6 +607,13 @@ export function motivoDaFalhaDeIa(mensagem) {
   }
   if (/timeout|timed[\s_-]*out|abort|socket hang up|etimedout|econnreset/.test(texto)) {
     return 'O provedor de IA demorou demais para responder.';
+  }
+  // Parametro que o modelo nao aceita mais. Tem que vir ANTES da regra de modelo: a frase
+  // "`temperature` is deprecated for this model" contem "model" e caia em "modelo nao
+  // encontrado", mandando trocar o modelo quando o problema era o corpo da requisicao.
+  const deprecado = texto.match(/`?([a-z_]+)`?\s+is\s+(deprecated|not supported|unsupported)/);
+  if (deprecado) {
+    return `O provedor nao aceita mais o parametro "${deprecado[1]}" neste modelo.`;
   }
   if (/not[\s_-]*found|404|model/.test(texto)) {
     return 'O modelo de IA configurado nao foi encontrado no provedor.';

@@ -150,3 +150,22 @@ describe('motivoDaFalhaDeIa — chave de organizacao sem workspace', () => {
     expect(motivoDaFalhaDeIa('[anthropic] HTTP 403: permission_error')).toMatch(/nao tem permissao/i);
   });
 });
+
+// "`temperature` is deprecated for this model" contém a palavra "model" e caía na regra de
+// modelo, mandando trocar o modelo quando o problema era o corpo da requisição.
+describe('motivoDaFalhaDeIa — parametro depreciado', () => {
+  it.each([
+    ['`temperature` is deprecated for this model.', 'temperature'],
+    ['`top_k` is not supported for this model', 'top_k'],
+    ['top_p is unsupported', 'top_p'],
+  ])('nomeia o parametro em %s', (mensagem, parametro) => {
+    const motivo = motivoDaFalhaDeIa(`[anthropic] HTTP 400: invalid_request_error - ${mensagem}`);
+    expect(motivo).toBe(`O provedor nao aceita mais o parametro "${parametro}" neste modelo.`);
+  });
+
+  it('nao rouba o caso de modelo inexistente', () => {
+    expect(motivoDaFalhaDeIa('[anthropic] HTTP 404: model claude-x not_found')).toMatch(
+      /modelo de IA configurado/i
+    );
+  });
+});
