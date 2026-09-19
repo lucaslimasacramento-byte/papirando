@@ -9774,3 +9774,66 @@ textarea.simulados-register-input {
   }
 
 }
+
+/* ── Painel inicial: ritmo vertical que acompanha a altura da janela ──────────────────
+ *
+ * O Início foi desenhado numa tela alta e não cabia numa de notebook: o aluno abria o app
+ * e a rotina do dia — que é o que ele veio ver — estava abaixo da dobra.
+ *
+ * As medidas ficam aqui, e não no JSX, por um motivo de ordem prática: estilo inline ganha
+ * de media query, então enquanto o "marginTop: 18" estivesse no componente, nenhuma regra
+ * de altura conseguiria encolher nada.
+ *
+ * A escala é por ALTURA da janela (max-height), não por largura: um monitor largo e baixo
+ * sofre o mesmo problema de um notebook pequeno, e é a altura que decide o que cabe.
+ */
+.pl-dash {
+  --dash-pad-y: clamp(16px, 4vw, 36px);
+  --dash-gap: 18px;
+  --dash-hero: clamp(34px, 6vw, 62px);
+  --dash-hero-gap: 16px;
+  --dash-hero-sub: 17px;
+  --dash-kpi-pad: 14px 16px 13px;
+  --dash-kpi-num: 38px;
+}
+
+/* Notebook comum (~900px de janela). */
+@media (max-height: 900px) {
+  .pl-dash {
+    --dash-pad-y: 20px;
+    --dash-gap: 13px;
+    --dash-hero: clamp(30px, 4.2vw, 46px);
+    --dash-hero-gap: 11px;
+    --dash-hero-sub: 15.5px;
+    --dash-kpi-pad: 11px 14px 10px;
+    --dash-kpi-num: 32px;
+  }
+}
+
+/* Notebook baixo (13", barra de tarefas, abas). Aqui a saudação para de ser display e
+ * vira título: manter 46px custaria a linha inteira da rotina do dia. */
+@media (max-height: 780px) {
+  .pl-dash {
+    --dash-pad-y: 14px;
+    --dash-gap: 10px;
+    --dash-hero: clamp(26px, 3.4vw, 34px);
+    --dash-hero-gap: 8px;
+    --dash-hero-sub: 14px;
+    --dash-kpi-pad: 9px 12px 8px;
+    --dash-kpi-num: 27px;
+  }
+}
+
+/* Abaixo disto não há o que comprimir sem tirar legibilidade — some a barra de KPIs
+ * secundários antes de espremer texto. */
+@media (max-height: 680px) {
+  .pl-dash {
+    --dash-pad-y: 10px;
+    --dash-gap: 8px;
+    --dash-hero: 24px;
+    --dash-hero-gap: 6px;
+    --dash-hero-sub: 13px;
+    --dash-kpi-pad: 8px 10px 7px;
+    --dash-kpi-num: 23px;
+  }
+}

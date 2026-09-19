@@ -167,8 +167,11 @@ export default function Dashboard({
   }
 
   return (
-    <div style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
-      <div style={{ width: '100%', padding: 'clamp(16px, 4vw, 36px) clamp(12px, 3vw, 32px)' }}>
+    <div className="pl-dash" style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
+      {/* As medidas verticais vem de variaveis (ver .pl-dash em index.css) porque estilo
+          inline ganha de media query: para o painel encolher em tela baixa, o numero tem
+          que sair do JSX. */}
+      <div style={{ width: '100%', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
         <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: 28, alignItems: 'center' }}>
           <div style={{ minWidth: 0 }}>
             <div className="pl-eyebrow">
@@ -180,18 +183,18 @@ export default function Dashboard({
                 </>
               )}
             </div>
-            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 'clamp(34px, 6vw, 62px)', color: 'var(--pl-ink)' }}>
+            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 'var(--dash-hero)', color: 'var(--pl-ink)' }}>
               {greeting}{cleanUserName ? `, ${cleanUserName}` : ''}<span style={{ color: 'var(--pl-accent)' }}>.</span>
             </h1>
             {(heroTopic || heroDetail) && (
-              <p style={{ margin: '12px 0 0', fontSize: 17, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 640, lineHeight: 1.45 }}>
+              <p style={{ margin: 'var(--dash-hero-gap) 0 0', fontSize: 'var(--dash-hero-sub)', fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 640, lineHeight: 1.45 }}>
                 {heroTopic && (
                   <>Hoje a gente <span className="pl-mark-text">papira {heroTopic}</span>{heroDetail ? ` - ${heroDetail}` : '.'}</>
                 )}
                 {!heroTopic && heroDetail}
               </p>
             )}
-            <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ marginTop: 'var(--dash-hero-gap)', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button className="pl-btn pl-btn-primary pl-btn-lg" onClick={quickAction.onClick}>
                 <Play size={13} fill="currentColor" /> {quickAction.label}
               </button>
@@ -221,7 +224,7 @@ export default function Dashboard({
           )}
         </section>
 
-        <div className="pl-rule" style={{ margin: '18px 0 16px' }} />
+        <div className="pl-rule" style={{ margin: 'var(--dash-gap) 0' }} />
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 12 }}>
           <PlKpi label="Papirado hoje" num={historyOverview.todayMinutesLabel} detail="Volume efetivo" />
@@ -232,7 +235,7 @@ export default function Dashboard({
         </section>
 
         {/* ── Foco do Dia + Streak ── */}
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 18 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 'var(--dash-gap)' }}>
           <PlFocoDia
             recommendation={primaryRecommendation}
             todayProgress={historyOverview.todayGoalProgress}
@@ -248,7 +251,7 @@ export default function Dashboard({
           />
         </section>
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginTop: 18 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginTop: 'var(--dash-gap)' }}>
           <div className="pl-card" style={{ padding: '16px 18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
               <div>
@@ -294,13 +297,13 @@ export default function Dashboard({
         </section>
 
         {(ultimaAnotacao || editalProgresso) && (
-          <section style={{ display: 'grid', gridTemplateColumns: ultimaAnotacao && editalProgresso ? '1.2fr 1fr' : '1fr', gap: 14, marginTop: 16 }}>
+          <section style={{ display: 'grid', gridTemplateColumns: ultimaAnotacao && editalProgresso ? '1.2fr 1fr' : '1fr', gap: 14, marginTop: 'var(--dash-gap)' }}>
             {ultimaAnotacao && <PlLastNote nota={ultimaAnotacao} onOpen={onOpenUltimaAnotacao} onOpenNotebook={() => setActiveTab?.('redacoes')} />}
             {editalProgresso && <PlEditalProgress data={editalProgresso} onOpen={() => setActiveTab?.('edital')} />}
           </section>
         )}
 
-        <section style={{ marginTop: 20 }}>
+        <section style={{ marginTop: 'var(--dash-gap)' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 10 }}>
             <div>
               <div className="pl-eyebrow">Esta semana</div>
@@ -324,10 +327,10 @@ export default function Dashboard({
 
 function PlKpi({ label, num, unit, detail, icon, progress, accentColor }) {
   return (
-    <div className="pl-card" style={{ padding: '14px 16px 13px' }}>
+    <div className="pl-card" style={{ padding: 'var(--dash-kpi-pad)' }}>
       <div className="pl-eyebrow" style={{ fontSize: 10 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 6 }}>
-        <span className="pl-num" style={{ fontSize: 38, color: 'var(--pl-ink)', lineHeight: 1 }}>{num}</span>
+        <span className="pl-num" style={{ fontSize: 'var(--dash-kpi-num)', color: 'var(--pl-ink)', lineHeight: 1 }}>{num}</span>
         {unit && <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)', marginLeft: 2 }}>{unit}</span>}
         {icon && <span style={{ marginLeft: 'auto' }}>{icon}</span>}
       </div>
