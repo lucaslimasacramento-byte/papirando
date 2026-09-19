@@ -16,6 +16,7 @@ import {
   enforceAiRateLimit,
   enforceAiPlan,
   readJson,
+  envFlag,
   motivoDaFalhaDeIa,
   requireAiAuth,
   sendJson,
@@ -127,7 +128,19 @@ export default async function handler(req, res) {
     });
     // O motivo real so existia no log da Vercel. Classificado (nunca o texto cru do
     // provedor, que vazaria interno) ele diz se e chave, cota, modelo ou timeout.
-    const detalhe = status >= 500 ? motivoDaFalhaDeIa(error.message) : '';
+    let detalhe = status >= 500 ? motivoDaFalhaDeIa(error.message) : '';
+
+    // Escotilha de diagnostico: com AI_DEBUG_ERRORS=true o motivo cru do provedor vai
+    // junto. Desligado por padrao — e o dono do app que liga, resolve e desliga. Existe
+    // porque o classificado nem sempre basta: um HTTP 400 diz que a requisicao e invalida,
+    // mas nao qual campo o provedor recusou, e sem o log da Vercel (403 no plano Hobby)
+    // nao havia como saber sem varias rodadas de deploy-e-testa.
+    if (envFlag('AI_DEBUG_ERRORS', false)) {
+      const cru = String(error.message || '')
+        .replace(/\b(sk|sk-ant|xai|gsk|AIza)[-_A-Za-z0-9]{12,}/g, '[chave omitida]')
+        .slice(0, 600);
+      if (cru) detalhe = detalhe ? `${detalhe} [debug] ${cru}` : `[debug] ${cru}`;
+    }
 
     return sendJson(res, status, {
       error:

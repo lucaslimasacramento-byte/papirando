@@ -180,3 +180,18 @@ inteiro em 4 dos 13 editais do teste em vez de 10.
 
 Dois limites que atrapalham teste em lote: `AI_RATE_LIMIT_MAX` (padrão 30 por 10 min) e
 `AI_FREE_DAILY_CAP`.
+
+## Diagnosticar falha de IA em produção
+
+O backend responde mensagem genérica para todo 500 e o motivo real vai para o log da Vercel,
+que o plano Hobby não libera pela API (403). Para não depender disso:
+
+1. `api/ai.js` devolve um `detail` **classificado** — chave rejeitada, crédito/limite de gasto,
+   chamadas por minuto, sobrecarga, texto grande demais, permissão, modelo não encontrado, ou
+   o status HTTP e o tipo de erro do provedor. É o suficiente na maioria dos casos.
+2. Quando não for, ligue `AI_DEBUG_ERRORS=true` nas variáveis do projeto e **redeploy**: o
+   motivo cru do provedor passa a acompanhar a mensagem, com qualquer coisa parecida com
+   chave apagada. **Desligue depois** — é diagnóstico, não estado normal.
+
+Lembrete que já custou horas: **apagar ou alterar variável exige redeploy.** Sem ele a função
+continua rodando com o valor antigo, e o sintoma é idêntico ao de não ter mexido em nada.

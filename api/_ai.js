@@ -8,7 +8,7 @@ function env(name, fallback = '') {
   return String(process.env[name] || fallback).trim();
 }
 
-function envFlag(name, fallback = true) {
+export function envFlag(name, fallback = true) {
   const raw = env(name, fallback ? 'true' : 'false').toLowerCase();
   return !['0', 'false', 'no', 'off'].includes(raw);
 }
