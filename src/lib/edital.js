@@ -236,3 +236,55 @@ export function compatibilidadeDeCargos(cargos) {
 function nomeDoCargo(cargo, indice) {
   return String(cargo?.roleName || cargo?.title || `Cargo ${indice + 1}`).trim();
 }
+
+// Funde as disciplinas dos cargos escolhidos numa lista só, marcando em quais cargos cada
+// uma cai.
+//
+// Revisar cargo a cargo desfaz o raciocínio que o aluno acabou de fazer na tela anterior:
+// ele viu que os dois cargos se aproveitam e aí é obrigado a conferir duas listas quase
+// iguais, sem enxergar o que é compartilhado. Aqui ele revisa uma vez; na hora de criar,
+// cada curso leva só o que é dele.
+//
+// Os tópicos também são fundidos, e também carregam a marca do cargo: a mesma disciplina
+// costuma ter recortes diferentes para oficial e para praça, e levar o tópico de um para o
+// curso do outro colocaria no plano conteúdo que não cai na prova dele.
+export function mesclarDisciplinasDeCargos(cargos, preMarcar = true) {
+  const itens = [];
+
+  (cargos || []).forEach((cargo) => {
+    const idCargo = cargo?.id;
+
+    (cargo?.disciplinas || []).forEach((disciplina) => {
+      const nome = String(disciplina?.nome || '').trim();
+      if (!nome) return;
+
+      const topicos = (disciplina.topicos || []).map((topico) => String(topico || '').trim()).filter(Boolean);
+      const existente = itens.find((item) => mesmaDisciplina(item.nomeOriginal, nome));
+
+      if (!existente) {
+        itens.push({
+          nomeOriginal: nome,
+          nome,
+          incluir: preMarcar,
+          cargos: [idCargo],
+          topicos: topicos.map((nomeTopico) => ({ nome: nomeTopico, incluir: preMarcar, cargos: [idCargo] })),
+        });
+        return;
+      }
+
+      if (!existente.cargos.includes(idCargo)) existente.cargos.push(idCargo);
+
+      topicos.forEach((nomeTopico) => {
+        const chave = chaveDeDisciplina(nomeTopico);
+        const topicoExistente = existente.topicos.find((topico) => chaveDeDisciplina(topico.nome) === chave);
+        if (topicoExistente) {
+          if (!topicoExistente.cargos.includes(idCargo)) topicoExistente.cargos.push(idCargo);
+          return;
+        }
+        existente.topicos.push({ nome: nomeTopico, incluir: preMarcar, cargos: [idCargo] });
+      });
+    });
+  });
+
+  return itens;
+}

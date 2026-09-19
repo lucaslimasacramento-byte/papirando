@@ -79,6 +79,24 @@ quando na prática um cargo é o outro com matérias a mais):
 A tela nomeia as disciplinas exclusivas de cada cargo, não só conta: é assim que se vê se a
 diferença é real ou se foram dois jeitos de escrever a mesma matéria.
 
+### Revisão mesclada ✅
+
+Com dois cargos escolhidos, a revisão é **uma só**. Revisar "Cargo 1 de 2" desfazia o
+raciocínio da tela anterior: o aluno acabou de ver que os cargos se aproveitam e era obrigado
+a conferir duas listas quase iguais, sem enxergar o que é compartilhado.
+
+`mesclarDisciplinasDeCargos` funde as listas marcando em quais cargos cada disciplina cai —
+e cada **tópico** também, porque o recorte da mesma disciplina muda entre oficial e praça.
+Na tela, cada linha traz "Nos dois" ou "Só <cargo>". Dados do cargo e quadro de provas
+aparecem um por cargo (o quadro é o que dá o peso de cada disciplina naquela prova).
+
+No fim nascem **dois cursos**, um por cargo, cada um levando só o que é dele — inclusive
+tópico a tópico. Um nome de curso por cargo; concurso e banca são do edital e ficam fora.
+
+Efeito colateral corrigido: o id do cargo vem do título, então dois cargos de mesmo título
+tinham o mesmo id. Inofensivo com dropdown de escolha única; com a escolha múltipla, que casa
+disciplina e cargo por esse id, os dois virariam um só sem aviso.
+
 **Falta medir a qualidade da leitura:** quadro de provas preenchido, disciplinas reais,
 8–15 tópicos por disciplina, dados do cargo. `docs/TESTE-EXTRACAO-EDITAL.md` ainda diz que a
 saída da IA não foi verificada.

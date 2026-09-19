@@ -78,9 +78,12 @@ function QuadroDeProvas({ prova }) {
   );
 }
 
-function DisciplinaRevisavel({ item, onToggle, onRenomear, onToggleTopico }) {
+function DisciplinaRevisavel({ item, onToggle, onRenomear, onToggleTopico, rotuloDeCargo = null }) {
   const [aberta, setAberta] = useState(false);
   const topicosMarcados = item.topicos.filter((topico) => topico.incluir).length;
+  // Com dois cargos na mesma lista, saber de quem e a disciplina e o que da sentido a
+  // revisao: desmarcar uma compartilhada tira ela dos dois cursos.
+  const marca = rotuloDeCargo ? rotuloDeCargo(item.cargos || []) : null;
 
   return (
     <div className="pl-card" style={{ padding: 0, opacity: item.incluir ? 1 : 0.5 }}>
@@ -99,6 +102,14 @@ function DisciplinaRevisavel({ item, onToggle, onRenomear, onToggleTopico }) {
           className="pl-input"
           style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, padding: '6px 10px' }}
         />
+        {marca && (
+          <span
+            className={marca.compartilhada ? 'pl-tag pl-tag-success' : 'pl-tag'}
+            style={{ flexShrink: 0, fontSize: 11, whiteSpace: 'nowrap' }}
+          >
+            {marca.texto}
+          </span>
+        )}
         <button
           type="button"
           onClick={() => setAberta((v) => !v)}
@@ -127,6 +138,13 @@ function DisciplinaRevisavel({ item, onToggle, onRenomear, onToggleTopico }) {
                 style={{ width: 14, height: 14, marginTop: 2, flexShrink: 0, cursor: 'pointer' }}
               />
               <span style={{ color: topico.incluir ? 'var(--pl-ink-2)' : 'var(--pl-ink-4)' }}>{topico.nome}</span>
+              {/* O recorte da mesma disciplina muda de um cargo para o outro; sem dizer de
+                  quem e o topico, o aluno nao tem como conferir. */}
+              {rotuloDeCargo && !rotuloDeCargo(topico.cargos || []).compartilhada && (
+                <span className="pl-tag" style={{ fontSize: 10, flexShrink: 0 }}>
+                  {rotuloDeCargo(topico.cargos || []).texto}
+                </span>
+              )}
             </label>
           ))}
         </div>
@@ -136,20 +154,39 @@ function DisciplinaRevisavel({ item, onToggle, onRenomear, onToggleTopico }) {
 }
 
 export function RevisaoEditalPanel({
-  contest,
+  cargos = [],
   analysis,
   revisao,
   onAlterarDisciplina,
   avisos = [],
   nomeDoArquivo = '',
 }) {
-  if (!contest || !Array.isArray(revisao)) return null;
+  if (!cargos.length || !Array.isArray(revisao)) return null;
 
   const disciplinasMarcadas = revisao.filter((item) => item.incluir);
   const topicosMarcados = disciplinasMarcadas.reduce(
     (acc, item) => acc + item.topicos.filter((topico) => topico.incluir).length,
     0
   );
+
+  const nomeDoCargo = (cargo, indice) => cargo?.roleName || cargo?.title || `Cargo ${indice + 1}`;
+
+  // Com um cargo so, marcar cada linha com o nome dele seria ruido: todas sao dele.
+  const rotuloDeCargo = cargos.length < 2
+    ? null
+    : (idsDoItem) => {
+        const dono = cargos.filter((cargo) => idsDoItem.includes(cargo.id));
+        if (dono.length >= cargos.length) return { compartilhada: true, texto: 'Nos dois' };
+        if (!dono.length) return { compartilhada: false, texto: '—' };
+        return { compartilhada: false, texto: `Só ${nomeDoCargo(dono[0], cargos.indexOf(dono[0]))}` };
+      };
+
+  // Quantas disciplinas cada curso vai levar. E o que o aluno precisa ver antes de
+  // confirmar: desmarcar uma compartilhada mexe nos dois.
+  const porCargo = cargos.map((cargo, indice) => ({
+    nome: nomeDoCargo(cargo, indice),
+    disciplinas: disciplinasMarcadas.filter((item) => (item.cargos || []).includes(cargo.id)).length,
+  }));
 
   return (
     <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -176,31 +213,41 @@ export function RevisaoEditalPanel({
         </div>
       ))}
 
-      <section>
-        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Dados do cargo</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-          <DadoDoCargo label="Cargo" valor={contest.roleName || contest.title} />
-          <DadoDoCargo label="Vagas" valor={contest.vagas} />
-          <DadoDoCargo label="Remuneração" valor={contest.salario} />
-          <DadoDoCargo label="Escolaridade" valor={contest.escolaridade} />
-          <DadoDoCargo label="Lotação" valor={contest.lotacao} />
-          <DadoDoCargo label="Carga horária" valor={contest.cargaHoraria} />
-          <DadoDoCargo label="Data da prova" valor={contest.examDate} />
-          <DadoDoCargo label="Taxa de inscrição" valor={analysis?.inscricaoValor} />
-        </div>
-        {analysis?.etapas?.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+      {cargos.map((cargo, indice) => (
+        <section key={cargo.id ?? indice}>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>
+            {cargos.length > 1 ? nomeDoCargo(cargo, indice) : 'Dados do cargo'}
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+            <DadoDoCargo label="Cargo" valor={nomeDoCargo(cargo, indice)} />
+            <DadoDoCargo label="Vagas" valor={cargo.vagas} />
+            <DadoDoCargo label="Remuneração" valor={cargo.salario} />
+            <DadoDoCargo label="Escolaridade" valor={cargo.escolaridade} />
+            <DadoDoCargo label="Lotação" valor={cargo.lotacao} />
+            <DadoDoCargo label="Carga horária" valor={cargo.cargaHoraria} />
+            <DadoDoCargo label="Data da prova" valor={cargo.examDate} />
+            <DadoDoCargo label="Taxa de inscrição" valor={analysis?.inscricaoValor} />
+          </div>
+
+          {/* O quadro de provas e por cargo: e ele que diz o peso de cada disciplina
+              naquela prova, e dois cargos do mesmo edital raramente tem o mesmo. */}
+          <div style={{ marginTop: 12 }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Quadro de provas</p>
+            <QuadroDeProvas prova={cargo.prova} />
+          </div>
+        </section>
+      ))}
+
+      {analysis?.etapas?.length > 0 && (
+        <section>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Etapas do certame</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {analysis.etapas.map((etapa) => (
               <span key={etapa} className="pl-tag pl-tag-accent">{etapa}</span>
             ))}
           </div>
-        )}
-      </section>
-
-      <section>
-        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Quadro de provas</p>
-        <QuadroDeProvas prova={contest.prova} />
-      </section>
+        </section>
+      )}
 
       <section>
         <p className="pl-eyebrow" style={{ marginBottom: 8 }}>
@@ -216,6 +263,7 @@ export function RevisaoEditalPanel({
               onToggleTopico={(topicoIndice, incluir) =>
                 onAlterarDisciplina(indice, { topicoIndice, incluirTopico: incluir })
               }
+              rotuloDeCargo={rotuloDeCargo}
             />
           ))}
         </div>
@@ -227,8 +275,17 @@ export function RevisaoEditalPanel({
       >
         <Check size={16} style={{ color: 'var(--pl-success)', flexShrink: 0 }} />
         <span style={{ color: 'var(--pl-ink-2)' }}>
-          Vão ser criadas <strong style={{ color: 'var(--pl-ink)' }}>{disciplinasMarcadas.length} disciplinas</strong>
-          {' '}e <strong style={{ color: 'var(--pl-ink)' }}>{topicosMarcados} tópicos</strong>.
+          {cargos.length > 1 ? (
+            <>
+              Vão ser criados <strong style={{ color: 'var(--pl-ink)' }}>{cargos.length} cursos</strong>:{' '}
+              {porCargo.map((cargo) => `${cargo.nome} (${cargo.disciplinas} disciplinas)`).join(' e ')}.
+            </>
+          ) : (
+            <>
+              Vão ser criadas <strong style={{ color: 'var(--pl-ink)' }}>{disciplinasMarcadas.length} disciplinas</strong>
+              {' '}e <strong style={{ color: 'var(--pl-ink)' }}>{topicosMarcados} tópicos</strong>.
+            </>
+          )}
         </span>
       </div>
 

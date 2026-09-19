@@ -59,3 +59,25 @@ describe('analyzeEditalWithRealAI — erro em JSON do proprio backend', () => {
     );
   });
 });
+
+// O id do cargo vem do titulo. Com escolha multipla, disciplina e cargo se casam por esse
+// id — dois cargos de mesmo titulo virariam um so, sem aviso.
+describe('analyzeEditalWithRealAI — id de cargo', () => {
+  it('desempata ids repetidos', async () => {
+    respondeCom({
+      status: 200,
+      body: JSON.stringify({
+        analysis: {
+          contests: [
+            { title: 'Agente', subjects: [{ name: 'Português', topics: ['Crase'] }] },
+            { title: 'Agente', subjects: [{ name: 'Matemática', topics: [] }] },
+          ],
+        },
+      }),
+    });
+
+    const resultado = await analyzeEditalWithRealAI('edital');
+    const ids = resultado.contests.map((c) => c.id);
+    expect(new Set(ids).size).toBe(2);
+  });
+});

@@ -108,6 +108,17 @@ function normalizeOpenAiAnalysis(payload) {
     };
   });
 
+  // O id vem do titulo do cargo; dois cargos com o mesmo titulo geravam o mesmo id. Isso
+  // era inofensivo com um dropdown de escolha unica, mas a escolha multipla passa a casar
+  // disciplina com cargo por esse id — dois cargos iguais virariam um so, silenciosamente.
+  const idsVistos = new Set();
+  normalizedContests.forEach((contest, indice) => {
+    let id = contest.id || `cargo-${indice + 1}`;
+    if (idsVistos.has(id)) id = `${id}-${indice + 1}`;
+    idsVistos.add(id);
+    contest.id = id;
+  });
+
   return {
     source: payload?.source || payload?.provider || 'ai',
     sourceLabel: buildSourceLabel(payload),

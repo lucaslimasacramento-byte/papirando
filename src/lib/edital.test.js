@@ -7,6 +7,7 @@ import {
   acharLinhaDaProva,
   compatibilidadeDeCargos,
   mesmaDisciplina,
+  mesclarDisciplinasDeCargos,
 } from './edital';
 
 const EDITAL = 'a'.repeat(25000);
@@ -231,5 +232,58 @@ describe('compatibilidadeDeCargos', () => {
   it('nao quebra com cargo sem disciplinas', () => {
     const resultado = compatibilidadeDeCargos([cargo('A', ['Português']), { title: 'B' }]);
     expect(resultado.aproveitamento).toBe(0);
+  });
+});
+
+// Revisar cargo a cargo desfaz o raciocínio da tela anterior: o aluno viu que os dois
+// cargos se aproveitam e aí teria que conferir duas listas quase iguais.
+describe('mesclarDisciplinasDeCargos', () => {
+  const cargo = (id, disciplinas) => ({
+    id,
+    title: id,
+    disciplinas: disciplinas.map(([nome, topicos = []]) => ({ nome, topicos })),
+  });
+
+  it('junta a mesma disciplina dos dois cargos numa linha so', () => {
+    const itens = mesclarDisciplinasDeCargos([
+      cargo('oficial', [['Língua Portuguesa'], ['Direito Penal Militar']]),
+      cargo('soldado', [['Português'], ['Matemática']]),
+    ]);
+
+    expect(itens).toHaveLength(3);
+    expect(itens[0].nome).toBe('Língua Portuguesa');
+    expect(itens[0].cargos).toEqual(['oficial', 'soldado']);
+    expect(itens[1].cargos).toEqual(['oficial']);
+    expect(itens[2].cargos).toEqual(['soldado']);
+  });
+
+  // A mesma disciplina costuma ter recortes diferentes para oficial e para praça. Levar o
+  // tópico de um para o curso do outro colocaria no plano conteúdo que não cai na prova.
+  it('marca em qual cargo cada topico cai', () => {
+    const itens = mesclarDisciplinasDeCargos([
+      cargo('oficial', [['Português', ['Crase', 'Redação oficial']]]),
+      cargo('soldado', [['Português', ['Crase']]]),
+    ]);
+
+    expect(itens).toHaveLength(1);
+    expect(itens[0].topicos.map((t) => t.nome)).toEqual(['Crase', 'Redação oficial']);
+    expect(itens[0].topicos[0].cargos).toEqual(['oficial', 'soldado']);
+    expect(itens[0].topicos[1].cargos).toEqual(['oficial']);
+  });
+
+  it('respeita o preMarcar', () => {
+    const itens = mesclarDisciplinasDeCargos([cargo('a', [['Português', ['Crase']]])], false);
+    expect(itens[0].incluir).toBe(false);
+    expect(itens[0].topicos[0].incluir).toBe(false);
+  });
+
+  it('ignora disciplina sem nome', () => {
+    const itens = mesclarDisciplinasDeCargos([cargo('a', [['  '], ['Português']])]);
+    expect(itens).toHaveLength(1);
+  });
+
+  it('funciona com um cargo so', () => {
+    const itens = mesclarDisciplinasDeCargos([cargo('a', [['Português'], ['Matemática']])]);
+    expect(itens.map((i) => i.cargos)).toEqual([['a'], ['a']]);
   });
 });
