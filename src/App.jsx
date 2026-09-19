@@ -4454,7 +4454,16 @@ export default function App() {
       });
 
       if (!ignore) {
-        setBancoDisciplinas(disciplinasNormalizadas);
+        // A disciplina do curso de demonstracao antigo tambem some da tela.
+        //
+        // O filtro de curso legado (isLegacyDemoCourse) tirava o CURSO da lista, mas as
+        // disciplinas dele ficaram no banco — e o Inicio, o Plano e o Bizu leem disciplina
+        // direto, sem passar por curso. O resultado era um painel cheio ("Historia do
+        // Brasil", 33 topicos em aberto) com zero cursos cadastrados, vindo de uma trilha
+        // de demonstracao que ninguem escolheu.
+        setBancoDisciplinas(
+          disciplinasNormalizadas.filter((disciplina) => !isLegacyDemoCourse({ plano: disciplina.plano }))
+        );
       }
     };
 
