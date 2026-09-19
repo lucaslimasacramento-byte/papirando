@@ -99,7 +99,6 @@ export default function Planos({
   const [isImporting, setIsImporting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isImportingCatalog, setIsImportingCatalog] = useState(false);
-  const [importResult, setImportResult] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [analysisResult, setAnalysisResult] = useState(null);
   const [selectedContestId, setSelectedContestId] = useState('');
@@ -118,21 +117,26 @@ export default function Planos({
   const [arrastando, setArrastando] = useState(false);
   const limiteAtingido = !isAdmin && remainingCourseSlots <= 0;
 
-  // O modal do edital tem quatro momentos e cada um pede a tela inteira. Antes tudo
+  // O modal do edital tem um momento por vez, e cada um pede a tela inteira. Antes tudo
   // aparecia junto — dados do curso, area de texto, upload, revisao e o botao de confirmar
   // — e quem abria via um formulario cheio de campos sem saber por onde comecar. Agora:
-  // enviar o PDF, esperar a leitura, conferir o que a IA achou, confirmar.
-  const etapaEdital = importResult
-    ? 'pronto'
-    : isAnalyzing
-      ? 'lendo'
-      : analysisResult
-        ? 'revisao'
-        : 'envio';
+  // enviar, esperar a leitura, escolher o cargo (se houver mais de um), conferir, confirmar.
+  const [etapaEdital, setEtapaEdital] = useState('envio');
+  // Cargos que o aluno decidiu levar, na ordem em que vao ser revisados. Um edital de cargo
+  // unico entra aqui com um item so, para o resto do fluxo nao precisar de caso especial.
+  const [cargosEscolhidos, setCargosEscolhidos] = useState([]);
+  const [indiceCargo, setIndiceCargo] = useState(0);
+  const [cursosCriados, setCursosCriados] = useState([]);
 
   const contestSelecionado = analysisResult
     ? analysisResult.contests.find((item) => item.id === selectedContestId) || analysisResult.contests[0]
     : null;
+
+  // Cada cargo importado vira um curso e consome uma vaga do plano. Oferecer mais do que
+  // cabe so produziria erro na hora de criar o terceiro.
+  const vagasParaCargos = isAdmin
+    ? (analysisResult?.contests.length || 1)
+    : Math.max(0, remainingCourseSlots);
   const facultyTemplates = useMemo(
     () => normalizeCourseTemplates(courseTemplates).filter((template) => template.intent === 'faculdade'),
     [courseTemplates]
@@ -175,7 +179,6 @@ export default function Planos({
   const resetForms = () => {
     setCourseForm(EMPTY_COURSE_FORM);
     setIaForm({ nome: '', plano: '', concurso: '', banca: '', editalText: '' });
-    setImportResult(null);
     setUploadedFileName('');
     setAnalysisResult(null);
     setSelectedContestId('');
@@ -184,6 +187,10 @@ export default function Planos({
     setModoTexto(false);
     setArrastando(false);
     setFaseDaLeitura('pdf');
+    setEtapaEdital('envio');
+    setCargosEscolhidos([]);
+    setIndiceCargo(0);
+    setCursosCriados([]);
   };
 
   // Voltar do resultado para o envio sem fechar o modal: trocar de arquivo era so possivel
@@ -194,11 +201,14 @@ export default function Planos({
     setAnalysisError('');
     setRevisao(null);
     setAvisosDaLeitura([]);
-    setImportResult(null);
     setUploadedFileName('');
     setModoTexto(false);
     setArrastando(false);
     setFaseDaLeitura('pdf');
+    setEtapaEdital('envio');
+    setCargosEscolhidos([]);
+    setIndiceCargo(0);
+    setCursosCriados([]);
     setIaForm({ nome: '', plano: '', concurso: '', banca: '', editalText: '' });
   };
 
@@ -303,6 +313,52 @@ export default function Planos({
     }));
   };
 
+  // Depois da leitura o aluno vai para a escolha do cargo — ou direto para a revisao,
+  // quando o edital tem um so. Um dropdown no meio da revisao dava a essa decisao o mesmo
+  // peso visual do campo "Banca", e ela e a que define a plataforma inteira: disciplinas,
+  // pesos, datas. Pior, a revisao ja vinha montada no primeiro cargo da lista, que e so o
+  // primeiro que a IA encontrou — quem nao reparasse montava o curso do cargo errado.
+  const irParaDepoisDaLeitura = (analysis) => {
+    const cargos = analysis?.contests || [];
+    if (!cargos.length) {
+      setEtapaEdital('envio');
+      return;
+    }
+    if (cargos.length === 1) {
+      setCargosEscolhidos([cargos[0].id]);
+      setIndiceCargo(0);
+      setEtapaEdital('revisao');
+      return;
+    }
+    setCargosEscolhidos([]);
+    setIndiceCargo(0);
+    setEtapaEdital('cargos');
+  };
+
+  const alternarCargoEscolhido = (id) => {
+    setCargosEscolhidos((prev) => {
+      if (prev.includes(id)) return prev.filter((item) => item !== id);
+      // Silenciosamente ignorar o clique passando do limite faria o checkbox parecer
+      // quebrado; o botao e o contador dizem quantas vagas restam.
+      if (prev.length >= vagasParaCargos) return prev;
+      return [...prev, id];
+    });
+  };
+
+  const confirmarCargosEscolhidos = () => {
+    if (!cargosEscolhidos.length) return;
+    setIndiceCargo(0);
+    // overwriteFields vale mesmo na leitura heuristica: o aluno acabou de apontar o cargo,
+    // entao o nome do curso tem que ser o dele. O que a heuristica nao pode fazer e
+    // pre-marcar disciplinas — o campo de nome esta logo abaixo e e editavel.
+    applyAnalysisToForm(analysisResult, {
+      overwriteFields: true,
+      preMarcar: analysisResult.source !== 'heuristic',
+      preferredContestId: cargosEscolhidos[0],
+    });
+    setEtapaEdital('revisao');
+  };
+
   const runAnalysis = async (text, options = {}) => {
     const normalizedText = String(text || '').trim();
 
@@ -327,6 +383,7 @@ export default function Planos({
       const realAnalysis = await analyzeEdital(normalizedText);
       setAnalysisResult(realAnalysis);
       applyAnalysisToForm(realAnalysis, options);
+      irParaDepoisDaLeitura(realAnalysis);
       return realAnalysis;
     } catch (realAiError) {
       try {
@@ -346,6 +403,7 @@ export default function Planos({
         // plataforma inteira se monta em cima desta leitura, ele NÃO preenche os campos
         // sozinho nem vem com tudo marcado: o aluno escolhe o que aproveitar.
         applyAnalysisToForm(heuristicAnalysis, { ...options, overwriteFields: false, preMarcar: false });
+        irParaDepoisDaLeitura(heuristicAnalysis);
         // Esconder o motivo real deixava a gente sem saber se era chave, timeout ou sessão.
         const motivo = String(realAiError?.message || '').trim();
         setAnalysisError(
@@ -356,6 +414,7 @@ export default function Planos({
         return heuristicAnalysis;
       } catch {
         setAnalysisResult(null);
+        setEtapaEdital('envio');
         setAnalysisError(realAiError.message || 'Não foi possível analisar o edital.');
         throw realAiError;
       }
@@ -373,7 +432,8 @@ export default function Planos({
 
     setIsAnalyzing(true);
     setFaseDaLeitura('pdf');
-    setImportResult(null);
+    setEtapaEdital('lendo');
+    setCursosCriados([]);
     setAnalysisError('');
 
     try {
@@ -383,6 +443,7 @@ export default function Planos({
       // nada acontecia na tela e o usuário ficava sem feedback.
       if (String(extractedText || '').trim().length < 40) {
         setAnalysisError('Esse PDF parece ser escaneado (imagem) ou está vazio — não consegui extrair o texto. Cole o texto do edital manualmente.');
+        setEtapaEdital('envio');
         return;
       }
       setIaForm((prev) => ({ ...prev, editalText: extractedText }));
@@ -391,6 +452,7 @@ export default function Planos({
     } catch (error) {
       console.error('[Planos] erro ao ler PDF:', error?.message || error);
       setAnalysisError('Não foi possível ler esse PDF. Tente outro arquivo ou cole o texto do edital.');
+      setEtapaEdital('envio');
     } finally {
       setIsAnalyzing(false);
     }
@@ -471,7 +533,6 @@ export default function Planos({
     }
 
     setIsImporting(true);
-    setImportResult(null);
 
     try {
       const result = await onImportEdital?.({
@@ -494,7 +555,33 @@ export default function Planos({
           })),
       });
 
-      setImportResult(result || null);
+      // Cada cargo escolhido vira um curso, um de cada vez: o aluno revisa, confirma, e a
+      // tela ja abre o proximo. Importar todos de uma vez pularia a revisao dos demais —
+      // que e justamente a garantia de que a leitura da IA nao entra crua na plataforma.
+      setCursosCriados((prev) => [
+        ...prev,
+        {
+          nome: iaForm.nome.trim(),
+          plano: iaForm.plano.trim() || iaForm.nome.trim(),
+          disciplinasCriadas: result?.disciplinasCriadas || 0,
+          topicosCriados: result?.topicosCriados || 0,
+        },
+      ]);
+
+      const proximoId = cargosEscolhidos[indiceCargo + 1];
+      if (proximoId) {
+        setIndiceCargo(indiceCargo + 1);
+        // Sempre reescrever: manter o nome do cargo anterior criaria o segundo curso com o
+        // mesmo `plano`, e plano e a chave que liga curso e disciplinas — os dois cargos
+        // acabariam no mesmo curso.
+        applyAnalysisToForm(analysisResult, {
+          overwriteFields: true,
+          preMarcar: analysisResult.source !== 'heuristic',
+          preferredContestId: proximoId,
+        });
+      } else {
+        setEtapaEdital('pronto');
+      }
     } catch (error) {
       showToast(error.message || 'Não foi possível importar o edital.', 'error');
     } finally {
@@ -759,20 +846,24 @@ export default function Planos({
           title={
             etapaEdital === 'lendo'
               ? 'Lendo o seu edital'
-              : etapaEdital === 'revisao'
-                ? 'Confira o que a IA encontrou'
-                : etapaEdital === 'pronto'
-                  ? 'Curso criado'
-                  : 'Montar o curso pelo edital'
+              : etapaEdital === 'cargos'
+                ? 'Qual cargo você vai fazer?'
+                : etapaEdital === 'revisao'
+                  ? 'Confira o que a IA encontrou'
+                  : etapaEdital === 'pronto'
+                    ? (cursosCriados.length > 1 ? 'Cursos criados' : 'Curso criado')
+                    : 'Montar o curso pelo edital'
           }
           subtitle={
             etapaEdital === 'lendo'
               ? 'Leva alguns segundos. Pode deixar aberto.'
-              : etapaEdital === 'revisao'
-                ? 'Nada é criado antes de você confirmar. Desmarque o que não for do seu cargo.'
-                : etapaEdital === 'pronto'
-                  ? ''
-                  : 'Envie o PDF do edital e a IA monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
+              : etapaEdital === 'cargos'
+                ? 'É esta escolha que define suas disciplinas, os pesos e as datas.'
+                : etapaEdital === 'revisao'
+                  ? 'Nada é criado antes de você confirmar. Desmarque o que não for do seu cargo.'
+                  : etapaEdital === 'pronto'
+                    ? ''
+                    : 'Envie o PDF do edital e a IA monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
           }
           onClose={closeMode}
         >
@@ -883,7 +974,96 @@ export default function Planos({
             </div>
           )}
 
-          {/* ETAPA 3 — o que a IA achou, do resumo ao detalhe. */}
+          {/* ETAPA 3 — a escolha do cargo, quando o edital traz mais de um. E a decisao
+              mais pesada do fluxo: define disciplinas, pesos e datas do app inteiro. */}
+          {etapaEdital === 'cargos' && analysisResult && (
+            <div style={{ display: 'grid', gap: 16 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 14, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>
+                  Este edital traz <strong style={{ color: 'var(--pl-ink)' }}>{analysisResult.contests.length} cargos</strong>.
+                  {vagasParaCargos > 1
+                    ? ` Você pode levar até ${vagasParaCargos} — cada um vira um curso separado.`
+                    : ' Escolha o seu.'}
+                </p>
+                {/* Sem vaga livre, todo checkbox ficaria bloqueado sem explicar por que. */}
+                {vagasParaCargos === 0 && (
+                  <div style={{ marginTop: 12, borderRadius: 12, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--pl-warn)' }}>
+                    Seu plano está com todas as vagas de curso ocupadas. Apague um curso que não
+                    usa mais para conseguir importar este edital.
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gap: 10 }}>
+                {analysisResult.contests.map((contest, idx) => {
+                  const escolhido = cargosEscolhidos.includes(contest.id);
+                  const bloqueado = !escolhido && cargosEscolhidos.length >= vagasParaCargos;
+
+                  return (
+                    <label
+                      key={contest.id ?? idx}
+                      className="pl-card"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 12,
+                        padding: '14px 16px',
+                        cursor: bloqueado ? 'not-allowed' : 'pointer',
+                        opacity: bloqueado ? 0.45 : 1,
+                        borderColor: escolhido ? 'var(--pl-accent)' : 'var(--pl-rule-2)',
+                        background: escolhido ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={escolhido}
+                        disabled={bloqueado}
+                        onChange={() => alternarCargoEscolhido(contest.id)}
+                        style={{ marginTop: 3, flexShrink: 0 }}
+                      />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                          {contest.roleName || contest.title}
+                        </p>
+                        {/* Vagas, salario e escolaridade sao o que faz alguem escolher um
+                            cargo em vez de outro — o nome sozinho nao decide nada. */}
+                        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {[
+                            contest.vagas && `${contest.vagas} vagas`,
+                            contest.salario,
+                            contest.escolaridade,
+                            contest.totalQuestoes ? `${contest.totalQuestoes} questões` : '',
+                            `${contest.disciplinasCount} disciplinas`,
+                          ]
+                            .filter(Boolean)
+                            .map((chip) => (
+                              <span key={chip} className="pl-tag" style={{ fontSize: 11 }}>{chip}</span>
+                            ))}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', paddingTop: 16, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
+                  {cargosEscolhidos.length} de {vagasParaCargos} {vagasParaCargos === 1 ? 'vaga' : 'vagas'} do seu plano
+                </span>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <SecondaryButton onClick={reiniciarLeituraDoEdital}>Enviar outro edital</SecondaryButton>
+                  <PrimaryButton onClick={confirmarCargosEscolhidos} disabled={!cargosEscolhidos.length}>
+                    <ArrowRight size={16} />
+                    {cargosEscolhidos.length > 1
+                      ? `Revisar ${cargosEscolhidos.length} cargos`
+                      : 'Revisar o cargo'}
+                  </PrimaryButton>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ETAPA 4 — o que a IA achou, do resumo ao detalhe. */}
           {etapaEdital === 'revisao' && contestSelecionado && (
             <div style={{ display: 'grid', gap: 20 }}>
               {analysisError && (
@@ -918,29 +1098,25 @@ export default function Planos({
                 ))}
               </div>
 
-              {/* O seletor de cargo só aparece quando há escolha a fazer. */}
-              {analysisResult.contests.length > 1 && (
-                <div>
-                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
-                    O edital tem {analysisResult.contests.length} cargos — qual é o seu?
-                  </label>
-                  <select
-                    value={selectedContestId}
-                    onChange={(e) => applyAnalysisToForm(analysisResult, {
-                      // parser interno nunca reescreve os campos nem vem pre-marcado
-                      overwriteFields: analysisResult.source !== 'heuristic',
-                      preMarcar: analysisResult.source !== 'heuristic',
-                      preferredContestId: e.target.value,
-                    })}
-                    className="pl-input"
-                    style={{ width: '100%', boxSizing: 'border-box' }}
-                  >
-                    {analysisResult.contests.map((contest, idx) => (
-                      <option key={contest.id ?? idx} value={contest.id}>
-                        {contest.title} - {contest.disciplinasCount} disciplinas / {contest.topicosCount} tópicos
-                      </option>
-                    ))}
-                  </select>
+              {/* Qual cargo esta sendo revisado agora. Com varios na fila, sem isto o aluno
+                  confirma o primeiro e a tela "volta ao inicio" sem explicacao. */}
+              {cargosEscolhidos.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div>
+                    <p className="pl-eyebrow" style={{ marginBottom: 4 }}>
+                      {cargosEscolhidos.length > 1
+                        ? `Cargo ${indiceCargo + 1} de ${cargosEscolhidos.length}`
+                        : 'Cargo'}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                      {contestSelecionado.roleName || contestSelecionado.title}
+                    </p>
+                  </div>
+                  {analysisResult.contests.length > 1 && cursosCriados.length === 0 && (
+                    <button className="pl-btn pl-btn-link" onClick={() => setEtapaEdital('cargos')}>
+                      Escolher outro cargo
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -965,8 +1141,13 @@ export default function Planos({
               />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', paddingTop: 16 }}>
-                <SecondaryButton onClick={reiniciarLeituraDoEdital} disabled={isImporting}>
-                  Enviar outro edital
+                {/* No meio da fila, "enviar outro edital" apagaria a lista dos cursos ja
+                    criados — que e o unico lugar onde eles aparecem. Ali o botao encerra. */}
+                <SecondaryButton
+                  onClick={cursosCriados.length ? () => setEtapaEdital('pronto') : reiniciarLeituraDoEdital}
+                  disabled={isImporting}
+                >
+                  {cursosCriados.length ? 'Parar por aqui' : 'Enviar outro edital'}
                 </SecondaryButton>
                 <PrimaryButton onClick={handleImportEdital} disabled={isImporting}>
                   {isImporting ? (
@@ -985,28 +1166,45 @@ export default function Planos({
             </div>
           )}
 
-          {/* ETAPA 4 — fim. Sem a revisão por baixo, que já não serve para nada. */}
+          {/* ETAPA 5 — fim. Sem a revisão por baixo, que já não serve para nada. */}
           {etapaEdital === 'pronto' && (
             <div style={{ display: 'grid', gap: 18, justifyItems: 'center', textAlign: 'center', padding: '20px 0 8px' }}>
               <CheckCircle2 size={34} style={{ color: 'var(--pl-success)' }} />
               <div>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                  {importResult.curso?.nome || iaForm.nome} está pronto.
-                </p>
-                <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)' }}>
-                  {importResult.disciplinasCriadas} disciplinas e {importResult.topicosCriados} tópicos criados a partir do edital.
+                  {cursosCriados.length > 1
+                    ? `${cursosCriados.length} cursos criados a partir do edital.`
+                    : `${cursosCriados[0]?.nome || iaForm.nome} está pronto.`}
                 </p>
               </div>
+
+              {/* Com varios cargos importados, um resumo unico escondia o que cada curso
+                  ganhou — e e isso que diz se alguma revisao saiu magra demais. */}
+              <div style={{ display: 'grid', gap: 8, width: '100%', maxWidth: 420 }}>
+                {cursosCriados.map((curso, idx) => (
+                  <div
+                    key={`${curso.plano}-${idx}`}
+                    className="pl-card"
+                    style={{ padding: '12px 16px', textAlign: 'left' }}
+                  >
+                    <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{curso.nome}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--pl-ink-2)' }}>
+                      {curso.disciplinasCriadas} disciplinas · {curso.topicosCriados} tópicos
+                    </p>
+                  </div>
+                ))}
+              </div>
+
               <PrimaryButton
                 onClick={() => {
                   // O rotulo promete navegacao; fechar o modal e deixar o aluno na lista
                   // seria mentira. Abre o curso recem-criado nas disciplinas.
-                  setSelectedCoursePlan?.(iaForm.plano || iaForm.nome || 'Todos');
+                  setSelectedCoursePlan?.(cursosCriados[0]?.plano || iaForm.plano || iaForm.nome || 'Todos');
                   setActiveTab('disciplinas');
                   closeMode();
                 }}
               >
-                Ir para o curso
+                {cursosCriados.length > 1 ? 'Ir para o primeiro curso' : 'Ir para o curso'}
               </PrimaryButton>
             </div>
           )}
