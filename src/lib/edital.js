@@ -117,45 +117,122 @@ export function acharLinhaDaProva(prova, nomeDaDisciplina) {
   }) || null;
 }
 
+// Palavras que aparecem no nome da disciplina sem mudar qual disciplina e. Edital chama a
+// mesma materia de "Nocoes de Informatica", "Informatica Basica" e "Informatica" no mesmo
+// documento — comparando o nome cru, viram tres disciplinas diferentes.
+const RUIDO_NO_NOME = new Set([
+  'nocoes', 'nocao', 'conhecimentos', 'conhecimento', 'fundamentos', 'elementos', 'aspectos',
+  'basica', 'basico', 'basicos', 'basicas', 'geral', 'gerais', 'aplicada', 'aplicado',
+  'pertinente', 'pertinentes', 'de', 'da', 'do', 'das', 'dos', 'e', 'em', 'a', 'o', 'os',
+  'as', 'ao', 'aos', 'sobre', 'para', 'com',
+]);
+
+// Nomes que o edital usa como sinonimos exatos.
+const SINONIMOS_DE_DISCIPLINA = new Map([
+  ['lingua portuguesa', 'portugues'],
+  ['portugues', 'portugues'],
+  ['lingua inglesa', 'ingles'],
+  ['lingua espanhola', 'espanhol'],
+  ['matematica basica', 'matematica'],
+]);
+
+// Cabecas genericas demais para casar sozinhas: "Direito" nao diz qual direito, e deixar
+// casar por conta propria faria Direito Penal virar Direito Administrativo.
+const CABECA_GENERICA = new Set(['direito', 'legislacao', 'lei', 'estatuto', 'codigo', 'teoria']);
+
+function tokensDaDisciplina(nome) {
+  const limpo = String(nome || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+  const sinonimo = SINONIMOS_DE_DISCIPLINA.get(limpo);
+  const base = sinonimo || limpo;
+
+  return new Set(base.split(' ').filter((palavra) => palavra && !RUIDO_NO_NOME.has(palavra)));
+}
+
+// Duas disciplinas sao a mesma quando sobram os mesmos tokens, ou quando uma e o nome da
+// outra com um recorte a mais ("Historia" x "Historia do Brasil"). O recorte so vale se o
+// nome menor disser de fato qual materia e.
+export function mesmaDisciplina(umNome, outroNome) {
+  const a = tokensDaDisciplina(umNome);
+  const b = tokensDaDisciplina(outroNome);
+  if (!a.size || !b.size) return false;
+
+  const [menor, maior] = a.size <= b.size ? [a, b] : [b, a];
+  const contido = [...menor].every((token) => maior.has(token));
+  if (!contido) return false;
+  if (menor.size === maior.size) return true;
+  // Com dois tokens ou mais o nome menor ja identifica a materia ("Direito Penal" dentro de
+  // "Direito Penal Militar"). Com um so, exige que ele nao seja uma cabeca generica.
+  if (menor.size >= 2) return true;
+  const unico = [...menor][0];
+  return unico.length >= 6 && !CABECA_GENERICA.has(unico);
+}
+
 // Compatibilidade entre os cargos que o aluno escolheu do mesmo edital.
 //
 // Quando ele marca dois cargos, a pergunta que importa é uma só: estudar os dois é quase
 // dobrar o esforço, ou boa parte se aproveita? Sem responder isso na hora da escolha, ele só
 // descobre depois de ter dois cursos montados.
 //
-// É a mesma conta do Conciliador (disciplinas em comum sobre a união), feita aqui na tela
-// porque os dados já estão em memória: é instantâneo e não gasta uma chamada de IA.
+// O número em destaque é o APROVEITAMENTO — quanto do cargo menor já cai no maior — e não a
+// razão entre comuns e união. É comum um cargo ser o outro com disciplinas a mais (oficial x
+// praça), e a razão sobre a união pune isso: um cargo inteiramente contido no outro aparecia
+// com 31%, sugerindo dois estudos separados quando na prática é um só com apêndice.
 export function compatibilidadeDeCargos(cargos) {
-  const mapas = (cargos || []).map(
-    (cargo) =>
-      new Map(
-        (cargo?.disciplinas || [])
-          .map((disciplina) => [chaveDeDisciplina(disciplina?.nome), String(disciplina?.nome || '').trim()])
-          .filter(([chave, nome]) => chave && nome)
-      )
+  const listas = (cargos || []).map((cargo) =>
+    (cargo?.disciplinas || [])
+      .map((disciplina) => String(disciplina?.nome || '').trim())
+      .filter(Boolean)
   );
 
-  if (mapas.length < 2) return { percentual: 0, comuns: [], exclusivos: mapas.map(() => 0), uniao: 0 };
+  const vazio = {
+    percentual: 0,
+    aproveitamento: 0,
+    comuns: [],
+    exclusivos: listas.map((_, idx) => ({ nome: nomeDoCargo(cargos?.[idx], idx), disciplinas: [] })),
+    acrescimo: 0,
+    uniao: 0,
+    contido: false,
+  };
 
-  const [primeiro, ...resto] = mapas;
-  // Comum = está em TODOS os cargos escolhidos. Com três cargos, o que aparece em dois não
-  // conta: o número tem que significar "isto eu estudo uma vez e vale para tudo".
-  const comuns = [...primeiro.entries()]
-    .filter(([chave]) => resto.every((mapa) => mapa.has(chave)))
-    .map(([, nome]) => nome);
+  if (listas.length < 2 || listas.some((lista) => !lista.length)) return vazio;
 
-  const chavesComuns = new Set(
-    [...primeiro.keys()].filter((chave) => resto.every((mapa) => mapa.has(chave)))
+  const [primeira, ...resto] = listas;
+  const comuns = primeira.filter((nome) =>
+    resto.every((lista) => lista.some((outro) => mesmaDisciplina(nome, outro)))
   );
-  const exclusivos = mapas.map(
-    (mapa) => [...mapa.keys()].filter((chave) => !chavesComuns.has(chave)).length
-  );
-  const uniao = new Set(mapas.flatMap((mapa) => [...mapa.keys()])).size;
+
+  const exclusivos = listas.map((lista, idx) => ({
+    nome: nomeDoCargo(cargos[idx], idx),
+    // O nome das exclusivas, não só a contagem: é assim que dá para ver se a diferença é
+    // real ou se foram dois jeitos de escrever a mesma matéria.
+    disciplinas: lista.filter((nome) => !comuns.some((comum) => mesmaDisciplina(nome, comum))),
+  }));
+
+  // União contando nomes equivalentes uma vez só.
+  const uniao = [];
+  listas.flat().forEach((nome) => {
+    if (!uniao.some((existente) => mesmaDisciplina(existente, nome))) uniao.push(nome);
+  });
+
+  const menorLista = Math.min(...listas.map((lista) => lista.length));
+  const maiorLista = Math.max(...listas.map((lista) => lista.length));
 
   return {
-    percentual: uniao > 0 ? Math.round((comuns.length / uniao) * 100) : 0,
+    percentual: uniao.length > 0 ? Math.round((comuns.length / uniao.length) * 100) : 0,
+    aproveitamento: menorLista > 0 ? Math.round((comuns.length / menorLista) * 100) : 0,
     comuns,
     exclusivos,
-    uniao,
+    // Quantas disciplinas o segundo cargo acrescenta a quem já estudaria o maior. É o custo
+    // real de levar os dois, e o que o aluno realmente quer saber.
+    acrescimo: Math.max(0, uniao.length - maiorLista),
+    uniao: uniao.length,
+    contido: comuns.length === menorLista,
   };
+}
+
+function nomeDoCargo(cargo, indice) {
+  return String(cargo?.roleName || cargo?.title || `Cargo ${indice + 1}`).trim();
 }

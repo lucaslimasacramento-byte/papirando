@@ -1068,73 +1068,68 @@ export default function Planos({
               {/* Com dois cargos marcados, a pergunta que importa e uma so: estudar os dois
                   e quase dobrar o esforco, ou boa parte se aproveita? Responder aqui, na
                   escolha, e o que evita descobrir isso com dois cursos ja montados. */}
-              {compatibilidadeEscolhida && (
-                <div
-                  className="pl-card"
-                  style={{
-                    padding: '14px 16px',
-                    borderColor: compatibilidadeEscolhida.percentual >= 58
-                      ? 'var(--pl-success)'
-                      : compatibilidadeEscolhida.percentual >= 32
-                        ? 'var(--pl-warn)'
-                        : 'var(--pl-danger)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                    <span
-                      className="pl-num"
-                      style={{
-                        fontSize: 26,
-                        color: compatibilidadeEscolhida.percentual >= 58
-                          ? 'var(--pl-success)'
-                          : compatibilidadeEscolhida.percentual >= 32
-                            ? 'var(--pl-warn)'
-                            : 'var(--pl-danger)',
-                      }}
-                    >
-                      {compatibilidadeEscolhida.percentual}%
-                    </span>
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                      de compatibilidade entre os cargos marcados
-                    </span>
-                  </div>
+              {compatibilidadeEscolhida && (() => {
+                const { aproveitamento, comuns, exclusivos, acrescimo, contido } = compatibilidadeEscolhida;
+                const cor = aproveitamento >= 70
+                  ? 'var(--pl-success)'
+                  : aproveitamento >= 40
+                    ? 'var(--pl-warn)'
+                    : 'var(--pl-danger)';
+                // Quem tem menos disciplinas e o cargo "coberto" pelo outro.
+                const menor = [...exclusivos].sort((a, b) => a.disciplinas.length - b.disciplinas.length)[0];
 
-                  <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>
-                    {compatibilidadeEscolhida.comuns.length === 0
-                      ? 'Nenhuma disciplina se repete. Na prática são dois estudos separados.'
-                      : compatibilidadeEscolhida.percentual >= 58
-                        ? `${compatibilidadeEscolhida.comuns.length} disciplinas caem nos dois — a maior parte do que você estudar serve para ambos.`
-                        : compatibilidadeEscolhida.percentual >= 32
-                          ? `${compatibilidadeEscolhida.comuns.length} disciplinas caem nos dois, mas boa parte do conteúdo é exclusiva de cada um.`
-                          : `Só ${compatibilidadeEscolhida.comuns.length} disciplinas se repetem. Levar os dois é quase dobrar o esforço.`}
-                  </p>
-
-                  {compatibilidadeEscolhida.comuns.length > 0 && (
-                    <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {compatibilidadeEscolhida.comuns.slice(0, 8).map((nome) => (
-                        <span key={nome} className="pl-tag pl-tag-success" style={{ fontSize: 11 }}>{nome}</span>
-                      ))}
-                      {compatibilidadeEscolhida.comuns.length > 8 && (
-                        <span className="pl-tag" style={{ fontSize: 11 }}>
-                          +{compatibilidadeEscolhida.comuns.length - 8}
-                        </span>
-                      )}
+                return (
+                  <div className="pl-card" style={{ padding: '14px 16px', borderColor: cor }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                      <span className="pl-num" style={{ fontSize: 26, color: cor }}>{aproveitamento}%</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                        do cargo mais enxuto já cai no outro
+                      </span>
                     </div>
-                  )}
 
-                  {/* Quanto sobra fora do comum é o custo real de levar os dois. */}
-                  <p style={{ margin: '10px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>
-                    Exclusivas de cada cargo:{' '}
-                    {cargosEscolhidos
-                      .map((id, idx) => {
-                        const cargo = analysisResult.contests.find((item) => item.id === id);
-                        const nome = cargo?.roleName || cargo?.title || `Cargo ${idx + 1}`;
-                        return `${nome} (${compatibilidadeEscolhida.exclusivos[idx] ?? 0})`;
-                      })
-                      .join(' · ')}
-                  </p>
-                </div>
-              )}
+                    <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>
+                      {comuns.length === 0
+                        ? 'Nenhuma disciplina se repete. Na prática são dois estudos separados.'
+                        : contido
+                          ? `${menor?.nome || 'Um dos cargos'} está inteiro dentro do outro: estudando o maior, você já cobre os dois. Levar os dois acrescenta ${acrescimo} ${acrescimo === 1 ? 'disciplina' : 'disciplinas'}.`
+                          : `${comuns.length} ${comuns.length === 1 ? 'disciplina cai' : 'disciplinas caem'} nos dois. Levar o segundo cargo acrescenta ${acrescimo} ${acrescimo === 1 ? 'disciplina' : 'disciplinas'} ao seu estudo.`}
+                    </p>
+
+                    {comuns.length > 0 && (
+                      <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {comuns.slice(0, 8).map((nome) => (
+                          <span key={nome} className="pl-tag pl-tag-success" style={{ fontSize: 11 }}>{nome}</span>
+                        ))}
+                        {comuns.length > 8 && (
+                          <span className="pl-tag" style={{ fontSize: 11 }}>+{comuns.length - 8}</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Nomear as exclusivas, e nao so conta-las: e assim que da para ver se a
+                        diferenca e real ou se foram dois jeitos de escrever a mesma materia —
+                        e nos dois casos o aluno decide melhor do que com um numero solto. */}
+                    {exclusivos.some((cargo) => cargo.disciplinas.length > 0) && (
+                      <div style={{ marginTop: 12, display: 'grid', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 12 }}>
+                        {exclusivos
+                          .filter((cargo) => cargo.disciplinas.length > 0)
+                          .map((cargo) => (
+                            <div key={cargo.nome}>
+                              <p className="pl-eyebrow" style={{ marginBottom: 5 }}>
+                                Só em {cargo.nome} ({cargo.disciplinas.length})
+                              </p>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {cargo.disciplinas.map((nome) => (
+                                  <span key={nome} className="pl-tag" style={{ fontSize: 11 }}>{nome}</span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', paddingTop: 16, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12.5, color: 'var(--pl-ink-3)' }}>

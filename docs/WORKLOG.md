@@ -59,11 +59,25 @@ Quando o edital traz mais de um cargo, entra uma tela própria de escolha (cards
 salário, escolaridade, questões e nº de disciplinas) entre a leitura e a revisão. Seleção
 múltipla limitada às vagas de curso do plano; cada cargo é revisado e confirmado um por vez.
 
-Marcando dois ou mais, aparece a **compatibilidade entre eles** — mesma conta do Conciliador
-(disciplinas em comum sobre a união), calculada localmente em `compatibilidadeDeCargos`
-(`src/lib/edital.js`, 6 testes). É instantânea e não gasta chamada de IA, porque os dados já
-estão em memória. Responde na hora da escolha a única pergunta que importa ali: estudar os
-dois é quase dobrar o esforço, ou boa parte se aproveita?
+Marcando dois ou mais, aparece a **compatibilidade entre eles**, calculada localmente em
+`compatibilidadeDeCargos` (`src/lib/edital.js`, 13 testes). É instantânea e não gasta chamada
+de IA, porque os dados já estão em memória.
+
+Duas correções depois do primeiro teste real (PM/AL, Oficial x Soldado, que marcava 31%
+quando na prática um cargo é o outro com matérias a mais):
+
+- **O matcher exigia nome idêntico.** "Noções de Informática" e "Informática" viravam
+  disciplinas diferentes. Agora `mesmaDisciplina` compara por tokens, descartando ruído
+  ("noções de", "básica", "pertinente") e sinônimos de edital ("Língua Portuguesa" =
+  "Português"), e aceita o nome menor contido no maior. Cabeças genéricas — "Direito",
+  "Legislação" — não casam sozinhas, senão Direito Penal viraria Direito Administrativo.
+- **A métrica punia subconjunto.** Comuns sobre a união dá número baixo justamente quando um
+  cargo está contido no outro (oficial x praça), sugerindo dois estudos separados. O número
+  em destaque passou a ser o **aproveitamento** (quanto do cargo menor cai no maior), com o
+  **acréscimo** em disciplinas ao lado — que é o custo real de levar os dois.
+
+A tela nomeia as disciplinas exclusivas de cada cargo, não só conta: é assim que se vê se a
+diferença é real ou se foram dois jeitos de escrever a mesma matéria.
 
 **Falta medir a qualidade da leitura:** quadro de provas preenchido, disciplinas reais,
 8–15 tópicos por disciplina, dados do cargo. `docs/TESTE-EXTRACAO-EDITAL.md` ainda diz que a

@@ -6,6 +6,7 @@ import {
   impressaoDoEdital,
   acharLinhaDaProva,
   compatibilidadeDeCargos,
+  mesmaDisciplina,
 } from './edital';
 
 const EDITAL = 'a'.repeat(25000);
@@ -133,36 +134,87 @@ describe('acharLinhaDaProva', () => {
   });
 });
 
-// A escolha de dois cargos do mesmo edital é a hora de dizer se eles se aproveitam. Mesma
-// conta do Conciliador (comuns sobre a união), feita localmente porque os dados já estão
-// em memória.
+// Edital chama a mesma matéria de três jeitos no mesmo documento. Comparando o nome cru,
+// um cargo que é o outro com disciplinas a mais aparecia como "31% de compatibilidade".
+describe('mesmaDisciplina', () => {
+  it.each([
+    ['Noções de Informática', 'Informática'],
+    ['Informática Básica', 'Noções de Informática'],
+    ['Língua Portuguesa', 'Português'],
+    ['Direito Penal', 'Direito Penal Militar'],
+    ['História', 'História do Brasil'],
+    ['Legislação Pertinente ao Policial Militar', 'Legislação ao Policial Militar'],
+  ])('casa %s com %s', (a, b) => {
+    expect(mesmaDisciplina(a, b)).toBe(true);
+  });
+
+  it.each([
+    ['Direito Penal', 'Direito Administrativo'],
+    ['Matemática', 'Raciocínio Lógico'],
+    // "Direito" sozinho não diz qual direito é: deixar casar juntaria disciplinas distintas.
+    ['Direito', 'Direito Constitucional'],
+    ['Legislação', 'Legislação de Trânsito'],
+    ['História', 'Geografia'],
+  ])('nao casa %s com %s', (a, b) => {
+    expect(mesmaDisciplina(a, b)).toBe(false);
+  });
+
+  it('nao casa com nome vazio', () => {
+    expect(mesmaDisciplina('', 'Português')).toBe(false);
+  });
+});
+
 describe('compatibilidadeDeCargos', () => {
   const cargo = (nome, disciplinas) => ({ title: nome, disciplinas: disciplinas.map((d) => ({ nome: d })) });
 
   it('nao compara um cargo sozinho', () => {
     const resultado = compatibilidadeDeCargos([cargo('A', ['Português'])]);
-    expect(resultado.percentual).toBe(0);
+    expect(resultado.aproveitamento).toBe(0);
     expect(resultado.comuns).toEqual([]);
   });
 
-  it('calcula comuns sobre a uniao', () => {
+  // O caso que motivou a mudança: oficial é o soldado com matérias a mais. A razão sobre a
+  // união dava 60% e sugeria dois estudos; o aproveitamento diz o que importa — quem estuda
+  // o maior já cobre o menor inteiro.
+  it('reconhece um cargo contido no outro', () => {
     const resultado = compatibilidadeDeCargos([
-      cargo('A', ['Português', 'Matemática', 'Direito Penal']),
-      cargo('B', ['Português', 'Matemática', 'Informática']),
+      cargo('Soldado', ['Língua Portuguesa', 'Matemática', 'Noções de Informática']),
+      cargo('Oficial', ['Português', 'Matemática', 'Informática', 'Direito Penal Militar', 'História']),
     ]);
-    // 2 comuns numa união de 4 disciplinas
-    expect(resultado.comuns).toEqual(['Português', 'Matemática']);
-    expect(resultado.uniao).toBe(4);
-    expect(resultado.percentual).toBe(50);
+    expect(resultado.contido).toBe(true);
+    expect(resultado.aproveitamento).toBe(100);
+    expect(resultado.acrescimo).toBe(0);
   });
 
-  it('ignora acento e caixa ao casar os nomes', () => {
+  it('conta quantas disciplinas o segundo cargo acrescenta', () => {
     const resultado = compatibilidadeDeCargos([
-      cargo('A', ['LÍNGUA PORTUGUESA']),
-      cargo('B', ['Lingua Portuguesa']),
+      cargo('A', ['Português', 'Matemática', 'Direito Penal']),
+      cargo('B', ['Português', 'Informática']),
     ]);
-    expect(resultado.percentual).toBe(100);
-    expect(resultado.comuns).toHaveLength(1);
+    // União: Português, Matemática, Direito Penal, Informática = 4; maior lista = 3
+    expect(resultado.acrescimo).toBe(1);
+    expect(resultado.contido).toBe(false);
+  });
+
+  it('nomeia as disciplinas exclusivas de cada cargo', () => {
+    const resultado = compatibilidadeDeCargos([
+      cargo('Soldado', ['Português', 'Direito Penal', 'Direito Civil']),
+      cargo('Oficial', ['Português', 'Informática']),
+    ]);
+    expect(resultado.exclusivos[0]).toEqual({
+      nome: 'Soldado',
+      disciplinas: ['Direito Penal', 'Direito Civil'],
+    });
+    expect(resultado.exclusivos[1]).toEqual({ nome: 'Oficial', disciplinas: ['Informática'] });
+  });
+
+  it('ignora acento, caixa e ruido no nome ao casar', () => {
+    const resultado = compatibilidadeDeCargos([
+      cargo('A', ['LÍNGUA PORTUGUESA', 'Noções de Informática']),
+      cargo('B', ['Português', 'Informática Básica']),
+    ]);
+    expect(resultado.aproveitamento).toBe(100);
+    expect(resultado.uniao).toBe(2);
   });
 
   // Com tres cargos, o que aparece em dois nao e "comum": o numero precisa significar
@@ -171,21 +223,13 @@ describe('compatibilidadeDeCargos', () => {
     const resultado = compatibilidadeDeCargos([
       cargo('A', ['Português', 'Matemática']),
       cargo('B', ['Português', 'Matemática']),
-      cargo('C', ['Português', 'Direito']),
+      cargo('C', ['Português', 'Direito Civil']),
     ]);
     expect(resultado.comuns).toEqual(['Português']);
   });
 
-  it('conta quantas disciplinas sao exclusivas de cada cargo', () => {
-    const resultado = compatibilidadeDeCargos([
-      cargo('A', ['Português', 'Direito Penal', 'Direito Civil']),
-      cargo('B', ['Português', 'Informática']),
-    ]);
-    expect(resultado.exclusivos).toEqual([2, 1]);
-  });
-
   it('nao quebra com cargo sem disciplinas', () => {
     const resultado = compatibilidadeDeCargos([cargo('A', ['Português']), { title: 'B' }]);
-    expect(resultado.percentual).toBe(0);
+    expect(resultado.aproveitamento).toBe(0);
   });
 });
