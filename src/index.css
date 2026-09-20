@@ -9795,6 +9795,8 @@ textarea.simulados-register-input {
   --dash-hero-sub: 17px;
   --dash-kpi-pad: 14px 16px 13px;
   --dash-kpi-num: 38px;
+  --dash-frase: 21px;
+  --dash-frase-pad: 14px;
 }
 
 /* Notebook comum (~900px de janela). */
@@ -9807,6 +9809,8 @@ textarea.simulados-register-input {
     --dash-hero-sub: 15.5px;
     --dash-kpi-pad: 11px 14px 10px;
     --dash-kpi-num: 32px;
+    --dash-frase: 18px;
+    --dash-frase-pad: 11px;
   }
 }
 
@@ -9821,6 +9825,8 @@ textarea.simulados-register-input {
     --dash-hero-sub: 14px;
     --dash-kpi-pad: 9px 12px 8px;
     --dash-kpi-num: 27px;
+    --dash-frase: 16px;
+    --dash-frase-pad: 9px;
   }
 }
 
@@ -9835,5 +9841,7 @@ textarea.simulados-register-input {
     --dash-hero-sub: 13px;
     --dash-kpi-pad: 8px 10px 7px;
     --dash-kpi-num: 23px;
+    --dash-frase: 14.5px;
+    --dash-frase-pad: 7px;
   }
 }

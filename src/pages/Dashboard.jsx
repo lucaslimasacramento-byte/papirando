@@ -12,6 +12,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { saudacaoDoHorario, msAteProximaFaixa } from '../lib/saudacao';
+import { fraseDoDia } from '../lib/frases';
 import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
 export default function Dashboard({
@@ -246,6 +247,40 @@ export default function Dashboard({
           <PlKpi label="Meta diária" num={String(historyOverview.todayGoalProgress)} unit="%" detail="do objetivo de hoje" progress={historyOverview.todayGoalProgress / 100} />
           <PlKpi label="Revisões" num={String(urgentReviews).padStart(2, '0')} detail="Alta prioridade" accentColor={urgentReviews > 0 ? 'warn' : undefined} />
         </section>
+
+        {/* Frase do dia.
+         *
+         * Aqui, e nao no topo: colada na saudacao ela competiria com "Hoje a gente papira
+         * X", que e a unica linha da tela que diz o que fazer agora. Depois dos numeros e
+         * antes da acao, ela fecha o balanco ("foi isso que voce fez") e abre o proximo
+         * passo — que e onde uma frase dessas tem alguma chance de ser lida. */}
+        <div
+          style={{
+            marginTop: 'var(--dash-gap)',
+            borderTop: '1px solid var(--pl-rule)',
+            borderBottom: '1px solid var(--pl-rule)',
+            padding: 'var(--dash-frase-pad) 0',
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 14,
+          }}
+        >
+          <span className="pl-eyebrow" style={{ flexShrink: 0 }}>Frase do dia</span>
+          <p
+            style={{
+              margin: 0,
+              fontFamily: 'var(--pl-serif)',
+              fontStyle: 'italic',
+              fontWeight: 300,
+              fontSize: 'var(--dash-frase)',
+              lineHeight: 1.3,
+              letterSpacing: '-0.015em',
+              color: 'var(--pl-ink-2)',
+            }}
+          >
+            {fraseDoDia(agora)}
+          </p>
+        </div>
 
         {/* ── Foco do Dia + Streak ── */}
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 'var(--dash-gap)' }}>
