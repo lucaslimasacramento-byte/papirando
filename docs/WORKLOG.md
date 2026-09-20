@@ -18,6 +18,59 @@
 
 ---
 
+## Plano — Objetivos e Meus cursos depois do edital ⏳
+
+Decidido na madrugada de 20/09, **não implementado**. Contexto: a plataforma passou a se
+montar a partir do PDF que o aluno sobe, e as duas páginas foram desenhadas para o modelo
+anterior (catálogo curado por nós).
+
+### O papel de cada uma
+
+**Meus cursos = a casa.** Onde o aluno estuda, escolhe o alvo e vê quanto falta. Responde
+três perguntas: quais são meus alvos, qual é o principal, e se algum edital meu mudou.
+
+**Objetivos (hoje "Biblioteca") = os editais em destaque do Brasil.** Não é o catálogo
+antigo, e a diferença é quem faz o trabalho pesado:
+
+| | Catálogo antigo | Destaques (novo) |
+|---|---|---|
+| Quem monta as disciplinas | Nós, na mão, por concurso | A IA, lendo o PDF uma vez |
+| Quem confere | Ninguém | O admin, na tela de revisão, antes de publicar |
+| O que o aluno faz | Escolhe um pronto | Escolhe um pronto, em 2 segundos |
+| Custo por aluno | — | Zero chamada de IA (a leitura é uma só) |
+
+O fluxo de publicação é o **mesmo modal de importação já construído** (envio → leitura →
+escolha de cargo → revisão), com uma diferença no fim: em vez de criar curso, salva no
+catálogo. O admin revisa antes de publicar, então o que chega ao aluno já passou por olho
+humano — hoje essa conferência é do aluno, porque a IA pode errar.
+
+Isto **não** recria a dor de manutenção: ninguém digita conteúdo programático. É o trabalho
+de um aluno, feito uma vez, aproveitado por todos.
+
+### O que precisa ser resolvido antes de implementar
+
+1. **Onde guardar.** Avaliar reaproveitar `contest_templates` (+ cargos), que já existe e já
+   alimenta a Biblioteca, em vez de tabela nova. A análise da IA já tem a forma certa
+   (cargos, disciplinas, tópicos, quadro de provas, etapas, datas).
+2. **Retificação.** O curso do aluno já guarda `edital_impressao` e `edital_lido_em`
+   (ver sessão 2026-09-19). Republicar um destaque deve conseguir avisar quem importou
+   aquela versão — é o único jeito de a plataforma não mentir depois que o edital muda.
+3. **O PDF original fica disponível** no destaque: o aluno precisa poder conferir a fonte.
+4. **Nomes.** "Objetivo" hoje significa três coisas — a aba, o curso ("Novo objetivo") e o
+   alvo ("objetivo-alvo"). Reservar *objetivo* para o alvo e renomear a aba (candidatos:
+   "Editais em destaque", "Destaques").
+5. **Importar destaque ≠ pular a revisão.** O aluno ainda escolhe o cargo (a tela de escolha
+   múltipla com compatibilidade continua valendo) e ainda pode desmarcar disciplina. O que
+   ele pula é a espera da leitura, não a conferência do que é dele.
+
+### Enquanto não houver destaque publicado
+
+A Biblioteca vazia dizendo "Nenhum concurso publicado" ensina o aluno que o app é vazio.
+Decidir no lançamento: esconder a aba até ter o primeiro destaque, ou publicar dois ou três
+antes de abrir.
+
+---
+
 ## Sessão 2026-09-19 (noite) — Cursos saem do navegador 🚧
 
 **Achado do dono, olhando a tela inicial com zero cursos cadastrados:** o Dashboard mostrava
