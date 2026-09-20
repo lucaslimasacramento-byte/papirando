@@ -247,92 +247,6 @@ function stripOAuthErrorFromLocation() {
   }
 }
 
-function EditorialTopStrip({ activeTab, setActiveTab, darkMode = false }) {
-  const tabs = [
-    { id: 'home', label: 'Dashboard' },
-    { id: 'questoes', label: 'Questões' },
-    { id: 'sessoes', label: 'Resolver questão' },
-    { id: 'planejamento', label: 'Plano' },
-  ];
-
-  const activeId = activeTab === 'home'
-    ? 'home'
-    : activeTab === 'questoes'
-      ? 'questoes'
-      : activeTab === 'planejamento'
-        ? 'planejamento'
-        : activeTab === 'sessoes'
-          ? 'sessoes'
-          : '';
-
-  const stripTheme = darkMode
-    ? {
-        background: '#0f0c08',
-        border: 'rgba(243, 239, 229, 0.14)',
-        active: '#f3efe5',
-        muted: 'rgba(243, 239, 229, 0.62)',
-        faint: 'rgba(243, 239, 229, 0.40)',
-      }
-    : {
-        background: '#efe8d8',
-        border: 'rgba(20, 17, 13, 0.14)',
-        active: '#14110d',
-        muted: 'rgba(20, 17, 13, 0.58)',
-        faint: 'rgba(20, 17, 13, 0.36)',
-      };
-
-  return (
-    <div
-      className="fixed inset-x-0 top-0 z-[70] flex h-11 items-center border-b"
-      style={{
-        background: stripTheme.background,
-        borderColor: stripTheme.border,
-        color: stripTheme.active,
-        maxWidth: '100vw',
-        overflowX: 'hidden',
-      }}
-    >
-      <button
-        type="button"
-        onClick={() => setActiveTab('home')}
-        className="flex h-full w-14 items-center justify-center border-r md:w-[88px]"
-        style={{ borderColor: stripTheme.border, color: stripTheme.active }}
-        aria-label="Papirando"
-      >
-        <span style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1 }}>P</span>
-      </button>
-      <nav className="hidden h-full min-w-0 flex-1 items-center md:flex">
-        {tabs.map((tab) => {
-          const isActive = activeId === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className="relative flex h-full items-center px-6 text-sm font-semibold transition"
-              style={{
-                color: isActive ? stripTheme.active : stripTheme.muted,
-              }}
-            >
-              {tab.label}
-              {isActive ? (
-                <span
-                  className="absolute inset-x-5 bottom-0 h-px"
-                  style={{ background: stripTheme.active }}
-                />
-              ) : null}
-            </button>
-          );
-        })}
-      </nav>
-      <div className="hidden shrink-0 items-center gap-2 px-5 text-[11px] font-semibold md:flex" style={{ color: stripTheme.muted }}>
-        <span style={{ color: stripTheme.faint }}>✣</span>
-        Aplicação editorial · 16 mai 2026
-      </div>
-    </div>
-  );
-}
-
 function parseCycleDurationLabel(label, fallback = 90) {
   const text = String(label || '').toLowerCase();
   const hourMatch = text.match(/(\d+)\s*h/);
@@ -7353,10 +7267,9 @@ export default function App() {
     <ErrorBoundary>
       <ToastProvider>
       <div
-        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden pt-11 font-sans text-slate-800"
+        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
         style={{ backgroundColor: 'var(--pl-bg, #f3efe5)', color: 'var(--pl-ink)' }}
       >
-      <EditorialTopStrip activeTab={activeTab} setActiveTab={setActiveTab} darkMode={darkMode} />
       {chartTooltip && (
         <div
           className="pointer-events-none fixed z-[9999] flex -translate-x-1/2 -translate-y-full transform items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-lg mt-[-10px]"

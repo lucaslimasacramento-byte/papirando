@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -11,6 +11,7 @@ import {
   Trophy,
   Zap,
 } from 'lucide-react';
+import { saudacaoDoHorario, msAteProximaFaixa } from '../lib/saudacao';
 import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
 export default function Dashboard({
@@ -43,13 +44,25 @@ export default function Dashboard({
     [safeHistorico, dayGoalMinutes]
   );
 
+  // O horario da tela, nao o da abertura.
+  //
+  // `new Date()` no corpo do componente congela no instante em que o painel montou: quem
+  // deixa o app aberto a noite toda continuava vendo "Boa tarde" as duas da manha, e a data
+  // parada no dia anterior. O relogio se reprograma para a proxima virada de faixa — nao
+  // fica acordando de minuto em minuto para nada.
+  const [agora, setAgora] = useState(() => new Date());
+
+  useEffect(() => {
+    const alarme = setTimeout(() => setAgora(new Date()), msAteProximaFaixa(agora));
+    return () => clearTimeout(alarme);
+  }, [agora]);
+
   const dayContextLabel = useMemo(
-    () => new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
-    []
+    () => agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
+    [agora]
   );
 
-  const currentHour = new Date().getHours();
-  const greeting = currentHour < 12 ? 'Bom dia' : currentHour < 18 ? 'Boa tarde' : 'Boa noite';
+  const greeting = saudacaoDoHorario(agora).saudacao;
   const cleanUserName = String(userDisplayName || '').trim();
   const primaryRecommendation = studyRecommendation?.primary || null;
   const targetDaysRemaining = Number.isFinite(Number(targetContest?.diasParaProva))
