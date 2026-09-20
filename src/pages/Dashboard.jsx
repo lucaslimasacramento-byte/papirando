@@ -64,6 +64,7 @@ export default function Dashboard({
   );
 
   const greeting = saudacaoDoHorario(agora).saudacao;
+  const citacaoDoDia = fraseDoDia(agora);
   const cleanUserName = String(userDisplayName || '').trim();
   const primaryRecommendation = studyRecommendation?.primary || null;
   const targetDaysRemaining = Number.isFinite(Number(targetContest?.diasParaProva))
@@ -186,12 +187,10 @@ export default function Dashboard({
           inline ganha de media query: para o painel encolher em tela baixa, o numero tem
           que sair do JSX. */}
       <div style={{ width: '100%', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
-        {/* A coluna da direita e do objetivo-alvo. Sem alvo definido ela fica vazia, e e
-            onde a frase do dia cabe: o unico ponto da tela com espaco sobrando e sem nada
-            competindo por atencao. Quando o alvo existe, ele volta a mandar — a contagem de
-            dias para a prova vale mais que qualquer frase. Por isso a coluna e mais larga
-            no modo frase: 220px e a medida do cartao do alvo, nao a de uma citacao. */}
-        <section style={{ display: 'grid', gridTemplateColumns: `minmax(0, 1fr) ${targetDaysRemaining !== null ? '220px' : '300px'}`, gap: 28, alignItems: 'center' }}>
+        {/* A coluna da direita e do objetivo-alvo, definido ou nao. Deixa-la vazia era o
+            pior dos mundos: o aluno nao via que faltava escolher um alvo, e a plataforma
+            inteira depende dele para priorizar. Sem alvo, o lugar convida a definir. */}
+        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: 28, alignItems: 'center' }}>
           <div style={{ minWidth: 0 }}>
             <div className="pl-eyebrow">
               {dayContextLabel}
@@ -227,29 +226,21 @@ export default function Dashboard({
           </div>
 
           {targetDaysRemaining === null && (
-            <figure
-              style={{
-                margin: 0,
-                borderLeft: '2px solid var(--pl-rule-strong)',
-                paddingLeft: 18,
-              }}
+            <div
+              className="pl-card pl-card-paper"
+              style={{ width: 220, padding: '17px 20px', borderStyle: 'dashed' }}
             >
-              <figcaption className="pl-eyebrow" style={{ marginBottom: 8 }}>Frase do dia</figcaption>
-              <p
-                style={{
-                  margin: 0,
-                  fontFamily: 'var(--pl-serif)',
-                  fontStyle: 'italic',
-                  fontWeight: 300,
-                  fontSize: 'var(--dash-frase)',
-                  lineHeight: 1.32,
-                  letterSpacing: '-0.015em',
-                  color: 'var(--pl-ink-2)',
-                }}
-              >
-                {fraseDoDia(agora)}
+              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Objetivo-alvo</div>
+              <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', lineHeight: 1.3 }}>
+                Nenhum alvo definido
+              </div>
+              <p style={{ margin: '6px 0 12px', fontSize: 12, lineHeight: 1.45, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+                É o alvo que diz à plataforma o que priorizar e quantos dias faltam.
               </p>
-            </figure>
+              <button className="pl-btn pl-btn-sm" onClick={() => setActiveTab?.('planos')}>
+                Definir alvo <ArrowRight size={12} />
+              </button>
+            </div>
           )}
 
           {targetDaysRemaining !== null && (
@@ -365,6 +356,42 @@ export default function Dashboard({
             <PlWeekBars bars={weekBars} max={weekMax} />
           </div>
         </section>
+
+        {/* A citacao fecha a pagina, como colofao.
+         *
+         * Nao cabia mais no alto: a coluna da direita e do objetivo-alvo, e entre os KPIs e
+         * o Foco do Dia ela criava uma linha nova numa tela ja apertada. Aqui nao empurra
+         * nada, nao disputa com nenhuma acao, e e o que o olho encontra quando termina de
+         * ler o painel — que e quando uma frase dessas tem alguma chance de ser lida. */}
+        <figure
+          style={{
+            margin: 'var(--dash-gap) 0 0',
+            borderTop: '1px solid var(--pl-rule)',
+            paddingTop: 'var(--dash-gap)',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontFamily: 'var(--pl-serif)',
+              fontStyle: 'italic',
+              fontWeight: 300,
+              fontSize: 'var(--dash-frase)',
+              lineHeight: 1.35,
+              letterSpacing: '-0.015em',
+              color: 'var(--pl-ink-2)',
+              maxWidth: 620,
+              marginInline: 'auto',
+            }}
+          >
+            {citacaoDoDia.texto}
+          </p>
+          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
+          <figcaption className="pl-eyebrow" style={{ marginTop: 10 }}>
+            {citacaoDoDia.autor}
+          </figcaption>
+        </figure>
       </div>
     </div>
   );
