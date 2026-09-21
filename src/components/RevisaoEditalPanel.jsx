@@ -277,8 +277,10 @@ export function RevisaoEditalPanel({
         <span style={{ color: 'var(--pl-ink-2)' }}>
           {cargos.length > 1 ? (
             <>
-              Vão ser criados <strong style={{ color: 'var(--pl-ink)' }}>{cargos.length} cursos</strong>:{' '}
+              Vai ser criado <strong style={{ color: 'var(--pl-ink)' }}>1 curso</strong> com os{' '}
+              {cargos.length} cargos:{' '}
               {porCargo.map((cargo) => `${cargo.nome} (${cargo.disciplinas} disciplinas)`).join(' e ')}.
+              {' '}A matéria que cai nos dois é estudada uma vez e conta para os dois.
             </>
           ) : (
             <>

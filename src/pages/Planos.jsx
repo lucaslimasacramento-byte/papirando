@@ -343,9 +343,12 @@ export default function Planos({
     // A leitura heuristica nao vem pre-marcada: ela erra bastante em edital longo, e a
     // plataforma inteira se monta em cima desta lista. O aluno marca o que estiver certo.
     setRevisao(mesclarDisciplinasDeCargos(cargos, analysis.source !== 'heuristic'));
-    setNomesDosCursos(
-      Object.fromEntries(cargos.map((cargo) => [cargo.id, cargo.roleName || cargo.title]))
-    );
+    // Com mais de um cargo o nome do curso nao pode ser o de um deles: o curso cobre os
+    // dois. Nomeia pelo certame, que e o que os une.
+    const nomePadrao = cargos.length > 1
+      ? (analysis.examName && analysis.examName !== 'Não encontrado' ? analysis.examName : 'Curso do edital')
+      : (cargos[0].roleName || cargos[0].title);
+    setNomesDosCursos({ [cargos[0].id]: nomePadrao });
     // Concurso e banca sao do edital, nao do cargo: os dois cargos saem do mesmo certame.
     setIaForm((prev) => ({
       ...prev,
@@ -530,78 +533,71 @@ export default function Planos({
   const handleImportEdital = async () => {
     if (!cargosParaRevisar.length) return;
 
-    // Cada cargo leva so o que e dele: a revisao e uma lista mesclada, e uma disciplina
-    // marcada pode existir num cargo e nao no outro. O mesmo vale topico a topico — o
-    // recorte da mesma disciplina muda entre oficial e praca.
-    const paraImportar = cargosParaRevisar.map((cargo) => ({
-      cargo,
-      nome: String(nomesDosCursos[cargo.id] || cargo.roleName || cargo.title || '').trim(),
-      disciplinas: (revisao || [])
-        .filter((item) => item.incluir && item.cargos.includes(cargo.id) && String(item.nome || '').trim())
-        .map((item) => ({
-          nome: String(item.nome).trim(),
-          topicos: item.topicos
-            .filter((topico) => topico.incluir && topico.cargos.includes(cargo.id))
-            .map((topico) => topico.nome),
-        })),
-    }));
-
-    const semNome = paraImportar.find((item) => !item.nome);
-    if (semNome) {
-      showToast('Dê um nome ao curso de cada cargo antes de confirmar.', 'warn');
+    // Um curso com todos os cargos escolhidos, e nao um curso por cargo.
+    //
+    // Com dois cargos do mesmo edital, dois cursos separados sao a mesma lista estudada em
+    // duplicata: a materia comum apareceria duas vezes e o progresso nao conversaria —
+    // marcar "Lingua Portuguesa" concluida num deixaria o outro em zero na mesma materia.
+    // Aqui a disciplina e criada uma vez, carregando a quais cargos ela serve.
+    const nomeDoCurso = String(nomesDosCursos[cargosParaRevisar[0].id] || '').trim();
+    if (!nomeDoCurso) {
+      showToast('Dê um nome ao curso antes de confirmar.', 'warn');
       return;
     }
 
-    // Avisar qual cargo ficou vazio, e nao so "nenhuma disciplina marcada": com dois cargos
-    // na mesma lista, o aluno nao tem como adivinhar qual deles ficou sem nada.
-    const semDisciplinas = paraImportar.find((item) => !item.disciplinas.length);
-    if (semDisciplinas) {
-      showToast(`Nenhuma disciplina ficou marcada para ${semDisciplinas.nome}.`, 'warn');
+    const disciplinas = (revisao || [])
+      .filter((item) => item.incluir && String(item.nome || '').trim())
+      .map((item) => ({
+        nome: String(item.nome).trim(),
+        // Os topicos tambem carregam o cargo: o recorte da mesma disciplina muda entre
+        // oficial e praca, e o progresso de um nao pode contar topico que nao cai na prova
+        // dele.
+        topicos: item.topicos.filter((topico) => topico.incluir).map((topico) => topico.nome),
+        cargos: item.cargos.filter((id) => cargosEscolhidos.includes(id)),
+      }))
+      .filter((item) => item.cargos.length);
+
+    if (!disciplinas.length) {
+      showToast('Nenhuma disciplina ficou marcada para importar.', 'warn');
       return;
     }
 
     setIsImporting(true);
 
-    const criados = [];
     try {
-      for (const item of paraImportar) {
-        const result = await onImportEdital?.({
-          courseData: {
-            nome: item.nome,
-            plano: item.nome,
-            concurso: iaForm.concurso.trim() || item.nome,
-            banca: iaForm.banca.trim() || 'A definir',
-            edital_arquivo: uploadedFileName,
-          },
-          editalText: iaForm.editalText,
-          selectedContestId: item.cargo.id,
-          analysisResult,
-          // O que vale e a revisao do aluno, nao a proposta crua da IA.
-          disciplinasRevisadas: item.disciplinas,
-        });
+      const result = await onImportEdital?.({
+        courseData: {
+          nome: nomeDoCurso,
+          plano: nomeDoCurso,
+          concurso: iaForm.concurso.trim() || nomeDoCurso,
+          banca: iaForm.banca.trim() || 'A definir',
+          edital_arquivo: uploadedFileName,
+        },
+        editalText: iaForm.editalText,
+        selectedContestId: cargosParaRevisar[0].id,
+        cargosSelecionados: cargosParaRevisar.map((cargo) => cargo.id),
+        analysisResult,
+        // O que vale e a revisao do aluno, nao a proposta crua da IA.
+        disciplinasRevisadas: disciplinas,
+      });
 
-        criados.push({
-          nome: item.nome,
-          plano: item.nome,
+      setCursosCriados([
+        {
+          nome: nomeDoCurso,
+          plano: nomeDoCurso,
+          cargos: cargosParaRevisar.map((cargo) => cargo.roleName || cargo.title),
           disciplinasCriadas: result?.disciplinasCriadas || 0,
           topicosCriados: result?.topicosCriados || 0,
-        });
-      }
-
-      setCursosCriados(criados);
+        },
+      ]);
       setEtapaEdital('pronto');
     } catch (error) {
-      // Um cargo pode ter sido criado antes da falha do outro. Mostrar o que ja existe
-      // evita o aluno tentar de novo e acabar com o mesmo curso duas vezes.
-      if (criados.length) {
-        setCursosCriados(criados);
-        setEtapaEdital('pronto');
-      }
       showToast(error.message || 'Não foi possível importar o edital.', 'error');
     } finally {
       setIsImporting(false);
     }
   };
+
   const buildCourseMetaChips = (curso) => {
     const intent = curso.intent || curso.tipo || (curso.origem === 'catalogo' || curso.origem === 'ia' ? 'concurso' : 'livre');
     const chips = [{ key: 'intent', tone: intent === 'faculdade' ? 'highlight' : 'accent', label: INTENT_LABELS[intent] || 'Objetivo' }];
@@ -1205,16 +1201,14 @@ export default function Planos({
               {/* Um nome de curso por cargo: a revisao e uma so, mas no fim nasce um curso
                   para cada. Concurso e banca sao do edital, entao ficam fora do laco. */}
               <div style={{ display: 'grid', gap: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
-                  {cargosParaRevisar.map((cargo, indice) => (
-                    <InputField
-                      key={cargo.id ?? indice}
-                      label={cargosParaRevisar.length > 1 ? `Nome do curso ${indice + 1}` : 'Nome do curso'}
-                      value={nomesDosCursos[cargo.id] || ''}
-                      onChange={(value) => setNomesDosCursos((prev) => ({ ...prev, [cargo.id]: value }))}
-                    />
-                  ))}
-                </div>
+                {/* Um nome so: e um curso cobrindo os dois cargos, nao um curso por cargo. */}
+                <InputField
+                  label="Nome do curso"
+                  value={nomesDosCursos[cargosParaRevisar[0].id] || ''}
+                  onChange={(value) =>
+                    setNomesDosCursos((prev) => ({ ...prev, [cargosParaRevisar[0].id]: value }))
+                  }
+                />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
                   <InputField label="Concurso/órgão" value={iaForm.concurso} onChange={(value) => setIaForm((prev) => ({ ...prev, concurso: value }))} />
                   <InputField label="Banca" value={iaForm.banca} onChange={(value) => setIaForm((prev) => ({ ...prev, banca: value }))} />
@@ -1242,12 +1236,12 @@ export default function Planos({
                   {isImporting ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      {cargosParaRevisar.length > 1 ? 'Criando os cursos...' : 'Criando o curso...'}
+                      Criando o curso...
                     </>
                   ) : (
                     <>
                       <Wand2 size={16} />
-                      {cargosParaRevisar.length > 1 ? `Confirmar e criar ${cargosParaRevisar.length} cursos` : 'Confirmar e criar'}
+                      {cargosParaRevisar.length > 1 ? 'Confirmar e criar o curso' : 'Confirmar e criar'}
                     </>
                   )}
                 </PrimaryButton>
@@ -1261,9 +1255,7 @@ export default function Planos({
               <CheckCircle2 size={34} style={{ color: 'var(--pl-success)' }} />
               <div>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                  {cursosCriados.length > 1
-                    ? `${cursosCriados.length} cursos criados a partir do edital.`
-                    : `${cursosCriados[0]?.nome} está pronto.`}
+                  {cursosCriados[0]?.nome} está pronto.
                 </p>
               </div>
 
@@ -1280,6 +1272,11 @@ export default function Planos({
                     <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--pl-ink-2)' }}>
                       {curso.disciplinasCriadas} disciplinas · {curso.topicosCriados} tópicos
                     </p>
+                    {curso.cargos?.length > 1 && (
+                      <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                        Cobrindo {curso.cargos.length} cargos: {curso.cargos.join(' e ')}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1293,7 +1290,7 @@ export default function Planos({
                   closeMode();
                 }}
               >
-                {cursosCriados.length > 1 ? 'Ir para o primeiro curso' : 'Ir para o curso'}
+                Ir para o curso
               </PrimaryButton>
             </div>
           )}

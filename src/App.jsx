@@ -113,6 +113,7 @@ import {
 import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { recordCustomObjective } from './lib/customObjectivesApi';
 import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
+import { montarMapaDeCargos } from './lib/cargos';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -5850,6 +5851,8 @@ export default function App() {
     courseData,
     editalText,
     selectedContestId,
+    // Todos os cargos que o aluno escolheu — o curso carrega os dois dentro dele.
+    cargosSelecionados = null,
     analysisResult,
     // Disciplinas como o aluno deixou na tela de revisão. Sem catálogo para cair de volta,
     // é a revisão dele que vale — não a proposta crua da IA.
@@ -5857,13 +5860,27 @@ export default function App() {
   }) => {
     const analysis =
       analysisResult?.contests?.length > 0 ? analysisResult : analyzeEditalDocument(editalText);
-    const contestBase =
-      analysis.contests.find((contest) => contest.id === selectedContestId) || analysis.contests[0];
+
+    // Um curso pode ter mais de um cargo. Quando o aluno presta dois cargos do mesmo edital,
+    // dois cursos separados seriam a mesma lista estudada em duplicata, com progresso que
+    // nao conversa — marcar Portugues concluido num deixava o outro em zero na mesma
+    // materia. Ver src/lib/cargos.js.
+    const idsDosCargos = Array.isArray(cargosSelecionados) && cargosSelecionados.length
+      ? cargosSelecionados
+      : [selectedContestId].filter(Boolean);
+
+    const cargosDoCurso = idsDosCargos
+      .map((id) => analysis.contests.find((contest) => contest.id === id))
+      .filter(Boolean);
+
+    const contestBase = cargosDoCurso[0] || analysis.contests[0];
 
     if (!contestBase) {
       throw new Error('A IA não conseguiu identificar um concurso válido para importar.');
     }
 
+    // As disciplinas do curso sao a UNIAO do que o aluno marcou para todos os cargos: a
+    // materia comum e criada uma vez so, e o mapa acima diz a quem ela serve.
     const contestSelecionado = Array.isArray(disciplinasRevisadas)
       ? { ...contestBase, disciplinas: disciplinasRevisadas }
       : contestBase;
@@ -5892,7 +5909,25 @@ export default function App() {
       carga_horaria: courseData?.carga_horaria || contestSelecionado.cargaHoraria || '',
       inscricao_valor: courseData?.inscricao_valor || analysis.inscricaoValor || '',
       etapas_tags: courseData?.etapas_tags?.length ? courseData.etapas_tags : (analysis.etapas || []),
-      prova: Array.isArray(contestSelecionado.prova) ? contestSelecionado.prova : [],
+      // Os cargos do curso, com o quadro de provas de cada um: e o peso por disciplina
+      // naquela prova, e dois cargos do mesmo edital raramente tem o mesmo.
+      cargos: (cargosDoCurso.length ? cargosDoCurso : [contestBase]).map((cargo) => ({
+        id: cargo.id,
+        nome: cargo.roleName || cargo.title,
+        vagas: cargo.vagas || '',
+        salario: cargo.salario || '',
+        escolaridade: cargo.escolaridade || '',
+        lotacao: cargo.lotacao || '',
+        carga_horaria: cargo.cargaHoraria || '',
+        prova: Array.isArray(cargo.prova) ? cargo.prova : [],
+        examDate: cargo.examDate || '',
+      })),
+      // Qual disciplina serve a quais cargos. Sem isto, o progresso de um cargo contaria
+      // materia que nao cai na prova dele.
+      disciplinasPorCargo: montarMapaDeCargos(disciplinasRevisadas),
+      // Campos de topo seguem o primeiro cargo: tres telas ainda leem curso.prova e
+      // curso.cargo direto, e quebra-las agora seria pior que a duplicacao.
+      prova: Array.isArray(contestBase.prova) ? contestBase.prova : [],
       prova_data: courseData?.prova_data || parseEditalDate(contestSelecionado.examDate),
       edital_arquivo: courseData?.edital_arquivo || '',
       edital_lido_em: new Date().toISOString().slice(0, 10),
