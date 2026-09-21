@@ -45,7 +45,7 @@ const buildReason = ({ pendingTopics, accuracy, progress, targetContestName, nex
   const reasons = [];
 
   if (pendingTopics > 0) {
-    reasons.push(`${pendingTopics} topico(s) ainda aberto(s)`);
+    reasons.push(`${pendingTopics} tópico(s) ainda aberto(s)`);
   }
 
   if (accuracy !== null) {
@@ -55,7 +55,7 @@ const buildReason = ({ pendingTopics, accuracy, progress, targetContestName, nex
       reasons.push(`taxa de acerto ainda instavel (${accuracy}%)`);
     }
   } else {
-    reasons.push('sem historico suficiente nessa materia');
+    reasons.push('sem histórico suficiente nessa matéria');
   }
 
   if (progress < 50) {
@@ -252,12 +252,12 @@ export function buildSmartStudyPlan({
         item.accuracy !== null && item.accuracy < 65
           ? 'Alta prioridade'
           : item.pendingTopics > 0
-            ? 'Fila de revisao'
+            ? 'Fila de revisão'
             : 'Manter ativo';
 
       const actionLabel =
         item.studyMode === 'questoes'
-          ? 'Rodar questoes'
+          ? 'Rodar questões'
           : item.studyMode === 'revisao'
             ? 'Revisar agora'
             : 'Retomar teoria';
@@ -274,7 +274,7 @@ export function buildSmartStudyPlan({
         reason:
           item.accuracy !== null
             ? `${item.accuracy}% de acerto agregado | ${item.pendingTopics} topico(s) em aberto`
-            : `${item.pendingTopics} topico(s) em aberto | sem historico suficiente`,
+            : `${item.pendingTopics} tópico(s) em aberto | sem histórico suficiente`,
         suggestedDurationLabel: item.suggestedDurationLabel,
       };
     })

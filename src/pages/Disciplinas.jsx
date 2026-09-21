@@ -120,7 +120,11 @@ export default function Disciplinas({
     };
 
     fetchDisciplinas();
-  }, [setBancoDisciplinas, subjectCatalog]);
+    // subjectCatalog e um array novo a cada render do App: como dependencia, ele refazia a
+    // busca no banco sem parar — e o "Carregando disciplinas..." piscava por cima da tabela
+    // a cada volta. O catalogo so serve para canonizar nomes aqui, entao a quantidade de
+    // entradas basta como assinatura.
+  }, [setBancoDisciplinas, subjectCatalog.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setPlanoFiltro(forcedPlanoFiltro || 'Todos');
@@ -399,7 +403,10 @@ function TabelaDisciplinas({
             </tr>
           </thead>
           <tbody>
-            {loading && (
+            {/* Só mostra "carregando" quando não há o que mostrar. Trocar a tabela cheia
+                por um aviso de carregamento a cada atualização e o que fazia as disciplinas
+                sumirem e voltarem na cara do aluno. */}
+            {loading && data.length === 0 && (
               <tr>
                 <td colSpan={6}>
                   <EmptyDashed icon={BrainCircuit} title="Carregando disciplinas..." />
@@ -407,7 +414,7 @@ function TabelaDisciplinas({
               </tr>
             )}
 
-            {!loading && data.map((disciplina, index) => (
+            {data.map((disciplina, index) => (
               <DisciplinaRow
                 key={disciplina.id || disciplina.nome || index}
                 disciplina={disciplina}
@@ -466,18 +473,29 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPl
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 5 }}>
               <span className="pl-mini-chip" style={{ background: token.chip, color: token.chipInk }}>{token.label}</span>
               {disciplina.needsReview && <span className="pl-mini-chip is-warning">revisão urgente</span>}
+              {disciplina.nuncaEstudada && <span className="pl-mini-chip">não iniciada</span>}
               {marcaDeCargo && (
                 <span className={`pl-mini-chip${marcaDeCargo.forte ? ' is-success' : ''}`}>{marcaDeCargo.texto}</span>
               )}
               <span className="pl-muted" style={{ fontSize: 12 }}>
-                {disciplina.lastStudyLabel ? `último estudo ${disciplina.lastStudyLabel}` : 'sem estudo recente'}
+                {disciplina.lastStudyLabel
+                  ? `último estudo ${disciplina.lastStudyLabel}`
+                  : disciplina.nuncaEstudada ? 'ainda não começou' : 'sem estudo recente'}
               </span>
             </div>
           </div>
         </div>
       </td>
       <td>
-        <span className="pl-pill-muted">{disciplina.plano || 'Geral'}</span>
+        {/* Nome de concurso e longo ("Concurso Publico para Admissao ao CFO e CFP da PMAL")
+            e estourava o pill, escrevendo por cima do texto ao lado. */}
+        <span
+          className="pl-pill-muted"
+          title={disciplina.plano || 'Geral'}
+          style={{ maxWidth: 220, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'middle' }}
+        >
+          {disciplina.plano || 'Geral'}
+        </span>
       </td>
       <td>{topicos.length}</td>
       <td>{concluidos}</td>
@@ -681,11 +699,20 @@ function enrichDisciplines(disciplinas, historicoReal, studyRecommendation) {
     const recommendedSubject = studyRecommendation?.subject || studyRecommendation?.disciplina || studyRecommendation?.materia;
     const isRecommended = recommendedSubject && sameSubject({ disciplina: recommendedSubject, materia: recommendedSubject, subject: recommendedSubject }, disciplina);
 
+    // Disciplina recem-importada nao esta "atrasada": ela nem comecou.
+    //
+    // A regra antiga marcava revisao urgente quando faltava historico — e logo depois de
+    // subir o edital, TODAS as 17 ficavam em vermelho. Um alerta que aparece em tudo nao
+    // alerta nada, e ainda faz o aluno achar que esta devendo no primeiro dia. Urgente e o
+    // que ele comecou e deixou para tras, ou o que a recomendacao apontou.
+    const nuncaEstudada = relatedHistory.length === 0 && coverage === 0;
+
     return {
       ...disciplina,
       coverage,
+      nuncaEstudada,
       lastStudyLabel: formatRelativeDate(lastDate),
-      needsReview: isRecommended || coverage < 35 || relatedHistory.length === 0,
+      needsReview: !nuncaEstudada && (isRecommended || coverage < 35 || relatedHistory.length === 0),
       areaKey: disciplina.area || disciplina.categoria || inferAreaFromText(disciplina.nome, disciplina.plano),
     };
   });

@@ -61,6 +61,27 @@ export function resolveSubjectCatalogEntry(value, subjectCatalog = []) {
   return best;
 }
 
+// Quando o catalogo e o edital escrevem a MESMA disciplina, ganha quem tem acento.
+//
+// O catalogo existe para agrupar nomes equivalentes, nao para reescrever ortografia. So que
+// entradas antigas dele foram cadastradas sem acento ("Nocoes de Direito Penal",
+// "Matematica"), e como o nome canonico substituia o do edital, o erro do cadastro chegava
+// a tela do aluno — inclusive em portugues errado, num produto de concurso.
+//
+// A regra nao inventa acento: se os dois textos sao iguais ignorando acento e caixa, fica o
+// que tem acento. Nomes de fato diferentes ("Portugues" -> "Lingua Portuguesa") seguem
+// resolvendo pelo catalogo, como antes.
+function temAcento(texto) {
+  const bruto = String(texto || '');
+  return bruto.normalize('NFD').replace(/[\u0300-\u036f]/g, '') !== bruto;
+}
+
 export function canonicalizeSubjectName(value, subjectCatalog = []) {
-  return resolveSubjectCatalogEntry(value, subjectCatalog)?.nome || String(value || '').trim();
+  const original = String(value || '').trim();
+  const canonico = resolveSubjectCatalogEntry(value, subjectCatalog)?.nome || original;
+
+  const mesmoNome = normalizeSubjectText(canonico) === normalizeSubjectText(original);
+  if (mesmoNome && temAcento(original) && !temAcento(canonico)) return original;
+
+  return canonico;
 }

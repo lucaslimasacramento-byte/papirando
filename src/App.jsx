@@ -2499,14 +2499,14 @@ export default function App() {
         },
         questionCandidate && {
           id: 'rotina-manha-questoes',
-          title: 'Questoes',
+          title: 'Questões',
           subtitle: questionCandidate.nome,
           detail:
             questionCandidate.accuracy !== null
-              ? `Feche a manha validando o acerto agregado de ${questionCandidate.accuracy}%.`
-              : 'Use um bloco curto de questoes para medir a assimilacao.',
+              ? `Feche a manhã validando o acerto agregado de ${questionCandidate.accuracy}%.`
+              : 'Use um bloco curto de questões para medir a assimilação.',
           duration: '0h 30m',
-          tag: 'Questoes',
+          tag: 'Questões',
           recommendation: buildQuestionRecommendation(questionCandidate),
         },
       ].filter(Boolean);
@@ -2516,14 +2516,14 @@ export default function App() {
       return [
         questionCandidate && {
           id: 'rotina-tarde-questoes',
-          title: 'Questoes',
+          title: 'Questões',
           subtitle: questionCandidate.nome,
           detail:
             questionCandidate.accuracy !== null
               ? `Momento bom para subir o acerto de ${questionCandidate.accuracy}%.`
-              : 'Transforme a tarde em leitura de desempenho com questoes.',
+              : 'Transforme a tarde em leitura de desempenho com questões.',
           duration: '0h 40m',
-          tag: 'Questoes',
+          tag: 'Questões',
           recommendation: buildQuestionRecommendation(questionCandidate, '0h 40m', 40),
         },
         primary && {
@@ -2586,7 +2586,7 @@ export default function App() {
         subtitle: questionCandidate.nome,
         detail: 'Feche o dia com um bloco curto de validacao.',
         duration: '0h 20m',
-        tag: 'Questoes',
+        tag: 'Questões',
         recommendation: buildQuestionRecommendation(questionCandidate, '0h 20m', 20),
       },
     ].filter(Boolean);

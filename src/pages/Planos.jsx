@@ -1288,17 +1288,35 @@ export default function Planos({
                 ))}
               </div>
 
-              <PrimaryButton
-                onClick={() => {
-                  // O rotulo promete navegacao; fechar o modal e deixar o aluno na lista
-                  // seria mentira. Abre o curso recem-criado nas disciplinas.
-                  setSelectedCoursePlan?.(cursosCriados[0]?.plano || 'Todos');
-                  setActiveTab('disciplinas');
-                  closeMode();
-                }}
-              >
-                Ir para o curso
-              </PrimaryButton>
+              {/* O edital virou disciplinas, mas a plataforma ainda nao sabe QUANDO o aluno
+                  estuda — e sem isso a rotina do dia, a meta diaria e as revisoes nao tem
+                  como se comportar. Por isso a rotina e a acao principal aqui, e nao o
+                  curso: e o passo que falta para o resto funcionar. */}
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <PrimaryButton
+                  onClick={() => {
+                    setSelectedCoursePlan?.(cursosCriados[0]?.plano || 'Todos');
+                    setActiveTab('planejamento');
+                    closeMode();
+                  }}
+                >
+                  <CalendarDays size={16} />
+                  Montar minha rotina de estudos
+                </PrimaryButton>
+                <SecondaryButton
+                  onClick={() => {
+                    setSelectedCoursePlan?.(cursosCriados[0]?.plano || 'Todos');
+                    setActiveTab('disciplinas');
+                    closeMode();
+                  }}
+                >
+                  Ver as disciplinas
+                </SecondaryButton>
+              </div>
+              <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-3)', maxWidth: 380 }}>
+                Sem a rotina, a plataforma não sabe quando você estuda — e o plano do dia, a
+                meta e as revisões ficam parados.
+              </p>
             </div>
           )}
         </ModalShell>
@@ -1858,7 +1876,9 @@ function SectionHeader({ eyebrow, title, meta, cta }) {
 function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, onMarcarAlvo }) {
   const isLibrary = curso.origem === 'catalogo' || curso.origem === 'biblioteca';
   const intent = curso.intent || curso.tipo || (isLibrary || curso.origem === 'ia' ? 'concurso' : 'livre');
-  const tipoLabel = isLibrary ? 'Biblioteca' : curso.origem === 'ia' ? 'Importado por IA' : INTENT_LABELS[intent] || 'Personalizado';
+  // "Importado por IA" nao diz nada ao aluno sobre o curso dele — diz como a gente construiu
+  // o produto. O selo volta a ser o tipo do objetivo (Concurso, Vestibular, Graduacao).
+  const tipoLabel = isLibrary ? 'Biblioteca' : INTENT_LABELS[intent] || 'Personalizado';
   const secondaryTag = curso.cargo || curso.area || curso.curso_superior || curso.instituicao || (intent === 'concurso' ? curso.status_concurso : '') || 'Geral';
   const visibleChips = chips.slice(0, 3);
 
