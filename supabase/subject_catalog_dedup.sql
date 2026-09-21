@@ -27,6 +27,8 @@ $$;
 
 -- 1. Quem fica: uma linha por nome (ignorando acento). Entre iguais, ganha a que TEM acento;
 --    empatou, fica a mais antiga.
+drop table if exists _sobreviventes;
+
 create temporary table _sobreviventes as
 select distinct on (public.sem_acento(nome))
   id,
@@ -62,19 +64,42 @@ from agrupados a
 where sc.id = a.sobrevivente_id;
 
 -- 3. Repontar quem apontava para uma duplicata.
-update public.subjects s
-set subject_catalog_id = sob.id
-from public.subject_catalog c
-join _sobreviventes sob on sob.chave = public.sem_acento(c.nome)
-where s.subject_catalog_id = c.id
-  and s.subject_catalog_id <> sob.id;
+--
+-- Condicional de proposito: o vinculo (subject_catalog_id) vem de
+-- supabase/subject_catalog_links.sql, que pode nao ter rodado no projeto — e o proprio app
+-- tem caminho de reserva para inserir disciplina sem ele. Sem a checagem, o script inteiro
+-- aborta com "column does not exist" e a limpeza nao acontece.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'subjects' and column_name = 'subject_catalog_id'
+  ) then
+    update public.subjects s
+    set subject_catalog_id = sob.id
+    from public.subject_catalog c
+    join _sobreviventes sob on sob.chave = public.sem_acento(c.nome)
+    where s.subject_catalog_id = c.id
+      and s.subject_catalog_id <> sob.id;
+  else
+    raise notice 'subjects.subject_catalog_id nao existe: nada a repontar (rode subject_catalog_links.sql se quiser o vinculo).';
+  end if;
 
-update public.contest_template_subjects cts
-set subject_catalog_id = sob.id
-from public.subject_catalog c
-join _sobreviventes sob on sob.chave = public.sem_acento(c.nome)
-where cts.subject_catalog_id = c.id
-  and cts.subject_catalog_id <> sob.id;
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'contest_template_subjects' and column_name = 'subject_catalog_id'
+  ) then
+    update public.contest_template_subjects cts
+    set subject_catalog_id = sob.id
+    from public.subject_catalog c
+    join _sobreviventes sob on sob.chave = public.sem_acento(c.nome)
+    where cts.subject_catalog_id = c.id
+      and cts.subject_catalog_id <> sob.id;
+  else
+    raise notice 'contest_template_subjects.subject_catalog_id nao existe: nada a repontar.';
+  end if;
+end
+$$;
 
 -- 4. Agora sim, apagar as duplicatas.
 delete from public.subject_catalog c
