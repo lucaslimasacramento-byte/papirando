@@ -31,6 +31,7 @@ import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
 import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos } from '../lib/edital';
+import { progressoPorCargo } from '../lib/cargos';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -178,6 +179,9 @@ export default function Planos({
         disciplinasCount: disciplinas.length,
         topicosCount: totalTopicos,
         progresso: totalTopicos > 0 ? Math.round((concluidos / totalTopicos) * 100) : 0,
+        // Um curso pode cobrir mais de um cargo, e o progresso de cada um conta so o que
+        // cai na prova dele — a materia comum entra nos dois. Ver src/lib/cargos.js.
+        porCargo: progressoPorCargo(curso, disciplinas),
       };
     });
   }, [bancoDisciplinas, cursos]);
@@ -601,6 +605,9 @@ export default function Planos({
   const buildCourseMetaChips = (curso) => {
     const intent = curso.intent || curso.tipo || (curso.origem === 'catalogo' || curso.origem === 'ia' ? 'concurso' : 'livre');
     const chips = [{ key: 'intent', tone: intent === 'faculdade' ? 'highlight' : 'accent', label: INTENT_LABELS[intent] || 'Objetivo' }];
+    // Curso que cobre mais de um cargo precisa dizer isso na cara: e a diferenca entre
+    // "um plano" e "dois planos no mesmo lugar".
+    if ((curso.cargos || []).length > 1) chips.push({ key: 'cargos', tone: 'success', label: `${curso.cargos.length} cargos` });
     if (intent === 'concurso') chips.push({ key: 'status', tone: 'accent', label: formatStatusLabel(curso.status_concurso) });
     if (curso.prova_data) chips.push({ key: 'prova', tone: 'highlight', label: `Prova ${formatDateDisplay(curso.prova_data)}` });
     if (curso.salario) chips.push({ key: 'salario', tone: 'success', label: curso.salario });
@@ -1927,15 +1934,40 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
           <EditorialMetric label="Tópicos" value={String(curso.topicosCount)} />
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso do objetivo</span>
-            <span className="pl-num" style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>{curso.progresso}%</span>
+        {/* Com mais de um cargo, uma barra so mentiria: a materia exclusiva de um cargo
+            conta no total geral mas nao avanca o outro. Uma barra por cargo diz a verdade —
+            e a materia comum, estudada uma vez, sobe as duas. */}
+        {curso.porCargo?.length > 1 ? (
+          <div style={{ marginTop: 12, display: 'grid', gap: 10 }}>
+            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso por cargo</span>
+            {curso.porCargo.map((cargo) => (
+              <div key={cargo.id}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {cargo.nome}
+                  </span>
+                  <span className="pl-num" style={{ fontSize: 14, color: 'var(--pl-ink-2)', flexShrink: 0 }}>{cargo.percentual}%</span>
+                </div>
+                <div className="pl-progress" style={{ marginTop: 5 }}>
+                  <div className="fill" style={{ width: `${Math.min(Math.max(cargo.percentual, 0), 100)}%`, background: 'var(--pl-ink)' }} />
+                </div>
+                <p style={{ margin: '4px 0 0', fontSize: 10.5, color: 'var(--pl-ink-3)' }}>
+                  {cargo.disciplinas} disciplinas · {cargo.concluidos} de {cargo.topicos} tópicos
+                </p>
+              </div>
+            ))}
           </div>
-          <div className="pl-progress" style={{ marginTop: 6 }}>
-            <div className="fill" style={{ width: `${Math.min(Math.max(curso.progresso, 0), 100)}%`, background: 'var(--pl-ink)' }} />
+        ) : (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+              <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso do objetivo</span>
+              <span className="pl-num" style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>{curso.progresso}%</span>
+            </div>
+            <div className="pl-progress" style={{ marginTop: 6 }}>
+              <div className="fill" style={{ width: `${Math.min(Math.max(curso.progresso, 0), 100)}%`, background: 'var(--pl-ink)' }} />
+            </div>
           </div>
-        </div>
+        )}
 
         <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 14 }}>
           {!isTarget && onMarcarAlvo && (

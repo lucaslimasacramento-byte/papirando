@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
-import { acharLinhaDaProva } from '../lib/edital';
+import { acharLinhaDaProva, avisosDoDocumento } from '../lib/edital';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -126,6 +126,9 @@ export default function Edital({
     };
   }, [editalAtivo]);
 
+  // O que o documento aparenta ser, antes de a IA olhar. Ver src/lib/edital.js.
+  const [avisosDoEdital, setAvisosDoEdital] = useState([]);
+
   const editalTextoLimpo = String(editalText || '').trim();
   const hasEditalText = editalTextoLimpo.length > 0;
 
@@ -145,6 +148,10 @@ export default function Edital({
 
     setAiError('');
     setAiPanelOpen(true);
+    // Avisa ANTES de gastar a analise: parte dos arquivos anunciados como edital e
+    // comunicado, retificacao ou resultado. Avisa, nao bloqueia — o aluno pode ter colado
+    // so o conteudo programatico, que e curto e legitimo. Mesma checagem da importacao.
+    setAvisosDoEdital(avisosDoDocumento(editalTextoLimpo));
     const resultado = await analyzeEdital(editalText);
     if (!temDadosUteis(resultado)) {
       setAiAnalysis(null);
@@ -612,6 +619,19 @@ function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAn
               {aiError}
             </div>
           )}
+
+          {/* O documento pode nao ser o edital de abertura (comunicado, retificacao,
+              resultado). Avisa sem bloquear: a leitura continua, mas o aluno sabe o que
+              esperar do que vier. */}
+          {!aiLoading && avisosDoEdital.map((aviso) => (
+            <div
+              key={aviso}
+              className="pl-card"
+              style={{ padding: '10px 14px', borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)', fontSize: 13, fontWeight: 600 }}
+            >
+              {aviso}
+            </div>
+          ))}
 
           {!aiLoading && !aiError && aiAnalysis && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>

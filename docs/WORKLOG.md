@@ -18,6 +18,51 @@
 
 ---
 
+## Sessão 2026-09-21 (madrugada) — Um curso, vários cargos ✅
+
+Decisão do dono ao ver a tela de revisão com os dois cargos da PM/AL batendo 100%: **dois
+cursos separados são a mesma lista estudada em duplicata**, com progresso que não conversa —
+marcar "Língua Portuguesa" concluída num deixava o outro em zero na mesma matéria. E mesmo
+sem 100%, quem presta dois cargos quer um plano, não dois.
+
+- `src/lib/cargos.js` (10 testes): o mapa disciplina → cargos, o progresso por cargo e a
+  contagem de compartilhadas. Matéria comum conta nos dois; exclusiva conta só no seu.
+  Tópicos carregam a mesma marca — o recorte da mesma disciplina muda entre oficial e praça.
+  Curso sem mapa (anterior à mudança, ou de cargo único) trata tudo como do cargo que
+  existe, senão o progresso dele zeraria da noite para o dia.
+- O curso ganha `cargos[]` com o quadro de provas de **cada** cargo. Os campos de topo
+  (`prova`, `cargo`, `vagas`) seguem o primeiro cargo: três telas ainda leem direto.
+- "Meus cursos" mostra **uma barra por cargo**. Uma barra só mentiria: matéria exclusiva de
+  um cargo entra no total geral mas não avança o outro.
+
+### Também nesta rodada
+
+- **Design do bloco de IA em Disciplinas.** O botão "Registrar sessão guiada" era um
+  retângulo preto colado no texto: `.pl-btn-ai` só troca cor e dependia de `.pl-btn` ao lado,
+  que faltava. Corrigido nos dois lados (a classe passa a carregar a própria forma). E o azul
+  do bloco era índigo cru (`rgba(99,102,241)`, `#EEF2FF`, `#3730a3`) — não é a identidade,
+  que é `#1e3a5f`. Agora usa tokens, e o número virou Fraunces itálico. O `#93b4ff` cravado
+  em três lugares virou `--pl-accent-on-ink`.
+- **Título da aba** reduzido para "Papirando" (og:title e twitter:title seguem completos —
+  ali a frase ajuda).
+- **`avisosDoDocumento` ligado no `Edital.jsx`**: a função existia e era testada, mas só a
+  importação usava; a página do Edital aceitava qualquer PDF sem avisar.
+- **Teto de altura** em `AdminUsuarios` e `AdminCourseTemplatesEditor`: em notebook os modais
+  passavam da tela e o botão de salvar ficava fora de alcance, sem rolagem.
+
+### Ainda aberto
+
+1. **Medir a qualidade da leitura** (bloqueante para os destaques) — ver o plano abaixo.
+2. `AI_DEBUG_ERRORS` ainda ligado na Vercel; apagar a variável.
+3. As outras quatro chaves de IA estão mortas (Groq, OpenRouter, Gemini, OpenAI): sem plano B
+   se a Anthropic oscilar.
+4. 3 de 13 editais ainda truncam o anexo (150k–210k caracteres); a correção é recortar por
+   cargo em `api/_edital-text.js`.
+5. O progresso por cargo aparece em "Meus cursos", mas `Edital.jsx` e `Disciplinas.jsx`
+   continuam mostrando um número só.
+
+---
+
 ## Sessão 2026-09-21 — Nome piscando no cumprimento ✅
 
 Achado do dono: entrando com `contato@…`, o app abria com "Boa noite, Contato" e trocava
