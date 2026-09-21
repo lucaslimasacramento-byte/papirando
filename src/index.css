@@ -18,6 +18,10 @@
   --pl-accent-2:      #2a4d76;
   --pl-accent-soft:   rgba(30, 58, 95, 0.08);
   --pl-accent-ring:   rgba(30, 58, 95, 0.30);
+  /* Acento sobre fundo ink (botao de IA). O acento normal e um azul escuro — sobre o preto
+     do botao ele some, entao aqui vale a versao clara. Nao muda com o tema: o fundo e ink
+     nos dois. Antes era #93b4ff cravado no CSS, uma cor que nao existia em lugar nenhum. */
+  --pl-accent-on-ink: #93b1d1;
   --pl-highlight:      #f4d04e;
   --pl-highlight-soft: #fdf3ce;
   --pl-highlight-ink:  #8a6d10;
@@ -557,20 +561,30 @@ html, body {
 .pl-btn-ghost { background: transparent; color: var(--pl-ink); border: 0; }
 .pl-btn-ghost:hover { background: var(--pl-bg-soft); border: 0; }
 /* Modifier IA para .pl-btn — ink sólido, sparkle azul-claro (v1.0) */
+/* Forma propria, e nao so a cor.
+ *
+ * .pl-btn-ai so trocava fundo e texto, contando com .pl-btn ao lado para ter altura,
+ * padding e canto. Onde alguem usou a classe sozinha (Disciplinas), o botao virou um
+ * retangulo preto colado no texto. Repetir a forma aqui custa quatro linhas e nao conflita
+ * quando as duas classes vem juntas — os valores sao os mesmos. */
 .pl-btn-ai {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 16px; border-radius: 8px;
+  font-family: var(--pl-sans); font-size: 13.5px; font-weight: 600;
+  letter-spacing: -0.005em; cursor: pointer;
   background: var(--pl-ink, #14110d);
   color: var(--pl-bg, #f3efe5);
   border: 0;
 }
 .pl-btn-ai:hover { background: var(--pl-ink-2, #1f1a14); border: 0; }
 .pl-btn-ai > svg,
-.pl-btn-ai > .icon { color: #93b4ff; flex-shrink: 0; }
+.pl-btn-ai > .icon { color: var(--pl-accent-on-ink); flex-shrink: 0; width: 14px; height: 14px; }
 .pl-btn-ai .beta {
   font-family: var(--pl-serif);
   font-style: italic;
   font-weight: 400;
   font-size: 11px;
-  color: #93b4ff;
+  color: var(--pl-accent-on-ink);
   letter-spacing: -0.01em;
   margin-left: 4px;
 }
@@ -1444,7 +1458,7 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   .seal-plan-elite, .seal-plan-elite::after, .seal-trial.urgent { animation: none; }
 }
 
-/* Tag IA — ink sólido, sparkle #93b4ff */
+/* Tag IA — ink sólido, sparkle no acento sobre ink */
 .pl-tag-ai {
   display: inline-flex; align-items: center; gap: 5px;
   height: 22px; padding: 0 9px; border-radius: 4px;
@@ -1469,7 +1483,7 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   pointer-events: none;
 }
 .pl-tag-ai > svg,
-.pl-tag-ai > .icon { color: #93b4ff; }
+.pl-tag-ai > .icon { color: var(--pl-accent-on-ink); }
 
 /* Card com borda suave de acento — usado em superfícies IA */
 .pl-card-ai {
@@ -1672,11 +1686,14 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   cursor: pointer;
 }
 .pl-icon-button:hover { border-color: var(--pl-ink); color: var(--pl-ink); }
+/* O bloco de IA usava indigo cru (rgba(99,102,241), #EEF2FF, #3730a3) — uma cor que nao
+ * existe na identidade e destoava do resto da tela. O acento do Papirando e o azul dos
+ * tokens; aqui ele entra pelas variaveis, entao acompanha o tema claro e o escuro. */
 .pl-ai-mini,
 .pl-ai-suggestion {
-  border: 1px solid rgba(99, 102, 241, 0.18);
+  border: 1px solid var(--pl-rule-2);
   border-radius: 6px;
-  background: rgba(238, 242, 255, 0.58);
+  background: var(--pl-bg-soft);
 }
 .pl-ai-mini { padding: 12px; }
 .pl-ai-mini span,
@@ -1689,8 +1706,14 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
 .pl-ai-mini strong {
   display: block;
   margin: 4px 0;
-  color: #3730a3;
-  font-size: 22px;
+  color: var(--pl-ink);
+  font-family: var(--pl-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-size: 26px;
+  line-height: 1.1;
 }
 .pl-ai-suggestion {
   display: grid;
@@ -6033,9 +6056,12 @@ textarea.simulados-register-input {
   border: 0; border-radius: 5px;
   font-size: 11.5px; font-weight: 700; cursor: pointer;
 }
+/* Era um gradiente indigo (#4338ca -> #6366f1) que nao existe na identidade. A acao de IA
+ * no app e ink solido com o sparkle em acento — igual ao .pl-btn-ai e a .pl-tag-ai. */
 .pl-float-toolbar .act.ai {
-  background: linear-gradient(135deg, #4338ca, #6366f1); color: #fff;
+  background: var(--pl-ink); color: var(--pl-bg);
 }
+.pl-float-toolbar .act.ai svg { color: var(--pl-accent-on-ink); }
 .pl-float-toolbar .act svg { width: 12px; height: 12px; stroke-width: 1.75; }
 .pl-float-toolbar .x {
   width: 26px; height: 26px; border-radius: 5px;

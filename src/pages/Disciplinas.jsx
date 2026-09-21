@@ -505,7 +505,7 @@ function BizuDiagnostico({ disciplinas, onStart }) {
               : 'Cadastre disciplinas e registre estudo para a IA montar um diagnóstico útil.'}
           </p>
           <div style={{ marginTop: 18 }}>
-            <button type="button" className="pl-btn-ai" onClick={onStart}>
+            <button type="button" className="pl-btn pl-btn-ai" onClick={onStart}>
               <Sparkles size={15} />
               Registrar sessão guiada
             </button>
