@@ -18,6 +18,29 @@
 
 ---
 
+## Sessão 2026-09-21 — Nome piscando no cumprimento ✅
+
+Achado do dono: entrando com `contato@…`, o app abria com "Boa noite, Contato" e trocava
+para "Lucas" um segundo depois. O rodapé da Sidebar fazia o mesmo.
+
+Causa: o nome caía para o começo do e-mail enquanto o perfil não tinha chegado do Supabase.
+E as duas telas não tinham como saber a diferença — `effectiveProfile` espalha `null` em
+`{}`, então sempre *parece* carregado.
+
+- `src/lib/perfil.js` (7 testes): regra única de nome de exibição. Sem perfil carregado, não
+  há nome — a saudação sai sem nome e completa quando o dado existir. A ordem de fallback
+  (nome real > username > primeira palavra do e-mail) estava duplicada em dois arquivos, com
+  implementações diferentes; agora é uma só.
+- `App.jsx` passa `perfilCarregado` (sinal separado) para a Sidebar e o conteúdo.
+- Sidebar mostra uma barra cinza no lugar do nome enquanto carrega, então nada pula quando o
+  nome chega.
+
+Vale como regra geral para a auditoria: **não mostrar palpite com cara de dado.** O mesmo
+padrão apareceu nas disciplinas órfãs (filtrar na tela não apaga o dado) e nos chips
+"Nao encontrado vagas".
+
+---
+
 ## Plano — Objetivos e Meus cursos depois do edital ⏳
 
 Decidido na madrugada de 20/09, **não implementado**. Contexto: a plataforma passou a se
@@ -46,6 +69,48 @@ humano — hoje essa conferência é do aluno, porque a IA pode errar.
 
 Isto **não** recria a dor de manutenção: ninguém digita conteúdo programático. É o trabalho
 de um aluno, feito uma vez, aproveitado por todos.
+
+### Revisão crítica do plano (20/09, madrugada)
+
+**1. Pré-requisito bloqueante que faltava: medir a qualidade da leitura.** Hoje um erro da IA
+custa um aluno, e ele vê na tela de revisão antes de confirmar. Publicando destaques, o mesmo
+erro vira um erro × N alunos — e com a chancela do Papirando, em que o aluno confia mais do
+que no PDF que ele mesmo subiu. A auditoria pendente (quadro de provas preenchido,
+disciplinas reais, 8–15 tópicos) deixa de ser "bom ter" e vira condição para publicar.
+
+**2. A manutenção volta como STATUS, não como matéria.** O plano resolve o conteúdo (a IA
+lê) e cria outra dívida: inscrições abertas → encerradas → prova marcada → realizada. Vitrine
+com edital vencido é pior que vitrine vazia. Solução barata, mas precisa estar no desenho:
+guardar `inscricoes_ate` e `prova_data` e deixar o app arquivar sozinho; publicar sem data
+não deveria ser permitido. Os 11 status já existem em `contestGrouping.js` — falta a data que
+os faz andar sem ninguém.
+
+**3. `contest_templates` não comporta o que ganhamos.** Reaproveitar dá, mas faltam colunas:
+`prova` (jsonb — o quadro de provas, peso por disciplina), `edital_impressao` e
+`edital_lido_em` (sem eles não existe aviso de retificação), `versao` e um `edital_id` de
+verdade. Hoje é **uma linha por cargo**, agrupadas por semelhança de nome
+(`src/lib/contestGrouping.js`): frágil para virar base de catálogo. O bucket
+`contest-edital-files` já existe, e a RLS já libera leitura anônima.
+
+**4. Aviso de retificação precisa de diff.** "Saiu retificação" sem dizer o que mudou deixa o
+aluno pior: ele sabe que algo mudou e não sabe o que fazer. Mínimo: "2 disciplinas novas, 1
+removida, prova adiada".
+
+**5. Duplicidade.** Quem já subiu o edital e depois importa o destaque fica com dois cursos
+iguais, consumindo 2 das 3 vagas. Dá para detectar pelo `edital_impressao`.
+
+**6. Oportunidade (fora de escopo).** A RLS já permite leitura anônima: um destaque pode ser
+página pública ("Edital X: disciplinas, quadro de provas e datas"). Aquisição em cima de um
+trabalho que será feito de qualquer jeito.
+
+### Ordem de execução
+
+1. Medir a qualidade da leitura (bloqueante)
+2. Colunas que faltam no `contest_templates`
+3. Publicar **um** destaque, na mão, do edital da PM/AL que já temos — valida o fluxo inteiro
+   sem construir tela nenhuma
+4. A tela do aluno
+5. Retificação com diff
 
 ### O que precisa ser resolvido antes de implementar
 

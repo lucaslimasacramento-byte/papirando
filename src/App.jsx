@@ -1382,6 +1382,11 @@ export default function App() {
     });
   }, [badgeRuleOverrides, currentProfileKey, defaultBadgeConfig]);
 
+  // currentProfile nasce null e vira objeto quando o Supabase responde. effectiveProfile
+  // espalha null em {} e por isso sempre parece "carregado" — quem precisa decidir se mostra
+  // um nome tem que receber este sinal separado.
+  const perfilCarregado = currentProfile !== null;
+
   const effectiveProfile = useMemo(() => {
     const localOverride = profileOverrides[currentProfileKey] || {};
     return {
@@ -7060,6 +7065,7 @@ export default function App() {
     temaAtivo,
     setTemaAtivo,
     effectiveProfile,
+    perfilCarregado,
     profileHasValidCpf,
     currentUserEmail,
     profileMetrics,
@@ -7303,6 +7309,7 @@ export default function App() {
           isAdmin={isAdmin}
           currentUserEmail={currentUserEmail}
           currentProfile={effectiveProfile}
+          perfilCarregado={perfilCarregado}
           onNavigate={() => setMobileNavOpen(false)}
           labelOverrides={sidebarLabelsOverride || {}}
           className="h-full min-h-0 shadow-float lg:shadow-none"
