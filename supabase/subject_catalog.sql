@@ -42,6 +42,25 @@ before update on public.subject_catalog
 for each row
 execute function public.set_subject_catalog_updated_at();
 
+-- `sem_acento` e a chave de unicidade do catalogo: duas grafias da mesma disciplina sao a
+-- mesma disciplina. Sem ela, o `on conflict` abaixo nao teria em que conflitar — foi assim
+-- que o catalogo chegou a 72 linhas para ~15 disciplinas.
+create or replace function public.sem_acento(texto text)
+returns text
+language sql
+immutable
+set search_path = public
+as $$
+  select lower(translate(
+    coalesce(texto, ''),
+    'áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ',
+    'aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC'
+  ));
+$$;
+
+create unique index if not exists subject_catalog_nome_unico
+  on public.subject_catalog (public.sem_acento(nome));
+
 -- O campo `nome` e o que aparece na tela do aluno: vai em portugues correto. As formas sem
 -- acento ficam como ALIAS, que e para o que elas servem — casar o que o edital escreveu de
 -- qualquer jeito.
@@ -62,4 +81,4 @@ values
   ('Biologia', 'Básicas', '[]'::jsonb),
   ('Física', 'Básicas', '["Fisica"]'::jsonb),
   ('Química', 'Básicas', '["Quimica"]'::jsonb)
-on conflict do nothing;
+on conflict (public.sem_acento(nome)) do nothing;
