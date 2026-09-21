@@ -18,6 +18,33 @@
 
 ---
 
+## Sessão 2026-09-21 (fecho) — Anthropic sozinha e qualidade aprovada ✅
+
+**A leitura foi verificada em produção e aprovada pelo dono** (edital da PM/AL, 2 cargos, 70
+páginas): disciplinas reais, granularidade útil, quadro de provas preenchido, dados do cargo
+presentes. Isso destrava o plano dos destaques — era o item bloqueante.
+
+**Anthropic vira provedor único.** Saem OpenRouter, Groq, Gemini e OpenAI: nenhuma das quatro
+chaves funcionava, e cada falha da Anthropic virava uma mensagem com quatro erros colados em
+que o motivo real ficava escondido. 344 linhas a menos em `api/_ai.js`. PDF e imagem já
+tinham caminho Anthropic. `AI_PROVIDER` e `AI_FALLBACK_PROVIDER` saíram junto — podem ser
+apagadas da Vercel, assim como as chaves dos outros quatro.
+
+**Progresso por cargo chegou às telas que faltavam:** o Edital ganhou uma barra por cargo (com
+questões daquela prova) e cada linha em Disciplinas diz "Nos dois cargos" ou "Só <cargo>" — a
+informação que muda a decisão do dia, porque estudar uma compartilhada rende o dobro.
+
+### O que fica aberto, e por quê
+
+- **3 de 13 editais truncam o anexo** (150k–210k caracteres). **Não mexi de propósito:** os 13
+  PDFs do lote não estão no repositório, e alterar o recorte sem poder medir arriscaria quebrar
+  o que acabou de ser aprovado. Para retomar: juntar os PDFs de novo e rodar
+  `scripts/testar-extracao-edital.mjs` antes e depois.
+- `AI_DEBUG_ERRORS` ainda ligado na Vercel (apagar).
+- Sem plano B se a Anthropic oscilar — decisão consciente, registrada acima.
+
+---
+
 ## Sessão 2026-09-21 (madrugada) — Um curso, vários cargos ✅
 
 Decisão do dono ao ver a tela de revisão com os dois cargos da PM/AL batendo 100%: **dois
