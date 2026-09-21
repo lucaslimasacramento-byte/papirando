@@ -338,10 +338,13 @@ export default function AdminConfiguracoes({
               <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Inteligência Artificial</p>
               <h3 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, color: 'var(--pl-ink)' }}>Status do motor de IA</h3>
               <p style={{ margin: '0 0 4px', maxWidth: 600, fontSize: 13, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
-                A IA de produção roda pelo gateway /api/ai na Vercel, com OpenRouter como provedor principal.
+                A IA de produção roda pelo gateway /api/ai na Vercel, com a Anthropic (Claude) como
+                provedor único.
               </p>
               <p style={{ margin: 0, maxWidth: 600, fontSize: 13, lineHeight: 1.55, color: 'var(--pl-ink-2)' }}>
-                Configure AI_PROVIDER, AI_FALLBACK_PROVIDER e as chaves dos provedores nas variáveis de ambiente da Vercel.
+                Configure ANTHROPIC_API_KEY nas variáveis de ambiente da Vercel. ANTHROPIC_MODEL e
+                ANTHROPIC_WORKSPACE_ID são opcionais — o segundo só é exigido por chave de escopo
+                &quot;Organização&quot;.
               </p>
             </div>
 

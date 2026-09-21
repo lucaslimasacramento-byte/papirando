@@ -22,25 +22,13 @@ export function envFlag(name, fallback = true) {
 }
 
 export function getAiConfig() {
-  const provider = env('AI_PROVIDER', env('VITE_AI_PROVIDER', 'auto')).toLowerCase();
-  const fallbackProvider = env('AI_FALLBACK_PROVIDER', '').toLowerCase();
   return {
-    provider,
-    fallbackProvider,
     anthropicKey: env('ANTHROPIC_API_KEY'),
     // Chave de escopo "Organizacao" nao pertence a workspace nenhum, e a API exige o
     // cabecalho anthropic-workspace-id nesse caso — sem ele responde 400. Chave de escopo
     // "Workspace" dispensa. Manter vazio quando a chave ja for de workspace.
     anthropicWorkspaceId: env('ANTHROPIC_WORKSPACE_ID'),
     anthropicModel: env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
-    openAiKey: env('OPENAI_API_KEY'),
-    openAiModel: env('OPENAI_MODEL', 'gpt-4.1-mini'),
-    googleKey: env('GOOGLE_API_KEY') || env('GEMINI_API_KEY'),
-    googleModel: env('GOOGLE_MODEL', 'gemini-2.0-flash'),
-    openRouterKey: env('OPENROUTER_API_KEY'),
-    openRouterModel: env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
-    groqKey: env('GROQ_API_KEY'),
-    groqModel: env('GROQ_MODEL', 'llama-3.1-8b-instant'),
   };
 }
 
@@ -284,29 +272,18 @@ function extractJson(text) {
   throw new Error('A IA retornou uma resposta que nao e JSON valido.');
 }
 
+// A Anthropic e o unico provedor.
+//
+// A cadeia de fallback existia para o caso de um provedor cair, mas na pratica nenhuma das
+// outras quatro chaves funcionava — e o custo era alto: cada falha da Anthropic virava uma
+// mensagem com quatro erros diferentes colados, em que o motivo real ficava escondido atras
+// de "credito esgotado" de um servico que ninguem usava. Diagnosticar ficou horas mais
+// dificil por causa de um plano B que nao existia.
+//
+// Se um dia voltar a ter fallback, ele volta com chave testada e mensagem que diz de quem e
+// cada erro. Ate la, um provedor so e mais honesto.
 function providerOrder(config = getAiConfig()) {
-  const preferred =
-    ['anthropic', 'openrouter', 'groq', 'openai', 'gemini'].includes(config.provider)
-      ? config.provider
-      : config.anthropicKey
-        ? 'anthropic'
-        : config.openRouterKey
-          ? 'openrouter'
-          : config.groqKey
-            ? 'groq'
-            : config.googleKey
-              ? 'gemini'
-              : config.openAiKey
-                ? 'openai'
-                : 'offline';
-
-  return [
-    ...new Set(
-      [preferred, config.fallbackProvider, 'anthropic', 'openrouter', 'groq', 'gemini', 'openai'].filter(
-        (provider) => provider && provider !== 'offline'
-      )
-    ),
-  ];
+  return config.anthropicKey ? ['anthropic'] : [];
 }
 
 // Orcamento de saida das chamadas Anthropic.
@@ -455,142 +432,10 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
   return anthropicJson(payload, config);
 }
 
-async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
-  const config = getAiConfig();
-  if (!config.openRouterKey) throw new Error('OPENROUTER_API_KEY nao configurada.');
-
-  const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    timeoutMs,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.openRouterKey}`,
-      'HTTP-Referer': 'https://papirando.vercel.app',
-      'X-Title': 'Papirando',
-    },
-    body: JSON.stringify({
-      model: config.openRouterModel,
-      temperature: 0.25,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.` },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-
-  const content = payload?.choices?.[0]?.message?.content;
-  return { provider: 'openrouter', model: payload?.model || config.openRouterModel, json: extractJson(content) };
-}
-
-async function runGroqJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
-  const config = getAiConfig();
-  if (!config.groqKey) throw new Error('GROQ_API_KEY nao configurada.');
-
-  const payload = await fetchJson('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    timeoutMs,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.groqKey}`,
-    },
-    body: JSON.stringify({
-      model: config.groqModel,
-      temperature: 0.25,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.` },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-
-  const content = payload?.choices?.[0]?.message?.content;
-  return { provider: 'groq', model: payload?.model || config.groqModel, json: extractJson(content) };
-}
-
-async function runOpenAiJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
-  const config = getAiConfig();
-  if (!config.openAiKey) throw new Error('OPENAI_API_KEY nao configurada.');
-
-  const payload = await fetchJson('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    timeoutMs,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.openAiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.openAiModel,
-      temperature: 0.25,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.` },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-
-  const content = payload?.choices?.[0]?.message?.content;
-  return { provider: 'openai', model: payload?.model || config.openAiModel, json: extractJson(content) };
-}
-
-async function runGeminiJson(prompt, { timeoutMs } = {}) {
-  const config = getAiConfig();
-  if (!config.googleKey) throw new Error('GOOGLE_API_KEY/GEMINI_API_KEY nao configurada.');
-
-  const payload = await fetchJson(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-    {
-      method: 'POST',
-      timeoutMs,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nResponda somente com JSON valido.` }] }],
-        generationConfig: { temperature: 0.25, responseMimeType: 'application/json' },
-      }),
-    }
-  );
-
-  const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-  return { provider: 'gemini', model: config.googleModel, json: extractJson(content) };
-}
-
-async function runGeminiWithPdf(prompt, pdfBase64) {
-  const config = getAiConfig();
-  if (!config.googleKey) throw new Error('GOOGLE_API_KEY/GEMINI_API_KEY nao configurada. PDF requer Gemini.');
-
-  const payload = await fetchJson(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          role: 'user',
-          parts: [
-            { inlineData: { mimeType: 'application/pdf', data: pdfBase64 } },
-            { text: `${prompt}\n\nResponda somente com JSON valido.` },
-          ],
-        }],
-        generationConfig: { temperature: 0.25, responseMimeType: 'application/json' },
-      }),
-    }
-  );
-
-  const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-  return { provider: 'gemini', model: config.googleModel, json: extractJson(content) };
-}
-
 async function runJson(prompt, options = {}) {
   const errors = [];
   const config = getAiConfig();
   let order = providerOrder(config);
-
-  // Preferir Groq apenas quando ele nao substituir explicitamente o Claude selecionado.
-  if (options.preferFast && config.groqKey && order[0] !== 'anthropic') {
-    order = ['groq', ...order.filter((p) => p !== 'groq')];
-  }
 
   // Prazo para a cadeia inteira, nao para cada provedor.
   //
@@ -612,10 +457,6 @@ async function runJson(prompt, options = {}) {
 
     try {
       if (provider === 'anthropic') return await runAnthropicJson(prompt, tentativa);
-      if (provider === 'openrouter') return await runOpenRouterJson(prompt, tentativa);
-      if (provider === 'groq') return await runGroqJson(prompt, tentativa);
-      if (provider === 'gemini') return await runGeminiJson(prompt, tentativa);
-      if (provider === 'openai') return await runOpenAiJson(prompt, tentativa);
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }
@@ -630,36 +471,16 @@ function clampList(items, max) {
 
 export async function getHealth() {
   const config = getAiConfig();
-  const order = providerOrder(config);
   return {
-    ok: Boolean(config.anthropicKey || config.openRouterKey || config.groqKey || config.googleKey || config.openAiKey),
+    ok: Boolean(config.anthropicKey),
     service: 'papirando-ai',
-    provider: order[0] || 'offline',
-    model:
-      order[0] === 'anthropic'
-        ? config.anthropicModel
-        : order[0] === 'openrouter'
-        ? config.openRouterModel
-        : order[0] === 'groq'
-          ? config.groqModel
-          : order[0] === 'openai'
-        ? config.openAiModel
-        : order[0] === 'gemini'
-          ? config.googleModel
-          : '',
-    fallbackProvider: config.fallbackProvider || '',
+    provider: config.anthropicKey ? 'anthropic' : 'offline',
+    model: config.anthropicKey ? config.anthropicModel : '',
     authRequired: envFlag('AI_REQUIRE_AUTH', true),
     rateLimitEnabled: envFlag('AI_RATE_LIMIT_ENABLED', true),
   };
 }
 
-// Traduz o erro cru do provedor num motivo curto e seguro.
-//
-// O backend respondia so "Falha temporaria no servico de IA", e ai nao da para distinguir
-// chave rejeitada de modelo inexistente, cota estourada ou timeout — o dono do app fica
-// adivinhando. Repassar o texto cru resolveria, mas vazaria interno para o cliente, e a
-// auditoria ja decidiu que health nao expoe nem provider nem modelo (aiSecurity.test.js).
-// Entao classificamos: diagnostico util, nada de interno.
 export function motivoDaFalhaDeIa(mensagem) {
   const bruto = String(mensagem || '');
   if (!bruto.trim()) return '';
@@ -1470,9 +1291,6 @@ export async function analyzeContestPdf({ pdfBase64 = '' } = {}) {
       if (provider === 'anthropic') {
         return buildContestFormResponse(await runAnthropicWithPdf(prompt, pdfBase64, { schemaName: 'contest_form_template' }));
       }
-      if (provider === 'gemini') {
-        return buildContestFormResponse(await runGeminiWithPdf(prompt, pdfBase64));
-      }
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }
@@ -1616,65 +1434,6 @@ export async function transcribeEssayImage({ dataUrl = '', mimeType = '' } = {})
         };
       }
 
-      if (provider === 'openrouter' && config.openRouterKey) {
-        const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${config.openRouterKey}`,
-            'HTTP-Referer': 'https://papirando.vercel.app',
-            'X-Title': 'Papirando',
-          },
-          body: JSON.stringify({
-            model: config.openRouterModel,
-            temperature: 0.1,
-            response_format: { type: 'json_object' },
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'text', text: prompt },
-                { type: 'image_url', image_url: { url: dataUrl } },
-              ],
-            }],
-          }),
-        });
-
-        const parsed = extractJson(payload?.choices?.[0]?.message?.content);
-        return {
-          provider: 'openrouter',
-          source: 'openrouter',
-          sourceLabel: 'OpenRouter',
-          model: payload?.model || config.openRouterModel,
-          text: String(parsed?.text || '').trim(),
-        };
-      }
-
-      if (provider === 'gemini' && config.googleKey) {
-        const payload = await fetchJson(
-          `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                role: 'user',
-                parts: [{ text: prompt }, { inlineData: { mimeType: safeMimeType, data: base64 } }],
-              }],
-              generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
-            }),
-          }
-        );
-
-        const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-        const parsed = extractJson(content);
-        return {
-          provider: 'gemini',
-          source: 'gemini',
-          sourceLabel: 'Gemini',
-          model: config.googleModel,
-          text: String(parsed?.text || '').trim(),
-        };
-      }
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }

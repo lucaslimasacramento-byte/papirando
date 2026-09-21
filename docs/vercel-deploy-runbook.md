@@ -33,7 +33,7 @@ Na Vercel, cadastre em `Settings > Environment Variables` para `Production` e `P
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_PUBLIC_APP_ORIGIN`, se quiser forcar links canonicos de convite para um dominio especifico
 - `VITE_AI_SERVER_URL`, se a IA estiver hospedada fora do gateway `/api/ai`
-- `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `GOOGLE_API_KEY` ou `OPENAI_API_KEY` somente como variaveis server-side
+- `ANTHROPIC_API_KEY` somente como variavel server-side (nunca com prefixo VITE_)
 
 Nunca cadastrar chaves `service_role`, Stripe ou provider de IA como variaveis `VITE_`.
 
@@ -79,20 +79,18 @@ Para manter IA ativa em producao, hospede o `ai-server` em um servico proprio:
 Variaveis esperadas pelo `ai-server`:
 
 ```env
-AI_PROVIDER=anthropic
 ANTHROPIC_API_KEY=cole_a_chave_da_anthropic_aqui
-ANTHROPIC_MODEL=claude-sonnet-4-6
-AI_FALLBACK_PROVIDER=openai
+ANTHROPIC_MODEL=claude-sonnet-5
+# So para chave de escopo "Organizacao"; chave de workspace dispensa.
+ANTHROPIC_WORKSPACE_ID=
 AI_ALLOWED_ORIGINS=https://SEU-PROJETO.vercel.app
 AI_SERVER_TOKEN=
 AI_SERVER_PORT=8787
-GOOGLE_API_KEY=
-GOOGLE_MODEL=gemini-2.0-flash
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4.1-mini
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=qwen2.5:7b
 ```
+
+> A Anthropic e o unico provedor. A cadeia de fallback (OpenRouter, Groq, Gemini, OpenAI)
+> saiu em 21/09: nenhuma das chaves funcionava, e cada falha virava uma mensagem com quatro
+> erros colados em que o motivo real ficava escondido. Pode apagar essas variaveis da Vercel.
 
 Depois de publicar o backend de IA, configure na Vercel:
 
