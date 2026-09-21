@@ -230,12 +230,22 @@ disciplina em tópicos separados, mirando 8 a 15 por disciplina. Sem isso cada e
 estrutura diferente — fino demais intimida, grosso demais faz a barra de progresso não andar.
 O número é um chute calibrado, não medido; é o primeiro botão a girar quando houver uso real.
 
+## Verificado em produção (21/09/2026)
+
+**A saída da IA foi checada e aprovada pelo dono.** Edital da PM/AL, 2 cargos, 70 páginas,
+com a Anthropic respondendo: disciplinas reais, tópicos em granularidade útil, quadro de
+provas preenchido (121 questões em cada cargo) e dados do cargo presentes.
+
+É uma avaliação humana sobre a tela de revisão, não uma medição automatizada — vale como
+aprovação para seguir, não como métrica repetível.
+
 ## Não verificado
 
-**A saída da IA não foi testada.** Não há chave de API neste ambiente — nem Anthropic, nem
-OpenAI, nem Gemini. O que está validado é o texto que chega ao modelo (13/13 com anexo, 13/13
-com composição) e o formato que se exige dele. Se a IA de fato preenche o quadro de provas e
-respeita a granularidade, só rodando: `npm run ai:server` com a chave no `.env`.
+**Os 3 editais que truncam o anexo** (150k–210k caracteres, dezenas de cargos) não foram
+re-testados: os 13 PDFs do lote não estão no repositório, foram baixados numa sessão
+anterior. Mexer no recorte sem poder medir arriscaria quebrar o que acabou de ser aprovado.
+Para retomar: juntar os PDFs de novo e rodar `scripts/testar-extracao-edital.mjs` antes e
+depois da mudança.
 
 ## Pendente
 
@@ -312,5 +322,6 @@ Onde aparece para o aluno:
 build limpo. Os 32 testes de `src/lib/edital.test.js` cobrem os avisos, o parser de data, a
 impressão e o casamento de disciplina com o quadro.
 
-**Continua não verificado:** a saída da IA. Sem chave de API no ambiente, o que está provado é
-o texto que chega ao modelo, o formato exigido dele e o caminho do dado da resposta até a tela.
+**Verificado depois (21/09/2026):** a saída da IA foi aprovada pelo dono em produção — ver a
+seção "Verificado em produção" acima. O que estava provado até ali era o texto que chega ao
+modelo, o formato exigido dele e o caminho do dado da resposta até a tela.
