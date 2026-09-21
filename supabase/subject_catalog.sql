@@ -42,18 +42,24 @@ before update on public.subject_catalog
 for each row
 execute function public.set_subject_catalog_updated_at();
 
+-- O campo `nome` e o que aparece na tela do aluno: vai em portugues correto. As formas sem
+-- acento ficam como ALIAS, que e para o que elas servem — casar o que o edital escreveu de
+-- qualquer jeito.
 insert into public.subject_catalog (nome, area, aliases)
 values
-  ('Lingua Portuguesa', 'Basicas', '["Portugues","Lingua portuguesa"]'::jsonb),
-  ('Matematica', 'Basicas', '["Raciocinio Matematico"]'::jsonb),
-  ('Informatica', 'Basicas', '["Nocoes de Informatica","Tecnologia da Informacao"]'::jsonb),
-  ('Atualidades', 'Basicas', '["Conhecimentos Gerais"]'::jsonb),
-  ('Nocoes de Direito Constitucional', 'Juridicas', '["Direito Constitucional","Constitucional"]'::jsonb),
-  ('Nocoes de Direito Administrativo', 'Juridicas', '["Direito Administrativo","Administrativo"]'::jsonb),
-  ('Nocoes de Direito Penal', 'Juridicas', '["Direito Penal","Penal"]'::jsonb),
-  ('Nocoes de Processo Penal', 'Juridicas', '["Direito Processual Penal","Processo Penal"]'::jsonb),
-  ('Nocoes de Direitos Humanos', 'Juridicas', '["Direitos Humanos"]'::jsonb),
-  ('Nocoes de Direito Penal Militar', 'Juridicas', '["Direito Penal Militar","Penal Militar"]'::jsonb),
-  ('Nocoes de Direito Processual Penal Militar', 'Juridicas', '["Direito Processual Penal Militar","Processo Penal Militar"]'::jsonb),
-  ('Legislacao Pertinente ao Policial Militar', 'Policial', '["Legislacao Militar","Legislacao Pertinente ao Policial Militar de Alagoas","Legislacao Pertinente a Atuacao do Policial Militar de Alagoas"]'::jsonb)
+  ('Língua Portuguesa', 'Básicas', '["Português","Portugues","Lingua Portuguesa","Lingua portuguesa"]'::jsonb),
+  ('Matemática', 'Básicas', '["Matematica","Raciocínio Matemático","Raciocinio Matematico"]'::jsonb),
+  ('Informática', 'Básicas', '["Informatica","Noções de Informática","Nocoes de Informatica","Tecnologia da Informação","Tecnologia da Informacao"]'::jsonb),
+  ('Atualidades', 'Básicas', '["Conhecimentos Gerais"]'::jsonb),
+  ('Noções de Direito Constitucional', 'Jurídicas', '["Nocoes de Direito Constitucional","Direito Constitucional","Constitucional"]'::jsonb),
+  ('Noções de Direito Administrativo', 'Jurídicas', '["Nocoes de Direito Administrativo","Direito Administrativo","Administrativo"]'::jsonb),
+  ('Noções de Direito Penal', 'Jurídicas', '["Nocoes de Direito Penal","Direito Penal","Penal"]'::jsonb),
+  ('Noções de Processo Penal', 'Jurídicas', '["Nocoes de Processo Penal","Direito Processual Penal","Processo Penal"]'::jsonb),
+  ('Noções de Direitos Humanos', 'Jurídicas', '["Nocoes de Direitos Humanos","Direitos Humanos"]'::jsonb),
+  ('Noções de Direito Penal Militar', 'Jurídicas', '["Nocoes de Direito Penal Militar","Direito Penal Militar","Penal Militar"]'::jsonb),
+  ('Noções de Direito Processual Penal Militar', 'Jurídicas', '["Nocoes de Direito Processual Penal Militar","Direito Processual Penal Militar","Processo Penal Militar"]'::jsonb),
+  ('Legislação Pertinente ao Policial Militar', 'Policial', '["Legislacao Pertinente ao Policial Militar","Legislação Militar","Legislacao Militar","Legislação Pertinente ao Policial Militar de Alagoas","Legislacao Pertinente ao Policial Militar de Alagoas","Legislacao Pertinente a Atuacao do Policial Militar de Alagoas"]'::jsonb),
+  ('Biologia', 'Básicas', '[]'::jsonb),
+  ('Física', 'Básicas', '["Fisica"]'::jsonb),
+  ('Química', 'Básicas', '["Quimica"]'::jsonb)
 on conflict do nothing;
