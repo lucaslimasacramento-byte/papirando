@@ -21,6 +21,7 @@ import {
   Play,
 } from 'lucide-react';
 import { getAreaToken } from '../lib/areaTokens';
+import { cargosDaDisciplina } from '../lib/cargos';
 
 export default function Disciplinas({
   cursos = [],
@@ -156,6 +157,18 @@ export default function Disciplinas({
     return enrichedDisciplinas.filter((disciplina) => allowed.has(disciplina.id || disciplina.nome));
   }, [disciplinasFiltradas, enrichedDisciplinas]);
 
+  // Indice plano -> cargos do curso, para a linha da disciplina dizer a quais cargos ela
+  // serve. Um curso pode cobrir mais de um cargo desde a leitura do edital.
+  const cargosPorPlano = useMemo(() => {
+    const indice = {};
+    (cursos || []).forEach((curso) => {
+      const lista = Array.isArray(curso?.cargos) ? curso.cargos : [];
+      if (!curso?.plano || lista.length < 2) return;
+      indice[curso.plano] = { lista, porDisciplina: (nome) => cargosDaDisciplina(curso, nome) };
+    });
+    return indice;
+  }, [cursos]);
+
   const objetivosAtivos = useMemo(
     () => (cursos || []).filter((curso) => curso.status !== 'arquivado'),
     [cursos]
@@ -222,6 +235,7 @@ export default function Disciplinas({
           <>
             <TabelaDisciplinas
               data={enrichedFiltered}
+              cargosPorPlano={cargosPorPlano}
               loading={loadingDisciplinas}
               query={query}
               setQuery={setQuery}
@@ -312,6 +326,7 @@ function Kpi({ icon: Icon, label, value, sub }) {
 
 function TabelaDisciplinas({
   data,
+  cargosPorPlano = {},
   loading,
   query,
   setQuery,
@@ -396,6 +411,7 @@ function TabelaDisciplinas({
               <DisciplinaRow
                 key={disciplina.id || disciplina.nome || index}
                 disciplina={disciplina}
+                cargosDoPlano={cargosPorPlano}
                 index={index}
                 onOpen={onOpen}
                 onEdit={onEdit}
@@ -421,7 +437,18 @@ function TabelaDisciplinas({
   );
 }
 
-function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete }) {
+function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPlano = {} }) {
+  // Num curso de mais de um cargo, saber a quais a disciplina serve muda o que o aluno faz
+  // com ela: estudar uma que cai nos dois rende o dobro do avanco.
+  const cargos = cargosDoPlano[disciplina.plano] || null;
+  const marcaDeCargo = (() => {
+    if (!cargos || cargos.lista.length < 2) return null;
+    const dela = cargos.porDisciplina(disciplina.nome);
+    if (dela.length >= cargos.lista.length) return { texto: 'Nos dois cargos', forte: true };
+    const dono = cargos.lista.find((cargo) => dela.includes(cargo.id));
+    return dono ? { texto: `Só ${dono.nome}`, forte: false } : null;
+  })();
+
   const token = getAreaToken(disciplina.areaKey || disciplina.area || inferAreaFromText(disciplina.nome, disciplina.plano));
   const topicos = disciplina.topicos || [];
   const concluidos = topicos.filter((topico) => topico.concluido).length;
@@ -439,6 +466,9 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 5 }}>
               <span className="pl-mini-chip" style={{ background: token.chip, color: token.chipInk }}>{token.label}</span>
               {disciplina.needsReview && <span className="pl-mini-chip is-warning">revisão urgente</span>}
+              {marcaDeCargo && (
+                <span className={`pl-mini-chip${marcaDeCargo.forte ? ' is-success' : ''}`}>{marcaDeCargo.texto}</span>
+              )}
               <span className="pl-muted" style={{ fontSize: 12 }}>
                 {disciplina.lastStudyLabel ? `último estudo ${disciplina.lastStudyLabel}` : 'sem estudo recente'}
               </span>

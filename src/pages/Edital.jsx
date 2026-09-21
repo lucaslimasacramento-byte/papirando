@@ -18,6 +18,7 @@ import {
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
 import { acharLinhaDaProva, avisosDoDocumento } from '../lib/edital';
+import { progressoPorCargo } from '../lib/cargos';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -102,6 +103,17 @@ export default function Edital({
     }
     return safeDisciplinas;
   }, [bancoDisciplinas, concursoSelecionado]);
+
+  // O curso do concurso selecionado — e dele que saem os cargos.
+  const cursoDoConcurso = useMemo(
+    () => (cursos || []).find((curso) => curso?.plano && curso.plano === concursoSelecionado?.plano) || null,
+    [cursos, concursoSelecionado]
+  );
+
+  const progressoDosCargos = useMemo(
+    () => progressoPorCargo(cursoDoConcurso, editalAtivo),
+    [cursoDoConcurso, editalAtivo]
+  );
 
   const totals = useMemo(() => {
     let topicos = 0;
@@ -211,6 +223,34 @@ export default function Edital({
         />
 
         <KpiStrip totals={totals} />
+
+        {/* Curso que cobre mais de um cargo: um numero so nao serve. A materia exclusiva de
+            um cargo entra no total geral e nao avanca o outro; a comum, estudada uma vez,
+            sobe os dois. Ver src/lib/cargos.js. */}
+        {progressoDosCargos.length > 1 && (
+          <section className="pl-card" style={{ padding: '14px 16px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Progresso por cargo</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+              {progressoDosCargos.map((cargo) => (
+                <div key={cargo.id}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {cargo.nome}
+                    </span>
+                    <span className="pl-num" style={{ fontSize: 16, color: 'var(--pl-ink)', flexShrink: 0 }}>{cargo.percentual}%</span>
+                  </div>
+                  <div className="pl-progress" style={{ marginTop: 6 }}>
+                    <div className="fill" style={{ width: `${Math.min(Math.max(cargo.percentual, 0), 100)}%`, background: 'var(--pl-ink)' }} />
+                  </div>
+                  <p style={{ margin: '5px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+                    {cargo.disciplinas} disciplinas · {cargo.concluidos} de {cargo.topicos} tópicos
+                    {cargo.questoes ? ` · ${cargo.questoes} questões na prova` : ''}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {importMsg && (
           <div style={{

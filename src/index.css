@@ -1673,6 +1673,9 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   font-weight: 750;
 }
 .pl-mini-chip.is-warning { background: var(--pl-warn-soft); color: var(--pl-warn); }
+/* Disciplina que cai em mais de um cargo do mesmo curso: estudar ela rende o dobro. */
+.pl-mini-chip.is-success { background: var(--pl-success-soft); color: var(--pl-success); }
+.pl-mini-chip { background: var(--pl-bg-soft); color: var(--pl-ink-2); }
 .pl-pill-muted { background: var(--pl-bg-soft); color: var(--pl-ink-2); }
 .pl-icon-button {
   display: inline-grid;
