@@ -18,7 +18,7 @@ import {
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
 import { acharLinhaDaProva, avisosDoDocumento } from '../lib/edital';
-import { progressoPorCargo } from '../lib/cargos';
+import { progressoPorObjetivo } from '../lib/objetivos';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -104,14 +104,14 @@ export default function Edital({
     return safeDisciplinas;
   }, [bancoDisciplinas, concursoSelecionado]);
 
-  // O curso do concurso selecionado — e dele que saem os cargos.
+  // O curso do concurso selecionado — e dele que saem os objetivos.
   const cursoDoConcurso = useMemo(
     () => (cursos || []).find((curso) => curso?.plano && curso.plano === concursoSelecionado?.plano) || null,
     [cursos, concursoSelecionado]
   );
 
-  const progressoDosCargos = useMemo(
-    () => progressoPorCargo(cursoDoConcurso, editalAtivo),
+  const progressoDosObjetivos = useMemo(
+    () => progressoPorObjetivo(cursoDoConcurso, editalAtivo),
     [cursoDoConcurso, editalAtivo]
   );
 
@@ -224,14 +224,14 @@ export default function Edital({
 
         <KpiStrip totals={totals} />
 
-        {/* Curso que cobre mais de um cargo: um numero so nao serve. A materia exclusiva de
-            um cargo entra no total geral e nao avanca o outro; a comum, estudada uma vez,
-            sobe os dois. Ver src/lib/cargos.js. */}
-        {progressoDosCargos.length > 1 && (
+        {/* Curso que agrupa mais de um objetivo: um numero so nao serve. A materia
+            exclusiva de um objetivo entra no total geral e nao avanca o outro; a comum,
+            estudada uma vez, sobe os dois. Ver src/lib/objetivos.js. */}
+        {progressoDosObjetivos.length > 1 && (
           <section className="pl-card" style={{ padding: '14px 16px' }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Progresso por cargo</p>
+            <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Progresso por objetivo</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-              {progressoDosCargos.map((cargo) => (
+              {progressoDosObjetivos.map((cargo) => (
                 <div key={cargo.id}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

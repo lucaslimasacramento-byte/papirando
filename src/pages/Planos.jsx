@@ -31,7 +31,7 @@ import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
 import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos } from '../lib/edital';
-import { progressoPorCargo } from '../lib/cargos';
+import { progressoPorObjetivo, objetivosDoCurso, montarMapaDeObjetivos } from '../lib/objetivos';
 import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -180,9 +180,9 @@ export default function Planos({
         disciplinasCount: disciplinas.length,
         topicosCount: totalTopicos,
         progresso: totalTopicos > 0 ? Math.round((concluidos / totalTopicos) * 100) : 0,
-        // Um curso pode cobrir mais de um cargo, e o progresso de cada um conta so o que
-        // cai na prova dele — a materia comum entra nos dois. Ver src/lib/cargos.js.
-        porCargo: progressoPorCargo(curso, disciplinas),
+        // Um curso agrupa objetivos, e o progresso de cada um conta so o que cai na prova
+        // dele — a materia comum entra em todos. Ver src/lib/objetivos.js.
+        porObjetivo: progressoPorObjetivo(curso, disciplinas),
       };
     });
   }, [bancoDisciplinas, cursos]);
@@ -606,9 +606,10 @@ export default function Planos({
   const buildCourseMetaChips = (curso) => {
     const intent = curso.intent || curso.tipo || (curso.origem === 'catalogo' || curso.origem === 'ia' ? 'concurso' : 'livre');
     const chips = [{ key: 'intent', tone: intent === 'faculdade' ? 'highlight' : 'accent', label: INTENT_LABELS[intent] || 'Objetivo' }];
-    // Curso que cobre mais de um cargo precisa dizer isso na cara: e a diferenca entre
+    // Curso que agrupa mais de um objetivo precisa dizer isso na cara: e a diferenca entre
     // "um plano" e "dois planos no mesmo lugar".
-    if ((curso.cargos || []).length > 1) chips.push({ key: 'cargos', tone: 'success', label: `${curso.cargos.length} cargos` });
+    const totalObjetivos = objetivosDoCurso(curso).length;
+    if (totalObjetivos > 1) chips.push({ key: 'objetivos', tone: 'success', label: `${totalObjetivos} objetivos` });
     if (intent === 'concurso') chips.push({ key: 'status', tone: 'accent', label: formatStatusLabel(curso.status_concurso) });
     if (curso.prova_data) chips.push({ key: 'prova', tone: 'highlight', label: `Prova ${formatDateDisplay(curso.prova_data)}` });
     if (curso.salario) chips.push({ key: 'salario', tone: 'success', label: curso.salario });
@@ -1997,10 +1998,10 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
         {/* Com mais de um cargo, uma barra so mentiria: a materia exclusiva de um cargo
             conta no total geral mas nao avanca o outro. Uma barra por cargo diz a verdade —
             e a materia comum, estudada uma vez, sobe as duas. */}
-        {curso.porCargo?.length > 1 ? (
+        {curso.porObjetivo?.length > 1 ? (
           <div style={{ marginTop: 12, display: 'grid', gap: 10 }}>
-            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso por cargo</span>
-            {curso.porCargo.map((cargo) => (
+            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Progresso por objetivo</span>
+            {curso.porObjetivo.map((cargo) => (
               <div key={cargo.id}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2091,13 +2092,20 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
   // ficha, o apelido aparece nos cartoes.
   const [apelido, setApelido] = useState(curso?.apelido || '');
   const [intent, setIntent] = useState(curso?.intent || curso?.tipo || 'livre');
-  const [provaData, setProvaData] = useState(curso?.prova_data || '');
-  // O edital da o ponto de partida, nao a verdade eterna: adiamento de prova e rotina, e
-  // vagas e salario as vezes so saem em retificacao.
-  const [banca, setBanca] = useState(curso?.banca || '');
-  const [vagas, setVagas] = useState(semValor(curso?.vagas) ? '' : String(curso?.vagas || ''));
-  const [salario, setSalario] = useState(semValor(curso?.salario) ? '' : String(curso?.salario || ''));
   const [imagemUrl, setImagemUrl] = useState(curso?.imagem_url || '');
+  // Os dados que sao do alvo vivem em cada objetivo, nao no curso: um curso pode agrupar
+  // dois concursos com datas e bancas diferentes. O edital da o ponto de partida, nao a
+  // verdade eterna — adiamento de prova e rotina, e vagas as vezes so saem em retificacao.
+  const [objetivos, setObjetivos] = useState(() =>
+    objetivosDoCurso(curso).map((objetivo) => ({
+      ...objetivo,
+      vagas: semValor(objetivo.vagas) ? '' : String(objetivo.vagas || ''),
+      salario: semValor(objetivo.salario) ? '' : String(objetivo.salario || ''),
+    }))
+  );
+
+  const alterarObjetivo = (id, campo, valor) =>
+    setObjetivos((prev) => prev.map((item) => (item.id === id ? { ...item, [campo]: valor } : item)));
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
@@ -2167,47 +2175,66 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
-          <div>
-            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Data da prova</label>
-            <input
-              type="date"
-              value={provaData ? String(provaData).slice(0, 10) : ''}
-              onChange={(e) => setProvaData(e.target.value)}
-              className="pl-input"
-              style={{ width: '100%', boxSizing: 'border-box' }}
-            />
-          </div>
-          <div>
-            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Banca</label>
-            <input
-              value={banca}
-              onChange={(e) => setBanca(e.target.value)}
-              placeholder="A definir"
-              className="pl-input"
-              style={{ width: '100%', boxSizing: 'border-box' }}
-            />
-          </div>
-          <div>
-            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Vagas</label>
-            <input
-              value={vagas}
-              onChange={(e) => setVagas(e.target.value)}
-              placeholder="Não informado"
-              className="pl-input"
-              style={{ width: '100%', boxSizing: 'border-box' }}
-            />
-          </div>
-          <div>
-            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Remuneração</label>
-            <input
-              value={salario}
-              onChange={(e) => setSalario(e.target.value)}
-              placeholder="Não informada"
-              className="pl-input"
-              style={{ width: '100%', boxSizing: 'border-box' }}
-            />
-          </div>
+        {/* Um bloco por objetivo: a data da prova e a banca sao de cada alvo, nao do curso
+            — e um curso pode juntar dois concursos com datas diferentes. */}
+        <div style={{ display: 'grid', gap: 14 }}>
+          <p className="pl-eyebrow" style={{ margin: 0 }}>
+            {objetivos.length > 1 ? `Objetivos deste curso (${objetivos.length})` : 'Objetivo'}
+          </p>
+
+          {objetivos.map((objetivo) => (
+            <div key={objetivo.id} className="pl-card" style={{ padding: '12px 14px', display: 'grid', gap: 10 }}>
+              <input
+                value={objetivo.nome || ''}
+                onChange={(e) => alterarObjetivo(objetivo.id, 'nome', e.target.value)}
+                placeholder="Nome do objetivo"
+                className="pl-input"
+                style={{ width: '100%', boxSizing: 'border-box', fontWeight: 700 }}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+                <div>
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Data da prova</label>
+                  <input
+                    type="date"
+                    value={objetivo.prova_data ? String(objetivo.prova_data).slice(0, 10) : ''}
+                    onChange={(e) => alterarObjetivo(objetivo.id, 'prova_data', e.target.value)}
+                    className="pl-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Banca</label>
+                  <input
+                    value={objetivo.banca || ''}
+                    onChange={(e) => alterarObjetivo(objetivo.id, 'banca', e.target.value)}
+                    placeholder="A definir"
+                    className="pl-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Vagas</label>
+                  <input
+                    value={objetivo.vagas || ''}
+                    onChange={(e) => alterarObjetivo(objetivo.id, 'vagas', e.target.value)}
+                    placeholder="Não informado"
+                    className="pl-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Remuneração</label>
+                  <input
+                    value={objetivo.salario || ''}
+                    onChange={(e) => alterarObjetivo(objetivo.id, 'salario', e.target.value)}
+                    placeholder="Não informada"
+                    className="pl-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div>
@@ -2264,11 +2291,17 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
                   nome,
                   apelido: apelido.trim(),
                   intent,
-                  prova_data: provaData,
-                  banca: banca.trim(),
-                  vagas: vagas.trim(),
-                  salario: salario.trim(),
                   imagem_url: imagemUrl,
+                  objetivos: objetivos.map((objetivo) => ({
+                    ...objetivo,
+                    nome: String(objetivo.nome || '').trim() || 'Objetivo',
+                    banca: String(objetivo.banca || '').trim(),
+                    vagas: String(objetivo.vagas || '').trim(),
+                    salario: String(objetivo.salario || '').trim(),
+                  })),
+                  // O curso segue o primeiro objetivo nos campos que telas antigas ainda
+                  // leem direto (curso.prova_data).
+                  prova_data: objetivos[0]?.prova_data || '',
                 });
                 onClose?.();
               }}

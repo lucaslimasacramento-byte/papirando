@@ -21,7 +21,7 @@ import {
   Play,
 } from 'lucide-react';
 import { getAreaToken } from '../lib/areaTokens';
-import { cargosDaDisciplina } from '../lib/cargos';
+import { objetivosDaDisciplina, objetivosDoCurso } from '../lib/objetivos';
 
 export default function Disciplinas({
   cursos = [],
@@ -161,14 +161,14 @@ export default function Disciplinas({
     return enrichedDisciplinas.filter((disciplina) => allowed.has(disciplina.id || disciplina.nome));
   }, [disciplinasFiltradas, enrichedDisciplinas]);
 
-  // Indice plano -> cargos do curso, para a linha da disciplina dizer a quais cargos ela
-  // serve. Um curso pode cobrir mais de um cargo desde a leitura do edital.
+  // Indice plano -> objetivos do curso, para a linha da disciplina dizer a quais objetivos
+  // ela serve. Um curso agrupa objetivos desde a leitura do edital.
   const cargosPorPlano = useMemo(() => {
     const indice = {};
     (cursos || []).forEach((curso) => {
-      const lista = Array.isArray(curso?.cargos) ? curso.cargos : [];
+      const lista = objetivosDoCurso(curso);
       if (!curso?.plano || lista.length < 2) return;
-      indice[curso.plano] = { lista, porDisciplina: (nome) => cargosDaDisciplina(curso, nome) };
+      indice[curso.plano] = { lista, porDisciplina: (nome) => objetivosDaDisciplina(curso, nome) };
     });
     return indice;
   }, [cursos]);
@@ -445,13 +445,13 @@ function TabelaDisciplinas({
 }
 
 function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPlano = {} }) {
-  // Num curso de mais de um cargo, saber a quais a disciplina serve muda o que o aluno faz
-  // com ela: estudar uma que cai nos dois rende o dobro do avanco.
+  // Num curso de mais de um objetivo, saber a quais a disciplina serve muda o que o aluno
+  // faz com ela: estudar uma que cai nos dois rende o dobro do avanco.
   const cargos = cargosDoPlano[disciplina.plano] || null;
   const marcaDeCargo = (() => {
     if (!cargos || cargos.lista.length < 2) return null;
     const dela = cargos.porDisciplina(disciplina.nome);
-    if (dela.length >= cargos.lista.length) return { texto: 'Nos dois cargos', forte: true };
+    if (dela.length >= cargos.lista.length) return { texto: 'Nos dois objetivos', forte: true };
     const dono = cargos.lista.find((cargo) => dela.includes(cargo.id));
     return dono ? { texto: `Só ${dono.nome}`, forte: false } : null;
   })();

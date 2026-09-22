@@ -113,8 +113,8 @@ import {
 import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { recordCustomObjective } from './lib/customObjectivesApi';
 import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
-import { montarMapaDeCargos } from './lib/cargos';
-import { concursosDosCursos, PREFIXO_CURSO } from './lib/cursoComoConcurso';
+import { concursosDosCursos, migrarAlvoDeCurso } from './lib/cursoComoConcurso';
+import { migrarCurso, idDoObjetivo, objetivosDoCurso, montarMapaDeObjetivos } from './lib/objetivos';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -658,7 +658,7 @@ export default function App() {
     if (!Array.isArray(courses)) return [];
 
     const seen = new Set();
-    return courses.filter((course) => {
+    return courses.map(migrarCurso).filter((course) => {
       if (!course || isLegacyDemoCourse(course)) return false;
 
       const key = [course.plano, course.nome, course.concurso]
@@ -1128,7 +1128,10 @@ export default function App() {
         const contests = await loadUserContests(currentUserId);
         const targetRow = contests.find((row) => row.is_target);
         if (!cancelled && targetRow?.contest_slug) {
-          setTargetContestId(targetRow.contest_slug);
+          // Alvo salvo antes de o alvo passar a apontar para um objetivo ("curso:<id>")
+          // continua resolvendo: sem isto, todo aluno com alvo definido voltaria a "Nenhum
+          // alvo definido" no deploy, sem ter mexido em nada.
+          setTargetContestId(migrarAlvoDeCurso(targetRow.contest_slug, cursos));
         }
       } catch (error) {
         console.warn('[user_contests] Erro ao carregar concursos do usuário:', error?.message || error);
@@ -4303,6 +4306,13 @@ export default function App() {
     return () => { ignore = true; };
   }, [isAuthenticated, currentUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // O alvo salvo no navegador tambem passa pela ponte, assim que os cursos existem.
+  useEffect(() => {
+    if (!targetContestId || !cursos.length) return;
+    const migrado = migrarAlvoDeCurso(targetContestId, cursos);
+    if (migrado !== targetContestId) setTargetContestId(migrado);
+  }, [targetContestId, cursos]);
+
   // Espelha no banco toda mudanca na lista de cursos.
   //
   // A sincronizacao olha a lista inteira em vez de salvar em cada ponto de edicao: cursos
@@ -4750,6 +4760,11 @@ export default function App() {
       if (patch.prova_data !== undefined) next.prova_data = patch.prova_data || '';
       if (patch.imagem_url !== undefined) next.imagem_url = String(patch.imagem_url || '').trim();
       if (patch.cor !== undefined && patch.cor) next.cor = patch.cor;
+      if (patch.apelido !== undefined) next.apelido = String(patch.apelido || '').trim();
+      if (patch.status !== undefined && patch.status) next.status = patch.status;
+      // Os dados que sao do alvo (data da prova, banca, cargo, vagas) vivem no objetivo, nao
+      // no curso: um curso pode agrupar dois concursos com datas diferentes.
+      if (Array.isArray(patch.objetivos)) next.objetivos = patch.objetivos;
       return next;
     }));
   };
@@ -5870,10 +5885,10 @@ export default function App() {
     const analysis =
       analysisResult?.contests?.length > 0 ? analysisResult : analyzeEditalDocument(editalText);
 
-    // Um curso pode ter mais de um cargo. Quando o aluno presta dois cargos do mesmo edital,
-    // dois cursos separados seriam a mesma lista estudada em duplicata, com progresso que
-    // nao conversa — marcar Portugues concluido num deixava o outro em zero na mesma
-    // materia. Ver src/lib/cargos.js.
+    // Um curso agrupa objetivos. Quando o aluno presta dois cargos do mesmo edital, dois
+    // cursos separados seriam a mesma lista estudada em duplicata, com progresso que nao
+    // conversa — marcar Portugues concluido num deixava o outro em zero na mesma materia.
+    // Ver src/lib/objetivos.js.
     const idsDosCargos = Array.isArray(cargosSelecionados) && cargosSelecionados.length
       ? cargosSelecionados
       : [selectedContestId].filter(Boolean);
@@ -5918,22 +5933,31 @@ export default function App() {
       carga_horaria: courseData?.carga_horaria || contestSelecionado.cargaHoraria || '',
       inscricao_valor: courseData?.inscricao_valor || analysis.inscricaoValor || '',
       etapas_tags: courseData?.etapas_tags?.length ? courseData.etapas_tags : (analysis.etapas || []),
-      // Os cargos do curso, com o quadro de provas de cada um: e o peso por disciplina
+      // Os objetivos do curso, com o quadro de provas de cada um: e o peso por disciplina
       // naquela prova, e dois cargos do mesmo edital raramente tem o mesmo.
-      cargos: (cargosDoCurso.length ? cargosDoCurso : [contestBase]).map((cargo) => ({
+      //
+      // O objetivo e quem tem data, banca e cargo — e e ele que vira o alvo. O curso e o
+      // plano que os agrupa. Ver src/lib/objetivos.js.
+      objetivos: (cargosDoCurso.length ? cargosDoCurso : [contestBase]).map((cargo) => ({
         id: cargo.id,
         nome: cargo.roleName || cargo.title,
+        tipo: 'concurso',
+        cargo: cargo.roleName || cargo.title,
+        banca: courseData?.banca || analysis.banca || 'A definir',
         vagas: cargo.vagas || '',
         salario: cargo.salario || '',
         escolaridade: cargo.escolaridade || '',
         lotacao: cargo.lotacao || '',
         carga_horaria: cargo.cargaHoraria || '',
+        inscricao_valor: analysis.inscricaoValor || '',
+        etapas_tags: analysis.etapas || [],
         prova: Array.isArray(cargo.prova) ? cargo.prova : [],
-        examDate: cargo.examDate || '',
+        prova_data: parseEditalDate(cargo.examDate) || courseData?.prova_data || '',
+        status_concurso: normalizeContestStatus('edital_publicado'),
       })),
-      // Qual disciplina serve a quais cargos. Sem isto, o progresso de um cargo contaria
-      // materia que nao cai na prova dele.
-      disciplinasPorCargo: montarMapaDeCargos(disciplinasRevisadas),
+      // Qual disciplina serve a quais objetivos. Sem isto, o progresso de um objetivo
+      // contaria materia que nao cai na prova dele.
+      disciplinasPorObjetivo: montarMapaDeObjetivos(disciplinasRevisadas),
       // Campos de topo seguem o primeiro cargo: tres telas ainda leem curso.prova e
       // curso.cargo direto, e quebra-las agora seria pior que a duplicacao.
       prova: Array.isArray(contestBase.prova) ? contestBase.prova : [],
@@ -6064,7 +6088,11 @@ export default function App() {
     // dias, sem prioridade e sem foco do dia: a plataforma inteira depende deste campo.
     // Se ja houver um alvo, nao mexemos: a escolha e dele.
     if (!targetContestId) {
-      setTargetContestId(`${PREFIXO_CURSO}${novoCurso.id}`);
+      // O alvo aponta para um OBJETIVO, nao para o curso: e o objetivo que tem data de
+      // prova, banca e cargo. Com mais de um, o primeiro escolhido vira o alvo — trocar e
+      // um clique no cartao.
+      const primeiro = objetivosDoCurso(novoCurso)[0];
+      if (primeiro) setTargetContestId(idDoObjetivo(novoCurso.id, primeiro.id));
     }
 
     return {

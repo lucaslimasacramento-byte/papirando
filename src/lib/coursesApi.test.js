@@ -17,11 +17,14 @@ function selectRetorna(resultado) {
 }
 
 describe('fetchCourses', () => {
-  it('devolve o curso com o id da linha', async () => {
+  it('devolve o curso com o id da linha, ja migrado para objetivos', async () => {
     selectRetorna({ data: [{ id: 'curso-1', dados: { nome: 'PM/AL' }, created_at: 'x' }], error: null });
     const { ok, courses } = await fetchCourses('user-1');
     expect(ok).toBe(true);
-    expect(courses).toEqual([{ nome: 'PM/AL', id: 'curso-1' }]);
+    expect(courses[0]).toMatchObject({ nome: 'PM/AL', id: 'curso-1' });
+    // Curso salvo antes de o curso passar a agrupar objetivos ganha um objetivo na leitura,
+    // entao nao precisa de migracao de banco.
+    expect(courses[0].objetivos).toHaveLength(1);
   });
 
   // Sem distinguir os dois casos, uma falha de rede na abertura viraria "o aluno nao tem

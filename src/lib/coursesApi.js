@@ -8,6 +8,7 @@
 // resultado em vez de lançar.
 
 import { supabase } from './supabase';
+import { migrarCurso } from './objetivos';
 
 const TABELA_AUSENTE = '42P01';
 
@@ -46,7 +47,9 @@ export async function fetchCourses(userId) {
 
   return {
     ok: true,
-    courses: (data || []).map((linha) => ({ ...(linha.dados || {}), id: linha.id })),
+    // Migra na leitura: curso salvo antes de o curso passar a agrupar objetivos continua
+    // funcionando sem migracao de banco — o formato novo e derivado do que existe.
+    courses: (data || []).map((linha) => migrarCurso({ ...(linha.dados || {}), id: linha.id })),
   };
 }
 
