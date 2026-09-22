@@ -18,6 +18,33 @@
 
 ---
 
+## Sessão 2026-09-22 (madrugada, correção) — "objetivosNovos is not defined" ✅
+
+**Criar curso a partir do edital estava quebrado.** Ao confirmar a importação com dois cargos,
+a tela estourava com `objetivosNovos is not defined`.
+
+**Causa:** na sessão "perguntar em qual curso o edital entra", três blocos de código foram
+inseridos na **função errada** dentro do `App.jsx` (um arquivo de ~8 mil linhas com funções de
+nomes parecidos):
+
+- o bloco que monta os objetivos (`objetivosCrus` + `resolverColisaoDeIds`) caiu em
+  `createCourseFromCatalog` em vez de `importSelectedEditalWithAI`;
+- o `cursoExistente || createCourse(...)` caiu na mesma função errada;
+- o bloco final (juntar objetivos ao curso existente + definir o alvo + o `return`) caiu em
+  `handleImportEditalDisciplinas`.
+
+Os três voltaram para o lugar. Dois efeitos colaterais que isso já causava e agora somem:
+`handleImportEditalDisciplinas` (importar disciplinas para um plano existente, pela tela
+Edital) também estourava, e **juntar um edital a um curso existente criava um curso novo** em
+vez de reaproveitar o escolhido.
+
+**`npm run lint` pega isso** (`no-undef`) — passou a fazer parte da verificação antes de
+qualquer push. Rodando nele, apareceu o mesmo tipo de erro em `src/pages/Edital.jsx`:
+`avisosDoEdital` era lido dentro de `AiAnalysisPanel`, mas o estado vive no componente pai —
+os avisos de "isto não parece um edital de abertura" nunca apareciam. Agora vai por prop.
+
+---
+
 ## Sessão 2026-09-22 (madrugada) — Tela de Objetivos reorganizada + fim do 42% falso ✅
 
 Quatro coisas apontadas no print.

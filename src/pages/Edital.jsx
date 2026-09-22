@@ -268,6 +268,7 @@ export default function Edital({
             aiLoading={aiLoading}
             aiError={aiError}
             aiAnalysis={aiAnalysis}
+            avisosDoEdital={avisosDoEdital}
           />
         )}
 
@@ -634,7 +635,7 @@ function EditalEmptyState({ onAdicionar, hasObjetivo, objetivoNome, loadingObjet
   );
 }
 
-function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAnalysis }) {
+function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAnalysis, avisosDoEdital = [] }) {
   return (
     <section className="pl-card-ai">
       <button type="button" onClick={() => setAiPanelOpen((prev) => !prev)} className="edital-ai-toggle">
