@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { getAreaToken } from '../lib/areaTokens';
 import { storageThumb } from '../lib/imageUrl';
+import { objetivosDoCurso, idDoObjetivo } from '../lib/objetivos';
+import { nomeCurtoDoCurso } from '../lib/apelidoCurso';
 
 // ─── CourseTemplateView (Faculdade e Vestibular) ──────────────────────────────
 
@@ -202,25 +204,40 @@ const TIPOS = [
 
 // ─── Meus objetivos (strip) ───────────────────────────────────────────────────
 
-function MeusObjetivos({ cursos, onSetActiveTab, onRemove }) {
+// Um cartao por OBJETIVO, agrupados pelo curso que os reune.
+//
+// Antes esta lista mostrava um cartao por CURSO. Depois que o curso passou a agrupar
+// objetivos, isso escondia justamente o que o aluno escolheu: ele marcou dois cargos na
+// importacao e via um item so. O alvo tambem e por objetivo — sem ve-los aqui, nao ha como
+// escolher qual deles guia o dia.
+function MeusObjetivos({ cursos, onSetActiveTab, onRemove, alvoId = '', onDefinirAlvo }) {
   if (!cursos || cursos.length === 0) return null;
+
+  const linhas = cursos.flatMap((curso) =>
+    objetivosDoCurso(curso).map((objetivo) => ({ curso, objetivo }))
+  );
 
   return (
     <div style={{ marginBottom: 32 }}>
-      <p className="pl-eyebrow" style={{ marginBottom: 12 }}>Meus objetivos</p>
+      <p className="pl-eyebrow" style={{ marginBottom: 12 }}>
+        Meus objetivos {linhas.length > 1 ? `(${linhas.length})` : ''}
+      </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {cursos.map((curso) => {
+        {linhas.map(({ curso, objetivo }) => {
           const tipo = inferTipo(curso);
           const tipoInfo = TIPOS.find((t) => t.id === tipo) || TIPOS[0];
           const Icon = tipoInfo.icon;
+          const id = idDoObjetivo(curso.id, objetivo.id);
+          const ehAlvo = alvoId === id;
           return (
             <div
-              key={curso.id}
+              key={id}
               className="pl-card"
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '8px 12px 8px 10px',
                 cursor: 'pointer',
+                borderColor: ehAlvo ? 'var(--pl-ink)' : 'var(--pl-rule-2)',
               }}
               onClick={() => onSetActiveTab?.('edital')}
               title="Abrir edital"
@@ -237,13 +254,32 @@ function MeusObjetivos({ cursos, onSetActiveTab, onRemove }) {
                 </div>
               )}
               <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
-                  {curso.nome || curso.concurso}
+                <p
+                  title={objetivo.nome}
+                  style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}
+                >
+                  {objetivo.nome}
                 </p>
-                <p style={{ margin: 0, fontSize: 10, color: 'var(--pl-ink-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  {tipoInfo.label}
+                {/* O curso e o contexto: dois objetivos do mesmo edital so se distinguem
+                    pelo cargo, e o aluno precisa saber de qual plano cada um veio. */}
+                <p
+                  title={curso.nome || curso.concurso}
+                  style={{ margin: 0, fontSize: 10, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}
+                >
+                  {ehAlvo ? 'ALVO · ' : ''}{nomeCurtoDoCurso(curso)} · {tipoInfo.label}
                 </p>
               </div>
+              {!ehAlvo && onDefinirAlvo && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onDefinirAlvo(id); }}
+                  className="pl-btn pl-btn-sm"
+                  style={{ flexShrink: 0 }}
+                  title="Guiar o dia por este objetivo"
+                >
+                  Alvo
+                </button>
+              )}
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onRemove?.(curso.id); }}
@@ -737,6 +773,8 @@ export default function Objetivos({
   isAdmin = false,
   setActiveTab,
   onRemoveCourse,
+  targetContestId = '',
+  onSetTargetContest,
 }) {
   const [tipoAtivo, setTipoAtivo] = useState('concurso');
   const [importError, setImportError] = useState('');
@@ -795,6 +833,8 @@ export default function Objetivos({
         cursos={cursosAtivos}
         onSetActiveTab={setActiveTab}
         onRemove={onRemoveCourse}
+        alvoId={targetContestId}
+        onDefinirAlvo={onSetTargetContest}
       />
 
       {/* Adicionar novo objetivo */}

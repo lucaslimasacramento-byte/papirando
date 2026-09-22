@@ -113,6 +113,41 @@ padrão apareceu nas disciplinas órfãs (filtrar na tela não apaga o dado) e n
 
 ---
 
+## Sessão 2026-09-22 — Curso agrupa Objetivos ✅
+
+Feito. O curso **continha** cargos; passou a **agrupar objetivos**, e o objetivo virou
+entidade própria — com data de prova, banca, cargo e vagas editáveis, e sendo ele (não o
+curso) o alvo.
+
+```
+CURSO (plano de estudo)      nome que o aluno dá
+  ├── OBJETIVO  Oficial de Estado-Maior · PMAL · prova 19/07
+  └── OBJETIVO  Soldado do Quadro de Praças · PMAL · prova 19/07
+```
+
+- `src/lib/objetivos.js` (14 testes) no lugar de `cargos.js`. **A migração roda na leitura**
+  (`coursesApi` e localStorage): curso salvo em qualquer geração continua funcionando sem
+  migração de banco — com cargos vira com objetivos; antigo sem cargos vira com um objetivo.
+- **O alvo aponta para o objetivo** (`objetivo:<curso>:<objetivo>`). O id antigo
+  (`curso:<id>`) continua resolvendo por `migrarAlvoDeCurso`, no banco e no navegador — sem
+  essa ponte, todo aluno com alvo definido voltaria a "Nenhum alvo definido" no deploy.
+- Um curso de dois objetivos oferece **dois alvos** em "Concursos acompanhados" e na aba
+  Objetivos, onde cada objetivo tem seu cartão e um botão "Alvo".
+- O modal de editar tem **um bloco por objetivo**. Mudar a data de um não mexe no outro.
+- Edital, Disciplinas e Meus cursos falam "objetivo". No fluxo de importação a palavra
+  "cargo" fica: o edital tem cargos, que viram objetivos do curso.
+
+### Aberto
+
+1. **Importar um segundo edital** ainda cria um curso novo; falta perguntar "curso existente
+   ou novo?" — é o que permite juntar dois editais, ou concurso + faculdade, no mesmo plano.
+2. **Tipos misturados** (concurso + faculdade no mesmo curso): faculdade tem semestre, não
+   data única de prova, e a rotina do dia precisa saber lidar com os dois.
+3. A aba Objetivos ainda mostra o catálogo publicado abaixo dos objetivos do aluno — vira
+   "editais em destaque" quando o plano dos destaques for executado.
+
+---
+
 ## Plano — Curso agrupa Objetivos ⏳
 
 Decidido em 22/09 pelo dono, **não implementado** (os quatro ajustes pontuais desta sessão

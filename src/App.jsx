@@ -7563,6 +7563,8 @@ export default function App() {
 
           {activeTab === 'concursos' && (
             <Objetivos
+              targetContestId={targetContestId}
+              onSetTargetContest={setTargetContestId}
               concursoCatalog={contestLibrary}
               courseTemplates={courseTemplates ?? []}
               cursos={cursos}
