@@ -113,6 +113,47 @@ padrão apareceu nas disciplinas órfãs (filtrar na tela não apaga o dado) e n
 
 ---
 
+## Plano — Curso agrupa Objetivos ⏳
+
+Decidido em 22/09 pelo dono, **não implementado** (os quatro ajustes pontuais desta sessão
+valem nos dois modelos). Vocabulário escolhido: **Curso + Objetivos**.
+
+```
+CURSO (plano de estudo)          nome dado pelo aluno
+  ├── OBJETIVO 1   Oficial de Estado-Maior · PMAL · prova 19/07
+  └── OBJETIVO 2   Soldado do Quadro de Praças · PMAL · prova 19/07
+```
+
+Hoje o curso **contém cargos**; passa a **agrupar objetivos**, e a diferença não é de nome:
+o objetivo vira entidade própria, com dados e ciclo de vida próprios.
+
+| | Hoje | Novo |
+|---|---|---|
+| Alvo | um curso inteiro | um **objetivo** — que é quem tem data de prova |
+| Data remarcada | edita o curso (afeta tudo) | edita aquele objetivo |
+| Concurso + faculdade juntos | impossível | um curso, dois objetivos de tipos diferentes |
+| Segundo edital | outro curso | entra no mesmo curso, ou num novo — escolha do aluno |
+
+**Nada do que já existe se perde:** o mapa disciplina→cargo (`src/lib/cargos.js`) vira
+disciplina→objetivo; a compatibilidade, a revisão mesclada e o progresso por cargo seguem
+valendo, só mudam de nome.
+
+### A resolver antes de codar
+
+1. **Migração dos cursos existentes.** Cada `curso.cargos[]` vira objetivo com id próprio; o
+   `disciplinasPorCargo` passa a apontar para esses ids. Curso de cargo único vira curso com
+   um objetivo.
+2. **O alvo passa a apontar para objetivo**, não para curso. Hoje o id é `curso:<id>` (ver
+   `src/lib/cursoComoConcurso.js`); passaria a `objetivo:<id>`. O valor antigo precisa
+   continuar resolvendo, senão o aluno perde o alvo.
+3. **A aba Objetivos** deixa de ser o catálogo e passa a listar os objetivos do aluno — o que
+   conversa com o plano dos destaques (a Biblioteca vira "editais em destaque").
+4. **Importar o segundo edital** precisa perguntar: curso existente ou novo?
+5. **Tipos misturados** (concurso + faculdade no mesmo curso) mudam o que a rotina do dia
+   mostra: a faculdade tem semestre, não data única de prova.
+
+---
+
 ## Plano — Objetivos e Meus cursos depois do edital ⏳
 
 Decidido na madrugada de 20/09, **não implementado**. Contexto: a plataforma passou a se
