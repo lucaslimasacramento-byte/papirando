@@ -114,6 +114,7 @@ import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { recordCustomObjective } from './lib/customObjectivesApi';
 import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
 import { montarMapaDeCargos } from './lib/cargos';
+import { concursosDosCursos, PREFIXO_CURSO } from './lib/cursoComoConcurso';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -1522,7 +1523,7 @@ export default function App() {
 
     return contestLibrary
       .flatMap((contest) => {
-        const imported = cursos.some(
+        const imported = Boolean(contest.origemCursoId) || cursos.some(
           (curso) =>
             curso.plano === contest.plano ||
             curso.nome === contest.nome ||
@@ -2080,7 +2081,15 @@ export default function App() {
   );
 
   const myContests = useMemo(() => {
-    return contestLibrary
+    // O curso criado a partir do edital tambem e um concurso acompanhado.
+    //
+    // Esta lista vinha so do catalogo publicado. Depois que a plataforma passou a se montar
+    // pelo PDF do aluno, isso virou um beco: ele importa o edital, ganha o curso, e o botao
+    // "Marcar alvo" procura um concurso que nunca existiu — nao acontece nada, sem erro
+    // nenhum. Sem alvo, o Inicio fica sem contagem de dias, sem prioridade e sem foco.
+    const daBiblioteca = [...contestLibrary, ...concursosDosCursos(cursos, contestLibrary)];
+
+    return daBiblioteca
       .map((contest) => {
         const imported = cursos.some(
           (curso) =>
@@ -6047,6 +6056,17 @@ export default function App() {
     }
 
     setBancoDisciplinas((prev) => [...prev, ...novasDisciplinas]);
+
+    // Sem alvo definido, o curso recem-importado vira o alvo.
+    //
+    // O aluno acabou de dizer, subindo o edital, qual e o objetivo dele — pedir que ele
+    // repita isso num segundo passo e burocracia. E sem alvo o Inicio fica sem contagem de
+    // dias, sem prioridade e sem foco do dia: a plataforma inteira depende deste campo.
+    // Se ja houver um alvo, nao mexemos: a escolha e dele.
+    if (!targetContestId) {
+      setTargetContestId(`${PREFIXO_CURSO}${novoCurso.id}`);
+    }
+
     return {
       disciplinasCriadas: novasDisciplinas.length,
       topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
