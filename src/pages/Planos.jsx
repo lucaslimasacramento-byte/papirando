@@ -132,7 +132,18 @@ export default function Planos({
   const [cargosEscolhidos, setCargosEscolhidos] = useState([]);
   // Um nome de curso por cargo: a revisao e uma so, mas cada cargo vira um curso proprio.
   const [nomesDosCursos, setNomesDosCursos] = useState({});
+  // Curso de destino: '' = criar um novo. Juntar este edital a um plano que ja existe e o
+  // que permite estudar dois concursos (ou concurso + faculdade) de uma vez, aproveitando a
+  // materia que se repete entre eles.
+  const [cursoDestinoId, setCursoDestinoId] = useState('');
   const [cursosCriados, setCursosCriados] = useState([]);
+
+  // Cursos que podem receber este edital. Arquivado nao entra: juntar um edital novo a um
+  // plano que o aluno encerrou seria ressuscitar o que ele fechou.
+  const cursosParaEscolher = useMemo(
+    () => (cursos || []).filter((curso) => curso?.status !== 'arquivado'),
+    [cursos]
+  );
 
   // Os cargos escolhidos, como objetos e na ordem da escolha.
   const cargosParaRevisar = useMemo(() => {
@@ -213,6 +224,7 @@ export default function Planos({
     setEtapaEdital('envio');
     setCargosEscolhidos([]);
     setNomesDosCursos({});
+    setCursoDestinoId('');
     setCursosCriados([]);
   };
 
@@ -231,6 +243,7 @@ export default function Planos({
     setEtapaEdital('envio');
     setCargosEscolhidos([]);
     setNomesDosCursos({});
+    setCursoDestinoId('');
     setCursosCriados([]);
     setIaForm({ concurso: '', banca: '', editalText: '' });
   };
@@ -544,7 +557,11 @@ export default function Planos({
     // duplicata: a materia comum apareceria duas vezes e o progresso nao conversaria —
     // marcar "Lingua Portuguesa" concluida num deixaria o outro em zero na mesma materia.
     // Aqui a disciplina e criada uma vez, carregando a quais cargos ela serve.
-    const nomeDoCurso = String(nomesDosCursos[cargosParaRevisar[0].id] || '').trim();
+    const cursoDestino = cursosParaEscolher.find((curso) => String(curso.id) === String(cursoDestinoId));
+    const nomeDoCurso = cursoDestino
+      ? cursoDestino.nome
+      : String(nomesDosCursos[cargosParaRevisar[0].id] || '').trim();
+
     if (!nomeDoCurso) {
       showToast('Dê um nome ao curso antes de confirmar.', 'warn');
       return;
@@ -571,9 +588,10 @@ export default function Planos({
 
     try {
       const result = await onImportEdital?.({
+        cursoExistenteId: cursoDestino?.id || '',
         courseData: {
           nome: nomeDoCurso,
-          plano: nomeDoCurso,
+          plano: cursoDestino?.plano || nomeDoCurso,
           concurso: iaForm.concurso.trim() || nomeDoCurso,
           banca: iaForm.banca.trim() || 'A definir',
           edital_arquivo: uploadedFileName,
@@ -589,10 +607,12 @@ export default function Planos({
       setCursosCriados([
         {
           nome: nomeDoCurso,
-          plano: nomeDoCurso,
+          plano: cursoDestino?.plano || nomeDoCurso,
+          juntadoAExistente: Boolean(cursoDestino),
           cargos: cargosParaRevisar.map((cargo) => cargo.roleName || cargo.title),
           disciplinasCriadas: result?.disciplinasCriadas || 0,
           topicosCriados: result?.topicosCriados || 0,
+          reaproveitadas: result?.disciplinasReaproveitadas || [],
         },
       ]);
       setEtapaEdital('pronto');
@@ -1222,7 +1242,39 @@ export default function Planos({
               {/* Um nome de curso por cargo: a revisao e uma so, mas no fim nasce um curso
                   para cada. Concurso e banca sao do edital, entao ficam fora do laco. */}
               <div style={{ display: 'grid', gap: 16 }}>
+                {/* A pergunta que faltava: plano novo ou um que ja existe?
+                    Sem ela, cada edital virava um curso separado — e quem presta dois
+                    concursos estudava a materia repetida duas vezes, com o progresso
+                    dividido entre os dois planos. */}
+                {cursosParaEscolher.length > 0 && (
+                  <div>
+                    <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 8 }}>
+                      Onde entra este edital?
+                    </label>
+                    <select
+                      value={cursoDestinoId}
+                      onChange={(e) => setCursoDestinoId(e.target.value)}
+                      className="pl-input"
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                    >
+                      <option value="">Criar um curso novo</option>
+                      {cursosParaEscolher.map((curso) => (
+                        <option key={curso.id} value={curso.id}>
+                          Juntar a {nomeCurtoDoCurso(curso)}
+                        </option>
+                      ))}
+                    </select>
+                    {cursoDestinoId && (
+                      <p style={{ margin: '6px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>
+                        As matérias que já existem nesse curso não são criadas de novo — elas
+                        passam a valer também para os objetivos deste edital.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Um nome so: e um curso cobrindo os dois cargos, nao um curso por cargo. */}
+                {!cursoDestinoId && (
                 <InputField
                   label="Nome do curso"
                   value={nomesDosCursos[cargosParaRevisar[0].id] || ''}
@@ -1230,6 +1282,7 @@ export default function Planos({
                     setNomesDosCursos((prev) => ({ ...prev, [cargosParaRevisar[0].id]: value }))
                   }
                 />
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
                   <InputField label="Concurso/órgão" value={iaForm.concurso} onChange={(value) => setIaForm((prev) => ({ ...prev, concurso: value }))} />
                   <InputField label="Banca" value={iaForm.banca} onChange={(value) => setIaForm((prev) => ({ ...prev, banca: value }))} />
@@ -1276,7 +1329,9 @@ export default function Planos({
               <CheckCircle2 size={34} style={{ color: 'var(--pl-success)' }} />
               <div>
                 <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                  {cursosCriados[0]?.nome} está pronto.
+                  {cursosCriados[0]?.juntadoAExistente
+                    ? `Objetivos adicionados a ${cursosCriados[0]?.nome}.`
+                    : `${cursosCriados[0]?.nome} está pronto.`}
                 </p>
               </div>
 
@@ -1295,7 +1350,16 @@ export default function Planos({
                     </p>
                     {curso.cargos?.length > 1 && (
                       <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>
-                        Cobrindo {curso.cargos.length} cargos: {curso.cargos.join(' e ')}
+                        Cobrindo {curso.cargos.length} objetivos: {curso.cargos.join(' e ')}
+                      </p>
+                    )}
+                    {/* O ganho de juntar os editais num plano so: a materia que ja estava la
+                        passa a valer para os dois, sem estudar de novo. */}
+                    {curso.reaproveitadas?.length > 0 && (
+                      <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--pl-success)' }}>
+                        {curso.reaproveitadas.length}{' '}
+                        {curso.reaproveitadas.length === 1 ? 'matéria já estava' : 'matérias já estavam'}
+                        {' '}no curso e agora {curso.reaproveitadas.length === 1 ? 'vale' : 'valem'} para os dois.
                       </p>
                     )}
                   </div>

@@ -9,6 +9,8 @@ import {
   idDoObjetivo,
   partesDoIdDeObjetivo,
   ehIdDeCursoLegado,
+  resolverColisaoDeIds,
+  renomearNoMapa,
 } from './objetivos';
 
 const disciplina = (nome, topicos) => ({ nome, topicos });
@@ -133,5 +135,49 @@ describe('id do objetivo', () => {
   it('reconhece o id antigo de curso', () => {
     expect(ehIdDeCursoLegado('curso:curso-1')).toBe(true);
     expect(partesDoIdDeObjetivo('curso:curso-1')).toBeNull();
+  });
+});
+
+// O id do objetivo vem do titulo do cargo no edital, e dois editais diferentes podem gerar
+// o mesmo. Juntando o segundo a um curso que ja tem o primeiro, os dois virariam o MESMO
+// objetivo — progresso de um aparecendo no outro, sem erro nenhum na tela.
+describe('resolverColisaoDeIds', () => {
+  it('renomeia so o que colide e devolve o de-para', () => {
+    const { objetivos, renomeados } = resolverColisaoDeIds(
+      [{ id: 'oficial', nome: 'Oficial PM' }, { id: 'agente', nome: 'Agente' }],
+      [{ id: 'oficial', nome: 'Oficial Bombeiro' }]
+    );
+    expect(objetivos.map((o) => o.id)).toEqual(['oficial-2', 'agente']);
+    expect(renomeados).toEqual({ oficial: 'oficial-2' });
+  });
+
+  it('acha o proximo livre quando ja existe o -2', () => {
+    const { objetivos } = resolverColisaoDeIds(
+      [{ id: 'oficial' }],
+      [{ id: 'oficial' }, { id: 'oficial-2' }]
+    );
+    expect(objetivos[0].id).toBe('oficial-3');
+  });
+
+  it('nao renomeia quando nao ha colisao', () => {
+    const novos = [{ id: 'soldado' }];
+    const { objetivos, renomeados } = resolverColisaoDeIds(novos, [{ id: 'oficial' }]);
+    expect(objetivos[0]).toBe(novos[0]);
+    expect(renomeados).toEqual({});
+  });
+});
+
+describe('renomearNoMapa', () => {
+  it('leva o de-para para o mapa de disciplinas', () => {
+    const mapa = { portugues: ['oficial', 'agente'], ordemunida: ['oficial'] };
+    expect(renomearNoMapa(mapa, { oficial: 'oficial-2' })).toEqual({
+      portugues: ['oficial-2', 'agente'],
+      ordemunida: ['oficial-2'],
+    });
+  });
+
+  it('devolve o mapa intacto quando nao houve renomeacao', () => {
+    const mapa = { portugues: ['a'] };
+    expect(renomearNoMapa(mapa, {})).toBe(mapa);
   });
 });

@@ -131,6 +131,48 @@ export function montarMapaDeObjetivos(disciplinasRevisadas) {
   return mapa;
 }
 
+// Renomeia objetivos novos que colidem com os que o curso ja tem.
+//
+// O id do objetivo vem do titulo do cargo no edital ("oficial", "analista-judiciario"), e
+// dois editais diferentes podem gerar o mesmo. Juntando o segundo a um curso que ja tem o
+// primeiro, os dois virariam o MESMO objetivo: o progresso de um apareceria no outro e as
+// disciplinas se misturariam, sem erro nenhum na tela.
+//
+// Devolve tambem o de-para, porque o mapa disciplina -> objetivo foi montado com os ids
+// antigos e precisa acompanhar.
+export function resolverColisaoDeIds(objetivosNovos, objetivosExistentes) {
+  const usados = new Set((objetivosExistentes || []).map((objetivo) => String(objetivo?.id)));
+  const renomeados = {};
+
+  const objetivos = (objetivosNovos || []).map((objetivo) => {
+    const original = String(objetivo?.id || 'objetivo');
+    if (!usados.has(original)) {
+      usados.add(original);
+      return objetivo;
+    }
+
+    let sufixo = 2;
+    while (usados.has(`${original}-${sufixo}`)) sufixo += 1;
+    const novo = `${original}-${sufixo}`;
+    usados.add(novo);
+    renomeados[original] = novo;
+    return { ...objetivo, id: novo };
+  });
+
+  return { objetivos, renomeados };
+}
+
+// Aplica o de-para da colisao no mapa disciplina -> objetivos.
+export function renomearNoMapa(mapa, renomeados) {
+  if (!Object.keys(renomeados || {}).length) return mapa || {};
+  return Object.fromEntries(
+    Object.entries(mapa || {}).map(([chave, objetivos]) => [
+      chave,
+      [...new Set((objetivos || []).map((id) => renomeados[id] || id))],
+    ])
+  );
+}
+
 // Progresso de cada objetivo do curso.
 //
 // A mesma disciplina entra na conta de todos os objetivos que ela serve, sem duplicar
