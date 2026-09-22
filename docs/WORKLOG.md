@@ -18,6 +18,41 @@
 
 ---
 
+## Sessão 2026-09-22 (madrugada) — Tela de Objetivos reorganizada + fim do 42% falso ✅
+
+Quatro coisas apontadas no print.
+
+**1. A tela de Objetivos virou curso → objetivos.** Eram pastilhas soltas: dois objetivos do
+mesmo edital viravam dois chips iguais, sem dizer que são o mesmo plano, sem progresso, sem
+prazo e sem como editar. Agora é **um bloco por curso** (com capa, cor, nome e descrição) e
+**uma linha por objetivo** dentro dele — com % do conteúdo, dias para o prazo, banca, barra de
+progresso, "Definir alvo" e "Abrir". O "Remover" passou a ser do curso inteiro, no rodapé,
+dizendo o que apaga.
+
+**2. Dá para editar o curso ali.** O modal de personalizar saiu de `Planos.jsx` para
+`src/components/EditarCursoModal.jsx` (com `ModalShell`/`InputField` em
+`src/components/ModalShell.jsx`) e agora é usado nas duas telas. É por ele que se **adiciona
+um objetivo manualmente** — útil para quem importou o edital com um cargo só.
+
+**3. O catálogo vazio saiu do meio da tela.** "Catálogo vazio." ocupava metade da página para
+quem já tem objetivo. A biblioteca ficou recolhida atrás de "Ver a biblioteca"; quem ainda não
+tem nenhum objetivo continua caindo direto nela.
+
+**4. Fim do "42% geral".** Era literalmente `const progGeralEdital = 42;` — número de maquete
+que o Dashboard exibia acima de uma lista com todas as disciplinas em 0%. Novo
+`src/lib/progressoDoEdital.js` (5 testes) conta **por tópico**, não pela média das disciplinas
+(uma matéria de 40 tópicos pesa mais que uma de 4). Sem nada estudado, é 0.
+
+**Bônus — Bizu IA (Disciplinas).** Mesma família de erro: dizia *"Língua Portuguesa está
+puxando a fila"* com 0% de cobertura. Com tudo zerado, agora diz "Ponto de partida" e aponta a
+ordem sugerida. O cartão também foi reorganizado: as sugestões subiram para a coluna da
+esquerda, que estava com um buraco do tamanho de meio cartão.
+
+**KPIs:** passaram a contar objetivos (era cursos) — quem subiu um edital de dois cargos via
+"1".
+
+---
+
 ## Sessão 2026-09-22 (noite) — Rotina olha o prazo mais próximo + curso personalizável ✅
 
 Três coisas que o uso real cobrou.

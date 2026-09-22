@@ -533,31 +533,52 @@ function BizuDiagnostico({ disciplinas, onStart }) {
   const critical = ordered[0];
   const best = [...disciplinas].sort((a, b) => b.coverage - a.coverage)[0];
   const suggestions = ordered.slice(0, 3);
+  // Edital recem-subido: toda disciplina em 0%. Dizer "Lingua Portuguesa esta puxando a
+  // fila" com 0% de cobertura e elogiar um progresso que nao existe — e quem acabou de
+  // comecar percebe na hora que o diagnostico nao olhou nada.
+  const semEstudo = disciplinas.length > 0 && disciplinas.every((d) => Number(d.coverage || 0) === 0);
 
+  // Duas colunas de alturas parecidas. Antes a esquerda tinha so titulo, texto e botao
+  // enquanto a direita empilhava tres indicadores, e as sugestoes iam numa faixa propria la
+  // embaixo: sobrava um buraco do tamanho de meio cartao no meio da tela. As sugestoes
+  // subiram para a coluna da esquerda, que e onde a leitura continua.
   return (
     <section className="pl-card-ai" style={{ padding: 22 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.75fr)', gap: 22 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(250px, 0.62fr)', gap: 22, alignItems: 'start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span className="pl-tag-ai"><Sparkles size={13} /> Bizu IA</span>
             <span className="pl-small-label">Diagnóstico das disciplinas</span>
           </div>
           <h3 className="pl-section-title" style={{ marginTop: 14 }}>
-            {critical?.needsReview ? `Reforce ${critical.nome}` : 'Base estável para continuar'}
+            {semEstudo
+              ? 'Ponto de partida'
+              : critical?.needsReview ? `Reforce ${critical.nome}` : 'Base estável para continuar'}
           </h3>
-          <p className="pl-body" style={{ maxWidth: 780, marginTop: 8 }}>
-            {critical?.needsReview
+          <p className="pl-body" style={{ maxWidth: 620, marginTop: 8 }}>
+            {semEstudo
+              ? `Seu edital tem ${disciplinas.length} disciplinas e nenhum tópico concluído ainda. Comece pela ordem sugerida abaixo — o diagnóstico fica mais preciso a cada sessão registrada.`
+              : critical?.needsReview
               ? `Essa disciplina combina baixa cobertura com pouco estudo recente. Vale encaixar uma sessão curta antes de avançar para novos tópicos.`
               : best
               ? `${best.nome} está puxando a fila. Use esse ritmo para destravar as matérias com menor cobertura.`
               : 'Cadastre disciplinas e registre estudo para a IA montar um diagnóstico útil.'}
           </p>
-          <div style={{ marginTop: 18 }}>
+          <div style={{ marginTop: 16 }}>
             <button type="button" className="pl-btn pl-btn-ai" onClick={onStart}>
               <Sparkles size={15} />
               Registrar sessão guiada
             </button>
           </div>
+
+          {suggestions.length > 0 && (
+            <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>
+              <p className="pl-small-label" style={{ margin: 0 }}>Ordem sugerida</p>
+              {suggestions.map((disciplina, index) => (
+                <SuggestionRow key={disciplina.id || disciplina.nome} disciplina={disciplina} index={index} />
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'grid', gap: 10 }}>
@@ -565,12 +586,6 @@ function BizuDiagnostico({ disciplinas, onStart }) {
           <Insight label="Melhor tração" value={best ? `${best.coverage}%` : '0%'} detail={best?.nome || 'Sem dados'} />
           <Insight label="Sugestões ativas" value={suggestions.length} detail="ordem sugerida para revisar" />
         </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginTop: 18 }}>
-        {suggestions.map((disciplina, index) => (
-          <SuggestionRow key={disciplina.id || disciplina.nome} disciplina={disciplina} index={index} />
-        ))}
       </div>
     </section>
   );

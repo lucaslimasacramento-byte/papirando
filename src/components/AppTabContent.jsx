@@ -471,6 +471,9 @@ export default function AppTabContent(props) {
         onSetTargetContest={handleSetTargetContest || setTargetContestId}
         onImportCatalogCourse={createCourseFromCatalog}
         onUpdateCourseTargets={updateCourseTargets}
+        bancoDisciplinas={bancoDisciplinas}
+        onUpdateCourse={updateCourse}
+        onUploadCourseImage={uploadCourseImage}
         setActiveTab={setActiveTab}
         onOpenContestDetail={(contest) => {
           setSelectedContestDetailId(contest?.id || null);

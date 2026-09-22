@@ -115,6 +115,7 @@ import { recordCustomObjective } from './lib/customObjectivesApi';
 import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
 import { concursosDosCursos, migrarAlvoDeCurso } from './lib/cursoComoConcurso';
 import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
+import { progressoDoEdital } from './lib/progressoDoEdital';
 import {
   migrarCurso,
   idDoObjetivo,
@@ -7070,7 +7071,12 @@ export default function App() {
     setExpandedDisciplinas((prev) => ({ ...prev, [disciplinaId]: !prev[disciplinaId] }));
   };
 
-  const progGeralEdital = 42;
+  // Progresso real do edital do alvo. Era 42 fixo — um numero de maquete que o Dashboard
+  // exibia como "42% geral" acima de uma lista com todas as disciplinas em 0%.
+  const progGeralEdital = useMemo(
+    () => progressoDoEdital(targetContestDisciplines),
+    [targetContestDisciplines]
+  );
   const ultimaAnotacao = useMemo(() => {
     const fontes = (Array.isArray(redacoes) ? redacoes : [])
       .map((redacao) => {
