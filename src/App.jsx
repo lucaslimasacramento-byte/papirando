@@ -119,6 +119,8 @@ import {
   migrarCurso,
   idDoObjetivo,
   objetivosDoCurso,
+  objetivosDaDisciplina,
+  partesDoIdDeObjetivo,
   montarMapaDeObjetivos,
   resolverColisaoDeIds,
   renomearNoMapa,
@@ -2148,6 +2150,26 @@ export default function App() {
     return myContests.find((item) => item.id === targetContestId) || null;
   }, [myContests, targetContestId]);
 
+  // O alvo hoje e um objetivo dentro de um curso ("objetivo:<curso>:<objetivo>"). A rotina do
+  // dia precisa dos OUTROS objetivos do mesmo curso tambem: e comparando os prazos que ela
+  // sabe qual materia vem primeiro quando o curso junta, por exemplo, um concurso e a
+  // faculdade.
+  const cursoDoAlvo = useMemo(() => {
+    const partes = partesDoIdDeObjetivo(targetContestId);
+    if (!partes) return null;
+    return cursos.find((curso) => curso.id === partes.cursoId) || null;
+  }, [cursos, targetContestId]);
+
+  const objetivosDoAlvo = useMemo(
+    () => (cursoDoAlvo ? objetivosDoCurso(cursoDoAlvo) : []),
+    [cursoDoAlvo]
+  );
+
+  const objetivosDaDisciplinaDoAlvo = useCallback(
+    (nome) => (cursoDoAlvo ? objetivosDaDisciplina(cursoDoAlvo, nome) : []),
+    [cursoDoAlvo]
+  );
+
   const planningCourseOptions = useMemo(() => {
     const seen = new Set();
 
@@ -2293,8 +2315,18 @@ export default function App() {
       history: historicoReal,
       subjectCatalog,
       targetContest: targetContestSummary,
+      objetivos: objetivosDoAlvo,
+      objetivosDaDisciplina: objetivosDaDisciplinaDoAlvo,
     });
-  }, [targetContestDisciplines, bancoDisciplinas, historicoReal, subjectCatalog, targetContestSummary]);
+  }, [
+    targetContestDisciplines,
+    bancoDisciplinas,
+    historicoReal,
+    subjectCatalog,
+    targetContestSummary,
+    objetivosDoAlvo,
+    objetivosDaDisciplinaDoAlvo,
+  ]);
 
   const planningStudyRecommendation = useMemo(() => {
     const baseDisciplines =
@@ -2309,8 +2341,19 @@ export default function App() {
       history: historicoReal,
       subjectCatalog,
       targetContest: planningContestSummary,
+      objetivos: objetivosDoAlvo,
+      objetivosDaDisciplina: objetivosDaDisciplinaDoAlvo,
     });
-  }, [planningDisciplines, targetContestDisciplines, bancoDisciplinas, historicoReal, subjectCatalog, planningContestSummary]);
+  }, [
+    planningDisciplines,
+    targetContestDisciplines,
+    bancoDisciplinas,
+    historicoReal,
+    subjectCatalog,
+    planningContestSummary,
+    objetivosDoAlvo,
+    objetivosDaDisciplinaDoAlvo,
+  ]);
 
   useEffect(() => {
     if (studyPlanningMode !== 'ciclo' || planWizardStep !== 0) return;
@@ -7242,6 +7285,7 @@ export default function App() {
     importSelectedEditalWithAI,
     analyzeEditalDocument,
     deleteCourse,
+    updateCourseTargets,
     updateCourse,
     uploadCourseImage,
     setSelectedCoursePlan,

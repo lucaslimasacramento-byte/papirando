@@ -1,4 +1,5 @@
 import { buildDisciplineSummaryFromHistory, formatMinutesLabel } from './studyAnalytics';
+import { marcoMaisProximo } from './tiposDeObjetivo';
 import { canonicalizeSubjectName } from './subjectCatalogUtils';
 
 const sortTopics = (topics = []) =>
@@ -41,8 +42,12 @@ const getDurationByScore = (score) => {
   return 45;
 };
 
-const buildReason = ({ pendingTopics, accuracy, progress, targetContestName, nextTopic }) => {
+const buildReason = ({ pendingTopics, accuracy, progress, targetContestName, nextTopic, objetivoUrgente }) => {
   const reasons = [];
+
+  if (objetivoUrgente) {
+    reasons.push(`cai em ${objetivoUrgente}, que é o prazo mais próximo`);
+  }
 
   if (pendingTopics > 0) {
     reasons.push(`${pendingTopics} tópico(s) ainda aberto(s)`);
@@ -50,9 +55,9 @@ const buildReason = ({ pendingTopics, accuracy, progress, targetContestName, nex
 
   if (accuracy !== null) {
     if (accuracy < 65) {
-      reasons.push(`desempenho baixo nas questoes (${accuracy}%)`);
+      reasons.push(`desempenho baixo nas questões (${accuracy}%)`);
     } else if (accuracy < 75) {
-      reasons.push(`taxa de acerto ainda instavel (${accuracy}%)`);
+      reasons.push(`taxa de acerto ainda instável (${accuracy}%)`);
     }
   } else {
     reasons.push('sem histórico suficiente nessa matéria');
@@ -67,7 +72,7 @@ const buildReason = ({ pendingTopics, accuracy, progress, targetContestName, nex
   }
 
   if (nextTopic?.nome) {
-    reasons.push(`proximo passo: ${nextTopic.nome}`);
+    reasons.push(`próximo passo: ${nextTopic.nome}`);
   }
 
   return reasons.slice(0, 3).join(' | ');
@@ -174,11 +179,32 @@ export function buildSmartStudyPlan({
   history = [],
   subjectCatalog = [],
   targetContest = null,
+  // Os objetivos do curso do alvo e a quais objetivos cada disciplina serve.
+  //
+  // Um curso pode juntar um concurso com a faculdade, e os dois tem prazos diferentes. Sem
+  // isto a rotina olhava so o prazo do alvo: com a prova em 10 dias e o semestre em 90, ela
+  // dava o mesmo peso as duas — ou, pior, ignorava o que vem primeiro quando o alvo era o
+  // outro. Ver src/lib/tiposDeObjetivo.js.
+  objetivos = [],
+  objetivosDaDisciplina = null,
 }) {
   const canonicalDisciplines = mergeDisciplinesByCanonical({ disciplines, subjectCatalog });
   const canonicalHistory = buildDisciplineSummaryFromHistory(history);
   const historyMap = new Map(canonicalHistory.map((item) => [item.name, item]));
-  const urgencyFactor = getUrgencyFactor(targetContest?.diasParaProva);
+  // O prazo que aperta e o mais proximo entre os objetivos do curso, nao o do alvo: quem
+  // tem prova em duas semanas nao estuda como quem tem o semestre inteiro pela frente.
+  const marco = marcoMaisProximo(objetivos);
+  const diasQueApertam = marco ? marco.dias : targetContest?.diasParaProva;
+  const urgencyFactor = getUrgencyFactor(diasQueApertam);
+
+  // Com mais de um objetivo, o que cai no prazo mais proximo vem antes. Uma materia que so
+  // serve ao semestre nao pode competir de igual para igual com a que cai na prova de
+  // sabado.
+  const objetivoUrgente = objetivos.length > 1 ? marco?.objetivo?.id : null;
+  const serveAoUrgente = (nome) =>
+    Boolean(objetivoUrgente) &&
+    typeof objetivosDaDisciplina === 'function' &&
+    (objetivosDaDisciplina(nome) || []).includes(objetivoUrgente);
 
   const ranked = canonicalDisciplines
     .map((discipline) => {
@@ -202,7 +228,10 @@ export function buildSmartStudyPlan({
         (pendingTopics.length > 0 && progress < 60 ? 12 : 0) +
         Number(discipline?.manualPriorityBoost || 0);
 
-      const score = Math.round(scoreBase * urgencyFactor);
+      // 25% a mais para quem cai no prazo que vem primeiro. O suficiente para a materia da
+      // prova de sabado passar na frente da do semestre, sem zerar o resto do plano.
+      const urgente = serveAoUrgente(discipline?.nome);
+      const score = Math.round(scoreBase * urgencyFactor * (urgente ? 1.25 : 1));
       const studyMode = getStudyMode({
         accuracy,
         pendingTopics: pendingTopics.length,
@@ -213,6 +242,8 @@ export function buildSmartStudyPlan({
       return {
         ...discipline,
         canonicalName,
+        // A tela usa isto para dizer POR QUE esta materia veio antes.
+        objetivoUrgente: urgente ? marco?.objetivo?.nome || '' : '',
         plano: discipline?.planoLabel || discipline?.plano || '',
         accuracy,
         minutesStudied,
@@ -230,6 +261,7 @@ export function buildSmartStudyPlan({
           progress,
           targetContestName: targetContest?.nome || '',
           nextTopic,
+          objetivoUrgente: urgente ? marco?.objetivo?.nome || '' : '',
         }),
       };
     })

@@ -24,6 +24,7 @@ const DisciplinaDetalhe = lazy(() => import('../pages/DisciplinaDetalhe'));
 const Questoes = lazy(() => import('../pages/Questoes'));
 const Planos = lazy(() => import('../pages/Planos'));
 const ConcursosDisponiveis = lazy(() => import('../pages/ConcursosDisponiveis'));
+const Objetivos = lazy(() => import('../pages/Objetivos'));
 const ConcursoDetalhe = lazy(() => import('../pages/ConcursoDetalhe'));
 const LembretesCalendario = lazy(() => import('../pages/LembretesCalendario'));
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
@@ -151,6 +152,7 @@ export default function AppTabContent(props) {
     importSelectedEditalWithAI,
     analyzeEditalDocument,
     deleteCourse,
+    updateCourseTargets,
     setSelectedCoursePlan,
     contestLibrary,
     currentCourseLimit,
@@ -454,23 +456,32 @@ export default function AppTabContent(props) {
   }
 
   if (activeTab === 'concursos') {
+    // "Objetivos" mostra os objetivos DO ALUNO, nao a biblioteca.
+    //
+    // Esta aba renderizava a Biblioteca (o catalogo publicado pelo admin), que hoje esta
+    // vazia: o aluno importava o edital, ganhava dois objetivos e, ao clicar em Objetivos,
+    // via "Nenhum concurso publicado no momento". A Biblioteca continua acessivel pelo
+    // botao em Meus cursos.
     return (
-      <ConcursosDisponiveis
+      <Objetivos
         concursoCatalog={contestLibrary}
         courseTemplates={courseTemplates}
+        cursos={cursos}
+        targetContestId={targetContestId}
+        onSetTargetContest={handleSetTargetContest || setTargetContestId}
         onImportCatalogCourse={createCourseFromCatalog}
+        onUpdateCourseTargets={updateCourseTargets}
         setActiveTab={setActiveTab}
         onOpenContestDetail={(contest) => {
           setSelectedContestDetailId(contest?.id || null);
           setActiveTab('concurso_detalhe');
         }}
-        currentCourseLimit={currentCourseLimit}
-        currentCourseCount={currentCourseCount}
         remainingCourseSlots={remainingCourseSlots}
         isAdmin={isAdmin}
-        favoriteContestIds={favoriteContestIds}
-        interestedContestIds={interestedContestIds}
-        cursos={cursos}
+        onRemoveCourse={(cursoId) => {
+          const curso = (cursos || []).find((item) => item.id === cursoId);
+          if (curso) deleteCourse(curso);
+        }}
       />
     );
   }
