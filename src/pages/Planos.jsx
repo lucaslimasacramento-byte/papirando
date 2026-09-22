@@ -32,6 +32,7 @@ import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
 import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos } from '../lib/edital';
 import { progressoPorCargo } from '../lib/cargos';
+import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -640,6 +641,18 @@ export default function Planos({
             cursoStats={cursoStats}
             onTrocar={() => setActiveTab('concursos')}
             onLimparAlvo={() => onSetTargetContest?.('')}
+            onEditar={(() => {
+              const curso = cursos.find((item) => item.plano === targetContest?.plano || item.nome === targetContest?.nome);
+              return curso ? () => setEditingCourse(curso) : undefined;
+            })()}
+            onArquivar={(() => {
+              const curso = cursos.find((item) => item.plano === targetContest?.plano || item.nome === targetContest?.nome);
+              if (!curso || !onUpdateCourse) return undefined;
+              return () => {
+                onUpdateCourse(curso.id, { status: 'arquivado' });
+                onSetTargetContest?.('');
+              };
+            })()}
             onAbrir={() => targetContest?.id && onOpenContestDetail?.(targetContest.id)}
           />
           <ConcursosAcompanhadosCard
@@ -1391,7 +1404,7 @@ function PlanosHeader({ onCriarCurso, onAbrirBiblioteca, onImportarIA }) {
   );
 }
 
-function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onAbrir }) {
+function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onAbrir, onEditar, onArquivar }) {
   const targetStats = cursoStats.find(
     (c) => c.plano === target?.plano || c.nome === target?.nome
   ) || null;
@@ -1449,11 +1462,13 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
     return min === max ? fmt(min) : `${fmt(min)} a ${fmt(max)}`;
   };
 
-  const salario = formatSalario(target?.salario);
+  const salario = semValor(target?.salario) ? null : formatSalario(target?.salario);
   const provaLabel = target?.prova_data ? formatDateDisplay(target.prova_data) : null;
   const quickFacts = [
     { key: 'prova', icon: CalendarDays, label: 'Prova', value: provaLabel || 'Sem data', tone: daysToExam !== null && daysToExam < 0 ? 'muted' : 'default' },
-    { key: 'vagas', icon: Users, label: 'Vagas', value: target?.vagas ? `${target.vagas}` : 'A definir', tone: 'default' },
+    // semValor: "Nao encontrado" e a IA dizendo que o campo nao estava no edital — exibir
+    // isso como dado e pior que deixar em branco, porque parece informacao conferida.
+    { key: 'vagas', icon: Users, label: 'Vagas', value: semValor(target?.vagas) ? 'A definir' : `${target.vagas}`, tone: 'default' },
     { key: 'disciplinas', icon: BookOpen, label: 'Disciplinas', value: String(targetDisciplinasCount || 0), tone: 'default' },
     { key: 'topicos', icon: Layers3, label: 'Tópicos', value: String(targetTopicosCount || 0), tone: 'default' },
   ];
@@ -1522,7 +1537,7 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
             fontSize: 27, lineHeight: 1.1, color: '#f3efe5',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
-            {target ? target.nome : 'Nenhum alvo definido'}
+            {target ? nomeCurtoDoCurso(target) : 'Nenhum alvo definido'}
           </h2>
         </div>
       </div>
@@ -1643,6 +1658,26 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
                   Sem progresso ainda. Abra o curso e vincule estudos para esse painel começar a acompanhar sua rota.
                 </p>
                 <span className="pl-num" style={{ fontSize: 20, color: 'var(--pl-ink-3)' }}>0%</span>
+              </div>
+            )}
+
+            {/* Prova que ja passou nao pode ser so um selo: ou a data foi remarcada (o que
+                em concurso e rotina), ou o objetivo acabou. Sem saida daqui, o plano vive
+                entulhado de prova vencida. */}
+            {daysToExam !== null && daysToExam < 0 && (onEditar || onArquivar) && (
+              <div
+                className="pl-card"
+                style={{ padding: '10px 14px', borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
+              >
+                <span style={{ fontSize: 12.5, fontWeight: 650, color: 'var(--pl-warn)', flex: 1, minWidth: 180 }}>
+                  A data desta prova já passou. Foi remarcada?
+                </span>
+                {onEditar && (
+                  <button className="pl-btn pl-btn-sm" onClick={onEditar}>Remarcar data</button>
+                )}
+                {onArquivar && (
+                  <button className="pl-btn pl-btn-sm" onClick={onArquivar}>Arquivar objetivo</button>
+                )}
               </div>
             )}
 
@@ -1930,7 +1965,12 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
                 {secondaryTag}
               </p>
             ) : null}
-            <h3 style={{ margin: secondaryTag ? '3px 0 0' : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 18, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}>{curso.nome}</h3>
+            <h3
+              title={curso.nome}
+              style={{ margin: secondaryTag ? '3px 0 0' : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 18, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}
+            >
+              {nomeCurtoDoCurso(curso)}
+            </h3>
           </div>
         </div>
       </div>
@@ -2046,8 +2086,17 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
   ];
   const fileInputRef = useRef(null);
   const [nome, setNome] = useState(curso?.nome || '');
+  // Nome curto para as telas apertadas. "Concurso Publico para Admissao ao Curso de
+  // Formacao de Oficiais (..." cortado no meio nao ajuda ninguem; o nome oficial fica na
+  // ficha, o apelido aparece nos cartoes.
+  const [apelido, setApelido] = useState(curso?.apelido || '');
   const [intent, setIntent] = useState(curso?.intent || curso?.tipo || 'livre');
   const [provaData, setProvaData] = useState(curso?.prova_data || '');
+  // O edital da o ponto de partida, nao a verdade eterna: adiamento de prova e rotina, e
+  // vagas e salario as vezes so saem em retificacao.
+  const [banca, setBanca] = useState(curso?.banca || '');
+  const [vagas, setVagas] = useState(semValor(curso?.vagas) ? '' : String(curso?.vagas || ''));
+  const [salario, setSalario] = useState(semValor(curso?.salario) ? '' : String(curso?.salario || ''));
   const [imagemUrl, setImagemUrl] = useState(curso?.imagem_url || '');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -2105,14 +2154,60 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
         </div>
 
         <div>
-          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Data da prova (opcional)</label>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Apelido (opcional)</label>
           <input
-            type="date"
-            value={provaData ? String(provaData).slice(0, 10) : ''}
-            onChange={(e) => setProvaData(e.target.value)}
+            value={apelido}
+            onChange={(e) => setApelido(e.target.value)}
+            placeholder={apelidoSugerido(curso)}
             className="pl-input"
             style={{ width: '100%', boxSizing: 'border-box' }}
           />
+          <p style={{ margin: '5px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            Nome curto para os cartões. O nome completo continua guardado.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+          <div>
+            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Data da prova</label>
+            <input
+              type="date"
+              value={provaData ? String(provaData).slice(0, 10) : ''}
+              onChange={(e) => setProvaData(e.target.value)}
+              className="pl-input"
+              style={{ width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div>
+            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Banca</label>
+            <input
+              value={banca}
+              onChange={(e) => setBanca(e.target.value)}
+              placeholder="A definir"
+              className="pl-input"
+              style={{ width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div>
+            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Vagas</label>
+            <input
+              value={vagas}
+              onChange={(e) => setVagas(e.target.value)}
+              placeholder="Não informado"
+              className="pl-input"
+              style={{ width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div>
+            <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Remuneração</label>
+            <input
+              value={salario}
+              onChange={(e) => setSalario(e.target.value)}
+              placeholder="Não informada"
+              className="pl-input"
+              style={{ width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
         </div>
 
         <div>
@@ -2164,7 +2259,19 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
             <button
               className="pl-btn pl-btn-primary pl-btn-sm"
               disabled={!canSave}
-              onClick={() => { onSave?.({ nome, intent, prova_data: provaData, imagem_url: imagemUrl }); onClose?.(); }}
+              onClick={() => {
+                onSave?.({
+                  nome,
+                  apelido: apelido.trim(),
+                  intent,
+                  prova_data: provaData,
+                  banca: banca.trim(),
+                  vagas: vagas.trim(),
+                  salario: salario.trim(),
+                  imagem_url: imagemUrl,
+                });
+                onClose?.();
+              }}
             >
               Salvar
             </button>
