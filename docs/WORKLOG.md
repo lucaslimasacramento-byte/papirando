@@ -137,14 +137,37 @@ CURSO (plano de estudo)      nome que o aluno dá
 - Edital, Disciplinas e Meus cursos falam "objetivo". No fluxo de importação a palavra
   "cargo" fica: o edital tem cargos, que viram objetivos do curso.
 
+### Também feito nesta sessão
+
+**"Onde entra este edital?"** — a revisão pergunta se cria um curso novo ou junta a um que já
+existe. Juntando, as matérias que já estão lá **não são criadas de novo**: passam a valer
+também para os objetivos do edital novo, e a tela final diz quantas foram reaproveitadas.
+Junto, `resolverColisaoDeIds`: o id do objetivo vem do título do cargo, e dois editais podem
+gerar o mesmo ("oficial") — sem isso os dois virariam o mesmo objetivo, com progresso de um
+aparecendo no outro e sem erro na tela.
+
+**Tipos misturados** — `src/lib/tiposDeObjetivo.js` (12 testes) guarda a regra de cada tipo
+num lugar só: rótulo do prazo, se há contagem, e quais campos existem.
+
+| Tipo | Prazo | Campos |
+|---|---|---|
+| Concurso | Prova | banca, cargo, vagas, salário, escolaridade |
+| Vestibular | Prova | banca, vagas |
+| Graduação | Fim do período | instituição, período |
+| Estudo livre | — | — |
+
+O modal de editar pergunta o tipo por objetivo e mostra só os campos daquele tipo; dá para
+**adicionar um objetivo que não veio de edital** (a faculdade, um estudo livre). O cartão do
+alvo e o Início passam a dizer "para fechar o período" quando o alvo é faculdade, e somem com
+o prazo no estudo livre — em vez de "Sem data" com cara de pendência.
+
 ### Aberto
 
-1. **Importar um segundo edital** ainda cria um curso novo; falta perguntar "curso existente
-   ou novo?" — é o que permite juntar dois editais, ou concurso + faculdade, no mesmo plano.
-2. **Tipos misturados** (concurso + faculdade no mesmo curso): faculdade tem semestre, não
-   data única de prova, e a rotina do dia precisa saber lidar com os dois.
-3. A aba Objetivos ainda mostra o catálogo publicado abaixo dos objetivos do aluno — vira
+1. A aba Objetivos ainda mostra o catálogo publicado abaixo dos objetivos do aluno — vira
    "editais em destaque" quando o plano dos destaques for executado.
+2. A **rotina do dia** ainda prioriza por proximidade de prova. Com faculdade no mesmo curso,
+   `marcoMaisProximo` já devolve o prazo que aperta primeiro, mas o motor de recomendação
+   (`src/lib/studyRecommendation.js`) ainda não usa isso.
 
 ---
 

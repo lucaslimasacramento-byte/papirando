@@ -250,8 +250,15 @@ export default function Dashboard({
                 <span className="pl-num" style={{ fontSize: 54, color: 'var(--pl-ink)', lineHeight: 1 }}>{targetDaysRemaining}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)' }}>dias</span>
               </div>
+              {/* Dizer so "dias" nao informa nada quando o alvo e a faculdade: o prazo dela
+                  e o fim do periodo, nao uma prova. O rotulo vem do tipo do objetivo. */}
+              {targetContest?.rotuloDaContagem && (
+                <div style={{ marginTop: 2, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 600 }}>
+                  {targetContest.rotuloDaContagem}
+                </div>
+              )}
               <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                {targetContest?.nome || 'Objetivo definido'}
+                {targetContest?.objetivoNome || targetContest?.nome || 'Objetivo definido'}
               </div>
               <div style={{ marginTop: 3, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
                 {[targetContest?.banca, targetContest?.cargo || targetContest?.concurso].filter(Boolean).join(' - ')}

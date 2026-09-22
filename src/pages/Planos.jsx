@@ -12,6 +12,7 @@ import {
   LibraryBig,
   Loader2,
   Pencil,
+  Plus,
   Play,
   Sparkles,
   Target,
@@ -32,6 +33,7 @@ import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
 import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos } from '../lib/edital';
 import { progressoPorObjetivo, objetivosDoCurso, montarMapaDeObjetivos } from '../lib/objetivos';
+import { tipoDoObjetivo, LISTA_DE_TIPOS, marcoDoObjetivo, marcoMaisProximo } from '../lib/tiposDeObjetivo';
 import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -42,6 +44,18 @@ const semValor = (valor) => {
   const texto = String(valor || '').trim();
   return !texto || /^n[ãa]o\s*encontrado$/i.test(texto);
 };
+
+// Rotulo e exemplo de cada campo editavel do objetivo. Quais aparecem depende do tipo —
+// ver src/lib/tiposDeObjetivo.js.
+const CAMPOS_DO_OBJETIVO = [
+  { id: 'banca', label: 'Banca', placeholder: 'A definir' },
+  { id: 'cargo', label: 'Cargo', placeholder: 'Nome do cargo' },
+  { id: 'vagas', label: 'Vagas', placeholder: 'Não informado' },
+  { id: 'salario', label: 'Remuneração', placeholder: 'Não informada' },
+  { id: 'escolaridade', label: 'Escolaridade', placeholder: 'Não informada' },
+  { id: 'instituicao', label: 'Instituição', placeholder: 'Nome da faculdade' },
+  { id: 'periodo', label: 'Período', placeholder: '2026.2' },
+];
 
 const EMPTY_COURSE_FORM = {
   nome: '',
@@ -1487,9 +1501,10 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
     setTodayTime(now.getTime());
   }, []);
 
-  const daysToExam = target?.prova_data && todayTime
-    ? Math.ceil((new Date(`${target.prova_data}T00:00:00`).getTime() - todayTime) / 86400000)
-    : null;
+  // O prazo do alvo depende do tipo: concurso conta dias para a prova, faculdade para o
+  // fim do periodo, estudo livre nao tem prazo. Ver src/lib/tiposDeObjetivo.js.
+  const marco = target ? marcoDoObjetivo(target, todayTime ? new Date(todayTime) : new Date()) : null;
+  const daysToExam = marco ? marco.dias : null;
 
   const hasStats = targetStats && (targetStats.disciplinasCount > 0 || targetStats.topicosCount > 0);
   const targetDisciplinasCount = targetStats?.disciplinasCount || (Array.isArray(target?.disciplinas) ? target.disciplinas.length : 0);
@@ -1530,10 +1545,16 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
   const salario = semValor(target?.salario) ? null : formatSalario(target?.salario);
   const provaLabel = target?.prova_data ? formatDateDisplay(target.prova_data) : null;
   const quickFacts = [
-    { key: 'prova', icon: CalendarDays, label: 'Prova', value: provaLabel || 'Sem data', tone: daysToExam !== null && daysToExam < 0 ? 'muted' : 'default' },
+    // O rotulo vem do tipo: "Prova" num concurso, "Fim do periodo" numa faculdade. Estudo
+    // livre nao mostra prazo nenhum, em vez de exibir "Sem data" com cara de pendencia.
+    ...(tipoDoObjetivo(target).temPrazo
+      ? [{ key: 'prazo', icon: CalendarDays, label: marco?.rotulo || tipoDoObjetivo(target).rotuloDoPrazo, value: provaLabel || 'Sem data', tone: daysToExam !== null && daysToExam < 0 ? 'muted' : 'default' }]
+      : []),
     // semValor: "Nao encontrado" e a IA dizendo que o campo nao estava no edital — exibir
     // isso como dado e pior que deixar em branco, porque parece informacao conferida.
-    { key: 'vagas', icon: Users, label: 'Vagas', value: semValor(target?.vagas) ? 'A definir' : `${target.vagas}`, tone: 'default' },
+    ...(tipoDoObjetivo(target).campos.includes('vagas')
+      ? [{ key: 'vagas', icon: Users, label: 'Vagas', value: semValor(target?.vagas) ? 'A definir' : `${target.vagas}`, tone: 'default' }]
+      : []),
     { key: 'disciplinas', icon: BookOpen, label: 'Disciplinas', value: String(targetDisciplinasCount || 0), tone: 'default' },
     { key: 'topicos', icon: Layers3, label: 'Tópicos', value: String(targetTopicosCount || 0), tone: 'default' },
   ];
@@ -1592,7 +1613,9 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
                   color: tone.fg,
                   fontSize: 10, fontWeight: 800, letterSpacing: '0.03em',
                 }}>
-                  {daysToExam < 0 ? 'Prova encerrada' : `${daysToExam}d para a prova`}
+                  {daysToExam < 0
+                    ? `${marco?.rotulo || 'Prazo'} encerrado`
+                    : `${daysToExam}d ${marco?.rotuloDaContagem || ''}`.trim()}
                 </span>
               );
             })()}
@@ -1735,7 +1758,9 @@ function ConcursoAlvoCard({ target, cursoStats = [], onTrocar, onLimparAlvo, onA
                 style={{ padding: '10px 14px', borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
               >
                 <span style={{ fontSize: 12.5, fontWeight: 650, color: 'var(--pl-warn)', flex: 1, minWidth: 180 }}>
-                  A data desta prova já passou. Foi remarcada?
+                  {marco?.rotulo === 'Prova'
+                    ? 'A data desta prova já passou. Foi remarcada?'
+                    : 'Este prazo já passou. Quer atualizar?'}
                 </span>
                 {onEditar && (
                   <button className="pl-btn pl-btn-sm" onClick={onEditar}>Remarcar data</button>
@@ -2170,6 +2195,18 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
 
   const alterarObjetivo = (id, campo, valor) =>
     setObjetivos((prev) => prev.map((item) => (item.id === id ? { ...item, [campo]: valor } : item)));
+
+  // Objetivo que nao veio de edital: a faculdade do aluno, um estudo livre. E o que permite
+  // o curso misturar tipos sem precisar de um PDF para cada coisa.
+  const adicionarObjetivo = () =>
+    setObjetivos((prev) => [
+      ...prev,
+      { id: `manual-${Date.now()}`, nome: '', tipo: 'faculdade', prova_data: '', prova: [] },
+    ]);
+
+  // O ultimo nao sai: curso sem objetivo nenhum nao tem alvo, nem prazo, nem prioridade.
+  const removerObjetivo = (id) =>
+    setObjetivos((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
@@ -2239,66 +2276,93 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
           </p>
         </div>
 
-        {/* Um bloco por objetivo: a data da prova e a banca sao de cada alvo, nao do curso
-            — e um curso pode juntar dois concursos com datas diferentes. */}
+        {/* Um bloco por objetivo. A data e a banca sao de cada alvo, nao do curso — e um
+            curso pode juntar um concurso com a faculdade, que nem tem prova unica. Cada
+            bloco pergunta o tipo e mostra so os campos daquele tipo (ver
+            src/lib/tiposDeObjetivo.js). */}
         <div style={{ display: 'grid', gap: 14 }}>
-          <p className="pl-eyebrow" style={{ margin: 0 }}>
-            {objetivos.length > 1 ? `Objetivos deste curso (${objetivos.length})` : 'Objetivo'}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <p className="pl-eyebrow" style={{ margin: 0 }}>
+              {objetivos.length > 1 ? `Objetivos deste curso (${objetivos.length})` : 'Objetivo'}
+            </p>
+            <button type="button" className="pl-btn pl-btn-sm" onClick={adicionarObjetivo}>
+              <Plus size={13} /> Adicionar objetivo
+            </button>
+          </div>
 
-          {objetivos.map((objetivo) => (
-            <div key={objetivo.id} className="pl-card" style={{ padding: '12px 14px', display: 'grid', gap: 10 }}>
-              <input
-                value={objetivo.nome || ''}
-                onChange={(e) => alterarObjetivo(objetivo.id, 'nome', e.target.value)}
-                placeholder="Nome do objetivo"
-                className="pl-input"
-                style={{ width: '100%', boxSizing: 'border-box', fontWeight: 700 }}
-              />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
-                <div>
-                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Data da prova</label>
+          {objetivos.map((objetivo) => {
+            const tipo = tipoDoObjetivo(objetivo);
+            return (
+              <div key={objetivo.id} className="pl-card" style={{ padding: '12px 14px', display: 'grid', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input
-                    type="date"
-                    value={objetivo.prova_data ? String(objetivo.prova_data).slice(0, 10) : ''}
-                    onChange={(e) => alterarObjetivo(objetivo.id, 'prova_data', e.target.value)}
+                    value={objetivo.nome || ''}
+                    onChange={(e) => alterarObjetivo(objetivo.id, 'nome', e.target.value)}
+                    placeholder="Nome do objetivo"
                     className="pl-input"
-                    style={{ width: '100%', boxSizing: 'border-box' }}
+                    style={{ flex: 1, minWidth: 0, fontWeight: 700 }}
                   />
+                  {objetivos.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removerObjetivo(objetivo.id)}
+                      title="Remover este objetivo"
+                      style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4, flexShrink: 0 }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Banca</label>
-                  <input
-                    value={objetivo.banca || ''}
-                    onChange={(e) => alterarObjetivo(objetivo.id, 'banca', e.target.value)}
-                    placeholder="A definir"
-                    className="pl-input"
-                    style={{ width: '100%', boxSizing: 'border-box' }}
-                  />
+
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {LISTA_DE_TIPOS.map((opcao) => (
+                    <button
+                      key={opcao.id}
+                      type="button"
+                      onClick={() => alterarObjetivo(objetivo.id, 'tipo', opcao.id)}
+                      className={objetivo.tipo === opcao.id ? 'pl-chip is-active' : 'pl-chip'}
+                    >
+                      {opcao.label}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Vagas</label>
-                  <input
-                    value={objetivo.vagas || ''}
-                    onChange={(e) => alterarObjetivo(objetivo.id, 'vagas', e.target.value)}
-                    placeholder="Não informado"
-                    className="pl-input"
-                    style={{ width: '100%', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>Remuneração</label>
-                  <input
-                    value={objetivo.salario || ''}
-                    onChange={(e) => alterarObjetivo(objetivo.id, 'salario', e.target.value)}
-                    placeholder="Não informada"
-                    className="pl-input"
-                    style={{ width: '100%', boxSizing: 'border-box' }}
-                  />
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+                  {/* Estudo livre nao tem prazo: o campo some em vez de ficar vazio
+                      sugerindo que falta preencher. */}
+                  {tipo.temPrazo && (
+                    <div>
+                      <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>
+                        {tipo.rotuloDoPrazo}
+                      </label>
+                      <input
+                        type="date"
+                        value={objetivo.prova_data ? String(objetivo.prova_data).slice(0, 10) : ''}
+                        onChange={(e) => alterarObjetivo(objetivo.id, 'prova_data', e.target.value)}
+                        className="pl-input"
+                        style={{ width: '100%', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  )}
+
+                  {CAMPOS_DO_OBJETIVO.filter((campo) => tipo.campos.includes(campo.id)).map((campo) => (
+                    <div key={campo.id}>
+                      <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 5, fontSize: 9.5 }}>
+                        {campo.label}
+                      </label>
+                      <input
+                        value={objetivo[campo.id] || ''}
+                        onChange={(e) => alterarObjetivo(objetivo.id, campo.id, e.target.value)}
+                        placeholder={campo.placeholder}
+                        className="pl-input"
+                        style={{ width: '100%', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div>

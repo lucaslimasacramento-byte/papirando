@@ -114,6 +114,7 @@ import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { recordCustomObjective } from './lib/customObjectivesApi';
 import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
 import { concursosDosCursos, migrarAlvoDeCurso } from './lib/cursoComoConcurso';
+import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
 import {
   migrarCurso,
   idDoObjetivo,
@@ -2115,15 +2116,10 @@ export default function App() {
 
         if (!imported && !interested && !favorite) return null;
 
-        let diasParaProva = null;
-        if (contest.prova_data) {
-          const provaDate = new Date(`${contest.prova_data}T00:00:00`);
-          // Normaliza "hoje" para meia-noite local: a prova é fixada em T00:00:00, então
-          // comparar contra a hora atual desviava a contagem de dias em até 1 dia.
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          diasParaProva = Math.ceil((provaDate.getTime() - today.getTime()) / 86400000);
-        }
+        // O prazo depende do tipo do objetivo: concurso conta dias para a prova, faculdade
+        // para o fim do periodo, estudo livre nao tem prazo. Ver src/lib/tiposDeObjetivo.js.
+        const marco = marcoDoObjetivo(contest);
+        const diasParaProva = marco ? marco.dias : null;
 
         return {
           ...contest,
@@ -2133,6 +2129,8 @@ export default function App() {
           checklistDoneCount,
           disciplinasIniciadas,
           diasParaProva,
+          rotuloDoPrazo: marco?.rotulo || '',
+          rotuloDaContagem: marco?.rotuloDaContagem || '',
           isTarget: contest.id === targetContestId,
         };
       })
