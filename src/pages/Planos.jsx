@@ -35,6 +35,7 @@ import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos 
 import { progressoPorObjetivo, objetivosDoCurso, montarMapaDeObjetivos } from '../lib/objetivos';
 import { tipoDoObjetivo, LISTA_DE_TIPOS, marcoDoObjetivo, marcoMaisProximo } from '../lib/tiposDeObjetivo';
 import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
+import { CORES_DE_CURSO, capaDoCurso, descricaoDoCurso, limparDescricao, LIMITE_DA_DESCRICAO } from '../lib/personalizacaoCurso';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -2007,10 +2008,35 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
   const secondaryTag = curso.cargo || curso.area || curso.curso_superior || curso.instituicao || (intent === 'concurso' ? curso.status_concurso : '') || 'Geral';
   const visibleChips = chips.slice(0, 3);
 
+  // A capa e do curso do aluno. Cartao da biblioteca (publicado pelo admin) nao recebe capa:
+  // ali a personalizacao nao e dele.
+  const capa = isLibrary ? null : capaDoCurso(curso);
+
   return (
     <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 318 }}>
+      {capa && (
+        <div
+          style={{
+            height: 64,
+            background: capa.tipo === 'imagem' ? `${capa.gradiente}` : capa.gradiente,
+            position: 'relative',
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}
+        >
+          {capa.tipo === 'imagem' && (
+            <img
+              src={storageThumb(capa.url, 640)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          )}
+        </div>
+      )}
       <div style={{ position: 'relative', padding: '14px 16px 12px', borderBottom: '1px solid var(--pl-rule)', background: isLibrary ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)' }}>
-        <div style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, background: 'var(--pl-bg-deep)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+        {!capa && <div style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, background: 'var(--pl-bg-deep)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', minWidth: 0, gap: 6, flexWrap: 'wrap' }}>
             <span className={`pl-tag ${isLibrary ? '' : 'pl-tag-highlight'}`} style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>
@@ -2020,7 +2046,7 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
           </div>
           <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
             {onEditar && (
-              <button onClick={onEditar} title="Personalizar objetivo" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
+              <button onClick={onEditar} title="Personalizar curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
                 <Pencil size={15} />
               </button>
             )}
@@ -2067,7 +2093,7 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
 
       <div style={{ padding: '13px 16px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <p style={{ margin: 0, minHeight: 34, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, lineHeight: 1.42, fontWeight: 500, color: 'var(--pl-ink-3)' }}>
-          {[curso.cargo || curso.concurso || curso.area || 'Curso cadastrado', curso.banca || curso.instituicao].filter(Boolean).join(' - ')}
+          {descricaoDoCurso(curso)}
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10, minHeight: 24 }}>
@@ -2175,6 +2201,7 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
     { id: 'livre', label: 'Livre' },
   ];
   const fileInputRef = useRef(null);
+  const capaInputRef = useRef(null);
   const [nome, setNome] = useState(curso?.nome || '');
   // Nome curto para as telas apertadas. "Concurso Publico para Admissao ao Curso de
   // Formacao de Oficiais (..." cortado no meio nao ajuda ninguem; o nome oficial fica na
@@ -2182,6 +2209,12 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
   const [apelido, setApelido] = useState(curso?.apelido || '');
   const [intent, setIntent] = useState(curso?.intent || curso?.tipo || 'livre');
   const [imagemUrl, setImagemUrl] = useState(curso?.imagem_url || '');
+  // Capa e cor sao a cara do curso no cartao. O curso e o caderno que o aluno criou e vai
+  // abrir todo dia: deixar ele dar cara propria e o que separa "uma lista de materias" de
+  // "o meu plano".
+  const [capaUrl, setCapaUrl] = useState(curso?.capa_url || '');
+  const [cor, setCor] = useState(curso?.cor || CORES_DE_CURSO[0].id);
+  const [descricao, setDescricao] = useState(curso?.descricao || '');
   // Os dados que sao do alvo vivem em cada objetivo, nao no curso: um curso pode agrupar
   // dois concursos com datas e bancas diferentes. O edital da o ponto de partida, nao a
   // verdade eterna — adiamento de prova e rotina, e vagas as vezes so saem em retificacao.
@@ -2212,7 +2245,8 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
 
   const canSave = Boolean(nome.trim());
 
-  const handlePickFile = async (e) => {
+  // destino: 'selo' (o quadradinho do cartao) ou 'capa' (a faixa do topo).
+  const enviarImagem = (destino) => async (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // permite reenviar o mesmo arquivo
     if (!file || !onUploadImage) return;
@@ -2220,22 +2254,24 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
     setUploading(true);
     try {
       const url = await onUploadImage(file);
-      if (url) setImagemUrl(url);
+      if (url) (destino === 'capa' ? setCapaUrl : setImagemUrl)(url);
     } catch (err) {
       setUploadError(err?.message || 'Falha ao enviar a imagem.');
     } finally {
       setUploading(false);
     }
   };
+  const handlePickFile = enviarImagem('selo');
+  const handlePickCapa = enviarImagem('capa');
 
   return (
     <ModalShell
-      title="Personalizar objetivo"
-      subtitle="Ajuste o nome, o tipo, a foto e a data da prova. As matérias e tópicos você edita em Disciplinas."
+      title="Personalizar curso"
+      subtitle="Nome, capa, cor e os objetivos deste curso. As matérias e tópicos você edita em Disciplinas."
       onClose={onClose}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <InputField label="Nome do objetivo" value={nome} onChange={setNome} placeholder="Ex.: Prefeitura de..." />
+        <InputField label="Nome do curso" value={nome} onChange={setNome} placeholder="Ex.: Meu plano para a PM" />
 
         <div>
           <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Tipo</label>
@@ -2273,6 +2309,83 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
           />
           <p style={{ margin: '5px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
             Nome curto para os cartões. O nome completo continua guardado.
+          </p>
+        </div>
+
+        <div>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Descrição (opcional)</label>
+          <input
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value.slice(0, LIMITE_DA_DESCRICAO))}
+            placeholder="Ex.: Plano para a prova de outubro, focado em Penal"
+            className="pl-input"
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
+          <p style={{ margin: '5px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            Aparece no cartão em vez da linha automática. {LIMITE_DA_DESCRICAO - descricao.length} caracteres restantes.
+          </p>
+        </div>
+
+        {/* Paleta fechada em vez de color picker: os tons saem da familia do acento da marca
+            e todos aceitam texto claro em cima. */}
+        <div>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Cor do curso</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {CORES_DE_CURSO.map((opcao) => {
+              const ativa = cor === opcao.id;
+              return (
+                <button
+                  key={opcao.id}
+                  type="button"
+                  onClick={() => setCor(opcao.id)}
+                  title={opcao.label}
+                  aria-label={opcao.label}
+                  aria-pressed={ativa}
+                  style={{
+                    width: 34, height: 34, borderRadius: 8, cursor: 'pointer',
+                    background: `linear-gradient(135deg, ${opcao.base} 0%, ${opcao.claro} 100%)`,
+                    border: ativa ? '2px solid var(--pl-ink)' : '1px solid var(--pl-rule-2)',
+                    boxShadow: ativa ? 'var(--pl-sh-low)' : 'none',
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Capa (opcional)</label>
+          <div
+            style={{
+              height: 72, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--pl-rule-2)',
+              background: `linear-gradient(135deg, ${(CORES_DE_CURSO.find((c) => c.id === cor) || CORES_DE_CURSO[0]).base} 0%, ${(CORES_DE_CURSO.find((c) => c.id === cor) || CORES_DE_CURSO[0]).claro} 100%)`,
+            }}
+          >
+            {capaUrl && <img src={capaUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+            {onUploadImage && (
+              <>
+                <input ref={capaInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handlePickCapa} style={{ display: 'none' }} />
+                <button
+                  type="button"
+                  className="pl-btn pl-btn-sm"
+                  disabled={uploading}
+                  onClick={() => capaInputRef.current?.click()}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  <Upload size={14} /> {uploading ? 'Enviando…' : 'Enviar capa'}
+                </button>
+              </>
+            )}
+            {capaUrl && (
+              <button type="button" className="pl-btn pl-btn-sm" disabled={uploading} onClick={() => setCapaUrl('')}>
+                Remover capa
+              </button>
+            )}
+          </div>
+          <p style={{ margin: '6px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            Sem capa, o cartão usa a cor escolhida.
           </p>
         </div>
 
@@ -2366,7 +2479,7 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
         </div>
 
         <div>
-          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Foto (opcional)</label>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Selo do curso (opcional)</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 56, height: 56, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
@@ -2420,6 +2533,9 @@ function EditObjectiveModal({ curso, onClose, onSave, onOpenDisciplinas, onUploa
                   apelido: apelido.trim(),
                   intent,
                   imagem_url: imagemUrl,
+                  capa_url: capaUrl.trim(),
+                  cor,
+                  descricao: limparDescricao(descricao),
                   objetivos: objetivos.map((objetivo) => ({
                     ...objetivo,
                     nome: String(objetivo.nome || '').trim() || 'Objetivo',

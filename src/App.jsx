@@ -4808,6 +4808,9 @@ export default function App() {
       if (patch.prova_data !== undefined) next.prova_data = patch.prova_data || '';
       if (patch.imagem_url !== undefined) next.imagem_url = String(patch.imagem_url || '').trim();
       if (patch.cor !== undefined && patch.cor) next.cor = patch.cor;
+      // Capa e descricao podem ser limpas de proposito, entao aceitam string vazia.
+      if (patch.capa_url !== undefined) next.capa_url = String(patch.capa_url || '').trim();
+      if (patch.descricao !== undefined) next.descricao = String(patch.descricao || '').trim();
       if (patch.apelido !== undefined) next.apelido = String(patch.apelido || '').trim();
       if (patch.status !== undefined && patch.status) next.status = patch.status;
       // Os dados que sao do alvo (data da prova, banca, cargo, vagas) vivem no objetivo, nao

@@ -18,6 +18,40 @@
 
 ---
 
+## Sessão 2026-09-22 (noite) — Rotina olha o prazo mais próximo + curso personalizável ✅
+
+Três coisas que o uso real cobrou.
+
+**1. A rotina do dia entende prazos diferentes.** Um curso pode juntar o concurso de sábado
+com a faculdade que fecha em três meses. Antes os dois pesavam igual. Agora
+`buildSmartStudyPlan` recebe os objetivos do curso do alvo e o mapa disciplina → objetivos: a
+urgência sai do **marco mais próximo** (`marcoMaisProximo`), a matéria que cai no objetivo
+urgente ganha peso e o motivo diz o porquê — *"cai em Delegado, que é o prazo mais próximo"*.
+O motivo do objetivo entra **primeiro** na lista, senão o corte em três motivos o descartava.
+Ligado nos dois pontos de uso (rotina do dia e planejamento). Testes:
+`src/lib/studyRecommendationObjetivos.test.js`.
+
+**2. A aba Objetivos mostra os objetivos do aluno.** Ela renderizava a **Biblioteca** (o
+catálogo do admin), que está vazia — o aluno subia o edital, ganhava dois objetivos e via
+"Nenhum concurso publicado no momento". A interceptação da aba estava em
+`src/components/AppTabContent.jsx`, não no `App.jsx` (cujo bloco é código morto,
+`SHOULD_RENDER_LEGACY_TABS = false`). A Biblioteca continua acessível pelo botão em Meus
+cursos. **Não precisa subir o edital de novo.**
+
+**3. O curso é personalizável.** O curso é o caderno que o aluno criou e abre todo dia.
+Novo `src/lib/personalizacaoCurso.js` (10 testes) com:
+- **Capa** (`capa_url`) — faixa de imagem no topo do cartão.
+- **Cor** (`cor`) — paleta **fechada** de 6 tons da família do `--pl-accent` (#1e3a5f). Sem
+  color picker livre: roxo neon quebra a identidade e o contraste do texto na capa.
+- **Descrição** (`descricao`, até 120 caracteres) — aparece no cartão em vez da linha
+  automática "Cargo - Banca".
+- O modal virou **"Personalizar curso"** (era "Personalizar objetivo", mas sempre editou o
+  curso). Nome, apelido, descrição, cor, capa, selo e os objetivos, tudo num lugar.
+- Persistência automática: o curso é um documento JSONB, então os campos novos já vão para o
+  Supabase sem migração.
+
+---
+
 ## Sessão 2026-09-21 (fecho) — Anthropic sozinha e qualidade aprovada ✅
 
 **A leitura foi verificada em produção e aprovada pelo dono** (edital da PM/AL, 2 cargos, 70
