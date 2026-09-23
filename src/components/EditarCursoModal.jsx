@@ -4,7 +4,7 @@ import { BookOpen, Plus, Trash2, Upload } from 'lucide-react';
 import { objetivosDoCurso } from '../lib/objetivos';
 import { tipoDoObjetivo, LISTA_DE_TIPOS } from '../lib/tiposDeObjetivo';
 import { apelidoSugerido } from '../lib/apelidoCurso';
-import { CORES_DE_CURSO, limparDescricao, LIMITE_DA_DESCRICAO } from '../lib/personalizacaoCurso';
+import { CORES_DE_CURSO, limparDescricao, LIMITE_DA_DESCRICAO, recomendacaoDaImagem, avisoDaImagem } from '../lib/personalizacaoCurso';
 
 // Personalizacao do curso do aluno: nome, apelido, descricao, cor, capa, selo e os objetivos
 // que ele agrupa.
@@ -80,6 +80,14 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
   const removerObjetivo = (id) =>
     setObjetivos((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
   const [uploading, setUploading] = useState(false);
+  // Dimensoes reais do que o aluno escolheu, lidas quando a previa carrega. E o que permite
+  // avisar "vai ser cortada" antes de ele estranhar o resultado no cartao.
+  const [dimensoes, setDimensoes] = useState({ capa: null, selo: null });
+  const medir = (chave) => (evento) =>
+    setDimensoes((prev) => ({
+      ...prev,
+      [chave]: { largura: evento.target.naturalWidth, altura: evento.target.naturalHeight },
+    }));
   const [uploadError, setUploadError] = useState('');
 
   const canSave = Boolean(nome.trim());
@@ -200,7 +208,15 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
               background: `linear-gradient(135deg, ${(CORES_DE_CURSO.find((c) => c.id === cor) || CORES_DE_CURSO[0]).base} 0%, ${(CORES_DE_CURSO.find((c) => c.id === cor) || CORES_DE_CURSO[0]).claro} 100%)`,
             }}
           >
-            {capaUrl && <img src={capaUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+            {capaUrl && (
+              <img
+                src={capaUrl}
+                alt=""
+                onLoad={medir('capa')}
+                onError={() => setDimensoes((prev) => ({ ...prev, capa: null }))}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            )}
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {onUploadImage && (
@@ -224,8 +240,76 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
             )}
           </div>
           <p style={{ margin: '6px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
-            Sem capa, o cartão usa a cor escolhida.
+            {recomendacaoDaImagem('capa')}
           </p>
+          <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            Faixa larga no topo do cartão — o centro da imagem é o que aparece. Sem capa, o
+            cartão usa a cor escolhida.
+          </p>
+          {avisoDaImagem('capa', dimensoes.capa?.largura, dimensoes.capa?.altura) && (
+            <p style={{ margin: '6px 0 0', fontSize: 11.5, fontWeight: 700, color: 'var(--pl-warn)' }}>
+              {avisoDaImagem('capa', dimensoes.capa?.largura, dimensoes.capa?.altura)}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Selo do curso (opcional)</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
+              border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {imagemUrl
+                ? (
+                  <img
+                    src={imagemUrl}
+                    alt=""
+                    onLoad={medir('selo')}
+                    onError={() => setDimensoes((prev) => ({ ...prev, selo: null }))}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                )
+                : <BookOpen size={20} style={{ color: 'var(--pl-ink-4)' }} />}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {onUploadImage && (
+                <>
+                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handlePickFile} style={{ display: 'none' }} />
+                  <button
+                    type="button"
+                    className="pl-btn pl-btn-sm"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Upload size={14} /> {uploading ? 'Enviando…' : 'Enviar foto'}
+                  </button>
+                </>
+              )}
+              {imagemUrl && (
+                <button type="button" className="pl-btn pl-btn-sm" disabled={uploading} onClick={() => setImagemUrl('')}>
+                  Remover
+                </button>
+              )}
+            </div>
+          </div>
+          <p style={{ margin: '8px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            {recomendacaoDaImagem('selo')}
+          </p>
+          <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+            Quadrado, tipo o brasão do órgão. Aparece pequeno, ao lado do nome.
+          </p>
+          {avisoDaImagem('selo', dimensoes.selo?.largura, dimensoes.selo?.altura) && (
+            <p style={{ margin: '6px 0 0', fontSize: 11.5, fontWeight: 700, color: 'var(--pl-warn)' }}>
+              {avisoDaImagem('selo', dimensoes.selo?.largura, dimensoes.selo?.altura)}
+            </p>
+          )}
+          {uploadError && <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{uploadError}</p>}
+          <div style={{ marginTop: 10 }}>
+            <InputField label="Ou cole a URL de uma imagem" value={imagemUrl} onChange={setImagemUrl} placeholder="https://..." />
+          </div>
         </div>
 
         {/* Um bloco por objetivo. A data e a banca sao de cada alvo, nao do curso — e um
@@ -315,46 +399,6 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
               </div>
             );
           })}
-        </div>
-
-        <div>
-          <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Selo do curso (opcional)</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
-              border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {imagemUrl
-                ? <img src={imagemUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <BookOpen size={20} style={{ color: 'var(--pl-ink-4)' }} />}
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {onUploadImage && (
-                <>
-                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handlePickFile} style={{ display: 'none' }} />
-                  <button
-                    type="button"
-                    className="pl-btn pl-btn-sm"
-                    disabled={uploading}
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <Upload size={14} /> {uploading ? 'Enviando…' : 'Enviar foto'}
-                  </button>
-                </>
-              )}
-              {imagemUrl && (
-                <button type="button" className="pl-btn pl-btn-sm" disabled={uploading} onClick={() => setImagemUrl('')}>
-                  Remover
-                </button>
-              )}
-            </div>
-          </div>
-          {uploadError && <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 600, color: 'var(--pl-danger)' }}>{uploadError}</p>}
-          <div style={{ marginTop: 10 }}>
-            <InputField label="Ou cole a URL de uma imagem" value={imagemUrl} onChange={setImagemUrl} placeholder="https://..." />
-          </div>
         </div>
 
         <div style={{ borderTop: '1px solid var(--pl-rule)', paddingTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>

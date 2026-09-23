@@ -7,6 +7,8 @@ import {
   descricaoDoCurso,
   limparDescricao,
   LIMITE_DA_DESCRICAO,
+  recomendacaoDaImagem,
+  avisoDaImagem,
 } from './personalizacaoCurso';
 
 describe('corDoCurso', () => {
@@ -63,5 +65,48 @@ describe('limparDescricao', () => {
   it('junta espacos e corta no limite', () => {
     expect(limparDescricao('  meu\n  plano  ')).toBe('meu plano');
     expect(limparDescricao('a'.repeat(300))).toHaveLength(LIMITE_DA_DESCRICAO);
+  });
+});
+
+describe('recomendacaoDaImagem', () => {
+  it('diz as medidas, os formatos e o limite', () => {
+    const texto = recomendacaoDaImagem('capa');
+    expect(texto).toContain('1200 × 300 px');
+    expect(texto).toContain('4:1');
+    expect(texto).toContain('5 MB');
+  });
+
+  it('devolve vazio para uma chave que nao existe', () => {
+    expect(recomendacaoDaImagem('bandeira')).toBe('');
+  });
+});
+
+describe('avisoDaImagem', () => {
+  it('nao avisa quando a imagem esta na medida', () => {
+    expect(avisoDaImagem('capa', 1200, 300)).toBe('');
+    expect(avisoDaImagem('selo', 256, 256)).toBe('');
+  });
+
+  // 25% de folga: quase toda foto passa, so avisa quem perde pedaco grande.
+  it('aceita uma folga na proporcao', () => {
+    expect(avisoDaImagem('capa', 1200, 350)).toBe('');
+  });
+
+  it('avisa que a foto quadrada vai ser cortada na capa', () => {
+    expect(avisoDaImagem('capa', 1200, 1200)).toContain('mais alta');
+  });
+
+  it('avisa quando e larga demais', () => {
+    expect(avisoDaImagem('selo', 1200, 300)).toContain('mais larga');
+  });
+
+  // Resolucao baixa ganha o aviso mais util: nao adianta a proporcao estar certa.
+  it('avisa antes de tudo quando a imagem e pequena demais', () => {
+    expect(avisoDaImagem('capa', 400, 100)).toContain('borrada');
+  });
+
+  it('nao avisa sem as dimensoes', () => {
+    expect(avisoDaImagem('capa', 0, 0)).toBe('');
+    expect(avisoDaImagem('capa', undefined, undefined)).toBe('');
   });
 });

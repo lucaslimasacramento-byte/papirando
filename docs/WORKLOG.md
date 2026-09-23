@@ -18,6 +18,31 @@
 
 ---
 
+## Sessão 2026-09-23 (fecho) — Dimensões recomendadas nas imagens do curso ✅
+
+Capa e selo não diziam que tamanho pegar. O aluno enviava uma foto quadrada, ela virava uma
+faixa cortada no topo do cartão, e ele só descobria depois.
+
+Agora cada campo mostra:
+- **a recomendação** — "Recomendado: 1200 × 300 px (4:1) · PNG, JPG, WebP ou GIF · até 5 MB"
+  para a capa, 256 × 256 px (1:1) para o selo;
+- **o que o espaço faz com a imagem** — "faixa larga no topo do cartão, o centro é o que
+  aparece" / "quadrado, tipo o brasão do órgão";
+- **um aviso âmbar quando a imagem escolhida não cabe**, lido das dimensões reais assim que a
+  prévia carrega: *"Sua imagem tem 600 × 600 px — mais alta que o espaço. Só a faixa do meio
+  vai aparecer."* Avisa, não bloqueia. Também avisa quando a resolução é baixa demais
+  (abaixo de metade da largura recomendada fica borrada em tela retina).
+
+Os números têm folga sobre o tamanho exibido para aguentar tela retina, e a tolerância da
+proporção é de 25% — quase toda foto de celular passa sem aviso.
+
+`recomendacaoDaImagem` e `avisoDaImagem` em `src/lib/personalizacaoCurso.js`, 8 testes novos.
+**Capa e selo passaram a ficar lado a lado** no modal (o selo estava lá embaixo, depois dos
+objetivos), para dar para comparar. Conferido renderizando o modal num Chromium com uma
+imagem quadrada de propósito, que é o caso que dispara o aviso.
+
+---
+
 ## Sessão 2026-09-23 (noite) — O segundo cargo sumia + tela de Objetivos redesenhada ✅
 
 **1. Marcava dois cargos, salvava um.** O modal confirmava "Cobrindo 2 objetivos: Oficial de

@@ -58,3 +58,64 @@ export const LIMITE_DA_DESCRICAO = 120;
 export function limparDescricao(texto) {
   return String(texto || '').replace(/\s+/g, ' ').trim().slice(0, LIMITE_DA_DESCRICAO);
 }
+
+// Dimensões recomendadas das duas imagens do curso.
+//
+// Sem isto o aluno não tem como acertar: a capa aparece como uma faixa larga e baixa no
+// cartão, então uma foto quadrada perde o topo e a base — e ele só descobre depois de
+// enviar. Os números têm folga sobre o tamanho exibido para aguentar tela retina.
+export const IMAGENS_DO_CURSO = {
+  capa: {
+    rotulo: 'Capa',
+    largura: 1200,
+    altura: 300,
+    proporcao: '4:1',
+    // A capa é cortada pelos lados e pelo centro: o que interessa tem que estar no meio.
+    dica: 'Faixa larga no topo do cartão. O centro da imagem é o que aparece.',
+  },
+  selo: {
+    rotulo: 'Selo',
+    largura: 256,
+    altura: 256,
+    proporcao: '1:1',
+    dica: 'Quadrado, tipo o brasão do órgão. Aparece pequeno, ao lado do nome.',
+  },
+};
+
+export const FORMATOS_DE_IMAGEM = 'PNG, JPG, WebP ou GIF';
+export const TAMANHO_MAXIMO_MB = 5;
+
+// Linha de ajuda que vai embaixo do campo.
+export function recomendacaoDaImagem(chave) {
+  const alvo = IMAGENS_DO_CURSO[chave];
+  if (!alvo) return '';
+  return `Recomendado: ${alvo.largura} × ${alvo.altura} px (${alvo.proporcao}) · ${FORMATOS_DE_IMAGEM} · até ${TAMANHO_MAXIMO_MB} MB`;
+}
+
+// O que avisar depois de ver a imagem que o aluno escolheu.
+//
+// Avisa, não bloqueia: uma imagem fora da proporção continua servindo, só vai aparecer
+// cortada — e é melhor ele saber disso antes de estranhar o resultado.
+export function avisoDaImagem(chave, largura, altura) {
+  const alvo = IMAGENS_DO_CURSO[chave];
+  if (!alvo || !(largura > 0) || !(altura > 0)) return '';
+
+  const proporcaoEnviada = largura / altura;
+  const proporcaoAlvo = alvo.largura / alvo.altura;
+
+  // Menos da metade do recomendado em largura ja aparece borrada numa tela retina.
+  if (largura < alvo.largura / 2) {
+    return `Sua imagem tem ${largura} × ${altura} px. Abaixo de ${Math.round(alvo.largura / 2)} px de largura ela fica borrada no cartão.`;
+  }
+
+  // 25% de folga: quase toda foto de celular passa, e so avisa quem vai perder pedaco
+  // grande de verdade.
+  if (proporcaoEnviada < proporcaoAlvo * 0.75) {
+    return `Sua imagem tem ${largura} × ${altura} px — mais alta que o espaço. Só a faixa do meio vai aparecer.`;
+  }
+  if (proporcaoEnviada > proporcaoAlvo * 1.25) {
+    return `Sua imagem tem ${largura} × ${altura} px — mais larga que o espaço. As laterais vão ser cortadas.`;
+  }
+
+  return '';
+}
