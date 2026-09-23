@@ -288,3 +288,57 @@ export function mesclarDisciplinasDeCargos(cargos, preMarcar = true) {
 
   return itens;
 }
+
+// Quantos objetivos um edital pode render de uma vez.
+//
+// Três é o teto porque é onde a comparação ainda cabe na tela e a decisão continua
+// pensável: acima disso o aluno não está escolhendo entre cargos, está colecionando.
+export const LIMITE_DE_OBJETIVOS_POR_EDITAL = 3;
+
+// A grade "disciplina × cargo" da tela de escolha.
+//
+// Antes a tela mostrava oito disciplinas comuns e um "+3" — justo quando o aluno está
+// decidindo se leva os dois cargos, e é a lista inteira que responde isso. Uma chip escondida
+// pode ser a matéria que ele odeia. Aqui sai tudo, em linhas, com uma coluna por cargo.
+//
+// Ordem: primeiro o que cai em todos os cargos, depois o que cai em alguns, por fim as
+// exclusivas — é a leitura que o aluno faz, do compartilhado para o que custa a mais.
+export function matrizDeDisciplinas(cargos) {
+  const lista = Array.isArray(cargos) ? cargos : [];
+  const colunas = lista.map((cargo, indice) => nomeDoCargo(cargo, indice));
+
+  const linhas = [];
+  lista.forEach((cargo, indice) => {
+    (cargo?.disciplinas || []).forEach((disciplina) => {
+      const nome = String(disciplina?.nome || '').trim();
+      if (!nome) return;
+
+      const existente = linhas.find((linha) => mesmaDisciplina(linha.nome, nome));
+      if (existente) {
+        existente.em[indice] = true;
+        // Entre dois jeitos de escrever a mesma matéria, fica o nome mais completo:
+        // "Noções de Direito Penal" diz mais que "Direito Penal".
+        if (nome.length > existente.nome.length) existente.nome = nome;
+        return;
+      }
+
+      const em = lista.map(() => false);
+      em[indice] = true;
+      linhas.push({ nome, em });
+    });
+  });
+
+  linhas.forEach((linha) => {
+    linha.quantos = linha.em.filter(Boolean).length;
+  });
+
+  linhas.sort((a, b) => b.quantos - a.quantos || a.nome.localeCompare(b.nome, 'pt-BR'));
+
+  return {
+    colunas,
+    linhas,
+    // Quantas caem em todos os cargos escolhidos — o número que justifica um curso só.
+    emTodos: linhas.filter((linha) => linha.quantos === colunas.length).length,
+    total: linhas.length,
+  };
+}

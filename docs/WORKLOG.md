@@ -18,6 +18,36 @@
 
 ---
 
+## Sessão 2026-09-24 — Comparação de cargos vira grade; teto de 3 objetivos ✅
+
+**O "+3" saiu.** A tela de escolha de cargo mostrava oito disciplinas comuns como chips e
+escondia o resto atrás de "+3" — justo no momento em que o aluno decide se leva os dois
+cargos, e é a lista inteira que responde isso. A chip escondida podia ser exatamente a
+matéria que ele não quer.
+
+**Agora é uma grade disciplina × cargo:** uma linha por disciplina, uma coluna por cargo,
+✓ ou — em cada cruzamento. Ordenada do mais compartilhado para o mais exclusivo (o que cai em
+todos vem primeiro, em negrito). Nada fica escondido. Cabe até três colunas, que é o teto.
+O nome do cargo no cabeçalho quebra em duas linhas — "Soldado do Quadro de Praças" numa linha
+só virava "SOLDADO D…" e a coluna deixava de identificar o que compara.
+
+`matrizDeDisciplinas` em `src/lib/edital.js` (7 testes): une nomes equivalentes com
+`mesmaDisciplina`, fica com o nome mais completo entre os equivalentes ("Noções de Direito
+Penal" em vez de "Direito Penal"), e devolve `emTodos`/`total` para o resumo.
+
+**Teto de 3 objetivos por edital** (`LIMITE_DE_OBJETIVOS_POR_EDITAL`): é onde a comparação
+ainda cabe na tela e a decisão continua pensável. Acima disso o aluno não escolhe cargo,
+coleciona.
+
+**Dois textos corrigidos de passagem:** "cada um vira um curso separado" (desde a
+reestruturação, todos viram objetivos do mesmo curso) e "Levar os dois acrescenta 0
+disciplinas", que aparecia quando um cargo está inteiro dentro do outro — agora diz "sem
+nenhuma matéria a mais".
+
+Conferido renderizando a grade num Chromium com o caso real (Soldado 11 × Oficial 15).
+
+---
+
 ## Sessão 2026-09-23 (fecho) — Dimensões recomendadas nas imagens do curso ✅
 
 Capa e selo não diziam que tamanho pegar. O aluno enviava uma foto quadrada, ela virava uma

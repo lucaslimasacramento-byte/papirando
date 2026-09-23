@@ -4,6 +4,7 @@ import {
   Book,
   BookOpen,
   CalendarDays,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -31,7 +32,7 @@ import { storageThumb } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
-import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos } from '../lib/edital';
+import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos, matrizDeDisciplinas, LIMITE_DE_OBJETIVOS_POR_EDITAL } from '../lib/edital';
 import { progressoPorObjetivo, objetivosDoCurso, montarMapaDeObjetivos } from '../lib/objetivos';
 import { tipoDoObjetivo, LISTA_DE_TIPOS, marcoDoObjetivo, marcoMaisProximo } from '../lib/tiposDeObjetivo';
 import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
@@ -175,11 +176,16 @@ export default function Planos({
       .filter(Boolean);
   }, [analysisResult, cargosEscolhidos]);
 
-  // Cada cargo importado vira um curso e consome uma vaga do plano. Oferecer mais do que
-  // cabe so produziria erro na hora de criar o terceiro.
-  const vagasParaCargos = isAdmin
-    ? (analysisResult?.contests.length || 1)
-    : Math.max(0, remainingCourseSlots);
+  // Quantos cargos deste edital o aluno pode levar. Teto de tres (ver
+  // LIMITE_DE_OBJETIVOS_POR_EDITAL): e onde a comparacao ainda cabe na tela e a decisao
+  // continua pensavel.
+  //
+  // A vaga do plano conta uma vez so: os cargos escolhidos viram objetivos de um curso
+  // unico, nao um curso cada. Juntando a um curso que ja existe, nem isso.
+  const temOndeCriar = isAdmin || Number(remainingCourseSlots || 0) > 0 || Boolean(cursoDestinoId);
+  const vagasParaCargos = temOndeCriar
+    ? Math.min(LIMITE_DE_OBJETIVOS_POR_EDITAL, analysisResult?.contests.length || 1)
+    : 0;
 
   // Quanto dois (ou tres) cargos do mesmo edital se aproveitam. Calculado na hora da
   // escolha, que e quando a resposta muda a decisao — depois vira arrependimento.
@@ -1075,7 +1081,7 @@ export default function Planos({
                 <p style={{ margin: 0, fontSize: 14, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>
                   Este edital traz <strong style={{ color: 'var(--pl-ink)' }}>{analysisResult.contests.length} cargos</strong>.
                   {vagasParaCargos > 1
-                    ? ` Você pode levar até ${vagasParaCargos} — cada um vira um curso separado.`
+                    ? ` Você pode levar até ${vagasParaCargos} — todos entram no mesmo curso, como objetivos diferentes.`
                     : ' Escolha o seu.'}
                 </p>
                 {/* Sem vaga livre, todo checkbox ficaria bloqueado sem explicar por que. */}
@@ -1145,14 +1151,17 @@ export default function Planos({
                   e quase dobrar o esforco, ou boa parte se aproveita? Responder aqui, na
                   escolha, e o que evita descobrir isso com dois cursos ja montados. */}
               {compatibilidadeEscolhida && (() => {
-                const { aproveitamento, comuns, exclusivos, acrescimo, contido } = compatibilidadeEscolhida;
+                const { aproveitamento, comuns, acrescimo, contido } = compatibilidadeEscolhida;
                 const cor = aproveitamento >= 70
                   ? 'var(--pl-success)'
                   : aproveitamento >= 40
                     ? 'var(--pl-warn)'
                     : 'var(--pl-danger)';
-                // Quem tem menos disciplinas e o cargo "coberto" pelo outro.
-                const menor = [...exclusivos].sort((a, b) => a.disciplinas.length - b.disciplinas.length)[0];
+
+                // A grade inteira, sem "+3". O aluno esta decidindo se leva dois cargos; e a
+                // lista completa que responde isso, e a chip escondida pode ser justamente a
+                // materia que ele nao quer. Ver matrizDeDisciplinas em src/lib/edital.js.
+                const { colunas, linhas: linhasDaGrade, emTodos, total } = matrizDeDisciplinas(cargosParaRevisar);
 
                 return (
                   <div className="pl-card" style={{ padding: '14px 16px', borderColor: cor }}>
@@ -1165,51 +1174,99 @@ export default function Planos({
 
                     <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--pl-ink-2)', lineHeight: 1.55 }}>
                       {comuns.length === 0
-                        ? 'Nenhuma disciplina se repete. Na prática são dois estudos separados.'
+                        ? 'Nenhuma disciplina se repete. Na prática são estudos separados.'
                         : contido
-                          ? `${menor?.nome || 'Um dos cargos'} está inteiro dentro do outro: estudando o maior, você já cobre os dois. Levar os dois acrescenta ${acrescimo} ${acrescimo === 1 ? 'disciplina' : 'disciplinas'}.`
-                          : `${comuns.length} ${comuns.length === 1 ? 'disciplina cai' : 'disciplinas caem'} nos dois. Levar o segundo cargo acrescenta ${acrescimo} ${acrescimo === 1 ? 'disciplina' : 'disciplinas'} ao seu estudo.`}
+                          ? (acrescimo === 0
+                              ? 'Um dos cargos está inteiro dentro do outro: estudando o maior, você já cobre os dois, sem nenhuma matéria a mais.'
+                              : `Um dos cargos está inteiro dentro do outro: estudando o maior, você já cobre os dois. Levar os dois acrescenta ${acrescimo} ${acrescimo === 1 ? 'disciplina' : 'disciplinas'}.`)
+                          : `${emTodos} de ${total} ${total === 1 ? 'disciplina cai' : 'disciplinas caem'} em todos os cargos marcados. Levar todos acrescenta ${acrescimo} ${acrescimo === 1 ? 'disciplina' : 'disciplinas'} ao seu estudo.`}
                     </p>
 
-                    {comuns.length > 0 && (
-                      <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {comuns.slice(0, 8).map((nome) => (
-                          <span key={nome} className="pl-tag pl-tag-success" style={{ fontSize: 11 }}>{nome}</span>
+                    {/* Uma linha por disciplina, uma coluna por cargo. Cabe ate tres cargos,
+                        que e o teto da escolha. */}
+                    <div style={{ marginTop: 14, borderTop: '1px solid var(--pl-rule)' }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: `minmax(0, 1fr) repeat(${colunas.length}, 104px)`,
+                          gap: 0,
+                          alignItems: 'center',
+                          padding: '9px 0 7px',
+                          borderBottom: '1px solid var(--pl-rule-2)',
+                        }}
+                      >
+                        <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Disciplina</span>
+                        {/* Nome do cargo em ate duas linhas: "Soldado do Quadro de Pracas"
+                            numa linha so viraria "SOLDADO D..." e a coluna deixaria de
+                            identificar o que compara. */}
+                        {colunas.map((nomeDoCargoNaColuna) => (
+                          <span
+                            key={nomeDoCargoNaColuna}
+                            title={nomeDoCargoNaColuna}
+                            style={{
+                              fontSize: 10.5, fontWeight: 700, lineHeight: 1.25,
+                              color: 'var(--pl-ink-2)', textAlign: 'center',
+                              padding: '0 4px',
+                              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {nomeDoCargoNaColuna}
+                          </span>
                         ))}
-                        {comuns.length > 8 && (
-                          <span className="pl-tag" style={{ fontSize: 11 }}>+{comuns.length - 8}</span>
-                        )}
                       </div>
-                    )}
 
-                    {/* Nomear as exclusivas, e nao so conta-las: e assim que da para ver se a
-                        diferenca e real ou se foram dois jeitos de escrever a mesma materia —
-                        e nos dois casos o aluno decide melhor do que com um numero solto. */}
-                    {exclusivos.some((cargo) => cargo.disciplinas.length > 0) && (
-                      <div style={{ marginTop: 12, display: 'grid', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 12 }}>
-                        {exclusivos
-                          .filter((cargo) => cargo.disciplinas.length > 0)
-                          .map((cargo) => (
-                            <div key={cargo.nome}>
-                              <p className="pl-eyebrow" style={{ marginBottom: 5 }}>
-                                Só em {cargo.nome} ({cargo.disciplinas.length})
-                              </p>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                {cargo.disciplinas.map((nome) => (
-                                  <span key={nome} className="pl-tag" style={{ fontSize: 11 }}>{nome}</span>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                      {linhasDaGrade.map((linha) => {
+                        const emTodosOsCargos = linha.quantos === colunas.length;
+                        return (
+                          <div
+                            key={linha.nome}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: `minmax(0, 1fr) repeat(${colunas.length}, 104px)`,
+                              alignItems: 'center',
+                              padding: '7px 0',
+                              borderBottom: '1px solid var(--pl-rule)',
+                            }}
+                          >
+                            <span
+                              title={linha.nome}
+                              style={{
+                                minWidth: 0, paddingRight: 12,
+                                fontSize: 12.5,
+                                fontWeight: emTodosOsCargos ? 700 : 500,
+                                color: emTodosOsCargos ? 'var(--pl-ink)' : 'var(--pl-ink-2)',
+                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {linha.nome}
+                            </span>
+                            {linha.em.map((cai, indice) => (
+                              <span key={colunas[indice]} style={{ display: 'flex', justifyContent: 'center' }}>
+                                {cai ? (
+                                  <Check size={15} style={{ color: emTodosOsCargos ? 'var(--pl-success)' : 'var(--pl-ink-2)' }} />
+                                ) : (
+                                  // Traco em vez de nada: celula vazia parece coluna
+                                  // desalinhada, o traco diz "nao cai aqui".
+                                  <span style={{ color: 'var(--pl-ink-5)', fontSize: 13 }}>—</span>
+                                )}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p style={{ margin: '10px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+                      {total} {total === 1 ? 'disciplina no total' : 'disciplinas no total'} · {emTodos} em todos os cargos
+                    </p>
                   </div>
                 );
               })()}
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', paddingTop: 16, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
-                  {cargosEscolhidos.length} de {vagasParaCargos} {vagasParaCargos === 1 ? 'vaga' : 'vagas'} do seu plano
+                  {cargosEscolhidos.length} de {vagasParaCargos} {vagasParaCargos === 1 ? 'cargo' : 'cargos'} — o máximo é {LIMITE_DE_OBJETIVOS_POR_EDITAL} por edital
                 </span>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <SecondaryButton onClick={reiniciarLeituraDoEdital}>Enviar outro edital</SecondaryButton>

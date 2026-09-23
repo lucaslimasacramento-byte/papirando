@@ -8,6 +8,7 @@ import {
   compatibilidadeDeCargos,
   mesmaDisciplina,
   mesclarDisciplinasDeCargos,
+  matrizDeDisciplinas,
 } from './edital';
 
 const EDITAL = 'a'.repeat(25000);
@@ -285,5 +286,64 @@ describe('mesclarDisciplinasDeCargos', () => {
   it('funciona com um cargo so', () => {
     const itens = mesclarDisciplinasDeCargos([cargo('a', [['Português'], ['Matemática']])]);
     expect(itens.map((i) => i.cargos)).toEqual([['a'], ['a']]);
+  });
+});
+
+describe('matrizDeDisciplinas', () => {
+  const cargos = [
+    {
+      roleName: 'Soldado',
+      disciplinas: [{ nome: 'Língua Portuguesa' }, { nome: 'Direito Penal' }],
+    },
+    {
+      roleName: 'Oficial',
+      disciplinas: [{ nome: 'Lingua Portuguesa' }, { nome: 'Noções de Direito Penal' }, { nome: 'Língua Inglesa' }],
+    },
+  ];
+
+  it('tem uma coluna por cargo', () => {
+    expect(matrizDeDisciplinas(cargos).colunas).toEqual(['Soldado', 'Oficial']);
+  });
+
+  // O ponto da tela: nada fica escondido atras de um "+3".
+  it('lista toda disciplina uma vez so, unindo nomes equivalentes', () => {
+    const { linhas, total } = matrizDeDisciplinas(cargos);
+    expect(total).toBe(3);
+    expect(linhas.map((l) => l.nome)).toContain('Língua Inglesa');
+  });
+
+  it('marca em quais cargos cada disciplina cai', () => {
+    const { linhas } = matrizDeDisciplinas(cargos);
+    const inglesa = linhas.find((l) => l.nome === 'Língua Inglesa');
+    expect(inglesa.em).toEqual([false, true]);
+    expect(inglesa.quantos).toBe(1);
+  });
+
+  // "Nocoes de Direito Penal" diz mais que "Direito Penal".
+  it('fica com o nome mais completo entre os equivalentes', () => {
+    const { linhas } = matrizDeDisciplinas(cargos);
+    expect(linhas.some((l) => l.nome === 'Noções de Direito Penal')).toBe(true);
+    expect(linhas.some((l) => l.nome === 'Direito Penal')).toBe(false);
+  });
+
+  it('poe o que cai em todos primeiro', () => {
+    const { linhas, emTodos } = matrizDeDisciplinas(cargos);
+    expect(emTodos).toBe(2);
+    expect(linhas[0].quantos).toBe(2);
+    expect(linhas[linhas.length - 1].quantos).toBe(1);
+  });
+
+  it('aguenta tres cargos', () => {
+    const { colunas, linhas } = matrizDeDisciplinas([
+      ...cargos,
+      { roleName: 'Bombeiro', disciplinas: [{ nome: 'Língua Portuguesa' }] },
+    ]);
+    expect(colunas).toHaveLength(3);
+    expect(linhas.find((l) => l.nome === 'Língua Portuguesa').em).toEqual([true, true, true]);
+  });
+
+  it('devolve vazio sem cargo nenhum', () => {
+    expect(matrizDeDisciplinas([])).toMatchObject({ colunas: [], linhas: [], total: 0 });
+    expect(matrizDeDisciplinas(null).total).toBe(0);
   });
 });
