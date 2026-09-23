@@ -154,6 +154,8 @@ export default function AppTabContent(props) {
     deleteCourse,
     updateCourseTargets,
     setSelectedCoursePlan,
+    salvarRotinaInicial,
+    rotinaConfigurada,
     contestLibrary,
     currentCourseLimit,
     currentCourseCount,
@@ -345,6 +347,8 @@ export default function AppTabContent(props) {
         dailyRoutine={dailyRoutine}
         ultimaAnotacao={ultimaAnotacao}
         editalProgresso={editalProgresso}
+        rotinaConfigurada={rotinaConfigurada}
+        onAbrirPlanejamento={() => setActiveTab('planejamento')}
         onOpenTargetContest={(contestId) => {
           setSelectedContestDetailId(contestId);
           setActiveTab('concurso_detalhe');
@@ -426,6 +430,7 @@ export default function AppTabContent(props) {
   if (activeTab === 'planos') {
     return (
       <Planos
+        onSalvarRotina={salvarRotinaInicial}
         progGeralEdital={progGeralEdital}
         setActiveTab={setActiveTab}
         cursos={cursos}

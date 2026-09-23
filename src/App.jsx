@@ -116,6 +116,7 @@ import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi
 import { concursosDosCursos, migrarAlvoDeCurso } from './lib/cursoComoConcurso';
 import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
 import { progressoDoEdital } from './lib/progressoDoEdital';
+import { paraWizData, validarRotina } from './lib/rotinaInicial';
 import {
   migrarCurso,
   idDoObjetivo,
@@ -1161,6 +1162,10 @@ export default function App() {
   }, [studyPlanningMode]);
 
   useEffect(() => {
+    localStorage.setItem('papirando_rotina_configurada', rotinaConfigurada ? 'sim' : 'nao');
+  }, [rotinaConfigurada]);
+
+  useEffect(() => {
     localStorage.setItem('papirando_planning_course_plans', JSON.stringify(planningCoursePlans));
   }, [planningCoursePlans]);
 
@@ -1944,6 +1949,11 @@ export default function App() {
 
   const [_comunidadeInnerTab, _setComunidadeInnerTab] = useState('feed');
   const [planWizardStep, setPlanWizardStep] = useState(0);
+  // Se o aluno ja disse QUANDO estuda. O edital sozinho nao basta: sem rotina o plano do
+  // dia, a meta da semana e as revisoes ficam sem base. O Inicio cobra enquanto for false.
+  const [rotinaConfigurada, setRotinaConfigurada] = useState(
+    () => localStorage.getItem('papirando_rotina_configurada') === 'sim'
+  );
   const [isEditingCycle, setIsEditingCycle] = useState(false);
   const [showFinishedSessions, setShowFinishedSessions] = useState(true);
   const [chartTooltip, setChartTooltip] = useState(null);
@@ -4796,6 +4806,19 @@ export default function App() {
 
   // Edita os campos de um objetivo/curso (nome, tipo, foto, data da prova, cor).
   // Usado pela tela de personalização do aluno (objetivos personalizados e demais).
+  // A rotina definida logo depois de subir o edital, no proprio modal de importacao.
+  //
+  // Ela alimenta o mesmo wizData que o Planejamento usa — nao e um segundo lugar para
+  // guardar a mesma coisa. O ciclo se monta sozinho pelo efeito que observa wizData.
+  const salvarRotinaInicial = (rotina, materias = []) => {
+    if (validarRotina(rotina)) return;
+    const wiz = paraWizData(rotina, materias);
+    setWizData((prev) => ({ ...prev, ...wiz }));
+    setStudyPlanningMode(wiz.tipo === 'cronograma' ? 'cronograma' : 'ciclo');
+    setPlanWizardStep(0);
+    setRotinaConfigurada(true);
+  };
+
   const updateCourse = (courseId, patch = {}) => {
     if (!courseId) return;
     setCursos((prev) => prev.map((c) => {
@@ -7297,6 +7320,8 @@ export default function App() {
     analyzeEditalDocument,
     deleteCourse,
     updateCourseTargets,
+    salvarRotinaInicial,
+    rotinaConfigurada,
     updateCourse,
     uploadCourseImage,
     setSelectedCoursePlan,
@@ -7376,7 +7401,12 @@ export default function App() {
     planningAvailableDisciplines,
     sharedReminderCalendarEvents,
     planWizardStep,
-    setPlanWizardStep,
+    // Andar no wizard do Planejamento tambem conta como definir a rotina: o aviso do Inicio
+    // some por ter sido atendido, nao so pelo caminho do modal de importacao.
+    setPlanWizardStep: (valor) => {
+      setRotinaConfigurada(true);
+      setPlanWizardStep(valor);
+    },
     isEditingCycle,
     setIsEditingCycle,
     wizData,

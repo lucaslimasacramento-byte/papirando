@@ -8,7 +8,7 @@ vi.mock('./aiRuntime', () => ({
 import { analyzeEditalWithRealAI } from './editalAiClient';
 
 function respondeCom({ status, body }) {
-  global.fetch = vi.fn().mockResolvedValue({
+  globalThis.fetch = vi.fn().mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
     text: async () => body,

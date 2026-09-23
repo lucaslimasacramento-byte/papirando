@@ -18,6 +18,36 @@
 
 ---
 
+## Sessão 2026-09-23 — Onboarding continua dentro do modal do edital ✅
+
+Antes, o fim da importação mandava o aluno para outra aba ("Montar minha rotina de estudos")
+— ou seja, pedia que ele recomeçasse um fluxo que já estava na mão. Agora o modal **não solta
+o aluno** até a plataforma estar configurada.
+
+**Nova etapa entre "criado" e "pronto": a rotina.** Uma tela só, ~20 segundos:
+- quais dias da semana ele estuda (chips);
+- quantas horas por dia (slider, com o total da semana calculado ao lado);
+- ciclo de estudos ou cronograma fixo.
+
+Novo `src/lib/rotinaInicial.js` (10 testes): padrão (dias úteis, 3h), validação com mensagem
+específica, resumo de uma linha e a tradução para o `wizData` que o Planejamento já usa — não
+é um segundo lugar guardando a mesma coisa. O ciclo se monta sozinho pelo efeito que observa
+`wizData`.
+
+**Se fechar no meio, salva o que já respondeu.** O curso já está criado; só a rotina fica
+pendente. Aí entra `rotinaConfigurada` (persistido em localStorage) e um **aviso no topo do
+Início**: "Falta dizer quando você estuda" com botão para Planejamento. O aviso some quando a
+rotina é definida — pelo modal **ou** andando no wizard do Planejamento.
+
+**A tela final mudou de papel.** Era onde a rotina era cobrada; agora confirma o que foi
+configurado ("Sua rotina: 5 dias por semana · 3h por dia · 15h no total") e o botão principal
+é "Começar a estudar". Quem pulou vê o aviso âmbar e "Definir a rotina agora".
+
+Decisões do dono: **só o essencial** no onboarding (nível por matéria e metas ficam de fora —
+12 cliques a mais afugentam), e **salvar o que já foi respondido** se fechar no meio.
+
+---
+
 ## Sessão 2026-09-22 (madrugada, correção) — "objetivosNovos is not defined" ✅
 
 **Criar curso a partir do edital estava quebrado.** Ao confirmar a importação com dois cargos,

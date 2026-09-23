@@ -32,6 +32,8 @@ export default function Dashboard({
   onStartRecommendedSession,
   onStartRoutineItem,
   onOpenUltimaAnotacao,
+  rotinaConfigurada = true,
+  onAbrirPlanejamento,
 }) {
   const safeHistorico = useMemo(() => (Array.isArray(historicoReal) ? historicoReal : []), [historicoReal]);
   const safeAgendaHoje = useMemo(() => (Array.isArray(agendaHoje) ? agendaHoje : []), [agendaHoje]);
@@ -187,6 +189,33 @@ export default function Dashboard({
           inline ganha de media query: para o painel encolher em tela baixa, o numero tem
           que sair do JSX. */}
       <div style={{ width: '100%', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
+        {/* O aluno subiu o edital mas pulou a rotina. Sem ela o plano do dia nao sabe
+            quantos minutos cabem, a meta da semana nao tem base e as revisoes nao tem onde
+            encaixar — entao a cobranca fica no topo do Inicio ate ele resolver. */}
+        {!rotinaConfigurada && targetContest && (
+          <div
+            className="pl-card"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+              padding: '12px 16px', marginBottom: 18,
+              borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)',
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: 'var(--pl-ink)' }}>
+                Falta dizer quando você estuda.
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 12.5, color: 'var(--pl-ink-2)' }}>
+                Seu edital já virou disciplinas. Sem a rotina, o plano do dia, a meta da semana
+                e as revisões ficam parados.
+              </p>
+            </div>
+            <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={onAbrirPlanejamento} style={{ flexShrink: 0 }}>
+              Definir rotina
+            </button>
+          </div>
+        )}
+
         {/* A coluna da direita e do objetivo-alvo, definido ou nao. Deixa-la vazia era o
             pior dos mundos: o aluno nao via que faltava escolher um alvo, e a plataforma
             inteira depende dele para priorizar. Sem alvo, o lugar convida a definir. */}

@@ -38,6 +38,7 @@ import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
 import EditarCursoModal from '../components/EditarCursoModal';
 import { ModalShell, InputField } from '../components/ModalShell';
 import { CORES_DE_CURSO, capaDoCurso, descricaoDoCurso, limparDescricao, LIMITE_DA_DESCRICAO } from '../lib/personalizacaoCurso';
+import { DIAS_DA_SEMANA, FORMATOS, ROTINA_PADRAO, resumoDaRotina, validarRotina } from '../lib/rotinaInicial';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -106,6 +107,7 @@ export default function Planos({
   onUpdateCourse,
   onUploadImage,
   setSelectedCoursePlan,
+  onSalvarRotina,
   concursoCatalog = [],
   remainingCourseSlots = 3,
   isAdmin = false,
@@ -154,6 +156,9 @@ export default function Planos({
   // materia que se repete entre eles.
   const [cursoDestinoId, setCursoDestinoId] = useState('');
   const [cursosCriados, setCursosCriados] = useState([]);
+  // A rotina perguntada logo depois de o curso nascer. Ver src/lib/rotinaInicial.js.
+  const [rotina, setRotina] = useState(ROTINA_PADRAO);
+  const [rotinaConfirmada, setRotinaConfirmada] = useState(false);
 
   // Cursos que podem receber este edital. Arquivado nao entra: juntar um edital novo a um
   // plano que o aluno encerrou seria ressuscitar o que ele fechou.
@@ -239,6 +244,8 @@ export default function Planos({
     setArrastando(false);
     setFaseDaLeitura('pdf');
     setEtapaEdital('envio');
+    setRotina(ROTINA_PADRAO);
+    setRotinaConfirmada(false);
     setCargosEscolhidos([]);
     setNomesDosCursos({});
     setCursoDestinoId('');
@@ -632,12 +639,26 @@ export default function Planos({
           reaproveitadas: result?.disciplinasReaproveitadas || [],
         },
       ]);
-      setEtapaEdital('pronto');
+      setEtapaEdital('rotina');
     } catch (error) {
       showToast(error.message || 'Não foi possível importar o edital.', 'error');
     } finally {
       setIsImporting(false);
     }
+  };
+
+  const erroDaRotina = validarRotina(rotina);
+
+  // Grava a rotina no planejamento e deixa o app montar o ciclo a partir dela. As materias
+  // sao as do curso que acabou de nascer: e sobre elas que o ciclo gira.
+  const salvarRotina = () => {
+    if (validarRotina(rotina)) return;
+    const planoNovo = cursosCriados[0]?.plano || '';
+    const materias = planoNovo
+      ? bancoDisciplinas.filter((disciplina) => disciplina.plano === planoNovo).map((disciplina) => disciplina.nome)
+      : [];
+    onSalvarRotina?.(rotina, materias);
+    setRotinaConfirmada(true);
   };
 
   const buildCourseMetaChips = (curso) => {
@@ -918,9 +939,11 @@ export default function Planos({
                 ? 'Qual cargo você vai fazer?'
                 : etapaEdital === 'revisao'
                   ? 'Confira o que a IA encontrou'
-                  : etapaEdital === 'pronto'
-                    ? (cursosCriados.length > 1 ? 'Cursos criados' : 'Curso criado')
-                    : 'Montar o curso pelo edital'
+                  : etapaEdital === 'rotina'
+                    ? 'Quando você estuda?'
+                    : etapaEdital === 'pronto'
+                      ? 'Tudo pronto'
+                      : 'Montar o curso pelo edital'
           }
           subtitle={
             etapaEdital === 'lendo'
@@ -929,9 +952,11 @@ export default function Planos({
                 ? 'É esta escolha que define suas disciplinas, os pesos e as datas.'
                 : etapaEdital === 'revisao'
                   ? 'Nada é criado antes de você confirmar. Desmarque o que não for do seu cargo.'
-                  : etapaEdital === 'pronto'
-                    ? ''
-                    : 'Envie o PDF do edital e a IA monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
+                  : etapaEdital === 'rotina'
+                    ? 'Último passo. É com isso que a plataforma monta o plano do dia, a meta da semana e as revisões.'
+                    : etapaEdital === 'pronto'
+                      ? ''
+                      : 'Envie o PDF do edital e a IA monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
           }
           onClose={closeMode}
         >
@@ -1340,7 +1365,121 @@ export default function Planos({
             </div>
           )}
 
-          {/* ETAPA 5 — fim. Sem a revisão por baixo, que já não serve para nada. */}
+          {/* ETAPA 5 — a rotina. O edital diz O QUE estudar; falta dizer QUANDO, e sem isso
+              o plano do dia, a meta da semana e as revisoes nao tem como se comportar.
+              Mandar o aluno para outra aba aqui era pedir que ele recomecasse um fluxo que
+              ja estava na mao. */}
+          {etapaEdital === 'rotina' && (
+            <div style={{ display: 'grid', gap: 22 }}>
+              <div className="pl-card-paper" style={{ padding: '12px 16px' }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                  {cursosCriados[0]?.nome} está criado.
+                </p>
+                <p style={{ margin: '3px 0 0', fontSize: 12.5, color: 'var(--pl-ink-2)' }}>
+                  {cursosCriados[0]?.disciplinasCriadas} disciplinas · {cursosCriados[0]?.topicosCriados} tópicos
+                  {cursosCriados[0]?.cargos?.length > 1 ? ` · ${cursosCriados[0].cargos.length} objetivos` : ''}
+                </p>
+              </div>
+
+              <div>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Quais dias você estuda?</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {DIAS_DA_SEMANA.map((dia) => {
+                    const ativo = Boolean(rotina.dias[dia.id]);
+                    return (
+                      <button
+                        key={dia.id}
+                        type="button"
+                        onClick={() => setRotina((prev) => ({ ...prev, dias: { ...prev.dias, [dia.id]: !prev.dias[dia.id] } }))}
+                        aria-pressed={ativo}
+                        style={{
+                          minWidth: 56, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+                          fontSize: 12.5, fontWeight: 700,
+                          border: `1px solid ${ativo ? 'var(--pl-ink)' : 'var(--pl-rule-2)'}`,
+                          background: ativo ? 'var(--pl-ink)' : 'var(--pl-surface)',
+                          color: ativo ? 'var(--pl-bg)' : 'var(--pl-ink-2)',
+                        }}
+                      >
+                        {dia.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Quantas horas por dia?</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <input
+                    type="range"
+                    min="1"
+                    max="12"
+                    step="1"
+                    value={rotina.horasPorDia}
+                    onChange={(e) => setRotina((prev) => ({ ...prev, horasPorDia: Number(e.target.value) }))}
+                    style={{ flex: 1, minWidth: 220, accentColor: 'var(--pl-accent)' }}
+                  />
+                  <span className="pl-num" style={{ fontSize: 26, color: 'var(--pl-ink)', minWidth: 52 }}>
+                    {rotina.horasPorDia}h
+                  </span>
+                </div>
+                <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
+                  {resumoDaRotina(rotina)}
+                </p>
+              </div>
+
+              <div>
+                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Como você quer organizar?</p>
+                <div style={{ display: 'grid', gap: 8 }}>
+                  {FORMATOS.map((formato) => {
+                    const ativo = rotina.formato === formato.id;
+                    return (
+                      <button
+                        key={formato.id}
+                        type="button"
+                        onClick={() => setRotina((prev) => ({ ...prev, formato: formato.id }))}
+                        aria-pressed={ativo}
+                        style={{
+                          textAlign: 'left', padding: '12px 14px', borderRadius: 8, cursor: 'pointer',
+                          border: `1px solid ${ativo ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+                          background: ativo ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+                        }}
+                      >
+                        <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: ativo ? 'var(--pl-accent)' : 'var(--pl-ink)' }}>
+                          {formato.titulo}
+                        </span>
+                        <span style={{ display: 'block', marginTop: 3, fontSize: 12, color: 'var(--pl-ink-2)' }}>
+                          {formato.detalhe}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {erroDaRotina && (
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-danger)' }}>{erroDaRotina}</p>
+              )}
+
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
+                {/* Pular nao perde o curso: ele ja esta criado. So a rotina fica pendente, e
+                    o Inicio avisa. */}
+                <SecondaryButton onClick={() => setEtapaEdital('pronto')}>Deixar para depois</SecondaryButton>
+                <PrimaryButton
+                  disabled={Boolean(erroDaRotina)}
+                  onClick={() => {
+                    salvarRotina();
+                    setEtapaEdital('pronto');
+                  }}
+                >
+                  <CalendarDays size={16} />
+                  Confirmar rotina
+                </PrimaryButton>
+              </div>
+            </div>
+          )}
+
+          {/* ETAPA 6 — fim. Sem a revisão por baixo, que já não serve para nada. */}
           {etapaEdital === 'pronto' && (
             <div style={{ display: 'grid', gap: 18, justifyItems: 'center', textAlign: 'center', padding: '20px 0 8px' }}>
               <CheckCircle2 size={34} style={{ color: 'var(--pl-success)' }} />
@@ -1383,20 +1522,38 @@ export default function Planos({
                 ))}
               </div>
 
-              {/* O edital virou disciplinas, mas a plataforma ainda nao sabe QUANDO o aluno
-                  estuda — e sem isso a rotina do dia, a meta diaria e as revisoes nao tem
-                  como se comportar. Por isso a rotina e a acao principal aqui, e nao o
-                  curso: e o passo que falta para o resto funcionar. */}
+              {/* A rotina ja passou pela etapa anterior. Quando ela ficou de fora, este e o
+                  unico lugar que ainda pode cobra-la antes de o aluno sumir na plataforma. */}
+              {rotinaConfirmada ? (
+                <div className="pl-card-paper" style={{ padding: '12px 16px', width: '100%', maxWidth: 420 }}>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                    Sua rotina: {resumoDaRotina(rotina)}
+                  </p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                    Dá para mudar quando quiser em Planejamento.
+                  </p>
+                </div>
+              ) : (
+                <div className="pl-card-paper" style={{ padding: '12px 16px', width: '100%', maxWidth: 420 }}>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-warn)' }}>
+                    Falta definir quando você estuda.
+                  </p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                    Sem isso, o plano do dia, a meta e as revisões ficam parados. O aviso
+                    continua no Início até você configurar.
+                  </p>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
                 <PrimaryButton
                   onClick={() => {
                     setSelectedCoursePlan?.(cursosCriados[0]?.plano || 'Todos');
-                    setActiveTab('planejamento');
+                    setActiveTab(rotinaConfirmada ? 'home' : 'planejamento');
                     closeMode();
                   }}
                 >
-                  <CalendarDays size={16} />
-                  Montar minha rotina de estudos
+                  {rotinaConfirmada ? 'Começar a estudar' : 'Definir a rotina agora'}
                 </PrimaryButton>
                 <SecondaryButton
                   onClick={() => {
@@ -1408,10 +1565,6 @@ export default function Planos({
                   Ver as disciplinas
                 </SecondaryButton>
               </div>
-              <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-3)', maxWidth: 380 }}>
-                Sem a rotina, a plataforma não sabe quando você estuda — e o plano do dia, a
-                meta e as revisões ficam parados.
-              </p>
             </div>
           )}
         </ModalShell>
