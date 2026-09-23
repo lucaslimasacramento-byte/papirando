@@ -54,6 +54,13 @@ export default defineConfig([
       'react/jsx-uses-vars': 'error',
       'react/react-in-jsx-scope': 'off',
       'react-hooks/set-state-in-effect': 'off',
+      // Usar um const antes da declaracao e tela branca em producao, nao aviso: o
+      // ReferenceError da TDZ derruba o render inteiro — foi assim que o app caiu com um
+      // useState declarado 800 linhas abaixo do useEffect que o lia nas dependencias. Fica
+      // em `warn` porque o projeto tem ~30 casos benignos (arrow usada dentro de callback
+      // que so roda depois); quem le um aviso novo aqui confere se e dos que quebram. O
+      // portao de verdade e `npm run smoke`, que abre o app num navegador.
+      'no-use-before-define': ['warn', { functions: false, classes: false, variables: true }],
     },
   },
   {

@@ -18,6 +18,39 @@
 
 ---
 
+## Sessão 2026-09-23 (correção urgente) — papirando.com abrindo em branco ✅
+
+**O site saiu do ar.** Tela branca total, sem nada renderizado.
+
+**Causa:** na sessão anterior eu declarei o `useState` de `rotinaConfigurada` na linha ~1954
+do `App.jsx`, mas o `useEffect` que o persiste ficou na linha ~1165 — **800 linhas acima**. O
+array de dependências `[rotinaConfigurada]` é avaliado durante o render, antes da declaração:
+`ReferenceError: Cannot access 'rotinaConfigurada' before initialization`. O React não monta
+nada e a página fica branca. Declaração movida para junto do efeito.
+
+**Por que build, testes e lint não pegaram:** nenhum dos três executa o React num navegador.
+O Rollup empacota, o Vitest testa funções puras, o ESLint (sem a regra certa) não olha ordem
+de declaração. É um ponto cego real — e foi a segunda queda em dois dias por algo que só
+aparece abrindo o app.
+
+**Duas redes de proteção novas:**
+
+1. **`npm run smoke`** — sobe o dev server, abre o app num Chromium de verdade e falha se o
+   `#root` ficar vazio ou se houver erro de página. Verificado nos dois sentidos: com o bug,
+   `root len: 0` + a mensagem do TDZ; sem o bug, `root len: 19074`. `scripts/smoke.mjs`,
+   playwright como devDependency.
+2. **`no-use-before-define`** no ESLint, em `warn`. Aponta o padrão exato, mas o projeto tem
+   ~30 casos benignos (arrow usada dentro de callback que só roda depois), então não serve de
+   portão — serve de sinal.
+
+**Bônus que o smoke revelou de cara: o app nunca abria em `npm run dev`.** `src/lib/edital.js`
+importava `CHARS_MINIMO_EDITAL` de `../../api/_edital-text.js`, e o dev server proxia tudo que
+começa com `/api` para o servidor de IA local (porta 8787). O import virava uma requisição
+HTTP que voltava 502, o módulo raiz não carregava e o app abria em branco **mesmo sem bug
+nenhum**. A constante virou `src/lib/editalLimites.js`, e o lado servidor importa de lá.
+
+---
+
 ## Sessão 2026-09-23 — Onboarding continua dentro do modal do edital ✅
 
 Antes, o fim da importação mandava o aluno para outra aba ("Montar minha rotina de estudos")

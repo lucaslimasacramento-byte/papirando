@@ -1,3 +1,7 @@
+import { CHARS_MINIMO_EDITAL } from '../src/lib/editalLimites.js';
+
+export { CHARS_MINIMO_EDITAL };
+
 // Recorte de texto de edital antes de mandar para a IA.
 //
 // O problema que isto resolve (medido em docs/TESTE-EXTRACAO-EDITAL.md, 13 editais reais):
@@ -16,9 +20,6 @@
 const RE_CABECALHO_CONTEUDO =
   /(conte[úu]dos?\s*program[áa]ticos?|objetos?\s*de\s*avalia[çc][ãa]o|programas?\s*[-–—]?\s*(prova|conhecimentos)|programas?\s*das?\s*provas?|mat[ée]rias?\s*e\s*programas?)/i;
 
-// Piso para o documento passar por edital de abertura. Os 13 editais reais do teste têm de
-// 115k a 561k caracteres; os 3 não-editais que caíram na amostra tinham 1,3k, 4k e 18,6k.
-export const CHARS_MINIMO_EDITAL = 20000;
 
 // Orçamento de caracteres. O cabeçalho carrega concurso/órgão/banca/cargos/datas, que a
 // análise também precisa devolver — mandar só o anexo perderia esses campos.

@@ -9,7 +9,7 @@
 //
 // O limiar vem do mesmo módulo que o backend usa para recortar o texto, para não existirem
 // duas verdades sobre o que é um edital de abertura.
-import { CHARS_MINIMO_EDITAL } from '../../api/_edital-text.js';
+import { CHARS_MINIMO_EDITAL } from './editalLimites.js';
 
 // O aluno pode legitimamente colar só o anexo de conteúdo programático, que é curto. Então
 // isto AVISA, nunca bloqueia: quem decide é ele.

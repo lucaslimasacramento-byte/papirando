@@ -1157,6 +1157,12 @@ export default function App() {
     };
   }, [isAuthenticated, currentUserId]);
 
+  // Se o aluno ja disse QUANDO estuda. O edital sozinho nao basta: sem rotina o plano do
+  // dia, a meta da semana e as revisoes ficam sem base. O Inicio cobra enquanto for false.
+  const [rotinaConfigurada, setRotinaConfigurada] = useState(
+    () => localStorage.getItem('papirando_rotina_configurada') === 'sim'
+  );
+
   useEffect(() => {
     localStorage.setItem('papirando_study_planning_mode', studyPlanningMode);
   }, [studyPlanningMode]);
@@ -1949,11 +1955,6 @@ export default function App() {
 
   const [_comunidadeInnerTab, _setComunidadeInnerTab] = useState('feed');
   const [planWizardStep, setPlanWizardStep] = useState(0);
-  // Se o aluno ja disse QUANDO estuda. O edital sozinho nao basta: sem rotina o plano do
-  // dia, a meta da semana e as revisoes ficam sem base. O Inicio cobra enquanto for false.
-  const [rotinaConfigurada, setRotinaConfigurada] = useState(
-    () => localStorage.getItem('papirando_rotina_configurada') === 'sim'
-  );
   const [isEditingCycle, setIsEditingCycle] = useState(false);
   const [showFinishedSessions, setShowFinishedSessions] = useState(true);
   const [chartTooltip, setChartTooltip] = useState(null);
