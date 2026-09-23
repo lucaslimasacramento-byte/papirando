@@ -6,27 +6,47 @@
 
 import React, { useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronRight, FileText, Check } from 'lucide-react';
+import { fichaComparativa, provasComparativas, nomeDoCargo as rotuloDoCargo } from '../lib/comparativoDeCargos';
 
-const NAO_ENCONTRADO = /^n[ãa]o\s*encontrado$/i;
+// Grade de comparacao: uma linha por campo, uma coluna por cargo.
+//
+// Cada cargo tinha o proprio bloco de cartoezinhos, empilhado. Para comparar salario, vagas
+// ou data da prova o aluno rolava de um bloco ao outro guardando numero de cabeca — e e
+// nessa comparacao que ele decide o que vai prestar.
+function GradeComparativa({ colunas, children, rotuloDaPrimeiraColuna }) {
+  const grade = {
+    display: 'grid',
+    gridTemplateColumns: `minmax(0, 1.1fr) repeat(${colunas.length}, minmax(0, 1fr))`,
+    alignItems: 'center',
+  };
 
-function valorOuTraco(valor) {
-  const texto = String(valor || '').trim();
-  return !texto || NAO_ENCONTRADO.test(texto) ? '—' : texto;
-}
-
-function DadoDoCargo({ label, valor }) {
   return (
-    <div className="pl-card" style={{ padding: '10px 14px' }}>
-      <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{label}</p>
-      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)' }}>
-        {valorOuTraco(valor)}
-      </p>
+    <div>
+      <div style={{ ...grade, padding: '8px 0 7px', borderBottom: '1px solid var(--pl-rule-2)' }}>
+        <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>{rotuloDaPrimeiraColuna}</span>
+        {colunas.map((coluna) => (
+          <span
+            key={coluna}
+            title={coluna}
+            style={{
+              fontSize: 10.5, fontWeight: 700, lineHeight: 1.25, color: 'var(--pl-ink-2)',
+              padding: '0 8px',
+              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            }}
+          >
+            {coluna}
+          </span>
+        ))}
+      </div>
+      {children(grade)}
     </div>
   );
 }
 
-function QuadroDeProvas({ prova }) {
-  if (!prova?.length) {
+function QuadroDeProvas({ cargos }) {
+  const { colunas, linhas, totais, temDados } = provasComparativas(cargos);
+
+  if (!temDados) {
     return (
       <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', margin: 0 }}>
         O edital não trouxe o número de questões por disciplina. Sem isso a plataforma trata
@@ -35,46 +55,54 @@ function QuadroDeProvas({ prova }) {
     );
   }
 
-  const totalQuestoes = prova.reduce((acc, linha) => acc + (Number(linha.questoes) || 0), 0);
-
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-        <thead>
-          <tr>
-            {['Disciplina', 'Questões', 'Peso'].map((coluna, i) => (
-              <th
-                key={coluna}
-                className="pl-eyebrow"
-                style={{ textAlign: i === 0 ? 'left' : 'right', padding: '6px 8px', borderBottom: '1px solid var(--pl-rule-2)' }}
+    <GradeComparativa colunas={colunas} rotuloDaPrimeiraColuna="Disciplina">
+      {(grade) => (
+        <>
+          {linhas.map((linha) => (
+            <div key={linha.disciplina} style={{ ...grade, padding: '7px 0', borderBottom: '1px solid var(--pl-rule)' }}>
+              <span
+                title={linha.disciplina}
+                style={{
+                  minWidth: 0, paddingRight: 12, fontSize: 12.5,
+                  fontWeight: linha.emTodos ? 700 : 500,
+                  color: linha.emTodos ? 'var(--pl-ink)' : 'var(--pl-ink-2)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}
               >
-                {coluna}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {prova.map((linha, i) => (
-            <tr key={`${linha.disciplina}-${i}`}>
-              <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--pl-rule)', color: 'var(--pl-ink)' }}>
                 {linha.disciplina}
-              </td>
-              <td className="pl-num" style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid var(--pl-rule)' }}>
-                {linha.questoes}
-              </td>
-              <td className="pl-num" style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid var(--pl-rule)' }}>
-                {linha.peso}
-              </td>
-            </tr>
+              </span>
+              {linha.celulas.map((celula, indice) => (
+                <span key={colunas[indice]} style={{ padding: '0 8px', fontSize: 12.5 }}>
+                  {celula ? (
+                    <>
+                      <span className="pl-num" style={{ color: 'var(--pl-ink)' }}>{celula.questoes}</span>
+                      <span style={{ color: 'var(--pl-ink-3)' }}> questões</span>
+                      {/* Peso 1 e o padrao: repetir "peso 1" em toda linha so cansa a
+                          vista. So aparece quando muda a conta. */}
+                      {celula.peso && celula.peso !== '1' && (
+                        <span style={{ color: 'var(--pl-ink-3)' }}> · peso {celula.peso}</span>
+                      )}
+                    </>
+                  ) : (
+                    <span style={{ color: 'var(--pl-ink-5)' }}>—</span>
+                  )}
+                </span>
+              ))}
+            </div>
           ))}
-        </tbody>
-      </table>
-      {totalQuestoes > 0 && (
-        <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', marginTop: 8, marginBottom: 0 }}>
-          {totalQuestoes} questões no total.
-        </p>
+
+          <div style={{ ...grade, padding: '8px 0 0' }}>
+            <span className="pl-eyebrow" style={{ fontSize: 9.5 }}>Total</span>
+            {totais.map((total, indice) => (
+              <span key={colunas[indice]} style={{ padding: '0 8px', fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                <span className="pl-num">{total}</span> questões
+              </span>
+            ))}
+          </div>
+        </>
       )}
-    </div>
+    </GradeComparativa>
   );
 }
 
@@ -169,7 +197,8 @@ export function RevisaoEditalPanel({
     0
   );
 
-  const nomeDoCargo = (cargo, indice) => cargo?.roleName || cargo?.title || `Cargo ${indice + 1}`;
+  const nomeDoCargo = (cargo, indice) => rotuloDoCargo(cargo, indice);
+  const ficha = fichaComparativa(cargos, analysis);
 
   // Com um cargo so, marcar cada linha com o nome dele seria ruido: todas sao dele.
   const rotuloDeCargo = cargos.length < 2
@@ -213,30 +242,36 @@ export function RevisaoEditalPanel({
         </div>
       ))}
 
-      {cargos.map((cargo, indice) => (
-        <section key={cargo.id ?? indice}>
-          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>
-            {cargos.length > 1 ? nomeDoCargo(cargo, indice) : 'Dados do cargo'}
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-            <DadoDoCargo label="Cargo" valor={nomeDoCargo(cargo, indice)} />
-            <DadoDoCargo label="Vagas" valor={cargo.vagas} />
-            <DadoDoCargo label="Remuneração" valor={cargo.salario} />
-            <DadoDoCargo label="Escolaridade" valor={cargo.escolaridade} />
-            <DadoDoCargo label="Lotação" valor={cargo.lotacao} />
-            <DadoDoCargo label="Carga horária" valor={cargo.cargaHoraria} />
-            <DadoDoCargo label="Data da prova" valor={cargo.examDate} />
-            <DadoDoCargo label="Taxa de inscrição" valor={analysis?.inscricaoValor} />
-          </div>
+      {/* Ficha dos cargos lado a lado, nao um bloco empilhado por cargo. */}
+      <section className="pl-card" style={{ padding: '4px 16px 14px' }}>
+        <GradeComparativa colunas={ficha.colunas} rotuloDaPrimeiraColuna={cargos.length > 1 ? 'Comparativo' : 'Dados do cargo'}>
+          {(grade) => ficha.linhas.map((linha) => (
+            <div key={linha.label} style={{ ...grade, padding: '9px 0', borderBottom: '1px solid var(--pl-rule)' }}>
+              <span className="pl-eyebrow" style={{ fontSize: 9.5, paddingRight: 12 }}>{linha.label}</span>
+              {linha.valores.map((valor, indice) => (
+                <span
+                  key={ficha.colunas[indice]}
+                  style={{
+                    padding: '0 8px', fontSize: 13, lineHeight: 1.4,
+                    // O que muda de um cargo para o outro e o que o aluno veio procurar.
+                    fontWeight: linha.diferente ? 700 : 500,
+                    color: valor === '—' ? 'var(--pl-ink-4)' : 'var(--pl-ink)',
+                  }}
+                >
+                  {valor}
+                </span>
+              ))}
+            </div>
+          ))}
+        </GradeComparativa>
+      </section>
 
-          {/* O quadro de provas e por cargo: e ele que diz o peso de cada disciplina
-              naquela prova, e dois cargos do mesmo edital raramente tem o mesmo. */}
-          <div style={{ marginTop: 12 }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Quadro de provas</p>
-            <QuadroDeProvas prova={cargo.prova} />
-          </div>
-        </section>
-      ))}
+      {/* O quadro de provas tambem e comparativo: e ele que diz onde estao os pontos, e
+          dois cargos do mesmo edital raramente pesam as disciplinas igual. */}
+      <section className="pl-card" style={{ padding: '4px 16px 14px' }}>
+        <p className="pl-eyebrow" style={{ margin: '12px 0 2px' }}>Quadro de provas</p>
+        <QuadroDeProvas cargos={cargos} />
+      </section>
 
       {analysis?.etapas?.length > 0 && (
         <section>

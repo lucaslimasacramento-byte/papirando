@@ -18,6 +18,35 @@
 
 ---
 
+## Sessão 2026-09-24 (continuação) — Revisão do edital também fica comparativa ✅
+
+Mesma queixa da grade de disciplinas, agora na tela de revisão: os dados de cada cargo vinham
+**empilhados** — "Soldado" com oito cartõezinhos, depois "Oficial" com outros oito, e o
+quadro de provas repetido embaixo de cada um. Para comparar salário, vagas ou data da prova o
+aluno rolava de um bloco ao outro guardando número de cabeça.
+
+**Agora as duas seções são grades comparativas**, com uma linha por campo e uma coluna por
+cargo:
+
+- **Ficha:** Vagas, Remuneração, Escolaridade, Data da prova, Lotação, Carga horária e a taxa
+  de inscrição (que é do certame, então repete igual em todas as colunas). **O que difere
+  entre os cargos vem em negrito** — é o que o aluno veio procurar. Campo que nenhum cargo
+  tem some da tabela, em vez de virar uma fileira de traços.
+- **Quadro de provas:** uma linha por disciplina, questões e peso por cargo, total no rodapé.
+  "Peso 1" não aparece (é o padrão; repetir em toda linha só cansa a vista).
+
+`src/lib/comparativoDeCargos.js`, 17 testes.
+
+**Um bug achado ao renderizar:** "Conhecimentos Básicos" aparecia **duas vezes**, uma por
+cargo, em vez de lado a lado. `mesmaDisciplina` trata "conhecimentos" e "básicos" como ruído
+— e com razão, para não fundir matérias diferentes —, só que então o bloco não casava nem
+consigo mesmo. No quadro de provas as linhas não são disciplinas, são os blocos do edital:
+rótulo igual passou a ser a mesma linha (comparação por nome normalizado, com
+`mesmaDisciplina` ainda como rede para "Língua Portuguesa" × "Lingua Portuguesa"). 2 testes
+cobrem o caso.
+
+---
+
 ## Sessão 2026-09-24 — Comparação de cargos vira grade; teto de 3 objetivos ✅
 
 **O "+3" saiu.** A tela de escolha de cargo mostrava oito disciplinas comuns como chips e
