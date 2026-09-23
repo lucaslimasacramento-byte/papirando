@@ -116,6 +116,7 @@ import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi
 import { concursosDosCursos, migrarAlvoDeCurso } from './lib/cursoComoConcurso';
 import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
 import { progressoDoEdital } from './lib/progressoDoEdital';
+import { montarCurso } from './lib/novoCurso';
 import { paraWizData, validarRotina } from './lib/rotinaInicial';
 import {
   migrarCurso,
@@ -4747,52 +4748,9 @@ export default function App() {
   const createCourse = (courseData) => {
     assertCourseLimitAvailable();
 
-    const courseIntent =
-      courseData.intent ||
-      courseData.tipo ||
-      (courseData.origem === 'catalogo' || courseData.origem === 'ia' ? 'concurso' : 'livre');
-    const isContestCourse = courseIntent === 'concurso';
-
-    const novoCurso = {
-      id: `curso-${Date.now()}`,
-      nome: courseData.nome,
-      plano: courseData.plano || courseData.nome,
-      concurso: courseData.concurso || courseData.nome,
-      intent: courseIntent,
-      tipo: courseIntent,
-      area: courseData.area || 'Geral',
-      instituicao: courseData.instituicao || '',
-      periodo: courseData.periodo || '',
-      curso_superior: courseData.curso_superior || '',
-      cargo: courseData.cargo || '',
-      banca: courseData.banca || 'A definir',
-      salario: courseData.salario || '',
-      inscricao_valor: courseData.inscricao_valor || '',
-      escolaridade: courseData.escolaridade || '',
-      vagas: courseData.vagas || '',
-      lotacao: courseData.lotacao || '',
-      etapas: courseData.etapas || '',
-      etapas_tags: courseData.etapas_tags || [],
-      taf_itens: courseData.taf_itens || [],
-      carga_horaria: courseData.carga_horaria || '',
-      // Quadro de provas do cargo: [{disciplina, questoes, peso}]. É o que permite a
-      // plataforma dizer onde estão os pontos, em vez de tratar toda disciplina como igual.
-      prova: Array.isArray(courseData.prova) ? courseData.prova : [],
-      // Qual versão do edital gerou este curso. A plataforma inteira fica pendurada num PDF,
-      // e retificação posterior não chega a quem já montou — sem isto não há nem como avisar.
-      edital_arquivo: courseData.edital_arquivo || '',
-      edital_lido_em: courseData.edital_lido_em || '',
-      edital_impressao: courseData.edital_impressao || '',
-      status_concurso: isContestCourse ? normalizeContestStatus(courseData.status_concurso || 'edital_publicado') : '',
-      prova_data: courseData.prova_data || '',
-      imagem_url: courseData.imagem_url || '',
-      edital_url: courseData.edital_url || '',
-      status: courseData.status || 'ativo',
-      origem: courseData.origem || 'manual',
-      cor: courseData.cor || '#1e3a5f',
-      // Instituições-alvo (só ENEM): até 3 marcadores escolhidos pelo aluno.
-      instituicoes_alvo: Array.isArray(courseData.instituicoes_alvo) ? courseData.instituicoes_alvo : [],
-    };
+    // A montagem vive em src/lib/novoCurso.js, com teste. Era um literal aqui, e campo novo
+    // do fluxo de importacao (os objetivos do edital, por exemplo) sumia sem erro nenhum.
+    const novoCurso = montarCurso(courseData, { id: `curso-${Date.now()}` });
 
     setCursos((prev) => [novoCurso, ...prev]);
 
@@ -5616,7 +5574,6 @@ export default function App() {
       edital_url: template.edital_url,
       status: template.status || 'ativo',
       origem: 'catalogo',
-      cor: template.cor || '#1e3a5f',
     });
 
     if (currentUserId) {

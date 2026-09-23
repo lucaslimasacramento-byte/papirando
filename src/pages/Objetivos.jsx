@@ -17,7 +17,7 @@ import {
 import { getAreaToken } from '../lib/areaTokens';
 import { storageThumb } from '../lib/imageUrl';
 import { objetivosDoCurso, idDoObjetivo, progressoPorObjetivo } from '../lib/objetivos';
-import { tipoDoObjetivo, marcoDoObjetivo } from '../lib/tiposDeObjetivo';
+import { marcoDoObjetivo } from '../lib/tiposDeObjetivo';
 import { capaDoCurso, descricaoDoCurso } from '../lib/personalizacaoCurso';
 import { nomeCurtoDoCurso } from '../lib/apelidoCurso';
 import EditarCursoModal from '../components/EditarCursoModal';
@@ -208,27 +208,30 @@ const TIPOS = [
 
 // ─── Meus objetivos (strip) ───────────────────────────────────────────────────
 
-// Um bloco por CURSO, com os objetivos dele dentro.
+// Um cartao por CURSO, com os objetivos dele dentro.
 //
 // Antes eram pastilhas soltas: dois objetivos do mesmo edital viravam dois chips iguais, sem
 // dizer que sao o mesmo plano, sem progresso, sem prazo e sem como editar nada. O curso e o
-// caderno; os objetivos sao o que ele persegue. A tela tem que mostrar essa hierarquia.
+// caderno; os objetivos sao o que ele persegue. A tela mostra essa hierarquia.
 function MeusObjetivos({ cursos, bancoDisciplinas = [], onSetActiveTab, onRemove, alvoId = '', onDefinirAlvo, onEditarCurso }) {
   if (!cursos || cursos.length === 0) {
     return (
-      <div className="pl-card-paper" style={{ padding: '22px 24px', marginBottom: 28 }}>
-        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
+      <div className="pl-card-paper" style={{ padding: '26px 24px', textAlign: 'center' }}>
+        <Trophy size={26} style={{ color: 'var(--pl-ink-4)', marginBottom: 10 }} />
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>
           Você ainda não tem objetivos.
         </p>
         <p style={{ margin: '5px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', lineHeight: 1.5 }}>
-          Suba o PDF de um edital em Meus cursos, ou escolha um objetivo na lista abaixo.
+          Suba o PDF de um edital em Meus cursos, ou escolha um da biblioteca abaixo.
         </p>
       </div>
     );
   }
 
   return (
-    <div style={{ marginBottom: 32, display: 'grid', gap: 14 }}>
+    // Dois por linha em tela larga. Um cartao esticado a 1900px com uma linha de objetivo
+    // dentro era so ar — foi o que deixou a tela com cara de rascunho.
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: 14 }}>
       {cursos.map((curso) => {
         const objetivos = objetivosDoCurso(curso);
         const capa = capaDoCurso(curso);
@@ -236,121 +239,119 @@ function MeusObjetivos({ cursos, bancoDisciplinas = [], onSetActiveTab, onRemove
         const progressos = progressoPorObjetivo(curso, disciplinas);
 
         return (
-          <div key={curso.id} className="pl-card" style={{ overflow: 'hidden' }}>
-            {/* Cabecalho do curso: e o curso que carrega capa, cor e nome. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--pl-rule)' }}>
+          <div key={curso.id} className="pl-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {/* Faixa da cor/capa: e o que da identidade ao cartao e separa um curso do
+                outro de relance. */}
+            <div style={{ height: 6, background: capa.gradiente, flexShrink: 0 }} />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 16px 12px' }}>
               <div style={{
-                width: 38, height: 38, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
-                background: capa.gradiente, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 40, height: 40, borderRadius: 9, flexShrink: 0, overflow: 'hidden',
+                border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface-2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {curso.imagem_url
-                  ? <img src={storageThumb(curso.imagem_url, 96)} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <Trophy size={16} style={{ color: '#fff', opacity: 0.9 }} />}
+                  ? <img src={storageThumb(curso.imagem_url, 96)} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  : <Trophy size={17} style={{ color: 'var(--pl-ink-4)' }} />}
               </div>
+
               <div style={{ minWidth: 0, flex: 1 }}>
-                <p title={curso.nome} style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <p title={curso.nome} style={{ margin: 0, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {nomeCurtoDoCurso(curso)}
                 </p>
                 <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {descricaoDoCurso(curso)}
                 </p>
               </div>
-              <span className="pl-tag" style={{ flexShrink: 0 }}>
-                {objetivos.length} {objetivos.length === 1 ? 'objetivo' : 'objetivos'}
-              </span>
-              {onEditarCurso && (
-                <button
-                  type="button"
-                  onClick={() => onEditarCurso(curso)}
-                  className="pl-btn pl-btn-sm"
-                  style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                  title="Personalizar curso, editar objetivos e datas"
-                >
-                  <Pencil size={13} /> Editar
-                </button>
-              )}
+
+              {/* Editar e remover sao acoes do curso: ficam juntas, discretas, no cabecalho.
+                  "Remover curso" numa faixa propria criava uma terceira linha vazia. */}
+              <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+                {onEditarCurso && (
+                  <button
+                    type="button"
+                    onClick={() => onEditarCurso(curso)}
+                    title="Personalizar curso, editar objetivos e datas"
+                    style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 5, lineHeight: 0 }}
+                  >
+                    <Pencil size={15} />
+                  </button>
+                )}
+                {onRemove && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(curso.id)}
+                    title="Remover o curso e todos os objetivos dele"
+                    style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 5, lineHeight: 0 }}
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Uma linha por objetivo. Progresso, prazo e o botao de alvo ficam aqui porque
-                sao do objetivo, nao do curso: dois cargos do mesmo edital tem grades
-                diferentes e podem ter datas diferentes. */}
-            <div>
+            {/* Uma linha por objetivo. Progresso, prazo e o botao de alvo sao do objetivo,
+                nao do curso: dois cargos do mesmo edital tem grades e datas diferentes. */}
+            <div style={{ borderTop: '1px solid var(--pl-rule)' }}>
               {objetivos.map((objetivo, indice) => {
                 const id = idDoObjetivo(curso.id, objetivo.id);
                 const ehAlvo = alvoId === id;
                 const marco = marcoDoObjetivo(objetivo);
                 const pct = Math.round(Number(progressos.find((item) => item.id === objetivo.id)?.percentual || 0));
-                const tipo = tipoDoObjetivo(objetivo);
 
                 return (
-                  <div
+                  <button
                     key={id}
+                    type="button"
+                    onClick={() => onSetActiveTab?.('edital')}
+                    title="Abrir o edital deste objetivo"
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
+                      display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
                       padding: '11px 16px',
+                      border: 0,
                       borderTop: indice === 0 ? 0 : '1px solid var(--pl-rule)',
+                      borderLeft: `3px solid ${ehAlvo ? 'var(--pl-warn)' : 'transparent'}`,
                       background: ehAlvo ? 'var(--pl-bg-soft)' : 'transparent',
                     }}
                   >
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                        <span title={objetivo.nome} style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }}>
-                          {objetivo.nome}
-                        </span>
-                        {ehAlvo && <span className="pl-tag pl-tag-warn">Alvo</span>}
-                        <span className="pl-tag">{tipo.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
+                      <span title={objetivo.nome} style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {objetivo.nome}
+                      </span>
+                      {ehAlvo
+                        ? <span className="pl-tag pl-tag-warn" style={{ flexShrink: 0 }}>Alvo</span>
+                        : onDefinirAlvo && (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => { e.stopPropagation(); onDefinirAlvo(id); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onDefinirAlvo(id); } }}
+                            className="pl-btn-link"
+                            style={{ flexShrink: 0, fontSize: 11.5 }}
+                          >
+                            definir como alvo
+                          </span>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 7 }}>
+                      <div className="pl-progress accent" style={{ flex: 1, minWidth: 0 }}>
+                        <div className="fill" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }} />
                       </div>
-                      <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
-                        {pct}% do conteúdo
-                        {marco ? ` · ${marco.dias >= 0 ? `${marco.dias} dias ${marco.rotuloDaContagem}` : 'prazo passou'}` : ''}
-                        {objetivo.banca ? ` · ${objetivo.banca}` : ''}
-                      </p>
+                      <span className="pl-num" style={{ fontSize: 13, color: 'var(--pl-ink-2)', flexShrink: 0 }}>{pct}%</span>
                     </div>
 
-                    <div className="pl-progress accent" style={{ width: 110, flexShrink: 0 }}>
-                      <div className="fill" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }} />
-                    </div>
-
-                    {!ehAlvo && onDefinirAlvo && (
-                      <button
-                        type="button"
-                        onClick={() => onDefinirAlvo(id)}
-                        className="pl-btn pl-btn-sm"
-                        style={{ flexShrink: 0 }}
-                        title="Guiar o dia por este objetivo"
-                      >
-                        Definir alvo
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => onSetActiveTab?.('edital')}
-                      className="pl-btn pl-btn-sm pl-btn-ghost"
-                      style={{ flexShrink: 0 }}
-                      title="Abrir o edital deste objetivo"
-                    >
-                      Abrir
-                    </button>
-                  </div>
+                    <p style={{ margin: '5px 0 0', fontSize: 11, color: 'var(--pl-ink-3)' }}>
+                      {[
+                        marco ? (marco.dias >= 0 ? `${marco.dias} dias ${marco.rotuloDaContagem}` : 'prazo passou') : '',
+                        objetivo.banca || '',
+                        objetivo.vagas ? `${objetivo.vagas} vagas` : '',
+                      ].filter(Boolean).join(' · ') || 'Sem prazo definido'}
+                    </p>
+                  </button>
                 );
               })}
             </div>
-
-            {/* Remover e do CURSO inteiro (apaga os objetivos junto), entao fica no rodape e
-                com o texto dizendo o que apaga — nao num "x" ao lado de um objetivo so. */}
-            {onRemove && (
-              <div style={{ borderTop: '1px solid var(--pl-rule)', padding: '8px 16px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => onRemove(curso.id)}
-                  className="pl-btn-link"
-                  style={{ fontSize: 11.5, color: 'var(--pl-ink-4)' }}
-                  title="Remove o curso e todos os objetivos dele"
-                >
-                  Remover curso
-                </button>
-              </div>
-            )}
           </div>
         );
       })}
@@ -889,28 +890,35 @@ export default function Objetivos({
   ];
 
   return (
-    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
-      {/* Hero */}
-      <div style={{ marginBottom: 28 }}>
-        <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Objetivos de estudo</p>
-        <h1 className="pl-display" style={{ marginBottom: 10 }}>
-          O que você está estudando<span style={{ color: 'var(--pl-accent)' }}>.</span>
-        </h1>
-        <p style={{ fontSize: 14, color: 'var(--pl-ink-2)', maxWidth: 560, lineHeight: 1.55 }}>
-          Concurso público, vestibular, ENEM, faculdade ou estudo livre — organize tudo em um lugar
-          e acompanhe disciplinas, tópicos e progresso de cada objetivo.
-        </p>
+    // Largura limitada: a tela ocupava os 1900px do monitor e o conteudo ficava boiando,
+    // com cartoes de uma linha esticados de ponta a ponta.
+    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', minHeight: '100%' }}>
+     <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+      {/* Hero, com o resumo do lado: os numeros nao precisavam de quatro cartoes grandes
+          para dizer "1 objetivo". */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 28, flexWrap: 'wrap', marginBottom: 22 }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Objetivos de estudo</p>
+          <h1 className="pl-display" style={{ marginBottom: 10 }}>
+            O que você está estudando<span style={{ color: 'var(--pl-accent)' }}>.</span>
+          </h1>
+          <p style={{ fontSize: 13.5, color: 'var(--pl-ink-2)', maxWidth: 480, lineHeight: 1.55 }}>
+            Concurso público, vestibular, ENEM, faculdade ou estudo livre — cada objetivo com suas
+            disciplinas, seu prazo e seu progresso.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 22, flexShrink: 0, paddingBottom: 4 }}>
+          {kpis.map((k) => (
+            <div key={k.label}>
+              <p className="pl-num" style={{ fontSize: 30, color: 'var(--pl-ink)', lineHeight: 1, margin: 0 }}>{k.value}</p>
+              <p className="pl-eyebrow" style={{ margin: '5px 0 0', fontSize: 9.5 }}>{k.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginBottom: 28 }}>
-        {kpis.map((k) => (
-          <div key={k.label} className="pl-card" style={{ padding: '10px 14px' }}>
-            <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{k.label}</p>
-            <p className="pl-num" style={{ fontSize: 28, color: 'var(--pl-ink)', lineHeight: 1 }}>{k.value}</p>
-          </div>
-        ))}
-      </div>
+      <div className="pl-rule-soft" style={{ marginBottom: 20 }} />
 
       {/* Meus objetivos */}
       <MeusObjetivos
@@ -935,7 +943,7 @@ export default function Objetivos({
 
       {/* Adicionar novo objetivo. Quem ja tem objetivo abre no clique; quem nao tem cai
           direto na lista, que e o caminho dele. */}
-      <div>
+      <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px solid var(--pl-rule)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
           <p className="pl-eyebrow" style={{ margin: 0 }}>Adicionar objetivo</p>
           {temObjetivos && (
@@ -1055,6 +1063,7 @@ export default function Objetivos({
         </>
         )}
       </div>
+     </div>
     </div>
   );
 }

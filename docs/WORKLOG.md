@@ -18,6 +18,39 @@
 
 ---
 
+## Sessão 2026-09-23 (noite) — O segundo cargo sumia + tela de Objetivos redesenhada ✅
+
+**1. Marcava dois cargos, salvava um.** O modal confirmava "Cobrindo 2 objetivos: Oficial de
+Estado-Maior e Soldado do Quadro de Praças" e a tela mostrava um só.
+
+**Causa:** `createCourse`, no `App.jsx`, montava o curso com um literal que listava campo por
+campo — e **`objetivos` e `disciplinasPorObjetivo` não estavam na lista**. A importação
+passava os dois, eles eram descartados em silêncio, e na leitura `migrarCurso` derivava um
+único objetivo do campo `cargo`. Nenhum erro em lugar nenhum.
+
+**Correção:** a montagem virou `src/lib/novoCurso.js` (6 testes), e o primeiro teste é
+exatamente esse caso. Enquanto a regra morava dentro do componente, campo novo do fluxo de
+importação sumia sem ninguém notar; agora o teste segura. Aproveitei para incluir a
+personalização (`apelido`, `descricao`, `capa_url`, `cor`), que tinha o mesmo furo.
+
+**2. A tela de Objetivos foi redesenhada.** O que estava errado: cartões de uma linha
+esticados nos 1900px do monitor, quatro KPIs enormes para dizer "1", "Remover curso" numa
+faixa própria vazia, nenhuma identidade visual por curso.
+
+Agora:
+- **largura máxima de 1080px** — o conteúdo para de boiar;
+- **grade de dois cartões por linha** em tela larga;
+- os quatro números viraram uma **faixa compacta ao lado do título**, não quatro cartões;
+- cada cartão tem a **faixa da cor do curso** no topo;
+- **Editar e remover** viraram ícones discretos no cabeçalho do cartão;
+- cada objetivo é uma **linha clicável** com barra de progresso, %, prazo, banca e vagas; o
+  alvo ganha uma borda âmbar à esquerda em vez de um badge solto.
+
+Conferido renderizando a tela num Chromium com dois cursos de mentira (um concurso de dois
+cargos e uma faculdade) antes de publicar — não só build e testes.
+
+---
+
 ## Sessão 2026-09-23 (correção urgente) — papirando.com abrindo em branco ✅
 
 **O site saiu do ar.** Tela branca total, sem nada renderizado.
