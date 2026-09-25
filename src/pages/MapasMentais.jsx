@@ -520,7 +520,7 @@ export default function MapasMentais({
           topicId: '',
         }))
         .filter((node) => node.label);
-      if (nodes.length === 0) throw new Error('A IA não retornou ramos válidos para o mapa.');
+      if (nodes.length === 0) throw new Error('Não conseguimos montar ramos válidos para o mapa.');
 
       const titulo = String(payload?.title || normalizedPrompt || 'Mapa mental').trim();
       adoptMap(normalizeMindMapRecord(
@@ -545,14 +545,14 @@ export default function MapasMentais({
         context
       ));
     } catch (error) {
-      console.error('[MapasMentais] geração IA falhou:', error?.message || error);
+      console.error('[MapasMentais] geracao do mapa falhou:', error?.message || error);
       // Fallback: estrutura básica local a partir do prompt, com aviso honesto.
       const fallbackMap = buildMapFromPrompt(normalizedPrompt, context);
       if (fallbackMap) {
         adoptMap(fallbackMap);
-        setAiMapError('A IA está indisponível agora — criei uma estrutura básica a partir do seu texto. Edite à vontade e tente a IA de novo mais tarde.');
+        setAiMapError('A geração está indisponível agora — montei uma estrutura básica a partir do seu texto. Edite à vontade e tente de novo mais tarde.');
       } else {
-        setAiMapError(String(error?.message || 'A IA não respondeu agora. Tente novamente em instantes.'));
+        setAiMapError(String(error?.message || 'Não conseguimos montar o mapa agora. Tente novamente em instantes.'));
       }
     } finally {
       setAiMapLoading(false);
@@ -650,7 +650,7 @@ export default function MapasMentais({
           </div>
           <h1>Mapas mentais<span className="dot">.</span></h1>
           <p className="subtitle">
-            Sua mesa de trabalho conectada a disciplinas, tópicos e concursos. Gere com IA, edite à mão, vincule ao seu fluxo.
+            Sua mesa de trabalho conectada a disciplinas, tópicos e concursos. Gere automaticamente, edite à mão, vincule ao seu fluxo.
           </p>
         </div>
         <div className="pl-hero-kpis">

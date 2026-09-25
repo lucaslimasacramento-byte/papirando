@@ -322,7 +322,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Erro ao gerar card.');
-      if (!Array.isArray(data?.cards) || data.cards.length === 0) throw new Error('A IA não gerou cards para este trecho.');
+      if (!Array.isArray(data?.cards) || data.cards.length === 0) throw new Error('Nenhum card foi gerado para este trecho.');
       const base = newCard();
       const rows = data.cards.map((c) => ({
         deck_id: aiDeckId, user_id: currentUserId,
@@ -573,7 +573,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
               <div style={{ textAlign: 'center', padding: '12px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                 <Highlighter size={20} style={{ color: 'var(--pl-ink-4)' }} />
                 <p style={{ margin: 0, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 500, lineHeight: 1.5, maxWidth: 240 }}>
-                  Selecione texto para grifar ou pedir um flashcard à IA.
+                  Selecione texto para grifar ou gerar um flashcard.
                 </p>
               </div>
             )}
@@ -638,7 +638,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 
       {/* AI flashcard modal */}
       {aiModal && (
-        <Modal title="Grifar e gerar flashcards" subtitle="A IA monta de 1 a 5 cards a partir do trecho selecionado." onClose={() => setAiModal(false)} wide>
+        <Modal title="Grifar e gerar flashcards" subtitle="O Papirando monta de 1 a 5 cards a partir do trecho selecionado." onClose={() => setAiModal(false)} wide>
           <ErrBanner msg={aiErr} />
           <div className="field-group" style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: aiErr ? 12 : 0 }}>
             <span className="pl-eyebrow">Trecho selecionado</span>
@@ -841,7 +841,7 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
           </div>
           <h1>Materiais de estudo<span className="dot">.</span></h1>
           <p className="subtitle">
-            Envie suas apostilas e leis. Grife trechos, escreva margens e gere flashcards com IA — sua biblioteca pessoal de estudo, no mesmo papel.
+            Envie suas apostilas e leis. Grife trechos, escreva margens e gere flashcards do próprio material — sua biblioteca pessoal de estudo, no mesmo papel.
           </p>
         </div>
         <div className="meta">
@@ -906,7 +906,7 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
             <div className="sheet s3" />
           </div>
           <h3>Sua biblioteca está vazia.</h3>
-          <p>Envie PDFs de apostilas, leis ou resumos. Você poderá grifar trechos, anotar margens e pedir flashcards à IA sem sair da página.</p>
+          <p>Envie PDFs de apostilas, leis ou resumos. Você poderá grifar trechos, anotar margens e gerar flashcards sem sair da página.</p>
           <button
             type="button"
             onClick={() => { setUploadErr(''); setUploadModal(true); }}

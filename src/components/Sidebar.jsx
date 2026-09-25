@@ -67,7 +67,7 @@ const NAV_SECTIONS_BASE = [
     title: 'Prática',
     items: [
       { id: 'sessoes', icon: Timer, label: 'Sessões', badge: 'Hot' },
-      { id: 'flashcards', icon: Copy, label: 'Flashcards', badge: 'IA' },
+      { id: 'flashcards', icon: Copy, label: 'Flashcards' },
       { id: 'revisoes', icon: CheckCircle2, label: 'Revisões' },
       { id: 'questoes', icon: HelpCircle, label: 'Questões' },
       { id: 'simulados', icon: ListChecks, label: 'Simulados', badge: 'Rank' },
@@ -77,7 +77,7 @@ const NAV_SECTIONS_BASE = [
   {
     title: 'Biblioteca',
     items: [
-      { id: 'materiais', icon: FileText, label: 'Materiais PDF', badge: 'IA' },
+      { id: 'materiais', icon: FileText, label: 'Materiais PDF' },
       { id: 'audiobooks', icon: Headphones, label: 'Audiolivros' },
       { id: 'mapas', icon: Share2, label: 'Mapas mentais' },
       { id: 'legislacao', icon: Scale, label: 'Legislação' },

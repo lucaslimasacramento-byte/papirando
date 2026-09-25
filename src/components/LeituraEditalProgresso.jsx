@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 
 const ETAPAS = [
   { id: 'pdf', label: 'Lendo o arquivo' },
-  { id: 'ia', label: 'A IA está montando as disciplinas' },
+  { id: 'ia', label: 'Montando as disciplinas' },
 ];
 
 export function LeituraEditalProgresso({ fase = 'pdf' }) {

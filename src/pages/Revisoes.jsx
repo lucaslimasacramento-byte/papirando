@@ -565,7 +565,7 @@ function RevisoesEmptyState({ onRegistrar, onFlashcards, onDefinirAlvo }) {
     <section className="pl-card-paper revisoes-empty-state">
       <div className="revisoes-empty-live"><span /> Sua fila está pronta</div>
       <h2>Sem histórico suficiente ainda.</h2>
-      <p>Registre estudo, rode flashcards e defina um objetivo-alvo para a IA entender o que merece reforço.</p>
+      <p>Registre estudo, rode flashcards e defina um objetivo-alvo para o Papirando saber o que merece reforço.</p>
       <div className="revisoes-empty-grid">
         <EmptyAction n="01" title="Registrar uma sessão" detail="Alimente o histórico real para calibrar a fila." cta="Registrar estudo" onClick={onRegistrar} />
         <EmptyAction n="02" title="Estudar flashcards" detail="Use FSRS para criar revisões automáticas." cta="Abrir flashcards" onClick={onFlashcards} />

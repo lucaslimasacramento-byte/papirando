@@ -29,5 +29,5 @@ export async function resolveAiHeaders() {
 }
 
 export function getAiUnavailableMessage() {
-  return 'Servidor de IA nao configurado neste ambiente.';
+  return 'A leitura automatica nao esta configurada neste ambiente.';
 }

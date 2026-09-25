@@ -640,7 +640,7 @@ function MetasList({ metas, onEditar, onExcluir, onPapirar, onReplanejar }) {
           <div className="pl-overline">Por disciplina</div>
           <h2 className="pl-section-title" style={{ marginTop: 7 }}>{metas.length} metas pra papirar</h2>
         </div>
-        <button type="button" className="pl-btn-link" onClick={onReplanejar}>Replanejar com IA →</button>
+        <button type="button" className="pl-btn-link" onClick={onReplanejar}>Replanejar a semana →</button>
       </div>
       <div style={{ display: 'grid', gap: 10 }}>
         {metas.map((meta) => (
@@ -725,7 +725,7 @@ function MetaBizuSuggestion({ metas, onReplanejar }) {
   return (
     <section className="pl-card-ai metas-bizu">
       <div>
-        <span className="pl-tag-ai"><Sparkles size={13} /> Bizu IA</span>
+        <span className="pl-tag-ai"><Sparkles size={13} /> Bizu</span>
         <p className="pl-section-title" style={{ marginTop: 10, fontSize: 24 }}>
           {subject ? message.replace(subject, '') : message}
           {subject ? <span className="pl-mark-text">{subject}</span> : null}

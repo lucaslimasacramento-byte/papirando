@@ -70,7 +70,7 @@ function FlashcardsHeader({ onNovoDeck, onGerarIa, isPremium, onUpgrade }) {
           Flashcards<span style={{ color: 'var(--pl-accent)' }}>.</span>
         </h1>
         <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
-          Decks de repetição espaçada com <span className="pl-mark-text">geração com IA</span> quando você precisar.
+          Decks de repetição espaçada, <span className="pl-mark-text">gerados a partir do seu material</span> quando você precisar.
           O motor decide quando rever, você só papira.
         </p>
       </div>
@@ -80,11 +80,11 @@ function FlashcardsHeader({ onNovoDeck, onGerarIa, isPremium, onUpgrade }) {
         </button>
         {isPremium ? (
           <button type="button" className="pl-btn pl-btn-ai" onClick={onGerarIa}>
-            <Sparkles size={12} /> Gerar com IA
+            <Sparkles size={12} /> Gerar deck
           </button>
         ) : (
           <PremiumGate locked mode="button" feature="ai_flashcards" onUpgrade={onUpgrade}
-            label="Gerar com IA" hint="Gere flashcards ilimitados com IA no Papiro" />
+            label="Gerar deck" hint="Gere flashcards ilimitados no Papiro" />
         )}
       </div>
     </header>
@@ -218,7 +218,7 @@ function DecksSection({ decks, allCount, filter, setFilter, onAbrir, onEstudar, 
     { id: 'todos', label: `Todos ${allCount}` },
     { id: 'vencendo', label: 'Vencendo' },
     { id: 'novos', label: 'Novos' },
-    { id: 'ia', label: 'IA' },
+    { id: 'ia', label: 'Gerados' },
   ];
 
   return (
@@ -267,7 +267,7 @@ function DeckCard({ deck, onAbrir, onEstudar, onDelete }) {
       <div className="flash-card-corner" />
       <div className="flash-deck-top">
         <span className={`pl-chip flash-chip-${tone}`}>{deck.disciplina || 'Geral'}</span>
-        {deck.isAi && <span className="pl-tag-ai">Bizu IA</span>}
+        {deck.isAi && <span className="pl-tag-ai">Bizu</span>}
         <button
           type="button"
           aria-label="Excluir deck"
@@ -312,11 +312,11 @@ function GerarIaInlineCard({ disciplinaOptions, loading, error, onGerar }) {
   return (
     <section className="pl-card-ai flash-ai-card">
       <div className="flash-ai-head">
-        <span className="pl-tag-ai">Bizu IA</span>
+        <span className="pl-tag-ai">Bizu</span>
         <span className="pl-overline">Gerar deck</span>
       </div>
       <h3>Crie um deck em <span>15 segundos</span></h3>
-      <p>Diga disciplina e tópico. A IA escreve frente e verso no estilo de banca.</p>
+      <p>Diga disciplina e tópico. O Papirando escreve frente e verso no estilo de banca.</p>
       <label>
         <span>Disciplina</span>
         <select value={disciplinaId} onChange={(event) => setDisciplinaId(event.target.value)}>
@@ -382,10 +382,10 @@ function FlashcardsEmptyState({ onManual, onIa, onEdital }) {
     <section className="pl-card-paper flash-empty-state">
       <div className="pl-overline">Primeiro deck</div>
       <h2>Três caminhos para começar a papirar</h2>
-      <p>Monte um deck manual, deixe o Bizu IA criar a primeira leva, ou traga temas do edital verticalizado.</p>
+      <p>Monte um deck manual, deixe o Bizu criar a primeira leva, ou traga temas do edital verticalizado.</p>
       <div className="flash-empty-grid">
         <EmptyAction n="01" title="Deck manual" detail="Crie uma coleção simples e adicione frente e verso." cta="Criar deck" onClick={onManual} />
-        <EmptyAction n="02" title="Gerar com IA" detail="Informe disciplina e tópico para receber cards revisáveis." cta="Usar Bizu IA" onClick={onIa} ai />
+        <EmptyAction n="02" title="Gerar deck" detail="Informe disciplina e tópico para receber cards revisáveis." cta="Usar o Bizu" onClick={onIa} ai />
         <EmptyAction n="03" title="Do edital" detail="Use seus tópicos do edital como trilha de memorização." cta="Abrir edital" onClick={onEdital} />
       </div>
     </section>
@@ -397,7 +397,7 @@ function EmptyAction({ n, title, detail, cta, onClick, ai = false }) {
     <article className={ai ? 'pl-card-ai flash-empty-action' : 'pl-card flash-empty-action'}>
       <div>
         <span className="pl-serif-number">{n}</span>
-        {ai && <span className="pl-tag-ai">Bizu IA</span>}
+        {ai && <span className="pl-tag-ai">Bizu</span>}
       </div>
       <h3>{title}</h3>
       <p>{detail}</p>
@@ -451,7 +451,7 @@ function FlashcardsAiModal({
 }) {
   return (
     <CModal
-      title="Gerar flashcards com IA"
+      title="Gerar flashcards"
       onClose={onClose}
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
@@ -957,7 +957,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
       const flashcards = Array.isArray(payload?.flashcards) ? payload.flashcards : [];
 
       if (flashcards.length === 0) {
-        throw new Error('Nenhum flashcard foi retornado pela IA. Tente novamente ou ajuste o tópico.');
+        throw new Error('Nenhum flashcard foi gerado. Tente novamente ou ajuste o tópico.');
       }
 
       let targetDeck = activeDeck;
@@ -966,7 +966,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
       if (!targetDeck?.id) {
         targetDeck = await createDeck({
           userId: currentUserId,
-          titulo: topico ? `${disciplina || 'Flashcards'} · ${topico}` : disciplina || 'Flashcards IA',
+          titulo: topico ? `${disciplina || 'Flashcards'} · ${topico}` : disciplina || 'Flashcards gerados',
           disciplina: disciplina || 'Geral',
         });
         deckCreatedNow = true;
@@ -1003,7 +1003,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
       setAiGenModal(false);
       setAiForm({ courseId: '', disciplinaId: '', topicoId: '', disciplina: '', topico: '', quantidade: 10 });
     } catch (error) {
-      setAiErr(error?.message || 'A IA de produção não respondeu agora. Tente novamente em instantes.');
+      setAiErr(error?.message || 'Não conseguimos gerar os cards agora. Tente novamente em instantes.');
     } finally {
       setAiLoading(false);
     }
@@ -1341,7 +1341,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
         {/* AI generate modal */}
         {aiGenModal && (
           <CModal
-            title="Gerar cards com IA"
+            title="Gerar cards"
             onClose={() => setAiGenModal(false)}
             footer={
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>

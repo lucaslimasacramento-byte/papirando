@@ -794,7 +794,7 @@ export default function Conciliador({
       recommendation: planText,
       aiAdvantages: aiCompatibility.advantages || [],
       aiRisks: aiCompatibility.risks || [],
-      sourceLabel: 'Parecer da IA',
+      sourceLabel: 'Parecer do Papirando',
     };
   }, [aiCompatibility, finalVerdict]);
 
@@ -1972,7 +1972,7 @@ function VerdictCard({ verdict, loading = false }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div>
           <span style={{ display: 'inline-flex', borderRadius: 999, border: `1px solid ${ts.pillBorder}`, padding: '8px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.22em', background: ts.pillBg, color: ts.pillColor }}>
-            {loading ? 'IA analisando' : verdict.sourceLabel || 'Parecer final'}
+            {loading ? 'Analisando' : verdict.sourceLabel || 'Parecer final'}
           </span>
           <h3 style={{ marginTop: 16, fontSize: 28, fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--pl-ink)' }}>{verdict.title}</h3>
         </div>

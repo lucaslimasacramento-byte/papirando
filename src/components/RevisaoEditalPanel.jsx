@@ -153,7 +153,7 @@ function DisciplinaRevisavel({ item, onToggle, onRenomear, onToggleTopico, rotul
         <div style={{ borderTop: '1px solid var(--pl-rule)', padding: '8px 12px 12px 38px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {item.topicos.length === 0 && (
             <p style={{ fontSize: 12, color: 'var(--pl-ink-3)', margin: 0 }}>
-              A IA não quebrou esta disciplina em tópicos. Dá para adicionar depois, na tela da disciplina.
+              Esta disciplina veio sem tópicos no edital. Dá para adicionar depois, na tela da disciplina.
             </p>
           )}
           {item.topicos.map((topico, indice) => (
@@ -223,7 +223,7 @@ export function RevisaoEditalPanel({
         <p className="pl-eyebrow" style={{ marginBottom: 6 }}>Confira antes de confirmar</p>
         <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-2)' }}>
           É esta leitura que vira o seu plano de estudo. Desmarque o que não cai na sua prova
-          e corrija o que a IA entendeu errado.
+          e corrija o que ficou errado na leitura.
         </p>
       </div>
 

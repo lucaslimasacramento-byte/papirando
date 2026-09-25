@@ -278,7 +278,7 @@ export default function Redacoes({
       setTranscribedText(result.text || '');
       setUploadStatus('review');
     } catch (e) {
-      setUploadErr(String(e?.message || 'Falha na transcricao com IA.'));
+      setUploadErr(String(e?.message || 'Não conseguimos transcrever a imagem.'));
       setUploadStatus('idle');
     }
   };
@@ -296,8 +296,8 @@ export default function Redacoes({
     if (!text.trim()) {
       setCorrecaoErr(
         redacaoInputMode === 'upload'
-          ? 'Revise a transcrição antes de pedir a correção com IA.'
-          : 'Escreva ou cole sua redação antes de pedir a correção com IA.'
+          ? 'Revise a transcrição antes de pedir a correção.'
+          : 'Escreva ou cole sua redação antes de pedir a correção.'
       );
       return;
     }
@@ -335,11 +335,11 @@ export default function Redacoes({
           await onSaveRedacao?.({ redacao: record });
         } catch (saveErr) {
           console.error('[Redacoes] falha ao salvar parecer (tentativa 2):', saveErr?.message || saveErr);
-          setCorrecaoErr(String(saveErr?.message || 'A IA gerou o parecer, mas não consegui salvar o histórico agora. O parecer está na tela — copie o feedback antes de sair.'));
+          setCorrecaoErr(String(saveErr?.message || 'O parecer ficou pronto, mas não consegui salvar o histórico agora. Ele está na tela — copie o feedback antes de sair.'));
         }
       }
     } catch (err) {
-      setCorrecaoErr(String(err?.message || 'Servidor de IA indisponível. Tente novamente em alguns instantes.'));
+      setCorrecaoErr(String(err?.message || 'A correção está indisponível agora. Tente novamente em alguns instantes.'));
     } finally {
       setCorrigindo(false);
     }
@@ -652,11 +652,11 @@ export default function Redacoes({
           </div>
           <h1>Correção de redações<span className="dot">.</span></h1>
           <p className="subtitle">
-            Envio por foto ou texto, correção assistida por IA e histórico das suas folhas — tudo no mesmo lugar.
+            Envio por foto ou texto, correção comentada e histórico das suas folhas — tudo no mesmo lugar.
           </p>
         </div>
         <div className="meta">
-          <span>Banca · Tema · Esqueleto<br />Foto/texto · Parecer por IA</span>
+          <span>Banca · Tema · Esqueleto<br />Foto/texto · Parecer comentado</span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
@@ -681,7 +681,7 @@ export default function Redacoes({
         <div className="pl-kpi">
           <span className="lab"><BrainCircuit size={12} /> Corrigidas</span>
           <span className="val">{summary.corrected}</span>
-          <span className="sub">parecer de IA emitido</span>
+          <span className="sub">parecer emitido</span>
         </div>
         <div className="pl-kpi success">
           <span className="lab"><Percent size={12} /> Média</span>
@@ -750,7 +750,7 @@ export default function Redacoes({
                     Nova correção
                   </h2>
                   <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                    Escolha a banca, digite ou envie o texto e corrija com IA. Dicas por banca no ícone de ajuda (?).
+                    Escolha a banca, digite ou envie o texto e peça a correção. Dicas por banca no ícone de ajuda (?).
                   </p>
                 </div>
 
@@ -912,12 +912,12 @@ export default function Redacoes({
                         onClick={handleCorrigir}
                         disabled={corrigindo}
                         aria-disabled={!canCorrigirRedacao}
-                        title={canCorrigirRedacao ? 'Corrigir redação com IA' : 'Escreva ou cole a redação primeiro'}
+                        title={canCorrigirRedacao ? 'Corrigir esta redação' : 'Escreva ou cole a redação primeiro'}
                         className="pl-btn pl-btn-ai pl-btn-lg"
                         style={{ opacity: canCorrigirRedacao ? 1 : 0.7 }}
                       >
                         {corrigindo ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
-                        {corrigindo ? 'Corrigindo…' : 'Corrigir com IA'}
+                        {corrigindo ? 'Corrigindo…' : 'Corrigir redação'}
                       </button>
                     )}
                   </div>
@@ -926,7 +926,7 @@ export default function Redacoes({
                 {(redacaoInputMode === 'text' || uploadStatus === 'review') && !canCorrigirRedacao && !corrigindo && (
                   <div className="pl-warn-callout">
                     <AlertTriangle />
-                    <span>Escreva, cole ou revise a transcrição da redação para liberar a correção com IA.</span>
+                    <span>Escreva, cole ou revise a transcrição da redação para liberar a correção.</span>
                   </div>
                 )}
 
@@ -1045,13 +1045,13 @@ export default function Redacoes({
                             display: 'inline-flex', alignItems: 'center', gap: 8,
                           }}>
                             <BrainCircuit size={18} style={{ color: 'var(--pl-accent)' }} />
-                            Análise do tutor IA
+                            Análise da correção
                           </h4>
                           <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
                             Resumo, pontos fortes e ajustes objetivos.
                           </p>
                         </div>
-                        <span className="pl-tag pl-tag-ai"><Sparkles size={11} /> IA</span>
+                        <span className="pl-tag pl-tag-ai"><Sparkles size={11} /> Bizu</span>
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, padding: 18 }}>
@@ -1076,7 +1076,7 @@ export default function Redacoes({
 
                       {(priorityFixes.length > 0 || actionPlan.length > 0 || latestCorrection?.bancaFit || latestCorrection?.lineDiagnosis) && (
                         <div style={{ borderTop: '1px solid var(--pl-rule)', padding: 18, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-                          <FeedbackListCard title="Prioridades da próxima versão" icon={Trophy} items={priorityFixes} fallback={latestCorrection?.lineDiagnosis || 'A IA não retornou prioridades adicionais.'} />
+                          <FeedbackListCard title="Prioridades da próxima versão" icon={Trophy} items={priorityFixes} fallback={latestCorrection?.lineDiagnosis || 'Nenhuma prioridade adicional foi apontada.'} />
                           <FeedbackListCard title="Plano de treino" icon={Sparkles} items={actionPlan} fallback={latestCorrection?.bancaFit || 'Refaça o texto aplicando os ajustes acima e compare a nota.'} />
                         </div>
                       )}
@@ -1176,7 +1176,7 @@ export default function Redacoes({
           <div className="pl-side-card">
             <p className="pl-eyebrow">Resumo da área</p>
             <h3>Painel rápido</h3>
-            <p className="desc">Métricas do seu histórico de redações, alinhadas ao que a IA já corrigiu.</p>
+            <p className="desc">Métricas do seu histórico de redações, alinhadas ao que já foi corrigido.</p>
             <SidebarStat label="No histórico" helper="textos salvos" value={String(summary.total)} />
             <SidebarStat
               label="Melhor nota"

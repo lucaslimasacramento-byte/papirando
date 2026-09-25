@@ -460,7 +460,7 @@ export default function Planos({
         const motivo = String(realAiError?.message || '').trim();
         setAnalysisError(
           heuristicAnalysis
-            ? `A IA não respondeu — mostramos abaixo a leitura do parser interno, que costuma errar em edital longo. Confira tudo antes de confirmar.${motivo ? ` (motivo: ${motivo})` : ''}`
+            ? `Não conseguimos fazer a leitura completa — mostramos abaixo uma leitura de reserva, que costuma errar em edital longo. Confira tudo antes de confirmar.${motivo ? ` (motivo: ${motivo})` : ''}`
             : (motivo || 'Não foi possível analisar o edital.')
         );
         return heuristicAnalysis;
@@ -944,7 +944,7 @@ export default function Planos({
               : etapaEdital === 'cargos'
                 ? 'Qual cargo você vai fazer?'
                 : etapaEdital === 'revisao'
-                  ? 'Confira o que a IA encontrou'
+                  ? 'Confira a leitura do seu edital'
                   : etapaEdital === 'rotina'
                     ? 'Quando você estuda?'
                     : etapaEdital === 'pronto'
@@ -962,7 +962,7 @@ export default function Planos({
                     ? 'Último passo. É com isso que a plataforma monta o plano do dia, a meta da semana e as revisões.'
                     : etapaEdital === 'pronto'
                       ? ''
-                      : 'Envie o PDF do edital e a IA monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
+                      : 'Envie o PDF do edital. O Papirando monta as disciplinas, os tópicos e o quadro de provas do seu cargo.'
           }
           onClose={closeMode}
         >
@@ -1047,7 +1047,7 @@ export default function Planos({
                       }}
                       disabled={!iaForm.editalText.trim()}
                     >
-                      Analisar texto com IA
+                      Analisar este texto
                     </SecondaryButton>
                   </div>
                 </div>
@@ -1394,7 +1394,7 @@ export default function Planos({
                 revisao={revisao}
                 onAlterarDisciplina={alterarDisciplinaRevisada}
                 avisos={analysisResult.source === 'heuristic'
-                  ? ['Esta leitura NÃO veio da IA — é do parser interno, que erra bastante em edital longo. '
+                  ? ['Esta é a leitura de reserva, que erra bastante em edital longo. '
                      + 'Nada vem marcado de propósito: marque só o que estiver certo, ou feche e tente de novo.',
                      ...avisosDaLeitura]
                   : avisosDaLeitura}
@@ -1687,8 +1687,7 @@ function PlanosHeader({ onCriarCurso, onAbrirBiblioteca, onImportarIA }) {
         </button>
         <span className="btn-ai-aura">
           <button className="pl-btn pl-btn-ai" onClick={onImportarIA}>
-            <Sparkles size={12} /> Importar com IA
-            <span className="beta">beta</span>
+            <Sparkles size={12} /> Subir edital
           </button>
         </span>
       </div>

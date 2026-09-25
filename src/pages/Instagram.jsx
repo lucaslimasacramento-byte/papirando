@@ -260,7 +260,7 @@ export default function Instagram({ currentUserId = '' }) {
 
         <section className="ig-panel">
           <div className="ig-panel-head">
-            <h2>Legenda IA</h2>
+            <h2>Legenda automática</h2>
             <Sparkles size={18} />
           </div>
           <input value={captionContext.produto} onChange={(event) => setCaptionContext({ ...captionContext, produto: event.target.value })} placeholder="Produto" />

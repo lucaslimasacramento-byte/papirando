@@ -69,12 +69,12 @@ export async function requireAiAuth(req) {
 
   const token = normalizeBearerToken(req.headers.authorization);
   if (!token) {
-    throw httpError(401, 'Sessao obrigatoria para usar IA.', 'Faca login para usar a IA.');
+    throw httpError(401, 'Sessao obrigatoria para usar IA.', 'Faca login para usar este recurso.');
   }
 
   const { url, anonKey } = getSupabaseApiConfig();
   if (!url || !anonKey) {
-    throw httpError(500, 'Supabase auth nao configurado para validar chamadas de IA.', 'IA indisponivel no momento.');
+    throw httpError(500, 'Supabase auth nao configurado para validar chamadas de IA.', 'Recurso indisponivel no momento.');
   }
 
   const response = await fetch(`${url}/auth/v1/user`, {
@@ -132,7 +132,7 @@ export async function enforceAiPlan(req) {
       throw httpError(
         429,
         `Cota diaria de IA do plano gratuito excedida (${count}/${freeDailyCap}).`,
-        'Voce atingiu o limite diario de IA do plano gratuito. Assine o Papiro para uso ilimitado.'
+        'Voce atingiu o limite diario do plano gratuito. Assine o Papiro para uso ilimitado.'
       );
     }
   } catch (error) {
@@ -162,7 +162,7 @@ export function enforceAiRateLimit(req, route = '', identity = '') {
 
   current.count += 1;
   if (current.count > limit) {
-    throw httpError(429, `Rate limit de IA excedido para ${key}.`, 'Muitas chamadas de IA. Aguarde alguns minutos.');
+    throw httpError(429, `Rate limit de IA excedido para ${key}.`, 'Muitas chamadas seguidas. Aguarde alguns minutos.');
   }
 
   if (store.size > 2000) {
@@ -180,7 +180,7 @@ export async function readJson(req) {
     req.on('data', (chunk) => {
       raw += chunk;
       if (raw.length > 20 * 1024 * 1024) {
-        const error = httpError(413, 'Payload de IA muito grande.', 'Entrada muito grande para IA.');
+        const error = httpError(413, 'Payload de IA muito grande.', 'Entrada muito grande.');
         reject(error);
         req.destroy();
       }

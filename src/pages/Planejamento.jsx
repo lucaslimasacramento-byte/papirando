@@ -879,7 +879,7 @@ function PlanejamentoContent({
       setPlanApprovedAt(null);
       setPlanApproveError('');
     } catch (error) {
-      setAiScheduleError(error?.message || 'Não foi possível gerar o cronograma com IA.');
+      setAiScheduleError(error?.message || 'Não foi possível montar o cronograma agora.');
     } finally {
       setAiScheduleLoading(false);
     }
@@ -1373,7 +1373,7 @@ function PlanejamentoHeader({ mode, setMode, onConfigurar, onGenerateAiSchedule,
           </button>
           <button type="button" className="pl-btn pl-btn-ai" onClick={onGenerateAiSchedule} disabled={aiScheduleLoading}>
             {aiScheduleLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-            {aiScheduleLoading ? 'Gerando' : 'Gerar com IA'}
+            {aiScheduleLoading ? 'Montando' : 'Montar cronograma'}
           </button>
         </div>
     </header>
@@ -1495,7 +1495,7 @@ function PlSchedulePanel({
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
         <div>
           <span className="pl-tag pl-tag-accent">Cronograma inteligente</span>
-          <h2 className="pl-section-title" style={{ marginTop: 10 }}>Sugestao semanal da IA</h2>
+          <h2 className="pl-section-title" style={{ marginTop: 10 }}>Sugestão da semana</h2>
           <p className="pl-muted" style={{ margin: '8px 0 0', maxWidth: 760, lineHeight: 1.6 }}>
             {loading
               ? 'Analisando suas disciplinas, disponibilidade e concurso alvo para montar uma semana equilibrada.'
@@ -1520,7 +1520,7 @@ function PlSchedulePanel({
               className="pl-btn pl-btn-sm"
               onClick={onReavaliar}
               disabled={adjusting}
-              title="Reajusta o plano com base no que você atrasou, adiantou ou errou — sem IA"
+              title="Reajusta o plano com base no que você atrasou, adiantou ou errou"
             >
               {adjusting ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
               {adjusting ? 'Reavaliando' : 'Reavaliar plano'}

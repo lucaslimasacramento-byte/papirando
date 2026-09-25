@@ -135,7 +135,7 @@ export default function DisciplinaDetalhe({
       <div className="pl-card-ai" style={{ padding: 24, borderRadius: 20 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999, border: '1px solid var(--pl-accent-soft)', background: 'var(--pl-accent-soft)', padding: '4px 14px', marginBottom: 16 }}>
           <Sparkles size={12} style={{ color: 'var(--pl-accent)' }} />
-          <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-accent)' }}>Leitura da IA</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--pl-accent)' }}>Leitura do edital</span>
         </div>
 
         <h3 style={{ fontSize: 20, fontWeight: 600, color: 'var(--pl-ink)', marginBottom: 10 }}>Diagnóstico da disciplina</h3>

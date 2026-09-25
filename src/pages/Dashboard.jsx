@@ -515,12 +515,12 @@ function PlRoutineRow({ item, onStart, index, isFirst, isLast }) {
 
 function PlBizuCard({ recommendation, reminder, progress, onStart, onPlan }) {
   const title = recommendation?.nome || reminder?.title || 'Monte sua próxima sessão';
-  const detail = recommendation?.reason || recommendation?.nextTopic?.nome || reminder?.detail || 'O Bizu IA usa seu desempenho para sugerir o melhor próximo passo.';
+  const detail = recommendation?.reason || recommendation?.nextTopic?.nome || reminder?.detail || 'O Bizu usa seu desempenho para sugerir o melhor próximo passo.';
 
   return (
     <div className="pl-card-ai" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 13 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-        <span className="pl-tag-ai"><Sparkles size={10} /> Bizu IA</span>
+        <span className="pl-tag-ai"><Sparkles size={10} /> Bizu</span>
         <span className={`pl-tag${reminder?.badgeTone ? ` pl-tag-${reminder.badgeTone}` : ''}`}>{reminder?.badge || 'Agora'}</span>
       </div>
       <div>
@@ -804,7 +804,7 @@ function PlDashboardEmpty({
           <p style={{ margin: '8px 0 0', maxWidth: 680, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
             {concluido
               ? 'Seu plano está montado. Abra uma sessão e o Início passa a mostrar o foco do dia.'
-              : 'A IA lê o PDF, separa as disciplinas e os tópicos, pega as datas e o peso de cada matéria. Depois você só diz quando estuda.'}
+              : 'O Papirando lê o PDF, separa as disciplinas e os tópicos, pega as datas e o peso de cada matéria. Depois você só diz quando estuda.'}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
             {passos.map((passo, indice) => (

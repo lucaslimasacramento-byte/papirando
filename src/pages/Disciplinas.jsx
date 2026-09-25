@@ -547,7 +547,7 @@ function BizuDiagnostico({ disciplinas, onStart }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(250px, 0.62fr)', gap: 22, alignItems: 'start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span className="pl-tag-ai"><Sparkles size={13} /> Bizu IA</span>
+            <span className="pl-tag-ai"><Sparkles size={13} /> Bizu</span>
             <span className="pl-small-label">Diagnóstico das disciplinas</span>
           </div>
           <h3 className="pl-section-title" style={{ marginTop: 14 }}>
@@ -562,7 +562,7 @@ function BizuDiagnostico({ disciplinas, onStart }) {
               ? `Essa disciplina combina baixa cobertura com pouco estudo recente. Vale encaixar uma sessão curta antes de avançar para novos tópicos.`
               : best
               ? `${best.nome} está puxando a fila. Use esse ritmo para destravar as matérias com menor cobertura.`
-              : 'Cadastre disciplinas e registre estudo para a IA montar um diagnóstico útil.'}
+              : 'Cadastre disciplinas e registre estudo para o diagnóstico ficar útil.'}
           </p>
           <div style={{ marginTop: 16 }}>
             <button type="button" className="pl-btn pl-btn-ai" onClick={onStart}>
@@ -663,7 +663,7 @@ function DisciplinasEmptyState({ onNovaDisciplina, onAbrirBiblioteca, onRegistra
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, marginTop: 22 }}>
         <EmptyAction number="1" title="Criar disciplina" text="Cadastre a matéria e seus tópicos principais." action="Nova disciplina" onClick={onNovaDisciplina} />
         <EmptyAction number="2" title="Abrir objetivos" text="Use concurso, faculdade ou curso livre como referência de organização." action="Ver cursos" onClick={onAbrirBiblioteca} />
-        <EmptyAction number="3" title="Registrar estudo" text="Alimente o histórico para a IA sugerir prioridades." action="Registrar" onClick={onRegistrarEstudo} />
+        <EmptyAction number="3" title="Registrar estudo" text="Alimente o histórico para receber prioridades." action="Registrar" onClick={onRegistrarEstudo} />
       </div>
     </section>
   );

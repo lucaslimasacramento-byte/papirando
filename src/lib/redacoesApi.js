@@ -400,7 +400,7 @@ export async function transcribeEssayImageWithAI(file) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.error || 'Nao foi possivel transcrever a imagem com IA.');
+    throw new Error(payload?.error || 'Nao foi possivel transcrever a imagem.');
   }
 
   return {
@@ -421,7 +421,7 @@ export async function analyzeRedacaoWithRealAI({ text, tema, banca }) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.error || 'Nao foi possivel corrigir a redacao com IA.');
+    throw new Error(payload?.error || 'Nao foi possivel corrigir a redacao agora.');
   }
 
   return normalizeRedacaoCorrection({

@@ -167,7 +167,7 @@ export default function Edital({
     const resultado = await analyzeEdital(editalText);
     if (!temDadosUteis(resultado)) {
       setAiAnalysis(null);
-      setAiError('A IA não conseguiu identificar dados do edital neste texto. Confira se o conteúdo enviado é mesmo o edital.');
+      setAiError('Não conseguimos identificar dados de edital neste texto. Confira se o conteúdo enviado é mesmo o edital.');
       return null;
     }
     setAiAnalysis(resultado);
@@ -317,7 +317,7 @@ export default function Edital({
               style={{ opacity: aiLoading ? 0.72 : 1 }}
             >
               {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              {aiLoading ? 'Analisando...' : 'Analisar edital com IA'}
+              {aiLoading ? 'Lendo…' : 'Ler o edital'}
             </button>
           </div>
         )}
@@ -640,7 +640,7 @@ function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAn
     <section className="pl-card-ai">
       <button type="button" onClick={() => setAiPanelOpen((prev) => !prev)} className="edital-ai-toggle">
         <span>
-          <span className="pl-tag-ai"><Sparkles size={13} /> Leitura com IA</span>
+          <span className="pl-tag-ai"><Sparkles size={13} /> Leitura do edital</span>
           <strong>{aiAnalysis?.concurso || aiAnalysis?.nome || aiAnalysis?.examName || aiAnalysis?.organization || 'Edital analisado'}</strong>
         </span>
         <ChevronDown size={18} style={{ transform: aiPanelOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .15s' }} />
@@ -651,7 +651,7 @@ function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAn
           {aiLoading && (
             <div className="pl-ai-mini" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Loader2 size={18} className="animate-spin" />
-              <strong style={{ fontSize: 14, margin: 0 }}>Analisando edital com IA...</strong>
+              <strong style={{ fontSize: 14, margin: 0 }}>Lendo o edital…</strong>
             </div>
           )}
 

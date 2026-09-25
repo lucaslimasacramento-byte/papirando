@@ -35,7 +35,7 @@ export async function generateScheduleWithAI({ disciplinas = [], availability = 
       payload = JSON.parse(responseText);
     } catch {
       if (!response.ok) {
-        throw new Error('O servidor de IA respondeu em formato invalido.');
+        throw new Error('A resposta veio em formato invalido.');
       }
       throw new Error('A resposta do cronograma veio vazia ou invalida.');
     }
@@ -44,12 +44,12 @@ export async function generateScheduleWithAI({ disciplinas = [], availability = 
   if (!response.ok) {
     throw new Error(
       payload?.error ||
-        (responseText ? 'Nao foi possivel gerar o cronograma com IA.' : 'O servidor de IA nao retornou resposta.')
+        (responseText ? 'Nao foi possivel montar o cronograma agora.' : 'Nao veio resposta do servidor.')
     );
   }
 
   if (!Array.isArray(payload?.semana)) {
-    throw new Error('O cronograma retornado pela IA nao tem o formato esperado.');
+    throw new Error('O cronograma veio num formato inesperado.');
   }
 
   return payload;

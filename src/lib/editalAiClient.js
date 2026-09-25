@@ -31,7 +31,7 @@ export async function analyzeEditalWithRealAI(editalText) {
               : '';
 
         throw new Error(
-          `O servidor de IA respondeu em formato inválido (HTTP ${response.status}` +
+          `A leitura respondeu em formato inválido (HTTP ${response.status}` +
             `${codigo ? ` · ${codigo}` : ''}).${pista}`
         );
       }
@@ -46,7 +46,7 @@ export async function analyzeEditalWithRealAI(editalText) {
     // modelo inexistente, cota estourada ou timeout.
     const base =
       payload?.error ||
-      (responseText ? 'Não foi possível analisar o edital com IA.' : 'O servidor de IA não retornou resposta.');
+      (responseText ? 'Não foi possível analisar o edital agora.' : 'Não veio resposta do servidor.');
     const detalhe = String(payload?.detail || '').trim();
     throw new Error(detalhe && detalhe !== base ? `${base} — ${detalhe}` : base);
   }
@@ -150,5 +150,5 @@ function buildSourceLabel(payload) {
   if (provider === 'groq') return 'Groq';
   if (provider === 'openai') return 'OpenAI';
   if (provider === 'gemini') return 'Gemini';
-  return 'IA';
+  return 'Leitura automática';
 }

@@ -354,7 +354,7 @@ function BizuDiagnosticoCard({ melhor, pior, acuraciaGlobal, topicRows }) {
     <section className="pl-card-ai stats-bizu">
       <div className="stats-bizu-head">
         <div>
-          <span className="pl-tag-ai"><BrainCircuit size={13} /> Leitura da IA</span>
+          <span className="pl-tag-ai"><BrainCircuit size={13} /> Leitura do seu histórico</span>
           <h2 className="pl-section-title" style={{ marginTop: 10 }}>Diagnóstico estratégico</h2>
         </div>
         <span className="pl-tag pl-tag-success">Potencial de subida {potential}</span>

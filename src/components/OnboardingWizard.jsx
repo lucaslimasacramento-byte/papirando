@@ -77,7 +77,7 @@ function StepWelcome({ profile }) {
   const firstName = nome.split(' ')[0] || '';
 
   const features = [
-    { icon: Brain, label: 'IA para resumos, flashcards e questões' },
+    { icon: Brain, label: 'Resumos, flashcards e questões gerados para você' },
     { icon: Target, label: 'Simulados e banco de questões' },
     { icon: Timer, label: 'Cronômetro e ciclos de estudo' },
     { icon: BookOpen, label: 'Edital verticalizado e plano adaptativo' },
@@ -98,7 +98,7 @@ function StepWelcome({ profile }) {
           {firstName ? `Olá, ${firstName}!` : 'Olá!'}
         </h2>
         <p style={{ fontSize: 13.5, color: 'var(--pl-ink-2)', lineHeight: 1.55, maxWidth: 340 }}>
-          O Papirando é seu estúdio de estudos pessoal com IA. Vamos configurar sua conta
+          O Papirando é o estúdio onde o seu material vira estudo de verdade. Vamos configurar sua conta
           em poucos passos.
         </p>
       </div>
@@ -282,7 +282,7 @@ function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onTogg
         <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
           <strong style={{ color: 'var(--pl-ink)' }}>Tem o PDF do edital?</strong> Pule esta
           etapa e suba ele em <strong style={{ color: 'var(--pl-ink)' }}>Meus cursos</strong>:
-          a IA monta as disciplinas, os tópicos, as datas e o peso de cada matéria. O que você
+          o Papirando monta as disciplinas, os tópicos, as datas e o peso de cada matéria. O que você
           escolhe aqui entra sem conteúdo, para preencher depois.
         </p>
       </div>

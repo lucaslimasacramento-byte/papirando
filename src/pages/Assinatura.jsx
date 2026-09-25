@@ -17,9 +17,9 @@ const PLANS = [
     trial: false,
     included: [
       '3 uploads de material por mês',
-      '50 questões geradas por IA por mês',
+      '50 questões geradas por mês',
       '1 correção de redação por mês',
-      'Chat com IA: 15 mensagens por dia',
+      'Chat de estudo: 15 mensagens por dia',
       'Plano de estudo básico',
       'Simulados com gabarito',
       'Comunidade (somente leitura)',
@@ -38,9 +38,9 @@ const PLANS = [
     trial: true,
     included: [
       'Uploads ilimitados de material',
-      'Questões e flashcards ilimitados por IA',
+      'Questões e flashcards ilimitados',
       'Correções de redação ilimitadas',
-      'Chat com IA ilimitado',
+      'Chat de estudo ilimitado',
       'Plano adaptativo com recálculo de rota',
       'Modo Banca: CESPE, FGV, FCC, Cesgranrio',
       'Cronograma gerado a partir de edital',

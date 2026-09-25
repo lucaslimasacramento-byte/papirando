@@ -18,6 +18,44 @@
 
 ---
 
+## Sessão 2026-09-25 (noite) — "IA" sai da interface ✅
+
+A plataforma anunciava IA em toda tela: "Importar com IA (beta)", "Gerar com IA", "Corrigir
+com IA", "Bizu IA", "Leitura da IA", badge "IA" na sidebar. Isso descreve **como o produto foi
+construído**, não o que o aluno ganha — e o aluno não quer IA, quer o edital virado em plano
+de estudo. A linguagem passou a ser a da plataforma.
+
+**O botão do print virou `Subir edital`** (era "Importar com IA", com selo *beta*). O selo saiu
+junto: o guia inicial aponta para esse botão como **passo 1**, e um caminho principal marcado
+como beta se contradiz.
+
+Traduções aplicadas em 20 arquivos — a regra é verbo direto, e quando precisa de sujeito, o
+Papirando:
+- "Gerar com IA" → **Gerar deck** · "Corrigir com IA" → **Corrigir redação**
+- "Confira o que a IA encontrou" → **Confira a leitura do seu edital**
+- "Análise do tutor IA" → **Análise da correção** · "Parecer da IA" → **Parecer do Papirando**
+- "Bizu IA" → **Bizu** (o nome próprio fica; o sobrenome sai)
+- "A IA monta as disciplinas…" → **O Papirando monta as disciplinas…**
+- Erros: "Servidor de IA indisponível" → **A correção está indisponível agora**; "A IA não
+  respondeu" → **Não conseguimos fazer a leitura completa**
+- Assinatura: "50 questões geradas por IA" → **50 questões geradas**; "Chat com IA" → **Chat de
+  estudo**
+- Badges "IA" na sidebar (Flashcards, Materiais PDF): removidos
+
+**O que ficou de propósito:**
+- **comentários de código e nomes de variável** (`aiLoading`, `editalAiClient`) — precisam
+  continuar dizendo a verdade sobre a arquitetura, senão quem mexe no código se perde;
+- **painel Admin** — é tela interna, e lá o dono precisa saber qual provedor respondeu;
+- **Termos de uso** — esconder o uso de IA num documento legal seria o oposto de transparência;
+- **diagnósticos de operação** ("a chave da IA foi rejeitada") — são para o dono depurar.
+
+**Rede de proteção:** `src/lib/linguagemDaInterface.test.js` varre `src/pages` e
+`src/components`, ignora comentários, Admin e Termos, e falha se "IA" reaparecer como palavra
+numa tela do aluno. Já pegou 9 ocorrências que tinham passado batido na primeira varredura —
+todas dentro de JSX que o grep manual não alcançou.
+
+---
+
 ## Sessão 2026-09-25 — Onboarding alinhado à direção atual ✅
 
 O guia do Início ainda era o de quando o aluno escolhia um concurso num catálogo pronto:
