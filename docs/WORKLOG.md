@@ -18,6 +18,38 @@
 
 ---
 
+## Sessão 2026-09-25 — Onboarding alinhado à direção atual ✅
+
+O guia do Início ainda era o de quando o aluno escolhia um concurso num catálogo pronto:
+*"1. Escolha seu alvo · 2. Monte a semana · 3. Papire agora"*, com o botão principal mandando
+para uma **biblioteca vazia**. Hoje o eixo é outro — o aluno sobe o PDF do edital e a
+plataforma se monta em cima dele.
+
+**Os três passos agora são:**
+1. **Suba o seu edital** — "o PDF vira disciplinas, tópicos, datas e o peso de cada matéria"
+2. **Diga quando você estuda** — "quais dias e quantas horas por dia, leva uns vinte segundos"
+3. **Registre a primeira sessão**
+
+E o guia deixou de ser um cartaz fixo: **marca o que já está feito** (✓ verde no cartão e na
+pílula) e o **botão principal é a ação do passo que falta** — "Subir edital", depois "Definir
+rotina", depois "Abrir timer" —, não um "Começar tutorial" genérico. O título muda para
+"Tudo pronto. Bora estudar." quando os três estão completos. O roteiro guiado continua, atrás
+de "Como funciona", com o porquê de cada passo.
+
+Quem não tem o PDF em mãos tem um botão próprio — "Não tenho o PDF" — que leva à biblioteca,
+em vez de a biblioteca ser o caminho principal.
+
+`src/lib/primeirosPassos.js` (6 testes) guarda os passos e decide qual está pendente, inclusive
+fora de ordem (registrar sessão antes de definir a rotina não pula o passo da rotina).
+
+**No wizard de conta nova** o passo "O que você está estudando?" oferecia uma lista que está
+vazia, sem dizer que existe caminho melhor. Ganhou um aviso: *"Tem o PDF do edital? Pule esta
+etapa e suba ele em Meus cursos — o que você escolhe aqui entra sem conteúdo."*
+
+Conferido renderizando o Início num Chromium nos dois estados: nada feito, e edital já subido.
+
+---
+
 ## Sessão 2026-09-24 (continuação) — Revisão do edital também fica comparativa ✅
 
 Mesma queixa da grade de disciplinas, agora na tela de revisão: os dados de cada cargo vinham

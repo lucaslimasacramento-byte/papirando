@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
+  Check,
   FileText,
   Flame,
   Play,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 import { saudacaoDoHorario, msAteProximaFaixa } from '../lib/saudacao';
 import { fraseDoDia } from '../lib/frases';
+import { primeirosPassos } from '../lib/primeirosPassos';
 import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
 export default function Dashboard({
@@ -34,6 +36,9 @@ export default function Dashboard({
   onOpenUltimaAnotacao,
   rotinaConfigurada = true,
   onAbrirPlanejamento,
+  // Se o aluno ja tem algum curso. O guia inicial marca o passo do edital como feito — e
+  // nao adianta mandar subir de novo o que ja esta la.
+  temCurso = false,
 }) {
   const safeHistorico = useMemo(() => (Array.isArray(historicoReal) ? historicoReal : []), [historicoReal]);
   const safeAgendaHoje = useMemo(() => (Array.isArray(agendaHoje) ? agendaHoje : []), [agendaHoje]);
@@ -173,10 +178,13 @@ export default function Dashboard({
           <PlDashboardEmpty
             greeting={greeting}
             userName={cleanUserName}
-            onStart={() => setActiveTab?.('planejamento')}
-            onOpenContests={() => setActiveTab?.('planos')}
-            onOpenQuestions={() => setActiveTab?.('questoes')}
+            onSubirEdital={() => setActiveTab?.('planos')}
+            onDefinirRotina={() => setActiveTab?.('planejamento')}
             onOpenTimer={quickAction.onClick}
+            onVerBiblioteca={() => setActiveTab?.('concursos')}
+            temCurso={temCurso}
+            rotinaConfigurada={rotinaConfigurada}
+            temHistorico={safeHistorico.length > 0}
           />
         </div>
       </div>
@@ -611,34 +619,30 @@ function PlEditalProgress({ data, onOpen }) {
   );
 }
 
-function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQuestions, onOpenTimer }) {
-  const [tutorialStep, setTutorialStep] = useState(null);
-  const tutorialSteps = [
-    {
-      title: 'Primeiro, escolha seu alvo.',
-      text: 'Seu objetivo orienta plano, questões e rotina. Se ainda não tiver certeza, escolha provisório e ajuste depois.',
-      actionLabel: 'Abrir cursos',
-      onAction: onOpenContests,
-    },
-    {
-      title: 'Depois, monte sua semana.',
-      text: 'Organize os dias disponíveis, as matérias principais e uma cadência realista para começar sem bagunça.',
-      actionLabel: 'Montar semana',
-      onAction: onStart,
-    },
-    {
-      title: 'Por fim, registre a primeira sessão.',
-      text: 'Uma sessão curta já cria histórico e ajuda a plataforma a sugerir melhor o próximo estudo.',
-      actionLabel: 'Abrir timer',
-      onAction: onOpenTimer,
-    },
-  ];
-  const isTutorialActive = tutorialStep !== null;
-  const currentTutorial = isTutorialActive ? tutorialSteps[tutorialStep] : null;
-  const startTutorial = () => setTutorialStep(0);
-  const closeTutorial = () => setTutorialStep(null);
-  const nextTutorial = () => setTutorialStep((step) => (step >= tutorialSteps.length - 1 ? null : step + 1));
-  const previousTutorial = () => setTutorialStep((step) => Math.max(0, step - 1));
+function PlDashboardEmpty({
+  greeting,
+  userName,
+  onSubirEdital,
+  onDefinirRotina,
+  onOpenTimer,
+  onVerBiblioteca,
+  temCurso = false,
+  rotinaConfigurada = false,
+  temHistorico = false,
+}) {
+  // Os passos e o que ja esta feito saem de src/lib/primeirosPassos.js. O guia deixou de ser
+  // um cartaz fixo: ele reflete onde o aluno esta.
+  const { passos, indiceAtual, concluido } = primeirosPassos({ temCurso, rotinaConfigurada, temHistorico });
+  const acoes = { edital: onSubirEdital, rotina: onDefinirRotina, sessao: onOpenTimer };
+
+  const [passoAberto, setPassoAberto] = useState(null);
+  const roteiroAtivo = passoAberto !== null;
+  const passoDoRoteiro = roteiroAtivo ? passos[passoAberto] : null;
+
+  const abrirRoteiro = () => setPassoAberto(indiceAtual === -1 ? 0 : indiceAtual);
+  const fecharRoteiro = () => setPassoAberto(null);
+  const proximoPasso = () => setPassoAberto((passo) => (passo >= passos.length - 1 ? null : passo + 1));
+  const passoAnterior = () => setPassoAberto((passo) => Math.max(0, passo - 1));
 
   return (
     <div style={{ minHeight: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
@@ -648,15 +652,26 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
           {greeting}{userName ? `, ${userName}` : ''}. Bora começar a papirar?
         </h1>
         <p style={{ margin: '16px 0 0', maxWidth: 680, fontSize: 17, lineHeight: 1.55, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
-          Defina um alvo, monte sua primeira semana e comece com uma sessão curta. O resto a plataforma organiza junto com você.
+          Suba o PDF do seu edital e a plataforma se monta em cima dele: disciplinas, tópicos,
+          datas e o peso de cada matéria na sua prova.
         </p>
       </section>
+
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-        <PlOnboardStep number="1" title="Escolha seu alvo" text="Escolha seu objetivo de estudo." active={tutorialStep === 0} dimmed={isTutorialActive && tutorialStep !== 0} />
-        <PlOnboardStep number="2" title="Monte a semana" text="Ajuste disponibilidade e matérias principais." active={tutorialStep === 1} dimmed={isTutorialActive && tutorialStep !== 1} />
-        <PlOnboardStep number="3" title="Papire agora" text="Abra uma sessão e registre o primeiro estudo." active={tutorialStep === 2} dimmed={isTutorialActive && tutorialStep !== 2} />
+        {passos.map((passo, indice) => (
+          <PlOnboardStep
+            key={passo.id}
+            number={String(indice + 1)}
+            title={passo.titulo}
+            text={passo.texto}
+            feito={passo.feito}
+            active={roteiroAtivo ? passoAberto === indice : indiceAtual === indice}
+            dimmed={roteiroAtivo && passoAberto !== indice}
+          />
+        ))}
       </section>
-      {currentTutorial && (
+
+      {passoDoRoteiro && (
         <section
           style={{
             position: 'relative',
@@ -674,7 +689,7 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
             style={{
               position: 'absolute',
               top: -8,
-              left: `${Math.min(86, 14 + tutorialStep * 32)}%`,
+              left: `${Math.min(86, 14 + passoAberto * 32)}%`,
               width: 16,
               height: 16,
               background: 'var(--pl-bg)',
@@ -685,36 +700,40 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
           />
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <div className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>Passo {tutorialStep + 1} de {tutorialSteps.length}</div>
-              <h3 style={{ margin: '7px 0 0', fontSize: 19, lineHeight: 1.25, color: 'var(--pl-ink)' }}>{currentTutorial.title}</h3>
+              <div className="pl-eyebrow" style={{ color: 'var(--pl-accent)' }}>
+                Passo {passoAberto + 1} de {passos.length}
+                {passoDoRoteiro.feito ? ' · já feito' : ''}
+              </div>
+              <h3 style={{ margin: '7px 0 0', fontSize: 19, lineHeight: 1.25, color: 'var(--pl-ink)' }}>{passoDoRoteiro.titulo}</h3>
               <p style={{ margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
-                {currentTutorial.text}
+                {passoDoRoteiro.detalhe}
               </p>
             </div>
-            <button type="button" className="pl-btn pl-btn-sm" onClick={closeTutorial} style={{ flexShrink: 0 }}>
+            <button type="button" className="pl-btn pl-btn-sm" onClick={fecharRoteiro} style={{ flexShrink: 0 }}>
               Fechar
             </button>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-            <button type="button" className="pl-btn pl-btn-sm" onClick={previousTutorial} disabled={tutorialStep === 0}>
+            <button type="button" className="pl-btn pl-btn-sm" onClick={passoAnterior} disabled={passoAberto === 0}>
               Voltar
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <button type="button" className="pl-btn pl-btn-sm" onClick={currentTutorial.onAction}>
-                {currentTutorial.actionLabel}
+              <button type="button" className="pl-btn pl-btn-sm" onClick={acoes[passoDoRoteiro.id]}>
+                {passoDoRoteiro.acao}
               </button>
               <button
                 type="button"
                 className="pl-btn pl-btn-sm"
                 style={{ background: 'var(--pl-accent)', color: 'var(--pl-surface)', borderColor: 'var(--pl-accent)' }}
-                onClick={nextTutorial}
+                onClick={proximoPasso}
               >
-                {tutorialStep >= tutorialSteps.length - 1 ? 'Concluir' : 'Próximo passo'}
+                {passoAberto >= passos.length - 1 ? 'Concluir' : 'Próximo passo'}
               </button>
             </div>
           </div>
         </section>
       )}
+
       <section
         style={{
           position: 'relative',
@@ -780,46 +799,51 @@ function PlDashboardEmpty({ greeting, userName, onStart, onOpenContests, onOpenQ
             <Sparkles size={11} /> Guia inicial
           </span>
           <h2 style={{ margin: '13px 0 0', fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 31, color: 'var(--pl-ink)', letterSpacing: '-0.03em' }}>
-            Vamos configurar seu Papirando em 3 passos.
+            {concluido ? 'Tudo pronto. Bora estudar.' : 'Tudo começa pelo edital.'}
           </h2>
           <p style={{ margin: '8px 0 0', maxWidth: 680, fontSize: 14, lineHeight: 1.6, color: 'var(--pl-ink-2)', fontWeight: 600 }}>
-            Eu te guio por alvo, disponibilidade e primeira sessão. Siga o roteiro agora ou comece praticando e ajuste depois.
+            {concluido
+              ? 'Seu plano está montado. Abra uma sessão e o Início passa a mostrar o foco do dia.'
+              : 'A IA lê o PDF, separa as disciplinas e os tópicos, pega as datas e o peso de cada matéria. Depois você só diz quando estuda.'}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-            {['1. Objetivo-alvo', '2. Semana de estudo', '3. Primeira sessão'].map((step) => (
+            {passos.map((passo, indice) => (
               <span
-                key={step}
+                key={passo.id}
                 style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
                   border: '1px solid rgba(20,17,13,0.13)',
-                  background: 'var(--pl-bg-soft)',
+                  background: passo.feito ? 'var(--pl-success-soft)' : 'var(--pl-bg-soft)',
                   borderRadius: 999,
                   padding: '6px 10px',
                   fontSize: 12,
                   fontWeight: 800,
-                  color: 'var(--pl-ink-2)',
+                  color: passo.feito ? 'var(--pl-success)' : 'var(--pl-ink-2)',
                 }}
               >
-                {step}
+                {passo.feito && <Check size={12} />}
+                {indice + 1}. {passo.titulo}
               </span>
             ))}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end', position: 'relative' }}>
-          <button
-            className="pl-btn pl-btn-sm pl-btn-ai"
-            onClick={startTutorial}
-          >
-            <Sparkles size={11} /> Começar tutorial
+          {/* A acao principal e a do passo que falta — nao um tutorial generico. */}
+          <button className="pl-btn pl-btn-sm pl-btn-ai" onClick={concluido ? onOpenTimer : acoes[passos[indiceAtual].id]}>
+            <Sparkles size={11} /> {concluido ? 'Abrir timer' : passos[indiceAtual].acao}
           </button>
-          <button className="pl-btn pl-btn-sm" onClick={onOpenQuestions}>Ver questões</button>
-          <button className="pl-btn pl-btn-sm" onClick={onOpenTimer}>Abrir timer</button>
+          <button className="pl-btn pl-btn-sm" onClick={abrirRoteiro}>Como funciona</button>
+          {/* Quem nao tem o PDF em maos ainda precisa de um caminho. */}
+          {!temCurso && onVerBiblioteca && (
+            <button className="pl-btn pl-btn-sm" onClick={onVerBiblioteca}>Não tenho o PDF</button>
+          )}
         </div>
       </section>
     </div>
   );
 }
 
-function PlOnboardStep({ number, title, text, active = false, dimmed = false }) {
+function PlOnboardStep({ number, title, text, active = false, dimmed = false, feito = false }) {
   return (
     <div
       className="pl-card"
@@ -833,7 +857,12 @@ function PlOnboardStep({ number, title, text, active = false, dimmed = false }) 
         transition: 'opacity 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease',
       }}
     >
-      <div className="pl-num" style={{ fontSize: 38, color: active ? 'var(--pl-accent)' : 'var(--pl-ink)', lineHeight: 1 }}>{number}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="pl-num" style={{ fontSize: 38, color: feito ? 'var(--pl-success)' : active ? 'var(--pl-accent)' : 'var(--pl-ink)', lineHeight: 1 }}>
+          {number}
+        </div>
+        {feito && <Check size={17} style={{ color: 'var(--pl-success)' }} />}
+      </div>
       <h3 style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--pl-ink)' }}>{title}</h3>
       <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontWeight: 500 }}>{text}</p>
     </div>

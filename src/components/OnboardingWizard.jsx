@@ -7,6 +7,7 @@ import {
   Loader2,
   Plus,
   Search,
+  Sparkles,
   Target,
   Timer,
   Trophy,
@@ -266,6 +267,23 @@ function StepContest({ objectiveLibrary, selectedObjectives, selectedIds, onTogg
         </h2>
         <p style={{ fontSize: 13, color: 'var(--pl-ink-3)' }}>
           Escolha até {MAX_OBJECTIVES} objetivos — pode misturar concurso, vestibular e faculdade. Pode pular.
+        </p>
+      </div>
+
+      {/* O caminho principal da plataforma hoje e o PDF do edital, nao esta lista.
+          Escolher aqui cria um objetivo sem disciplina nenhuma; o edital traz materias,
+          topicos, datas e pesos prontos. Dizer isso agora evita que o aluno novo ache que a
+          lista curta e tudo o que existe. */}
+      <div
+        className="pl-card-paper"
+        style={{ padding: '11px 14px', display: 'flex', alignItems: 'flex-start', gap: 9 }}
+      >
+        <Sparkles size={14} style={{ color: 'var(--pl-accent)', flexShrink: 0, marginTop: 2 }} />
+        <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
+          <strong style={{ color: 'var(--pl-ink)' }}>Tem o PDF do edital?</strong> Pule esta
+          etapa e suba ele em <strong style={{ color: 'var(--pl-ink)' }}>Meus cursos</strong>:
+          a IA monta as disciplinas, os tópicos, as datas e o peso de cada matéria. O que você
+          escolhe aqui entra sem conteúdo, para preencher depois.
         </p>
       </div>
 

@@ -349,6 +349,7 @@ export default function AppTabContent(props) {
         editalProgresso={editalProgresso}
         rotinaConfigurada={rotinaConfigurada}
         onAbrirPlanejamento={() => setActiveTab('planejamento')}
+        temCurso={(cursos || []).some((curso) => curso?.status !== 'arquivado')}
         onOpenTargetContest={(contestId) => {
           setSelectedContestDetailId(contestId);
           setActiveTab('concurso_detalhe');
