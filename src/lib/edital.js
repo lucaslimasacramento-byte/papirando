@@ -117,6 +117,37 @@ export function acharLinhaDaProva(prova, nomeDaDisciplina) {
   }) || null;
 }
 
+// A duracao da prova de um cargo, dentro de uma leitura de edital.
+//
+// Um edital costuma ter varios cargos, e o tempo de prova pode diferir entre eles (o CFO e o
+// CFP da mesma PM nao fazem a mesma prova). A busca e pelo nome do cargo; sem casar, e com um
+// cargo so no edital, esse vale — e o caso comum, e exigir nome exato faria a leitura falhar
+// justamente onde nao ha ambiguidade.
+export function acharDuracaoDoCargo(analysis, nomeDoCargo) {
+  const cargos = Array.isArray(analysis?.contests) ? analysis.contests : [];
+  if (cargos.length === 0) return '';
+
+  const comDuracao = cargos.filter((cargo) => String(cargo?.duracaoProva || '').trim());
+  if (comDuracao.length === 0) return '';
+
+  const alvo = chaveDeDisciplina(nomeDoCargo);
+  if (alvo) {
+    const casado = comDuracao.find((cargo) => {
+      const nome = chaveDeDisciplina(cargo?.roleName || cargo?.title);
+      return nome && (nome === alvo || nome.includes(alvo) || alvo.includes(nome));
+    });
+    if (casado) return String(casado.duracaoProva).trim();
+  }
+
+  // Um cargo so com duracao: nao ha o que confundir.
+  if (comDuracao.length === 1) return String(comDuracao[0].duracaoProva).trim();
+
+  // Varios cargos com duracoes diferentes e nenhum casou pelo nome: devolver qualquer uma
+  // seria um palpite sobre qual prova o aluno fara.
+  const distintas = new Set(comDuracao.map((cargo) => String(cargo.duracaoProva).trim()));
+  return distintas.size === 1 ? [...distintas][0] : '';
+}
+
 // Palavras que aparecem no nome da disciplina sem mudar qual disciplina e. Edital chama a
 // mesma materia de "Nocoes de Informatica", "Informatica Basica" e "Informatica" no mesmo
 // documento — comparando o nome cru, viram tres disciplinas diferentes.

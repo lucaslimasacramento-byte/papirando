@@ -9,6 +9,7 @@ import {
   mesmaDisciplina,
   mesclarDisciplinasDeCargos,
   matrizDeDisciplinas,
+  acharDuracaoDoCargo,
 } from './edital';
 
 const EDITAL = 'a'.repeat(25000);
@@ -345,5 +346,43 @@ describe('matrizDeDisciplinas', () => {
   it('devolve vazio sem cargo nenhum', () => {
     expect(matrizDeDisciplinas([])).toMatchObject({ colunas: [], linhas: [], total: 0 });
     expect(matrizDeDisciplinas(null).total).toBe(0);
+  });
+});
+
+describe('acharDuracaoDoCargo', () => {
+  const analise = {
+    contests: [
+      { roleName: 'Oficial de Estado-Maior', title: 'CFO', duracaoProva: '4 horas' },
+      { roleName: 'Soldado do Quadro de Praças', title: 'CFP', duracaoProva: '3h30' },
+    ],
+  };
+
+  it('pega a duração do cargo certo', () => {
+    expect(acharDuracaoDoCargo(analise, 'Oficial de Estado-Maior')).toBe('4 horas');
+    expect(acharDuracaoDoCargo(analise, 'Soldado do Quadro de Praças')).toBe('3h30');
+  });
+
+  it('com um cargo só, não exige casar o nome', () => {
+    const umSo = { contests: [{ roleName: 'Analista', duracaoProva: '4 horas' }] };
+    expect(acharDuracaoDoCargo(umSo, 'Nome completamente diferente')).toBe('4 horas');
+  });
+
+  it('cargos com durações diferentes e nenhum casou: não chuta', () => {
+    expect(acharDuracaoDoCargo(analise, 'Perito Criminal')).toBe('');
+  });
+
+  it('cargos diferentes mas mesma duração: não há o que confundir', () => {
+    const mesma = {
+      contests: [
+        { roleName: 'Cargo A', duracaoProva: '4 horas' },
+        { roleName: 'Cargo B', duracaoProva: '4 horas' },
+      ],
+    };
+    expect(acharDuracaoDoCargo(mesma, 'Cargo C')).toBe('4 horas');
+  });
+
+  it('sem duração em nenhum cargo, devolve vazio', () => {
+    expect(acharDuracaoDoCargo({ contests: [{ roleName: 'X' }] }, 'X')).toBe('');
+    expect(acharDuracaoDoCargo(null, 'X')).toBe('');
   });
 });

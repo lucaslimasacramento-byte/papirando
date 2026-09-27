@@ -18,6 +18,33 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 10) — Duração da prova também no Planejamento, e puxando do PDF ✅
+
+**O cartão de ritmo virou um só.** Ele existia duplicado no Edital e no Planejamento, e as
+duas cópias **já tinham divergido**: uma mostrava a duração faltante, a outra escondia. Agora
+é `src/components/RitmoDaProvaCard.jsx`, usado pelas duas telas.
+
+**Descoberta no caminho: o texto do edital não fica guardado em lugar nenhum.** Ele só existe
+em memória durante a importação — não há campo no curso, nem no Supabase. Consequência
+prática: `hasEditalText` é sempre falso, e o botão **"Ler o edital" no rodapé da página do
+Edital é código morto** (o painel de análise por trás dele também). Não removi — está
+sinalizado para decisão.
+
+Isso mudou o desenho de "puxar do edital": não há o que reler, então o **arquivo precisa vir
+de novo**. O botão abre o seletor de PDF. `src/lib/duracaoDoArquivo.js` (4 testes) é
+deliberadamente estreito — lê o arquivo, roda a análise, **aproveita só a duração e descarta
+o resto**. Reimportar o edital inteiro reescreveria disciplinas e tópicos já marcados, o que
+seria desproporcional para buscar uma linha.
+
+`acharDuracaoDoCargo` (6 testes) pega a duração do **cargo certo**: num edital de PM o CFO e
+o CFP não fazem a mesma prova. Com um cargo só, não exige casar o nome; com vários e nenhum
+casando, devolve vazio em vez de chutar qual prova o aluno fará.
+
+O `pdf.js` entrou como **import sob demanda** — carregado no topo, ele ia no bundle inicial
+de quem só queria ver o edital.
+
+---
+
 ## Sessão 2026-09-27 (fecho 9) — "Não tenho esse dado" dito em voz alta ✅
 
 O cartão de ritmo mostrava só **Questões 120** e **Redação sim · 1h30**, sem o minutos por

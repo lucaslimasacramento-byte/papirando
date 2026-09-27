@@ -799,6 +799,7 @@ export default function AppTabContent(props) {
     return (
       <Planejamento
         currentUserId={currentUserId}
+        onUpdateCourse={updateCourse}
         targetContest={planningContestSummary}
         targetDisciplines={planningDisciplines}
         studyRecommendation={planningStudyRecommendation}

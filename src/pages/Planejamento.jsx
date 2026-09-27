@@ -24,13 +24,10 @@ import { generateScheduleWithAI, DIA_LABELS, MODO_COLORS } from '../lib/schedule
 import { approveStudyPlan, loadActiveStudyPlan, runPlanAdjustments } from '../lib/studyPlanStore';
 import { getDueTopicReviews, submitTopicReview } from '../lib/topicReviewApi';
 import { RATING_LABELS, formatNextInterval } from '../lib/fsrs';
-import {
-  perfilDaProva,
-  ritmoDeTreino,
-  linhaDaDisciplina,
-  formatarRitmo,
-  formatarDuracao,
-} from '../lib/ritmoDaProva';
+import { perfilDaProva, ritmoDeTreino, linhaDaDisciplina } from '../lib/ritmoDaProva';
+import { duracaoDoArquivo } from '../lib/duracaoDoArquivo';
+import { analyzeEdital } from '../lib/aiClient';
+import RitmoDaProvaCard from '../components/RitmoDaProvaCard';
 
 // Codigo do dia da semana de hoje (getDay: 0=domingo) alinhado ao WEEKDAY_ORDER.
 const TODAY_DIA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][new Date().getDay()];
@@ -211,6 +208,7 @@ export default function Planejamento(props) {
 
 function PlanejamentoContent({
   currentUserId = '',
+  onUpdateCourse,
   targetContest = null,
   targetDisciplines = [],
   studyRecommendation = null,
@@ -528,6 +526,38 @@ function PlanejamentoContent({
     [targetContest]
   );
   const ritmoDoAlvo = useMemo(() => ritmoDeTreino(perfilDoAlvo), [perfilDoAlvo]);
+
+  // Preencher a duracao da prova daqui tambem.
+  //
+  // O alvo aponta para um objetivo dentro de um curso; quem guarda a duracao e o curso, e o
+  // id dele viaja junto no alvo (ver src/lib/cursoComoConcurso.js). Sem esse id — alvo vindo
+  // do catalogo, por exemplo — o cartao so mostra, nao deixa editar.
+  const cursoDoAlvoId = targetContest?.origemCursoId || '';
+  const [lendoDuracao, setLendoDuracao] = useState(false);
+  const [erroDaDuracao, setErroDaDuracao] = useState('');
+
+  const salvarDuracao = (texto) => onUpdateCourse?.(cursoDoAlvoId, { duracao_prova: texto });
+
+  const puxarDuracaoDoEdital = async (arquivo) => {
+    if (!arquivo || !cursoDoAlvoId || !onUpdateCourse) return;
+    setLendoDuracao(true);
+    setErroDaDuracao('');
+    try {
+      const { duracao } = await duracaoDoArquivo(arquivo, {
+        analisar: analyzeEdital,
+        cargo: targetContest?.cargo || targetContest?.nome,
+      });
+      if (!duracao) {
+        setErroDaDuracao('Li o arquivo, mas não achei a duração da prova nele. Se ela estiver lá, informe na mão.');
+        return;
+      }
+      salvarDuracao(duracao);
+    } catch (erro) {
+      setErroDaDuracao(erro?.message || 'Não consegui ler esse arquivo agora.');
+    } finally {
+      setLendoDuracao(false);
+    }
+  };
 
   const planningSubjectColors = useMemo(() => {
     const names = [
@@ -1140,7 +1170,17 @@ function PlanejamentoContent({
                 <p style={{ margin: 0, textAlign: 'center', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                   Para cada disciplina, selecione a <strong>importância</strong> para a prova e o seu <strong>grau de conhecimento</strong>.
                 </p>
-                <RitmoDaProvaCard perfil={perfilDoAlvo} ritmo={ritmoDoAlvo} />
+                <div style={{ marginTop: 12 }}>
+                  <RitmoDaProvaCard
+                    perfil={perfilDoAlvo}
+                    ritmo={ritmoDoAlvo}
+                    duracaoSalva={targetContest?.duracao_prova || ''}
+                    onSalvarDuracao={cursoDoAlvoId && onUpdateCourse ? salvarDuracao : null}
+                    onLerDoEdital={cursoDoAlvoId && onUpdateCourse ? puxarDuracaoDoEdital : null}
+                    lendoEdital={lendoDuracao}
+                    erroDaLeitura={erroDaDuracao}
+                  />
+                </div>
                 <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: '1.15fr 0.85fr' }}>
                   <div style={{ maxHeight: 'min(46vh, 380px)', overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14 }}>
                     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
@@ -2151,51 +2191,6 @@ function WizardStepper({ step }) {
           </React.Fragment>
         );
       })}
-    </div>
-  );
-}
-
-// O que a prova exige, dito em números que o edital já trouxe.
-//
-// A importância de cada disciplina deixou de ser palpite: ela chega pré-calibrada pelo
-// quadro de provas. Este cartão mostra de onde veio a calibragem — e o tempo por questão,
-// que é o dado que muda o tipo de treino e que nenhum aluno calcula sozinho.
-function RitmoDaProvaCard({ perfil, ritmo }) {
-  if (!perfil || perfil.totalQuestoes === 0) return null;
-
-  const fatos = [
-    perfil.duracaoMin > 0 ? { rotulo: 'Duração da prova', valor: formatarDuracao(perfil.duracaoMin) } : null,
-    { rotulo: 'Questões', valor: String(perfil.totalQuestoes) },
-    perfil.temRedacao
-      ? { rotulo: 'Redação', valor: `sim · ${formatarDuracao(perfil.minutosDaRedacao)} reservados` }
-      : { rotulo: 'Redação', valor: 'não' },
-    perfil.minutosPorQuestao > 0
-      ? { rotulo: 'Por questão', valor: formatarRitmo(perfil.minutosPorQuestao) }
-      : null,
-  ].filter(Boolean);
-
-  return (
-    <div className="pl-card" style={{ marginTop: 12, padding: '12px 14px', background: 'var(--pl-bg-soft)' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-        <span className="pl-eyebrow">A prova, segundo o edital</span>
-        {ritmo ? <span className="pl-tag pl-tag-accent">{ritmo.titulo}</span> : null}
-      </div>
-      <div style={{ marginTop: 8, display: 'grid', gap: 10, gridTemplateColumns: `repeat(${fatos.length}, minmax(0, 1fr))` }}>
-        {fatos.map((fato) => (
-          <div key={fato.rotulo}>
-            <p style={{ margin: 0, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>
-              {fato.rotulo}
-            </p>
-            <p className="pl-num" style={{ margin: '2px 0 0', fontSize: 16, color: 'var(--pl-ink)' }}>{fato.valor}</p>
-          </div>
-        ))}
-      </div>
-      {ritmo ? (
-        <p style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{ritmo.detalhe}</p>
-      ) : null}
-      <p style={{ margin: '6px 0 0', fontSize: 11.5, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>
-        A importância abaixo já vem calibrada por questões × peso de cada disciplina. Ajuste o que quiser.
-      </p>
     </div>
   );
 }
