@@ -18,6 +18,30 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 9) — "Não tenho esse dado" dito em voz alta ✅
+
+O cartão de ritmo mostrava só **Questões 120** e **Redação sim · 1h30**, sem o minutos por
+questão — que é justamente o número que motivou o cartão.
+
+**Causa:** esse edital foi lido **antes** de o campo `duracao_prova` existir. Sem duração não
+há divisão a fazer. O cartão simplesmente omitia os dois campos vazios, o que é pior do que
+não mostrar nada: ele exibia dois fatos e escondia em silêncio o mais útil, e nada na tela
+dizia por quê.
+
+**Agora:** os quatro campos aparecem sempre; os que faltam vêm com "—" em tom apagado, e
+abaixo uma linha dizendo o que falta e por quê. Como o aluno está com o edital na mão, ele
+**informa a duração ali mesmo** — reler o PDF inteiro por causa de uma linha seria
+desproporcional, e todo edital lido antes desta semana está nessa situação.
+
+O campo aceita "4 horas", "3h30", "240 minutos" e confirma o que entendeu **antes** de salvar
+("entendi 4h · 1min18 por questão"): "4h30" e "4,30" não são a mesma coisa, e o aluno tem de
+ver o número que vai valer.
+
+Dois testes novos fixam o caso real da PMAL (120 questões + redação): sem duração, `completo:
+false` e nenhum ritmo inventado; com "4 horas", 1,3 min por questão — prova de velocidade.
+
+---
+
 ## Sessão 2026-09-27 (fecho 8) — Edital deixa de ser lista de afazeres ✅
 
 A tela era um **checklist**; o material que ela já tinha na mão dava um **mapa de

@@ -782,6 +782,7 @@ export default function AppTabContent(props) {
           bancoDisciplinas={bancoDisciplinas}
           cursos={cursos}
           historicoReal={historicoReal}
+          onUpdateCourse={updateCourse}
           targetContest={targetContestSummary}
           expandedEditalSubject={expandedEditalSubject}
         setExpandedEditalSubject={setExpandedEditalSubject}

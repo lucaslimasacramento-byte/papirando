@@ -4796,6 +4796,9 @@ export default function App() {
       }
       if (patch.intent !== undefined && patch.intent) { next.intent = patch.intent; next.tipo = patch.intent; }
       if (patch.prova_data !== undefined) next.prova_data = patch.prova_data || '';
+      // Duracao da prova. Edital lido antes deste campo existir nao tem o valor, e o aluno
+      // (que esta com o edital na mao) pode preencher na propria tela do Edital.
+      if (patch.duracao_prova !== undefined) next.duracao_prova = String(patch.duracao_prova || '').trim();
       if (patch.imagem_url !== undefined) next.imagem_url = String(patch.imagem_url || '').trim();
       if (patch.cor !== undefined && patch.cor) next.cor = patch.cor;
       // Capa e descricao podem ser limpas de proposito, entao aceitam string vazia.

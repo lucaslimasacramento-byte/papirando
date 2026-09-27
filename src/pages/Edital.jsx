@@ -28,7 +28,7 @@ import {
   doTopico,
   concluidosFragilizados,
 } from '../lib/aproveitamentoDoEdital';
-import { perfilDaProva, ritmoDeTreino, formatarRitmo, formatarDuracao } from '../lib/ritmoDaProva';
+import { perfilDaProva, ritmoDeTreino, formatarRitmo, formatarDuracao, minutosDaProva } from '../lib/ritmoDaProva';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -39,6 +39,7 @@ export default function Edital({
   bancoDisciplinas = [],
   cursos = [],
   historicoReal = [],
+  onUpdateCourse,
   targetContest = null,
   expandedEditalSubject,
   setExpandedEditalSubject,
@@ -317,7 +318,16 @@ export default function Edital({
 
         <KpiStrip totals={totals} />
 
-        <RitmoDaProvaCard perfil={perfil} ritmo={ritmo} />
+        <RitmoDaProvaCard
+          perfil={perfil}
+          ritmo={ritmo}
+          duracaoSalva={concursoSelecionado?.duracao_prova || ''}
+          onSalvarDuracao={
+            cursoDoConcurso && onUpdateCourse
+              ? (texto) => onUpdateCourse(cursoDoConcurso.id, { duracao_prova: texto })
+              : null
+          }
+        />
 
         <PorOndeComecar prioridades={prioridades} fatias={fatias} onAbrir={alternarDisciplina} />
 
@@ -532,20 +542,29 @@ function EditalHeader({
 // Sao dados que o edital sempre trouxe e que ninguem cruzava: duracao, total de questoes e
 // se ha redacao. Deles sai o tempo por questao — o numero que separa uma prova de velocidade
 // de uma de profundidade, e que nenhum aluno calcula sozinho. Ver src/lib/ritmoDaProva.js.
-// Sem o dado no edital, nada e estimado: o cartao simplesmente nao aparece.
-function RitmoDaProvaCard({ perfil, ritmo }) {
+//
+// Quando falta a duracao, o cartao NAO some o campo em silencio: dizer "nao tenho esse dado"
+// vale mais do que mostrar dois numeros e omitir justamente o mais util. E como o aluno esta
+// com o edital na mao, ele preenche ali mesmo — inclusive porque todo edital lido antes de
+// este campo existir ficou sem ele, e reler o PDF inteiro so por causa de uma linha seria
+// desproporcional.
+function RitmoDaProvaCard({ perfil, ritmo, duracaoSalva = '', onSalvarDuracao }) {
+  const [editando, setEditando] = useState(false);
+  const [rascunho, setRascunho] = useState(duracaoSalva);
+
+  useEffect(() => { setRascunho(duracaoSalva); }, [duracaoSalva]);
+
   if (!perfil || perfil.totalQuestoes === 0) return null;
 
-  const fatos = [
-    perfil.duracaoMin > 0 ? { rotulo: 'Duração', valor: formatarDuracao(perfil.duracaoMin) } : null,
-    { rotulo: 'Questões', valor: String(perfil.totalQuestoes) },
-    perfil.temRedacao
-      ? { rotulo: 'Redação', valor: `sim · ${formatarDuracao(perfil.minutosDaRedacao)}` }
-      : { rotulo: 'Redação', valor: 'não' },
-    perfil.minutosPorQuestao > 0
-      ? { rotulo: 'Por questão', valor: formatarRitmo(perfil.minutosPorQuestao) }
-      : null,
-  ].filter(Boolean);
+  const minutosDoRascunho = minutosDaProva(rascunho);
+  const faltaDuracao = perfil.duracaoMin === 0;
+  const podeEditar = Boolean(onSalvarDuracao);
+
+  const salvar = () => {
+    if (minutosDoRascunho <= 0) return;
+    onSalvarDuracao(rascunho.trim());
+    setEditando(false);
+  };
 
   return (
     <section className="pl-card" style={{ padding: '14px 16px' }}>
@@ -556,18 +575,87 @@ function RitmoDaProvaCard({ perfil, ritmo }) {
         </p>
         {ritmo ? <span className="pl-tag pl-tag-accent">{ritmo.titulo}</span> : null}
       </div>
-      <div style={{ marginTop: 10, display: 'grid', gap: 12, gridTemplateColumns: `repeat(auto-fit, minmax(150px, 1fr))` }}>
-        {fatos.map((fato) => (
-          <div key={fato.rotulo}>
-            <p className="pl-eyebrow" style={{ margin: 0 }}>{fato.rotulo}</p>
-            <p className="pl-num" style={{ margin: '2px 0 0', fontSize: 20, color: 'var(--pl-ink)' }}>{fato.valor}</p>
-          </div>
-        ))}
+
+      <div style={{ marginTop: 10, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+        <FatoDaProva rotulo="Questões" valor={String(perfil.totalQuestoes)} />
+        <FatoDaProva
+          rotulo="Redação"
+          valor={perfil.temRedacao ? `sim · ${formatarDuracao(perfil.minutosDaRedacao)}` : 'não'}
+        />
+        <FatoDaProva
+          rotulo="Duração"
+          valor={faltaDuracao ? '—' : formatarDuracao(perfil.duracaoMin)}
+          ausente={faltaDuracao}
+        />
+        <FatoDaProva
+          rotulo="Por questão"
+          valor={perfil.minutosPorQuestao > 0 ? formatarRitmo(perfil.minutosPorQuestao) : '—'}
+          ausente={perfil.minutosPorQuestao === 0}
+        />
       </div>
+
       {ritmo ? (
         <p style={{ margin: '10px 0 0', fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{ritmo.detalhe}</p>
       ) : null}
+
+      {faltaDuracao && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--pl-rule)' }}>
+          {editando ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+              <input
+                className="pl-input"
+                autoFocus
+                value={rascunho}
+                onChange={(evento) => setRascunho(evento.target.value)}
+                onKeyDown={(evento) => {
+                  if (evento.key === 'Enter') { evento.preventDefault(); salvar(); }
+                  if (evento.key === 'Escape') { setEditando(false); setRascunho(duracaoSalva); }
+                }}
+                placeholder="4 horas, 3h30, 240 minutos..."
+                style={{ flex: '1 1 200px', minWidth: 0 }}
+              />
+              <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={salvar} disabled={minutosDoRascunho <= 0}>
+                Salvar
+              </button>
+              <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={() => { setEditando(false); setRascunho(duracaoSalva); }}>
+                Cancelar
+              </button>
+              {/* Confirma o que foi entendido antes de salvar: "4h30" e "4,30" nao sao a
+                  mesma coisa, e o aluno tem de ver o numero que vai valer. */}
+              <span style={{ fontSize: 12, fontWeight: 650, color: minutosDoRascunho > 0 ? 'var(--pl-ink-2)' : 'var(--pl-ink-3)' }}>
+                {minutosDoRascunho > 0
+                  ? `entendi ${formatarDuracao(minutosDoRascunho)} · ${formatarRitmo(Math.round((Math.max(0, minutosDoRascunho - perfil.minutosDaRedacao) / perfil.totalQuestoes) * 10) / 10)} por questão`
+                  : 'não consegui ler essa duração'}
+              </span>
+            </div>
+          ) : (
+            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
+              Falta a <strong>duração da prova</strong> — sem ela não dá para calcular o tempo por questão.
+              A leitura deste edital não capturou esse dado.{' '}
+              {podeEditar && (
+                <button type="button" className="pl-btn-link" onClick={() => setEditando(true)}>
+                  Informar a duração
+                </button>
+              )}
+            </p>
+          )}
+        </div>
+      )}
     </section>
+  );
+}
+
+function FatoDaProva({ rotulo, valor, ausente = false }) {
+  return (
+    <div>
+      <p className="pl-eyebrow" style={{ margin: 0 }}>{rotulo}</p>
+      <p
+        className="pl-num"
+        style={{ margin: '2px 0 0', fontSize: 20, color: ausente ? 'var(--pl-ink-4)' : 'var(--pl-ink)' }}
+      >
+        {valor}
+      </p>
+    </div>
   );
 }
 

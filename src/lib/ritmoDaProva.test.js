@@ -122,6 +122,35 @@ describe('perfilDaProva', () => {
   });
 });
 
+describe('o caso do edital sem duracao', () => {
+  // 120 questoes e redacao, que e o que a leitura do edital da PMAL trouxe. A duracao
+  // ficou de fora porque o edital foi lido antes de o campo existir.
+  const semDuracao = {
+    prova: [{ disciplina: 'Tudo', questoes: '120', peso: '1' }],
+    etapas: ['Objetiva', 'Redacao'],
+  };
+
+  it('sem duracao, o que se sabe continua valendo e o resto fica zerado', () => {
+    const perfil = perfilDaProva({ ...semDuracao, duracaoProva: '' });
+
+    expect(perfil.totalQuestoes).toBe(120);
+    expect(perfil.temRedacao).toBe(true);
+    // Sem duracao nao ha ritmo — e nao se inventa um.
+    expect(perfil.minutosPorQuestao).toBe(0);
+    expect(perfil.completo).toBe(false);
+    expect(ritmoDeTreino(perfil)).toBeNull();
+  });
+
+  it('informada a duracao, o ritmo aparece com a redacao ja descontada', () => {
+    const perfil = perfilDaProva({ ...semDuracao, duracaoProva: '4 horas' });
+
+    // 240 - 90 de redacao = 150 minutos para 120 questoes.
+    expect(perfil.minutosPorQuestao).toBe(1.3);
+    expect(perfil.completo).toBe(true);
+    expect(ritmoDeTreino(perfil).id).toBe('velocidade');
+  });
+});
+
 describe('ritmoDeTreino', () => {
   it('prova apertada pede treino de velocidade', () => {
     // 120 itens em 3h30 — o classico Cebraspe.
