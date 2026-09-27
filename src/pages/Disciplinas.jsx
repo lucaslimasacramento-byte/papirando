@@ -396,13 +396,16 @@ function TabelaDisciplinas({
               colunas dividem o espaco em partes iguais, e a de Disciplina — que carrega nome,
               chips e a linha do ultimo estudo — recebe menos da metade do que precisa. O
               conteudo entao transborda e escreve por cima da coluna do Plano. */}
+          {/* As larguras somam os 960px de min-width da tabela. Com `table-layout: fixed`
+              elas mandam — nenhuma celula pode declarar minWidth maior que a sua coluna,
+              porque a coluna nao cede: o conteudo e que transborda por cima da vizinha. */}
           <colgroup>
             <col style={{ width: 300 }} />
-            <col style={{ width: 180 }} />
+            <col style={{ width: 190 }} />
             <col style={{ width: 80 }} />
-            <col style={{ width: 100 }} />
-            <col style={{ width: 150 }} />
-            <col style={{ width: 150 }} />
+            <col style={{ width: 90 }} />
+            <col style={{ width: 140 }} />
+            <col style={{ width: 160 }} />
           </colgroup>
           <thead>
             <tr>
@@ -476,7 +479,7 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPl
   return (
     <tr className={index % 2 === 1 ? 'is-striped' : undefined}>
       <td>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 13, minWidth: 300 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 13, minWidth: 0 }}>
           <span className="pl-area-marker" style={{ background: token.cover }} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 750, color: 'var(--pl-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -504,7 +507,7 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPl
         <span
           className="pl-pill-muted"
           title={disciplina.plano || 'Geral'}
-          style={{ maxWidth: 220, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'middle' }}
+          style={{ maxWidth: '100%', display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'middle' }}
         >
           {disciplina.plano || 'Geral'}
         </span>
@@ -512,11 +515,11 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPl
       <td>{topicos.length}</td>
       <td>{concluidos}</td>
       <td>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 42px', alignItems: 'center', gap: 10, minWidth: 160 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 34px', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <div className="pl-progress-track">
             <div className="pl-progress-fill" style={{ width: `${progresso}%`, background: token.cover }} />
           </div>
-          <strong style={{ color: token.cover, textAlign: 'right' }}>{progresso}%</strong>
+          <strong style={{ color: token.cover, textAlign: 'right', fontSize: 12, whiteSpace: 'nowrap' }}>{progresso}%</strong>
         </div>
       </td>
       <td>

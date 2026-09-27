@@ -18,6 +18,38 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 5) — Colunas de Disciplinas sem sobreposição ✅
+
+O "0%" do progresso escrevia **por cima** do botão Abrir. Medido em Chromium: a folga entre
+os dois era **-10px** em 860px de largura. Não era a barra ser grande demais — era célula
+pedindo mais largura do que a coluna tem.
+
+Com `table-layout: fixed` a coluna **não cede**: quem transborda é o conteúdo, por cima da
+vizinha. E três células pediam mais do que cabia — ainda descontando os 18px de padding de
+cada lado que a coluna já gastou:
+
+| Célula | Pedia | Coluna tinha | Sobra real |
+|---|---|---|---|
+| Progresso | `minWidth: 160` | 150 | 114 |
+| Disciplina | `minWidth: 300` | 300 | 264 |
+| Pill do plano | `maxWidth: 220` | 180 | 144 |
+
+Os `minWidth` saíram (o `<colgroup>` é a fonte da verdade), as larguras foram rebalanceadas
+para somar exatamente os 960px de `min-width` da tabela (300/190/80/90/140/160), e o "%"
+encolheu de 42 para 34px com fonte 12.
+
+**Medido antes e depois, em 1600 / 1100 / 860px:**
+
+| | Progresso × Ações | Plano × Tópicos |
+|---|---|---|
+| Antes (860px) | **-10px** (sobreposto) | **-74px** (sobreposto) |
+| Antes (1100px) | +11px | **-48px** (sobreposto) |
+| Depois (todos) | **+36px** | **+2px** |
+
+O botão mede 32px de altura nas três larguras — é o que denunciaria quebra de linha.
+
+---
+
 ## Sessão 2026-09-27 (fecho 4) — O cronograma passa a ler a prova ✅
 
 Quatro coisas nesta rodada, e a última muda o produto.
