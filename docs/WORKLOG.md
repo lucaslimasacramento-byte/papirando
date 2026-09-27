@@ -18,6 +18,27 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho) — Layout novo no Dashboard ✅
+
+Aplicado o `Dashboard.dc.html`:
+
+- **A frase do dia virou masthead** — faixa própria, largura inteira, fundo branco, logo
+  abaixo do cabeçalho. Ela já foi colofão (lá embaixo, onde ninguém chegava) e epígrafe
+  encostada na margem; numa faixa só dela a frase inteira respira sem disputar com
+  breadcrumb, busca e ícones.
+- **Conteúdo com largura máxima de 1180px**, como nas outras telas.
+- **A cobrança da rotina virou um selo âmbar no cartão do alvo** ("● Rotina", clicável). Era
+  uma faixa de duas linhas no topo do painel que empurrava o cumprimento para baixo todo dia
+  — caro numa tela que já luta por altura.
+
+**E o prazo vencido volta a aparecer.** O arquivo mostrava "-70 dias", e estava certo:
+`marcoMaisProximo` ignora datas passadas, então quando todas as provas do curso já
+aconteceram o painel ficava mudo. Agora cai no vencido menos antigo e o cartão diz *"Esta data
+já passou. Confira o edital e corrija em Objetivos."* — data vencida não é ausência de data,
+é sinal de que há algo para corrigir.
+
+---
+
 ## Sessão 2026-09-27 (noite) — O curso é que fica ativo; o prazo é sempre o mais próximo ✅
 
 O alvo era um objetivo solto: cada cartão tinha "Definir alvo" e objetivos de cursos

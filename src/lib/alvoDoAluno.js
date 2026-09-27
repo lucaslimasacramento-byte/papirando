@@ -55,7 +55,7 @@ export function prazoDoCursoAtivo(cursos, alvoId, hoje = new Date()) {
   if (!curso) return null;
 
   const objetivos = objetivosDoCurso(curso);
-  const marco = marcoMaisProximo(objetivos, hoje);
+  const marco = marcoMaisProximo(objetivos, hoje) || marcoVencidoMaisRecente(objetivos, hoje);
   if (!marco) return null;
 
   const principal = objetivoPrincipal(cursos, alvoId);
@@ -63,7 +63,22 @@ export function prazoDoCursoAtivo(cursos, alvoId, hoje = new Date()) {
     ...marco,
     curso,
     ehDoPrincipal: Boolean(principal && marco.objetivo?.id === principal.id),
+    // Data que já passou não é ausência de data: ou a prova aconteceu, ou o edital foi
+    // retificado e ninguém avisou a plataforma. Esconder isso deixaria o aluno com um
+    // painel mudo justo quando ele precisa corrigir alguma coisa.
+    vencido: marco.dias < 0,
   };
+}
+
+// O prazo vencido menos antigo — usado só quando nenhum objetivo tem data futura.
+function marcoVencidoMaisRecente(objetivos, hoje) {
+  return (objetivos || [])
+    .map((objetivo) => {
+      const marco = marcoDoObjetivo(objetivo, hoje);
+      return marco ? { ...marco, objetivo } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.dias - a.dias)[0] || null;
 }
 
 // Ordena os objetivos de um curso do prazo mais próximo para o mais distante; o principal

@@ -105,6 +105,26 @@ describe('prazoDoCursoAtivo', () => {
     const livre = { id: 'c5', objetivos: [{ id: 'a', nome: 'Inglês', tipo: 'livre' }] };
     expect(prazoDoCursoAtivo([livre], 'objetivo:c5:a', HOJE)).toBeNull();
   });
+
+  // Data vencida nao e ausencia de data: ou a prova passou, ou o edital foi retificado e
+  // ninguem avisou. Esconder deixaria o painel mudo bem quando ha o que corrigir.
+  it('mostra o prazo vencido menos antigo quando nenhum e futuro', () => {
+    const passado = {
+      id: 'c7',
+      objetivos: [
+        { id: 'velho', nome: 'Antigo', tipo: 'concurso', prova_data: emDias(-200) },
+        { id: 'recente', nome: 'Recente', tipo: 'concurso', prova_data: emDias(-70) },
+      ],
+    };
+    const prazo = prazoDoCursoAtivo([passado], 'objetivo:c7:velho', HOJE);
+    expect(prazo.objetivo.id).toBe('recente');
+    expect(prazo.dias).toBe(-70);
+    expect(prazo.vencido).toBe(true);
+  });
+
+  it('nao marca vencido quando ha data futura', () => {
+    expect(prazoDoCursoAtivo(CURSOS, 'objetivo:c1:oficial', HOJE).vencido).toBe(false);
+  });
 });
 
 describe('objetivosOrdenados', () => {

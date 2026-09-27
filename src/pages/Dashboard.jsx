@@ -79,9 +79,7 @@ export default function Dashboard({
   const primaryRecommendation = studyRecommendation?.primary || null;
   // A contagem vem do prazo mais proximo do curso ativo; o alvo em si e so o desempate de
   // prioridade. Sem esse dado (curso antigo, tela isolada), cai no que o alvo trazia.
-  const diasDoPrazo = Number.isFinite(Number(prazoDoAlvo?.dias)) && Number(prazoDoAlvo.dias) >= 0
-    ? Number(prazoDoAlvo.dias)
-    : null;
+  const diasDoPrazo = Number.isFinite(Number(prazoDoAlvo?.dias)) ? Number(prazoDoAlvo.dias) : null;
   const targetDaysRemaining = diasDoPrazo !== null
     ? diasDoPrazo
     : Number.isFinite(Number(targetContest?.diasParaProva))
@@ -203,74 +201,32 @@ export default function Dashboard({
 
   return (
     <div className="pl-dash" style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
+      {/* Masthead da frase do dia: faixa propria, largura inteira, logo abaixo do cabecalho.
+       *
+       * Ela ja foi colofao (la embaixo, onde ninguem chegava) e epigrafe encostada na
+       * margem. Numa faixa so dela, centralizada, a frase inteira respira sem disputar com
+       * breadcrumb, busca e icones — e continua sendo a primeira coisa do dia. */}
+      <div
+        style={{
+          padding: '10px 32px',
+          textAlign: 'center',
+          borderBottom: '1px solid var(--pl-rule)',
+          background: 'var(--pl-surface)',
+        }}
+      >
+        <p style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 15, color: 'var(--pl-ink-2)' }}>
+          {citacaoDoDia.texto}
+          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
+          <span className="pl-eyebrow" style={{ marginLeft: 8, fontSize: 10 }}>
+            — {citacaoDoDia.autor}
+          </span>
+        </p>
+      </div>
+
       {/* As medidas verticais vem de variaveis (ver .pl-dash em index.css) porque estilo
           inline ganha de media query: para o painel encolher em tela baixa, o numero tem
           que sair do JSX. */}
-      <div style={{ width: '100%', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
-        {/* O aluno subiu o edital mas pulou a rotina. Sem ela o plano do dia nao sabe
-            quantos minutos cabem, a meta da semana nao tem base e as revisoes nao tem onde
-            encaixar — entao a cobranca fica no topo do Inicio ate ele resolver. */}
-        {!rotinaConfigurada && targetContest && (
-          <div
-            className="pl-card"
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-              padding: '12px 16px', marginBottom: 18,
-              borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)',
-            }}
-          >
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: 'var(--pl-ink)' }}>
-                Falta dizer quando você estuda.
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: 12.5, color: 'var(--pl-ink-2)' }}>
-                Seu edital já virou disciplinas. Sem a rotina, o plano do dia, a meta da semana
-                e as revisões ficam parados.
-              </p>
-            </div>
-            <button type="button" className="pl-btn pl-btn-primary pl-btn-sm" onClick={onAbrirPlanejamento} style={{ flexShrink: 0 }}>
-              Definir rotina
-            </button>
-          </div>
-        )}
-
-        {/* A citacao abre a pagina, como epigrafe.
-         *
-         * Fechava o painel, de colofao, e la embaixo quase ninguem chegava. Aqui e a
-         * primeira coisa que o olho encontra ao abrir o Inicio — e uma frase dessas so
-         * serve para o comeco do dia. Uma linha so, encostada na margem: nao empurra o
-         * cumprimento, nao disputa com nenhum botao. */}
-        <figure
-          style={{
-            margin: '0 0 var(--dash-gap)',
-            paddingLeft: 14,
-            borderLeft: '2px solid var(--pl-rule-2)',
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: 10,
-            flexWrap: 'wrap',
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontFamily: 'var(--pl-serif)',
-              fontStyle: 'italic',
-              fontWeight: 300,
-              fontSize: 'var(--dash-frase)',
-              lineHeight: 1.3,
-              letterSpacing: '-0.015em',
-              color: 'var(--pl-ink-2)',
-              maxWidth: 720,
-            }}
-          >
-            {citacaoDoDia.texto}
-          </p>
-          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
-          <figcaption className="pl-eyebrow" style={{ flexShrink: 0 }}>
-            {citacaoDoDia.autor}
-          </figcaption>
-        </figure>
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
 
         {/* A coluna da direita e do objetivo-alvo, definido ou nao. Deixa-la vazia era o
             pior dos mundos: o aluno nao via que faltava escolher um alvo, e a plataforma
@@ -330,7 +286,27 @@ export default function Dashboard({
 
           {targetDaysRemaining !== null && (
             <div className="pl-card" style={{ width: 220, padding: '17px 22px' }}>
-              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Objetivo-alvo</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <div className="pl-eyebrow" style={{ fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>Objetivo-alvo</div>
+                {/* A cobranca da rotina virou um selo aqui, no cartao do alvo. Era uma faixa
+                    de duas linhas no topo do painel: empurrava o cumprimento para baixo
+                    todo dia, e numa tela que ja luta por altura isso custa caro. */}
+                {!rotinaConfigurada && (
+                  <button
+                    type="button"
+                    onClick={onAbrirPlanejamento}
+                    title="Sem a rotina, o plano do dia, a meta da semana e as revisões ficam parados."
+                    style={{
+                      flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4,
+                      height: 20, padding: '0 7px', borderRadius: 999, cursor: 'pointer',
+                      border: '1px solid var(--pl-warn)', background: 'var(--pl-warn-soft)',
+                    }}
+                  >
+                    <span style={{ width: 5, height: 5, borderRadius: 999, background: 'var(--pl-warn)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--pl-warn)', whiteSpace: 'nowrap' }}>Rotina</span>
+                  </button>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, marginTop: 8 }}>
                 <span className="pl-num" style={{ fontSize: 54, color: 'var(--pl-ink)', lineHeight: 1 }}>{targetDaysRemaining}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)' }}>dias</span>
@@ -350,7 +326,12 @@ export default function Dashboard({
               </div>
               {/* A data mais proxima nao e a do objetivo principal: o aluno precisa saber
                   disso, senao estuda para a prova errada primeiro. */}
-              {prazoDoAlvo && !prazoDoAlvo.ehDoPrincipal && (
+              {prazoDoAlvo?.vencido && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--pl-rule)', fontSize: 11, lineHeight: 1.4, color: 'var(--pl-warn)', fontWeight: 600 }}>
+                  Esta data já passou. Confira o edital e corrija em Objetivos.
+                </div>
+              )}
+              {prazoDoAlvo && !prazoDoAlvo.vencido && !prazoDoAlvo.ehDoPrincipal && (
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--pl-rule)', fontSize: 11, lineHeight: 1.4, color: 'var(--pl-warn)', fontWeight: 600 }}>
                   Esta é a prova mais próxima do seu curso — o seu objetivo principal é outro.
                 </div>
