@@ -14,11 +14,21 @@ import {
   Loader2,
   Upload,
   Play,
+  Search,
+  AlertTriangle,
+  Timer,
 } from 'lucide-react';
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
 import { acharLinhaDaProva, avisosDoDocumento } from '../lib/edital';
 import { progressoPorObjetivo } from '../lib/objetivos';
+import { ordenarPorPeso, porOndeComecar, fatiaDaProva, filtrarEdital, contarTopicos } from '../lib/ordemDoEdital';
+import {
+  aproveitamentoPorTopico,
+  doTopico,
+  concluidosFragilizados,
+} from '../lib/aproveitamentoDoEdital';
+import { perfilDaProva, ritmoDeTreino, formatarRitmo, formatarDuracao } from '../lib/ritmoDaProva';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -28,6 +38,7 @@ export default function Edital({
   editalText = '',
   bancoDisciplinas = [],
   cursos = [],
+  historicoReal = [],
   targetContest = null,
   expandedEditalSubject,
   setExpandedEditalSubject,
@@ -138,6 +149,88 @@ export default function Edital({
     };
   }, [editalAtivo]);
 
+  // A ordem passa a sair do quadro de provas em vez do acaso do banco. Ver
+  // src/lib/ordemDoEdital.js — a pagina ja mostrava "40 questoes · peso 2" e nao usava.
+  const editalOrdenado = useMemo(
+    () => ordenarPorPeso(editalAtivo, concursoSelecionado?.prova),
+    [editalAtivo, concursoSelecionado]
+  );
+
+  const prioridades = useMemo(
+    () => porOndeComecar(editalAtivo, concursoSelecionado?.prova),
+    [editalAtivo, concursoSelecionado]
+  );
+
+  const fatias = useMemo(
+    () => fatiaDaProva(editalAtivo, concursoSelecionado?.prova),
+    [editalAtivo, concursoSelecionado]
+  );
+
+  // Quantas questoes o aluno fez em cada topico e quanto acertou. O check diz "estudei";
+  // isto diz "funcionou". Ver src/lib/aproveitamentoDoEdital.js.
+  const aproveitamento = useMemo(() => aproveitamentoPorTopico(historicoReal), [historicoReal]);
+
+  const fragilizados = useMemo(
+    () => concluidosFragilizados(editalAtivo, aproveitamento),
+    [editalAtivo, aproveitamento]
+  );
+
+  // O retrato da prova (duracao, questoes, redacao, tempo por questao). A tela que
+  // representa o edital e o lugar mais natural para ele.
+  const perfil = useMemo(
+    () =>
+      perfilDaProva({
+        prova: concursoSelecionado?.prova || [],
+        etapas: concursoSelecionado?.etapas_tags || [],
+        duracaoProva: concursoSelecionado?.duracao_prova || '',
+      }),
+    [concursoSelecionado]
+  );
+  const ritmo = useMemo(() => ritmoDeTreino(perfil), [perfil]);
+
+  // Busca e filtros. Um edital tem mais de cem topicos; sem isto, achar "Crase" e abrir
+  // disciplina por disciplina ate topar com ela.
+  const [busca, setBusca] = useState('');
+  const [apenasPendentes, setApenasPendentes] = useState(false);
+
+  const editalVisivel = useMemo(
+    () => filtrarEdital(editalOrdenado, { busca, apenasPendentes }),
+    [editalOrdenado, busca, apenasPendentes]
+  );
+
+  const filtrando = busca.trim().length > 0 || apenasPendentes;
+  const topicosVisiveis = useMemo(() => contarTopicos(editalVisivel), [editalVisivel]);
+
+  // Mais de uma disciplina aberta ao mesmo tempo.
+  //
+  // O estado vinha do App como UM id: abrir uma disciplina fechava a outra. Numa tela cujo
+  // trabalho e dar conta do edital inteiro, comparar duas materias era impossivel. O id do
+  // App continua valendo como abertura inicial (e por ele que outras telas mandam abrir uma
+  // disciplina especifica), mas daqui em diante quem manda e o conjunto.
+  const [abertas, setAbertas] = useState(() => new Set());
+
+  useEffect(() => {
+    if (!expandedEditalSubject) return;
+    setAbertas((atual) => new Set(atual).add(expandedEditalSubject));
+    // Consome o ponteiro: ele e um pedido ("abra esta disciplina"), nao um estado. Se
+    // ficasse guardado, fechar a disciplina na mao e a tela re-renderizar a reabriria.
+    setExpandedEditalSubject?.(null);
+  }, [expandedEditalSubject, setExpandedEditalSubject]);
+
+  const alternarDisciplina = (id) => {
+    setAbertas((atual) => {
+      const proximo = new Set(atual);
+      if (proximo.has(id)) proximo.delete(id);
+      else proximo.add(id);
+      return proximo;
+    });
+  };
+
+  const todasAbertas = editalVisivel.length > 0 && editalVisivel.every((d) => abertas.has(d.id));
+  const alternarTodas = () => {
+    setAbertas(todasAbertas ? new Set() : new Set(editalVisivel.map((d) => d.id)));
+  };
+
   // O que o documento aparenta ser, antes de a IA olhar. Ver src/lib/edital.js.
   const [avisosDoEdital, setAvisosDoEdital] = useState([]);
 
@@ -224,6 +317,12 @@ export default function Edital({
 
         <KpiStrip totals={totals} />
 
+        <RitmoDaProvaCard perfil={perfil} ritmo={ritmo} />
+
+        <PorOndeComecar prioridades={prioridades} fatias={fatias} onAbrir={alternarDisciplina} />
+
+        <ConcluidosFrageis itens={fragilizados} />
+
         {/* Curso que agrupa mais de um objetivo: um numero so nao serve. A materia
             exclusiva de um objetivo entra no total geral e nao avanca o outro; a comum,
             estudada uma vez, sobe os dois. Ver src/lib/objetivos.js. */}
@@ -276,8 +375,24 @@ export default function Edital({
           <SectionHeader
             eyebrow="Disciplinas do edital"
             title="Progresso por tópico."
-            rightLabel={`${totals.concluidos} de ${totals.topicos} tópicos concluídos`}
+            rightLabel={
+              filtrando
+                ? `${topicosVisiveis} de ${totals.topicos} tópicos no filtro`
+                : `${totals.concluidos} de ${totals.topicos} tópicos concluídos`
+            }
           />
+
+          {editalAtivo.length > 0 && (
+            <BarraDeBusca
+              busca={busca}
+              setBusca={setBusca}
+              apenasPendentes={apenasPendentes}
+              setApenasPendentes={setApenasPendentes}
+              todasAbertas={todasAbertas}
+              onAlternarTodas={alternarTodas}
+              ordenadoPorPeso={fatias.size > 0}
+            />
+          )}
 
           {editalAtivo.length === 0 ? (
             <EditalEmptyState
@@ -287,15 +402,20 @@ export default function Edital({
               loadingObjetivo={loadingObjetivo}
               onCarregarObjetivo={handleCarregarObjetivo}
             />
+          ) : editalVisivel.length === 0 ? (
+            <EmptyDashed icon={Search} title={`Nenhum tópico para "${busca}".`} />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {editalAtivo.map((disciplina) => (
+              {editalVisivel.map((disciplina) => (
                 <DisciplinaAccordion
                   key={disciplina.id || disciplina.nome}
                   disciplina={disciplina}
                   concurso={concursoSelecionado}
-                  isExpanded={expandedEditalSubject === disciplina.id}
-                  onToggle={() => setExpandedEditalSubject?.(expandedEditalSubject === disciplina.id ? null : disciplina.id)}
+                  fatia={fatias.get(disciplina.nome)}
+                  aproveitamento={aproveitamento}
+                  filtrando={filtrando}
+                  isExpanded={abertas.has(disciplina.id)}
+                  onToggle={() => alternarDisciplina(disciplina.id)}
                   onEdit={() => setEditingDiscipline?.(disciplina)}
                   onToggleTopico={(topicoId) => toggleEditalTopico?.(disciplina.id, topicoId)}
                   onAddTopic={() => setEditingDiscipline?.(disciplina)}
@@ -407,6 +527,159 @@ function EditalHeader({
   );
 }
 
+// O retrato da prova, no topo da tela que representa o edital.
+//
+// Sao dados que o edital sempre trouxe e que ninguem cruzava: duracao, total de questoes e
+// se ha redacao. Deles sai o tempo por questao — o numero que separa uma prova de velocidade
+// de uma de profundidade, e que nenhum aluno calcula sozinho. Ver src/lib/ritmoDaProva.js.
+// Sem o dado no edital, nada e estimado: o cartao simplesmente nao aparece.
+function RitmoDaProvaCard({ perfil, ritmo }) {
+  if (!perfil || perfil.totalQuestoes === 0) return null;
+
+  const fatos = [
+    perfil.duracaoMin > 0 ? { rotulo: 'Duração', valor: formatarDuracao(perfil.duracaoMin) } : null,
+    { rotulo: 'Questões', valor: String(perfil.totalQuestoes) },
+    perfil.temRedacao
+      ? { rotulo: 'Redação', valor: `sim · ${formatarDuracao(perfil.minutosDaRedacao)}` }
+      : { rotulo: 'Redação', valor: 'não' },
+    perfil.minutosPorQuestao > 0
+      ? { rotulo: 'Por questão', valor: formatarRitmo(perfil.minutosPorQuestao) }
+      : null,
+  ].filter(Boolean);
+
+  return (
+    <section className="pl-card" style={{ padding: '14px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+        <p className="pl-eyebrow" style={{ margin: 0 }}>
+          <Timer size={11} style={{ verticalAlign: '-1px', marginRight: 5 }} />
+          O ritmo desta prova
+        </p>
+        {ritmo ? <span className="pl-tag pl-tag-accent">{ritmo.titulo}</span> : null}
+      </div>
+      <div style={{ marginTop: 10, display: 'grid', gap: 12, gridTemplateColumns: `repeat(auto-fit, minmax(150px, 1fr))` }}>
+        {fatos.map((fato) => (
+          <div key={fato.rotulo}>
+            <p className="pl-eyebrow" style={{ margin: 0 }}>{fato.rotulo}</p>
+            <p className="pl-num" style={{ margin: '2px 0 0', fontSize: 20, color: 'var(--pl-ink)' }}>{fato.valor}</p>
+          </div>
+        ))}
+      </div>
+      {ritmo ? (
+        <p style={{ margin: '10px 0 0', fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{ritmo.detalhe}</p>
+      ) : null}
+    </section>
+  );
+}
+
+// Por onde comecar.
+//
+// A lista abaixo ja vem ordenada pelo peso da prova, mas "a que vale mais" nao e a mesma
+// pergunta que "onde a proxima hora rende mais": uma disciplina de 40 questoes ja 90% feita
+// nao e o melhor lugar para investir agora. Aqui entra o que vale muito E ainda esta parado.
+function PorOndeComecar({ prioridades, fatias, onAbrir }) {
+  if (!prioridades || prioridades.length === 0) return null;
+
+  return (
+    <section className="pl-card-paper" style={{ padding: '14px 16px' }}>
+      <p className="pl-eyebrow" style={{ margin: 0 }}>Por onde começar</p>
+      <div style={{ marginTop: 10, display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))' }}>
+        {prioridades.map((item, indice) => {
+          const fatia = fatias.get(item.disciplina.nome);
+          return (
+            <button
+              key={item.disciplina.id || item.disciplina.nome}
+              type="button"
+              onClick={() => onAbrir?.(item.disciplina.id)}
+              className="pl-card"
+              style={{ padding: '10px 12px', textAlign: 'left', cursor: 'pointer', display: 'grid', gridTemplateColumns: '26px minmax(0, 1fr)', gap: 10, alignItems: 'center' }}
+            >
+              <span className="pl-serif-number" style={{ fontSize: 20, color: 'var(--pl-ink-3)' }}>{indice + 1}</span>
+              <span style={{ minWidth: 0 }}>
+                <strong style={{ display: 'block', fontSize: 13, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.disciplina.nome}
+                </strong>
+                <small style={{ display: 'block', marginTop: 3, fontSize: 11.5, fontWeight: 650, color: 'var(--pl-ink-3)' }}>
+                  {item.naProva.questoes} questões
+                  {fatia ? ` · ${fatia}% da prova` : ''}
+                  {` · ${item.cobertura}% feito`}
+                </small>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// O alerta que contradiz o proprio aluno.
+//
+// Topico marcado como concluido cujo aproveitamento nao sustenta a marcacao. E o estado mais
+// perigoso da tela justamente porque parece resolvido: some da lista de pendencias, conta
+// como progresso e volta na prova. O corte e conservador de proposito (ver
+// src/lib/aproveitamentoDoEdital.js): so entra quem fez questoes suficientes.
+function ConcluidosFrageis({ itens }) {
+  if (!itens || itens.length === 0) return null;
+
+  return (
+    <section className="pl-card" style={{ padding: '12px 16px', borderLeft: '3px solid var(--pl-warn)' }}>
+      <p className="pl-eyebrow" style={{ margin: 0 }}>
+        <AlertTriangle size={11} style={{ verticalAlign: '-1px', marginRight: 5 }} />
+        Marcados como feitos, mas o desempenho não confirma
+      </p>
+      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {itens.map((item) => (
+          <span key={`${item.disciplina}-${item.topico}`} className="pl-tag pl-tag-warn" style={{ maxWidth: '100%' }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {item.topico}
+            </span>
+            <strong style={{ flexShrink: 0 }}>{item.percentual}%</strong>
+          </span>
+        ))}
+      </div>
+      <p style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>
+        O check diz que você estudou. O aproveitamento diz que ainda não colou — vale revisar antes de contar como pronto.
+      </p>
+    </section>
+  );
+}
+
+// Busca e filtros do edital.
+function BarraDeBusca({ busca, setBusca, apenasPendentes, setApenasPendentes, todasAbertas, onAlternarTodas, ordenadoPorPeso }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 0 }}>
+        <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-3)' }} />
+        <input
+          className="pl-input"
+          value={busca}
+          onChange={(evento) => setBusca(evento.target.value)}
+          placeholder="Buscar disciplina ou tópico..."
+          style={{ width: '100%', paddingLeft: 32 }}
+        />
+      </div>
+
+      <button
+        type="button"
+        className={`pl-btn pl-btn-sm${apenasPendentes ? ' pl-btn-primary' : ''}`}
+        onClick={() => setApenasPendentes(!apenasPendentes)}
+      >
+        Só pendentes
+      </button>
+
+      <button type="button" className="pl-btn pl-btn-sm" onClick={onAlternarTodas}>
+        {todasAbertas ? 'Recolher tudo' : 'Expandir tudo'}
+      </button>
+
+      {ordenadoPorPeso && (
+        <span className="pl-small-label" style={{ marginLeft: 'auto' }}>
+          Ordenado pelo peso na prova
+        </span>
+      )}
+    </div>
+  );
+}
+
 function KpiStrip({ totals }) {
   return (
     <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
@@ -450,6 +723,9 @@ function SectionHeader({ eyebrow, title, rightLabel }) {
 function DisciplinaAccordion({
   disciplina,
   concurso,
+  fatia,
+  aproveitamento,
+  filtrando = false,
   isExpanded,
   onToggle,
   onEdit,
@@ -460,8 +736,12 @@ function DisciplinaAccordion({
 }) {
   const topicos = Array.isArray(disciplina.topicos) ? disciplina.topicos : [];
   const concluidos = topicos.filter((topico) => topico?.concluido).length;
-  const total = topicos.length;
-  const pct = total > 0 ? Math.round((concluidos / total) * 100) : Number(disciplina.percentual || 0);
+  // Com filtro ativo, `topicos` traz so o recorte. O progresso tem de continuar falando da
+  // disciplina inteira — dizer "1 de 1 topico" porque a busca achou um so seria mentira.
+  const total = filtrando ? Number(disciplina.topicosNoTotal ?? topicos.length) : topicos.length;
+  const pct = total > 0 && !filtrando
+    ? Math.round((concluidos / total) * 100)
+    : Number(disciplina.percentual || (total > 0 ? Math.round((concluidos / total) * 100) : 0));
   const area = getAreaToken(disciplina.area || concurso?.area || inferAreaFromText(`${disciplina.nome} ${disciplina.plano}`));
   // Peso desta disciplina na prova, vindo do quadro de provas do edital. Sem isso todas as
   // disciplinas parecem valer o mesmo e o aluno estuda o que gosta, não o que pontua.
@@ -478,12 +758,21 @@ function DisciplinaAccordion({
         <NameWithAreaMarker
           name={disciplina.nome}
           area={area}
-          meta={`${concluidos} de ${total} tópicos`}
+          meta={
+            filtrando
+              ? `${topicos.length} de ${total} tópicos no filtro`
+              : `${concluidos} de ${total} tópicos`
+          }
         />
-        {naProva && (
+        {/* Slot sempre presente: a grade do cabecalho tem uma coluna para ele, e deixar de
+            renderizar quando nao ha quadro de provas deslocaria todo o resto. */}
+        {naProva ? (
           <span className="pl-tag pl-tag-accent" style={{ whiteSpace: 'nowrap' }}>
             {naProva.questoes} questões{Number(naProva.peso) > 1 ? ` · peso ${naProva.peso}` : ''}
+            {fatia ? ` · ${fatia}% da prova` : ''}
           </span>
+        ) : (
+          <span aria-hidden="true" />
         )}
         <ProgressInline pct={pct} color={area.cover} />
         <span className="pl-tag">{isExpanded ? 'Recolher' : 'Expandir'}</span>
@@ -499,6 +788,7 @@ function DisciplinaAccordion({
                 key={topico.id || `${disciplina.id}-${index}`}
                 topico={topico}
                 index={index + 1}
+                desempenho={doTopico(aproveitamento, disciplina.nome, topico?.nome)}
                 onToggle={() => onToggleTopico(topico.id)}
                 onLink={onLink}
               />
@@ -559,7 +849,7 @@ function ProgressInline({ pct, color }) {
   );
 }
 
-function TopicoRow({ topico, index, onToggle, onLink }) {
+function TopicoRow({ topico, index, desempenho, onToggle, onLink }) {
   const tipo = inferTopicType(topico);
 
   return (
@@ -584,6 +874,8 @@ function TopicoRow({ topico, index, onToggle, onLink }) {
         <span className={topicTypeClass(tipo)} style={{ textTransform: 'uppercase', fontSize: 10 }}>
           {tipo}
         </span>
+        {/* O check diz "estudei". Isto diz "funcionou" — e sao fatos diferentes. */}
+        <DesempenhoDoTopico desempenho={desempenho} />
       </button>
 
       <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={onLink}>
@@ -591,6 +883,36 @@ function TopicoRow({ topico, index, onToggle, onLink }) {
         Link
       </button>
     </div>
+  );
+}
+
+// Questoes feitas e aproveitamento do topico, em uma pilula.
+//
+// Abaixo de um punhado de questoes o percentual e ruido (1 de 2 nao e "50% de dominio"),
+// entao a pilula mostra so as questoes feitas — o numero que e fato. Ver
+// src/lib/aproveitamentoDoEdital.js.
+function DesempenhoDoTopico({ desempenho }) {
+  if (!desempenho) return null;
+
+  const classe = !desempenho.confiavel
+    ? 'pl-tag'
+    : desempenho.atencao
+      ? 'pl-tag pl-tag-warn'
+      : 'pl-tag pl-tag-success';
+
+  return (
+    <span
+      className={classe}
+      style={{ whiteSpace: 'nowrap', fontSize: 10.5 }}
+      title={
+        desempenho.confiavel
+          ? `${desempenho.acertos} acertos em ${desempenho.questoes} questões`
+          : `${desempenho.questoes} questões feitas — poucas para calcular aproveitamento`
+      }
+    >
+      {desempenho.questoes}q
+      {desempenho.confiavel ? ` · ${desempenho.percentual}%` : ''}
+    </span>
   );
 }
 

@@ -18,6 +18,50 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 8) — Edital deixa de ser lista de afazeres ✅
+
+A tela era um **checklist**; o material que ela já tinha na mão dava um **mapa de
+prioridade**. Quatro frentes, todas escolhidas pelo usuário.
+
+**1. A ordem sai do quadro de provas.** Não existia nenhum `sort` — a ordem era a de entrada
+no banco. A página já *exibia* "40 questões · peso 2" em cada linha e **não usava o número
+para nada**. `src/lib/ordemDoEdital.js` (23 testes) ordena por questões × peso, com quem está
+fora do quadro no fim (*"não sei quanto vale" não é "vale pouco"*, mas pôr no topo o que não
+se mediu seria pior). Cada linha ganhou também "% da prova".
+
+**2. "Por onde começar".** Ordenar por peso responde "o que vale mais", que **não é** a mesma
+pergunta que "onde a próxima hora rende mais": 40 questões já 90% feitas não são o melhor
+lugar para investir. O critério é `pontos × (1 - cobertura)` — o que ainda há para ganhar.
+
+**3. Aproveitamento por tópico** (pedido no meio da rodada). O dado já existia: toda sessão
+grava `topico`, `acertos` e `erros`. Faltava cruzar com o edital.
+`src/lib/aproveitamentoDoEdital.js` (12 testes) traz `12q · 42%` em cada tópico e, acima
+dele, **o alerta que contradiz o aluno**: tópico marcado como concluído cujo desempenho não
+sustenta a marcação. É o estado mais perigoso da tela — some das pendências, conta como
+progresso e volta na prova. Corte conservador: abaixo de 5 questões mostra só o número de
+questões, porque *1 de 2 não é "50% de domínio", é acaso*.
+
+**4. Busca, filtros e o ritmo da prova.** Busca que alcança o nome do tópico (não só o da
+disciplina), "só pendentes", "expandir tudo" — e **mais de uma disciplina aberta ao mesmo
+tempo**: o estado vinha do App como *um* id, então abrir uma fechava a outra, numa tela cujo
+trabalho é dar conta do edital inteiro. O cartão de ritmo da prova (fecho 4) também subiu
+para cá.
+
+### Dois bugs latentes achados no caminho
+
+**A grade do cabeçalho tinha 4 colunas para 5 itens.** A linha do peso na prova só aparece
+quando o edital tem quadro de provas — que hoje é o caso normal. O slot do peso passou a ser
+sempre renderizado (vazio quando não há), para a contagem não depender do conteúdo.
+
+**O media query de tela estreita apontava para o filho errado.** A regra dizia "o terceiro
+filho ocupa a linha inteira", escrita quando o terceiro filho era a barra de progresso —
+agora é o peso. Medido em Chromium a 1000px: o cabeçalho se partia em **3 linhas** (150px)
+com tudo empilhado na margem esquerda e o peso invadindo o progresso. Agora são **2 linhas
+intencionais** (106px), e a barra de progresso alinha no mesmo x (863) havendo peso ou não.
+A 1600 e 1280px: uma linha só, 74px, sem invasão.
+
+---
+
 ## Sessão 2026-09-27 (fecho 7) — Edital verticalizado desentortado ✅
 
 O texto do cabeçalho saía **uma palavra por linha**. A causa não estava no texto: a coluna da

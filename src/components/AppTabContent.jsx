@@ -781,6 +781,7 @@ export default function AppTabContent(props) {
           editalText={targetContestSummary?.edital_text || targetContestSummary?.editalText || ''}
           bancoDisciplinas={bancoDisciplinas}
           cursos={cursos}
+          historicoReal={historicoReal}
           targetContest={targetContestSummary}
           expandedEditalSubject={expandedEditalSubject}
         setExpandedEditalSubject={setExpandedEditalSubject}

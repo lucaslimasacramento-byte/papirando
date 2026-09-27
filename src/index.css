@@ -1819,7 +1819,12 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   cursor: pointer;
   padding: 16px 20px;
   display: grid;
-  grid-template-columns: auto minmax(260px, 1fr) minmax(220px, 1.6fr) auto;
+  /* Cinco colunas para cinco itens: seta, nome, peso na prova, progresso e o "Expandir".
+     Eram quatro, e a linha do peso so aparece quando o edital tem quadro de provas — que
+     hoje e o caso normal. Com um item a mais do que colunas, o quinto caia numa segunda
+     linha implicita e o cabecalho da disciplina se partia em duas. O slot do peso e sempre
+     renderizado (vazio quando nao ha quadro) para a contagem nao depender do conteudo. */
+  grid-template-columns: auto minmax(200px, 1fr) auto minmax(160px, 1fr) auto;
   gap: 16px;
   align-items: center;
   text-align: left;
@@ -1850,7 +1855,9 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   background: transparent;
   padding: 10px 8px;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  /* Quinta coluna: as questoes feitas e o aproveitamento do topico. Sem ela o item extra
+     caia numa segunda linha. Fica vazia quando o topico ainda nao teve questoes. */
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
   gap: 14px;
   align-items: center;
 }
@@ -2344,12 +2351,19 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   .pl-card-paper > div[style*="grid-template-columns: minmax(0, 1fr) 320px"] {
     grid-template-columns: 1fr !important;
   }
+  /* Em tela estreita o cabecalho da disciplina vira duas linhas: nome em cima, peso na
+     prova e progresso embaixo. As posicoes sao explicitas porque a regra antiga mandava
+     "o terceiro filho ocupa a linha" — e o terceiro filho mudou quando o peso na prova
+     entrou. Deixar no automatico fazia o cabecalho se partir em tres linhas tortas. */
   .edital-accordion-trigger {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) minmax(140px, auto);
+    row-gap: 10px;
   }
-  .edital-accordion-trigger > :nth-child(3) {
-    grid-column: 2 / -1;
-  }
+  .edital-accordion-trigger > :nth-child(1) { grid-row: 1; grid-column: 1; }
+  .edital-accordion-trigger > :nth-child(2) { grid-row: 1; grid-column: 2; }
+  .edital-accordion-trigger > :nth-child(5) { grid-row: 1; grid-column: 3; justify-self: end; }
+  .edital-accordion-trigger > :nth-child(3) { grid-row: 2; grid-column: 2; justify-self: start; }
+  .edital-accordion-trigger > :nth-child(4) { grid-row: 2; grid-column: 3; }
   .planning-cycle-strip,
   .planning-main-grid,
   .metas-top-grid,
