@@ -883,9 +883,9 @@ export default function Objetivos({
   ];
 
   return (
-    // Mesmo fundo de Meus cursos (`pl-paper-bg-soft`): as duas telas sao do mesmo par e
-    // estavam com pautas diferentes — 47px aqui, 56px la — o que sobressaltava ao trocar.
-    <div className="pl-paper-bg-soft" style={{ flex: 1, overflowY: 'auto', minHeight: '100%' }}>
+    // Sem classe de fundo: quem pinta a pauta e o container de conteudo do App, e uma so
+    // para todas as telas. Ver src/lib/fundoDaPagina.test.js.
+    <div style={{ flex: 1, overflowY: 'auto', minHeight: '100%' }}>
      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 32px 64px' }}>
       <div style={{ marginBottom: 32 }}>
         <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Objetivos de estudo</p>

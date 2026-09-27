@@ -72,7 +72,7 @@ export default function AdminDesign() {
     .filter((k) => COURSE_LOGOS[k]);
 
   return (
-    <div className="pl-paper-bg" style={{ padding: '28px 28px 64px' }}>
+    <div style={{ padding: '28px 28px 64px' }}>
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
 
         {/* Hero */}

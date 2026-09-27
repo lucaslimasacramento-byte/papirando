@@ -65,7 +65,7 @@ export default function DisciplinaDetalhe({
   ];
 
   return (
-    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ padding: '28px 28px 48px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ── Hero editorial ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 24, alignItems: 'start' }}>

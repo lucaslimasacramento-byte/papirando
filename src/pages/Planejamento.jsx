@@ -169,7 +169,7 @@ class PlanningErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="pl-paper-bg" style={{ padding: '28px 28px 48px' }}>
+        <div style={{ padding: '28px 28px 48px' }}>
           <div className="pl-card" style={{ maxWidth: 980, border: '1px solid var(--pl-warn-soft)', background: 'var(--pl-warn-soft)', padding: 32 }}>
           <span className="pl-tag pl-tag-warn">
             Planejamento em recuperacao

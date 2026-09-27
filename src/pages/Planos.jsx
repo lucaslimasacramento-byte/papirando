@@ -705,7 +705,7 @@ export default function Planos({
   };
 
   return (
-    <div className="pl-paper-bg-soft" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '18px 20px 40px', border: 0, outline: 0 }}>
+    <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '18px 20px 40px', border: 0, outline: 0 }}>
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 24, margin: 0 }}>
         <PlanosHeader
           onCriarCurso={() => openMode('intent')}

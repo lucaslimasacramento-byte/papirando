@@ -264,7 +264,7 @@ export default function AdminConfiguracoes({
   const showGlobalSave = activeSection === 'xp' || activeSection === 'badges' || activeSection === 'wellness';
 
   return (
-    <div className="pl-paper-bg" style={{ minHeight: '100vh', padding: '28px 28px 48px' }}>
+    <div style={{ minHeight: '100vh', padding: '28px 28px 48px' }}>
       {/* Hero */}
       <div style={{ marginBottom: 24 }}>
         <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Admin do produto</p>

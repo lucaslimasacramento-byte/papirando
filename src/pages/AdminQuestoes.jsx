@@ -520,7 +520,7 @@ export default function AdminQuestoes() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="pl-paper-bg" style={{ minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh' }}>
       {/* Hero */}
       <div style={{ padding: '28px 28px 16px' }}>
         <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Admin · banco de questoes</p>

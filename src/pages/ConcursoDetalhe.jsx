@@ -244,7 +244,7 @@ export function EnemDetalhe({
   const isEncerrado = statusDot === 'inscricoes_encerradas';
 
   return (
-    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 20px 48px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 20px 48px' }}>
 
       {/* Voltar + admin */}
       {!embedded && (
@@ -1127,7 +1127,7 @@ function ConcursoDetalheBody({
 
   if (!contest) {
     return (
-      <div className="pl-paper-bg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '100%', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '100%', flexDirection: 'column', gap: 16 }}>
         <p className="pl-eyebrow">Concurso</p>
         <h2 style={{ fontSize: 28, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>Nenhum concurso selecionado</h2>
         <button
@@ -1143,7 +1143,7 @@ function ConcursoDetalheBody({
   }
 
   return (
-    <div className="pl-paper-bg" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '20px 20px 40px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '20px 20px 40px' }}>
       {/* Back + admin row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <button

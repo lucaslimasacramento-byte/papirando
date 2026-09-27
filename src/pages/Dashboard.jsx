@@ -224,6 +224,44 @@ export default function Dashboard({
           </div>
         )}
 
+        {/* A citacao abre a pagina, como epigrafe.
+         *
+         * Fechava o painel, de colofao, e la embaixo quase ninguem chegava. Aqui e a
+         * primeira coisa que o olho encontra ao abrir o Inicio — e uma frase dessas so
+         * serve para o comeco do dia. Uma linha so, encostada na margem: nao empurra o
+         * cumprimento, nao disputa com nenhum botao. */}
+        <figure
+          style={{
+            margin: '0 0 var(--dash-gap)',
+            paddingLeft: 14,
+            borderLeft: '2px solid var(--pl-rule-2)',
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 10,
+            flexWrap: 'wrap',
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontFamily: 'var(--pl-serif)',
+              fontStyle: 'italic',
+              fontWeight: 300,
+              fontSize: 'var(--dash-frase)',
+              lineHeight: 1.3,
+              letterSpacing: '-0.015em',
+              color: 'var(--pl-ink-2)',
+              maxWidth: 720,
+            }}
+          >
+            {citacaoDoDia.texto}
+          </p>
+          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
+          <figcaption className="pl-eyebrow" style={{ flexShrink: 0 }}>
+            {citacaoDoDia.autor}
+          </figcaption>
+        </figure>
+
         {/* A coluna da direita e do objetivo-alvo, definido ou nao. Deixa-la vazia era o
             pior dos mundos: o aluno nao via que faltava escolher um alvo, e a plataforma
             inteira depende dele para priorizar. Sem alvo, o lugar convida a definir. */}
@@ -401,41 +439,6 @@ export default function Dashboard({
           </div>
         </section>
 
-        {/* A citacao fecha a pagina, como colofao.
-         *
-         * Nao cabia mais no alto: a coluna da direita e do objetivo-alvo, e entre os KPIs e
-         * o Foco do Dia ela criava uma linha nova numa tela ja apertada. Aqui nao empurra
-         * nada, nao disputa com nenhuma acao, e e o que o olho encontra quando termina de
-         * ler o painel — que e quando uma frase dessas tem alguma chance de ser lida. */}
-        <figure
-          style={{
-            margin: 'var(--dash-gap) 0 0',
-            borderTop: '1px solid var(--pl-rule)',
-            paddingTop: 'var(--dash-gap)',
-            textAlign: 'center',
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontFamily: 'var(--pl-serif)',
-              fontStyle: 'italic',
-              fontWeight: 300,
-              fontSize: 'var(--dash-frase)',
-              lineHeight: 1.35,
-              letterSpacing: '-0.015em',
-              color: 'var(--pl-ink-2)',
-              maxWidth: 620,
-              marginInline: 'auto',
-            }}
-          >
-            {citacaoDoDia.texto}
-          </p>
-          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
-          <figcaption className="pl-eyebrow" style={{ marginTop: 10 }}>
-            {citacaoDoDia.autor}
-          </figcaption>
-        </figure>
       </div>
     </div>
   );
