@@ -18,6 +18,38 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 2) — Capa maior, nítida e com enquadramento ✅
+
+**A capa estava borrada** — e a causa era boa de achar: ela passava por `storageThumb`, cujo
+redimensionador **trava em 128 ou 256px**, porque foi escrito para logos de 28 a 56px. Servida
+a 256px e esticada para a largura do cartão (que em tela cheia passa de 1400px), chegava
+lavada. Novo `storageBanner` em `src/lib/imageUrl.js`: **1600 × 500, `resize=cover`,
+qualidade 82**. Um degrau só, para não multiplicar variantes frias no CDN — que era o motivo
+da escada existir.
+
+**A capa também cresceu:** 64 → **132px**. Com 64 era tarja, não capa.
+
+**E dá para escolher a faixa que aparece.** Quando a imagem é mais alta que o espaço, a prévia
+vira arrastável ("Arraste para escolher a faixa"), com slider Topo↔Base e botão "Centralizar"
+ao lado. O valor vai em `capa_pos` (0–100) e vira `object-position: center N%` no cartão. A
+prévia tem a altura real da capa, senão o que se escolhe aqui não corresponde ao que aparece
+lá.
+
+Detalhes que valem a pena: o controle **some quando a imagem cabe inteira** (não há o que
+enquadrar, e um slider que não muda nada é pior que nenhum); capa nova **volta ao centro**,
+porque o enquadramento da anterior não vale para outra imagem; o arrasto escuta no `window`,
+então não trava se o ponteiro sai da prévia no meio do gesto; e o aviso de imagem alta passou
+a apontar o controle em vez de anunciar uma perda inevitável.
+
+`posicaoDaCapa` trata `null`/`''` antes de `Number()`: os dois dariam `0`, que é um
+enquadramento válido (o topo) e passaria por escolha do aluno.
+
+**O lint pegou um TDZ antes de ir para produção** — `podeEnquadrar` usava `dimensoes`,
+declarado 60 linhas abaixo. É exatamente o padrão que derrubou o site em 23/09; a regra
+`no-use-before-define` valeu o ruído.
+
+---
+
 ## Sessão 2026-09-27 (fecho) — Layout novo no Dashboard ✅
 
 Aplicado o `Dashboard.dc.html`:

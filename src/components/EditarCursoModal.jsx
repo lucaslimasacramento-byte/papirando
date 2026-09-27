@@ -1,10 +1,22 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ModalShell, InputField } from './ModalShell';
-import { BookOpen, Plus, Trash2, Upload } from 'lucide-react';
+import { BookOpen, MoveVertical, Plus, Trash2, Upload } from 'lucide-react';
 import { objetivosDoCurso } from '../lib/objetivos';
 import { tipoDoObjetivo, LISTA_DE_TIPOS } from '../lib/tiposDeObjetivo';
 import { apelidoSugerido } from '../lib/apelidoCurso';
-import { CORES_DE_CURSO, limparDescricao, LIMITE_DA_DESCRICAO, recomendacaoDaImagem, avisoDaImagem } from '../lib/personalizacaoCurso';
+import {
+  CORES_DE_CURSO,
+  IMAGENS_DO_CURSO,
+  POSICAO_PADRAO_DA_CAPA,
+  avisoDaImagem,
+  limparDescricao,
+  LIMITE_DA_DESCRICAO,
+  posicaoDaCapa,
+  recomendacaoDaImagem,
+} from '../lib/personalizacaoCurso';
+
+// Proporcao da faixa da capa. Acima dela a imagem cabe inteira e nao ha o que enquadrar.
+const PROPORCAO_DA_CAPA = IMAGENS_DO_CURSO.capa.largura / IMAGENS_DO_CURSO.capa.altura;
 
 // Personalizacao do curso do aluno: nome, apelido, descricao, cor, capa, selo e os objetivos
 // que ele agrupa.
@@ -52,6 +64,11 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
   // abrir todo dia: deixar ele dar cara propria e o que separa "uma lista de materias" de
   // "o meu plano".
   const [capaUrl, setCapaUrl] = useState(curso?.capa_url || '');
+  // Qual faixa da imagem aparece, de 0 (topo) a 100 (base). A capa e larga e baixa, a foto
+  // do aluno quase nunca e: cortar sempre pelo centro joga fora o que costuma importar.
+  const [capaPos, setCapaPos] = useState(() => posicaoDaCapa(curso));
+  const [arrastando, setArrastando] = useState(false);
+  const previaDaCapaRef = useRef(null);
   const [cor, setCor] = useState(curso?.cor || CORES_DE_CURSO[0].id);
   const [descricao, setDescricao] = useState(curso?.descricao || '');
   // Os dados que sao do alvo vivem em cada objetivo, nao no curso: um curso pode agrupar
@@ -64,6 +81,61 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
       salario: semValor(objetivo.salario) ? '' : String(objetivo.salario || ''),
     }))
   );
+
+  // Dimensoes reais do que o aluno escolheu, lidas quando a previa carrega. E o que permite
+  // avisar "vai ser cortada" antes de ele estranhar o resultado no cartao.
+  const [dimensoes, setDimensoes] = useState({ capa: null, selo: null });
+  const medir = (chave) => (evento) =>
+    setDimensoes((prev) => ({
+      ...prev,
+      [chave]: { largura: evento.target.naturalWidth, altura: evento.target.naturalHeight },
+    }));
+
+  // So ha o que enquadrar quando sobra imagem para cima ou para baixo — ou seja, quando ela
+  // e mais "alta" que a faixa da capa. Comparamos as proporcoes, nao os pixels.
+  const podeEnquadrar = Boolean(
+    capaUrl &&
+    dimensoes.capa &&
+    dimensoes.capa.largura / dimensoes.capa.altura < PROPORCAO_DA_CAPA
+  );
+
+  // Arrastar na previa e o gesto natural ("mover a faixa"); o slider abaixo faz o mesmo para
+  // quem prefere clicar, e serve de alvo acessivel pelo teclado.
+  const posicaoPeloPonteiro = (evento) => {
+    const area = previaDaCapaRef.current?.getBoundingClientRect();
+    if (!area || area.height === 0) return null;
+    const proporcao = (evento.clientY - area.top) / area.height;
+    return Math.min(Math.max(Math.round(proporcao * 100), 0), 100);
+  };
+
+  const comecarAArrastar = (evento) => {
+    if (!podeEnquadrar) return;
+    evento.currentTarget.setPointerCapture?.(evento.pointerId);
+    setArrastando(true);
+    const posicao = posicaoPeloPonteiro(evento);
+    if (posicao !== null) setCapaPos(posicao);
+  };
+
+  useEffect(() => {
+    if (!arrastando) return undefined;
+
+    const mover = (evento) => {
+      const posicao = posicaoPeloPonteiro(evento);
+      if (posicao !== null) setCapaPos(posicao);
+    };
+    const soltar = () => setArrastando(false);
+
+    // No window, nao no elemento: se o ponteiro sai da previa no meio do gesto, o arrasto
+    // continua em vez de travar no meio.
+    window.addEventListener('pointermove', mover);
+    window.addEventListener('pointerup', soltar);
+    window.addEventListener('pointercancel', soltar);
+    return () => {
+      window.removeEventListener('pointermove', mover);
+      window.removeEventListener('pointerup', soltar);
+      window.removeEventListener('pointercancel', soltar);
+    };
+  }, [arrastando]);
 
   const alterarObjetivo = (id, campo, valor) =>
     setObjetivos((prev) => prev.map((item) => (item.id === id ? { ...item, [campo]: valor } : item)));
@@ -80,14 +152,6 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
   const removerObjetivo = (id) =>
     setObjetivos((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
   const [uploading, setUploading] = useState(false);
-  // Dimensoes reais do que o aluno escolheu, lidas quando a previa carrega. E o que permite
-  // avisar "vai ser cortada" antes de ele estranhar o resultado no cartao.
-  const [dimensoes, setDimensoes] = useState({ capa: null, selo: null });
-  const medir = (chave) => (evento) =>
-    setDimensoes((prev) => ({
-      ...prev,
-      [chave]: { largura: evento.target.naturalWidth, altura: evento.target.naturalHeight },
-    }));
   const [uploadError, setUploadError] = useState('');
 
   const canSave = Boolean(nome.trim());
@@ -101,7 +165,12 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
     setUploading(true);
     try {
       const url = await onUploadImage(file);
-      if (url) (destino === 'capa' ? setCapaUrl : setImagemUrl)(url);
+      if (url) {
+        // Capa nova comeca centralizada: o enquadramento da anterior nao vale para outra
+        // imagem.
+        if (destino === 'capa') setCapaPos(POSICAO_PADRAO_DA_CAPA);
+        (destino === 'capa' ? setCapaUrl : setImagemUrl)(url);
+      }
     } catch (err) {
       setUploadError(err?.message || 'Falha ao enviar a imagem.');
     } finally {
@@ -202,22 +271,76 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
 
         <div>
           <label className="pl-eyebrow" style={{ display: 'block', marginBottom: 6 }}>Capa (opcional)</label>
+          {/* A previa tem a altura real da capa no cartao, senao o enquadramento escolhido
+              aqui nao corresponde ao que aparece la. */}
           <div
+            ref={previaDaCapaRef}
+            onPointerDown={comecarAArrastar}
             style={{
-              height: 72, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--pl-rule-2)',
+              height: 132, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--pl-rule-2)',
               background: `linear-gradient(135deg, ${(CORES_DE_CURSO.find((c) => c.id === cor) || CORES_DE_CURSO[0]).base} 0%, ${(CORES_DE_CURSO.find((c) => c.id === cor) || CORES_DE_CURSO[0]).claro} 100%)`,
+              position: 'relative',
+              cursor: podeEnquadrar ? (arrastando ? 'grabbing' : 'grab') : 'default',
+              touchAction: 'none',
             }}
           >
             {capaUrl && (
               <img
                 src={capaUrl}
                 alt=""
+                draggable={false}
                 onLoad={medir('capa')}
                 onError={() => setDimensoes((prev) => ({ ...prev, capa: null }))}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                style={{
+                  width: '100%', height: '100%', display: 'block',
+                  objectFit: 'cover',
+                  objectPosition: `center ${capaPos}%`,
+                  userSelect: 'none',
+                }}
               />
             )}
+            {podeEnquadrar && !arrastando && (
+              <span
+                style={{
+                  position: 'absolute', left: '50%', bottom: 8, transform: 'translateX(-50%)',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '3px 9px', borderRadius: 999,
+                  background: 'rgba(20,17,13,0.62)', color: '#fff',
+                  fontSize: 10.5, fontWeight: 700, pointerEvents: 'none', whiteSpace: 'nowrap',
+                }}
+              >
+                <MoveVertical size={11} /> Arraste para escolher a faixa
+              </span>
+            )}
           </div>
+
+          {/* Quando a imagem cabe inteira, nao ha o que enquadrar — e o controle sumindo diz
+              isso melhor do que um slider que nao muda nada. */}
+          {podeEnquadrar && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+              <span className="pl-eyebrow" style={{ fontSize: 9.5, flexShrink: 0 }}>Topo</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={capaPos}
+                onChange={(e) => setCapaPos(Number(e.target.value))}
+                aria-label="Faixa da imagem que aparece na capa"
+                style={{ flex: 1, minWidth: 100, accentColor: 'var(--pl-accent)' }}
+              />
+              <span className="pl-eyebrow" style={{ fontSize: 9.5, flexShrink: 0 }}>Base</span>
+              <button
+                type="button"
+                className="pl-btn pl-btn-sm"
+                onClick={() => setCapaPos(POSICAO_PADRAO_DA_CAPA)}
+                disabled={capaPos === POSICAO_PADRAO_DA_CAPA}
+                style={{ flexShrink: 0, padding: '3px 9px', fontSize: 11 }}
+              >
+                Centralizar
+              </button>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {onUploadImage && (
               <>
@@ -243,8 +366,8 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
             {recomendacaoDaImagem('capa')}
           </p>
           <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
-            Faixa larga no topo do cartão — o centro da imagem é o que aparece. Sem capa, o
-            cartão usa a cor escolhida.
+            Faixa larga no topo do cartão. Se a imagem for mais alta que o espaço, arraste na
+            prévia para escolher a faixa que aparece. Sem capa, o cartão usa a cor escolhida.
           </p>
           {avisoDaImagem('capa', dimensoes.capa?.largura, dimensoes.capa?.altura) && (
             <p style={{ margin: '6px 0 0', fontSize: 11.5, fontWeight: 700, color: 'var(--pl-warn)' }}>
@@ -417,6 +540,7 @@ export default function EditarCursoModal({ curso, onClose, onSave, onOpenDiscipl
                   intent,
                   imagem_url: imagemUrl,
                   capa_url: capaUrl.trim(),
+                  capa_pos: capaPos,
                   cor,
                   descricao: limparDescricao(descricao),
                   objetivos: objetivos.map((objetivo) => ({

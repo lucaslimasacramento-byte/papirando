@@ -57,3 +57,15 @@ describe('montarCurso', () => {
     expect(curso.concurso).toBe('Meu plano');
   });
 });
+
+describe('enquadramento da capa', () => {
+  it('nasce centralizado', () => {
+    expect(montarCurso({ nome: 'A' }).capa_pos).toBe(50);
+  });
+
+  // 0 e o topo da imagem, uma escolha valida — nao pode virar o padrao.
+  it('preserva o topo quando e a escolha do aluno', () => {
+    expect(montarCurso({ nome: 'A', capa_pos: 0 }).capa_pos).toBe(0);
+    expect(montarCurso({ nome: 'A', capa_pos: 80 }).capa_pos).toBe(80);
+  });
+});

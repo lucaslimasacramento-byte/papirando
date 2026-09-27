@@ -28,7 +28,7 @@ import { analyzeEdital } from '../lib/aiClient';
 import { showConfirm, showToast } from '../lib/dialogs';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
-import { storageThumb } from '../lib/imageUrl';
+import { storageThumb, storageBanner } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
@@ -2315,8 +2315,10 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
       {capa && (
         <div
           style={{
-            height: 64,
-            background: capa.tipo === 'imagem' ? `${capa.gradiente}` : capa.gradiente,
+            // 64px era uma tarja: a imagem mal aparecia e o corte comia tudo. Com 132 a capa
+            // vira capa, e ainda sobra altura para o conteudo do cartao.
+            height: 132,
+            background: capa.gradiente,
             position: 'relative',
             overflow: 'hidden',
             flexShrink: 0,
@@ -2324,11 +2326,16 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
         >
           {capa.tipo === 'imagem' && (
             <img
-              src={storageThumb(capa.url, 640)}
+              src={storageBanner(capa.url)}
               alt=""
               loading="lazy"
               decoding="async"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              style={{
+                width: '100%', height: '100%', display: 'block',
+                objectFit: 'cover',
+                // Qual faixa da imagem aparece — escolha do aluno no modal.
+                objectPosition: capa.enquadramento,
+              }}
             />
           )}
         </div>

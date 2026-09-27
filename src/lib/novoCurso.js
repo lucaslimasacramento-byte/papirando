@@ -7,6 +7,7 @@
 // um objetivo só. Com a montagem aqui, o teste cobre o que precisa sobreviver.
 
 import { normalizeContestStatus } from './contestGrouping';
+import { POSICAO_PADRAO_DA_CAPA } from './personalizacaoCurso';
 
 export function montarCurso(courseData = {}, { id } = {}) {
   const intent =
@@ -61,6 +62,7 @@ export function montarCurso(courseData = {}, { id } = {}) {
     apelido: courseData.apelido || '',
     descricao: courseData.descricao || '',
     capa_url: courseData.capa_url || '',
+    capa_pos: Number.isFinite(Number(courseData.capa_pos)) ? Number(courseData.capa_pos) : POSICAO_PADRAO_DA_CAPA,
     cor: courseData.cor || 'azul',
 
     imagem_url: courseData.imagem_url || '',

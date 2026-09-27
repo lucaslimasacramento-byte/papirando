@@ -41,3 +41,23 @@ export function storageThumb(url, size = 64) {
   const sep = rendered.includes('?') ? '&' : '?';
   return `${rendered}${sep}width=${snapped}&height=${snapped}&resize=contain&quality=80`;
 }
+
+// Capa de curso: faixa larga, nao miniatura.
+//
+// A capa passava por `storageThumb`, cuja escada trava em 256px porque foi feita para logos
+// de 28 a 56px. Servida a 256 e esticada para a largura do cartao — que em tela cheia passa
+// de 1400px —, a imagem chegava borrada. Aqui vai um degrau proprio, e um so, para nao
+// multiplicar variantes frias no CDN.
+const BANNER_LARGURA = 1600;
+const BANNER_ALTURA = 500;
+
+export function storageBanner(url) {
+  if (!url || typeof url !== 'string') return url || '';
+  const marker = '/storage/v1/object/public/';
+  if (!url.includes(marker)) return url;
+  const rendered = url.replace(marker, '/storage/v1/render/image/public/');
+  const sep = rendered.includes('?') ? '&' : '?';
+  // `cover` (e nao `contain`) porque o corte e intencional: o enquadramento vertical fica
+  // com o aluno, via `object-position`. Ver posicaoDaCapa em personalizacaoCurso.js.
+  return `${rendered}${sep}width=${BANNER_LARGURA}&height=${BANNER_ALTURA}&resize=cover&quality=82`;
+}

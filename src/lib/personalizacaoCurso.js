@@ -26,15 +26,37 @@ export function corDoCurso(curso) {
   return CORES_DE_CURSO.find((cor) => cor.id === id) || COR_PADRAO;
 }
 
+// Qual faixa da imagem aparece na capa, de 0 (topo) a 100 (base).
+//
+// A capa e uma faixa larga e baixa; uma foto de celular e o contrario. Cortar sempre pelo
+// centro joga fora justamente o que costuma importar — o rosto no alto, o texto na base. O
+// aluno escolhe a altura do corte.
+export const POSICAO_PADRAO_DA_CAPA = 50;
+
+export function posicaoDaCapa(curso) {
+  const cru = curso?.capa_pos;
+  // `Number(null)` e `Number('')` dao 0, que e um enquadramento valido — e passaria por
+  // escolha do aluno. Ausencia tem que virar o padrao, nao o topo da imagem.
+  if (cru === null || cru === undefined || cru === '') return POSICAO_PADRAO_DA_CAPA;
+
+  const valor = Number(cru);
+  if (!Number.isFinite(valor)) return POSICAO_PADRAO_DA_CAPA;
+  return Math.min(Math.max(Math.round(valor), 0), 100);
+}
+
 // O que desenhar no topo do cartao. Com capa enviada, a imagem; sem capa, o degrade da cor.
 // Os dois casos devolvem o mesmo formato para o cartao nao precisar de dois caminhos.
 export function capaDoCurso(curso) {
   const cor = corDoCurso(curso);
   const gradiente = `linear-gradient(135deg, ${cor.base} 0%, ${cor.claro} 100%)`;
   const url = String(curso?.capa_url || '').trim();
+  const posicao = posicaoDaCapa(curso);
+  // Pronto para ir direto no `objectPosition` da <img>.
+  const enquadramento = `center ${posicao}%`;
+
   return url
-    ? { tipo: 'imagem', url, cor, gradiente }
-    : { tipo: 'cor', url: '', cor, gradiente };
+    ? { tipo: 'imagem', url, cor, gradiente, posicao, enquadramento }
+    : { tipo: 'cor', url: '', cor, gradiente, posicao, enquadramento };
 }
 
 // Linha de apoio do cartao. A descricao que o aluno escreveu ganha da linha automatica
@@ -110,6 +132,11 @@ export function avisoDaImagem(chave, largura, altura) {
 
   // 25% de folga: quase toda foto de celular passa, e so avisa quem vai perder pedaco
   // grande de verdade.
+  // A capa deixou de cortar sempre pelo meio: o aluno escolhe a faixa. O aviso agora aponta
+  // o controle em vez de anunciar uma perda que ele nao pode evitar.
+  if (chave === 'capa' && proporcaoEnviada < proporcaoAlvo * 0.75) {
+    return `Sua imagem tem ${largura} × ${altura} px — mais alta que o espaço. Arraste na prévia para escolher a faixa que aparece.`;
+  }
   if (proporcaoEnviada < proporcaoAlvo * 0.75) {
     return `Sua imagem tem ${largura} × ${altura} px — mais alta que o espaço. Só a faixa do meio vai aparecer.`;
   }

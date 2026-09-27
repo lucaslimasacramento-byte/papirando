@@ -9,6 +9,7 @@ import {
   LIMITE_DA_DESCRICAO,
   recomendacaoDaImagem,
   avisoDaImagem,
+  posicaoDaCapa,
 } from './personalizacaoCurso';
 
 describe('corDoCurso', () => {
@@ -96,6 +97,12 @@ describe('avisoDaImagem', () => {
     expect(avisoDaImagem('capa', 1200, 1200)).toContain('mais alta');
   });
 
+  // Na capa da para escolher a faixa; no selo, nao. O aviso aponta a saida quando ela existe.
+  it('manda enquadrar na capa, e so avisa do corte no selo', () => {
+    expect(avisoDaImagem('capa', 1200, 1200)).toContain('Arraste na prévia');
+    expect(avisoDaImagem('selo', 300, 1200)).toContain('Só a faixa do meio');
+  });
+
   it('avisa quando e larga demais', () => {
     expect(avisoDaImagem('selo', 1200, 300)).toContain('mais larga');
   });
@@ -108,5 +115,32 @@ describe('avisoDaImagem', () => {
   it('nao avisa sem as dimensoes', () => {
     expect(avisoDaImagem('capa', 0, 0)).toBe('');
     expect(avisoDaImagem('capa', undefined, undefined)).toBe('');
+  });
+});
+
+describe('posicaoDaCapa', () => {
+  it('centraliza por padrao', () => {
+    expect(posicaoDaCapa({})).toBe(50);
+    expect(posicaoDaCapa({ capa_pos: null })).toBe(50);
+  });
+
+  it('respeita a faixa escolhida', () => {
+    expect(posicaoDaCapa({ capa_pos: 0 })).toBe(0);
+    expect(posicaoDaCapa({ capa_pos: 80 })).toBe(80);
+  });
+
+  // Valor fora da escala viraria um enquadramento invalido no CSS.
+  it('prende entre 0 e 100', () => {
+    expect(posicaoDaCapa({ capa_pos: -40 })).toBe(0);
+    expect(posicaoDaCapa({ capa_pos: 400 })).toBe(100);
+  });
+
+  it('arredonda para inteiro', () => {
+    expect(posicaoDaCapa({ capa_pos: 33.7 })).toBe(34);
+  });
+
+  it('entra no enquadramento que a <img> usa', () => {
+    expect(capaDoCurso({ capa_url: 'x', capa_pos: 20 }).enquadramento).toBe('center 20%');
+    expect(capaDoCurso({}).enquadramento).toBe('center 50%');
   });
 });

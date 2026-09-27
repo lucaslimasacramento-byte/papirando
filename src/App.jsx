@@ -4802,6 +4802,8 @@ export default function App() {
       if (patch.cor !== undefined && patch.cor) next.cor = patch.cor;
       // Capa e descricao podem ser limpas de proposito, entao aceitam string vazia.
       if (patch.capa_url !== undefined) next.capa_url = String(patch.capa_url || '').trim();
+      // 0 e um enquadramento valido (topo da imagem), entao o teste e por undefined.
+      if (patch.capa_pos !== undefined) next.capa_pos = Number(patch.capa_pos);
       if (patch.descricao !== undefined) next.descricao = String(patch.descricao || '').trim();
       if (patch.apelido !== undefined) next.apelido = String(patch.apelido || '').trim();
       if (patch.status !== undefined && patch.status) next.status = patch.status;
