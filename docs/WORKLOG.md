@@ -18,6 +18,33 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 7) — Edital verticalizado desentortado ✅
+
+O texto do cabeçalho saía **uma palavra por linha**. A causa não estava no texto: a coluna da
+direita do cabeçalho era `auto`, ou seja, **se dimensionava pelo conteúdo** — e o conteúdo é o
+**nome do concurso**, que num edital de PM tem 150 caracteres ("Concurso Público para Admissão
+ao Curso de Formação de Oficiais (CFO) e ao Curso de Formação de Praças (CFP) da Polícia
+Militar do Estado de Alagoas").
+
+A trilha crescia para caber a frase inteira, a coluna da esquerda desabava, e o parágrafo
+quebrava letra a letra. O `text-overflow: ellipsis` do seletor **existia desde sempre e nunca
+entrava em ação** — reticências só funcionam quando algo limita a largura, e nada limitava.
+
+**Medido em Chromium, antes e depois:**
+
+| Largura | Coluna esquerda (antes → depois) | Linhas do parágrafo |
+|---|---|---|
+| 1600px | 330 → **1268** | 3 → **2** |
+| 1280px | **10** → **948** | **16** → **2** |
+| 1000px | **0** → **668** | **16** → **2** |
+
+A coluna da direita ficava com **1238px** em qualquer largura — o comprimento exato do nome do
+concurso. Agora tem teto de 300px, o nome trunca com reticências (e o nome inteiro vai no
+`title`, para consulta no hover) e o título do hero virou `clamp(32px, 5vw, 56px)` em vez de
+56px fixos.
+
+---
+
 ## Sessão 2026-09-27 (fecho 6) — Bizu de Disciplinas em faixas ✅
 
 O cartão "Diagnóstico das disciplinas" eram **duas colunas que nunca casavam**: à esquerda

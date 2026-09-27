@@ -338,9 +338,16 @@ function EditalHeader({
   const area = getAreaToken(concurso?.area || inferAreaFromText(concurso?.nome || concurso?.plano || ''));
 
   return (
-    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end' }}>
+    // A coluna da direita era `auto`, entao ela se dimensionava pelo conteudo — e o conteudo
+    // e o NOME DO CONCURSO, que num edital de policia militar tem 150 caracteres
+    // ("Concurso Publico para Admissao ao Curso de Formacao de Oficiais (CFO) e ao Curso de
+    // Formacao de Pracas (CFP) da Policia Militar do Estado de Alagoas"). A trilha crescia
+    // para caber a frase inteira, a coluna da esquerda desabava para quase zero, e o texto
+    // saia uma palavra por linha. O `text-overflow: ellipsis` do seletor nunca entrava em
+    // acao porque nada limitava a largura dele. Agora limita.
+    <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 300px)', gap: 32, alignItems: 'end' }}>
       <div>
-          <h1 className="pl-display" style={{ margin: 0, fontSize: 56, color: 'var(--pl-ink)' }}>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 'clamp(32px, 5vw, 56px)', color: 'var(--pl-ink)' }}>
             Edital verticalizado<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
           <p style={{ margin: '12px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 660, lineHeight: 1.5 }}>
@@ -364,6 +371,7 @@ function EditalHeader({
             type="button"
             className="pl-card edital-selector-button"
             onClick={() => setSelectorOpen((prev) => !prev)}
+            title={concurso?.nome || 'Sem concurso ativo'}
           >
             <span className="pl-area-dot" style={{ background: area.cover, width: 13, height: 13 }} />
             <span style={{ minWidth: 0, flex: 1 }}>
