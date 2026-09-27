@@ -156,6 +156,7 @@ export default function AppTabContent(props) {
     setSelectedCoursePlan,
     salvarRotinaInicial,
     rotinaConfigurada,
+    prazoDoAlvo,
     contestLibrary,
     currentCourseLimit,
     currentCourseCount,
@@ -348,6 +349,7 @@ export default function AppTabContent(props) {
         ultimaAnotacao={ultimaAnotacao}
         editalProgresso={editalProgresso}
         rotinaConfigurada={rotinaConfigurada}
+        prazoDoAlvo={prazoDoAlvo}
         onAbrirPlanejamento={() => setActiveTab('planejamento')}
         temCurso={(cursos || []).some((curso) => curso?.status !== 'arquivado')}
         onOpenTargetContest={(contestId) => {

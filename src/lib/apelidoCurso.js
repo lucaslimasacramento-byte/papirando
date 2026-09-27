@@ -12,7 +12,12 @@ export function apelidoSugerido(curso) {
   // Siglas em caixa alta com 2+ letras (PMAL, CFO, TJ, INSS), tirando as genericas.
   const genericas = new Set(['CFO', 'CFP', 'CFS', 'CHO']);
   const sigla = (nome.match(/\b[A-Z]{2,}(?:\/[A-Z]{2,})?\b/g) || []).find((s) => !genericas.has(s));
-  const cargo = String(curso?.cargo || (curso?.cargos || [])[0]?.nome || '').trim();
+
+  // Curso que agrupa mais de um objetivo NAO pode ser apelidado pelo cargo de um deles: o
+  // cartao do Oficial dizia "Soldado do Quadro de Pracas" na linha do curso, porque foi esse
+  // o cargo que ficou no topo. Com varios, so a sigla do orgao serve.
+  const varios = (curso?.objetivos || curso?.cargos || []).length > 1;
+  const cargo = varios ? '' : String(curso?.cargo || (curso?.cargos || [])[0]?.nome || '').trim();
 
   if (sigla && cargo) return `${sigla} — ${cargo}`;
   if (sigla) return sigla;

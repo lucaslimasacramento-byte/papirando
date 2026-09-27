@@ -18,6 +18,39 @@
 
 ---
 
+## Sessão 2026-09-27 (noite) — O curso é que fica ativo; o prazo é sempre o mais próximo ✅
+
+O alvo era um objetivo solto: cada cartão tinha "Definir alvo" e objetivos de cursos
+diferentes disputavam o mesmo lugar, como se fossem irmãos. Não são — o curso é o caderno
+(carrega disciplinas, plano e metas), os objetivos são o que se persegue dentro dele.
+
+**Agora quem fica ativo é o CURSO.** O cabeçalho de cada curso traz "Tornar ativo"; ao ativar,
+o objetivo principal já vem escolhido — o de prazo mais próximo, que é o que o aluno
+escolheria. Dentro do curso ativo, com dois ou mais objetivos, aparece "Tornar principal".
+
+**O prazo deixou de ser escolha.** A contagem do Início vem sempre do **marco mais próximo do
+curso ativo**, venha do principal ou não, e o cartão diz de quem é: *"Esta é a prova mais
+próxima do seu curso — o seu objetivo principal é outro."* Não adianta marcar o Oficial como
+principal se a prova do Soldado é antes.
+
+**O principal só desempata prioridade** (decisão do dono): todas as matérias do curso
+continuam no plano, e a que cai no principal ganha peso — que é o que o motor de recomendação
+já fazia. **Cursos não-ativos ficam visíveis**, com opacidade menor, para abrir, editar e ver
+progresso; só não entram no plano do dia.
+
+Os objetivos vêm ordenados **pelo calendário**, não pelo principal: o principal ganha a marca,
+mas não fura a fila.
+
+`src/lib/alvoDoAluno.js` (14 testes) deriva tudo do próprio alvo — curso ativo e objetivo
+principal saem do id `objetivo:<curso>:<objetivo>`, sem um terceiro estado para manter em
+sincronia.
+
+**Bug corrigido de passagem:** o cartão do Oficial mostrava "Soldado do Quadro de Praças" na
+linha do curso. `apelidoSugerido` montava o apelido com `curso.cargo`, que guarda o cargo de
+um dos objetivos. Com mais de um objetivo, só a sigla do órgão serve.
+
+---
+
 ## Sessão 2026-09-27 (tarde) — Layout novo em Objetivos + fundo igual ao de Meus cursos ✅
 
 Aplicado o layout enviado pelo dono (`Objetivos.dc.html`):

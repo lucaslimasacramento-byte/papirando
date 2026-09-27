@@ -36,6 +36,9 @@ export default function Dashboard({
   onOpenUltimaAnotacao,
   rotinaConfigurada = true,
   onAbrirPlanejamento,
+  // Marco mais proximo do curso ativo (ver src/lib/alvoDoAluno.js). Pode ser de um objetivo
+  // que nao e o principal — e justamente por isso que ele existe.
+  prazoDoAlvo = null,
   // Se o aluno ja tem algum curso. O guia inicial marca o passo do edital como feito — e
   // nao adianta mandar subir de novo o que ja esta la.
   temCurso = false,
@@ -74,7 +77,14 @@ export default function Dashboard({
   const citacaoDoDia = fraseDoDia(agora);
   const cleanUserName = String(userDisplayName || '').trim();
   const primaryRecommendation = studyRecommendation?.primary || null;
-  const targetDaysRemaining = Number.isFinite(Number(targetContest?.diasParaProva))
+  // A contagem vem do prazo mais proximo do curso ativo; o alvo em si e so o desempate de
+  // prioridade. Sem esse dado (curso antigo, tela isolada), cai no que o alvo trazia.
+  const diasDoPrazo = Number.isFinite(Number(prazoDoAlvo?.dias)) && Number(prazoDoAlvo.dias) >= 0
+    ? Number(prazoDoAlvo.dias)
+    : null;
+  const targetDaysRemaining = diasDoPrazo !== null
+    ? diasDoPrazo
+    : Number.isFinite(Number(targetContest?.diasParaProva))
     ? Number(targetContest.diasParaProva)
     : null;
   const urgentReviews = safeReviewQueue.filter((item) => item?.urgencyLabel === 'Alta prioridade').length;
@@ -327,17 +337,24 @@ export default function Dashboard({
               </div>
               {/* Dizer so "dias" nao informa nada quando o alvo e a faculdade: o prazo dela
                   e o fim do periodo, nao uma prova. O rotulo vem do tipo do objetivo. */}
-              {targetContest?.rotuloDaContagem && (
+              {(prazoDoAlvo?.rotuloDaContagem || targetContest?.rotuloDaContagem) && (
                 <div style={{ marginTop: 2, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 600 }}>
-                  {targetContest.rotuloDaContagem}
+                  {prazoDoAlvo?.rotuloDaContagem || targetContest.rotuloDaContagem}
                 </div>
               )}
               <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                {targetContest?.objetivoNome || targetContest?.nome || 'Objetivo definido'}
+                {prazoDoAlvo?.objetivo?.nome || targetContest?.objetivoNome || targetContest?.nome || 'Objetivo definido'}
               </div>
               <div style={{ marginTop: 3, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-                {[targetContest?.banca, targetContest?.cargo || targetContest?.concurso].filter(Boolean).join(' - ')}
+                {[prazoDoAlvo?.objetivo?.banca || targetContest?.banca, targetContest?.cargo || targetContest?.concurso].filter(Boolean).join(' - ')}
               </div>
+              {/* A data mais proxima nao e a do objetivo principal: o aluno precisa saber
+                  disso, senao estuda para a prova errada primeiro. */}
+              {prazoDoAlvo && !prazoDoAlvo.ehDoPrincipal && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--pl-rule)', fontSize: 11, lineHeight: 1.4, color: 'var(--pl-warn)', fontWeight: 600 }}>
+                  Esta é a prova mais próxima do seu curso — o seu objetivo principal é outro.
+                </div>
+              )}
             </div>
           )}
         </section>

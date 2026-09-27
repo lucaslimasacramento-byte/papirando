@@ -118,6 +118,7 @@ import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
 import { progressoDoEdital } from './lib/progressoDoEdital';
 import { montarCurso } from './lib/novoCurso';
 import { paraWizData, validarRotina } from './lib/rotinaInicial';
+import { prazoDoCursoAtivo } from './lib/alvoDoAluno';
 import {
   migrarCurso,
   idDoObjetivo,
@@ -2162,6 +2163,14 @@ export default function App() {
   const targetContestSummary = useMemo(() => {
     return myContests.find((item) => item.id === targetContestId) || null;
   }, [myContests, targetContestId]);
+
+  // O prazo que a plataforma conta e o do marco mais proximo do CURSO ativo, nao o do
+  // objetivo principal. Com dois cargos do mesmo edital em datas diferentes, mostrar a data
+  // do principal esconderia a prova que vem antes. Ver src/lib/alvoDoAluno.js.
+  const prazoDoAlvo = useMemo(
+    () => prazoDoCursoAtivo(cursos, targetContestId),
+    [cursos, targetContestId]
+  );
 
   // O alvo hoje e um objetivo dentro de um curso ("objetivo:<curso>:<objetivo>"). A rotina do
   // dia precisa dos OUTROS objetivos do mesmo curso tambem: e comparando os prazos que ela
@@ -7280,6 +7289,7 @@ export default function App() {
     updateCourseTargets,
     salvarRotinaInicial,
     rotinaConfigurada,
+    prazoDoAlvo,
     updateCourse,
     uploadCourseImage,
     setSelectedCoursePlan,

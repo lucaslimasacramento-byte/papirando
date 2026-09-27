@@ -17,7 +17,8 @@ import {
 import { getAreaToken } from '../lib/areaTokens';
 import { storageThumb } from '../lib/imageUrl';
 import { objetivosDoCurso, idDoObjetivo, progressoPorObjetivo } from '../lib/objetivos';
-import { marcoDoObjetivo, tipoDoObjetivo } from '../lib/tiposDeObjetivo';
+import { tipoDoObjetivo } from '../lib/tiposDeObjetivo';
+import { alvoAoAtivar, cursoEstaAtivo, objetivosOrdenados } from '../lib/alvoDoAluno';
 import { capaDoCurso } from '../lib/personalizacaoCurso';
 import { iniciaisDe } from '../lib/iniciais';
 import { nomeCurtoDoCurso } from '../lib/apelidoCurso';
@@ -209,27 +210,17 @@ const TIPOS = [
 
 // ─── Meus objetivos (strip) ───────────────────────────────────────────────────
 
-// Um cartao por OBJETIVO, com o curso como contexto na linha de baixo.
+// Os cursos do aluno, e dentro de cada um os objetivos que ele persegue.
 //
-// Antes eram pastilhas soltas, depois um bloco por curso. O layout novo poe cada objetivo
-// no proprio cartao — e o que o aluno persegue e o objetivo, nao o caderno que os agrupa —,
-// mas o curso continua visivel: dois cargos do mesmo edital so se distinguem por ele.
+// O alvo era um objetivo solto: cada cartao tinha "Definir alvo" e objetivos de cursos
+// diferentes disputavam o mesmo lugar, como se fossem irmaos. Nao sao. O curso e o caderno
+// — carrega as disciplinas, o plano e as metas; os objetivos sao o que se persegue dentro
+// dele. Entao quem fica ATIVO e o curso, e o principal so desempata la dentro.
+//
+// O prazo em destaque e sempre o mais proximo do curso, venha do principal ou nao: nao
+// adianta marcar o Oficial como principal se a prova do Soldado e antes.
 function MeusObjetivos({ cursos, bancoDisciplinas = [], onSetActiveTab, onRemove, alvoId = '', onDefinirAlvo, onEditarCurso }) {
-  const linhas = (cursos || []).flatMap((curso) => {
-    const disciplinas = (bancoDisciplinas || []).filter((disciplina) => disciplina.plano === curso.plano);
-    const progressos = progressoPorObjetivo(curso, disciplinas);
-
-    return objetivosDoCurso(curso).map((objetivo) => ({
-      curso,
-      objetivo,
-      id: idDoObjetivo(curso.id, objetivo.id),
-      pct: Math.round(Number(progressos.find((item) => item.id === objetivo.id)?.percentual || 0)),
-      marco: marcoDoObjetivo(objetivo),
-      tipo: tipoDoObjetivo(objetivo),
-    }));
-  });
-
-  if (linhas.length === 0) {
+  if (!cursos || cursos.length === 0) {
     return (
       <div style={{ border: '1px dashed var(--pl-rule-strong)', borderRadius: 8, padding: 28, textAlign: 'center' }}>
         <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
@@ -240,100 +231,170 @@ function MeusObjetivos({ cursos, bancoDisciplinas = [], onSetActiveTab, onRemove
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-      {linhas.map(({ curso, objetivo, id, pct, marco, tipo }) => {
-        const ehAlvo = alvoId === id;
+    <div style={{ display: 'grid', gap: 22 }}>
+      {cursos.map((curso) => {
+        const ativo = cursoEstaAtivo(curso, alvoId);
         const capa = capaDoCurso(curso);
+        const disciplinas = (bancoDisciplinas || []).filter((disciplina) => disciplina.plano === curso.plano);
+        const progressos = progressoPorObjetivo(curso, disciplinas);
+        const ordenados = objetivosOrdenados(curso, ativo ? alvoId : '');
+        // O proximo prazo do curso: o primeiro da fila que ainda nao passou. Guardamos o
+        // item inteiro porque o nome do objetivo importa — com dois cargos, "60 dias" sem
+        // dizer de qual prova nao ajuda ninguem.
+        const proximo = ordenados.find((item) => item.marco && item.marco.dias >= 0) || null;
+        const varios = ordenados.length > 1;
 
         return (
-          <div
-            key={id}
-            className="pl-card"
-            style={{
-              padding: '16px 18px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              position: 'relative',
-              // O alvo se destaca pela borda, nao por um badge perdido no meio.
-              borderColor: ehAlvo ? 'var(--pl-accent)' : 'var(--pl-rule-2)',
-            }}
-          >
-            {onRemove && (
-              <button
-                type="button"
-                onClick={() => onRemove(curso.id)}
-                title="Remover o curso e todos os objetivos dele"
-                style={{
-                  position: 'absolute', top: 8, right: 8,
-                  border: 0, background: 'transparent', cursor: 'pointer',
-                  color: 'var(--pl-ink-4)', padding: 3, lineHeight: 0,
-                }}
-              >
-                <X size={14} />
-              </button>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <section key={curso.id}>
+            {/* Cabecalho do curso: e aqui que se liga e desliga o que manda no seu dia. */}
+            <div
+              className="pl-card"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+                padding: '12px 16px', marginBottom: 10,
+                borderColor: ativo ? 'var(--pl-accent)' : 'var(--pl-rule-2)',
+                background: ativo ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+              }}
+            >
               <div style={{
-                width: 34, height: 34, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
+                width: 32, height: 32, borderRadius: 7, flexShrink: 0, overflow: 'hidden',
                 background: curso.imagem_url ? 'var(--pl-surface-2)' : capa.gradiente,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 11.5, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em',
+                fontSize: 11, fontWeight: 800, color: '#fff',
               }}>
                 {curso.imagem_url
                   ? <img src={storageThumb(curso.imagem_url, 96)} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  : iniciaisDe(objetivo.nome)}
+                  : iniciaisDe(curso.nome)}
               </div>
-              <div style={{ minWidth: 0, paddingRight: 14 }}>
-                <p title={objetivo.nome} style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {objetivo.nome}
+
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+                  <span title={curso.nome} style={{ fontSize: 14, fontWeight: 800, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>
+                    {nomeCurtoDoCurso(curso)}
+                  </span>
+                  {ativo && <span className="pl-tag pl-tag-accent">Curso ativo</span>}
+                </div>
+                <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+                  {[
+                    `${ordenados.length} ${ordenados.length === 1 ? 'objetivo' : 'objetivos'}`,
+                    // A data que aperta, com o nome de quem e: com dois cargos, o aluno
+                    // precisa saber de qual prova sao os dias que faltam.
+                    proximo
+                      ? `${proximo.marco.dias} dias ${proximo.marco.rotuloDaContagem}${varios ? ` · ${proximo.objetivo.nome}` : ''}`
+                      : 'sem prazo definido',
+                  ].filter(Boolean).join(' · ')}
                 </p>
-                <p title={curso.nome} style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {nomeCurtoDoCurso(curso)} · {tipo.label}
-                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                {!ativo && onDefinirAlvo && (
+                  <button
+                    type="button"
+                    className="pl-btn pl-btn-primary pl-btn-sm"
+                    onClick={() => onDefinirAlvo(alvoAoAtivar(curso))}
+                    title="Passa a guiar o plano do dia, a meta da semana e as revisões"
+                  >
+                    Tornar ativo
+                  </button>
+                )}
+                {onEditarCurso && (
+                  <button
+                    type="button"
+                    onClick={() => onEditarCurso(curso)}
+                    title="Personalizar curso, editar objetivos e datas"
+                    className="pl-btn pl-btn-sm pl-btn-ghost"
+                    style={{ padding: '4px 8px' }}
+                  >
+                    <Pencil size={13} />
+                  </button>
+                )}
+                {onRemove && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(curso.id)}
+                    title="Remover o curso e todos os objetivos dele"
+                    style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--pl-ink-4)', padding: 4, lineHeight: 0 }}
+                  >
+                    <X size={15} />
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Progresso e prazo sao do objetivo: dois cargos do mesmo edital tem grades e
-                datas diferentes. */}
-            <div>
-              <div className="pl-progress accent">
-                <div className="fill" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }} />
-              </div>
-              <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--pl-ink-3)' }}>
-                {[
-                  `${pct}% do conteúdo`,
-                  marco ? (marco.dias >= 0 ? `${marco.dias} dias ${marco.rotuloDaContagem}` : 'prazo passou') : '',
-                  objetivo.banca || '',
-                ].filter(Boolean).join(' · ')}
-              </p>
-            </div>
+            {/* Os objetivos do curso, do prazo mais proximo para o mais distante. */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+              {ordenados.map(({ objetivo, marco, ehPrincipal }) => {
+                const id = idDoObjetivo(curso.id, objetivo.id);
+                const pct = Math.round(Number(progressos.find((item) => item.id === objetivo.id)?.percentual || 0));
+                const tipo = tipoDoObjetivo(objetivo);
+                const destacado = ativo && ehPrincipal;
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 2 }}>
-              {ehAlvo ? (
-                <span className="pl-tag pl-tag-accent">Alvo do dia</span>
-              ) : onDefinirAlvo && (
-                <button type="button" className="pl-btn pl-btn-sm" onClick={() => onDefinirAlvo(id)}>
-                  Definir alvo
-                </button>
-              )}
-              <button type="button" className="pl-btn pl-btn-sm pl-btn-ghost" onClick={() => onSetActiveTab?.('edital')}>
-                Abrir
-              </button>
-              {onEditarCurso && (
-                <button
-                  type="button"
-                  onClick={() => onEditarCurso(curso)}
-                  title="Personalizar curso, editar objetivos e datas"
-                  className="pl-btn pl-btn-sm pl-btn-ghost"
-                  style={{ marginLeft: 'auto', padding: '4px 8px' }}
-                >
-                  <Pencil size={13} />
-                </button>
-              )}
+                return (
+                  <div
+                    key={id}
+                    className="pl-card"
+                    style={{
+                      padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10,
+                      borderColor: destacado ? 'var(--pl-accent)' : 'var(--pl-rule-2)',
+                      // Curso inativo nao some da tela — so nao disputa atencao com o ativo.
+                      opacity: ativo ? 1 : 0.72,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                        background: capa.gradiente,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11.5, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em',
+                      }}>
+                        {iniciaisDe(objetivo.nome)}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p title={objetivo.nome} style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {objetivo.nome}
+                        </p>
+                        <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {[tipo.label, objetivo.banca].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="pl-progress accent">
+                        <div className="fill" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }} />
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--pl-ink-3)' }}>
+                        {[
+                          `${pct}% do conteúdo`,
+                          marco ? (marco.dias >= 0 ? `${marco.dias} dias ${marco.rotuloDaContagem}` : 'prazo passou') : '',
+                          objetivo.vagas ? `${objetivo.vagas} vagas` : '',
+                        ].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 2 }}>
+                      {/* "Principal" so faz sentido no curso ativo e com mais de um objetivo:
+                          com um so, nao ha o que desempatar. */}
+                      {destacado && varios && <span className="pl-tag pl-tag-accent">Principal</span>}
+                      {ativo && varios && !ehPrincipal && onDefinirAlvo && (
+                        <button
+                          type="button"
+                          className="pl-btn pl-btn-sm"
+                          onClick={() => onDefinirAlvo(id)}
+                          title="A matéria que cai neste objetivo passa a ter prioridade"
+                        >
+                          Tornar principal
+                        </button>
+                      )}
+                      <button type="button" className="pl-btn pl-btn-sm pl-btn-ghost" onClick={() => onSetActiveTab?.('edital')}>
+                        Abrir
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          </section>
         );
       })}
     </div>
