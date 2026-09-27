@@ -18,6 +18,34 @@
 
 ---
 
+## Sessão 2026-09-27 — Carga de estudo por dia, não uma média ✅
+
+A rotina perguntava "quantas horas por dia?" com **um slider só**, aplicado à semana inteira.
+Quem trabalha estuda 1h na terça e 6h no sábado — uma carga única obriga a mentir num dos
+dois, e o plano do dia sai errado nos dois.
+
+**Agora cada dia marcado tem a sua carga**, com slider e botões −/+ de meia em meia hora
+("2h30", não "2,5h"). Só os dias marcados aparecem: dia desmarcado não tem carga, e mostrar um
+campo zerado faria o aluno preencher à toa.
+
+**Atalho para quem estuda igual todo dia:** botões `1h 2h 3h 4h 6h` que preenchem todos os
+dias marcados de uma vez — sem eles, sete dias iguais seriam catorze cliques.
+
+O resumo acompanha: com a mesma carga em todos, diz *"5 dias por semana · 3h por dia · 15h no
+total"*; com cargas diferentes, cai para *"6 dias por semana · 14h30 no total"* — dizer "3h por
+dia" ali seria mentira.
+
+**A validação ficou específica:** dia marcado com 0h é contradição (ou estuda, ou não devia
+estar marcado), e o aviso diz **qual** dia — *"Sábado está marcado com 0h. Defina as horas ou
+desmarque o dia."*
+
+`src/lib/rotinaInicial.js` reescrita: `horasPorDia` virou um mapa por dia, `definirHorasDoDia`
+não muta o original, e o formato antigo (um número para a semana toda) continua sendo lido —
+18 testes, um deles cobrindo justamente essa compatibilidade. O `wizData` do Planejamento já
+aceitava carga por dia; agora recebe a real em vez do mesmo número sete vezes.
+
+---
+
 ## Sessão 2026-09-25 (noite) — "IA" sai da interface ✅
 
 A plataforma anunciava IA em toda tela: "Importar com IA (beta)", "Gerar com IA", "Corrigir

@@ -39,7 +39,20 @@ import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
 import EditarCursoModal from '../components/EditarCursoModal';
 import { ModalShell, InputField } from '../components/ModalShell';
 import { CORES_DE_CURSO, capaDoCurso, descricaoDoCurso, limparDescricao, LIMITE_DA_DESCRICAO } from '../lib/personalizacaoCurso';
-import { DIAS_DA_SEMANA, FORMATOS, ROTINA_PADRAO, resumoDaRotina, validarRotina } from '../lib/rotinaInicial';
+import {
+  DIAS_DA_SEMANA,
+  FORMATOS,
+  ROTINA_PADRAO,
+  HORAS_MAXIMAS_POR_DIA,
+  PASSO_DE_HORAS,
+  aplicarATodos,
+  definirHorasDoDia,
+  diasAtivos,
+  formatarHoras,
+  horasDoDia,
+  resumoDaRotina,
+  validarRotina,
+} from '../lib/rotinaInicial';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -1465,22 +1478,96 @@ export default function Planos({
               </div>
 
               <div>
-                <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Quantas horas por dia?</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                  <input
-                    type="range"
-                    min="1"
-                    max="12"
-                    step="1"
-                    value={rotina.horasPorDia}
-                    onChange={(e) => setRotina((prev) => ({ ...prev, horasPorDia: Number(e.target.value) }))}
-                    style={{ flex: 1, minWidth: 220, accentColor: 'var(--pl-accent)' }}
-                  />
-                  <span className="pl-num" style={{ fontSize: 26, color: 'var(--pl-ink)', minWidth: 52 }}>
-                    {rotina.horasPorDia}h
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+                  <p className="pl-eyebrow" style={{ margin: 0 }}>Quantas horas em cada dia?</p>
+                  {/* Atalho para quem estuda a mesma coisa todo dia — sem ele, marcar sete
+                      dias iguais viraria catorze cliques. */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11.5, color: 'var(--pl-ink-3)' }}>Mesma carga todo dia:</span>
+                    {[1, 2, 3, 4, 6].map((horas) => (
+                      <button
+                        key={horas}
+                        type="button"
+                        className="pl-btn pl-btn-sm"
+                        onClick={() => setRotina((prev) => aplicarATodos(prev, horas))}
+                        style={{ padding: '4px 9px', fontSize: 11.5 }}
+                      >
+                        {horas}h
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
+
+                {diasAtivos(rotina.dias).length === 0 ? (
+                  <p style={{ margin: 0, fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
+                    Marque um dia acima para definir a carga dele.
+                  </p>
+                ) : (
+                  <div style={{ display: 'grid', gap: 6 }}>
+                    {/* Uma linha por dia MARCADO. Dia desmarcado nao aparece: ele nao tem
+                        carga, e mostrar um campo zerado so faria o aluno preencher a toa. */}
+                    {DIAS_DA_SEMANA.filter((dia) => rotina.dias[dia.id]).map((dia) => {
+                      const horas = horasDoDia(rotina, dia.id);
+                      const mudar = (delta) =>
+                        setRotina((prev) => definirHorasDoDia(prev, dia.id, horasDoDia(prev, dia.id) + delta));
+
+                      return (
+                        <div
+                          key={dia.id}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 12,
+                            padding: '7px 12px', borderRadius: 8,
+                            border: '1px solid var(--pl-rule-2)',
+                            background: horas > 0 ? 'var(--pl-surface)' : 'var(--pl-warn-soft)',
+                          }}
+                        >
+                          <span style={{ minWidth: 72, fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                            {dia.nome}
+                          </span>
+
+                          <input
+                            type="range"
+                            min="0"
+                            max={HORAS_MAXIMAS_POR_DIA}
+                            step={PASSO_DE_HORAS}
+                            value={horas}
+                            onChange={(e) => setRotina((prev) => definirHorasDoDia(prev, dia.id, Number(e.target.value)))}
+                            aria-label={`Horas na ${dia.nome}`}
+                            style={{ flex: 1, minWidth: 120, accentColor: 'var(--pl-accent)' }}
+                          />
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                            <button
+                              type="button"
+                              onClick={() => mudar(-PASSO_DE_HORAS)}
+                              disabled={horas <= 0}
+                              aria-label={`Menos meia hora na ${dia.nome}`}
+                              className="pl-btn pl-btn-sm"
+                              style={{ padding: '2px 9px', fontSize: 14, lineHeight: 1.2 }}
+                            >
+                              −
+                            </button>
+                            <span className="pl-num" style={{ minWidth: 52, textAlign: 'center', fontSize: 15, color: horas > 0 ? 'var(--pl-ink)' : 'var(--pl-warn)' }}>
+                              {formatarHoras(horas)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => mudar(PASSO_DE_HORAS)}
+                              disabled={horas >= HORAS_MAXIMAS_POR_DIA}
+                              aria-label={`Mais meia hora na ${dia.nome}`}
+                              className="pl-btn pl-btn-sm"
+                              style={{ padding: '2px 9px', fontSize: 14, lineHeight: 1.2 }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <p style={{ margin: '9px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)' }}>
                   {resumoDaRotina(rotina)}
                 </p>
               </div>
