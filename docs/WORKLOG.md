@@ -18,6 +18,27 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 6) — Bizu de Disciplinas em faixas ✅
+
+O cartão "Diagnóstico das disciplinas" eram **duas colunas que nunca casavam**: à esquerda
+título, um texto de três linhas, botão e três sugestões; à direita três indicadores curtos.
+Nada se alinhava na horizontal, o texto ficava espremido em 620px e meia largura do cartão
+servia só de fundo.
+
+Virou **uma coluna em faixas**: cabeçalho → frase → ação → os três números lado a lado →
+ordem sugerida. Cada faixa usa o cartão inteiro.
+
+**Medido em Chromium (1600 / 1200 / 900px):** título, texto, botão, primeiro indicador e
+primeira sugestão começam **todos no mesmo x (43)**; as bordas direitas dos indicadores e das
+sugestões coincidem. Os três indicadores ficam em **uma linha só** até 900px e quebram em
+duas a 600px, que é o comportamento certo no celular.
+
+Também: `.pl-ai-mini span/small` ganharam ellipsis — lado a lado cada indicador fica com um
+terço da largura, e nome longo ("Conhecimentos do Estado de Alagoas") empurrava a caixa para
+fora da coluna.
+
+---
+
 ## Sessão 2026-09-27 (fecho 5) — Colunas de Disciplinas sem sobreposição ✅
 
 O "0%" do progresso escrevia **por cima** do botão Abrir. Medido em Chromium: a folga entre

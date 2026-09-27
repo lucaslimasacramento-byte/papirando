@@ -553,55 +553,58 @@ function BizuDiagnostico({ disciplinas, onStart }) {
   // comecar percebe na hora que o diagnostico nao olhou nada.
   const semEstudo = disciplinas.length > 0 && disciplinas.every((d) => Number(d.coverage || 0) === 0);
 
-  // Duas colunas de alturas parecidas. Antes a esquerda tinha so titulo, texto e botao
-  // enquanto a direita empilhava tres indicadores, e as sugestoes iam numa faixa propria la
-  // embaixo: sobrava um buraco do tamanho de meio cartao no meio da tela. As sugestoes
-  // subiram para a coluna da esquerda, que e onde a leitura continua.
+  // Uma coluna so, em faixas.
+  //
+  // As duas colunas nao se alinhavam: a esquerda tinha titulo, texto de tres linhas, botao e
+  // tres sugestoes; a direita, tres indicadores curtos. Nada casava na horizontal, e o texto
+  // ficava espremido em 620px enquanto meia largura do cartao servia de fundo. Agora a
+  // leitura desce reta — cabecalho, frase, acao, os numeros lado a lado, e a ordem sugerida —
+  // e cada faixa usa o cartao inteiro.
   return (
     <section className="pl-card-ai" style={{ padding: 22 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(250px, 0.62fr)', gap: 22, alignItems: 'start' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span className="pl-tag-ai"><Sparkles size={13} /> Bizu</span>
-            <span className="pl-small-label">Diagnóstico das disciplinas</span>
-          </div>
-          <h3 className="pl-section-title" style={{ marginTop: 14 }}>
-            {semEstudo
-              ? 'Ponto de partida'
-              : critical?.needsReview ? `Reforce ${critical.nome}` : 'Base estável para continuar'}
-          </h3>
-          <p className="pl-body" style={{ maxWidth: 620, marginTop: 8 }}>
-            {semEstudo
-              ? `Seu edital tem ${disciplinas.length} disciplinas e nenhum tópico concluído ainda. Comece pela ordem sugerida abaixo — o diagnóstico fica mais preciso a cada sessão registrada.`
-              : critical?.needsReview
-              ? `Essa disciplina combina baixa cobertura com pouco estudo recente. Vale encaixar uma sessão curta antes de avançar para novos tópicos.`
-              : best
-              ? `${best.nome} está puxando a fila. Use esse ritmo para destravar as matérias com menor cobertura.`
-              : 'Cadastre disciplinas e registre estudo para o diagnóstico ficar útil.'}
-          </p>
-          <div style={{ marginTop: 16 }}>
-            <button type="button" className="pl-btn pl-btn-ai" onClick={onStart}>
-              <Sparkles size={15} />
-              Registrar sessão guiada
-            </button>
-          </div>
-
-          {suggestions.length > 0 && (
-            <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>
-              <p className="pl-small-label" style={{ margin: 0 }}>Ordem sugerida</p>
-              {suggestions.map((disciplina, index) => (
-                <SuggestionRow key={disciplina.id || disciplina.nome} disciplina={disciplina} index={index} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: 'grid', gap: 10 }}>
-          <Insight label="Cobertura mais baixa" value={critical ? `${critical.coverage}%` : '0%'} detail={critical?.nome || 'Sem dados'} />
-          <Insight label="Melhor tração" value={best ? `${best.coverage}%` : '0%'} detail={best?.nome || 'Sem dados'} />
-          <Insight label="Sugestões ativas" value={suggestions.length} detail="ordem sugerida para revisar" />
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <span className="pl-tag-ai"><Sparkles size={13} /> Bizu</span>
+        <span className="pl-small-label">Diagnóstico das disciplinas</span>
       </div>
+      <h3 className="pl-section-title" style={{ marginTop: 12 }}>
+        {semEstudo
+          ? 'Ponto de partida'
+          : critical?.needsReview ? `Reforce ${critical.nome}` : 'Base estável para continuar'}
+      </h3>
+      <p className="pl-body" style={{ maxWidth: 780, marginTop: 8 }}>
+        {semEstudo
+          ? `Seu edital tem ${disciplinas.length} disciplinas e nenhum tópico concluído ainda. Comece pela ordem sugerida abaixo — o diagnóstico fica mais preciso a cada sessão registrada.`
+          : critical?.needsReview
+          ? `Essa disciplina combina baixa cobertura com pouco estudo recente. Vale encaixar uma sessão curta antes de avançar para novos tópicos.`
+          : best
+          ? `${best.nome} está puxando a fila. Use esse ritmo para destravar as matérias com menor cobertura.`
+          : 'Cadastre disciplinas e registre estudo para o diagnóstico ficar útil.'}
+      </p>
+      <div style={{ marginTop: 14 }}>
+        <button type="button" className="pl-btn pl-btn-ai" onClick={onStart}>
+          <Sparkles size={15} />
+          Registrar sessão guiada
+        </button>
+      </div>
+
+      {/* Os tres numeros na horizontal: sao a mesma coisa lida de tres angulos, e empilhados
+          na lateral nunca alinhavam com o texto ao lado. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginTop: 18 }}>
+        <Insight label="Cobertura mais baixa" value={critical ? `${critical.coverage}%` : '0%'} detail={critical?.nome || 'Sem dados'} />
+        <Insight label="Melhor tração" value={best ? `${best.coverage}%` : '0%'} detail={best?.nome || 'Sem dados'} />
+        <Insight label="Sugestões ativas" value={suggestions.length} detail="ordem sugerida para revisar" />
+      </div>
+
+      {suggestions.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <p className="pl-small-label" style={{ margin: '0 0 8px' }}>Ordem sugerida</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 }}>
+            {suggestions.map((disciplina, index) => (
+              <SuggestionRow key={disciplina.id || disciplina.nome} disciplina={disciplina} index={index} />
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

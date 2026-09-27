@@ -1713,6 +1713,11 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
   color: var(--pl-ink-3);
   font-size: 12px;
   font-weight: 650;
+  /* Lado a lado cada indicador fica com um terco da largura, e nome de disciplina longo
+     ("Conhecimentos do Estado de Alagoas") empurrava a caixa alem da coluna. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pl-ai-mini strong {
   display: block;
