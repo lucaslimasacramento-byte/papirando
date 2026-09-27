@@ -392,6 +392,18 @@ function TabelaDisciplinas({
 
       <div style={{ overflowX: 'auto' }}>
         <table className="pl-editorial-table">
+          {/* Larguras explicitas porque a tabela e `table-layout: fixed`: sem elas as seis
+              colunas dividem o espaco em partes iguais, e a de Disciplina — que carrega nome,
+              chips e a linha do ultimo estudo — recebe menos da metade do que precisa. O
+              conteudo entao transborda e escreve por cima da coluna do Plano. */}
+          <colgroup>
+            <col style={{ width: 300 }} />
+            <col style={{ width: 180 }} />
+            <col style={{ width: 80 }} />
+            <col style={{ width: 100 }} />
+            <col style={{ width: 150 }} />
+            <col style={{ width: 150 }} />
+          </colgroup>
           <thead>
             <tr>
               <th>Disciplina</th>
@@ -508,7 +520,7 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPl
         </div>
       </td>
       <td>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
           <button type="button" className="pl-btn pl-btn-compact pl-btn-primary" onClick={() => onOpen(disciplina)}>
             Abrir
             <ArrowUpRight size={13} />

@@ -18,6 +18,34 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 3) — Disciplinas em tela pequena ✅
+
+O botão "Abrir" da tabela de Disciplinas virava **"Ab / rir"** em tela estreita — o texto
+partido no meio da palavra, dentro de uma caixa de altura fixa. Três causas, em camadas:
+
+**1. `.pl-btn` não tinha `white-space: nowrap`.** Era global: qualquer botão em coluna
+apertada quebrava o rótulo. Agora tem `nowrap` e `flex-shrink: 0` — o container que role, o
+botão não se desmancha.
+
+**2. `min-width: min(920px, 100%)` anulava o próprio `min-width`.** Em tela estreita virava
+`100%`, e a tabela se espremia em vez de rolar. Com `table-layout: fixed`, coluna espremida
+não encolhe o conteúdo: ele transborda e escreve por cima da vizinha — era isso que fazia a
+pílula do plano cobrir o "ainda não começou". Virou `960px` fixo, e o `overflow-x: auto` do
+pai passou a funcionar.
+
+**3. O media query baixava o mínimo para 760px**, mas este conteúdo (nome + chips, pílula do
+plano, barra de progresso e três ações) precisa de 960. Removido: rolar é melhor do que ler um
+texto escrito por cima do outro.
+
+**E as colunas ganharam larguras explícitas** (`<colgroup>`): com `table-layout: fixed` as
+seis dividiam o espaço em partes iguais, e a de Disciplina recebia menos da metade do que
+precisa.
+
+Conferido num Chromium a 1100px e a 860px, medindo a caixa do botão (81 × 32 nas duas) — a
+altura de 32px é o que denuncia a quebra de linha.
+
+---
+
 ## Sessão 2026-09-27 (fecho 2) — Capa maior, nítida e com enquadramento ✅
 
 **A capa estava borrada** — e a causa era boa de achar: ela passava por `storageThumb`, cujo

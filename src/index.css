@@ -552,6 +552,11 @@ html, body {
   background: var(--pl-surface); color: var(--pl-ink);
   border: 1px solid var(--pl-rule-strong);
   transition: background .12s, border-color .12s, transform .04s;
+  /* Rotulo de botao nao quebra linha nem encolhe. Numa coluna apertada, "Abrir" virava
+     "Ab / rir" dentro da altura fixa de 38px — o texto partido no meio da palavra. Melhor
+     o container rolar (as tabelas ja tem overflow-x) do que o botao se desmanchar. */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pl-btn:hover { background: var(--pl-bg-soft); border-color: var(--pl-ink-3); }
 .pl-btn:active { transform: translateY(0.5px); }
@@ -1626,7 +1631,11 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
 }
 .pl-editorial-table {
   width: 100%;
-  min-width: min(920px, 100%);
+  /* `min(920px, 100%)` anulava o proprio min-width: em tela estreita virava 100% e a tabela
+     se espremia em vez de rolar. Com `table-layout: fixed`, colunas espremidas nao encolhem
+     o conteudo — ele transborda e escreve por cima da coluna vizinha. O pai tem
+     `overflow-x: auto`, entao a largura minima fixa faz a tabela rolar, que e o certo. */
+  min-width: 960px;
   table-layout: fixed;
   border-collapse: collapse;
   background: var(--pl-surface);
@@ -1651,11 +1660,10 @@ textarea.pl-input { height: auto; min-height: 88px; padding: 10px 14px; line-hei
 }
 .pl-editorial-table tr.is-striped td { background: var(--pl-surface-2); }
 
-@media (max-width: 900px) {
-  .pl-editorial-table {
-    min-width: 760px;
-  }
-}
+/* Sem excecao por largura de tela. O media query baixava o minimo para 760px, mas o conteudo
+   desta tabela (nome + chips, pill do plano, barra de progresso e tres acoes) precisa de 960
+   para nao se sobrepor. Em tela menor, a tabela rola — e rolar e melhor do que ler um texto
+   escrito por cima do outro. */
 .pl-area-marker {
   width: 5px;
   height: 42px;
