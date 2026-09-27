@@ -17,8 +17,9 @@ import {
 import { getAreaToken } from '../lib/areaTokens';
 import { storageThumb } from '../lib/imageUrl';
 import { objetivosDoCurso, idDoObjetivo, progressoPorObjetivo } from '../lib/objetivos';
-import { marcoDoObjetivo } from '../lib/tiposDeObjetivo';
-import { capaDoCurso, descricaoDoCurso } from '../lib/personalizacaoCurso';
+import { marcoDoObjetivo, tipoDoObjetivo } from '../lib/tiposDeObjetivo';
+import { capaDoCurso } from '../lib/personalizacaoCurso';
+import { iniciaisDe } from '../lib/iniciais';
 import { nomeCurtoDoCurso } from '../lib/apelidoCurso';
 import EditarCursoModal from '../components/EditarCursoModal';
 
@@ -208,149 +209,129 @@ const TIPOS = [
 
 // ─── Meus objetivos (strip) ───────────────────────────────────────────────────
 
-// Um cartao por CURSO, com os objetivos dele dentro.
+// Um cartao por OBJETIVO, com o curso como contexto na linha de baixo.
 //
-// Antes eram pastilhas soltas: dois objetivos do mesmo edital viravam dois chips iguais, sem
-// dizer que sao o mesmo plano, sem progresso, sem prazo e sem como editar nada. O curso e o
-// caderno; os objetivos sao o que ele persegue. A tela mostra essa hierarquia.
+// Antes eram pastilhas soltas, depois um bloco por curso. O layout novo poe cada objetivo
+// no proprio cartao — e o que o aluno persegue e o objetivo, nao o caderno que os agrupa —,
+// mas o curso continua visivel: dois cargos do mesmo edital so se distinguem por ele.
 function MeusObjetivos({ cursos, bancoDisciplinas = [], onSetActiveTab, onRemove, alvoId = '', onDefinirAlvo, onEditarCurso }) {
-  if (!cursos || cursos.length === 0) {
+  const linhas = (cursos || []).flatMap((curso) => {
+    const disciplinas = (bancoDisciplinas || []).filter((disciplina) => disciplina.plano === curso.plano);
+    const progressos = progressoPorObjetivo(curso, disciplinas);
+
+    return objetivosDoCurso(curso).map((objetivo) => ({
+      curso,
+      objetivo,
+      id: idDoObjetivo(curso.id, objetivo.id),
+      pct: Math.round(Number(progressos.find((item) => item.id === objetivo.id)?.percentual || 0)),
+      marco: marcoDoObjetivo(objetivo),
+      tipo: tipoDoObjetivo(objetivo),
+    }));
+  });
+
+  if (linhas.length === 0) {
     return (
-      <div className="pl-card-paper" style={{ padding: '26px 24px', textAlign: 'center' }}>
-        <Trophy size={26} style={{ color: 'var(--pl-ink-4)', marginBottom: 10 }} />
-        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>
-          Você ainda não tem objetivos.
-        </p>
-        <p style={{ margin: '5px 0 0', fontSize: 12.5, color: 'var(--pl-ink-3)', lineHeight: 1.5 }}>
-          Suba o PDF de um edital em Meus cursos, ou escolha um da biblioteca abaixo.
+      <div style={{ border: '1px dashed var(--pl-rule-strong)', borderRadius: 8, padding: 28, textAlign: 'center' }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)' }}>
+          Nenhum objetivo ainda — suba o PDF de um edital em Meus cursos, ou escolha um da biblioteca abaixo.
         </p>
       </div>
     );
   }
 
   return (
-    // Dois por linha em tela larga. Um cartao esticado a 1900px com uma linha de objetivo
-    // dentro era so ar — foi o que deixou a tela com cara de rascunho.
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: 14 }}>
-      {cursos.map((curso) => {
-        const objetivos = objetivosDoCurso(curso);
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+      {linhas.map(({ curso, objetivo, id, pct, marco, tipo }) => {
+        const ehAlvo = alvoId === id;
         const capa = capaDoCurso(curso);
-        const disciplinas = (bancoDisciplinas || []).filter((disciplina) => disciplina.plano === curso.plano);
-        const progressos = progressoPorObjetivo(curso, disciplinas);
 
         return (
-          <div key={curso.id} className="pl-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            {/* Faixa da cor/capa: e o que da identidade ao cartao e separa um curso do
-                outro de relance. */}
-            <div style={{ height: 6, background: capa.gradiente, flexShrink: 0 }} />
+          <div
+            key={id}
+            className="pl-card"
+            style={{
+              padding: '16px 18px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              position: 'relative',
+              // O alvo se destaca pela borda, nao por um badge perdido no meio.
+              borderColor: ehAlvo ? 'var(--pl-accent)' : 'var(--pl-rule-2)',
+            }}
+          >
+            {onRemove && (
+              <button
+                type="button"
+                onClick={() => onRemove(curso.id)}
+                title="Remover o curso e todos os objetivos dele"
+                style={{
+                  position: 'absolute', top: 8, right: 8,
+                  border: 0, background: 'transparent', cursor: 'pointer',
+                  color: 'var(--pl-ink-4)', padding: 3, lineHeight: 0,
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 16px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
-                width: 40, height: 40, borderRadius: 9, flexShrink: 0, overflow: 'hidden',
-                border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface-2)',
+                width: 34, height: 34, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
+                background: curso.imagem_url ? 'var(--pl-surface-2)' : capa.gradiente,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11.5, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em',
               }}>
                 {curso.imagem_url
                   ? <img src={storageThumb(curso.imagem_url, 96)} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  : <Trophy size={17} style={{ color: 'var(--pl-ink-4)' }} />}
+                  : iniciaisDe(objetivo.nome)}
               </div>
-
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p title={curso.nome} style={{ margin: 0, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {nomeCurtoDoCurso(curso)}
+              <div style={{ minWidth: 0, paddingRight: 14 }}>
+                <p title={objetivo.nome} style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {objetivo.nome}
                 </p>
-                <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {descricaoDoCurso(curso)}
+                <p title={curso.nome} style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {nomeCurtoDoCurso(curso)} · {tipo.label}
                 </p>
-              </div>
-
-              {/* Editar e remover sao acoes do curso: ficam juntas, discretas, no cabecalho.
-                  "Remover curso" numa faixa propria criava uma terceira linha vazia. */}
-              <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-                {onEditarCurso && (
-                  <button
-                    type="button"
-                    onClick={() => onEditarCurso(curso)}
-                    title="Personalizar curso, editar objetivos e datas"
-                    style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 5, lineHeight: 0 }}
-                  >
-                    <Pencil size={15} />
-                  </button>
-                )}
-                {onRemove && (
-                  <button
-                    type="button"
-                    onClick={() => onRemove(curso.id)}
-                    title="Remover o curso e todos os objetivos dele"
-                    style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 5, lineHeight: 0 }}
-                  >
-                    <X size={15} />
-                  </button>
-                )}
               </div>
             </div>
 
-            {/* Uma linha por objetivo. Progresso, prazo e o botao de alvo sao do objetivo,
-                nao do curso: dois cargos do mesmo edital tem grades e datas diferentes. */}
-            <div style={{ borderTop: '1px solid var(--pl-rule)' }}>
-              {objetivos.map((objetivo, indice) => {
-                const id = idDoObjetivo(curso.id, objetivo.id);
-                const ehAlvo = alvoId === id;
-                const marco = marcoDoObjetivo(objetivo);
-                const pct = Math.round(Number(progressos.find((item) => item.id === objetivo.id)?.percentual || 0));
+            {/* Progresso e prazo sao do objetivo: dois cargos do mesmo edital tem grades e
+                datas diferentes. */}
+            <div>
+              <div className="pl-progress accent">
+                <div className="fill" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }} />
+              </div>
+              <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--pl-ink-3)' }}>
+                {[
+                  `${pct}% do conteúdo`,
+                  marco ? (marco.dias >= 0 ? `${marco.dias} dias ${marco.rotuloDaContagem}` : 'prazo passou') : '',
+                  objetivo.banca || '',
+                ].filter(Boolean).join(' · ')}
+              </p>
+            </div>
 
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => onSetActiveTab?.('edital')}
-                    title="Abrir o edital deste objetivo"
-                    style={{
-                      display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
-                      padding: '11px 16px',
-                      border: 0,
-                      borderTop: indice === 0 ? 0 : '1px solid var(--pl-rule)',
-                      borderLeft: `3px solid ${ehAlvo ? 'var(--pl-warn)' : 'transparent'}`,
-                      background: ehAlvo ? 'var(--pl-bg-soft)' : 'transparent',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
-                      <span title={objetivo.nome} style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {objetivo.nome}
-                      </span>
-                      {ehAlvo
-                        ? <span className="pl-tag pl-tag-warn" style={{ flexShrink: 0 }}>Alvo</span>
-                        : onDefinirAlvo && (
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={(e) => { e.stopPropagation(); onDefinirAlvo(id); }}
-                            onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onDefinirAlvo(id); } }}
-                            className="pl-btn-link"
-                            style={{ flexShrink: 0, fontSize: 11.5 }}
-                          >
-                            definir como alvo
-                          </span>
-                        )}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 7 }}>
-                      <div className="pl-progress accent" style={{ flex: 1, minWidth: 0 }}>
-                        <div className="fill" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }} />
-                      </div>
-                      <span className="pl-num" style={{ fontSize: 13, color: 'var(--pl-ink-2)', flexShrink: 0 }}>{pct}%</span>
-                    </div>
-
-                    <p style={{ margin: '5px 0 0', fontSize: 11, color: 'var(--pl-ink-3)' }}>
-                      {[
-                        marco ? (marco.dias >= 0 ? `${marco.dias} dias ${marco.rotuloDaContagem}` : 'prazo passou') : '',
-                        objetivo.banca || '',
-                        objetivo.vagas ? `${objetivo.vagas} vagas` : '',
-                      ].filter(Boolean).join(' · ') || 'Sem prazo definido'}
-                    </p>
-                  </button>
-                );
-              })}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 'auto', paddingTop: 2 }}>
+              {ehAlvo ? (
+                <span className="pl-tag pl-tag-accent">Alvo do dia</span>
+              ) : onDefinirAlvo && (
+                <button type="button" className="pl-btn pl-btn-sm" onClick={() => onDefinirAlvo(id)}>
+                  Definir alvo
+                </button>
+              )}
+              <button type="button" className="pl-btn pl-btn-sm pl-btn-ghost" onClick={() => onSetActiveTab?.('edital')}>
+                Abrir
+              </button>
+              {onEditarCurso && (
+                <button
+                  type="button"
+                  onClick={() => onEditarCurso(curso)}
+                  title="Personalizar curso, editar objetivos e datas"
+                  className="pl-btn pl-btn-sm pl-btn-ghost"
+                  style={{ marginLeft: 'auto', padding: '4px 8px' }}
+                >
+                  <Pencil size={13} />
+                </button>
+              )}
             </div>
           </div>
         );
@@ -882,45 +863,58 @@ export default function Objetivos({
   const temObjetivos = cursosAtivos.length > 0;
   const aberto = !temObjetivos || mostrarBiblioteca;
 
+  const concursos = todosObjetivos.filter((o) => o.tipo === 'concurso').length;
+  const outros = todosObjetivos.length - concursos;
+
+  // Cada numero com uma linha dizendo o que ele significa: "2" sozinho nao informa nada.
   const kpis = [
-    { label: 'Objetivos', value: todosObjetivos.length },
-    { label: 'Cursos', value: cursosAtivos.length },
-    { label: 'Concursos', value: todosObjetivos.filter((o) => o.tipo === 'concurso').length },
-    { label: 'Vestibular / Faculdade', value: todosObjetivos.filter((o) => ['vestibular', 'faculdade', 'livre', 'enem'].includes(o.tipo)).length },
+    {
+      label: 'Objetivos',
+      value: todosObjetivos.length,
+      detail: todosObjetivos.length === 1 ? 'o que você persegue' : 'o que você persegue',
+    },
+    {
+      label: 'Cursos',
+      value: cursosAtivos.length,
+      detail: cursosAtivos.length === 1 ? 'plano de estudo' : 'planos de estudo',
+    },
+    { label: 'Concursos', value: concursos, detail: concursos === 1 ? 'cargo em disputa' : 'cargos em disputa' },
+    { label: 'Outros', value: outros, detail: 'vestibular, faculdade, livre' },
   ];
 
   return (
-    // Largura limitada: a tela ocupava os 1900px do monitor e o conteudo ficava boiando,
-    // com cartoes de uma linha esticados de ponta a ponta.
-    <div className="pl-paper-bg" style={{ padding: '28px 28px 48px', minHeight: '100%' }}>
-     <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-      {/* Hero, com o resumo do lado: os numeros nao precisavam de quatro cartoes grandes
-          para dizer "1 objetivo". */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 28, flexWrap: 'wrap', marginBottom: 22 }}>
-        <div style={{ minWidth: 0 }}>
-          <p className="pl-eyebrow" style={{ marginBottom: 8 }}>Objetivos de estudo</p>
-          <h1 className="pl-display" style={{ marginBottom: 10 }}>
-            O que você está estudando<span style={{ color: 'var(--pl-accent)' }}>.</span>
-          </h1>
-          <p style={{ fontSize: 13.5, color: 'var(--pl-ink-2)', maxWidth: 480, lineHeight: 1.55 }}>
-            Concurso público, vestibular, ENEM, faculdade ou estudo livre — cada objetivo com suas
-            disciplinas, seu prazo e seu progresso.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: 22, flexShrink: 0, paddingBottom: 4 }}>
-          {kpis.map((k) => (
-            <div key={k.label}>
-              <p className="pl-num" style={{ fontSize: 30, color: 'var(--pl-ink)', lineHeight: 1, margin: 0 }}>{k.value}</p>
-              <p className="pl-eyebrow" style={{ margin: '5px 0 0', fontSize: 9.5 }}>{k.label}</p>
-            </div>
-          ))}
-        </div>
+    // Mesmo fundo de Meus cursos (`pl-paper-bg-soft`): as duas telas sao do mesmo par e
+    // estavam com pautas diferentes — 47px aqui, 56px la — o que sobressaltava ao trocar.
+    <div className="pl-paper-bg-soft" style={{ flex: 1, overflowY: 'auto', minHeight: '100%' }}>
+     <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 32px 64px' }}>
+      <div style={{ marginBottom: 32 }}>
+        <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Objetivos de estudo</p>
+        {/* pl-display nao traz tamanho, e o reset do Tailwind zera o do h1: sem esta linha
+            o titulo do hero sai do tamanho de um paragrafo. */}
+        <h1 className="pl-display" style={{ marginBottom: 12, fontSize: 'clamp(30px, 4vw, 44px)' }}>
+          O que você está estudando<span style={{ color: 'var(--pl-accent)' }}>.</span>
+        </h1>
+        <p style={{ margin: 0, fontSize: 15, color: 'var(--pl-ink-2)', maxWidth: 600, lineHeight: 1.55 }}>
+          Concurso público, vestibular, ENEM, faculdade ou estudo livre — organize tudo em um
+          lugar e acompanhe disciplinas, tópicos e progresso de cada objetivo.
+        </p>
       </div>
 
-      <div className="pl-rule-soft" style={{ marginBottom: 20 }} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 32 }}>
+        {kpis.map((k) => (
+          <div key={k.label} className="pl-card" style={{ padding: '16px 18px' }}>
+            <p className="pl-eyebrow" style={{ margin: 0, fontSize: 10 }}>{k.label}</p>
+            <p className="pl-num" style={{ fontSize: 32, color: 'var(--pl-ink)', lineHeight: 1, margin: '8px 0 0' }}>{k.value}</p>
+            <p style={{ margin: '6px 0 0', fontSize: 11.5, fontWeight: 500, color: 'var(--pl-ink-3)' }}>{k.detail}</p>
+          </div>
+        ))}
+      </div>
 
-      {/* Meus objetivos */}
+      <div className="pl-rule-soft" style={{ marginBottom: 32 }} />
+
+      <p className="pl-eyebrow" style={{ marginBottom: 14 }}>
+        Meus objetivos{todosObjetivos.length > 0 ? ` (${todosObjetivos.length})` : ''}
+      </p>
       <MeusObjetivos
         cursos={cursosAtivos}
         bancoDisciplinas={bancoDisciplinas}
@@ -943,9 +937,12 @@ export default function Objetivos({
 
       {/* Adicionar novo objetivo. Quem ja tem objetivo abre no clique; quem nao tem cai
           direto na lista, que e o caminho dele. */}
-      <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px solid var(--pl-rule)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
-          <p className="pl-eyebrow" style={{ margin: 0 }}>Adicionar objetivo</p>
+      <div style={{ marginTop: 36, paddingTop: 32, borderTop: '1px solid var(--pl-rule)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+          <div>
+            <p className="pl-eyebrow" style={{ margin: '0 0 10px' }}>Adicionar objetivo</p>
+            <h2 className="pl-display" style={{ margin: 0, fontSize: 30 }}>Escolha um caminho.</h2>
+          </div>
           {temObjetivos && (
             <button type="button" className="pl-btn pl-btn-sm" onClick={() => setMostrarBiblioteca((v) => !v)}>
               {aberto ? 'Fechar' : 'Ver a biblioteca'}

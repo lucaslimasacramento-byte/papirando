@@ -18,6 +18,35 @@
 
 ---
 
+## Sessão 2026-09-27 (tarde) — Layout novo em Objetivos + fundo igual ao de Meus cursos ✅
+
+Aplicado o layout enviado pelo dono (`Objetivos.dc.html`):
+
+- **hero editorial** com título de 44px (o `pl-display` não traz tamanho e o reset do Tailwind
+  zera o do `h1` — sem `fontSize` explícito o hero saía do tamanho de um parágrafo);
+- **quatro cartões de KPI** com uma linha de significado embaixo do número ("2" sozinho não
+  informa nada): *o que você persegue*, *planos de estudo*, *cargos em disputa*, *vestibular,
+  faculdade, livre*;
+- **um cartão por objetivo**, em grade `auto-fill minmax(280px)`, com quadrado de iniciais, o
+  curso como subtítulo, "Alvo do dia" ou "Definir alvo", e × no canto;
+- seção **"Adicionar objetivo / Escolha um caminho."** com o título editorial;
+- largura de **1180px** e respiros de 32px, como no arquivo.
+
+**Mantive o que o uso real já tinha cobrado** e não estava no arquivo: barra de progresso,
+prazo e banca em cada cartão, e o lápis para personalizar o curso. O layout organiza; a
+informação continua.
+
+**O fundo:** Objetivos usava `pl-paper-bg` (pauta a cada 47px, rolando com o conteúdo) e Meus
+cursos usa `pl-paper-bg-soft` (56px, mais suave, `background-attachment: fixed`). Eram duas
+pautas diferentes em telas do mesmo par — dava um sobressalto ao trocar. Objetivos passou a
+usar o mesmo de Meus cursos.
+
+`src/lib/iniciais.js` (6 testes) monta as duas letras do quadrado: prefere a sigla que o nome
+já traz ("TJ-SP" → TJ, "INSS" → INSS) e ignora preposições ("Curso de Formação de Oficiais" →
+CF).
+
+---
+
 ## Sessão 2026-09-27 — Carga de estudo por dia, não uma média ✅
 
 A rotina perguntava "quantas horas por dia?" com **um slider só**, aplicado à semana inteira.
