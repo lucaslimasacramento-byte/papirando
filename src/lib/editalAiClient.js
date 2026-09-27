@@ -93,6 +93,8 @@ function normalizeOpenAiAnalysis(payload) {
       escolaridade: String(contest.escolaridade || '').trim(),
       lotacao: String(contest.lotacao || '').trim(),
       cargaHoraria: String(contest.carga_horaria || '').trim(),
+      // Tempo de prova: e o que da o ritmo por questao (src/lib/ritmoDaProva.js).
+      duracaoProva: String(contest.duracao_prova || '').trim(),
       prova,
       totalQuestoes: prova.reduce((acc, linha) => acc + (Number(linha.questoes) || 0), 0),
       examDate: String(contest.exam_date || analysis?.dates?.exam_date || 'Não encontrado').trim(),

@@ -50,6 +50,9 @@ export function montarCurso(courseData = {}, { id } = {}) {
     // Quadro de provas do cargo: [{disciplina, questoes, peso}]. É o que permite a
     // plataforma dizer onde estão os pontos, em vez de tratar toda disciplina como igual.
     prova: Array.isArray(courseData.prova) ? courseData.prova : [],
+    // Tempo de prova, como o edital escreve ("4 horas", "3h30"). Com o quadro acima e as
+    // etapas, sai o ritmo por questao que calibra o treino — ver src/lib/ritmoDaProva.js.
+    duracao_prova: courseData.duracao_prova || '',
     // Qual versão do edital gerou este curso. A plataforma inteira fica pendurada num PDF, e
     // retificação posterior não chega a quem já montou — sem isto não há nem como avisar.
     edital_arquivo: courseData.edital_arquivo || '',

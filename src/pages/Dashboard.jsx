@@ -29,7 +29,6 @@ export default function Dashboard({
   studyRecommendation = null,
   dailyRoutine = [],
   ultimaAnotacao = null,
-  editalProgresso = null,
   onOpenTargetContest,
   onStartRecommendedSession,
   onStartRoutineItem,
@@ -412,10 +411,9 @@ export default function Dashboard({
           />
         </section>
 
-        {(ultimaAnotacao || editalProgresso) && (
-          <section style={{ display: 'grid', gridTemplateColumns: ultimaAnotacao && editalProgresso ? '1.2fr 1fr' : '1fr', gap: 14, marginTop: 'var(--dash-gap)' }}>
-            {ultimaAnotacao && <PlLastNote nota={ultimaAnotacao} onOpen={onOpenUltimaAnotacao} onOpenNotebook={() => setActiveTab?.('redacoes')} />}
-            {editalProgresso && <PlEditalProgress data={editalProgresso} onOpen={() => setActiveTab?.('edital')} />}
+        {ultimaAnotacao && (
+          <section style={{ marginTop: 'var(--dash-gap)' }}>
+            <PlLastNote nota={ultimaAnotacao} onOpen={onOpenUltimaAnotacao} onOpenNotebook={() => setActiveTab?.('redacoes')} />
           </section>
         )}
 
@@ -580,41 +578,6 @@ function PlLastNote({ nota, onOpen, onOpenNotebook }) {
         <button className="pl-btn-link" onClick={onOpenNotebook}>
           Ver caderno <ArrowRight size={12} />
         </button>
-      </div>
-    </div>
-  );
-}
-
-function PlEditalProgress({ data, onOpen }) {
-  const list = Array.isArray(data?.porDisciplina) ? data.porDisciplina.slice(0, 5) : [];
-  return (
-    <div className="pl-card" style={{ padding: '18px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
-        <div>
-          <div className="pl-eyebrow">Edital - progresso</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 7 }}>
-            <span className="pl-num" style={{ fontSize: 44, color: 'var(--pl-ink)', lineHeight: 1 }}>{Math.round(Number(data?.geral || 0))}</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink-2)' }}>% geral</span>
-          </div>
-        </div>
-        <button className="pl-btn pl-btn-sm" onClick={onOpen}>
-          Abrir edital
-        </button>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 16 }}>
-        {list.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--pl-ink-3)', fontWeight: 500 }}>Sem disciplinas do edital para exibir.</p>
-        ) : list.map((item) => (
-          <div key={item.nome}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 5 }}>
-              <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)' }}>{item.nome}</span>
-              <span className="pl-num" style={{ fontSize: 17, color: 'var(--pl-ink-2)' }}>{item.pct}%</span>
-            </div>
-            <div className="pl-progress accent">
-              <div className="fill" style={{ width: `${Math.min(Math.max(Number(item.pct || 0), 0), 100)}%` }} />
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

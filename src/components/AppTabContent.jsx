@@ -113,7 +113,6 @@ export default function AppTabContent(props) {
     smartStudyPlan,
     dailyRoutine,
     ultimaAnotacao,
-    editalProgresso,
     onOpenUltimaAnotacao,
     setSelectedContestDetailId,
     handleDisciplineClick,
@@ -347,7 +346,6 @@ export default function AppTabContent(props) {
         studyRecommendation={smartStudyPlan}
         dailyRoutine={dailyRoutine}
         ultimaAnotacao={ultimaAnotacao}
-        editalProgresso={editalProgresso}
         rotinaConfigurada={rotinaConfigurada}
         prazoDoAlvo={prazoDoAlvo}
         onAbrirPlanejamento={() => setActiveTab('planejamento')}

@@ -24,6 +24,13 @@ import { generateScheduleWithAI, DIA_LABELS, MODO_COLORS } from '../lib/schedule
 import { approveStudyPlan, loadActiveStudyPlan, runPlanAdjustments } from '../lib/studyPlanStore';
 import { getDueTopicReviews, submitTopicReview } from '../lib/topicReviewApi';
 import { RATING_LABELS, formatNextInterval } from '../lib/fsrs';
+import {
+  perfilDaProva,
+  ritmoDeTreino,
+  linhaDaDisciplina,
+  formatarRitmo,
+  formatarDuracao,
+} from '../lib/ritmoDaProva';
 
 // Codigo do dia da semana de hoje (getDay: 0=domingo) alinhado ao WEEKDAY_ORDER.
 const TODAY_DIA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][new Date().getDay()];
@@ -508,6 +515,20 @@ function PlanejamentoContent({
     return mergeDisciplinesByCanonical({ disciplines: source, subjectCatalog: safeSubjectCatalog });
   }, [planningAvailableDisciplines, wizardCoursePlans, safeSubjectCatalog]);
 
+  // O retrato da prova do alvo: duração, número de questões, redação e o tempo por questão
+  // que sai disso. É o que permite o planejamento sair do "tudo vale igual" — ver
+  // src/lib/ritmoDaProva.js.
+  const perfilDoAlvo = useMemo(
+    () =>
+      perfilDaProva({
+        prova: targetContest?.prova || [],
+        etapas: targetContest?.etapas_tags || [],
+        duracaoProva: targetContest?.duracao_prova || '',
+      }),
+    [targetContest]
+  );
+  const ritmoDoAlvo = useMemo(() => ritmoDeTreino(perfilDoAlvo), [perfilDoAlvo]);
+
   const planningSubjectColors = useMemo(() => {
     const names = [
       ...safeTargetDisciplines.map((discipline) => discipline?.nome),
@@ -601,6 +622,28 @@ function PlanejamentoContent({
     0
   );
 
+  // Ponto de partida dos controles de importância/conhecimento.
+  //
+  // Ordem: o que o aluno já ajustou antes ganha de tudo; depois o peso que o edital dá à
+  // disciplina (questões × peso, na escala de 1 a 5); e só na ausência dos dois o 3 neutro.
+  function pesosIniciaisDoEdital() {
+    const inicial = {};
+    planningAvailableDisciplines.forEach((discipline) => {
+      const nome = discipline?.nome;
+      if (!nome || inicial[nome]) return;
+
+      const salvo = safePlanningSubjectConfig[nome] || {};
+      const doEdital = linhaDaDisciplina(perfilDoAlvo, nome);
+
+      inicial[nome] = {
+        selected: salvo.selected !== false,
+        importance: Number(salvo.importance || doEdital?.importancia || 3),
+        knowledge: Number(salvo.knowledge || 3),
+      };
+    });
+    return inicial;
+  }
+
   function openWizard() {
     const starterPlans =
       activePlans.length > 0
@@ -610,6 +653,10 @@ function PlanejamentoContent({
     setWizardMode(studyMode);
     setWizardModeDraft(studyMode);
     setWizardCoursePlans(starterPlans);
+    // A importância começa calibrada pelo quadro de provas do edital, não em 3 para tudo.
+    // O aluno continua podendo mexer — o que muda é o ponto de partida: quem tem 40 questões
+    // de Português e 10 de Informática não devia ter de descobrir isso sozinho.
+    setWizardSubjectState(pesosIniciaisDoEdital());
     setWizardHoursByDay(buildWizardHoursFromAvailability(safeAvailability));
     setWizardMinDuration(Number(safePlanningSessionWindow.minMinutes || 60));
     setWizardMaxDuration(Number(safePlanningSessionWindow.maxMinutes || 120));
@@ -963,10 +1010,10 @@ function PlanejamentoContent({
           />
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div
-            style={{ position: 'relative', zIndex: 10, display: 'flex', maxHeight: '86vh', width: '100%', maxWidth: 880, flexDirection: 'column', overflow: 'hidden', borderRadius: 20, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}
+            style={{ position: 'relative', zIndex: 10, display: 'flex', maxHeight: 'calc(100vh - 32px)', width: '100%', maxWidth: 960, flexDirection: 'column', overflow: 'hidden', borderRadius: 20, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-surface)', boxShadow: 'var(--pl-sh-high)' }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div style={{ borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px', position: 'relative' }}>
+            <div style={{ borderBottom: '1px solid var(--pl-rule)', padding: '12px 24px 10px', position: 'relative', flexShrink: 0 }}>
               <button
                 type="button"
                 onClick={closeWizard}
@@ -975,38 +1022,38 @@ function PlanejamentoContent({
               >
                 <X size={22} />
               </button>
-              <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--pl-ink)', margin: 0 }}>Editar Planejamento</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--pl-ink)', margin: 0 }}>Editar Planejamento</h3>
               <WizardStepper step={wizardStep} />
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 24px' }}>
             {wizardStep === 1 ? (
               <div>
-                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
+                <p style={{ margin: 0, textAlign: 'center', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                   Para iniciar o seu planejamento, escolha a melhor forma de visualização para você:
                 </p>
-                <div style={{ marginTop: 20, display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                   <WizardModeCard
                     active={wizardModeDraft === 'ciclo'}
-                    icon={<RotateCcw size={62} style={{ color: 'var(--pl-accent)' }} />}
+                    icon={<RotateCcw size={28} style={{ color: 'var(--pl-accent)' }} />}
                     title="Ciclo de Estudos"
                     text="Estude as disciplinas em uma ordem rotativa, sem depender de dias fixos. Ideal para quem precisa de flexibilidade na rotina."
                     onClick={() => setWizardModeDraft('ciclo')}
                   />
                   <WizardModeCard
                     active={wizardModeDraft === 'fixo'}
-                    icon={<CalendarDays size={62} style={{ color: 'var(--pl-accent)' }} />}
+                    icon={<CalendarDays size={28} style={{ color: 'var(--pl-accent)' }} />}
                     title="Planejamento Semanal"
                     text="Defina dias certos para cada frente de estudo e acompanhe tudo em calendário e kanban."
                     onClick={() => setWizardModeDraft('fixo')}
                   />
                 </div>
 
-                <div style={{ marginTop: 20, borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
-                  <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
+                <div style={{ marginTop: 14, borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14 }}>
+                  <p style={{ margin: 0, textAlign: 'center', fontSize: 13, fontWeight: 500, color: 'var(--pl-ink-2)' }}>
                     Escolha quais cursos entram no escopo desse planejamento:
                   </p>
-                  <div style={{ marginTop: 16, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                  <div style={{ marginTop: 10, maxHeight: 190, overflowY: 'auto', display: 'grid', gap: 10, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                     {safeCourseOptions.map((course) => (
                       <button
                         type="button"
@@ -1044,10 +1091,10 @@ function PlanejamentoContent({
 
             {wizardStep === 2 ? (
               <div>
-                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
+                <p style={{ margin: 0, textAlign: 'center', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                   Selecione quais das suas <strong>disciplinas</strong> você deseja colocar no seu <strong>planejamento</strong>.
                 </p>
-                <div style={{ marginTop: 20, maxHeight: 300, overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+                <div style={{ marginTop: 12, maxHeight: 'min(52vh, 420px)', overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14 }}>
                   <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
                     {wizardSubjectPool.map((discipline) => {
                       const selected = wizardSubjectState[discipline.nome]?.selected !== false;
@@ -1090,20 +1137,21 @@ function PlanejamentoContent({
 
             {wizardStep === 3 ? (
               <div>
-                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
+                <p style={{ margin: 0, textAlign: 'center', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                   Para cada disciplina, selecione a <strong>importância</strong> para a prova e o seu <strong>grau de conhecimento</strong>.
                 </p>
-                <div style={{ marginTop: 20, display: 'grid', gap: 16, gridTemplateColumns: '1.15fr 0.85fr' }}>
-                  <div style={{ maxHeight: 300, overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16 }}>
+                <RitmoDaProvaCard perfil={perfilDoAlvo} ritmo={ritmoDoAlvo} />
+                <div style={{ marginTop: 12, display: 'grid', gap: 12, gridTemplateColumns: '1.15fr 0.85fr' }}>
+                  <div style={{ maxHeight: 'min(46vh, 380px)', overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14 }}>
                     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                       {selectedWizardSubjects.map((discipline) => {
                         const config = wizardSubjectState[discipline.nome] || { importance: 3, knowledge: 3 };
                         return (
-                          <div key={discipline.nome} className="pl-card" style={{ padding: 16 }}>
-                            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink)', textAlign: 'center', margin: 0 }}>{discipline.nome}</p>
-                            <div style={{ marginTop: 16 }}>
+                          <div key={discipline.nome} className="pl-card" style={{ padding: 12 }}>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink)', textAlign: 'center', margin: 0 }}>{discipline.nome}</p>
+                            <div style={{ marginTop: 10 }}>
                               <label className="pl-eyebrow">Importância</label>
-                              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <input
                                   type="range"
                                   min="1"
@@ -1124,9 +1172,9 @@ function PlanejamentoContent({
                                 <span style={{ width: 24, textAlign: 'right', fontWeight: 700, color: 'var(--pl-ink)' }}>{config.importance}</span>
                               </div>
                             </div>
-                            <div style={{ marginTop: 16 }}>
+                            <div style={{ marginTop: 10 }}>
                               <label className="pl-eyebrow">Conhecimento</label>
-                              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <input
                                   type="range"
                                   min="1"
@@ -1153,7 +1201,7 @@ function PlanejamentoContent({
                     </div>
                   </div>
 
-                  <div style={{ maxHeight: 300, overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ maxHeight: 'min(46vh, 380px)', overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {subjectPriorityPreview.map((discipline) => (
                       <div
                         key={discipline.nome}
@@ -1172,15 +1220,15 @@ function PlanejamentoContent({
 
             {wizardStep === 4 ? (
               <div>
-                <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>
+                <p style={{ margin: 0, textAlign: 'center', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                   Quais dias e quantas horas pretende estudar?
                 </p>
-                <div style={{ marginTop: 20, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                <div style={{ marginTop: 12, display: 'grid', gap: 8, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                   {WEEKDAY_ORDER.map((dayId) => {
                     const dayBlueprint = WEEKDAY_BLUEPRINT.find((day) => day.id === dayId);
                     const current = wizardHoursByDay[dayId] || { enabled: false, minutes: 0 };
                     return (
-                      <div key={dayId} style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 12, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '8px 12px' }}>
+                      <div key={dayId} style={{ display: 'flex', alignItems: 'center', gap: 10, borderRadius: 12, border: '1px solid var(--pl-rule)', background: 'var(--pl-bg-soft)', padding: '6px 10px' }}>
                         <input
                           type="checkbox"
                           checked={current.enabled}
@@ -1221,15 +1269,18 @@ function PlanejamentoContent({
                   })}
                 </div>
 
-                <div style={{ marginTop: 20, borderRadius: 12, background: 'var(--pl-accent-soft)', padding: '12px 20px', textAlign: 'right', fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)' }}>
+                <div style={{ marginTop: 12, borderRadius: 12, background: 'var(--pl-accent-soft)', padding: '8px 16px', textAlign: 'right', fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)' }}>
                   Total na Semana: {formatMinutes(totalWizardMinutes)}
                 </div>
 
-                <div style={{ marginTop: 24 }}>
-                  <p style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>
+                {/* Matérias por dia e duração do bloco lado a lado: são a mesma decisão
+                    vista de dois ângulos, e separadas empurravam o passo para fora da tela. */}
+                <div style={{ marginTop: 14, display: 'grid', gap: 16, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'start' }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                     Quantas matérias deseja encaixar por dia?
                   </p>
-                  <div style={{ marginTop: 12, display: 'inline-flex', borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 4 }}>
+                  <div style={{ marginTop: 8, display: 'inline-flex', borderRadius: 12, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 4 }}>
                     {[1, 2, 3].map((count) => (
                       <button
                         key={count}
@@ -1237,8 +1288,8 @@ function PlanejamentoContent({
                         onClick={() => setWizardSubjectsPerDay(count)}
                         style={{
                           borderRadius: 8,
-                          padding: '8px 16px',
-                          fontSize: 13,
+                          padding: '6px 12px',
+                          fontSize: 12.5,
                           fontWeight: 600,
                           cursor: 'pointer',
                           border: 'none',
@@ -1251,21 +1302,21 @@ function PlanejamentoContent({
                       </button>
                     ))}
                   </div>
-                  <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)' }}>
+                  <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 500, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>
                     O app usa esse número para distribuir blocos de teoria e aproveitar o tempo que sobrar com revisão ou questões.
                   </p>
                 </div>
 
-                <div style={{ marginTop: 24 }}>
-                  <p style={{ fontSize: 15, color: 'var(--pl-ink-2)' }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: 'var(--pl-ink-2)' }}>
                     Qual mínimo e máximo de tempo você deseja estudar uma mesma disciplina?
                   </p>
-                  <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
                     <select
                       value={wizardMinDuration}
                       onChange={(event) => setWizardMinDuration(Number(event.target.value))}
                       className="pl-input"
-                      style={{ minWidth: 120, borderBottom: '2px solid var(--pl-accent)', background: 'transparent', padding: '8px', fontSize: 16, color: 'var(--pl-ink)' }}
+                      style={{ minWidth: 100, borderBottom: '2px solid var(--pl-accent)', background: 'transparent', padding: '6px', fontSize: 14, color: 'var(--pl-ink)' }}
                     >
                       {DURATION_OPTIONS.map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1273,12 +1324,12 @@ function PlanejamentoContent({
                         </option>
                       ))}
                     </select>
-                    <span style={{ fontSize: 16, color: 'var(--pl-ink-3)' }}>a</span>
+                    <span style={{ fontSize: 14, color: 'var(--pl-ink-3)' }}>a</span>
                     <select
                       value={wizardMaxDuration}
                       onChange={(event) => setWizardMaxDuration(Number(event.target.value))}
                       className="pl-input"
-                      style={{ minWidth: 120, borderBottom: '2px solid var(--pl-accent)', background: 'transparent', padding: '8px', fontSize: 16, color: 'var(--pl-ink)' }}
+                      style={{ minWidth: 100, borderBottom: '2px solid var(--pl-accent)', background: 'transparent', padding: '6px', fontSize: 14, color: 'var(--pl-ink)' }}
                     >
                       {DURATION_OPTIONS.filter((minutes) => minutes >= wizardMinDuration).map((minutes) => (
                         <option key={minutes} value={minutes}>
@@ -1287,16 +1338,17 @@ function PlanejamentoContent({
                       ))}
                     </select>
                   </div>
-                  <p style={{ marginTop: 12, fontSize: 13, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-3)' }}>
+                  <p style={{ margin: '8px 0 0', fontSize: 12, fontWeight: 500, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>
                     Se o dia não fechar exatamente com a duração mínima, o restante vira bloco complementar de revisão ou questões.
                   </p>
+                </div>
                 </div>
               </div>
             ) : null}
 
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--pl-rule)', padding: '12px 24px', flexShrink: 0 }}>
               <button type="button" onClick={closeWizard} className="pl-btn pl-btn-ghost pl-btn-sm">
                 {wizardStep === 1 ? 'Agora não' : 'Cancelar'}
               </button>
@@ -2067,7 +2119,7 @@ function WizardStepper({ step }) {
   const steps = ['Organização', 'Disciplinas', 'Relevância', 'Horários'];
 
   return (
-    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
       {steps.map((label, index) => {
         const number = index + 1;
         const active = step === number;
@@ -2075,30 +2127,75 @@ function WizardStepper({ step }) {
 
         return (
           <React.Fragment key={label}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div
                 style={{
                   display: 'flex',
-                  width: 40,
-                  height: 40,
+                  width: 30,
+                  height: 30,
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '50%',
                   border: active || done ? '2px solid var(--pl-accent)' : '2px solid var(--pl-ink-3)',
                   background: active || done ? 'var(--pl-accent)' : 'transparent',
-                  fontSize: 15,
+                  fontSize: 12.5,
                   fontWeight: 700,
                   color: active || done ? 'var(--pl-bg)' : 'var(--pl-ink-3)',
                 }}
               >
                 {String(number).padStart(2, '0')}
               </div>
-              <span style={{ fontSize: 12, fontWeight: active ? 700 : 400, color: active ? 'var(--pl-ink)' : 'var(--pl-ink-3)' }}>{label}</span>
+              <span style={{ fontSize: 11, fontWeight: active ? 700 : 400, color: active ? 'var(--pl-ink)' : 'var(--pl-ink-3)' }}>{label}</span>
             </div>
             {number < steps.length ? <div style={{ height: 2, width: 48, background: 'var(--pl-rule-2)' }} /> : null}
           </React.Fragment>
         );
       })}
+    </div>
+  );
+}
+
+// O que a prova exige, dito em números que o edital já trouxe.
+//
+// A importância de cada disciplina deixou de ser palpite: ela chega pré-calibrada pelo
+// quadro de provas. Este cartão mostra de onde veio a calibragem — e o tempo por questão,
+// que é o dado que muda o tipo de treino e que nenhum aluno calcula sozinho.
+function RitmoDaProvaCard({ perfil, ritmo }) {
+  if (!perfil || perfil.totalQuestoes === 0) return null;
+
+  const fatos = [
+    perfil.duracaoMin > 0 ? { rotulo: 'Duração da prova', valor: formatarDuracao(perfil.duracaoMin) } : null,
+    { rotulo: 'Questões', valor: String(perfil.totalQuestoes) },
+    perfil.temRedacao
+      ? { rotulo: 'Redação', valor: `sim · ${formatarDuracao(perfil.minutosDaRedacao)} reservados` }
+      : { rotulo: 'Redação', valor: 'não' },
+    perfil.minutosPorQuestao > 0
+      ? { rotulo: 'Por questão', valor: formatarRitmo(perfil.minutosPorQuestao) }
+      : null,
+  ].filter(Boolean);
+
+  return (
+    <div className="pl-card" style={{ marginTop: 12, padding: '12px 14px', background: 'var(--pl-bg-soft)' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+        <span className="pl-eyebrow">A prova, segundo o edital</span>
+        {ritmo ? <span className="pl-tag pl-tag-accent">{ritmo.titulo}</span> : null}
+      </div>
+      <div style={{ marginTop: 8, display: 'grid', gap: 10, gridTemplateColumns: `repeat(${fatos.length}, minmax(0, 1fr))` }}>
+        {fatos.map((fato) => (
+          <div key={fato.rotulo}>
+            <p style={{ margin: 0, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pl-ink-3)' }}>
+              {fato.rotulo}
+            </p>
+            <p className="pl-num" style={{ margin: '2px 0 0', fontSize: 16, color: 'var(--pl-ink)' }}>{fato.valor}</p>
+          </div>
+        ))}
+      </div>
+      {ritmo ? (
+        <p style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{ritmo.detalhe}</p>
+      ) : null}
+      <p style={{ margin: '6px 0 0', fontSize: 11.5, lineHeight: 1.5, color: 'var(--pl-ink-3)' }}>
+        A importância abaixo já vem calibrada por questões × peso de cada disciplina. Ajuste o que quiser.
+      </p>
     </div>
   );
 }
@@ -2119,10 +2216,12 @@ function WizardModeCard({ active, icon, title, text, onClick }) {
         boxShadow: active ? 'inset 0 0 0 1px var(--pl-accent)' : 'none',
       }}
     >
-      <div style={{ display: 'flex', height: 144, alignItems: 'center', justifyContent: 'center', background: 'var(--pl-surface)' }}>{icon}</div>
-      <div style={{ padding: 20, background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)' }}>
-        <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{title}</p>
-        <p style={{ marginTop: 8, fontSize: 13, lineHeight: 1.7, color: 'var(--pl-ink-2)' }}>{text}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: active ? 'var(--pl-accent-soft)' : 'var(--pl-surface)' }}>
+        <div style={{ flexShrink: 0 }}>{icon}</div>
+        <div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{title}</p>
+          <p style={{ margin: '4px 0 0', fontSize: 12.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>{text}</p>
+        </div>
       </div>
     </button>
   );

@@ -18,6 +18,48 @@
 
 ---
 
+## Sessão 2026-09-27 (fecho 4) — O cronograma passa a ler a prova ✅
+
+Quatro coisas nesta rodada, e a última muda o produto.
+
+**1. Bloco "Edital — progresso" saiu do Início.** Repetia, em barra de 0%, o que a página do
+edital já mostra inteiro. Removido o componente, a prop e o `useMemo` que o alimentava
+(`progGeralEdital` continua, porque a página do Edital usa).
+
+**2. "Editar Planejamento" cabe na tela.** O modal era `86vh` com scroll interno e uma
+ilustração de 144px de altura por cartão só para decorar. Agora: `calc(100vh - 32px)`,
+cabeçalho e rodapé com `flex-shrink: 0`, ícone de 62 para 28, cartão de modo na horizontal,
+e no passo 4 "matérias por dia" e "duração do bloco" **lado a lado** — eram a mesma decisão
+vista de dois ângulos, e empilhadas empurravam o passo para fora da tela.
+
+**3. O bug do "escolhi 45m e ele marcou 1h30".** Havia **duas verdades** sobre a duração do
+bloco, e elas não conversavam. O wizard salvava a escolha em `planningSessionWindow`
+(`{minMinutes, maxMinutes}`, numérico). O montador do ciclo lia `wizData.minSessao` /
+`maxSessao` — dois **textos** (`'1h 30m'` / `'2h 00m'`) que **nenhuma tela jamais escrevia**.
+O seletor era decorativo: o aluno escolhia qualquer coisa e recebia o valor de fábrica.
+`src/lib/janelaDeEstudo.js` (8 testes) passa a ser o único lugar que responde essa pergunta,
+e a escolha numérica ganha do texto legado. O primeiro teste é exatamente o caso relatado.
+
+**4. O cronograma passa a sair do ritmo da prova.** O edital sempre trouxe quanto tempo o
+candidato terá e quantas questões enfrentará; a plataforma ignorava os dois e montava o mesmo
+cronograma para todo mundo. Agora:
+
+- `api/_ai.js` extrai `duracao_prova` ("4 horas", "3h30", "240 minutos"), e o campo desce
+  até o curso e o objetivo (coluna JSON — sem migração).
+- `src/lib/ritmoDaProva.js` (22 testes) calcula o que ninguém calcula sozinho: **minutos por
+  questão**, descontando **1h30 de redação** quando o edital tem etapa discursiva. Sem isso
+  uma prova com redação parece muito mais folgada do que é.
+- O mesmo módulo converte **questões × peso** na escala de importância do wizard. A
+  disciplina que mais pontua vira 5; as outras caem proporcionalmente. O aluno não abre mais
+  o passo 3 com tudo em 3 — abre com o edital já aplicado, e ajusta se quiser.
+- Abaixo de 2min/questão o app chama de **prova de velocidade** (120 itens em 3h30 dão
+  1min45 — ler, decidir e marcar sem folga); acima de 3min, **de profundidade**. São
+  preparações diferentes, e até aqui recebiam o mesmo plano.
+
+Sem o dado no edital, nada é estimado: o cartão simplesmente não aparece.
+
+---
+
 ## Sessão 2026-09-27 (fecho 3) — Disciplinas em tela pequena ✅
 
 O botão "Abrir" da tabela de Disciplinas virava **"Ab / rir"** em tela estreita — o texto

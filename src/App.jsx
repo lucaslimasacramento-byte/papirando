@@ -118,6 +118,7 @@ import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
 import { progressoDoEdital } from './lib/progressoDoEdital';
 import { montarCurso } from './lib/novoCurso';
 import { paraWizData, validarRotina } from './lib/rotinaInicial';
+import { janelaDeEstudo } from './lib/janelaDeEstudo';
 import { prazoDoCursoAtivo } from './lib/alvoDoAluno';
 import {
   migrarCurso,
@@ -263,14 +264,6 @@ function stripOAuthErrorFromLocation() {
   }
 }
 
-function parseCycleDurationLabel(label, fallback = 90) {
-  const text = String(label || '').toLowerCase();
-  const hourMatch = text.match(/(\d+)\s*h/);
-  const minuteMatch = text.match(/(\d+)\s*m/);
-  const total = (hourMatch ? Number(hourMatch[1]) * 60 : 0) + (minuteMatch ? Number(minuteMatch[1]) : 0);
-  return total > 0 ? total : fallback;
-}
-
 function roundCycleMinutes(minutes) {
   return Math.max(15, Math.round(Number(minutes || 0) / 15) * 15);
 }
@@ -396,7 +389,7 @@ function buildCycleSequence(weightedDisciplines) {
   return sequence;
 }
 
-function buildCycleFromWizardSelection({ wizardData, disciplines }) {
+function buildCycleFromWizardSelection({ wizardData, disciplines, janela }) {
   const availableDisciplines = Array.isArray(disciplines) ? disciplines.filter(Boolean) : [];
   if (availableDisciplines.length === 0) return [];
 
@@ -418,8 +411,11 @@ function buildCycleFromWizardSelection({ wizardData, disciplines }) {
 
   const disciplinesToUse = cycleDisciplines.length > 0 ? cycleDisciplines : availableDisciplines;
   const totalMinutes = Math.max(roundCycleMinutes(Number(wizardData?.horasSemana || 18) * 60), 60);
-  const requestedMin = Math.max(30, roundCycleMinutes(parseCycleDurationLabel(wizardData?.minSessao, 60)));
-  const requestedMax = Math.max(requestedMin, roundCycleMinutes(parseCycleDurationLabel(wizardData?.maxSessao, 120)));
+  // A duracao do bloco e a escolha do aluno no wizard ("de 45m a 1h"), nao o rotulo de
+  // fabrica que ficava em wizData e que ninguem nunca atualizava. Ver src/lib/janelaDeEstudo.js.
+  const escolha = janelaDeEstudo(wizardData, janela);
+  const requestedMin = Math.max(15, roundCycleMinutes(escolha.min));
+  const requestedMax = Math.max(requestedMin, roundCycleMinutes(escolha.max));
   const minimumBlocksPerDiscipline = 2;
   const minimumBlockSize = totalMinutes >= disciplinesToUse.length * minimumBlocksPerDiscipline * 30 ? 30 : 15;
   const fittedBaseBlock = Math.floor(totalMinutes / Math.max(disciplinesToUse.length * minimumBlocksPerDiscipline, 1) / 15) * 15;
@@ -2384,12 +2380,13 @@ export default function App() {
     const nextCycle = buildCycleFromWizardSelection({
       wizardData: wizData,
       disciplines: planningDisciplines,
+      janela: planningSessionWindow,
     });
 
     if (nextCycle.length === 0) return;
 
     setActiveCycle((prev) => mergeCycleProgress(prev, nextCycle));
-  }, [studyPlanningMode, planWizardStep, wizData, planningDisciplines]);
+  }, [studyPlanningMode, planWizardStep, wizData, planningDisciplines, planningSessionWindow]);
 
   useEffect(() => {
     if (studyPlanningMode !== 'ciclo' || planningDisciplines.length === 0) return;
@@ -2512,6 +2509,7 @@ export default function App() {
     const nextCycle = buildCycleFromWizardSelection({
       wizardData: wizData,
       disciplines: planningDisciplines,
+      janela: planningSessionWindow,
     });
 
     if (nextCycle.length > 0) {
@@ -5979,6 +5977,9 @@ export default function App() {
       inscricao_valor: analysis.inscricaoValor || '',
       etapas_tags: analysis.etapas || [],
       prova: Array.isArray(cargo.prova) ? cargo.prova : [],
+      // Tempo de prova deste cargo. Com o quadro de provas e as etapas, e o que da o
+      // ritmo por questao em src/lib/ritmoDaProva.js.
+      duracao_prova: cargo.duracaoProva || '',
       prova_data: parseEditalDate(cargo.examDate) || courseData?.prova_data || '',
       status_concurso: normalizeContestStatus('edital_publicado'),
     }));
@@ -6027,6 +6028,7 @@ export default function App() {
       // Campos de topo seguem o primeiro cargo: tres telas ainda leem curso.prova e
       // curso.cargo direto, e quebra-las agora seria pior que a duplicacao.
       prova: Array.isArray(contestBase.prova) ? contestBase.prova : [],
+      duracao_prova: courseData?.duracao_prova || contestBase.duracaoProva || '',
       prova_data: courseData?.prova_data || parseEditalDate(contestSelecionado.examDate),
       edital_arquivo: courseData?.edital_arquivo || '',
       edital_lido_em: new Date().toISOString().slice(0, 10),
@@ -7105,25 +7107,6 @@ export default function App() {
     };
   }, [redacoes]);
 
-  const editalProgresso = useMemo(() => {
-    const targetDiscs = Array.isArray(targetContestDisciplines) ? targetContestDisciplines : [];
-    if (!targetContestSummary || targetDiscs.length === 0) return null;
-
-    const porDisciplina = targetDiscs
-      .map((disciplina) => ({
-        nome: String(disciplina?.nome || disciplina?.disciplina || 'Disciplina').trim(),
-        pct: Math.round(Number(disciplina?.percentual || disciplina?.progresso || 0)),
-      }))
-      .filter((item) => item.nome)
-      .sort((a, b) => b.pct - a.pct || a.nome.localeCompare(b.nome, 'pt-BR'))
-      .slice(0, 8);
-
-    return {
-      geral: progGeralEdital,
-      porDisciplina,
-    };
-  }, [targetContestSummary, targetContestDisciplines, progGeralEdital]);
-
   const currentCourseLimit = getCourseLimitFromProfile(currentProfile);
   const currentCourseCount = cursos.filter((course) => course.origem !== 'inferido').length;
   const remainingCourseSlots = isAdmin ? 999 : Math.max(currentCourseLimit - currentCourseCount, 0);
@@ -7251,7 +7234,6 @@ export default function App() {
     smartStudyPlan,
     dailyRoutine,
     ultimaAnotacao,
-    editalProgresso,
     onOpenUltimaAnotacao: () => setActiveTab('redacoes'),
     setSelectedContestDetailId,
     handleDisciplineClick,

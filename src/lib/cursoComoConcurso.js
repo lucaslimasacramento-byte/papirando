@@ -40,6 +40,14 @@ export function concursoDoObjetivo(curso, objetivo) {
     imagem_url: curso.imagem_url || '',
     edital_url: curso.edital_url || '',
     prova: Array.isArray(objetivo.prova) ? objetivo.prova : [],
+    // Quanto tempo dura a prova e quais são as etapas. Com o quadro acima, é o que dá o
+    // ritmo por questão que calibra o cronograma — ver src/lib/ritmoDaProva.js.
+    duracao_prova: objetivo.duracao_prova || curso.duracao_prova || '',
+    etapas_tags: Array.isArray(objetivo.etapas_tags)
+      ? objetivo.etapas_tags
+      : Array.isArray(curso.etapas_tags)
+        ? curso.etapas_tags
+        : [],
     origem: curso.origem || 'ia',
   };
 }

@@ -1327,8 +1327,14 @@ deixe "peso" vazio. Sem informacao nenhuma, devolva lista vazia.
 
 ETAPAS: as fases do certame — Objetiva, Discursiva, Redacao, TAF, Titulos, Pratica.
 
+DURACAO DA PROVA ("duracao_prova"): quanto tempo o candidato tera para fazer a prova
+daquele cargo. Vem da secao "DAS PROVAS" ("o candidato tera 4 horas para a realizacao das
+provas"). Copie como o edital escreve ("4 horas", "3h30", "240 minutos"). E o que permite a
+plataforma calcular o tempo por questao e montar o treino no ritmo certo. Sem a informacao,
+deixe vazio — nao estime.
+
 JSON esperado:
-{"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","inscricao_valor":"valor ou Nao encontrado","etapas":["Objetiva"],"dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","vagas":"","salario":"","escolaridade":"","lotacao":"","carga_horaria":"","prova":[{"disciplina":"","questoes":"","peso":""}],"subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
+{"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","inscricao_valor":"valor ou Nao encontrado","etapas":["Objetiva"],"dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","vagas":"","salario":"","escolaridade":"","lotacao":"","carga_horaria":"","duracao_prova":"","prova":[{"disciplina":"","questoes":"","peso":""}],"subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
 
 Edital:
 ${preparado.texto}`;
@@ -1366,6 +1372,9 @@ ${preparado.texto}`;
         escolaridade: String(contest?.escolaridade || '').trim(),
         lotacao: String(contest?.lotacao || '').trim(),
         carga_horaria: String(contest?.carga_horaria || '').trim(),
+        // Tempo de prova, como o edital escreve. Vira ritmo por questao em
+        // src/lib/ritmoDaProva.js.
+        duracao_prova: String(contest?.duracao_prova || '').trim(),
         // Linha do quadro so vale com disciplina E numero de questoes. Peso em branco vira
         // "1", que e o que o edital quer dizer quando nao diferencia.
         prova: (Array.isArray(contest?.prova) ? contest.prova : [])
