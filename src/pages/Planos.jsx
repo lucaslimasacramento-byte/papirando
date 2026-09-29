@@ -28,7 +28,7 @@ import { analyzeEdital } from '../lib/aiClient';
 import { showConfirm, showToast } from '../lib/dialogs';
 import { normalizeCourseTemplates } from '../lib/courseTemplates';
 import { buildContestForRole, CONTEST_STATUS_LABELS, getContestRoles, groupContestTemplates, normalizeContestStatus } from '../lib/contestGrouping';
-import { storageThumb, storageBanner } from '../lib/imageUrl';
+import { storageThumb } from '../lib/imageUrl';
 import { getAreaToken } from '../lib/areaTokens';
 import { RevisaoEditalPanel } from '../components/RevisaoEditalPanel';
 import { LeituraEditalProgresso } from '../components/LeituraEditalProgresso';
@@ -39,6 +39,8 @@ import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
 import EditarCursoModal from '../components/EditarCursoModal';
 import { ModalShell, InputField } from '../components/ModalShell';
 import { CORES_DE_CURSO, capaDoCurso, descricaoDoCurso, limparDescricao, LIMITE_DA_DESCRICAO } from '../lib/personalizacaoCurso';
+import CapaDoCurso from '../components/CapaDoCurso';
+import { SOBRE_A_CAPA, BOTAO_SOBRE_A_CAPA } from '../lib/estiloSobreACapa';
 import {
   DIAS_DA_SEMANA,
   FORMATOS,
@@ -2308,93 +2310,118 @@ function CursoTile({ curso, chips = [], isTarget, onAbrir, onApagar, onEditar, o
 
   // A capa e do curso do aluno. Cartao da biblioteca (publicado pelo admin) nao recebe capa:
   // ali a personalizacao nao e dele.
+  // Aqui so decide SE o cartao tem cabecalho de capa; o desenho e do CapaDoCurso.
   const capa = isLibrary ? null : capaDoCurso(curso);
 
   return (
     <div className="pl-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 318 }}>
-      {capa && (
-        <div
-          style={{
-            // 64px era uma tarja: a imagem mal aparecia e o corte comia tudo. Com 132 a capa
-            // vira capa, e ainda sobra altura para o conteudo do cartao.
-            height: 132,
-            background: capa.gradiente,
-            position: 'relative',
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}
-        >
-          {capa.tipo === 'imagem' && (
-            <img
-              src={storageBanner(capa.url)}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              style={{
-                width: '100%', height: '100%', display: 'block',
-                objectFit: 'cover',
-                // Qual faixa da imagem aparece — escolha do aluno no modal.
-                objectPosition: capa.enquadramento,
-              }}
-            />
-          )}
+      {capa ? (
+        // A capa deixou de ser tarja e virou o cabecalho do cartao: os selos, as acoes, o
+        // brasao e o nome ficam POR CIMA dela. Antes eram duas faixas empilhadas sem
+        // relacao — a foto em cima, a identidade embaixo —, e a capa nao era a cara do
+        // curso, era um enfeite antes dele.
+        <CapaDoCurso curso={curso} altura={172} ancora="entre">
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', minWidth: 0, gap: 6, flexWrap: 'wrap' }}>
+              <span className="pl-tag" style={{ ...SOBRE_A_CAPA, letterSpacing: '0.08em', textTransform: 'uppercase', background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)', backdropFilter: 'blur(4px)' }}>
+                {tipoLabel}
+              </span>
+              {isTarget && (
+                <span className="pl-tag" style={{ ...SOBRE_A_CAPA, background: 'var(--pl-warn)', border: '1px solid var(--pl-warn)', color: '#1a1207', textShadow: 'none', fontWeight: 800 }}>
+                  Alvo
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+              {onEditar && (
+                <button onClick={onEditar} title="Personalizar curso" style={{ ...BOTAO_SOBRE_A_CAPA }}>
+                  <Pencil size={15} />
+                </button>
+              )}
+              <button onClick={onApagar} title="Excluir curso" style={{ ...BOTAO_SOBRE_A_CAPA }}>
+                <Trash2 size={15} />
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 11, minWidth: 0 }}>
+            <div style={{
+              width: 46, height: 46, borderRadius: 9, flexShrink: 0, overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.95)',
+              border: '1px solid rgba(255,255,255,0.7)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.35)',
+            }}>
+              {curso.imagem_url ? (
+                <img src={storageThumb(curso.imagem_url, 256)} alt={curso.nome} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <PlCrestIcon label={curso.nome} />
+              )}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              {secondaryTag ? (
+                <p style={{ ...SOBRE_A_CAPA, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 700, opacity: 0.92 }}>
+                  {secondaryTag}
+                </p>
+              ) : null}
+              <h3
+                title={curso.nome}
+                style={{ ...SOBRE_A_CAPA, margin: secondaryTag ? '2px 0 0' : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 20, fontWeight: 800, letterSpacing: '-0.015em' }}
+              >
+                {nomeCurtoDoCurso(curso)}
+              </h3>
+            </div>
+          </div>
+        </CapaDoCurso>
+      ) : (
+        <div style={{ position: 'relative', padding: '14px 16px 12px', borderBottom: '1px solid var(--pl-rule)', background: isLibrary ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)' }}>
+          <div style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, background: 'var(--pl-bg-deep)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', minWidth: 0, gap: 6, flexWrap: 'wrap' }}>
+              <span className={`pl-tag ${isLibrary ? '' : 'pl-tag-highlight'}`} style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                {tipoLabel}
+              </span>
+              {isTarget && <span className="pl-tag pl-tag-warn">Alvo</span>}
+            </div>
+            <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+              {onEditar && (
+                <button onClick={onEditar} title="Personalizar curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
+                  <Pencil size={15} />
+                </button>
+              )}
+              <button onClick={onApagar} title="Excluir curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
+                <Trash2 size={15} />
+              </button>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, minWidth: 0 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 9,
+              background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', boxShadow: 'var(--pl-sh-low)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0,
+            }}>
+              {curso.imagem_url ? (
+                <img src={storageThumb(curso.imagem_url, 256)} alt={curso.nome} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <PlCrestIcon label={curso.nome} />
+              )}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              {secondaryTag ? (
+                <p style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
+                  {secondaryTag}
+                </p>
+              ) : null}
+              <h3
+                title={curso.nome}
+                style={{ margin: secondaryTag ? '3px 0 0' : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 18, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}
+              >
+                {nomeCurtoDoCurso(curso)}
+              </h3>
+            </div>
+          </div>
         </div>
       )}
-      <div style={{ position: 'relative', padding: '14px 16px 12px', borderBottom: '1px solid var(--pl-rule)', background: isLibrary ? 'var(--pl-bg-soft)' : 'var(--pl-surface-2)' }}>
-        {!capa && <div style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, background: 'var(--pl-bg-deep)', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />}
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', minWidth: 0, gap: 6, flexWrap: 'wrap' }}>
-            <span className={`pl-tag ${isLibrary ? '' : 'pl-tag-highlight'}`} style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              {tipoLabel}
-            </span>
-            {isTarget && <span className="pl-tag pl-tag-warn">Alvo</span>}
-          </div>
-          <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-            {onEditar && (
-              <button onClick={onEditar} title="Personalizar curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
-                <Pencil size={15} />
-              </button>
-            )}
-            <button onClick={onApagar} title="Excluir curso" style={{ border: 0, background: 'transparent', color: 'var(--pl-ink-4)', cursor: 'pointer', padding: 4 }}>
-              <Trash2 size={15} />
-            </button>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, minWidth: 0 }}>
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: 9,
-            background: 'var(--pl-surface)',
-            border: '1px solid var(--pl-rule-2)',
-            boxShadow: 'var(--pl-sh-low)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}>
-            {curso.imagem_url ? (
-              <img src={storageThumb(curso.imagem_url, 256)} alt={curso.nome} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <PlCrestIcon label={curso.nome} />
-            )}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            {secondaryTag ? (
-              <p style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 700, color: 'var(--pl-ink-2)' }}>
-                {secondaryTag}
-              </p>
-            ) : null}
-            <h3
-              title={curso.nome}
-              style={{ margin: secondaryTag ? '3px 0 0' : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 18, fontWeight: 800, letterSpacing: '-0.015em', color: 'var(--pl-ink)' }}
-            >
-              {nomeCurtoDoCurso(curso)}
-            </h3>
-          </div>
-        </div>
-      </div>
 
       <div style={{ padding: '13px 16px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <p style={{ margin: 0, minHeight: 34, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: 12, lineHeight: 1.42, fontWeight: 500, color: 'var(--pl-ink-3)' }}>

@@ -74,3 +74,32 @@ describe('migrarAlvoDeCurso', () => {
     expect(migrarAlvoDeCurso('pmal-oficial-2026', [curso])).toBe('pmal-oficial-2026');
   });
 });
+
+describe('personalizacao do curso no alvo', () => {
+  it('a capa escolhida pelo aluno viaja para o objetivo-alvo', () => {
+    const curso = {
+      id: 'c1',
+      nome: 'PMAL',
+      plano: 'PMAL',
+      capa_url: 'https://exemplo/capa.jpg',
+      capa_pos: 30,
+      cor: 'verde',
+      objetivos: [{ id: 'o1', nome: 'Oficial de Estado-Maior' }],
+    };
+
+    const alvo = concursoDoObjetivo(curso, curso.objetivos[0]);
+
+    // Sem estes campos o cartao do alvo no Inicio ficava branco enquanto o mesmo curso,
+    // em Meus cursos, mostrava a foto que o aluno subiu.
+    expect(alvo).toMatchObject({
+      capa_url: 'https://exemplo/capa.jpg',
+      capa_pos: 30,
+      cor: 'verde',
+    });
+  });
+
+  it('curso sem capa não inventa uma', () => {
+    const curso = { id: 'c1', nome: 'X', plano: 'X', objetivos: [{ id: 'o1', nome: 'Cargo' }] };
+    expect(concursoDoObjetivo(curso, curso.objetivos[0]).capa_url).toBe('');
+  });
+});

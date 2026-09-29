@@ -38,6 +38,13 @@ export function concursoDoObjetivo(curso, objetivo) {
     prova_data: objetivo.prova_data || curso.prova_data || '',
     status_concurso: objetivo.status_concurso || curso.status_concurso || 'edital_publicado',
     imagem_url: curso.imagem_url || '',
+    // A personalizacao do curso (capa, enquadramento e cor) viaja junto. O objetivo-alvo
+    // aparece no Inicio, e ate aqui chegava sem capa nenhuma: o cartao do alvo ficava
+    // branco enquanto o mesmo curso, em "Meus cursos", tinha a foto que o aluno escolheu.
+    // Ver src/lib/personalizacaoCurso.js.
+    capa_url: curso.capa_url || '',
+    capa_pos: curso.capa_pos,
+    cor: curso.cor || '',
     edital_url: curso.edital_url || '',
     prova: Array.isArray(objetivo.prova) ? objetivo.prova : [],
     // Quanto tempo dura a prova e quais são as etapas. Com o quadro acima, é o que dá o

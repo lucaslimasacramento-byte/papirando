@@ -18,6 +18,39 @@
 
 ---
 
+## Sessão 2026-09-29 — A capa vira destaque, e chega ao alvo ✅
+
+**A capa não era a cara do curso, era um enfeite antes dele.** O cartão tinha duas faixas
+empilhadas sem relação: a foto em cima, e logo abaixo outro bloco branco com selo, brasão,
+cargo e nome. Agora a identidade fica **por cima** da imagem — selos no alto à esquerda,
+ações à direita, brasão + cargo + nome na base. A capa subiu de 132 para 172px.
+
+Texto sobre foto do aluno exige **véu**: um degradê que escurece só a base (onde o texto
+vai), deixando o topo da imagem limpo. Mais forte sobre foto, discreto sobre o degradê de
+cor. Cada texto leva `text-shadow` por cima disso, porque a foto pode ter uma área clara
+justo atrás de uma palavra. As ações ganharam fundo próprio pelo mesmo motivo.
+
+**No alvo a capa não aparecia porque o dado não chegava lá.** `concursoDoObjetivo` (a
+projeção do curso para "concurso acompanhado") não carregava `capa_url` / `capa_pos` / `cor`
+— o cartão do alvo no Início ficava branco enquanto o mesmo curso, em Meus cursos, mostrava
+a foto. Agora viaja, com 2 testes. O cartão do alvo ganhou uma faixa de 84px; sem imagem
+enviada ele continua como era, porque um degradê de cor sozinho num cartão de 220px seria
+tarja sem informação.
+
+### Uma fragilidade que só a medição pegou
+
+Medindo no Chromium, o nome do curso terminava **12px fora da capa** e o rótulo do alvo caía
+inteiro fora dela. Causa: a sobreposição usa `height: 100%` + padding, o que só cabe porque
+o reset global define `border-box`. Depender de um reset global para um componente novo é
+frágil — e vazar aqui significa o nome do curso cair no corpo branco do cartão, **fora do véu
+que o torna legível**. `boxSizing: 'border-box'` explícito. Depois: tudo dentro da capa, com
+o nome terminando a 93% da altura.
+
+`SOBRE_A_CAPA` e `BOTAO_SOBRE_A_CAPA` foram para `src/lib/estiloSobreACapa.js` — o Fast
+Refresh do Vite só funciona quando um arquivo exporta apenas componentes.
+
+---
+
 ## Sessão 2026-09-27 (fecho 10) — Duração da prova também no Planejamento, e puxando do PDF ✅
 
 **O cartão de ritmo virou um só.** Ele existia duplicado no Edital e no Planejamento, e as

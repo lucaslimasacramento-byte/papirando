@@ -16,6 +16,8 @@ import { saudacaoDoHorario, msAteProximaFaixa } from '../lib/saudacao';
 import { fraseDoDia } from '../lib/frases';
 import { primeirosPassos } from '../lib/primeirosPassos';
 import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
+import CapaDoCurso from '../components/CapaDoCurso';
+import { SOBRE_A_CAPA } from '../lib/estiloSobreACapa';
 
 export default function Dashboard({
   openTimerSetup,
@@ -78,6 +80,10 @@ export default function Dashboard({
   const primaryRecommendation = studyRecommendation?.primary || null;
   // A contagem vem do prazo mais proximo do curso ativo; o alvo em si e so o desempate de
   // prioridade. Sem esse dado (curso antigo, tela isolada), cai no que o alvo trazia.
+  // So vale trocar o cabecalho do cartao pela capa quando ha capa de verdade. Sem imagem, o
+  // degrade de cor sozinho num cartao de 220px seria uma tarja colorida sem informacao.
+  const temCapaNoAlvo = Boolean(String(targetContest?.capa_url || '').trim());
+
   const diasDoPrazo = Number.isFinite(Number(prazoDoAlvo?.dias)) ? Number(prazoDoAlvo.dias) : null;
   const targetDaysRemaining = diasDoPrazo !== null
     ? diasDoPrazo
@@ -284,9 +290,19 @@ export default function Dashboard({
           )}
 
           {targetDaysRemaining !== null && (
-            <div className="pl-card" style={{ width: 220, padding: '17px 22px' }}>
+            <div className="pl-card" style={{ width: 220, padding: 0, overflow: 'hidden' }}>
+              {/* A capa que o aluno escolheu para o curso aparece aqui tambem. Ela nao
+                  chegava: a projecao do curso para "concurso" nao carregava capa_url, entao
+                  o cartao do alvo ficava branco enquanto o mesmo curso, em Meus cursos,
+                  tinha a foto dele. Ver src/lib/cursoComoConcurso.js. */}
+              {temCapaNoAlvo && (
+                <CapaDoCurso curso={targetContest} altura={84}>
+                  <span className="pl-eyebrow" style={{ ...SOBRE_A_CAPA, fontSize: 10 }}>Objetivo-alvo</span>
+                </CapaDoCurso>
+              )}
+              <div style={{ padding: temCapaNoAlvo ? '13px 22px 17px' : '17px 22px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <div className="pl-eyebrow" style={{ fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>Objetivo-alvo</div>
+                {!temCapaNoAlvo && <div className="pl-eyebrow" style={{ fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>Objetivo-alvo</div>}
                 {/* A cobranca da rotina virou um selo aqui, no cartao do alvo. Era uma faixa
                     de duas linhas no topo do painel: empurrava o cumprimento para baixo
                     todo dia, e numa tela que ja luta por altura isso custa caro. */}
@@ -335,6 +351,7 @@ export default function Dashboard({
                   Esta é a prova mais próxima do seu curso — o seu objetivo principal é outro.
                 </div>
               )}
+              </div>
             </div>
           )}
         </section>
