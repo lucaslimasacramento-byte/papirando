@@ -213,30 +213,51 @@ export default function Dashboard({
        * breadcrumb, busca e icones — e continua sendo a primeira coisa do dia. */}
       <div
         style={{
-          padding: '10px 32px',
+          padding: 'var(--dash-frase-pad) clamp(16px, 4vw, 48px)',
           textAlign: 'center',
           borderBottom: '1px solid var(--pl-rule)',
           background: 'var(--pl-surface)',
         }}
       >
-        <p style={{ margin: 0, fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 15, color: 'var(--pl-ink-2)' }}>
+        {/* O tamanho vem de --dash-frase, que ja existia no CSS e estava sendo ignorado: o
+            JSX trazia 15px fixo, e estilo inline ganha de media query. A frase ficava do
+            tamanho de uma legenda no meio de uma faixa branca — ocupava o espaco de um
+            destaque sem ter o peso de um. */}
+        <p
+          style={{
+            margin: '0 auto',
+            maxWidth: 940,
+            fontFamily: 'var(--pl-serif)',
+            fontStyle: 'italic',
+            fontWeight: 300,
+            fontSize: 'var(--dash-frase)',
+            lineHeight: 1.3,
+            letterSpacing: '-0.015em',
+            color: 'var(--pl-ink)',
+          }}
+        >
           {citacaoDoDia.texto}
-          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
-          <span className="pl-eyebrow" style={{ marginLeft: 8, fontSize: 10 }}>
-            — {citacaoDoDia.autor}
-          </span>
         </p>
+        {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. Em linha
+            propria ele para de competir com a frase pela mesma altura de texto. */}
+        <span className="pl-eyebrow" style={{ display: 'block', marginTop: 5 }}>
+          {citacaoDoDia.autor}
+        </span>
       </div>
 
       {/* As medidas verticais vem de variaveis (ver .pl-dash em index.css) porque estilo
           inline ganha de media query: para o painel encolher em tela baixa, o numero tem
           que sair do JSX. */}
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
+      {/* A largura era 1180 fixos: numa tela de 1920 sobravam ~500px de fundo vazio de cada
+          lado enquanto os cartoes se espremiam. Agora o painel ocupa a largura disponivel e
+          o respiro vem do padding, que encolhe sozinho em tela pequena. O texto continua
+          legivel porque quem limita linha e o proprio paragrafo (maxWidth), nao o container. */}
+      <div style={{ width: '100%', margin: '0 auto', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 48px)' }}>
 
         {/* A coluna da direita e do objetivo-alvo, definido ou nao. Deixa-la vazia era o
             pior dos mundos: o aluno nao via que faltava escolher um alvo, e a plataforma
             inteira depende dele para priorizar. Sem alvo, o lugar convida a definir. */}
-        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: 28, alignItems: 'center' }}>
+        <section className="pl-dash-hero" style={{ display: 'grid', gap: 28, alignItems: 'center' }}>
           <div style={{ minWidth: 0 }}>
             <div className="pl-eyebrow">
               {dayContextLabel}

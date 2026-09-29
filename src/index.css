@@ -9852,6 +9852,16 @@ textarea.simulados-register-input {
   --dash-kpi-pad: 14px 16px 13px;
   --dash-kpi-num: 38px;
   --dash-frase: 22px;
+  --dash-frase-pad: 14px;
+}
+
+/* O cartao do alvo tinha largura fixa de 220px. Num painel que agora ocupa a tela inteira,
+   isso o deixava minusculo ao lado da saudacao; e em tela estreita ele espremia o texto.
+   Com minmax ele cresce um pouco no monitor grande e cai para baixo no celular. */
+.pl-dash-hero { grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); }
+
+@media (max-width: 760px) {
+  .pl-dash-hero { grid-template-columns: 1fr; }
 }
 
 /* Notebook comum (~900px de janela). */
@@ -9865,6 +9875,7 @@ textarea.simulados-register-input {
     --dash-kpi-pad: 11px 14px 10px;
     --dash-kpi-num: 32px;
     --dash-frase: 19px;
+    --dash-frase-pad: 11px;
   }
 }
 
@@ -9880,6 +9891,7 @@ textarea.simulados-register-input {
     --dash-kpi-pad: 9px 12px 8px;
     --dash-kpi-num: 27px;
     --dash-frase: 17px;
+    --dash-frase-pad: 9px;
   }
 }
 

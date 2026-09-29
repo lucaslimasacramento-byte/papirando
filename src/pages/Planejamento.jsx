@@ -731,6 +731,34 @@ function PlanejamentoContent({
     setWizardStep((prev) => Math.min(4, prev + 1));
   }
 
+  // Marca ou desmarca todas as disciplinas do passo 2 de uma vez.
+  //
+  // Preserva importancia e conhecimento de cada uma: desmarcar tudo e voltar atras nao pode
+  // apagar a calibragem que veio do edital nem o que o aluno ja ajustou.
+  function marcarTodasAsDisciplinas(marcar) {
+    setWizardSubjectState((anterior) => {
+      const proximo = { ...anterior };
+      wizardSubjectPool.forEach((discipline) => {
+        const atual = proximo[discipline.nome] || {};
+        proximo[discipline.nome] = {
+          ...atual,
+          selected: marcar,
+          importance: Number(atual.importance || safePlanningSubjectConfig[discipline.nome]?.importance || 3),
+          knowledge: Number(atual.knowledge || safePlanningSubjectConfig[discipline.nome]?.knowledge || 3),
+        };
+      });
+      return proximo;
+    });
+  }
+
+  const contagemDeDisciplinas = useMemo(() => {
+    const total = wizardSubjectPool.length;
+    const selecionadas = wizardSubjectPool.filter(
+      (discipline) => wizardSubjectState[discipline.nome]?.selected !== false
+    ).length;
+    return { total, selecionadas };
+  }, [wizardSubjectPool, wizardSubjectState]);
+
   async function saveWizardConfig() {
     if (wizardCoursePlans.length === 0 && safeCourseOptions.length > 0) return;
 
@@ -1124,7 +1152,35 @@ function PlanejamentoContent({
                 <p style={{ margin: 0, textAlign: 'center', fontSize: 13.5, lineHeight: 1.5, color: 'var(--pl-ink-2)' }}>
                   Selecione quais das suas <strong>disciplinas</strong> você deseja colocar no seu <strong>planejamento</strong>.
                 </p>
-                <div style={{ marginTop: 12, maxHeight: 'min(52vh, 420px)', overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14 }}>
+
+                {/* Um edital de concurso traz 15 a 20 disciplinas, e o caso comum e querer
+                    todas. Sem isto, comecar do zero custa quinze cliques — e desmarcar as
+                    duas que nao interessam custa dois. */}
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                  <span className="pl-small-label">
+                    {contagemDeDisciplinas.selecionadas} de {contagemDeDisciplinas.total} selecionadas
+                  </span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      className="pl-btn pl-btn-sm"
+                      onClick={() => marcarTodasAsDisciplinas(true)}
+                      disabled={contagemDeDisciplinas.selecionadas === contagemDeDisciplinas.total}
+                    >
+                      Selecionar todas
+                    </button>
+                    <button
+                      type="button"
+                      className="pl-btn pl-btn-ghost pl-btn-sm"
+                      onClick={() => marcarTodasAsDisciplinas(false)}
+                      disabled={contagemDeDisciplinas.selecionadas === 0}
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 10, maxHeight: 'min(52vh, 420px)', overflowY: 'auto', borderRadius: 16, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', padding: 14 }}>
                   <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
                     {wizardSubjectPool.map((discipline) => {
                       const selected = wizardSubjectState[discipline.nome]?.selected !== false;

@@ -18,6 +18,41 @@
 
 ---
 
+## Sessão 2026-09-29 (fecho 2) — Painel ocupa a tela, frase ganha peso, "selecionar todas" ✅
+
+**1. O painel usava 70% da largura.** `maxWidth: 1180` fixo: numa tela de 1920 sobravam ~500px
+de fundo vazio de cada lado enquanto os cartões se espremiam. Agora ocupa a largura
+disponível e o respiro vem do padding, que encolhe sozinho.
+
+Medido em Chromium (largura útil ao lado da sidebar):
+
+| Janela | Disponível | Usado | Aproveitamento | Padding |
+|---|---|---|---|---|
+| 1920 | 1695 | 1599 | **94%** (era 70%) | 48px |
+| 1600 | 1375 | 1279 | 93% | 48px |
+| 1280 | 1055 | 978 | 93% | 38px |
+| 1024 | 799 | 738 | 92% | 31px |
+| 720 | 495 | 452 | 91% | 22px |
+
+Sem rolagem horizontal em nenhum tamanho. O cartão do alvo saiu de 220px fixos para
+`minmax(220px, 300px)` e, abaixo de 760px, o hero cai para uma coluna só — antes ele
+espremia a saudação no celular.
+
+**2. A frase estava com 15px porque o JSX ignorava a própria variável.** `--dash-frase` já
+existia no CSS (22 / 19 / 17 por altura de janela) e nunca chegou a valer: o componente
+trazia `fontSize: 15` inline, e **inline ganha de media query**. A frase ocupava o espaço de
+um destaque sem ter o peso de um. Agora usa a variável, em `--pl-ink` (era `ink-2`), com o
+crédito em linha própria — em linha corrida ele competia com a citação pela mesma altura de
+texto.
+
+**3. "Selecionar todas" no passo de disciplinas.** Um edital traz 15 a 20 disciplinas e o
+caso comum é querer todas: começar do zero custava quinze cliques, desmarcar duas custa dois.
+Tem contador ("16 de 18 selecionadas") e "Limpar". Marcar/desmarcar **preserva importância e
+conhecimento** de cada disciplina — desmarcar tudo e voltar atrás não pode apagar a
+calibragem que veio do edital.
+
+---
+
 ## Sessão 2026-09-29 — A capa vira destaque, e chega ao alvo ✅
 
 **A capa não era a cara do curso, era um enfeite antes dele.** O cartão tinha duas faixas
