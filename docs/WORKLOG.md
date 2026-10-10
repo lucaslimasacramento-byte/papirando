@@ -18,6 +18,29 @@
 
 ---
 
+## Sessão 2026-10-10 (fecho 2) — "Ler o edital" morto apagado, plano atual com corpo ✅
+
+**1. O botão morto saiu, e levou junto o que só servia a ele.** `hasEditalText` era sempre
+falso (o texto do edital nunca foi guardado em lugar nenhum), então o botão nunca aparecia —
+e com ele nunca rodavam `runAnalysis`, `handleAnalyzeEdital`, o `AiAnalysisPanel` inteiro,
+`AiMiniInfo`, `temDadosUteis` e `MIN_EDITAL_CHARS`. **175 linhas a menos** em `Edital.jsx`.
+
+Desmontei com cuidado, porque **parte do encanamento ainda serve**: `aiError` continua sendo
+usado por "carregar do objetivo". Sem a análise, o painel sanfonado existia para mostrar uma
+linha de erro — virou uma tarja simples. A prop `editalText`, que sempre chegava vazia, saiu
+também do `AppTabContent`.
+
+**2. O "Plano atual" ganhou corpo permanente.** O que aparecia no hover era um
+**preenchimento** (`--pl-bg-soft`), não uma sombra — e era o `:hover` de um botão
+**desabilitado**, um efeito que existia por acidente e sumia assim que o mouse saía.
+
+O botão do plano atual não leva a lugar nenhum: ele **informa**. Ganhou classe própria
+(`.pl-btn-current`) com o preenchimento fixo, borda suave, uma sombra interna de 2px e
+`cursor: default`. O hover deixou de mudar qualquer coisa, porque não há nada para o clique
+fazer. Medido no Chromium: fundo, borda e sombra **idênticos com e sem o ponteiro**.
+
+---
+
 ## Sessão 2026-10-10 — O selo "Master" era um plano que não existe ✅
 
 O cabeçalho anunciava **MASTER**. Só existem dois planos: Folha (grátis) e Papiro.

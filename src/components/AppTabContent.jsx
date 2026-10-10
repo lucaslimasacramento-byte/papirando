@@ -778,7 +778,6 @@ export default function AppTabContent(props) {
       return (
         <Edital
           currentUserId={currentUserId}
-          editalText={targetContestSummary?.edital_text || targetContestSummary?.editalText || ''}
           bancoDisciplinas={bancoDisciplinas}
           cursos={cursos}
           historicoReal={historicoReal}

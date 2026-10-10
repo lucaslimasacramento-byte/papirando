@@ -565,6 +565,21 @@ html, body {
 .pl-btn-primary:hover { background: var(--pl-ink-2); border: 0; }
 .pl-btn-ghost { background: transparent; color: var(--pl-ink); border: 0; }
 .pl-btn-ghost:hover { background: var(--pl-bg-soft); border: 0; }
+/* Estado, nao acao.
+ *
+ * O botao do plano atual nao leva a lugar nenhum: ele informa. Ficava transparente, igual a
+ * um botao clicavel, e so ganhava corpo quando o ponteiro passava por cima — o :hover de um
+ * botao desabilitado, um efeito que existia por acidente e sumia assim que o mouse saia.
+ * Aqui o preenchimento passa a ser permanente, e o hover deixa de mudar qualquer coisa,
+ * porque nao ha nada para o clique fazer. */
+.pl-btn-current,
+.pl-btn-current:hover {
+  background: var(--pl-bg-soft);
+  color: var(--pl-ink-2);
+  border: 1px solid var(--pl-rule-2);
+  box-shadow: inset 0 1px 2px rgba(20, 17, 13, 0.06);
+  cursor: default;
+}
 /* Modifier IA para .pl-btn — ink sólido, sparkle azul-claro (v1.0) */
 /* Forma propria, e nao so a cor.
  *

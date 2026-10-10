@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
-import { acharLinhaDaProva, avisosDoDocumento } from '../lib/edital';
+import { acharLinhaDaProva } from '../lib/edital';
 import { duracaoDoArquivo } from '../lib/duracaoDoArquivo';
 import { progressoPorObjetivo } from '../lib/objetivos';
 import { ordenarPorPeso, porOndeComecar, fatiaDaProva, filtrarEdital, contarTopicos } from '../lib/ordemDoEdital';
@@ -32,12 +32,7 @@ import {
 import { perfilDaProva, ritmoDeTreino } from '../lib/ritmoDaProva';
 import RitmoDaProvaCard from '../components/RitmoDaProvaCard';
 
-// Limite mínimo de caracteres para considerar que há um edital extraível.
-// Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
-const MIN_EDITAL_CHARS = 400;
-
 export default function Edital({
-  editalText = '',
   bancoDisciplinas = [],
   cursos = [],
   historicoReal = [],
@@ -51,10 +46,7 @@ export default function Edital({
   setLinkModalOpen,
   onLoadFromObjetivo,
 }) {
-  const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState(null);
   const [importMsg, setImportMsg] = useState('');
   const [concursoSelecionadoId, setConcursoSelecionadoId] = useState('');
   const [selectorOpen, setSelectorOpen] = useState(false);
@@ -234,54 +226,6 @@ export default function Edital({
     setAbertas(todasAbertas ? new Set() : new Set(editalVisivel.map((d) => d.id)));
   };
 
-  // O que o documento aparenta ser, antes de a IA olhar. Ver src/lib/edital.js.
-  const [avisosDoEdital, setAvisosDoEdital] = useState([]);
-
-  const editalTextoLimpo = String(editalText || '').trim();
-  const hasEditalText = editalTextoLimpo.length > 0;
-
-  // Roda a leitura por IA e trata os estados comuns. Retorna o resultado válido ou null.
-  const runAnalysis = async () => {
-    // PDF escaneado (imagem) ou vazio extrai pouquíssimo texto: a IA volta vazia
-    // e o painel mostraria "Não identificado" como se tivesse dado certo. Barramos antes.
-    if (editalTextoLimpo.length < MIN_EDITAL_CHARS) {
-      setAiAnalysis(null);
-      setAiError(
-        'Não consegui extrair texto suficiente deste edital. Se for um PDF escaneado (imagem), ' +
-        'o conteúdo precisa estar em texto pesquisável — tente colar o texto ou enviar um PDF com texto selecionável.'
-      );
-      setAiPanelOpen(true);
-      return null;
-    }
-
-    setAiError('');
-    setAiPanelOpen(true);
-    // Avisa ANTES de gastar a analise: parte dos arquivos anunciados como edital e
-    // comunicado, retificacao ou resultado. Avisa, nao bloqueia — o aluno pode ter colado
-    // so o conteudo programatico, que e curto e legitimo. Mesma checagem da importacao.
-    setAvisosDoEdital(avisosDoDocumento(editalTextoLimpo));
-    const resultado = await analyzeEdital(editalText);
-    if (!temDadosUteis(resultado)) {
-      setAiAnalysis(null);
-      setAiError('Não conseguimos identificar dados de edital neste texto. Confira se o conteúdo enviado é mesmo o edital.');
-      return null;
-    }
-    setAiAnalysis(resultado);
-    return resultado;
-  };
-
-  const handleAnalyzeEdital = async () => {
-    if (!hasEditalText) return;
-    setAiLoading(true);
-    try {
-      await runAnalysis();
-    } catch (err) {
-      setAiError(err?.message || 'Erro ao analisar edital.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   // Puxar do edital so a duracao da prova.
   //
   // O aluno pode reimportar o edital inteiro, mas isso reescreve disciplinas e topicos que
@@ -404,15 +348,13 @@ export default function Edital({
           }}>{importMsg}</div>
         )}
 
-        {(aiPanelOpen || aiAnalysis || aiLoading || aiError) && (
-          <AiAnalysisPanel
-            aiPanelOpen={aiPanelOpen}
-            setAiPanelOpen={setAiPanelOpen}
-            aiLoading={aiLoading}
-            aiError={aiError}
-            aiAnalysis={aiAnalysis}
-            avisosDoEdital={avisosDoEdital}
-          />
+        {aiError && (
+          <div style={{
+            padding: '10px 14px',
+            background: 'var(--pl-danger-soft)', color: 'var(--pl-danger)',
+            border: '1px solid var(--pl-danger)', borderLeft: '3px solid var(--pl-danger)',
+            borderRadius: 4, fontSize: 13, fontWeight: 600,
+          }}>{aiError}</div>
         )}
 
         <section>
@@ -471,20 +413,6 @@ export default function Edital({
           )}
         </section>
 
-        {hasEditalText && editalAtivo.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              className="pl-btn-ai pl-btn"
-              onClick={handleAnalyzeEdital}
-              disabled={aiLoading}
-              style={{ opacity: aiLoading ? 0.72 : 1 }}
-            >
-              {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              {aiLoading ? 'Lendo…' : 'Ler o edital'}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -965,93 +893,6 @@ function EditalEmptyState({ onAdicionar, hasObjetivo, objetivoNome, loadingObjet
   );
 }
 
-function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAnalysis, avisosDoEdital = [] }) {
-  return (
-    <section className="pl-card-ai">
-      <button type="button" onClick={() => setAiPanelOpen((prev) => !prev)} className="edital-ai-toggle">
-        <span>
-          <span className="pl-tag-ai"><Sparkles size={13} /> Leitura do edital</span>
-          <strong>{aiAnalysis?.concurso || aiAnalysis?.nome || aiAnalysis?.examName || aiAnalysis?.organization || 'Edital analisado'}</strong>
-        </span>
-        <ChevronDown size={18} style={{ transform: aiPanelOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .15s' }} />
-      </button>
-
-      {aiPanelOpen && (
-        <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-          {aiLoading && (
-            <div className="pl-ai-mini" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Loader2 size={18} className="animate-spin" />
-              <strong style={{ fontSize: 14, margin: 0 }}>Lendo o edital…</strong>
-            </div>
-          )}
-
-          {aiError && (
-            <div className="pl-card" style={{ padding: 12, borderColor: 'var(--pl-danger)', color: 'var(--pl-danger)', fontWeight: 750 }}>
-              {aiError}
-            </div>
-          )}
-
-          {/* O documento pode nao ser o edital de abertura (comunicado, retificacao,
-              resultado). Avisa sem bloquear: a leitura continua, mas o aluno sabe o que
-              esperar do que vier. */}
-          {!aiLoading && avisosDoEdital.map((aviso) => (
-            <div
-              key={aviso}
-              className="pl-card"
-              style={{ padding: '10px 14px', borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)', fontSize: 13, fontWeight: 600 }}
-            >
-              {aviso}
-            </div>
-          ))}
-
-          {!aiLoading && !aiError && aiAnalysis && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
-              <AiMiniInfo label="Concurso" value={aiAnalysis?.examName || 'Não identificado'} />
-              <AiMiniInfo label="Banca" value={aiAnalysis?.banca || aiAnalysis?.organization || 'Não identificada'} />
-              <AiMiniInfo
-                label="Datas"
-                value={[
-                  aiAnalysis?.dates?.publicationDate,
-                  aiAnalysis?.dates?.registrationPeriod,
-                  aiAnalysis?.dates?.examDate,
-                ].filter(Boolean).join(' · ') || 'Sem datas extraídas'}
-              />
-            </div>
-          )}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function AiMiniInfo({ label, value }) {
-  return (
-    <div className="pl-ai-mini">
-      <span>{label}</span>
-      <strong style={{ fontSize: 15 }}>{value}</strong>
-    </div>
-  );
-}
-
-function EmptyDashed({ icon: Icon, title }) {
-  return (
-    <div style={{ padding: 30, textAlign: 'center', color: 'var(--pl-muted)' }}>
-      <Icon size={20} />
-      <strong style={{ display: 'block', marginTop: 8 }}>{title}</strong>
-    </div>
-  );
-}
-
-// A IA pode devolver um objeto sem nenhum campo realmente extraído (tudo vazio/null).
-// Nesse caso o painel mostraria "Não identificado" como sucesso — então tratamos como falha.
-function temDadosUteis(resultado) {
-  if (!resultado || typeof resultado !== 'object') return false;
-  const nome = resultado.examName || resultado.concurso || resultado.nome;
-  const banca = resultado.banca || resultado.organization;
-  const datas = resultado.dates && Object.values(resultado.dates).some(Boolean);
-  const disciplinas = Array.isArray(resultado.disciplinas) && resultado.disciplinas.length > 0;
-  return Boolean(nome || banca || datas || disciplinas);
-}
 
 function inferTopicType(topico) {
   const explicit = String(topico?.tipo || topico?.type || '').trim();

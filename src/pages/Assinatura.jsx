@@ -241,7 +241,11 @@ function PlanCard({ plan, isAnual, isCurrent, expiresAt, onSelect, checkoutLoadi
       {/* CTA */}
       <button
         type="button"
-        className={plan.featured ? 'pl-btn pl-btn-ai' : 'pl-btn pl-btn-ghost'}
+        className={
+          isCurrent
+            ? 'pl-btn pl-btn-current'
+            : plan.featured ? 'pl-btn pl-btn-ai' : 'pl-btn pl-btn-ghost'
+        }
         onClick={() => !isCurrent && !isFree && onSelect(plan.id)}
         style={{ justifyContent: 'center', width: '100%', marginBottom: 16, opacity: (checkoutLoading && !isFree) ? 0.7 : 1 }}
         disabled={isCurrent || (checkoutLoading && !isFree)}
