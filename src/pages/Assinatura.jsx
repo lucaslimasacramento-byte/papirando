@@ -190,26 +190,34 @@ function PlanCard({ plan, isAnual, isCurrent, expiresAt, onSelect, checkoutLoadi
         </div>
       )}
 
-      {/* Header */}
+      {/* Header — altura reservada para duas linhas de subtitulo.
+          Em tela estreita um dos textos quebra antes do outro, e so isso ja bastava para
+          empurrar o botao de um cartao para baixo do outro. */}
       <div style={{ marginBottom: 4 }}>
         <p className="pl-eyebrow" style={{ marginBottom: 4 }}>{plan.name}</p>
-        <p style={{ fontSize: 12.5, color: 'var(--pl-ink-2)', lineHeight: 1.4 }}>
+        <p style={{ fontSize: 12.5, color: 'var(--pl-ink-2)', lineHeight: 1.4, minHeight: 35 }}>
           {plan.audience}
         </p>
       </div>
 
-      {/* Plano atual */}
-      {isCurrent && (
-        <div style={{
-          borderRadius: 8, background: 'var(--pl-accent-soft)',
-          border: '1px solid var(--pl-accent-ring)',
-          padding: '6px 10px', marginTop: 4, marginBottom: 4,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-        }}>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--pl-accent)' }}>✓ Plano atual</span>
-          {expiry && <span style={{ fontSize: 11, color: 'var(--pl-ink-3)' }}>Expira {expiry}</span>}
-        </div>
-      )}
+      {/* Faixa do plano atual — espaço fixo, pelo mesmo motivo da linha de desconto logo
+          abaixo: ela só aparece em UM dos cartões, e sem reservar o lugar no outro os dois
+          botões caem em alturas diferentes. Comparar planos lado a lado é a função desta
+          tela; com as chamadas desalinhadas, o olho perde a régua. */}
+      <div style={{ height: 32, marginTop: 4, marginBottom: 4 }}>
+        {isCurrent && (
+          <div style={{
+            height: '100%',
+            borderRadius: 8, background: 'var(--pl-accent-soft)',
+            border: '1px solid var(--pl-accent-ring)',
+            padding: '0 10px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--pl-accent)' }}>✓ Plano atual</span>
+            {expiry && <span style={{ fontSize: 11, color: 'var(--pl-ink-3)' }}>Expira {expiry}</span>}
+          </div>
+        )}
+      </div>
 
       {/* Preço */}
       <div style={{ marginTop: 12, marginBottom: 2 }}>

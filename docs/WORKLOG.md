@@ -18,6 +18,23 @@
 
 ---
 
+## Sessão 2026-10-10 (fecho 3) — As duas chamadas na mesma linha ✅
+
+"Assinar o Papiro" ficava **28px acima** de "Plano atual". Duas causas, e nenhuma é o botão:
+
+1. A faixa **"✓ Plano atual" só existe em um dos cartões** e empurrava tudo abaixo dela.
+2. O subtítulo podia quebrar em duas linhas num cartão e não no outro.
+
+A linha de desconto, logo acima do botão, já resolvia isso com espaço fixo — apliquei a mesma
+ideia: a faixa ganhou altura reservada nos dois cartões (vazia onde não há plano atual) e o
+subtítulo ganhou piso de duas linhas.
+
+**Medido em Chromium a 1500 / 1100 / 860 / 700px:** antes, 28px de desalinho em todas;
+agora, **0 em todas**. Comparar planos lado a lado é a função desta tela; com as chamadas
+desalinhadas, o olho perde a régua.
+
+---
+
 ## Sessão 2026-10-10 (fecho 2) — "Ler o edital" morto apagado, plano atual com corpo ✅
 
 **1. O botão morto saiu, e levou junto o que só servia a ele.** `hasEditalText` era sempre
