@@ -1,9 +1,11 @@
 import React from 'react';
-import { Crown, Circle, ShieldCheck } from 'lucide-react';
+import { Crown, Circle } from 'lucide-react';
 
 /**
  * Selo de assinatura alinhado a `profiles.subscription_plan`.
- * Modelo 2 tiers: `folha` (free) e `papiro` (pago).
+ * Modelo 2 tiers: `folha` (free) e `papiro` (pago). Nao ha terceiro nivel — havia um
+ * "master" aqui, que era o papel de administrador disfarcado de plano e fazia o cabecalho
+ * anunciar um plano inexistente enquanto a pagina de Assinatura mostrava "Gratis".
  * Aliases legados aceitos: gratuito/free → folha; tatico/elite/beta → papiro.
  * Animações por nível: `seal-plan-gratuito`, `seal-plan-elite` em `index.css`.
  */
@@ -44,23 +46,6 @@ const PLAN_CONFIG = {
       color: '#3b1402',
       padding: '7px 14px',
       gap: 8,
-      fontSize: 12,
-      fontWeight: 800,
-      letterSpacing: '0.04em',
-    },
-  },
-  master: {
-    label: 'Master',
-    title: 'Plano Master — acesso administrativo',
-    icon: ShieldCheck,
-    iconSize: 15,
-    animClass: 'seal-plan-elite',
-    style: {
-      border: '1px solid var(--pl-warn-soft)',
-      background: 'var(--pl-warn-soft)',
-      color: 'var(--pl-warn)',
-      padding: '6px 12px',
-      gap: 6,
       fontSize: 12,
       fontWeight: 800,
       letterSpacing: '0.04em',

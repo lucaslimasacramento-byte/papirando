@@ -18,6 +18,29 @@
 
 ---
 
+## Sessão 2026-10-10 — O selo "Master" era um plano que não existe ✅
+
+O cabeçalho anunciava **MASTER**. Só existem dois planos: Folha (grátis) e Papiro.
+
+**Causa:** `App.jsx` mandava `isAdmin ? 'master' : ...` para o selo. "Master" não é plano — é
+o **papel de administrador vestido de assinatura**. Prova disso na própria tela: o cabeçalho
+dizia MASTER enquanto a página de Assinatura, a um clique dali, mostrava **"Plano atual:
+Grátis"**. Duas partes do app discordando sobre o mesmo fato.
+
+O selo passa a receber `isElitePlan`, que é o plano pago de verdade e **ignora o atalho de
+admin**. Ser admin continua liberando o acesso (`isPremiumPlan`, intocado) — o que muda é só
+o que o selo afirma. O cargo já aparece no rodapé da barra lateral, então nada se perde.
+
+O nível `master` saiu do componente. `src/lib/planosDaAssinatura.test.js` (3 testes) vira a
+regra: o selo tem exatamente dois níveis, a palavra "master" não volta ao código, e o
+cabeçalho recebe o plano real. Não é teste de comportamento — é uma trava para a decisão ser
+consciente se alguém propuser um terceiro nível.
+
+A constante de **papel** `['admin', 'admin_master', 'master']` continua: ali "master" é nome
+de cargo no banco, não rótulo de plano.
+
+---
+
 ## Sessão 2026-09-29 (fecho 2) — Painel ocupa a tela, frase ganha peso, "selecionar todas" ✅
 
 **1. O painel usava 70% da largura.** `maxWidth: 1180` fixo: numa tela de 1920 sobravam ~500px

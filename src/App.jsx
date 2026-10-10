@@ -7523,8 +7523,15 @@ export default function App() {
           onOpenProfile={() => setActiveTab('perfil')}
           onLogout={handleLogout}
           onOpenMobileNav={() => setMobileNavOpen(true)}
-          subscriptionPlan={isAdmin ? 'master' : (isPremiumPlan ? 'papiro' : 'gratuito')}
-          trialDaysLeft={isAdmin ? null : trialDaysLeft}
+          /* O selo diz qual ASSINATURA o aluno tem, e so existem duas: Folha (gratis) e
+             Papiro. "Master" era o papel de administrador vestido de plano — e o resultado
+             era o cabecalho anunciando um plano que nao existe enquanto a propria pagina de
+             Assinatura, logo ali, dizia "Plano atual: Gratis". Ser admin libera o acesso
+             (isPremiumPlan), mas nao compra assinatura nenhuma: quem responde pelo plano e
+             o isElitePlan, que ignora o atalho de admin. O cargo ja aparece no rodape da
+             barra lateral. */
+          subscriptionPlan={isElitePlan ? 'papiro' : 'gratuito'}
+          trialDaysLeft={trialDaysLeft}
           onOpenAssinatura={() => setActiveTab('assinatura')}
           isAdmin={isAdmin}
           onNavigate={(tabId) => {
