@@ -1,4 +1,5 @@
 import { resolveAiBaseUrl, resolveAiHeaders } from './aiRuntime';
+import { convidarParaAssinar } from './convite';
 
 export async function analyzeEditalWithRealAI(editalText) {
   const baseUrl = resolveAiBaseUrl();
@@ -41,6 +42,14 @@ export async function analyzeEditalWithRealAI(editalText) {
   }
 
   if (!response.ok) {
+    // 402 = sem assinatura (enforceAiPlan em api/_ai.js). Esta rota tem fetch proprio, entao
+    // nao passa pela interceptacao de src/lib/aiClient.js — e sem este trecho a leitura do
+    // edital seria a UNICA que devolveria erro seco onde as outras convidam.
+    if (response.status === 402) {
+      convidarParaAssinar({ acao: 'Ler o edital' });
+      throw new Error(payload?.error || 'Ler o edital faz parte do Papiro. Assine para continuar.');
+    }
+
     // O backend manda a mensagem publica em `error` e o motivo tecnico em `detail`.
     // Sem o detail, "falha temporaria no servico de IA" nao distingue chave invalida de
     // modelo inexistente, cota estourada ou timeout.

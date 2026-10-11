@@ -18,9 +18,13 @@ const PLAN_ALIASES = {
 };
 
 const PLAN_CONFIG = {
+  // A chave continua `folha` porque e o nome que o banco grava em assinaturas antigas, mas o
+  // rotulo nao pode mais dizer "Folha": esse plano deixou de existir quando a cortesia de 30
+  // dias virou a unica porta de entrada. Quem cai aqui nao esta num plano gratuito — esta
+  // sem assinatura, e o selo e o convite mais discreto do app.
   folha: {
-    label: 'Folha',
-    title: 'Plano Folha — toque para conhecer o Papiro',
+    label: 'Sem assinatura',
+    title: 'Sem assinatura ativa — toque para assinar o Papiro',
     icon: Circle,
     iconSize: 12,
     animClass: 'seal-plan-gratuito',

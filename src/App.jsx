@@ -120,7 +120,8 @@ import { progressoDoEdital } from './lib/progressoDoEdital';
 import { montarCurso } from './lib/novoCurso';
 import { paraWizData, validarRotina } from './lib/rotinaInicial';
 import { janelaDeEstudo } from './lib/janelaDeEstudo';
-import { estadoDaAssinatura, motivoDoBloqueio } from './lib/acessoDoAluno';
+import { estadoDaAssinatura } from './lib/acessoDoAluno';
+import { convidarParaAssinar } from './lib/convite';
 import { prazoDoCursoAtivo } from './lib/alvoDoAluno';
 import {
   migrarCurso,
@@ -1562,12 +1563,24 @@ export default function App() {
   }, [currentUserId, currentSubscription, subscriptionLoading, refreshSubscription]);
 
   // O portao. Toda acao que ESCREVE passa por aqui antes de rodar.
+  //
+  // Barrar nao e dar erro. O aluno nao fez nada errado: a cortesia tinha prazo, o prazo
+  // acabou, e o que falta e uma decisao dele. Em vez de um aviso vermelho e um pulo para
+  // outra aba — que tira o aluno de onde ele estava sem explicar o que ganharia —, abre o
+  // convite, que mostra o que esta do outro lado e deixa ele adiar sem fechar porta.
   const exigirAssinatura = useCallback((acao = '') => {
     if (acesso.podeEscrever) return true;
-    showToast(motivoDoBloqueio(acao), 'warning');
-    setActiveTab('assinatura');
+    convidarParaAssinar({ acao });
     return false;
   }, [acesso.podeEscrever]);
+
+  // O convite nasce em lugares sem acesso ao estado do app (inclusive dentro do cliente de
+  // IA), entao ele pede a troca de aba por evento.
+  useEffect(() => {
+    const abrir = () => setActiveTab('assinatura');
+    window.addEventListener('papirando:abrir-assinatura', abrir);
+    return () => window.removeEventListener('papirando:abrir-assinatura', abrir);
+  }, []);
 
   // Memoizado: sem isto, `findGroupedContestById` roda a cada render e devolve
   // um objeto NOVO toda vez. Como ConcursoDetalhe tem um efeito com dep

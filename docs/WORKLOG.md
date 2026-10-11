@@ -18,6 +18,46 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 3) — Barrar deixou de ser erro e virou convite ✅
+
+**Erro diz "deu problema". Aqui não deu problema nenhum:** a cortesia tinha prazo, o prazo
+acabou, e o que falta é uma decisão do aluno. Tela de erro empurra para fora; convite mostra
+o que está do outro lado.
+
+### Um lugar só, outra vez
+
+Em vez de tocar página por página, a interceptação ficou **onde a resposta 402 chega**: o
+cliente de IA. Isso cobre todas as rotas de uma vez — inclusive as que ainda não existem.
+
+O cliente do edital tem `fetch` próprio e **não passa por esse caminho** — sem tratá-lo
+separado, a leitura do edital seria a única a devolver erro seco onde todas as outras
+convidam.
+
+A mensagem lançada também é convite, nunca "erro": cada página trata a falha do seu jeito e
+algumas a exibem, então se ela aparecer num canto da tela continua dizendo a coisa certa.
+
+### O convite
+
+- **O título fala da ação que ele acabou de tentar**: "Corrigir redação faz parte do Papiro"
+  diz muito mais que "Recurso premium" — ele acabou de querer exatamente aquilo.
+- **Tranquilizar antes de vender**: a frase sobre os dados continuarem guardados vem *antes*
+  do preço. O medo de ter perdido o que construiu é o que faz fechar o app em vez de assinar.
+- **"Agora não"**, não "Cancelar": recusar não é abortar uma operação, é adiar uma decisão.
+- Não empilha: dois cliques barrados em sequência abririam dois modais sobrepostos.
+
+O portão de escrita (`exigirAssinatura`) também trocou o aviso vermelho + pulo de aba pelo
+convite — pular de aba tira o aluno de onde ele estava sem explicar o que ganharia.
+
+### O último resquício do plano morto
+
+O selo ainda dizia **"Folha"** para conta vencida. A chave continua `folha` (é o que o banco
+grava em assinaturas antigas), mas o rótulo virou **"Sem assinatura"**: quem cai ali não está
+num plano gratuito — esse plano deixou de existir.
+
+Medido: convite com 368px de altura, cabe na tela e o botão fica visível sem rolar.
+
+---
+
 ## Sessão 2026-10-11 (fecho 2) — Enforcement de servidor: a trava que vale dinheiro ✅
 
 O portão da interface é conveniência — qualquer um chama `/api/ai` direto com um token
