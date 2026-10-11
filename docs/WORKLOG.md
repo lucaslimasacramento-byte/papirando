@@ -18,6 +18,38 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 8) — O enunciado desenhava por cima das alternativas 🐛
+
+Depois de responder, o enunciado aparecia POR CIMA das alternativas: o gráfico em cima de A
+e B, os parágrafos atravessando C e D.
+
+**Causa: um `min-height: 0` que parecia inofensivo.** É o truque padrão para deixar um item
+de flex encolher, e foi o que permitiu a figura elástica do fecho 6. Só que, no bloco do
+enunciado, ele desliga a proteção que impede o bloco de ficar MENOR do que o próprio
+conteúdo. Enquanto não havia comentário, sobrava espaço e ninguém notou. Quando o comentário
+apareceu e apertou a coluna, o bloco foi espremido abaixo do tamanho dos seus parágrafos —
+que não encolhem — e eles transbordaram desenhando sobre o que vinha depois.
+
+Medido antes e depois, com o comentário aberto:
+
+| janela | transbordava antes | depois |
+|---|---|---|
+| 700px | 273px | **0** |
+| 800px | 217px | **0** |
+| 891px | 126px | **0** |
+
+Três ajustes a mais, já que depois de responder a prioridade muda:
+
+- A figura encolhe para 110px fixos quando a questão é respondida. O aluno já leu o gráfico;
+  o que ele precisa agora é do comentário. A rolagem caiu de 226px para 104px a 891px.
+- O comentário é trazido para a vista sozinho. Ele nasce abaixo das alternativas, e com
+  enunciado longo ficava fora de quadro — o aluno respondia e achava que não recebeu
+  correção nenhuma.
+- A tarja "Correta/Incorreta" cobria o código da questão. O cabeçalho abre espaço só quando
+  ela existe.
+
+---
+
 ## Sessão 2026-10-11 (fecho 7) — Rascunho: a folha de papel ao lado da prova ✅
 
 Em prova de verdade o aluno rabisca: faz a conta, risca a alternativa que descartou, anota a

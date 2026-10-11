@@ -18,7 +18,12 @@ import { blocosDoEnunciado } from '../lib/textoDaQuestao';
 // Abaixo disto o gráfico deixa de ser legível, e a rolagem passa a ser o mal menor.
 const ALTURA_MINIMA_DA_FIGURA = 132;
 
-function Figura({ url, alt, elastica }) {
+// Depois de responder, a figura cede espaço. O aluno já leu o gráfico; o que ele precisa
+// agora é do comentário, e disputar altura com ele faria o cartão rolar justamente quando
+// há mais o que ler.
+const ALTURA_DA_FIGURA_RESPONDIDA = 110;
+
+function Figura({ url, alt, elastica, compacta }) {
   const [quebrada, setQuebrada] = useState(false);
 
   if (quebrada) {
@@ -47,9 +52,11 @@ function Figura({ url, alt, elastica }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         // `minHeight: 0` é o que permite encolher: sem ele um item de flex nunca fica menor
         // do que o próprio conteúdo, e a imagem empurraria as alternativas para fora da tela.
-        ...(elastica
-          ? { flex: '1 1 auto', minHeight: ALTURA_MINIMA_DA_FIGURA }
-          : { flexShrink: 0 }),
+        ...(compacta
+          ? { flex: '0 0 auto', height: ALTURA_DA_FIGURA_RESPONDIDA }
+          : elastica
+            ? { flex: '1 1 auto', minHeight: ALTURA_MINIMA_DA_FIGURA }
+            : { flexShrink: 0 }),
       }}
     >
       <img
@@ -77,7 +84,7 @@ function Figura({ url, alt, elastica }) {
   );
 }
 
-export default function EnunciadoDaQuestao({ enunciado, imagem = '', fontSize = 13.5 }) {
+export default function EnunciadoDaQuestao({ enunciado, imagem = '', fontSize = 13.5, compacto = false }) {
   const blocos = useMemo(() => blocosDoEnunciado(enunciado, imagem), [enunciado, imagem]);
 
   if (blocos.length === 0) return null;
@@ -92,13 +99,21 @@ export default function EnunciadoDaQuestao({ enunciado, imagem = '', fontSize = 
       style={{
         marginBottom: 10,
         display: 'flex', flexDirection: 'column',
-        minHeight: 0,
-        flex: elastica ? '1 1 auto' : '0 0 auto',
+        // NÃO colocar `min-height: 0` aqui. Parece inofensivo — é o que se usa para deixar
+        // um item de flex encolher — mas aqui ele desliga a proteção que impede o bloco de
+        // ficar MENOR do que o próprio conteúdo. Quando o comentário da resposta aparecia e
+        // apertava a coluna, o enunciado era espremido abaixo do tamanho dos seus parágrafos,
+        // que não encolhem, e eles transbordavam desenhando POR CIMA das alternativas.
+        //
+        // Sem ele, o piso do bloco é: parágrafos + a altura mínima da figura. Quando sobra
+        // espaço, a figura cresce e ocupa o que sobrou; quando não sobra, o cartão rola — que
+        // é o comportamento certo, e não a sobreposição.
+        flex: elastica && !compacto ? '1 1 auto' : '0 0 auto',
       }}
     >
       {blocos.map((bloco, indice) => (
         bloco.tipo === 'figura' ? (
-          <Figura key={`figura-${bloco.url}-${indice}`} url={bloco.url} alt={bloco.alt} elastica={elastica} />
+          <Figura key={`figura-${bloco.url}-${indice}`} url={bloco.url} alt={bloco.alt} elastica={elastica} compacta={compacto} />
         ) : (
           <p
             key={`paragrafo-${indice}`}

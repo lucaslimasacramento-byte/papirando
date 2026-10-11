@@ -797,6 +797,7 @@ function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
   const [comentario, setComentario] = useState(() => (
     question.explanation ? { comentario: question.explanation, conceitos: [], dica: '' } : null
   ));
+  const blocoRef = useRef(null);
 
   useEffect(() => {
     if (question.explanation) return undefined;
@@ -822,11 +823,19 @@ function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
     return () => { valido = false; };
   }, [question, currentUserId, resposta]);
 
+  // O comentário nasce no fim do cartão, abaixo das alternativas. Com enunciado longo ele
+  // fica fora de vista, e o aluno acha que respondeu e não recebeu correção nenhuma. Trazer
+  // o bloco para a vista é o mínimo: foi para isso que ele clicou em "Responder".
+  useEffect(() => {
+    if (estado !== 'pronto' && estado !== 'vazio' && estado !== 'erro') return;
+    blocoRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [estado]);
+
   const cor = acertou ? 'var(--pl-success)' : 'var(--pl-danger)';
   const fundo = acertou ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)';
 
   return (
-    <div className="pl-gabarito-reveal" style={{
+    <div ref={blocoRef} className="pl-gabarito-reveal" style={{
       marginTop: 12, flexShrink: 0, borderRadius: 8, padding: 12,
       border: `1px solid ${fundo}`, background: fundo,
     }}>
@@ -925,7 +934,9 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
 
       <div style={{
         flexShrink: 0, borderBottom: `1px solid ${submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-rule)'}`,
-        padding: '8px 16px',
+        // Depois de responder, a tarja "Correta/Incorreta" ocupa o canto superior direito e
+        // cobria o código da questão. O espaço é aberto só quando ela existe.
+        padding: submitted ? '8px 104px 8px 16px' : '8px 16px',
         background: submitted ? (wasCorrect ? 'rgba(var(--pl-success-soft-rgb, 209,250,229),0.3)' : 'rgba(var(--pl-danger-soft-rgb, 254,226,226),0.3)') : 'var(--pl-bg-soft)',
       }}>
         <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -975,7 +986,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         padding: '8px 16px 12px',
         display: 'flex', flexDirection: 'column',
       }}>
-        <EnunciadoDaQuestao enunciado={question.statement} imagem={question.imagem} />
+        <EnunciadoDaQuestao enunciado={question.statement} imagem={question.imagem} compacto={submitted} />
 
         <div style={{ display: 'flex', flexShrink: 0, flexDirection: 'column', gap: 6 }}>
           {question.options.map((option) => (
