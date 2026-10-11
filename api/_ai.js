@@ -108,37 +108,71 @@ async function callSupabaseRpc(fnName, token, args = {}) {
     },
     body: JSON.stringify(args),
   });
-  if (!response.ok) throw new Error(`rpc ${fnName} respondeu ${response.status}`);
+  if (!response.ok) {
+    // O corpo vai junto (truncado): e nele que o Postgres diz se a funcao nao existe
+    // (PGRST202 / 42883). So com o status, "404" e indistinguivel de uma URL errada, e quem
+    // le o log nao sabe se falta aplicar uma migration ou se o banco esta fora do ar.
+    // Fica no log do servidor; nenhuma mensagem de erro para o aluno passa por aqui.
+    const corpo = await response.text().catch(() => '');
+    throw new Error(`rpc ${fnName} respondeu ${response.status}${corpo ? ` — ${corpo.slice(0, 200)}` : ''}`);
+  }
   return response.json().catch(() => null);
 }
 
-// Enforcement de plano no servidor: premium (assinatura/trial/admin) tem uso
-// ilimitado; nao-premium tem uma cota diaria de backstop para evitar abuso de
-// custo de IA por chamada direta a API. Fail-open em erro de infra para nunca
-// bloquear um usuario pagante por falha transitoria.
+// Enforcement de plano no servidor.
+//
+// A politica mudou: nao existe mais plano gratuito. Antes, quem nao era premium tinha uma
+// cota diaria de 12 chamadas de IA — um "backstop" que fazia sentido enquanto havia um tier
+// gratuito de verdade. Com a cortesia de 30 dias sendo a unica porta de entrada, essa cota
+// vira exatamente o que a politica deixou de oferecer: um plano gratuito, servido pelo
+// endpoint que mais custa dinheiro.
+//
+// Daqui em diante e binario: premium (assinatura paga, cortesia em dia ou admin) usa; o
+// resto recebe 402. A fonte de verdade e a funcao `is_premium_user()` no proprio banco
+// (supabase/migrations/202607070001_blindagem_fase1.sql), nao o que o navegador afirma — o
+// portao da interface e conveniencia, este aqui e a trava.
+//
+// FAIL-OPEN, de proposito e com limite: se a consulta ao banco falhar (rede, indisponi-
+// bilidade), a chamada passa. Bloquear um assinante por soluco de infraestrutura e pior do
+// que deixar passar algumas chamadas — e o estrago e limitado, porque `enforceAiRateLimit`
+// continua valendo por usuario mesmo nesse caminho.
 export async function enforceAiPlan(req) {
   if (!envFlag('AI_ENFORCE_PLAN', true)) return;
   const token = normalizeBearerToken(req.headers.authorization);
   if (!token) return; // requireAiAuth ja barrou; defensivo
 
-  const freeDailyCap = Math.max(1, Number(env('AI_FREE_DAILY_CAP')) || 12);
+  let premium;
   try {
-    const premium = await callSupabaseRpc('is_premium_user', token, {});
-    if (premium === true) return; // premium: sem limite
-
-    const period = `daily:${new Date().toISOString().slice(0, 10)}`;
-    const count = Number(await callSupabaseRpc('increment_usage', token, { p_feature: 'ai_backstop', p_period: period }));
-    if (Number.isFinite(count) && count > freeDailyCap) {
-      throw httpError(
-        429,
-        `Cota diaria de IA do plano gratuito excedida (${count}/${freeDailyCap}).`,
-        'Voce atingiu o limite diario do plano gratuito. Assine o Papiro para uso ilimitado.'
-      );
-    }
+    premium = await callSupabaseRpc('is_premium_user', token, {});
   } catch (error) {
-    if (error.status === 429) throw error;
-    console.warn('[api/ai] enforceAiPlan fail-open:', error.message);
+    // Dois motivos muito diferentes caem aqui, e confundi-los e caro.
+    //
+    // Se a funcao `is_premium_user` nao existir no banco (migration nunca aplicada), TODA
+    // chamada cai no fail-open e a trava nao trava nada — parecendo que trava. Isso nao e
+    // soluco: e configuracao faltando, e precisa gritar diferente de um erro de rede.
+    //
+    // Mesmo assim nao fecha o portao: sem a funcao, ninguem e verificavel, e fechar
+    // bloquearia 100% dos usuarios, inclusive quem paga. O conserto e aplicar a migration
+    // supabase/migrations/202607070001_blindagem_fase1.sql, nao derrubar o produto.
+    const semFuncao = /PGRST202|42883|is_premium_user.*(does not exist|nao encontrad)/i
+      .test(String(error.message || ''));
+
+    console.error(
+      semFuncao
+        ? '[api/ai] ENFORCEMENT DESLIGADO: is_premium_user() nao existe no banco. Aplique supabase/migrations/202607070001_blindagem_fase1.sql.'
+        : '[api/ai] enforceAiPlan fail-open (nao consegui consultar o plano):',
+      error.message
+    );
+    return;
   }
+
+  if (premium === true) return;
+
+  throw httpError(
+    402,
+    'Chamada de IA sem assinatura ativa (is_premium_user = false).',
+    'Seu período de cortesia terminou. Assine o Papiro para voltar a usar este recurso.'
+  );
 }
 
 export function enforceAiRateLimit(req, route = '', identity = '') {

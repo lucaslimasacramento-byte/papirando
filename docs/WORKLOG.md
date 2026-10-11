@@ -18,6 +18,59 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 2) — Enforcement de servidor: a trava que vale dinheiro ✅
+
+O portão da interface é conveniência — qualquer um chama `/api/ai` direto com um token
+válido. A trava de verdade é no servidor, e ela estava **errada para a política nova**.
+
+**O que o servidor fazia:** quem não era premium tinha uma **cota diária de 12 chamadas** de
+IA. Isso fazia sentido enquanto existia um tier gratuito. Com a cortesia virando a única
+porta de entrada, essa cota era exatamente o plano gratuito que a política aboliu — servido
+pelo endpoint que mais custa dinheiro. Agora é binário: premium usa, o resto recebe **402**.
+
+A fonte de verdade já existia e já era a certa: `is_premium_user()` no próprio banco (admin
+OU assinatura ativa/cortesia não vencida OU plano pago no perfil). E `enforceAiPlan` roda
+**antes do roteamento** em `api/ai.js`, então cobre as **14 rotas** de uma vez — flashcards,
+redação, edital, chat, mapas, cronograma.
+
+### Fail-open, de propósito e com limite
+
+Se a consulta ao banco falhar, a chamada passa: bloquear um assinante por soluço de
+infraestrutura é pior do que deixar passar algumas chamadas. O estrago fica contido porque
+`enforceAiRateLimit` continua valendo por usuário nesse caminho.
+
+### A falha que seria invisível
+
+Se `is_premium_user()` **não existir** no banco, toda chamada cai no fail-open e a trava não
+trava nada — **parecendo que trava**. Isso não é soluço, é configuração faltando, e agora
+grita diferente: log `ENFORCEMENT DESLIGADO` apontando a migration a aplicar.
+
+Para isso funcionar, `callSupabaseRpc` passou a **incluir o corpo da resposta** no erro: só
+com o status, um 404 é indistinguível de URL errada, e quem lê o log não sabe se falta
+migration ou se o banco caiu. Fica no log do servidor; nenhuma mensagem ao aluno passa por ali.
+
+### Os testes pegaram dois erros meus
+
+1. Um token falso simples (`tok-valido`) é descartado por `normalizeBearerToken`, que exige
+   formato JWT — **dois testes estavam verdes sem nunca consultar o plano**.
+2. `planosDaAssinatura.test.js` usava `__dirname`, que **não existe em ESM**. Funcionava no
+   vitest por interop; o lint pegou porque desta vez rodei em tudo, não só nos arquivos
+   tocados.
+
+### ⚠️ Pendente de verificação no banco de produção
+
+A migration `202607070001_blindagem_fase1.sql` **não tem registro de "APLICADA NO PROD"** no
+WORKLOG, diferente de outras. O projeto do Papirando não está na conta do Supabase acessível
+por aqui, então não consegui confirmar. Verificação de uma linha no SQL editor:
+
+```sql
+select public.is_premium_user();
+```
+
+Erro de função inexistente = a trava está desligada; aplique a migration.
+
+---
+
 ## Sessão 2026-10-11 — Fim do plano gratuito: 30 dias de cortesia, depois assina 🔧
 
 **Política nova:** não existe mais plano gratuito. Toda conta ganha **30 dias** ao se

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // O selo do cabecalho e a pagina de Assinatura tem de contar a mesma historia.
 //
@@ -10,7 +11,9 @@ import { resolve } from 'node:path';
 //
 // Este teste nao mede comportamento: e uma regra. Se alguem acrescentar um terceiro nivel,
 // ele quebra e obriga a decisao a ser consciente.
-const raiz = resolve(__dirname, '..');
+// `__dirname` nao existe em modulo ESM — funcionava no vitest por interop, mas e uma
+// variavel indefinida de verdade.
+const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function ler(caminho) {
   return readFileSync(resolve(raiz, caminho), 'utf8');
