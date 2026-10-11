@@ -18,6 +18,52 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 9) — O comentário acusava o aluno do erro de outro 🐛
+
+O aluno marcou **30** e o comentário dizia: *"A resposta do usuário (10%) corresponde a
+considerar apenas 1 estudante..."*. Ele nunca marcou 10.
+
+**Causa, e é um erro de projeto meu.** O comentário era gerado mandando a resposta do aluno
+para a IA — parecia mais útil ("por que a SUA alternativa não serve"). Só que o comentário
+é **compartilhado**: o texto escrito para o primeiro aluno, que marcou 10, ficava no cache e
+era servido a todo mundo depois. O comentário passou a acusar os outros de um erro que não
+era deles.
+
+Agora o comentário é escrito **sem saber o que o aluno respondeu**: explica o gabarito e por
+que cada alternativa errada não serve. Quem errou acha ali a própria alternativa; quem
+acertou confere o raciocínio. E a tela já mostra em vermelho o que ele marcou.
+
+O prompt do servidor também ficou explícito: 2 a 4 frases, citar o artigo/lei/fórmula, e
+nunca começar com "a alternativa X está correta" e parar por aí.
+
+⚠️ **Os comentários já gerados com o defeito continuam no cache.** Ver o SQL de limpeza
+abaixo — apagar é seguro: o app regenera na próxima abertura.
+
+```sql
+delete from public.question_comments
+where comentario ilike '%resposta do usu%';
+```
+
+### Feedback do aluno na questão
+
+Quem resolve é quem descobre que a questão está errada — gabarito trocado, imagem que não
+carrega, enunciado truncado. Joinha para cima/para baixo no rodapé do cartão, **sempre
+visível** (o defeito aparece antes de responder tanto quanto depois), e um campo de texto
+opcional com limite de 500 caracteres, o mesmo do CHECK da coluna.
+
+Um voto por aluno por questão, e ele pode mudar de ideia. Ninguém vê o voto do outro:
+feedback é recado para quem mantém o banco, não placar público.
+
+Aberto, o campo desce para uma linha só dele — espremido entre "Rascunho" e "Responder" ele
+virava uma fresta de três palavras por linha.
+
+⚠️ **Pendente: rodar `supabase/migrations/202610120002_feedback_das_questoes.sql`.**
+
+**Arquivos:** `src/lib/feedbackDaQuestao.js` (+9 testes), `src/components/FeedbackDaQuestao.jsx`.
+**Testes:** 598 passando.
+
+---
+
 ## Sessão 2026-10-11 (fecho 8) — O enunciado desenhava por cima das alternativas 🐛
 
 Depois de responder, o enunciado aparecia POR CIMA das alternativas: o gráfico em cima de A

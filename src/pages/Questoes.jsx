@@ -28,6 +28,7 @@ import { rotuloDaDisciplina } from '../lib/rotuloDaDisciplina';
 import { textoDoEnunciado } from '../lib/textoDaQuestao';
 import { comentarioDaQuestao } from '../lib/comentarioDaQuestao';
 import Rascunho from '../components/Rascunho';
+import FeedbackDaQuestao from '../components/FeedbackDaQuestao';
 
 // Normalizes a Supabase question row to the format the UI expects
 function normalizeQuestion(row) {
@@ -792,7 +793,7 @@ export default function Questoes({
 // Aqui o comentário é buscado em três lugares, do mais confiável ao mais caro (ver
 // src/lib/comentarioDaQuestao.js): o texto curado, o cache compartilhado e, só então, a IA.
 // Quem gera paga a espera uma vez; todo mundo depois lê do cache.
-function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
+function ComentarioDaResposta({ question, currentUserId, acertou }) {
   const [estado, setEstado] = useState(() => (question.explanation ? 'pronto' : 'carregando'));
   const [comentario, setComentario] = useState(() => (
     question.explanation ? { comentario: question.explanation, conceitos: [], dica: '' } : null
@@ -806,7 +807,7 @@ function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
     setEstado('carregando');
     setComentario(null);
 
-    comentarioDaQuestao(question, { currentUserId, respostaDoAluno: resposta })
+    comentarioDaQuestao(question, { currentUserId })
       .then((resultado) => {
         if (!valido) return;
         setComentario(resultado);
@@ -821,7 +822,7 @@ function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
     // O cleanup existe porque o aluno pode pular para a próxima questão antes de a IA
     // responder — e o comentário da anterior apareceria em cima da nova.
     return () => { valido = false; };
-  }, [question, currentUserId, resposta]);
+  }, [question, currentUserId]);
 
   // O comentário nasce no fim do cartão, abaixo das alternativas. Com enunciado longo ele
   // fica fora de vista, e o aluno acha que respondeu e não recebeu correção nenhuma. Trazer
@@ -1007,7 +1008,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         </div>
 
         {submitted ? (
-          <ComentarioDaResposta question={question} currentUserId={currentUserId} acertou={wasCorrect} resposta={selectedOptionId} />
+          <ComentarioDaResposta question={question} currentUserId={currentUserId} acertou={wasCorrect} />
         ) : null}
       </div>
 
@@ -1017,7 +1018,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         padding: '8px 16px',
         background: submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-bg-soft)',
       }}>
-        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           {/* O rascunho fica ao lado de "Responder" porque é ali que ele é usado: o aluno lê,
               precisa fazer a conta, e a folha tem de estar a um clique — não escondida num
               menu. Em prova de verdade o papel já está em cima da mesa. */}
@@ -1038,7 +1039,13 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
             Rascunho
           </button>
 
-          <div style={{ display: 'flex', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+          {/* O joinha fica no rodapé, sempre visível: o aluno descobre que a questão está
+              errada ANTES de responder tanto quanto depois — imagem que não carrega,
+              enunciado truncado. Esperar a resposta para só então deixar avisar perderia
+              metade dos relatos. */}
+          <FeedbackDaQuestao questaoId={question.id} currentUserId={currentUserId} />
+
+          <div style={{ display: 'flex', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginLeft: 'auto' }}>
           {submitted ? (
             <button type="button" onClick={resetQuestion} className="pl-btn pl-btn-ghost pl-btn-sm">
               Tentar novamente

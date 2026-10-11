@@ -72,9 +72,18 @@ async function guardarComentario(questionId, comentario, currentUserId) {
 
 // O comentário da questão, resolvido pela ordem acima.
 //
-// `respostaDoAluno` entra no prompt porque a explicação muda de tom: quem errou precisa saber
-// por que a alternativa que escolheu não serve, não só por que a certa serve.
-export async function comentarioDaQuestao(questao, { currentUserId = '', respostaDoAluno = '' } = {}) {
+// O comentário é ESCRITO SEM SABER o que o aluno respondeu, e isso é deliberado.
+//
+// A primeira versão mandava a resposta dele para a IA, achando que a explicação ficaria mais
+// útil ("por que a SUA alternativa não serve"). O resultado foi um defeito feio: o comentário
+// gerado para o primeiro aluno — que marcou 10 — ficava no cache e era servido a todo mundo,
+// dizendo "a resposta do usuário (10%) corresponde a..." para quem tinha marcado 30. O texto
+// acusava o aluno de um erro que não era dele.
+//
+// Como o comentário é compartilhado, ele tem de valer para qualquer um: explica o gabarito e
+// por que cada alternativa errada não serve. Quem errou acha ali a própria alternativa; quem
+// acertou confere o raciocínio. E a tela já mostra o que ele marcou, em vermelho.
+export async function comentarioDaQuestao(questao, { currentUserId = '' } = {}) {
   const curado = String(questao?.explanation || '').trim();
   if (curado) return { comentario: curado, conceitos: [], dica: '', origem: 'curado' };
 
@@ -90,7 +99,6 @@ export async function comentarioDaQuestao(questao, { currentUserId = '', respost
     enunciado,
     alternativas: alternativasParaPrompt(questao?.options),
     gabarito: gabaritoDaQuestao(questao),
-    resposta_usuario: respostaDoAluno,
   });
 
   const comentario = {
@@ -104,9 +112,6 @@ export async function comentarioDaQuestao(questao, { currentUserId = '', respost
 
   if (!comentario.comentario) return null;
 
-  // O cache não é guardado com a resposta do aluno no prompt: o comentário tem de servir
-  // para quem acertou e para quem errou. Quando ele veio enviesado pela resposta de um,
-  // ainda assim explica o gabarito — e é melhor do que a questão seguir sem nada.
   await guardarComentario(questao?.id, comentario, currentUserId);
 
   return comentario;

@@ -654,7 +654,13 @@ export async function explainQuestion(payload = {}) {
   const enunciado = String(payload.enunciado || payload.statement || '').trim();
   if (!enunciado) throw new Error('Envie o enunciado da questao para explicar.');
 
-  const prompt = `Explique uma questao de concurso publico brasileiro.
+  // A resposta do aluno so entra quando quem chama manda — e o comentario compartilhado do
+  // banco de questoes NAO manda, de proposito. Ver src/lib/comentarioDaQuestao.js: um
+  // comentario escrito para o erro de um aluno ficava no cache e acusava os outros de um
+  // erro que nao era deles.
+  const respostaDoAluno = String(payload.resposta_usuario || payload.userAnswer || '').trim();
+
+  const prompt = `Explique uma questao de concurso publico brasileiro para um estudante.
 
 Enunciado:
 ${enunciado}
@@ -663,7 +669,13 @@ Alternativas:
 ${JSON.stringify(payload.alternativas || payload.options || [])}
 
 Gabarito: ${payload.gabarito || payload.answer || ''}
-Resposta do usuario: ${payload.resposta_usuario || payload.userAnswer || ''}
+${respostaDoAluno ? `Resposta do usuario: ${respostaDoAluno}` : 'O aluno nao informou a resposta: NAO cite "a resposta do usuario" nem suponha qual alternativa ele marcou.'}
+
+Regras para o campo "explanation":
+- Portugues do Brasil, 2 a 4 frases, direto ao ponto.
+- Diga por que o gabarito esta certo E por que as outras alternativas nao servem.
+- Cite o artigo, a lei, a formula ou o dado do enunciado que sustenta a resposta.
+- Nao comece com "a alternativa X esta correta" e pare por ai.
 
 JSON esperado:
 {"isCorrect":true,"answer":"alternativa correta","explanation":"explicacao objetiva","keyConcepts":["conceito"],"studyTip":"como revisar"}`;
