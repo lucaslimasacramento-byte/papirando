@@ -32,8 +32,15 @@ describe('planos da assinatura', () => {
 
   it('o cabecalho recebe o plano real, nao o atalho de administrador', () => {
     const app = ler('App.jsx');
-    // Ser admin libera o acesso (isPremiumPlan), mas nao compra assinatura.
-    expect(app).toContain("subscriptionPlan={isElitePlan ? 'papiro' : 'gratuito'}");
-    expect(app).not.toContain("isAdmin ? 'master'");
+
+    // A regra, nao a frase exata: este teste ja travou uma mudanca legitima do selo porque
+    // comparava a linha inteira. O que precisa valer e que o plano exibido NAO venha de
+    // `isAdmin` — ser admin libera o acesso, mas nao compra assinatura.
+    const linha = app.match(/subscriptionPlan=\{[^}]*\}/)?.[0] || '';
+
+    expect(linha).not.toBe('');
+    expect(linha).not.toContain('isAdmin');
+    expect(linha).not.toContain('master');
+    expect(linha).not.toContain('isPremiumPlan');
   });
 });

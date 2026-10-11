@@ -2,54 +2,36 @@ import React, { useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { startCheckout } from '../lib/subscriptionApi';
 import { showToast } from '../lib/dialogs';
+import { SITUACAO, DIAS_DE_CORTESIA } from '../lib/acessoDoAluno';
 
-const PLANS = [
-  {
-    id: 'folha',
-    name: 'Folha',
-    audience: 'Para começar sem compromisso.',
-    monthlyPrice: '0',
-    annualPrice: '0',
-    annualNote: '',
-    annualDiscount: null,
-    cta: 'Continuar no Folha',
-    featured: false,
-    trial: false,
-    included: [
-      '3 uploads de material por mês',
-      '50 questões geradas por mês',
-      '1 correção de redação por mês',
-      'Chat de estudo: 15 mensagens por dia',
-      'Plano de estudo básico',
-      'Simulados com gabarito',
-      'Comunidade (somente leitura)',
-    ],
-  },
-  {
-    id: 'papiro',
-    name: 'Papiro',
-    audience: 'Acesso total à plataforma. Sem limites.',
-    monthlyPrice: '19,90',
-    annualPrice: '13,30',
-    annualNote: 'R$ 159,90/ano',
-    annualDiscount: '33% off',
-    cta: 'Assinar o Papiro',
-    featured: true,
-    trial: true,
-    included: [
-      'Uploads ilimitados de material',
-      'Questões e flashcards ilimitados',
-      'Correções de redação ilimitadas',
-      'Chat de estudo ilimitado',
-      'Plano adaptativo com recálculo de rota',
-      'Modo Banca: CESPE, FGV, FCC, Cesgranrio',
-      'Cronograma gerado a partir de edital',
-      'Audiobooks e materiais exclusivos',
-      'Comunidade completa + sala VIP',
-      'Suporte prioritário em até 4h',
-    ],
-  },
-];
+// Um plano so.
+//
+// O Folha deixou de existir: toda conta ganha 30 dias de cortesia ao se cadastrar e, depois
+// disso, so continua escrevendo quem assina. Manter o cartao do gratuito ao lado seria
+// oferecer uma escolha que nao existe mais — e a tela de planos nao e lugar para anunciar
+// uma porta fechada.
+const PAPIRO = {
+  id: 'papiro',
+  name: 'Papiro',
+  audience: 'Acesso total à plataforma. Sem limites.',
+  monthlyPrice: '19,90',
+  annualPrice: '13,30',
+  annualNote: 'R$ 159,90/ano',
+  annualDiscount: '33% off',
+  cta: 'Assinar o Papiro',
+  included: [
+    'Uploads ilimitados de material',
+    'Questões e flashcards ilimitados',
+    'Correções de redação ilimitadas',
+    'Chat de estudo ilimitado',
+    'Plano adaptativo com recálculo de rota',
+    'Modo Banca: CESPE, FGV, FCC, Cesgranrio',
+    'Cronograma gerado a partir de edital',
+    'Audiobooks e materiais exclusivos',
+    'Comunidade completa + sala VIP',
+    'Suporte prioritário em até 4h',
+  ],
+};
 
 function fmtDate(iso) {
   if (!iso) return null;
@@ -62,6 +44,10 @@ export default function Assinatura({
   user = null,
   currentPlan = 'folha',
   expiresAt = null,
+  // Situacao da conta, de src/lib/acessoDoAluno.js. Sem ela a tela cai num estado neutro —
+  // mostra o plano e nada sobre o prazo —, que e o que acontece se alguem renderizar esta
+  // pagina sem passar o estado.
+  estado = null,
   onSelectPlan = null,
   checkoutLoading = false,
 }) {
@@ -71,7 +57,6 @@ export default function Assinatura({
   // Se o pai passou um handler (ex.: Perfil), usa ele. Senão, dispara o checkout
   // aqui mesmo — assim a tela funciona mesmo renderizada standalone (AppTabContent).
   const handleSelect = async (planId) => {
-    if (planId === 'folha') return;
     if (typeof onSelectPlan === 'function') {
       onSelectPlan(planId, isAnual);
       return;
@@ -86,15 +71,18 @@ export default function Assinatura({
     }
   };
 
-  // Normaliza planos legados para os nomes atuais
-  const normalizedCurrentPlan = useMemo(() => {
-    const raw = String(currentPlan || user?.subscription_plan || 'folha').toLowerCase();
-    if (['papiro', 'elite', 'tatico'].includes(raw)) return 'papiro';
-    return 'folha';
-  }, [currentPlan, user?.subscription_plan]);
+  // Assinante de verdade: so quem paga. Cortesia nao conta — e justamente quem a tela
+  // precisa convencer.
+  const ehAssinante = useMemo(() => {
+    if (estado) return estado.ehPagante;
+    const raw = String(currentPlan || user?.subscription_plan || '').toLowerCase();
+    return ['papiro', 'elite', 'tatico'].includes(raw);
+  }, [estado, currentPlan, user?.subscription_plan]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      <SituacaoDaConta estado={estado} expiresAt={expiresAt} />
 
       {/* Toggle mensal / anual */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -116,24 +104,96 @@ export default function Assinatura({
         )}
       </div>
 
-      {/* Cards — 2 colunas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 14, alignItems: 'stretch' }}>
-        {PLANS.map((plan) => (
+      {/* Um cartao so, e nao largo demais: uma coluna de 10 itens esticada por 1400px vira
+          uma lista solta no meio do branco. */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 520 }}>
           <PlanCard
-            key={plan.id}
-            plan={plan}
+            plan={PAPIRO}
             isAnual={isAnual}
-            isCurrent={normalizedCurrentPlan === plan.id}
-            expiresAt={normalizedCurrentPlan === plan.id ? expiresAt : null}
+            isCurrent={ehAssinante}
+            expiresAt={ehAssinante ? expiresAt : null}
             onSelect={(planId) => handleSelect(planId)}
             checkoutLoading={checkoutLoading || internalBusy}
           />
-        ))}
+        </div>
       </div>
 
       <p style={{ fontSize: 11.5, color: 'var(--pl-ink-3)', textAlign: 'center', marginTop: 4 }}>
         Pagamento via cartão de crédito ou PIX · Cancele a qualquer momento · Sem fidelidade
       </p>
+    </div>
+  );
+}
+
+// Em que pe esta a conta, no topo da propria tela de planos.
+//
+// Sem isto, o aluno em cortesia e o aluno vencido veem exatamente a mesma pagina — e os dois
+// precisam de respostas diferentes: um quer saber quanto tempo ainda tem, o outro quer saber
+// se perdeu o que construiu. Essa segunda pergunta e a que decide entre assinar e sumir, e
+// por isso a resposta vem antes do preco.
+function SituacaoDaConta({ estado, expiresAt }) {
+  if (!estado || estado.porSerAdmin) return null;
+  if (estado.ehPagante) {
+    const ate = fmtDate(expiresAt);
+    return (
+      <Faixa tom="success">
+        <strong>Assinatura ativa.</strong>{ate ? ` Próxima renovação em ${ate}.` : ''}
+      </Faixa>
+    );
+  }
+
+  if (estado.situacao === SITUACAO.TRIAL) {
+    const dias = estado.diasRestantes;
+    const apertado = dias <= 7;
+    return (
+      <Faixa tom={apertado ? 'warn' : 'accent'}>
+        {dias <= 0 ? (
+          <><strong>Sua cortesia termina hoje.</strong> Assine para não perder o ritmo.</>
+        ) : (
+          <>
+            <strong>{dias} {dias === 1 ? 'dia' : 'dias'}</strong> de cortesia{apertado ? ' — e depois?' : ` dos ${DIAS_DE_CORTESIA}.`}
+            {apertado ? ' Assinando agora, nada para.' : ' Use à vontade; nada é cobrado até você assinar.'}
+          </>
+        )}
+      </Faixa>
+    );
+  }
+
+  if (estado.situacao === SITUACAO.VENCIDO) {
+    return (
+      <Faixa tom="danger">
+        <strong>Sua cortesia terminou.</strong> Seu edital, seus cursos e seu progresso continuam
+        aqui — você só não consegue estudar nem criar nada novo até assinar.
+      </Faixa>
+    );
+  }
+
+  return null;
+}
+
+const TONS_DA_FAIXA = {
+  success: { fundo: 'var(--pl-success-soft)', borda: 'var(--pl-success)', texto: 'var(--pl-success)' },
+  accent: { fundo: 'var(--pl-accent-soft)', borda: 'var(--pl-accent-ring)', texto: 'var(--pl-accent)' },
+  warn: { fundo: 'var(--pl-warn-soft)', borda: 'var(--pl-warn)', texto: 'var(--pl-warn)' },
+  danger: { fundo: 'var(--pl-danger-soft)', borda: 'var(--pl-danger)', texto: 'var(--pl-danger)' },
+};
+
+function Faixa({ tom = 'accent', children }) {
+  const cores = TONS_DA_FAIXA[tom] || TONS_DA_FAIXA.accent;
+  return (
+    <div style={{
+      borderRadius: 8,
+      background: cores.fundo,
+      border: `1px solid ${cores.borda}`,
+      borderLeft: `3px solid ${cores.borda}`,
+      padding: '10px 14px',
+      fontSize: 13,
+      lineHeight: 1.5,
+      color: cores.texto,
+      fontWeight: 600,
+    }}>
+      {children}
     </div>
   );
 }

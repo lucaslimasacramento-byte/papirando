@@ -18,6 +18,65 @@
 
 ---
 
+## Sessão 2026-10-11 — Fim do plano gratuito: 30 dias de cortesia, depois assina 🔧
+
+**Política nova:** não existe mais plano gratuito. Toda conta ganha **30 dias** ao se
+cadastrar; passados os 30, quem não assina **continua vendo** tudo o que construiu mas
+**para de escrever** (decisão do usuário: "pode ver, não pode usar").
+
+### O que já existia — e os dois buracos
+
+A função `start-trial` **já concedia 30 dias de Papiro** e já era idempotente. Mas:
+
+1. **Era chamada no fim do onboarding.** Quem se cadastrava e abandonava o formulário não
+   ganhava nada. E era best-effort: falhou, ficou no console.
+2. **O vencimento era silencioso.** O comentário da própria função dizia: *"expira sozinha no
+   dia 30 e devolve o usuário para o plano Folha"*. Agora não há Folha para onde voltar.
+
+### A regra num lugar só
+
+`src/lib/acessoDoAluno.js` (16 testes) responde "em que pé está a conta" e "pode escrever?".
+Espalhar esse `if` por botão não é questão de estilo: **cada caminho esquecido é um aluno
+vencido usando de graça — ou, pior, um pagante bloqueado por engano.**
+
+O teste achou código morto na primeira rodada: com `Math.ceil`, o aviso "termina hoje" era
+**inalcançável** — 12 horas restantes viravam "falta 1 dia", e quem lesse isso às 23h
+descobriria no dia seguinte que o prazo era hoje. Virou `floor`.
+
+### Contas que já existem
+
+Resolvido **sem migração no banco**: a cortesia é concedida na abertura do app para quem não
+tem assinatura nenhuma. Como `start-trial` é idempotente, quem já teve cortesia (mesmo
+vencida) não ganha outra, e quem nunca teve recebe os 30 dias na próxima vez que abrir.
+
+### O que mudou na interface
+
+- **Faixa da cortesia** em qualquer tela: quem está na reta final sabe antes de perder; quem
+  já perdeu entende por que os botões pararam — sem isso o app não parece bloqueado, parece
+  quebrado.
+- **Assinatura**: o cartão do Folha saiu (a tela de planos não é lugar para anunciar uma
+  porta fechada) e ganhou uma faixa de situação no topo. A do vencido fala primeiro dos
+  **dados que continuam ali** — o medo de perder o que construiu é o que faz abandonar em
+  vez de assinar.
+- **Selo do cabeçalho**: na cortesia mostra **Papiro** com a contagem. Dizer "Folha" durante
+  os 30 dias afirmaria que ele está num plano limitado justo enquanto usa a plataforma
+  inteira.
+- Descoberto no caminho: o tab de Assinatura passava props que o componente **não recebe**
+  (`temaAtivo`, `currentUserId`...), então `currentPlan` caía no padrão e a tela anunciava
+  Folha como plano atual para todo mundo.
+
+### 🔧 O que NÃO está coberto
+
+- **Enforcement de servidor.** O portão é de interface. Um usuário vencido que chame as Edge
+  Functions direto ainda é atendido. Isso é o que protege receita de verdade.
+- **Portões aplicados:** criar curso, adicionar objetivo, importar edital, marcar tópico e
+  registrar estudo. **Faltam** os caminhos de geração (questões, flashcards, redação, chat),
+  que vivem nas páginas.
+- O rótulo **"Folha"** ainda aparece no selo para conta vencida — é o último lugar onde o
+  plano morto sobrevive.
+
+---
+
 ## Sessão 2026-10-10 (fecho 3) — As duas chamadas na mesma linha ✅
 
 "Assinar o Papiro" ficava **28px acima** de "Plano atual". Duas causas, e nenhuma é o botão:

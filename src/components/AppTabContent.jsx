@@ -318,6 +318,8 @@ export default function AppTabContent(props) {
     handleRunCommunityConnectivityCheck,
     handleRunCommunitySmokeTest,
     isPremiumPlan,
+    acesso,
+    currentSubscription,
     isElitePlan,
     communityPersistence,
     selectedCommunitySquadId,
@@ -394,13 +396,14 @@ export default function AppTabContent(props) {
 
   if (activeTab === 'assinatura') {
     return (
+      /* As props aqui nao batiam com as que o componente recebe (temaAtivo, currentUserId,
+         currentProfile...), entao `currentPlan` caia no padrao e a tela anunciava Folha como
+         plano atual para todo mundo. Agora recebe o estado de verdade. */
       <Assinatura
-        temaAtivo={temaAtivo}
-        setActiveTab={setActiveTab}
-        currentUserId={currentUserId}
-        currentProfile={effectiveProfile}
-        isAdmin={isAdmin}
-        onProfileUpdate={(patch) => handleSaveProfile({ ...(effectiveProfile || {}), ...(patch || {}) })}
+        user={effectiveProfile}
+        currentPlan={acesso?.ehPagante ? 'papiro' : 'folha'}
+        expiresAt={currentSubscription?.current_period_end || effectiveProfile?.subscription_expires_at || null}
+        estado={acesso}
       />
     );
   }

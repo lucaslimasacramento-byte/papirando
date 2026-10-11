@@ -19,6 +19,7 @@ import Header from './components/Header';
 import { ToastProvider } from './lib/toast';
 import { showConfirm, showToast } from './lib/dialogs';
 import CheckoutResultBanner from './components/CheckoutResultBanner';
+import FaixaDaCortesia from './components/FaixaDaCortesia';
 import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
@@ -119,6 +120,7 @@ import { progressoDoEdital } from './lib/progressoDoEdital';
 import { montarCurso } from './lib/novoCurso';
 import { paraWizData, validarRotina } from './lib/rotinaInicial';
 import { janelaDeEstudo } from './lib/janelaDeEstudo';
+import { estadoDaAssinatura, motivoDoBloqueio } from './lib/acessoDoAluno';
 import { prazoDoCursoAtivo } from './lib/alvoDoAluno';
 import {
   migrarCurso,
@@ -1492,6 +1494,7 @@ export default function App() {
     planName: stripePlanName,
     isPremium: isStripeActive,
     subscription: currentSubscription,
+    loading: subscriptionLoading,
     refresh: refreshSubscription,
   } = useSubscription(currentUserId);
 
@@ -1515,6 +1518,56 @@ export default function App() {
     (!isStripeActive && hasPaidProfilePlan);
 
   const isPremiumPlan = isAdmin || isStripeActive || hasPaidProfilePlan;
+
+  // Politica atual: nao existe plano gratuito. Toda conta ganha 30 dias de cortesia; depois
+  // disso, quem nao assina continua VENDO tudo o que construiu, mas para de escrever.
+  // A regra inteira mora em src/lib/acessoDoAluno.js — um lugar so, de proposito: espalhada
+  // em `if` por botao, esquecer um caminho e questao de tempo, e cada caminho esquecido e um
+  // aluno vencido usando de graca ou, pior, um pagante bloqueado por engano.
+  const acesso = useMemo(
+    () => estadoDaAssinatura({ assinatura: currentSubscription, isAdmin }),
+    [currentSubscription, isAdmin]
+  );
+
+  // Concede a cortesia de 30 dias a quem ainda nao tem assinatura nenhuma.
+  //
+  // Ate aqui isso acontecia so no FIM do onboarding: quem se cadastrava e abandonava no meio
+  // nao ganhava nada, e a chamada era best-effort — falhou, ficou no console. Com a cortesia
+  // virando a unica porta de entrada do produto, nao da para ela depender de o aluno chegar
+  // ao fim de um formulario.
+  //
+  // Rodar na abertura do app resolve dois casos de uma vez: a conta nova e a conta que ja
+  // existia antes desta politica. A funcao e idempotente no servidor (devolve
+  // `already_exists` sem tocar em nada), entao quem ja teve cortesia — mesmo vencida — nao
+  // ganha outra.
+  const cortesiaPedida = useRef(false);
+
+  useEffect(() => {
+    if (!currentUserId || subscriptionLoading) return;
+    if (currentSubscription) return;
+    if (cortesiaPedida.current) return;
+    cortesiaPedida.current = true;
+
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke('start-trial');
+        if (data?.granted) refreshSubscription?.();
+      } catch (erro) {
+        // Nao bloqueia o app: sem assinatura o aluno ainda escreve (ver acessoDoAluno.js),
+        // e a proxima abertura tenta de novo.
+        console.warn('[cortesia] start-trial falhou:', erro?.message || erro);
+        cortesiaPedida.current = false;
+      }
+    })();
+  }, [currentUserId, currentSubscription, subscriptionLoading, refreshSubscription]);
+
+  // O portao. Toda acao que ESCREVE passa por aqui antes de rodar.
+  const exigirAssinatura = useCallback((acao = '') => {
+    if (acesso.podeEscrever) return true;
+    showToast(motivoDoBloqueio(acao), 'warning');
+    setActiveTab('assinatura');
+    return false;
+  }, [acesso.podeEscrever]);
 
   // Memoizado: sem isto, `findGroupedContestById` roda a cada render e devolve
   // um objeto NOVO toda vez. Como ConcursoDetalhe tem um efeito com dep
@@ -4753,6 +4806,7 @@ export default function App() {
   };
 
   const createCourse = (courseData) => {
+    if (!exigirAssinatura('Criar um curso')) return null;
     assertCourseLimitAvailable();
 
     // A montagem vive em src/lib/novoCurso.js, com teste. Era um literal aqui, e campo novo
@@ -5550,6 +5604,7 @@ export default function App() {
   };
 
   const createCourseFromCatalog = async (template, planName = null) => {
+    if (!exigirAssinatura('Adicionar um objetivo')) return null;
     // planName: nome do plano definido pelo aluno ao combinar vários cursos.
     // Quando presente, vira a chave de agrupamento (plano) de todos os cursos
     // escolhidos — e as disciplinas herdam esse mesmo plano (insert abaixo).
@@ -5931,6 +5986,7 @@ export default function App() {
     // plano so, aproveitando a materia que se repete.
     cursoExistenteId = '',
   }) => {
+    if (!exigirAssinatura('Importar um edital')) return null;
     const analysis =
       analysisResult?.contests?.length > 0 ? analysisResult : analyzeEditalDocument(editalText);
 
@@ -6330,6 +6386,7 @@ export default function App() {
 
 
   const adicionarNovoEstudo = async (novoRegistro) => {
+    if (!exigirAssinatura('Registrar estudo')) return;
     const normalizedRecord = normalizeStudyRecord(novoRegistro, subjectCatalog);
     setHistoricoReal((prev) => [normalizedRecord, ...prev]);
 
@@ -6953,6 +7010,7 @@ export default function App() {
   };
 
   const toggleEditalTopico = async (discId, topicoId) => {
+    if (!exigirAssinatura('Marcar tópicos do edital')) return;
     const disciplina = bancoDisciplinas.find((item) => item.id === discId);
     const topico = disciplina?.topicos?.find((item) => item.id === topicoId);
 
@@ -7450,6 +7508,9 @@ export default function App() {
     handleRunCommunityConnectivityCheck,
     handleRunCommunitySmokeTest,
     isPremiumPlan,
+    acesso,
+    exigirAssinatura,
+    currentSubscription,
     isElitePlan,
     communityPersistence,
     selectedCommunitySquadId,
@@ -7530,8 +7591,11 @@ export default function App() {
              (isPremiumPlan), mas nao compra assinatura nenhuma: quem responde pelo plano e
              o isElitePlan, que ignora o atalho de admin. O cargo ja aparece no rodape da
              barra lateral. */
-          subscriptionPlan={isElitePlan ? 'papiro' : 'gratuito'}
-          trialDaysLeft={trialDaysLeft}
+          /* Na cortesia o aluno TEM o Papiro — so nao pagou ainda. Mostrar "Folha" durante
+             os 30 dias diria a ele que esta num plano limitado justamente enquanto usa a
+             plataforma inteira. O contador de dias ja vive no proprio selo. */
+          subscriptionPlan={acesso.ehPagante || acesso.emCortesia ? 'papiro' : 'folha'}
+          trialDaysLeft={acesso.emCortesia ? acesso.diasRestantes : null}
           onOpenAssinatura={() => setActiveTab('assinatura')}
           isAdmin={isAdmin}
           onNavigate={(tabId) => {
@@ -7560,6 +7624,8 @@ export default function App() {
           }`}
         >
           <CheckoutResultBanner onSuccess={refreshSubscription} />
+
+          <FaixaDaCortesia estado={acesso} onAssinar={() => setActiveTab('assinatura')} />
 
           <Suspense
             fallback={
