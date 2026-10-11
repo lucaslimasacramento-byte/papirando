@@ -59,7 +59,7 @@ cache. A política de escrita deixa qualquer aluno autenticado preencher o que f
 ninguém sobrescrever o que já existe. É o que torna "toda questão tem comentário" possível
 sem uma rodada de milhares de chamadas de IA antes do lançamento.
 
-⚠️ **Pendente: rodar a migração em produção.**
+✅ **Migração aplicada em produção (2026-10-11).** Conferido pela API REST: `question_comments` responde 200.
 
 ### O cabeçalho encolheu
 
