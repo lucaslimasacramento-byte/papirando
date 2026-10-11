@@ -394,10 +394,22 @@ export default function Questoes({
   }, [filteredQuestions.length, currentQuestionIndex]);
 
   return (
-    <div className="pl-page" style={{ height: '100%', overflow: 'hidden' }}>
-      {/* Cabeçalho de uma faixa só: identidade à esquerda, números e ação à direita, na
-          mesma linha. Antes eram três blocos empilhados (título, subtítulo, meta) de um lado
-          e dois (tiles, botão) do outro, e a primeira questão começava quase na dobra. */}
+    <div className="pl-page" style={{ height: '100%', overflow: 'hidden', gap: 14 }}>
+      {/* Comando da página: cabeçalho e barra de busca num bloco só, sobre superfície.
+          Soltos sobre o papel bege eles se misturavam ao fundo e a tela não tinha onde
+          começar; agrupados, o bloco se separa do fundo e a questão fica claramente como o
+          segundo (e principal) elemento da tela. */}
+      <div
+        style={{
+          flexShrink: 0,
+          display: 'flex', flexDirection: 'column', gap: 10,
+          background: 'var(--pl-surface)',
+          border: '1px solid var(--pl-rule-2)',
+          borderRadius: 14,
+          padding: '14px 16px',
+          boxShadow: 'var(--pl-sh-low)',
+        }}
+      >
       <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'center', flexShrink: 0 }}>
         <div>
           <h1 className="pl-display" style={{ margin: 0, fontSize: 30, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
@@ -452,7 +464,9 @@ export default function Questoes({
         </div>
       </header>
 
-      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', borderRadius: 12, padding: '10px 12px' }}>
+      {/* A barra perdeu a moldura própria: ela é a segunda linha do mesmo bloco, separada
+          por um fio. Duas molduras empilhadas liam como duas seções sem relação. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid var(--pl-rule)', paddingTop: 10 }}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
             <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--pl-ink-3)', pointerEvents: 'none' }} />
@@ -534,6 +548,7 @@ export default function Questoes({
             showToast('Caderno excluído.', 'success');
           }}
         />
+      </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minHeight: 0, flex: 1 }}>
@@ -793,7 +808,7 @@ function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
 
   return (
     <div className="pl-gabarito-reveal" style={{
-      marginTop: 12, borderRadius: 8, padding: 12,
+      marginTop: 12, flexShrink: 0, borderRadius: 8, padding: 12,
       border: `1px solid ${fundo}`, background: fundo,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -866,7 +881,10 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         overflow: 'hidden',
         borderRadius: 16,
         background: 'var(--pl-surface)',
-        boxShadow: submitted ? 'var(--pl-sh-mid)' : 'var(--pl-sh-low)',
+        // Sombra permanente, não só depois de responder: é ela que levanta a questão do
+        // papel bege e diz "é aqui que você trabalha". Antes o cartão era branco sobre bege
+        // com um fio de borda, e no meio de uma tela clara isso quase não se via.
+        boxShadow: submitted ? 'var(--pl-sh-high)' : 'var(--pl-sh-mid)',
         border: `1px solid ${submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-rule)'}`,
         transition: 'box-shadow 0.3s',
       }}
@@ -929,10 +947,18 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         </div>
       </div>
 
-      <div style={{ minHeight: 0, flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '8px 16px 12px' }}>
+      {/* Coluna elástica: o enunciado ocupa o que sobra e as alternativas ficam sempre
+          visíveis. `overflowY: auto` continua aqui como rede — quando nem com a figura no
+          mínimo a questão couber (enunciado muito longo, janela muito baixa), rolar é melhor
+          do que cortar. */}
+      <div style={{
+        minHeight: 0, flex: 1, overflowY: 'auto', overscrollBehavior: 'contain',
+        padding: '8px 16px 12px',
+        display: 'flex', flexDirection: 'column',
+      }}>
         <EnunciadoDaQuestao enunciado={question.statement} imagem={question.imagem} />
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexShrink: 0, flexDirection: 'column', gap: 6 }}>
           {question.options.map((option) => (
             <AnswerOption
               key={option.id}
@@ -1056,8 +1082,8 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
   }
 
   return (
-    <button type="button" onClick={onClick} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, borderRadius: 10, padding: '8px 10px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--pl-sans)', ...containerStyle }}>
-      <div style={{ display: 'flex', height: 28, width: 28, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', fontSize: 12, fontWeight: 600, ...markerStyle }}>
+    <button type="button" onClick={onClick} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, borderRadius: 10, padding: '6px 10px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--pl-sans)', ...containerStyle }}>
+      <div style={{ display: 'flex', height: 25, width: 25, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', fontSize: 11.5, fontWeight: 600, ...markerStyle }}>
         {submitted && isCorrect ? <Check size={14} strokeWidth={3} /> : submitted && isWrongSelection ? <X size={14} strokeWidth={3} /> : label}
       </div>
       <span style={{ minWidth: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: textColor }}>{text}</span>

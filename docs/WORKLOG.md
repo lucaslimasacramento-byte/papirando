@@ -61,6 +61,30 @@ sem uma rodada de milhares de chamadas de IA antes do lançamento.
 
 ✅ **Migração aplicada em produção (2026-10-11).** Conferido pela API REST: `question_comments` responde 200.
 
+### A questão cabe na tela (fecho 6)
+
+Pedido: "a questão fica fixa na tela e não precisa de rolagem". Um teto fixo na figura
+(300px, 30vh) não resolve isso — o que sobra para o gráfico depende do tamanho do enunciado,
+de quantas alternativas há e da altura da janela. Três variáveis que número escrito à mão
+nenhum acerta sempre.
+
+A figura virou o elemento **elástico** do cartão: `flex: 1` dentro de uma coluna de altura
+limitada, `min-height: 0` para poder encolher, `object-fit: contain` para encolher sem
+distorcer, e um piso de 132px abaixo do qual rolar é o mal menor. Medido no Chromium com o
+cartão real:
+
+| janela | corpo | gráfico | rolagem |
+|---|---|---|---|
+| 700px | 360px | 319×132 | 0px |
+| 800px | 460px | 319×132 | 0px |
+| 891px | 551px | 385×159 | 0px |
+| 1000px | 660px | 562×232 | 0px |
+
+Cabeçalho e barra de busca viraram **um bloco só** sobre superfície, separados por um fio.
+Soltos sobre o papel bege eles se misturavam ao fundo. E o cartão da questão ganhou sombra
+permanente (`--pl-sh-mid`, `--pl-sh-high` depois de responder) — antes era branco sobre bege
+com um fio de borda, e numa tela clara isso quase não se via.
+
 ### O cabeçalho encolheu
 
 Título de 44 para 30px, subtítulo fora (repetia o que os botões já dizem), os quatro números
