@@ -119,6 +119,14 @@ export default function Questoes({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterDisc, setFilterDisc]   = useState('');
   const [filterBanca, setFilterBanca] = useState('');
+  // Orgao e area vem do edital de cada concurso ("PM AL", "Combatente"). Sao as duas
+  // perguntas que o aluno realmente faz e que disciplina/banca nao respondem.
+  const [filterOrgao, setFilterOrgao] = useState('');
+  const [filterArea, setFilterArea] = useState('');
+  // As opcoes saem do que EXISTE no banco, nao de um catalogo: oferecer um filtro que nao
+  // devolve questao nenhuma e pior do que nao oferecer.
+  const [orgaoOptions, setOrgaoOptions] = useState([]);
+  const [areaOptions, setAreaOptions] = useState([]);
   const [filterDif, setFilterDif]     = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [examBoards, setExamBoards] = useState([]);
@@ -192,6 +200,8 @@ export default function Questoes({
       let q = supabase.from('questions').select('*').eq('is_public', true);
       if (filterDisc) q = q.eq('disciplina', filterDisc);
       if (filterBanca) q = q.eq('banca', filterBanca);
+      if (filterOrgao) q = q.eq('orgao', filterOrgao);
+      if (filterArea) q = q.eq('area', filterArea);
       if (filterDif) q = q.eq('dificuldade', filterDif);
 
       const { data, error } = await q.order('created_at', { ascending: false }).limit(50);
@@ -202,15 +212,44 @@ export default function Questoes({
       let fallbackQuery = supabase.from('questions').select('*');
       if (filterDisc) fallbackQuery = fallbackQuery.eq('disciplina', filterDisc);
       if (filterBanca) fallbackQuery = fallbackQuery.eq('banca', filterBanca);
+      if (filterOrgao) fallbackQuery = fallbackQuery.eq('orgao', filterOrgao);
+      if (filterArea) fallbackQuery = fallbackQuery.eq('area', filterArea);
       if (filterDif) fallbackQuery = fallbackQuery.eq('dificuldade', filterDif);
       const { data } = await fallbackQuery.order('created_at', { ascending: false }).limit(50);
       setDbQuestions((data || []).map(normalizeQuestion));
     } finally {
       setDbLoading(false);
     }
-  }, [filterDisc, filterBanca, filterDif]);
+  }, [filterDisc, filterBanca, filterOrgao, filterArea, filterDif]);
 
   useEffect(() => { loadQuestions(); }, [loadQuestions]);
+
+  // Carrega as opcoes de orgao e area uma vez, a partir do que ja esta cadastrado.
+  //
+  // A coluna pode nao existir ainda (a migration 202610110001 e aplicada a mao): neste caso
+  // a consulta falha e os dois filtros simplesmente nao aparecem, em vez de derrubar a tela.
+  useEffect(() => {
+    let cancelado = false;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from('questions')
+        .select('orgao, area')
+        .eq('is_public', true)
+        .limit(1000);
+
+      if (cancelado || error || !data) return;
+
+      const unicos = (campo) => [...new Set(
+        data.map((linha) => String(linha?.[campo] || '').trim()).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+      setOrgaoOptions(unicos('orgao'));
+      setAreaOptions(unicos('area'));
+    })();
+
+    return () => { cancelado = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -294,6 +333,8 @@ export default function Questoes({
       if (activeCaderno && !activeCadernoQuestionIds.has(String(item.id))) return false;
       if (filterDisc && item.disciplina !== filterDisc) return false;
       if (filterBanca && item.banca !== filterBanca) return false;
+      if (filterOrgao && item.orgao !== filterOrgao) return false;
+      if (filterArea && item.area !== filterArea) return false;
       if (filterDif && item.dificuldade && item.dificuldade !== filterDif) return false;
       const q = query.trim().toLowerCase();
       if (!q) return true;
@@ -436,7 +477,7 @@ export default function Questoes({
             {(activeFiltersCount > 0 || activeCaderno) && (
               <button
                 type="button"
-                onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterDif(''); setActiveCadernoId(''); }}
+                onClick={() => { setFilterDisc(''); setFilterBanca(''); setFilterOrgao(''); setFilterArea(''); setFilterDif(''); setActiveCadernoId(''); }}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)', padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
               >
                 <X size={13} />
@@ -542,8 +583,8 @@ export default function Questoes({
             </div>
 
             <p style={{ marginBottom: 12, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
-              Disciplina e banca são escolhas do cadastro da plataforma (catálogo padrão de disciplinas e catálogo de
-              bancas). Listas vazias somem após o administrador incluir registros.
+              Disciplina e banca vêm do cadastro da plataforma. Órgão e área vêm das próprias
+              questões já cadastradas — por isso só aparecem quando há o que escolher.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
@@ -595,6 +636,28 @@ export default function Questoes({
                   )}
                 </select>
               </div>
+              {/* Orgao e area so aparecem quando ha o que escolher. Um seletor permanente
+                  com uma opcao so ("Todos os órgãos") ocupa espaco e nao decide nada — e,
+                  enquanto o banco nao tiver questoes com esses campos, e exatamente isso que
+                  ele seria. */}
+              <SeletorDeFiltro
+                id="questoes-filter-orgao"
+                rotulo="Órgão"
+                vazio="Todos os órgãos"
+                valor={filterOrgao}
+                opcoes={orgaoOptions}
+                onChange={setFilterOrgao}
+              />
+
+              <SeletorDeFiltro
+                id="questoes-filter-area"
+                rotulo="Área"
+                vazio="Todas as áreas"
+                valor={filterArea}
+                opcoes={areaOptions}
+                onChange={setFilterArea}
+              />
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }} htmlFor="questoes-filter-nivel">
                   Nível
@@ -619,6 +682,8 @@ export default function Questoes({
                 onClick={() => {
                   setFilterDisc('');
                   setFilterBanca('');
+                  setFilterOrgao('');
+                  setFilterArea('');
                   setFilterDif('');
                 }}
                 className="pl-btn pl-btn-ghost"
@@ -827,6 +892,33 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Um seletor de filtro cujas opcoes saem do banco. Some quando nao ha nenhuma.
+function SeletorDeFiltro({ id, rotulo, vazio, valor, opcoes, onChange }) {
+  if (!opcoes || opcoes.length === 0) return null;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label
+        htmlFor={id}
+        style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}
+      >
+        {rotulo}
+      </label>
+      <select
+        id={id}
+        value={valor}
+        onChange={(evento) => onChange(evento.target.value)}
+        style={{ borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg)', padding: '8px 12px', fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', outline: 'none', fontFamily: 'var(--pl-sans)', width: '100%' }}
+      >
+        <option value="">{vazio}</option>
+        {opcoes.map((opcao) => (
+          <option key={opcao} value={opcao}>{opcao}</option>
+        ))}
+      </select>
     </div>
   );
 }

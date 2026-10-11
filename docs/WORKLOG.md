@@ -55,15 +55,23 @@ confiança no banco inteiro. Só o que está pronto é gravado.
 Importação **idempotente de graça**: o índice único em `(source, external_id)` já existia, então
 recolar o mesmo lote com os gabaritos preenchidos **atualiza** em vez de duplicar.
 
-### ⚠️ Falta aplicar a migration
+### ✅ Migration aplicada em produção (2026-10-11)
 
-`supabase/migrations/202610110001_questoes_orgao_area.sql` adiciona `orgao` e `area` — sem
-ela, esses dois campos são lidos do texto e **descartados na gravação**, e o filtro por órgão
-/ área não existe. Idempotente.
+`supabase/migrations/202610110001_questoes_orgao_area.sql` rodada pelo usuário no SQL editor.
+As colunas `orgao` e `area` existem.
 
-### 🔧 Ainda pendente
+### ✅ Filtros de órgão e área
 
-Os filtros da tela de Questões ainda não oferecem órgão e área (dependem da migration).
+As opções saem **do que existe no banco**, não de um catálogo: oferecer um filtro que não
+devolve questão nenhuma é pior do que não oferecer. Por isso os dois seletores **somem
+quando não há o que escolher** — um seletor permanente com uma opção só ocupa espaço e não
+decide nada.
+
+A consulta das opções falha em silêncio se a coluna não existir (instalação sem a migration):
+os filtros apenas não aparecem, em vez de derrubar a tela.
+
+Os dois botões **"Limpar"** passaram a limpar órgão e área também — senão o aluno aperta
+Limpar, continua vendo o recorte de um órgão e não entende por quê.
 
 ---
 
