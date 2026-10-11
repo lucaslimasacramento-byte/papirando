@@ -57,17 +57,15 @@ migration ou se o banco caiu. Fica no log do servidor; nenhuma mensagem ao aluno
    vitest por interop; o lint pegou porque desta vez rodei em tudo, não só nos arquivos
    tocados.
 
-### ⚠️ Pendente de verificação no banco de produção
+### ✅ Verificado no banco de produção (2026-10-11)
 
-A migration `202607070001_blindagem_fase1.sql` **não tem registro de "APLICADA NO PROD"** no
-WORKLOG, diferente de outras. O projeto do Papirando não está na conta do Supabase acessível
-por aqui, então não consegui confirmar. Verificação de uma linha no SQL editor:
+`select public.is_premium_user();` rodou no SQL editor do projeto **sem erro**, devolvendo
+`false`. A função **existe** — a migration `202607070001_blindagem_fase1.sql` está aplicada e
+a trava está valendo.
 
-```sql
-select public.is_premium_user();
-```
-
-Erro de função inexistente = a trava está desligada; aplique a migration.
+O `false` é o resultado correto ali e **não** indica falta de assinatura: o SQL editor roda
+sem usuário autenticado, `auth.uid()` é nulo, e a primeira cláusula da função é
+`when p_uid is null then false`. Ela só julga assinatura quando há usuário na sessão.
 
 ---
 
