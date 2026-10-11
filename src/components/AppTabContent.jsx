@@ -41,6 +41,7 @@ const AdminLegislacao = lazy(() => import('../pages/AdminLegislacao'));
 const AdminBetaFeedback = lazy(() => import('../pages/AdminBetaFeedback'));
 const AdminAssinaturas = lazy(() => import('../pages/AdminAssinaturas'));
 const AdminQuestoes = lazy(() => import('../pages/AdminQuestoes'));
+const AdminQuestoesColar = lazy(() => import('../pages/AdminQuestoesColar'));
 const QuestionImportPage = lazy(() => import('../pages/admin/QuestionImportPage'));
 const Sessoes = lazy(() => import('../pages/Sessoes'));
 const Revisoes = lazy(() => import('../pages/Revisoes'));
@@ -634,6 +635,10 @@ export default function AppTabContent(props) {
 
   if (activeTab === 'admin_questoes_import' && isAdmin) {
     return <QuestionImportPage />;
+  }
+
+  if (activeTab === 'admin_questoes_colar' && isAdmin) {
+    return <AdminQuestoesColar />;
   }
 
   if (activeTab === 'admin_disciplinas' && isAdmin) {

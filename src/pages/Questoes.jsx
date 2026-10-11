@@ -30,9 +30,14 @@ function normalizeQuestion(row) {
     : (() => { try { return JSON.parse(row.alternativas || '[]'); } catch { return []; } })();
   return {
     id: row.id,
+    // O numero que o aluno usa para falar da questao ("a #551858"). O `id` e um UUID do
+    // banco — identifica a linha, nao a questao, e nao significa nada para ninguem.
+    codigo: String(row.external_id || '').trim(),
     disciplina: row.disciplina || '',
     topico: row.topico || '',
     banca: row.banca || '',
+    orgao: row.orgao || '',
+    area: row.area || '',
     ano: row.ano || '',
     dificuldade: row.dificuldade || 'Media',
     statement: row.enunciado || '',
@@ -704,27 +709,39 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         background: submitted ? (wasCorrect ? 'rgba(var(--pl-success-soft-rgb, 209,250,229),0.3)' : 'rgba(var(--pl-danger-soft-rgb, 254,226,226),0.3)') : 'var(--pl-bg-soft)',
       }}>
         <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          {/* Hierarquia: o que o aluno precisa para se situar vem primeiro (disciplina >
+              tópico), e a procedência (banca · órgão · ano) vem depois, em tom menor. O UUID
+              do banco saiu daqui: ele ocupava o lugar de honra, numa pílula azul, como se
+              fosse o número da questão — e "3956ac51-7308-4070" não diz nada a ninguém. */}
           <div style={{ display: 'flex', minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-            <span style={{
-              flexShrink: 0, borderRadius: 6, padding: '2px 8px',
-              fontSize: 11, fontWeight: 600, fontFamily: 'var(--pl-sans)',
-              background: submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-accent-soft)',
-              color: 'var(--pl-ink)',
-            }}>
-              {question.id}
-            </span>
-            <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+            <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 750, color: 'var(--pl-ink)', fontFamily: 'var(--pl-sans)' }}>
               {question.disciplina}
             </span>
-            <ChevronRight size={12} style={{ flexShrink: 0, color: 'var(--pl-rule-strong)' }} />
-            <span style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11, fontWeight: 700, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{question.topico}</span>
+            {question.topico ? (
+              <>
+                <ChevronRight size={12} style={{ flexShrink: 0, color: 'var(--pl-rule-strong)' }} />
+                <span style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 600, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>{question.topico}</span>
+              </>
+            ) : null}
           </div>
 
-          <div style={{ display: 'flex', flexShrink: 0, gap: 6 }}>
-            <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderRadius: 4, border: '1px solid var(--pl-rule-2)', padding: '2px 6px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
-              {question.banca}
-            </span>
-            <span style={{ borderRadius: 4, border: '1px solid var(--pl-rule-2)', padding: '2px 6px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>{question.ano}</span>
+          <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 8, fontSize: 10, fontWeight: 650, letterSpacing: '0.04em', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+            {[question.banca, question.orgao, question.ano].filter(Boolean).map((parte, indice) => (
+              <React.Fragment key={parte}>
+                {indice > 0 ? <span style={{ opacity: 0.45 }}>·</span> : null}
+                <span style={{ maxWidth: 170, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{parte}</span>
+              </React.Fragment>
+            ))}
+            {/* O número público, bem discreto: serve para o aluno citar a questão no suporte
+                ou na comunidade, e não para competir com o conteúdo. */}
+            {question.codigo ? (
+              <span
+                title="Código da questão"
+                style={{ fontFamily: 'var(--pl-mono)', fontSize: 9.5, color: 'var(--pl-ink-4)', letterSpacing: 0 }}
+              >
+                #{question.codigo}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>

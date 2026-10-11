@@ -38,6 +38,7 @@ import {
   Sun,
   GraduationCap,
   Palette,
+  ClipboardPaste,
 } from 'lucide-react';
 import { LAUNCH_MVP_MODE, LAUNCH_HIDDEN_TABS, CONCURSO_ONLY_TABS } from '../lib/launchConfig';
 import { primeiroNomeDoPerfil } from '../lib/perfil';
@@ -102,6 +103,7 @@ const ADMIN_SECTION = {
     { id: 'admin_concursos', icon: GraduationCap, label: 'Catálogo', badge: 'Admin' },
     { id: 'admin_design', icon: Palette, label: 'Design', badge: 'Admin' },
     { id: 'admin_questoes', icon: HelpCircle, label: 'Questões', badge: 'Admin' },
+    { id: 'admin_questoes_colar', icon: ClipboardPaste, label: 'Colar questões', badge: 'Admin' },
     { id: 'admin_disciplinas', icon: Book, label: 'Disciplinas', badge: 'Admin' },
     { id: 'admin_usuarios', icon: Users, label: 'Usuários', badge: 'Admin' },
     { id: 'admin_finance', icon: WalletCards, label: 'Financeiro', badge: 'Admin' },

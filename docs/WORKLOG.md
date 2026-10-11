@@ -18,6 +18,55 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 4) — Questões: colar para importar, e o UUID sai da frente 🔧
+
+### O código estranho era a chave do banco
+
+`question.id` (UUID) estava renderizado como a **primeira e mais destacada** pílula do
+cabeçalho, em azul — no lugar onde deveria estar o número da questão. "3956ac51-7308-4070"
+não diz nada a ninguém.
+
+O cabeçalho virou hierarquia: **disciplina › tópico** em primeiro (é o que situa o aluno), e
+**banca · órgão · ano** depois, em tom menor. O número público (`external_id`, o ID TEC) entra
+discreto, em monoespaçada — serve para citar a questão no suporte, não para competir com o
+conteúdo.
+
+### O comentário não faltava no código — faltava nos dados
+
+O campo existe (`explicacao`) e a tela já o mostra depois que o aluno responde. Estava vazio.
+O importador agora lê `COMENTÁRIO:` / `JUSTIFICATIVA:` / `EXPLICAÇÃO:` do bloco colado.
+
+### Colar para importar
+
+`src/lib/questoesColadas.js` (14 testes) lê o formato do export do TEC. A parte que exige
+cuidado **não** é o parse dos rótulos — é o **texto compartilhado**. Prova do Cebraspe
+encadeia vários itens sobre o mesmo texto-base, e o export escreve isso como
+`[Mesmo texto da Questão 3 – ...]`. Importar literalmente deixaria **6 das 10** questões do
+lote real sem enunciado: o aluno leria a instrução interna do arquivo.
+
+O parser resolve a referência — a questão recebe o texto-base de verdade e mantém o comando e
+o item dela. Verificado no lote real: **0 referências não resolvidas**.
+
+A tela (`AdminQuestoesColar.jsx`) mostra **prévia antes de gravar**, com o que faltou em cada
+questão. Não é enfeite: 9 das 10 do primeiro lote vieram sem gabarito, e questão sem gabarito
+é questão que o aluno abre, responde e não recebe correção — não ensina e ainda mina a
+confiança no banco inteiro. Só o que está pronto é gravado.
+
+Importação **idempotente de graça**: o índice único em `(source, external_id)` já existia, então
+recolar o mesmo lote com os gabaritos preenchidos **atualiza** em vez de duplicar.
+
+### ⚠️ Falta aplicar a migration
+
+`supabase/migrations/202610110001_questoes_orgao_area.sql` adiciona `orgao` e `area` — sem
+ela, esses dois campos são lidos do texto e **descartados na gravação**, e o filtro por órgão
+/ área não existe. Idempotente.
+
+### 🔧 Ainda pendente
+
+Os filtros da tela de Questões ainda não oferecem órgão e área (dependem da migration).
+
+---
+
 ## Sessão 2026-10-11 (fecho 3) — Barrar deixou de ser erro e virou convite ✅
 
 **Erro diz "deu problema". Aqui não deu problema nenhum:** a cortesia tinha prazo, o prazo
