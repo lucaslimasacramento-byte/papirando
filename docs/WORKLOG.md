@@ -18,6 +18,68 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 5) — O enunciado volta a ser texto, e toda questão ganha comentário ✅
+
+### De onde as questões vêm
+
+Pergunta do usuário: "ela vem por api?". Vem. `src/services/importQuestions.ts` importa
+ENEM 2009–2023 de `api.enem.dev`. É de lá que vem a maior parte do banco — e é de lá que vêm
+os três defeitos da tela:
+
+| Defeito | Causa |
+|---|---|
+| `matematica` sem acento e sem maiúscula | A API manda `discipline` em slug e o valor ia direto para a tela. |
+| `![](https://enem.dev/...png)` no meio da frase | O enunciado é markdown e o cartão imprimia como string. Em questão de matemática o gráfico **é** a questão. |
+| Bloco "Comentario" vazio | A API entrega enunciado, alternativas e gabarito. Comentário, nenhum. |
+
+### O enunciado deixou de ser string
+
+`src/lib/textoDaQuestao.js` transforma o enunciado numa lista de blocos — parágrafo ou
+figura — e `src/components/EnunciadoDaQuestao.jsx` desenha cada um do jeito certo. O `![]`
+órfão, o link markdown com a URL à vista e as entidades HTML saem no caminho. URL que não
+seja http(s) ou `data:image` não vira `src`: o banco recebe colagem de terceiros.
+
+### O acento voltou no dado, não no CSS
+
+`text-transform: capitalize` conserta a maiúscula e não devolve o acento. `src/lib/rotuloDaDisciplina.js`
+tem dicionário para o que a gente conhece e regra de título para o resto, com os conectivos
+em minúscula e as siglas preservadas. O valor cru continua guardado ao lado (`disciplinaBruta`),
+porque o filtro casa com a coluna do banco, não com o rótulo.
+
+### Toda questão tem comentário
+
+Três fontes, da mais confiável à mais cara (`src/lib/comentarioDaQuestao.js`):
+
+1. `questions.explicacao` — curado, escrito à mão.
+2. `question_comments` — gerado por IA uma vez e **compartilhado com todos os alunos**.
+3. a IA, agora — só quando as duas primeiras estão vazias.
+
+A migração `supabase/migrations/202610120001_comentarios_das_questoes.sql` cria a tabela de
+cache. A política de escrita deixa qualquer aluno autenticado preencher o que falta, e
+ninguém sobrescrever o que já existe. É o que torna "toda questão tem comentário" possível
+sem uma rodada de milhares de chamadas de IA antes do lançamento.
+
+⚠️ **Pendente: rodar a migração em produção.**
+
+### O cabeçalho encolheu
+
+Título de 44 para 30px, subtítulo fora (repetia o que os botões já dizem), os quatro números
+viraram uma faixa única em vez de quatro cartões soltos, e a estante de cadernos some quando
+não há caderno. Tudo isso era altura tirada do enunciado.
+
+### A skill
+
+`.claude/skills/questoes/` — `SKILL.md` com o fluxo e as armadilhas, `padronizar.mjs` com a
+parte determinística. O padrão tem uma definição só (`src/lib/padraoDaQuestao.js`), usada
+pelo app e pela ferramenta: o que ela considera "pronto" é exatamente o que a tela consegue
+mostrar. Saída em JSON ou em SQL idempotente por `(source, external_id)`.
+
+**Arquivos novos:** `textoDaQuestao.js`, `rotuloDaDisciplina.js`, `padraoDaQuestao.js`,
+`comentarioDaQuestao.js`, `EnunciadoDaQuestao.jsx`, a migração e a skill.
+**Testes:** 564 passando (17 novos no padrão, 14 no texto, 7 no rótulo).
+
+---
+
 ## Sessão 2026-10-11 (fecho 4) — Questões: colar para importar, e o UUID sai da frente 🔧
 
 ### O código estranho era a chave do banco

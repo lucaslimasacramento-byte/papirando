@@ -22,6 +22,10 @@ import { loadExamBoardsFromSupabase } from '../lib/examBoardsApi';
 import { supabase } from '../lib/supabase';
 import { submitAnswer } from '../lib/questoesApi';
 import { showConfirm, showToast } from '../lib/dialogs';
+import EnunciadoDaQuestao from '../components/EnunciadoDaQuestao';
+import { rotuloDaDisciplina } from '../lib/rotuloDaDisciplina';
+import { textoDoEnunciado } from '../lib/textoDaQuestao';
+import { comentarioDaQuestao } from '../lib/comentarioDaQuestao';
 
 // Normalizes a Supabase question row to the format the UI expects
 function normalizeQuestion(row) {
@@ -33,14 +37,21 @@ function normalizeQuestion(row) {
     // O numero que o aluno usa para falar da questao ("a #551858"). O `id` e um UUID do
     // banco — identifica a linha, nao a questao, e nao significa nada para ninguem.
     codigo: String(row.external_id || '').trim(),
-    disciplina: row.disciplina || '',
-    topico: row.topico || '',
+    // O banco guarda o que a fonte mandou — a API do ENEM manda "matematica". O rotulo
+    // bonito e decisao de apresentacao: ver src/lib/rotuloDaDisciplina.js.
+    disciplina: rotuloDaDisciplina(row.disciplina || ''),
+    // O valor cru continua a mao porque o filtro casa com a coluna do banco, nao com o
+    // rotulo. Trocar um pelo outro faria o filtro parar de achar questao.
+    disciplinaBruta: row.disciplina || '',
+    topico: rotuloDaDisciplina(row.topico || ''),
     banca: row.banca || '',
     orgao: row.orgao || '',
-    area: row.area || '',
+    area: rotuloDaDisciplina(row.area || ''),
+    areaBruta: row.area || '',
     ano: row.ano || '',
     dificuldade: row.dificuldade || 'Media',
     statement: row.enunciado || '',
+    imagem: row.image_url || '',
     options: alts,
     explanation: row.explicacao || '',
   };
@@ -84,6 +95,14 @@ const QUESTION_BANK = [
       'O erro está em "Faziam dez anos". O verbo fazer, indicando tempo decorrido, fica no singular: "Fazia dez anos".',
   },
 ];
+
+// O filtro compara com o valor do banco; a tela mostra o rotulo. Um dos dois basta.
+function combina(rotulo, bruto, escolhido) {
+  const alvo = String(escolhido || '').trim().toLowerCase();
+  if (!alvo) return true;
+  return String(rotulo || '').trim().toLowerCase() === alvo
+    || String(bruto || '').trim().toLowerCase() === alvo;
+}
 
 function readNotebookStorage(key) {
   if (typeof window === 'undefined') return [];
@@ -331,21 +350,26 @@ export default function Questoes({
   const filteredQuestions = useMemo(() => {
     return allQuestions.filter((item) => {
       if (activeCaderno && !activeCadernoQuestionIds.has(String(item.id))) return false;
-      if (filterDisc && item.disciplina !== filterDisc) return false;
+      // O filtro guarda o valor como esta no banco, e a questao carrega os dois: o cru e o
+      // rotulo. Comparar so com um dos lados deixaria o filtro sem resultado justamente
+      // depois de a tela passar a mostrar o nome bonito.
+      if (filterDisc && !combina(item.disciplina, item.disciplinaBruta, filterDisc)) return false;
       if (filterBanca && item.banca !== filterBanca) return false;
       if (filterOrgao && item.orgao !== filterOrgao) return false;
-      if (filterArea && item.area !== filterArea) return false;
+      if (filterArea && !combina(item.area, item.areaBruta, filterArea)) return false;
       if (filterDif && item.dificuldade && item.dificuldade !== filterDif) return false;
       const q = query.trim().toLowerCase();
       if (!q) return true;
       return (
         item.disciplina.toLowerCase().includes(q) ||
         item.topico.toLowerCase().includes(q) ||
-        item.statement.toLowerCase().includes(q)
+        // O enunciado decodificado: buscar no markdown cru faria "png" e "https" baterem
+        // em meia prova do ENEM.
+        textoDoEnunciado(item.statement).toLowerCase().includes(q)
       );
     });
-  }, [activeCaderno, activeCadernoQuestionIds, allQuestions, filterBanca, filterDif, filterDisc, query]);
-  const activeFiltersCount = [filterDisc, filterBanca, filterDif].filter((value) => String(value || '').trim().length > 0).length;
+  }, [activeCaderno, activeCadernoQuestionIds, allQuestions, filterArea, filterBanca, filterDif, filterDisc, filterOrgao, query]);
+  const activeFiltersCount = [filterDisc, filterBanca, filterOrgao, filterArea, filterDif].filter((value) => String(value || '').trim().length > 0).length;
   const hasFiveOptionQuestion = useMemo(
     () => filteredQuestions.some((question) => Array.isArray(question?.options) && question.options.length >= 5),
     [filteredQuestions]
@@ -371,15 +395,18 @@ export default function Questoes({
 
   return (
     <div className="pl-page" style={{ height: '100%', overflow: 'hidden' }}>
-      <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 32, alignItems: 'end', flexShrink: 0 }}>
+      {/* Cabeçalho de uma faixa só: identidade à esquerda, números e ação à direita, na
+          mesma linha. Antes eram três blocos empilhados (título, subtítulo, meta) de um lado
+          e dois (tiles, botão) do outro, e a primeira questão começava quase na dobra. */}
+      <header style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 24, alignItems: 'center', flexShrink: 0 }}>
         <div>
-          <h1 className="pl-display" style={{ margin: 0, fontSize: 44, color: 'var(--pl-ink)' }}>
+          <h1 className="pl-display" style={{ margin: 0, fontSize: 30, lineHeight: 1.1, color: 'var(--pl-ink)' }}>
             Banco de questões<span style={{ color: 'var(--pl-accent)' }}>.</span>
           </h1>
-          <p style={{ margin: '10px 0 0', fontSize: 15, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 580, lineHeight: 1.5 }}>
-            Monte cadernos por matéria, tópico e quantidade, ou resolva questões soltas no modo livre.
-          </p>
-          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          {/* O subtítulo saiu daqui. Ele explicava em duas linhas o que os botões logo abaixo
+              já oferecem ("Montar caderno", "Iniciar modo livre") — e numa tela de resolver
+              questão cada linha do cabeçalho é uma linha a menos de enunciado. */}
+          <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>Meta do dia</span>
             {isEditingMeta ? (
               <input
@@ -407,19 +434,19 @@ export default function Questoes({
             <span style={{ fontSize: 11, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>resolvidas · clique para editar</span>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <QStatTile label="Taxa hoje" value={`${questionAccuracy}%`} />
-            <QStatTile label="No histórico" value={String(historyOverview.totalQuestions)} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', overflow: 'hidden' }}>
+            <QStatTile label="Hoje" value={`${questionAccuracy}%`} />
+            <QStatTile label="Total" value={String(historyOverview.totalQuestions)} />
             <QStatTile label="Acurácia" value={`${historyOverview.overallAccuracy}%`} />
             <QStatTile label="Tempo" value={historyOverview.totalMinutesLabel} />
           </div>
           <button
             type="button"
             onClick={() => setRegistroEstudoModalOpen?.(true)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: 'none', background: 'var(--pl-accent)', color: 'white', padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 8, border: 'none', background: 'var(--pl-accent)', color: 'white', padding: '8px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--pl-sans)' }}
           >
-            <Play size={13} fill="currentColor" />
+            <Play size={12} fill="currentColor" />
             Registrar estudo
           </button>
         </div>
@@ -722,6 +749,97 @@ export default function Questoes({
   );
 }
 
+// O comentário que explica a resposta.
+//
+// A maior parte do banco veio da API do ENEM, que entrega enunciado, alternativas e gabarito
+// — e nada mais. O cartão mostrava um bloco "Comentario" vazio: o aluno respondia, acertava
+// ou errava, e não ficava sabendo POR QUÊ. Em banco de questões isso é o produto inteiro.
+//
+// Aqui o comentário é buscado em três lugares, do mais confiável ao mais caro (ver
+// src/lib/comentarioDaQuestao.js): o texto curado, o cache compartilhado e, só então, a IA.
+// Quem gera paga a espera uma vez; todo mundo depois lê do cache.
+function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
+  const [estado, setEstado] = useState(() => (question.explanation ? 'pronto' : 'carregando'));
+  const [comentario, setComentario] = useState(() => (
+    question.explanation ? { comentario: question.explanation, conceitos: [], dica: '' } : null
+  ));
+
+  useEffect(() => {
+    if (question.explanation) return undefined;
+
+    let valido = true;
+    setEstado('carregando');
+    setComentario(null);
+
+    comentarioDaQuestao(question, { currentUserId, respostaDoAluno: resposta })
+      .then((resultado) => {
+        if (!valido) return;
+        setComentario(resultado);
+        setEstado(resultado ? 'pronto' : 'vazio');
+      })
+      .catch((erro) => {
+        if (!valido) return;
+        console.error('[Questoes] falha ao obter o comentário da questão:', erro);
+        setEstado('erro');
+      });
+
+    // O cleanup existe porque o aluno pode pular para a próxima questão antes de a IA
+    // responder — e o comentário da anterior apareceria em cima da nova.
+    return () => { valido = false; };
+  }, [question, currentUserId, resposta]);
+
+  const cor = acertou ? 'var(--pl-success)' : 'var(--pl-danger)';
+  const fundo = acertou ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)';
+
+  return (
+    <div className="pl-gabarito-reveal" style={{
+      marginTop: 12, borderRadius: 8, padding: 12,
+      border: `1px solid ${fundo}`, background: fundo,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <p style={{ margin: 0, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: cor, fontFamily: 'var(--pl-sans)' }}>
+          Comentário
+        </p>
+        {estado === 'carregando' ? <Loader2 size={12} className="animate-spin" style={{ color: cor }} /> : null}
+      </div>
+
+      {estado === 'carregando' ? (
+        <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+          Escrevendo a explicação desta questão...
+        </p>
+      ) : null}
+
+      {estado === 'pronto' && comentario ? (
+        <>
+          <p style={{ marginTop: 4, fontSize: 12.5, fontWeight: 500, lineHeight: 1.6, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>
+            {comentario.comentario}
+          </p>
+          {comentario.conceitos?.length ? (
+            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {comentario.conceitos.map((conceito) => (
+                <span key={conceito} className="pl-tag" style={{ fontSize: 10 }}>{conceito}</span>
+              ))}
+            </div>
+          ) : null}
+          {comentario.dica ? (
+            <p style={{ marginTop: 8, fontSize: 11.5, fontWeight: 600, lineHeight: 1.5, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+              Como revisar: {comentario.dica}
+            </p>
+          ) : null}
+        </>
+      ) : null}
+
+      {estado === 'vazio' || estado === 'erro' ? (
+        <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-3)', fontFamily: 'var(--pl-sans)' }}>
+          {estado === 'erro'
+            ? 'Não consegui escrever o comentário agora. Tente de novo em instantes.'
+            : 'Esta questão ainda não tem comentário.'}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onNextQuestion }) {
   const [selectedOptionId, setSelectedOptionId] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -812,7 +930,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
       </div>
 
       <div style={{ minHeight: 0, flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '8px 16px 12px' }}>
-        <p style={{ marginBottom: 12, fontSize: 14, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>{question.statement}</p>
+        <EnunciadoDaQuestao enunciado={question.statement} imagem={question.imagem} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {question.options.map((option) => (
@@ -833,16 +951,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         </div>
 
         {submitted ? (
-          <div className="pl-gabarito-reveal" style={{
-            marginTop: 12, borderRadius: 8, padding: 12,
-            border: `1px solid ${wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)'}`,
-            background: wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)',
-          }}>
-            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: wasCorrect ? 'var(--pl-success)' : 'var(--pl-danger)', fontFamily: 'var(--pl-sans)' }}>
-              Comentario
-            </p>
-            <p style={{ marginTop: 4, fontSize: 12, fontWeight: 500, lineHeight: 1.55, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>{question.explanation}</p>
-          </div>
+          <ComentarioDaResposta question={question} currentUserId={currentUserId} acertou={wasCorrect} resposta={selectedOptionId} />
         ) : null}
       </div>
 
@@ -958,9 +1067,11 @@ function AnswerOption({ label, text, selected = false, submitted = false, isCorr
 
 function QStatTile({ label, value }) {
   return (
-    <div style={{ background: 'var(--pl-bg-soft)', border: '1px solid var(--pl-rule-2)', borderRadius: 8, padding: '10px 14px', minWidth: 78 }}>
-      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', lineHeight: 1, fontFamily: 'var(--pl-sans)' }}>{label}</div>
-      <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 26, letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--pl-ink)', marginTop: 4 }}>
+    // Célula de uma faixa única: a borda é da faixa, não de cada número. Quatro cartões
+    // soltos lado a lado disputavam atenção com o título da página.
+    <div style={{ padding: '6px 12px', minWidth: 62, borderLeft: '1px solid var(--pl-rule)' }}>
+      <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--pl-ink-3)', lineHeight: 1, fontFamily: 'var(--pl-sans)' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 19, letterSpacing: '-0.04em', lineHeight: 1.2, color: 'var(--pl-ink)', marginTop: 2 }}>
         {value}<span style={{ color: 'var(--pl-accent)' }}>.</span>
       </div>
     </div>
@@ -968,22 +1079,10 @@ function QStatTile({ label, value }) {
 }
 
 function QuestionNotebookShelf({ cadernos, activeCadernoId, onSelect, onCreate, onDelete }) {
-  if (!Array.isArray(cadernos) || cadernos.length === 0) {
-    return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderRadius: 8, border: '1px dashed var(--pl-rule-strong)', background: 'var(--pl-bg-soft)', padding: '8px 12px' }}>
-        <div style={{ display: 'flex', minWidth: 0, alignItems: 'center', gap: 8 }}>
-          <BookOpen size={15} style={{ flexShrink: 0, color: 'var(--pl-accent)' }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pl-ink-2)', fontFamily: 'var(--pl-sans)' }}>
-            Nenhum caderno criado ainda. Monte um bloco por disciplina, topico e quantidade.
-          </span>
-        </div>
-        <button type="button" className="pl-btn pl-btn-ghost pl-btn-sm" onClick={onCreate}>
-          <Plus size={13} />
-          Novo caderno
-        </button>
-      </div>
-    );
-  }
+  // Sem caderno, sem estante. Havia aqui uma faixa tracejada explicando que não existia
+  // nenhum caderno e oferecendo "Novo caderno" — uma linha inteira da tela para repetir o
+  // botão "Montar caderno", que está logo acima e sempre visível.
+  if (!Array.isArray(cadernos) || cadernos.length === 0) return null;
 
   return (
     <div style={{ display: 'flex', minWidth: 0, gap: 8, overflowX: 'auto', paddingBottom: 2 }}>

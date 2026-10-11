@@ -5,7 +5,12 @@ node_modules/
 .pnp.js
 
 # Claude / worktrees locais (nunca versionar)
-.claude/
+.claude/*
+# ...menos as skills: elas sao conhecimento do projeto, nao configuracao da maquina. Um
+# fluxo que so existe no disco de uma pessoa nao e um fluxo do projeto.
+# (o padrao e `.claude/*` e nao `.claude/`: o Git nao entra numa pasta excluida inteira,
+# entao a excecao abaixo so funciona se a exclusao for do CONTEUDO.)
+!.claude/skills/
 
 # Áudio bem-estar: ficheiros grandes — manter no disco, fora do Git
 public/assets/wellness/*.mp3
