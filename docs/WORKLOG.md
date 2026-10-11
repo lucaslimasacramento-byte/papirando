@@ -18,6 +18,41 @@
 
 ---
 
+## Sessão 2026-10-11 (fecho 7) — Rascunho: a folha de papel ao lado da prova ✅
+
+Em prova de verdade o aluno rabisca: faz a conta, risca a alternativa que descartou, anota a
+fórmula. Sem isso, questão de matemática vira adivinhação — e ele resolve no caderno físico,
+fora do app, onde nada fica registrado.
+
+**É janela, não modal.** Modal escurece o fundo e bloqueia o que está atrás — e o que está
+atrás é justamente o enunciado que ele precisa ler enquanto calcula. Arrasta pela barra de
+título, redimensiona pelo canto, fecha no Esc ou no X.
+
+**Ferramentas:** lápis, texto e borracha; três cores (grafite, azul, vermelho), três
+espessuras, desfazer e limpar.
+
+**Duas memórias, de propósito:** a folha acompanha a QUESTÃO (a conta da 3 não serve na 4);
+a posição e o tamanho da janela acompanham o ALUNO (fazer a janela saltar de volta ao canto
+a cada questão desfaria o ajuste que ele acabou de fazer). Tudo em memória, nada no disco —
+rascunho é rascunho.
+
+### Três defeitos que só o navegador revelou
+
+| Defeito | Causa |
+|---|---|
+| A caixa de texto nascia e morria no mesmo clique | Depois do handler, o `pointerdown` roda o foco padrão do navegador, tira o foco do campo recém-criado, o `onBlur` dispara e a caixa some. `preventDefault()` resolve. |
+| O texto saía minúsculo | `var(--pl-sans)` numa string de fonte de canvas é inválido, e atribuição inválida é **ignorada em silêncio** — a fonte ficava no padrão de 10px. |
+| A cor congelaria no tema | Guardar o hexadecimal faria o traço do tema claro continuar escuro sobre o fundo escuro do tema noturno. Agora guarda o token e resolve a cada repinte. |
+
+Medido no Chromium: traço, clique solto (deixa ponto), texto, borracha (apaga e o desfazer
+devolve), arrastar, arrastar para fora da tela (para no limite, x = 48 − largura),
+redimensionar sem perder o desenho, limpar. Zero erros de página.
+
+**Arquivos:** `src/lib/rascunho.js` (+ 25 testes), `src/components/Rascunho.jsx`.
+**Testes:** 589 passando.
+
+---
+
 ## Sessão 2026-10-11 (fecho 5) — O enunciado volta a ser texto, e toda questão ganha comentário ✅
 
 ### De onde as questões vêm

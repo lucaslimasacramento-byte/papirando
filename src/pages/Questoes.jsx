@@ -12,6 +12,7 @@ import {
   Play,
   Plus,
   Search,
+  PenLine,
   SlidersHorizontal,
   Target,
   Trash2,
@@ -26,6 +27,7 @@ import EnunciadoDaQuestao from '../components/EnunciadoDaQuestao';
 import { rotuloDaDisciplina } from '../lib/rotuloDaDisciplina';
 import { textoDoEnunciado } from '../lib/textoDaQuestao';
 import { comentarioDaQuestao } from '../lib/comentarioDaQuestao';
+import Rascunho from '../components/Rascunho';
 
 // Normalizes a Supabase question row to the format the UI expects
 function normalizeQuestion(row) {
@@ -136,6 +138,11 @@ export default function Questoes({
   const [dbLoading, setDbLoading]     = useState(true);
   const [todayStats, setTodayStats]   = useState({ resolved: 0, accuracy: 0 });
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // O rascunho vive na PAGINA, nao no cartao. O cartao e remontado a cada questao
+  // (`key={currentQuestion.id}`), e com o estado la dentro a janela se fechava sozinha toda
+  // vez que o aluno avancava — justamente numa sequencia de questoes de calculo, que e
+  // quando ele mais precisa dela aberta.
+  const [rascunhoAberto, setRascunhoAberto] = useState(false);
   const [filterDisc, setFilterDisc]   = useState('');
   const [filterBanca, setFilterBanca] = useState('');
   // Orgao e area vem do edital de cada concurso ("PM AL", "Combatente"). Sao as duas
@@ -590,6 +597,8 @@ export default function Questoes({
                 key={currentQuestion.id}
                 question={currentQuestion}
                 currentUserId={currentUserId}
+                rascunhoAberto={rascunhoAberto}
+                onAlternarRascunho={() => setRascunhoAberto((aberto) => !aberto)}
                 onAnswered={loadTodayStats}
                 onNextQuestion={() => {
                   if (filteredQuestions.length <= 1) return;
@@ -605,6 +614,16 @@ export default function Questoes({
           ) : null}
         </div>
       </div>
+
+      {/* A janela do rascunho é renderizada aqui, fora do cartão, e sobrevive à troca de
+          questão — a folha de dentro é que muda, pelo `key`. */}
+      {rascunhoAberto && currentQuestion ? (
+        <Rascunho
+          key={currentQuestion.id}
+          questaoId={currentQuestion.id}
+          aoFechar={() => setRascunhoAberto(false)}
+        />
+      ) : null}
 
       {filtersOpen ? (
         <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,17,13,0.55)', padding: '0 16px', backdropFilter: 'blur(4px)' }}>
@@ -855,7 +874,7 @@ function ComentarioDaResposta({ question, currentUserId, acertou, resposta }) {
   );
 }
 
-function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onNextQuestion }) {
+function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onNextQuestion, rascunhoAberto = false, onAlternarRascunho }) {
   const [selectedOptionId, setSelectedOptionId] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -987,7 +1006,27 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
         padding: '8px 16px',
         background: submitted ? (wasCorrect ? 'var(--pl-success-soft)' : 'var(--pl-danger-soft)') : 'var(--pl-bg-soft)',
       }}>
-        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          {/* O rascunho fica ao lado de "Responder" porque é ali que ele é usado: o aluno lê,
+              precisa fazer a conta, e a folha tem de estar a um clique — não escondida num
+              menu. Em prova de verdade o papel já está em cima da mesa. */}
+          <button
+            type="button"
+            onClick={() => onAlternarRascunho?.()}
+            aria-pressed={rascunhoAberto}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
+              borderRadius: 8, padding: '6px 12px',
+              border: `1px solid ${rascunhoAberto ? 'var(--pl-accent)' : 'var(--pl-rule-2)'}`,
+              background: rascunhoAberto ? 'var(--pl-accent-soft)' : 'var(--pl-surface)',
+              color: rascunhoAberto ? 'var(--pl-accent)' : 'var(--pl-ink-2)',
+              fontSize: 12, fontWeight: 650, cursor: 'pointer', fontFamily: 'var(--pl-sans)',
+            }}
+          >
+            <PenLine size={13} />
+            Rascunho
+          </button>
+
           <div style={{ display: 'flex', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
           {submitted ? (
             <button type="button" onClick={resetQuestion} className="pl-btn pl-btn-ghost pl-btn-sm">
@@ -1027,6 +1066,7 @@ function InteractiveQuestionCard({ question, currentUserId = '', onAnswered, onN
           </div>
         </div>
       </div>
+
     </div>
   );
 }
