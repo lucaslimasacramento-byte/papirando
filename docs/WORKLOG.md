@@ -36,8 +36,8 @@ acertou confere o raciocínio. E a tela já mostra em vermelho o que ele marcou.
 O prompt do servidor também ficou explícito: 2 a 4 frases, citar o artigo/lei/fórmula, e
 nunca começar com "a alternativa X está correta" e parar por aí.
 
-⚠️ **Os comentários já gerados com o defeito continuam no cache.** Ver o SQL de limpeza
-abaixo — apagar é seguro: o app regenera na próxima abertura.
+✅ **Cache dos comentários defeituosos limpo em produção (2026-10-11).** O SQL abaixo foi o
+usado; apagar é seguro, o app regenera na próxima abertura.
 
 ```sql
 delete from public.question_comments
@@ -57,7 +57,7 @@ feedback é recado para quem mantém o banco, não placar público.
 Aberto, o campo desce para uma linha só dele — espremido entre "Rascunho" e "Responder" ele
 virava uma fresta de três palavras por linha.
 
-⚠️ **Pendente: rodar `supabase/migrations/202610120002_feedback_das_questoes.sql`.**
+✅ **Migração aplicada em produção (2026-10-11).** Conferido pela API REST: `question_feedback` responde 200.
 
 **Arquivos:** `src/lib/feedbackDaQuestao.js` (+9 testes), `src/components/FeedbackDaQuestao.jsx`.
 **Testes:** 598 passando.
