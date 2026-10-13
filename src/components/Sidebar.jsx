@@ -40,6 +40,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { LAUNCH_MVP_MODE, LAUNCH_HIDDEN_TABS, CONCURSO_ONLY_TABS } from '../lib/launchConfig';
+import { primeiroNomeDoPerfil } from '../lib/perfil';
 
 const NAV_SECTIONS_BASE = [
   {
@@ -183,6 +184,7 @@ export default function Sidebar({
   isAdmin = false,
   currentUserEmail = '',
   currentProfile = null,
+  perfilCarregado = true,
   onNavigate,
   className = '',
   labelOverrides = null,
@@ -222,14 +224,11 @@ export default function Sidebar({
     onNavigate?.();
   };
 
-  const displayName = (() => {
-    const nome = String(currentProfile?.nome || '').trim();
-    if (nome) return nome.split(' ')[0];
-    const raw = String(currentUserEmail || '').trim();
-    if (!raw) return 'Conta ativa';
-    const name = raw.split('@')[0];
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  })();
+  // Mesma regra da saudacao do painel (src/lib/perfil.js): enquanto o perfil nao carregou,
+  // nao se chuta nome. Aqui o rodape mostrava o comeco do e-mail e trocava pelo nome real
+  // um segundo depois.
+  const nomeDoPerfil = primeiroNomeDoPerfil(currentProfile, currentUserEmail, { carregado: perfilCarregado });
+  const displayName = nomeDoPerfil || (perfilCarregado ? 'Conta ativa' : '');
 
   const avatarUrl = String(currentProfile?.avatar_url || '').trim();
   const initial = displayName.charAt(0).toUpperCase();
@@ -458,10 +457,16 @@ export default function Sidebar({
               fontSize: 12, fontWeight: 600, color: 'var(--pl-ink)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
-              {displayName}
+              {/* Barra em vez de nome errado: o espaco continua ocupado, entao nada pula
+                  quando o perfil chega. */}
+              {displayName || (
+                <span style={{ display: 'inline-block', width: 72, height: 9, borderRadius: 3, background: 'var(--pl-rule-2)' }} />
+              )}
             </div>
             <div style={{ fontSize: 10, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
-              {isAdmin ? 'Administrador' : (
+              {!perfilCarregado ? (
+                <span style={{ display: 'inline-block', width: 46, height: 7, borderRadius: 3, background: 'var(--pl-rule)' }} />
+              ) : isAdmin ? 'Administrador' : (
                 (() => {
                   const firstName = String(currentProfile?.nome || '').trim().split(' ')[0].toLowerCase();
                   const isFeminine = firstName.length > 1 && firstName.endsWith('a') && !['lucas', 'mateus', 'nicolas', 'tobias', 'elias', 'jonas', 'noa', 'ezra'].includes(firstName);

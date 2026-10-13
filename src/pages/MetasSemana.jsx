@@ -449,7 +449,12 @@ export default function MetasSemana({ currentUserId, historicoReal }) {
       {/* Edit/Add modal */}
       {editModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.45)', padding: 16, backdropFilter: 'blur(4px)' }}>
-          <div style={{ width: '100%', maxWidth: 400, borderRadius: 20, background: 'var(--pl-surface)', border: '1px solid var(--pl-rule-2)', boxShadow: 'var(--pl-sh-high)' }}>
+          <div style={{
+            width: '100%', maxWidth: 400, borderRadius: 20, background: 'var(--pl-surface)',
+            border: '1px solid var(--pl-rule-2)', boxShadow: 'var(--pl-sh-high)',
+            // Ver LinkModal: overlay fixo nao rola sozinho em tela baixa.
+            maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto',
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pl-rule)', padding: '16px 24px' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>
                 {editGoal ? 'Editar meta' : 'Nova meta'}

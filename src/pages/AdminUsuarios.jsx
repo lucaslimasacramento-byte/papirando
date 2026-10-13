@@ -514,12 +514,14 @@ function ModalShell({ title, onClose, children }) {
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.45)',
+      background: 'rgba(0,0,0,0.45)', padding: 16,
     }} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      {/* Teto de altura: sem ele, em notebook o modal passava da tela e os botoes de
+          confirmar ficavam fora de alcance, sem barra de rolagem para chegar neles. */}
       <div className="pl-card" style={{
         width: '100%', maxWidth: 440, padding: '24px 28px',
         boxShadow: 'var(--pl-sh-high)', borderRadius: 16,
-        position: 'relative',
+        position: 'relative', maxHeight: '90vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)', margin: 0 }}>{title}</h3>

@@ -21,6 +21,7 @@ import {
   Play,
 } from 'lucide-react';
 import { getAreaToken } from '../lib/areaTokens';
+import { objetivosDaDisciplina, objetivosDoCurso } from '../lib/objetivos';
 
 export default function Disciplinas({
   cursos = [],
@@ -119,7 +120,11 @@ export default function Disciplinas({
     };
 
     fetchDisciplinas();
-  }, [setBancoDisciplinas, subjectCatalog]);
+    // subjectCatalog e um array novo a cada render do App: como dependencia, ele refazia a
+    // busca no banco sem parar — e o "Carregando disciplinas..." piscava por cima da tabela
+    // a cada volta. O catalogo so serve para canonizar nomes aqui, entao a quantidade de
+    // entradas basta como assinatura.
+  }, [setBancoDisciplinas, subjectCatalog.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setPlanoFiltro(forcedPlanoFiltro || 'Todos');
@@ -155,6 +160,18 @@ export default function Disciplinas({
     const allowed = new Set(disciplinasFiltradas.map((disciplina) => disciplina.id || disciplina.nome));
     return enrichedDisciplinas.filter((disciplina) => allowed.has(disciplina.id || disciplina.nome));
   }, [disciplinasFiltradas, enrichedDisciplinas]);
+
+  // Indice plano -> objetivos do curso, para a linha da disciplina dizer a quais objetivos
+  // ela serve. Um curso agrupa objetivos desde a leitura do edital.
+  const cargosPorPlano = useMemo(() => {
+    const indice = {};
+    (cursos || []).forEach((curso) => {
+      const lista = objetivosDoCurso(curso);
+      if (!curso?.plano || lista.length < 2) return;
+      indice[curso.plano] = { lista, porDisciplina: (nome) => objetivosDaDisciplina(curso, nome) };
+    });
+    return indice;
+  }, [cursos]);
 
   const objetivosAtivos = useMemo(
     () => (cursos || []).filter((curso) => curso.status !== 'arquivado'),
@@ -222,6 +239,7 @@ export default function Disciplinas({
           <>
             <TabelaDisciplinas
               data={enrichedFiltered}
+              cargosPorPlano={cargosPorPlano}
               loading={loadingDisciplinas}
               query={query}
               setQuery={setQuery}
@@ -312,6 +330,7 @@ function Kpi({ icon: Icon, label, value, sub }) {
 
 function TabelaDisciplinas({
   data,
+  cargosPorPlano = {},
   loading,
   query,
   setQuery,
@@ -384,7 +403,10 @@ function TabelaDisciplinas({
             </tr>
           </thead>
           <tbody>
-            {loading && (
+            {/* Só mostra "carregando" quando não há o que mostrar. Trocar a tabela cheia
+                por um aviso de carregamento a cada atualização e o que fazia as disciplinas
+                sumirem e voltarem na cara do aluno. */}
+            {loading && data.length === 0 && (
               <tr>
                 <td colSpan={6}>
                   <EmptyDashed icon={BrainCircuit} title="Carregando disciplinas..." />
@@ -392,10 +414,11 @@ function TabelaDisciplinas({
               </tr>
             )}
 
-            {!loading && data.map((disciplina, index) => (
+            {data.map((disciplina, index) => (
               <DisciplinaRow
                 key={disciplina.id || disciplina.nome || index}
                 disciplina={disciplina}
+                cargosDoPlano={cargosPorPlano}
                 index={index}
                 onOpen={onOpen}
                 onEdit={onEdit}
@@ -421,7 +444,18 @@ function TabelaDisciplinas({
   );
 }
 
-function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete }) {
+function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete, cargosDoPlano = {} }) {
+  // Num curso de mais de um objetivo, saber a quais a disciplina serve muda o que o aluno
+  // faz com ela: estudar uma que cai nos dois rende o dobro do avanco.
+  const cargos = cargosDoPlano[disciplina.plano] || null;
+  const marcaDeCargo = (() => {
+    if (!cargos || cargos.lista.length < 2) return null;
+    const dela = cargos.porDisciplina(disciplina.nome);
+    if (dela.length >= cargos.lista.length) return { texto: 'Nos dois objetivos', forte: true };
+    const dono = cargos.lista.find((cargo) => dela.includes(cargo.id));
+    return dono ? { texto: `Só ${dono.nome}`, forte: false } : null;
+  })();
+
   const token = getAreaToken(disciplina.areaKey || disciplina.area || inferAreaFromText(disciplina.nome, disciplina.plano));
   const topicos = disciplina.topicos || [];
   const concluidos = topicos.filter((topico) => topico.concluido).length;
@@ -439,15 +473,29 @@ function DisciplinaRow({ disciplina, index, onOpen, onEdit, onDelete }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 5 }}>
               <span className="pl-mini-chip" style={{ background: token.chip, color: token.chipInk }}>{token.label}</span>
               {disciplina.needsReview && <span className="pl-mini-chip is-warning">revisão urgente</span>}
+              {disciplina.nuncaEstudada && <span className="pl-mini-chip">não iniciada</span>}
+              {marcaDeCargo && (
+                <span className={`pl-mini-chip${marcaDeCargo.forte ? ' is-success' : ''}`}>{marcaDeCargo.texto}</span>
+              )}
               <span className="pl-muted" style={{ fontSize: 12 }}>
-                {disciplina.lastStudyLabel ? `último estudo ${disciplina.lastStudyLabel}` : 'sem estudo recente'}
+                {disciplina.lastStudyLabel
+                  ? `último estudo ${disciplina.lastStudyLabel}`
+                  : disciplina.nuncaEstudada ? 'ainda não começou' : 'sem estudo recente'}
               </span>
             </div>
           </div>
         </div>
       </td>
       <td>
-        <span className="pl-pill-muted">{disciplina.plano || 'Geral'}</span>
+        {/* Nome de concurso e longo ("Concurso Publico para Admissao ao CFO e CFP da PMAL")
+            e estourava o pill, escrevendo por cima do texto ao lado. */}
+        <span
+          className="pl-pill-muted"
+          title={disciplina.plano || 'Geral'}
+          style={{ maxWidth: 220, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'middle' }}
+        >
+          {disciplina.plano || 'Geral'}
+        </span>
       </td>
       <td>{topicos.length}</td>
       <td>{concluidos}</td>
@@ -505,7 +553,7 @@ function BizuDiagnostico({ disciplinas, onStart }) {
               : 'Cadastre disciplinas e registre estudo para a IA montar um diagnóstico útil.'}
           </p>
           <div style={{ marginTop: 18 }}>
-            <button type="button" className="pl-btn-ai" onClick={onStart}>
+            <button type="button" className="pl-btn pl-btn-ai" onClick={onStart}>
               <Sparkles size={15} />
               Registrar sessão guiada
             </button>
@@ -651,11 +699,20 @@ function enrichDisciplines(disciplinas, historicoReal, studyRecommendation) {
     const recommendedSubject = studyRecommendation?.subject || studyRecommendation?.disciplina || studyRecommendation?.materia;
     const isRecommended = recommendedSubject && sameSubject({ disciplina: recommendedSubject, materia: recommendedSubject, subject: recommendedSubject }, disciplina);
 
+    // Disciplina recem-importada nao esta "atrasada": ela nem comecou.
+    //
+    // A regra antiga marcava revisao urgente quando faltava historico — e logo depois de
+    // subir o edital, TODAS as 17 ficavam em vermelho. Um alerta que aparece em tudo nao
+    // alerta nada, e ainda faz o aluno achar que esta devendo no primeiro dia. Urgente e o
+    // que ele comecou e deixou para tras, ou o que a recomendacao apontou.
+    const nuncaEstudada = relatedHistory.length === 0 && coverage === 0;
+
     return {
       ...disciplina,
       coverage,
+      nuncaEstudada,
       lastStudyLabel: formatRelativeDate(lastDate),
-      needsReview: isRecommended || coverage < 35 || relatedHistory.length === 0,
+      needsReview: !nuncaEstudada && (isRecommended || coverage < 35 || relatedHistory.length === 0),
       areaKey: disciplina.area || disciplina.categoria || inferAreaFromText(disciplina.nome, disciplina.plano),
     };
   });

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -11,6 +11,8 @@ import {
   Trophy,
   Zap,
 } from 'lucide-react';
+import { saudacaoDoHorario, msAteProximaFaixa } from '../lib/saudacao';
+import { fraseDoDia } from '../lib/frases';
 import { buildStudyHistoryOverview, dailyGoalMinutesFromWeeklyHours, parseStudyTimeToMinutes, shiftDays, toDateKey } from '../lib/studyAnalytics';
 
 export default function Dashboard({
@@ -43,13 +45,26 @@ export default function Dashboard({
     [safeHistorico, dayGoalMinutes]
   );
 
+  // O horario da tela, nao o da abertura.
+  //
+  // `new Date()` no corpo do componente congela no instante em que o painel montou: quem
+  // deixa o app aberto a noite toda continuava vendo "Boa tarde" as duas da manha, e a data
+  // parada no dia anterior. O relogio se reprograma para a proxima virada de faixa — nao
+  // fica acordando de minuto em minuto para nada.
+  const [agora, setAgora] = useState(() => new Date());
+
+  useEffect(() => {
+    const alarme = setTimeout(() => setAgora(new Date()), msAteProximaFaixa(agora));
+    return () => clearTimeout(alarme);
+  }, [agora]);
+
   const dayContextLabel = useMemo(
-    () => new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
-    []
+    () => agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
+    [agora]
   );
 
-  const currentHour = new Date().getHours();
-  const greeting = currentHour < 12 ? 'Bom dia' : currentHour < 18 ? 'Boa tarde' : 'Boa noite';
+  const greeting = saudacaoDoHorario(agora).saudacao;
+  const citacaoDoDia = fraseDoDia(agora);
   const cleanUserName = String(userDisplayName || '').trim();
   const primaryRecommendation = studyRecommendation?.primary || null;
   const targetDaysRemaining = Number.isFinite(Number(targetContest?.diasParaProva))
@@ -167,8 +182,14 @@ export default function Dashboard({
   }
 
   return (
-    <div style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
-      <div style={{ width: '100%', padding: 'clamp(16px, 4vw, 36px) clamp(12px, 3vw, 32px)' }}>
+    <div className="pl-dash" style={{ flex: 1, overflow: 'auto', background: 'var(--pl-bg)' }}>
+      {/* As medidas verticais vem de variaveis (ver .pl-dash em index.css) porque estilo
+          inline ganha de media query: para o painel encolher em tela baixa, o numero tem
+          que sair do JSX. */}
+      <div style={{ width: '100%', padding: 'var(--dash-pad-y) clamp(12px, 3vw, 32px)' }}>
+        {/* A coluna da direita e do objetivo-alvo, definido ou nao. Deixa-la vazia era o
+            pior dos mundos: o aluno nao via que faltava escolher um alvo, e a plataforma
+            inteira depende dele para priorizar. Sem alvo, o lugar convida a definir. */}
         <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 220px', gap: 28, alignItems: 'center' }}>
           <div style={{ minWidth: 0 }}>
             <div className="pl-eyebrow">
@@ -180,18 +201,18 @@ export default function Dashboard({
                 </>
               )}
             </div>
-            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 'clamp(34px, 6vw, 62px)', color: 'var(--pl-ink)' }}>
+            <h1 className="pl-display" style={{ margin: '8px 0 0', fontSize: 'var(--dash-hero)', color: 'var(--pl-ink)' }}>
               {greeting}{cleanUserName ? `, ${cleanUserName}` : ''}<span style={{ color: 'var(--pl-accent)' }}>.</span>
             </h1>
             {(heroTopic || heroDetail) && (
-              <p style={{ margin: '12px 0 0', fontSize: 17, fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 640, lineHeight: 1.45 }}>
+              <p style={{ margin: 'var(--dash-hero-gap) 0 0', fontSize: 'var(--dash-hero-sub)', fontWeight: 500, color: 'var(--pl-ink-2)', maxWidth: 640, lineHeight: 1.45 }}>
                 {heroTopic && (
                   <>Hoje a gente <span className="pl-mark-text">papira {heroTopic}</span>{heroDetail ? ` - ${heroDetail}` : '.'}</>
                 )}
                 {!heroTopic && heroDetail}
               </p>
             )}
-            <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ marginTop: 'var(--dash-hero-gap)', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button className="pl-btn pl-btn-primary pl-btn-lg" onClick={quickAction.onClick}>
                 <Play size={13} fill="currentColor" /> {quickAction.label}
               </button>
@@ -204,6 +225,24 @@ export default function Dashboard({
             </div>
           </div>
 
+          {targetDaysRemaining === null && (
+            <div
+              className="pl-card pl-card-paper"
+              style={{ width: 220, padding: '17px 20px', borderStyle: 'dashed' }}
+            >
+              <div className="pl-eyebrow" style={{ fontSize: 10 }}>Objetivo-alvo</div>
+              <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)', lineHeight: 1.3 }}>
+                Nenhum alvo definido
+              </div>
+              <p style={{ margin: '6px 0 12px', fontSize: 12, lineHeight: 1.45, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
+                É o alvo que diz à plataforma o que priorizar e quantos dias faltam.
+              </p>
+              <button className="pl-btn pl-btn-sm" onClick={() => setActiveTab?.('planos')}>
+                Definir alvo <ArrowRight size={12} />
+              </button>
+            </div>
+          )}
+
           {targetDaysRemaining !== null && (
             <div className="pl-card" style={{ width: 220, padding: '17px 22px' }}>
               <div className="pl-eyebrow" style={{ fontSize: 10 }}>Objetivo-alvo</div>
@@ -211,8 +250,15 @@ export default function Dashboard({
                 <span className="pl-num" style={{ fontSize: 54, color: 'var(--pl-ink)', lineHeight: 1 }}>{targetDaysRemaining}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pl-ink-2)' }}>dias</span>
               </div>
+              {/* Dizer so "dias" nao informa nada quando o alvo e a faculdade: o prazo dela
+                  e o fim do periodo, nao uma prova. O rotulo vem do tipo do objetivo. */}
+              {targetContest?.rotuloDaContagem && (
+                <div style={{ marginTop: 2, fontSize: 11.5, color: 'var(--pl-ink-3)', fontWeight: 600 }}>
+                  {targetContest.rotuloDaContagem}
+                </div>
+              )}
               <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 700, color: 'var(--pl-ink)' }}>
-                {targetContest?.nome || 'Objetivo definido'}
+                {targetContest?.objetivoNome || targetContest?.nome || 'Objetivo definido'}
               </div>
               <div style={{ marginTop: 3, fontSize: 12, color: 'var(--pl-ink-3)', fontWeight: 500 }}>
                 {[targetContest?.banca, targetContest?.cargo || targetContest?.concurso].filter(Boolean).join(' - ')}
@@ -221,7 +267,7 @@ export default function Dashboard({
           )}
         </section>
 
-        <div className="pl-rule" style={{ margin: '18px 0 16px' }} />
+        <div className="pl-rule" style={{ margin: 'var(--dash-gap) 0' }} />
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 12 }}>
           <PlKpi label="Papirado hoje" num={historyOverview.todayMinutesLabel} detail="Volume efetivo" />
@@ -232,7 +278,7 @@ export default function Dashboard({
         </section>
 
         {/* ── Foco do Dia + Streak ── */}
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 18 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 'var(--dash-gap)' }}>
           <PlFocoDia
             recommendation={primaryRecommendation}
             todayProgress={historyOverview.todayGoalProgress}
@@ -248,7 +294,7 @@ export default function Dashboard({
           />
         </section>
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginTop: 18 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginTop: 'var(--dash-gap)' }}>
           <div className="pl-card" style={{ padding: '16px 18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
               <div>
@@ -294,13 +340,13 @@ export default function Dashboard({
         </section>
 
         {(ultimaAnotacao || editalProgresso) && (
-          <section style={{ display: 'grid', gridTemplateColumns: ultimaAnotacao && editalProgresso ? '1.2fr 1fr' : '1fr', gap: 14, marginTop: 16 }}>
+          <section style={{ display: 'grid', gridTemplateColumns: ultimaAnotacao && editalProgresso ? '1.2fr 1fr' : '1fr', gap: 14, marginTop: 'var(--dash-gap)' }}>
             {ultimaAnotacao && <PlLastNote nota={ultimaAnotacao} onOpen={onOpenUltimaAnotacao} onOpenNotebook={() => setActiveTab?.('redacoes')} />}
             {editalProgresso && <PlEditalProgress data={editalProgresso} onOpen={() => setActiveTab?.('edital')} />}
           </section>
         )}
 
-        <section style={{ marginTop: 20 }}>
+        <section style={{ marginTop: 'var(--dash-gap)' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 10 }}>
             <div>
               <div className="pl-eyebrow">Esta semana</div>
@@ -317,6 +363,42 @@ export default function Dashboard({
             <PlWeekBars bars={weekBars} max={weekMax} />
           </div>
         </section>
+
+        {/* A citacao fecha a pagina, como colofao.
+         *
+         * Nao cabia mais no alto: a coluna da direita e do objetivo-alvo, e entre os KPIs e
+         * o Foco do Dia ela criava uma linha nova numa tela ja apertada. Aqui nao empurra
+         * nada, nao disputa com nenhuma acao, e e o que o olho encontra quando termina de
+         * ler o painel — que e quando uma frase dessas tem alguma chance de ser lida. */}
+        <figure
+          style={{
+            margin: 'var(--dash-gap) 0 0',
+            borderTop: '1px solid var(--pl-rule)',
+            paddingTop: 'var(--dash-gap)',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontFamily: 'var(--pl-serif)',
+              fontStyle: 'italic',
+              fontWeight: 300,
+              fontSize: 'var(--dash-frase)',
+              lineHeight: 1.35,
+              letterSpacing: '-0.015em',
+              color: 'var(--pl-ink-2)',
+              maxWidth: 620,
+              marginInline: 'auto',
+            }}
+          >
+            {citacaoDoDia.texto}
+          </p>
+          {/* O credito nao e enfeite: e ele que separa citacao de frase de biscoito. */}
+          <figcaption className="pl-eyebrow" style={{ marginTop: 10 }}>
+            {citacaoDoDia.autor}
+          </figcaption>
+        </figure>
       </div>
     </div>
   );
@@ -324,10 +406,10 @@ export default function Dashboard({
 
 function PlKpi({ label, num, unit, detail, icon, progress, accentColor }) {
   return (
-    <div className="pl-card" style={{ padding: '14px 16px 13px' }}>
+    <div className="pl-card" style={{ padding: 'var(--dash-kpi-pad)' }}>
       <div className="pl-eyebrow" style={{ fontSize: 10 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 6 }}>
-        <span className="pl-num" style={{ fontSize: 38, color: 'var(--pl-ink)', lineHeight: 1 }}>{num}</span>
+        <span className="pl-num" style={{ fontSize: 'var(--dash-kpi-num)', color: 'var(--pl-ink)', lineHeight: 1 }}>{num}</span>
         {unit && <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink-3)', marginLeft: 2 }}>{unit}</span>}
         {icon && <span style={{ marginLeft: 'auto' }}>{icon}</span>}
       </div>

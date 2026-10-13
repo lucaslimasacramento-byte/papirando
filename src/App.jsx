@@ -23,6 +23,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase, loadContestDraftsFromSupabase, loadContestTemplateContent } from './lib/contestCatalogApi';
+import { loadCoursePackages, loadMyPackageEnrollments } from './lib/coursePackagesApi';
 import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { compressImage } from './lib/imageCompress';
@@ -30,6 +31,7 @@ import { saveContestTemplateAdmin } from './lib/adminContestTemplatesApi';
 import { loadSubjectCatalogFromSupabase, normalizeSubjectCatalogEntry } from './lib/subjectCatalogApi';
 import { normalizeExpense } from './lib/adminFinance';
 import { normalizeLead } from './lib/adminCrm';
+import { parseEditalDate, impressaoDoEdital, chaveDeDisciplina } from './lib/edital';
 import { canonicalizeSubjectName, resolveSubjectCatalogEntry } from './lib/subjectCatalogUtils';
 import { buildCanonicalHistory, normalizeStudyRecord } from './lib/studyAnalytics';
 import { buildSmartStudyPlan, mergeDisciplinesByCanonical } from './lib/studyRecommendation';
@@ -111,6 +113,17 @@ import {
 } from './lib/redacaoSiteContentApi';
 import { normalizePlanLimits, resolvePlanKey } from './lib/planLimitsConfig';
 import { recordCustomObjective } from './lib/customObjectivesApi';
+import { fetchCourses, upsertCourses, sincronizarCursos } from './lib/coursesApi';
+import { concursosDosCursos, migrarAlvoDeCurso } from './lib/cursoComoConcurso';
+import { marcoDoObjetivo } from './lib/tiposDeObjetivo';
+import {
+  migrarCurso,
+  idDoObjetivo,
+  objetivosDoCurso,
+  montarMapaDeObjetivos,
+  resolverColisaoDeIds,
+  renomearNoMapa,
+} from './lib/objetivos';
 import { normalizeNotificationSettings } from './lib/notificationSettings';
 import { normalizeCourseTemplates } from './lib/courseTemplates';
 import { REDACAO_THEME_BANK_DEFAULT } from './data/redacaoThemeBankDefault';
@@ -243,92 +256,6 @@ function stripOAuthErrorFromLocation() {
   } catch (error) {
     console.warn('Nao foi possivel limpar parametros OAuth da URL.', error);
   }
-}
-
-function EditorialTopStrip({ activeTab, setActiveTab, darkMode = false }) {
-  const tabs = [
-    { id: 'home', label: 'Dashboard' },
-    { id: 'questoes', label: 'Questões' },
-    { id: 'sessoes', label: 'Resolver questão' },
-    { id: 'planejamento', label: 'Plano' },
-  ];
-
-  const activeId = activeTab === 'home'
-    ? 'home'
-    : activeTab === 'questoes'
-      ? 'questoes'
-      : activeTab === 'planejamento'
-        ? 'planejamento'
-        : activeTab === 'sessoes'
-          ? 'sessoes'
-          : '';
-
-  const stripTheme = darkMode
-    ? {
-        background: '#0f0c08',
-        border: 'rgba(243, 239, 229, 0.14)',
-        active: '#f3efe5',
-        muted: 'rgba(243, 239, 229, 0.62)',
-        faint: 'rgba(243, 239, 229, 0.40)',
-      }
-    : {
-        background: '#efe8d8',
-        border: 'rgba(20, 17, 13, 0.14)',
-        active: '#14110d',
-        muted: 'rgba(20, 17, 13, 0.58)',
-        faint: 'rgba(20, 17, 13, 0.36)',
-      };
-
-  return (
-    <div
-      className="fixed inset-x-0 top-0 z-[70] flex h-11 items-center border-b"
-      style={{
-        background: stripTheme.background,
-        borderColor: stripTheme.border,
-        color: stripTheme.active,
-        maxWidth: '100vw',
-        overflowX: 'hidden',
-      }}
-    >
-      <button
-        type="button"
-        onClick={() => setActiveTab('home')}
-        className="flex h-full w-14 items-center justify-center border-r md:w-[88px]"
-        style={{ borderColor: stripTheme.border, color: stripTheme.active }}
-        aria-label="Papirando"
-      >
-        <span style={{ fontFamily: 'var(--pl-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1 }}>P</span>
-      </button>
-      <nav className="hidden h-full min-w-0 flex-1 items-center md:flex">
-        {tabs.map((tab) => {
-          const isActive = activeId === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className="relative flex h-full items-center px-6 text-sm font-semibold transition"
-              style={{
-                color: isActive ? stripTheme.active : stripTheme.muted,
-              }}
-            >
-              {tab.label}
-              {isActive ? (
-                <span
-                  className="absolute inset-x-5 bottom-0 h-px"
-                  style={{ background: stripTheme.active }}
-                />
-              ) : null}
-            </button>
-          );
-        })}
-      </nav>
-      <div className="hidden shrink-0 items-center gap-2 px-5 text-[11px] font-semibold md:flex" style={{ color: stripTheme.muted }}>
-        <span style={{ color: stripTheme.faint }}>✣</span>
-        Aplicação editorial · 16 mai 2026
-      </div>
-    </div>
-  );
 }
 
 function parseCycleDurationLabel(label, fallback = 90) {
@@ -727,11 +654,15 @@ export default function App() {
       .trim(), []);
 
   const isLegacyDemoCourse = useCallback((course = {}) => {
+    // Só os cursos demo antigos (curso-pmba-soldado-2026 / "PMBA - Soldado (2026)" e ADAB).
+    // NÃO filtrar qualquer "PM-BA Soldado": o curso padrão real usa esse nome.
     const text = normalizeLegacyCourseText([course.id, course.nome, course.plano, course.concurso, course.cargo].join(' '));
+    const nome = normalizeLegacyCourseText(course.nome);
+    const plano = normalizeLegacyCourseText(course.plano);
     return (
-      text.includes('curso-pmba-soldado-2026') ||
-      (text.includes('pmba') && text.includes('soldado')) ||
-      (text.includes('policia militar do estado da bahia') && text.includes('soldado')) ||
+      String(course.id || '') === 'curso-pmba-soldado-2026' ||
+      nome === 'pmba - soldado (2026)' ||
+      plano === 'pmba - soldado' ||
       (text.includes('adab 2026') && text.includes('fiscal estadual agropecuario'))
     );
   }, [normalizeLegacyCourseText]);
@@ -740,7 +671,7 @@ export default function App() {
     if (!Array.isArray(courses)) return [];
 
     const seen = new Set();
-    return courses.filter((course) => {
+    return courses.map(migrarCurso).filter((course) => {
       if (!course || isLegacyDemoCourse(course)) return false;
 
       const key = [course.plano, course.nome, course.concurso]
@@ -1035,12 +966,24 @@ export default function App() {
     return [];
   });
 
+  // O localStorage deixa de ser a morada do curso e vira cache: o banco e a verdade, mas o
+  // que ja esta aqui precisa continuar aparecendo enquanto o carregamento nao volta — e
+  // serve de fonte para a migracao inicial.
   useEffect(() => {
     localStorage.setItem('papirando_cursos', JSON.stringify(cursos));
   }, [cursos]);
 
+  // Enquanto isto e falso, a sincronizacao nao roda: sincronizar antes de carregar mandaria
+  // uma lista vazia (ou so a do navegador) para o banco e apagaria os cursos do aluno.
+  const [cursosCarregados, setCursosCarregados] = useState(false);
+  const cursosSincronizadosRef = useRef(null);
+
   const [contestLibrary, setContestLibrary] = useState(() => localConcursoCatalog);
   const [contestDrafts, setContestDrafts] = useState([]);
+  // Pacotes de curso com material pronto (ex.: PM-BA Soldado) e adesões do aluno.
+  // Não confundir com os cursos do aluno (cursos / public.courses).
+  const [coursePackages, setCoursePackages] = useState([]);
+  const [myPackageEnrollments, setMyPackageEnrollments] = useState([]);
   const [selectedContestDetailId, setSelectedContestDetailId] = useState(null);
   const [favoriteContestIds, setFavoriteContestIds] = useState(() => {
     const saved = readJsonStorage('papirando_favorite_contests', []);
@@ -1202,7 +1145,10 @@ export default function App() {
         const contests = await loadUserContests(currentUserId);
         const targetRow = contests.find((row) => row.is_target);
         if (!cancelled && targetRow?.contest_slug) {
-          setTargetContestId(targetRow.contest_slug);
+          // Alvo salvo antes de o alvo passar a apontar para um objetivo ("curso:<id>")
+          // continua resolvendo: sem isto, todo aluno com alvo definido voltaria a "Nenhum
+          // alvo definido" no deploy, sem ter mexido em nada.
+          setTargetContestId(migrarAlvoDeCurso(targetRow.contest_slug, cursos));
         }
       } catch (error) {
         console.warn('[user_contests] Erro ao carregar concursos do usuário:', error?.message || error);
@@ -1458,6 +1404,11 @@ export default function App() {
     });
   }, [badgeRuleOverrides, currentProfileKey, defaultBadgeConfig]);
 
+  // currentProfile nasce null e vira objeto quando o Supabase responde. effectiveProfile
+  // espalha null em {} e por isso sempre parece "carregado" — quem precisa decidir se mostra
+  // um nome tem que receber este sinal separado.
+  const perfilCarregado = currentProfile !== null;
+
   const effectiveProfile = useMemo(() => {
     const localOverride = profileOverrides[currentProfileKey] || {};
     return {
@@ -1567,9 +1518,24 @@ export default function App() {
   // `[rawContest]`, esse efeito disparava a cada re-render (inclusive o causado
   // pelo próprio clique), resetando o cargo selecionado e impedindo os botões
   // de interesse/alvo de refletirem o novo estado.
+  // Admin enxerga no catálogo, como prévia, os concursos em rascunho que já têm curso
+  // com material — para conferir como o aluno vai ver antes de publicar.
+  const catalogWithAdminPreview = useMemo(() => {
+    if (!isAdmin || contestDrafts.length === 0 || coursePackages.length === 0) return contestLibrary;
+    const courseTemplateIds = new Set(coursePackages.map((pkg) => pkg.contest_template_id).filter(Boolean));
+    const libraryIds = new Set(contestLibrary.map((contest) => contest.id));
+    const previews = contestDrafts
+      .filter((draft) => courseTemplateIds.has(draft.id) && !libraryIds.has(draft.id))
+      .map((draft) => ({ ...draft, is_public: true, adminPreview: true }));
+    return previews.length > 0 ? [...previews, ...contestLibrary] : contestLibrary;
+  }, [isAdmin, contestDrafts, coursePackages, contestLibrary]);
+  const enrolledPackageIds = useMemo(
+    () => myPackageEnrollments.map((enrollment) => enrollment.package_id),
+    [myPackageEnrollments]
+  );
   const selectedContestDetail = useMemo(
-    () => findGroupedContestById(contestLibrary, selectedContestDetailId),
-    [contestLibrary, selectedContestDetailId]
+    () => findGroupedContestById(catalogWithAdminPreview, selectedContestDetailId),
+    [catalogWithAdminPreview, selectedContestDetailId]
   );
   const communityRankings = useMemo(
     () =>
@@ -1592,7 +1558,7 @@ export default function App() {
 
     return contestLibrary
       .flatMap((contest) => {
-        const imported = cursos.some(
+        const imported = Boolean(contest.origemCursoId) || cursos.some(
           (curso) =>
             curso.plano === contest.plano ||
             curso.nome === contest.nome ||
@@ -2150,7 +2116,15 @@ export default function App() {
   );
 
   const myContests = useMemo(() => {
-    return contestLibrary
+    // O curso criado a partir do edital tambem e um concurso acompanhado.
+    //
+    // Esta lista vinha so do catalogo publicado. Depois que a plataforma passou a se montar
+    // pelo PDF do aluno, isso virou um beco: ele importa o edital, ganha o curso, e o botao
+    // "Marcar alvo" procura um concurso que nunca existiu — nao acontece nada, sem erro
+    // nenhum. Sem alvo, o Inicio fica sem contagem de dias, sem prioridade e sem foco.
+    const daBiblioteca = [...contestLibrary, ...concursosDosCursos(cursos, contestLibrary)];
+
+    return daBiblioteca
       .map((contest) => {
         const imported = cursos.some(
           (curso) =>
@@ -2166,15 +2140,10 @@ export default function App() {
 
         if (!imported && !interested && !favorite) return null;
 
-        let diasParaProva = null;
-        if (contest.prova_data) {
-          const provaDate = new Date(`${contest.prova_data}T00:00:00`);
-          // Normaliza "hoje" para meia-noite local: a prova é fixada em T00:00:00, então
-          // comparar contra a hora atual desviava a contagem de dias em até 1 dia.
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          diasParaProva = Math.ceil((provaDate.getTime() - today.getTime()) / 86400000);
-        }
+        // O prazo depende do tipo do objetivo: concurso conta dias para a prova, faculdade
+        // para o fim do periodo, estudo livre nao tem prazo. Ver src/lib/tiposDeObjetivo.js.
+        const marco = marcoDoObjetivo(contest);
+        const diasParaProva = marco ? marco.dias : null;
 
         return {
           ...contest,
@@ -2184,6 +2153,8 @@ export default function App() {
           checklistDoneCount,
           disciplinasIniciadas,
           diasParaProva,
+          rotuloDoPrazo: marco?.rotulo || '',
+          rotuloDaContagem: marco?.rotuloDaContagem || '',
           isTarget: contest.id === targetContestId,
         };
       })
@@ -2569,14 +2540,14 @@ export default function App() {
         },
         questionCandidate && {
           id: 'rotina-manha-questoes',
-          title: 'Questoes',
+          title: 'Questões',
           subtitle: questionCandidate.nome,
           detail:
             questionCandidate.accuracy !== null
-              ? `Feche a manha validando o acerto agregado de ${questionCandidate.accuracy}%.`
-              : 'Use um bloco curto de questoes para medir a assimilacao.',
+              ? `Feche a manhã validando o acerto agregado de ${questionCandidate.accuracy}%.`
+              : 'Use um bloco curto de questões para medir a assimilação.',
           duration: '0h 30m',
-          tag: 'Questoes',
+          tag: 'Questões',
           recommendation: buildQuestionRecommendation(questionCandidate),
         },
       ].filter(Boolean);
@@ -2586,14 +2557,14 @@ export default function App() {
       return [
         questionCandidate && {
           id: 'rotina-tarde-questoes',
-          title: 'Questoes',
+          title: 'Questões',
           subtitle: questionCandidate.nome,
           detail:
             questionCandidate.accuracy !== null
               ? `Momento bom para subir o acerto de ${questionCandidate.accuracy}%.`
-              : 'Transforme a tarde em leitura de desempenho com questoes.',
+              : 'Transforme a tarde em leitura de desempenho com questões.',
           duration: '0h 40m',
-          tag: 'Questoes',
+          tag: 'Questões',
           recommendation: buildQuestionRecommendation(questionCandidate, '0h 40m', 40),
         },
         primary && {
@@ -2656,7 +2627,7 @@ export default function App() {
         subtitle: questionCandidate.nome,
         detail: 'Feche o dia com um bloco curto de validacao.',
         duration: '0h 20m',
-        tag: 'Questoes',
+        tag: 'Questões',
         recommendation: buildQuestionRecommendation(questionCandidate, '0h 20m', 20),
       },
     ].filter(Boolean);
@@ -2785,6 +2756,35 @@ export default function App() {
       ignore = true;
     };
   }, [isAdmin, currentAuthUser]);
+
+  const refreshPackageEnrollments = useCallback(async () => {
+    if (!currentAuthUser?.id) {
+      setMyPackageEnrollments([]);
+      return;
+    }
+    try {
+      setMyPackageEnrollments(await loadMyPackageEnrollments(currentAuthUser.id));
+    } catch (error) {
+      console.warn('Falha ao carregar adesões aos pacotes de curso.', error);
+    }
+  }, [currentAuthUser?.id]);
+
+  // isAdmin entra na dependência porque a RLS só devolve pacotes em rascunho para admin.
+  useEffect(() => {
+    if (!currentAuthUser) {
+      setCoursePackages([]);
+      setMyPackageEnrollments([]);
+      return undefined;
+    }
+    let ignore = false;
+    loadCoursePackages()
+      .then((rows) => { if (!ignore) setCoursePackages(rows); })
+      .catch((error) => console.warn('Falha ao carregar pacotes de curso.', error));
+    refreshPackageEnrollments();
+    return () => {
+      ignore = true;
+    };
+  }, [currentAuthUser, isAdmin, refreshPackageEnrollments]);
 
   useEffect(() => {
     let ignore = false;
@@ -4320,6 +4320,72 @@ export default function App() {
     };
   }, [formatMinutesToDisplay]);
 
+  // Carrega os cursos do aluno e, na primeira vez, sobe o que existia so no navegador.
+  //
+  // O curso vivia apenas no localStorage enquanto as disciplinas dele ja ficavam no
+  // Supabase. Trocar de aparelho fazia os cursos sumirem e as disciplinas ficarem orfas —
+  // aparecendo no Inicio e no Plano sem curso nenhum para explica-las.
+  useEffect(() => {
+    let ignore = false;
+
+    const carregarCursos = async () => {
+      if (!isAuthenticated || !currentUserId) {
+        setCursosCarregados(false);
+        cursosSincronizadosRef.current = null;
+        return;
+      }
+
+      const { ok, courses } = await fetchCourses(currentUserId);
+      if (ignore) return;
+
+      // Sem leitura boa (rede, RLS, tabela ainda nao criada) o app segue com o que esta no
+      // navegador — mas a sincronizacao fica desligada, senao apagaria o que nao leu.
+      if (!ok) return;
+
+      const doNavegador = sanitizeStoredCourses(readJsonStorage('papirando_cursos', []) || []);
+
+      if (!courses.length && doNavegador.length) {
+        // Migracao silenciosa: o aluno nao tem por que saber que o curso mudou de lugar.
+        const salvou = await upsertCourses(currentUserId, doNavegador);
+        if (ignore) return;
+        cursosSincronizadosRef.current = salvou.ok ? doNavegador : null;
+        setCursos(doNavegador);
+        setCursosCarregados(salvou.ok);
+        return;
+      }
+
+      const limpos = sanitizeStoredCourses(courses);
+      cursosSincronizadosRef.current = limpos;
+      setCursos(limpos);
+      setCursosCarregados(true);
+    };
+
+    carregarCursos();
+    return () => { ignore = true; };
+  }, [isAuthenticated, currentUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // O alvo salvo no navegador tambem passa pela ponte, assim que os cursos existem.
+  useEffect(() => {
+    if (!targetContestId || !cursos.length) return;
+    const migrado = migrarAlvoDeCurso(targetContestId, cursos);
+    if (migrado !== targetContestId) setTargetContestId(migrado);
+  }, [targetContestId, cursos]);
+
+  // Espelha no banco toda mudanca na lista de cursos.
+  //
+  // A sincronizacao olha a lista inteira em vez de salvar em cada ponto de edicao: cursos
+  // nascem em cinco lugares diferentes deste arquivo (criar, catalogo, edital, inferencia
+  // por disciplina orfa, deduplicacao) e um deles esqueceria de salvar.
+  useEffect(() => {
+    if (!cursosCarregados || !currentUserId) return;
+
+    const anterior = cursosSincronizadosRef.current;
+    cursosSincronizadosRef.current = cursos;
+    sincronizarCursos(currentUserId, anterior, cursos).catch((error) => {
+      console.warn('[courses] falha ao sincronizar:', error?.message || error);
+    });
+  }, [cursos, cursosCarregados, currentUserId]);
+
   useEffect(() => {
     let ignore = false;
 
@@ -4385,7 +4451,16 @@ export default function App() {
       });
 
       if (!ignore) {
-        setBancoDisciplinas(disciplinasNormalizadas);
+        // A disciplina do curso de demonstracao antigo tambem some da tela.
+        //
+        // O filtro de curso legado (isLegacyDemoCourse) tirava o CURSO da lista, mas as
+        // disciplinas dele ficaram no banco — e o Inicio, o Plano e o Bizu leem disciplina
+        // direto, sem passar por curso. O resultado era um painel cheio ("Historia do
+        // Brasil", 33 topicos em aberto) com zero cursos cadastrados, vindo de uma trilha
+        // de demonstracao que ninguem escolheu.
+        setBancoDisciplinas(
+          disciplinasNormalizadas.filter((disciplina) => !isLegacyDemoCourse({ plano: disciplina.plano }))
+        );
       }
     };
 
@@ -4697,6 +4772,15 @@ export default function App() {
       etapas: courseData.etapas || '',
       etapas_tags: courseData.etapas_tags || [],
       taf_itens: courseData.taf_itens || [],
+      carga_horaria: courseData.carga_horaria || '',
+      // Quadro de provas do cargo: [{disciplina, questoes, peso}]. É o que permite a
+      // plataforma dizer onde estão os pontos, em vez de tratar toda disciplina como igual.
+      prova: Array.isArray(courseData.prova) ? courseData.prova : [],
+      // Qual versão do edital gerou este curso. A plataforma inteira fica pendurada num PDF,
+      // e retificação posterior não chega a quem já montou — sem isto não há nem como avisar.
+      edital_arquivo: courseData.edital_arquivo || '',
+      edital_lido_em: courseData.edital_lido_em || '',
+      edital_impressao: courseData.edital_impressao || '',
       status_concurso: isContestCourse ? normalizeContestStatus(courseData.status_concurso || 'edital_publicado') : '',
       prova_data: courseData.prova_data || '',
       imagem_url: courseData.imagem_url || '',
@@ -4734,6 +4818,11 @@ export default function App() {
       if (patch.prova_data !== undefined) next.prova_data = patch.prova_data || '';
       if (patch.imagem_url !== undefined) next.imagem_url = String(patch.imagem_url || '').trim();
       if (patch.cor !== undefined && patch.cor) next.cor = patch.cor;
+      if (patch.apelido !== undefined) next.apelido = String(patch.apelido || '').trim();
+      if (patch.status !== undefined && patch.status) next.status = patch.status;
+      // Os dados que sao do alvo (data da prova, banca, cargo, vagas) vivem no objetivo, nao
+      // no curso: um curso pode agrupar dois concursos com datas diferentes.
+      if (Array.isArray(patch.objetivos)) next.objetivos = patch.objetivos;
       return next;
     }));
   };
@@ -5844,31 +5933,115 @@ export default function App() {
     courseData,
     editalText,
     selectedContestId,
+    // Todos os cargos que o aluno escolheu — o curso carrega os dois dentro dele.
+    cargosSelecionados = null,
     analysisResult,
+    // Disciplinas como o aluno deixou na tela de revisão. Sem catálogo para cair de volta,
+    // é a revisão dele que vale — não a proposta crua da IA.
+    disciplinasRevisadas = null,
+    // Curso que ja existe, quando o aluno escolhe juntar este edital a um plano em vez de
+    // abrir outro. E o que permite estudar dois concursos (ou concurso + faculdade) num
+    // plano so, aproveitando a materia que se repete.
+    cursoExistenteId = '',
   }) => {
     const analysis =
       analysisResult?.contests?.length > 0 ? analysisResult : analyzeEditalDocument(editalText);
-    const contestSelecionado =
-      analysis.contests.find((contest) => contest.id === selectedContestId) || analysis.contests[0];
 
-    if (!contestSelecionado) {
+    // Um curso agrupa objetivos. Quando o aluno presta dois cargos do mesmo edital, dois
+    // cursos separados seriam a mesma lista estudada em duplicata, com progresso que nao
+    // conversa — marcar Portugues concluido num deixava o outro em zero na mesma materia.
+    // Ver src/lib/objetivos.js.
+    const idsDosCargos = Array.isArray(cargosSelecionados) && cargosSelecionados.length
+      ? cargosSelecionados
+      : [selectedContestId].filter(Boolean);
+
+    const cargosDoCurso = idsDosCargos
+      .map((id) => analysis.contests.find((contest) => contest.id === id))
+      .filter(Boolean);
+
+    const contestBase = cargosDoCurso[0] || analysis.contests[0];
+
+    if (!contestBase) {
       throw new Error('A IA não conseguiu identificar um concurso válido para importar.');
     }
 
+    // As disciplinas do curso sao a UNIAO do que o aluno marcou para todos os cargos: a
+    // materia comum e criada uma vez so, e o mapa acima diz a quem ela serve.
+    const contestSelecionado = Array.isArray(disciplinasRevisadas)
+      ? { ...contestBase, disciplinas: disciplinasRevisadas }
+      : contestBase;
+
     if (!contestSelecionado.disciplinas || contestSelecionado.disciplinas.length === 0) {
-      throw new Error('A IA não conseguiu identificar disciplinas reais nesse edital.');
+      throw new Error('Nenhuma disciplina ficou marcada para importar. Revise a lista antes de confirmar.');
     }
 
     const nomeCurso =
       courseData?.nome?.trim() ||
       (contestSelecionado.title !== 'Edital completo' ? contestSelecionado.title : 'Novo curso por edital');
 
-    const novoCurso = createCourse({
+    const cursoExistente = cursoExistenteId
+      ? cursos.find((item) => String(item.id) === String(cursoExistenteId))
+      : null;
+
+    const objetivosCrus = (cargosDoCurso.length ? cargosDoCurso : [contestBase]).map((cargo) => ({
+      id: cargo.id,
+      nome: cargo.roleName || cargo.title,
+      tipo: 'concurso',
+      cargo: cargo.roleName || cargo.title,
+      banca: courseData?.banca || analysis.banca || 'A definir',
+      vagas: cargo.vagas || '',
+      salario: cargo.salario || '',
+      escolaridade: cargo.escolaridade || '',
+      lotacao: cargo.lotacao || '',
+      carga_horaria: cargo.cargaHoraria || '',
+      inscricao_valor: analysis.inscricaoValor || '',
+      etapas_tags: analysis.etapas || [],
+      prova: Array.isArray(cargo.prova) ? cargo.prova : [],
+      prova_data: parseEditalDate(cargo.examDate) || courseData?.prova_data || '',
+      status_concurso: normalizeContestStatus('edital_publicado'),
+    }));
+
+    // O id do objetivo vem do titulo do cargo, e dois editais podem gerar o mesmo. Juntando
+    // ao curso existente, os dois virariam o MESMO objetivo — progresso de um aparecendo no
+    // outro, sem erro na tela. O de-para tambem corrige o mapa de disciplinas, que foi
+    // montado com os ids antigos.
+    const { objetivos: objetivosNovos, renomeados } = resolverColisaoDeIds(
+      objetivosCrus,
+      cursoExistente ? objetivosDoCurso(cursoExistente) : []
+    );
+
+    const novoCurso = cursoExistente || createCourse({
       ...courseData,
       nome: nomeCurso,
       plano: courseData?.plano || nomeCurso,
       concurso: courseData?.concurso || contestSelecionado.title || nomeCurso,
       banca: courseData?.banca || analysis.banca || 'A definir',
+      // A plataforma inteira se monta a partir do edital, então o curso puxa daqui o que
+      // antes vinha do catálogo ou era preenchido na mão.
+      cargo: courseData?.cargo || contestSelecionado.roleName || '',
+      vagas: courseData?.vagas || contestSelecionado.vagas || '',
+      salario: courseData?.salario || contestSelecionado.salario || '',
+      escolaridade: courseData?.escolaridade || contestSelecionado.escolaridade || '',
+      lotacao: courseData?.lotacao || contestSelecionado.lotacao || '',
+      carga_horaria: courseData?.carga_horaria || contestSelecionado.cargaHoraria || '',
+      inscricao_valor: courseData?.inscricao_valor || analysis.inscricaoValor || '',
+      etapas_tags: courseData?.etapas_tags?.length ? courseData.etapas_tags : (analysis.etapas || []),
+      // Os objetivos do curso, com o quadro de provas de cada um: e o peso por disciplina
+      // naquela prova, e dois cargos do mesmo edital raramente tem o mesmo.
+      //
+      // O objetivo e quem tem data, banca e cargo — e e ele que vira o alvo. O curso e o
+      // plano que os agrupa. Ver src/lib/objetivos.js.
+      objetivos: objetivosNovos,
+      // Qual disciplina serve a quais objetivos. Sem isto, o progresso de um objetivo
+      // contaria materia que nao cai na prova dele.
+      disciplinasPorObjetivo: renomearNoMapa(montarMapaDeObjetivos(disciplinasRevisadas), renomeados),
+      // Campos de topo seguem o primeiro cargo: tres telas ainda leem curso.prova e
+      // curso.cargo direto, e quebra-las agora seria pior que a duplicacao.
+      prova: Array.isArray(contestBase.prova) ? contestBase.prova : [],
+      prova_data: courseData?.prova_data || parseEditalDate(contestSelecionado.examDate),
+      edital_arquivo: courseData?.edital_arquivo || '',
+      edital_lido_em: new Date().toISOString().slice(0, 10),
+      edital_impressao: impressaoDoEdital(editalText),
       origem: 'ia',
     });
 
@@ -5879,8 +6052,27 @@ export default function App() {
     const novasDisciplinas = [];
     const palette = ['#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
 
+    // Disciplinas que o curso escolhido ja tem, por chave normalizada.
+    //
+    // Juntar um segundo edital a um curso existente quase sempre repete materia — Portugues,
+    // Informatica, Direito Constitucional. Criar de novo daria duas linhas da mesma
+    // disciplina no mesmo plano, cada uma com seu progresso: o aluno estudaria duas vezes e
+    // veria metade do avanco. A que ja existe so ganha o objetivo novo no mapa.
+    const jaNoCurso = new Map(
+      (cursoExistente ? bancoDisciplinas.filter((d) => d.plano === novoCurso.plano) : [])
+        .map((disciplina) => [chaveDeDisciplina(disciplina.nome), disciplina])
+    );
+    const disciplinasReaproveitadas = [];
+
     for (const [index, block] of contestSelecionado.disciplinas.entries()) {
       const subjectNome = normalizeSubjectNameForApp(block.nome);
+
+      const existente = jaNoCurso.get(chaveDeDisciplina(subjectNome));
+      if (existente) {
+        disciplinasReaproveitadas.push(existente.nome);
+        continue;
+      }
+
       const subject = await insertSubjectWithCatalogFallback({
         user_id: user.id,
         nome: subjectNome,
@@ -5918,10 +6110,45 @@ export default function App() {
 
     setBancoDisciplinas((prev) => [...prev, ...novasDisciplinas]);
 
+    // Curso existente: os objetivos novos entram no plano que ja estava la, e o mapa de
+    // disciplinas passa a apontar tambem para eles — inclusive nas materias reaproveitadas,
+    // que e o ganho de juntar os dois editais num plano so.
+    if (cursoExistente) {
+      const mapaNovo = renomearNoMapa(montarMapaDeObjetivos(disciplinasRevisadas), renomeados);
+      setCursos((prev) => prev.map((item) => {
+        if (item.id !== cursoExistente.id) return item;
+        const atual = migrarCurso(item);
+        const mapaAtual = { ...(atual.disciplinasPorObjetivo || {}) };
+        Object.entries(mapaNovo).forEach(([chave, objetivos]) => {
+          mapaAtual[chave] = [...new Set([...(mapaAtual[chave] || []), ...objetivos])];
+        });
+        return {
+          ...atual,
+          objetivos: [...(atual.objetivos || []), ...objetivosNovos],
+          disciplinasPorObjetivo: mapaAtual,
+        };
+      }));
+    }
+
+    // Sem alvo definido, o curso recem-importado vira o alvo.
+    //
+    // O aluno acabou de dizer, subindo o edital, qual e o objetivo dele — pedir que ele
+    // repita isso num segundo passo e burocracia. E sem alvo o Inicio fica sem contagem de
+    // dias, sem prioridade e sem foco do dia: a plataforma inteira depende deste campo.
+    // Se ja houver um alvo, nao mexemos: a escolha e dele.
+    if (!targetContestId) {
+      // O alvo aponta para um OBJETIVO, nao para o curso: e o objetivo que tem data de
+      // prova, banca e cargo. Com mais de um, o primeiro escolhido vira o alvo — trocar e
+      // um clique no cartao.
+      const primeiro = objetivosNovos[0] || objetivosDoCurso(novoCurso)[0];
+      if (primeiro) setTargetContestId(idDoObjetivo(novoCurso.id, primeiro.id));
+    }
+
     return {
       curso: novoCurso,
       disciplinasCriadas: novasDisciplinas.length,
       topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
+      disciplinasReaproveitadas,
       concursosDetectados: analysis.detectedContests,
       concursoImportado: contestSelecionado.title,
       bancaDetectada: analysis.banca,
@@ -5984,6 +6211,7 @@ export default function App() {
     }
 
     setBancoDisciplinas((prev) => [...prev, ...novasDisciplinas]);
+
     return {
       disciplinasCriadas: novasDisciplinas.length,
       topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
@@ -7037,6 +7265,7 @@ export default function App() {
     temaAtivo,
     setTemaAtivo,
     effectiveProfile,
+    perfilCarregado,
     profileHasValidCpf,
     currentUserEmail,
     profileMetrics,
@@ -7069,6 +7298,10 @@ export default function App() {
     uploadCourseImage,
     setSelectedCoursePlan,
     contestLibrary,
+    catalogWithAdminPreview,
+    coursePackages,
+    enrolledPackageIds,
+    refreshPackageEnrollments,
     currentCourseLimit,
     currentCourseCount,
     remainingCourseSlots,
@@ -7244,10 +7477,9 @@ export default function App() {
     <ErrorBoundary>
       <ToastProvider>
       <div
-        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden pt-11 font-sans text-slate-800"
+        className="app-shell flex h-screen min-h-0 flex-row items-stretch overflow-hidden font-sans text-slate-800"
         style={{ backgroundColor: 'var(--pl-bg, #f3efe5)', color: 'var(--pl-ink)' }}
       >
-      <EditorialTopStrip activeTab={activeTab} setActiveTab={setActiveTab} darkMode={darkMode} />
       {chartTooltip && (
         <div
           className="pointer-events-none fixed z-[9999] flex -translate-x-1/2 -translate-y-full transform items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-lg mt-[-10px]"
@@ -7281,6 +7513,7 @@ export default function App() {
           isAdmin={isAdmin}
           currentUserEmail={currentUserEmail}
           currentProfile={effectiveProfile}
+          perfilCarregado={perfilCarregado}
           onNavigate={() => setMobileNavOpen(false)}
           labelOverrides={sidebarLabelsOverride || {}}
           className="h-full min-h-0 shadow-float lg:shadow-none"
@@ -7451,6 +7684,8 @@ export default function App() {
 
           {activeTab === 'concursos' && (
             <Objetivos
+              targetContestId={targetContestId}
+              onSetTargetContest={setTargetContestId}
               concursoCatalog={contestLibrary}
               courseTemplates={courseTemplates ?? []}
               cursos={cursos}

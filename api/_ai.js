@@ -1,4 +1,14 @@
-const DEFAULT_TIMEOUT_MS = 90_000;
+import { prepararTextoEdital } from './_edital-text.js';
+
+// Abaixo do maxDuration de 60s da funcao em vercel.json: com 90s, a Vercel matava a
+// funcao antes do nosso timeout disparar e o aluno recebia um 504 sem mensagem nenhuma.
+// Com 55s a falha vira "o provedor demorou demais", que diz o que aconteceu.
+const DEFAULT_TIMEOUT_MS = 55_000;
+// Prazo da cadeia inteira de provedores, com folga para a funcao ainda montar e enviar a
+// resposta antes do maxDuration de 60s de vercel.json.
+const DEFAULT_BUDGET_MS = 50_000;
+// Abaixo disso nao vale acordar um provedor: ele so gastaria o resto do prazo para falhar.
+const MIN_TENTATIVA_MS = 3_000;
 const DEFAULT_AI_RATE_LIMIT = 30;
 const DEFAULT_AI_RATE_WINDOW_MS = 10 * 60 * 1000;
 
@@ -6,27 +16,19 @@ function env(name, fallback = '') {
   return String(process.env[name] || fallback).trim();
 }
 
-function envFlag(name, fallback = true) {
+export function envFlag(name, fallback = true) {
   const raw = env(name, fallback ? 'true' : 'false').toLowerCase();
   return !['0', 'false', 'no', 'off'].includes(raw);
 }
 
 export function getAiConfig() {
-  const provider = env('AI_PROVIDER', env('VITE_AI_PROVIDER', 'auto')).toLowerCase();
-  const fallbackProvider = env('AI_FALLBACK_PROVIDER', '').toLowerCase();
   return {
-    provider,
-    fallbackProvider,
     anthropicKey: env('ANTHROPIC_API_KEY'),
+    // Chave de escopo "Organizacao" nao pertence a workspace nenhum, e a API exige o
+    // cabecalho anthropic-workspace-id nesse caso — sem ele responde 400. Chave de escopo
+    // "Workspace" dispensa. Manter vazio quando a chave ja for de workspace.
+    anthropicWorkspaceId: env('ANTHROPIC_WORKSPACE_ID'),
     anthropicModel: env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
-    openAiKey: env('OPENAI_API_KEY'),
-    openAiModel: env('OPENAI_MODEL', 'gpt-4.1-mini'),
-    googleKey: env('GOOGLE_API_KEY') || env('GEMINI_API_KEY'),
-    googleModel: env('GOOGLE_MODEL', 'gemini-2.0-flash'),
-    openRouterKey: env('OPENROUTER_API_KEY'),
-    openRouterModel: env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
-    groqKey: env('GROQ_API_KEY'),
-    groqModel: env('GROQ_MODEL', 'llama-3.1-8b-instant'),
   };
 }
 
@@ -223,13 +225,27 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!response.ok) {
+      // payload.error costuma ser objeto: cair nele direto virava "[object Object]" na
+      // mensagem, que nao tem palavra nenhuma para classificar — exatamente o sintoma de
+      // um 400 que chega sem categoria. Serializa em vez de deixar o template fazer isso.
+      const descreve = (valor) => {
+        if (!valor) return '';
+        if (typeof valor === 'string') return valor;
+        try { return JSON.stringify(valor); } catch { return String(valor); }
+      };
       const message =
-        payload?.error?.message ||
-        payload?.error ||
-        payload?.message ||
+        descreve(payload?.error?.message) ||
+        descreve(payload?.error) ||
+        descreve(payload?.message) ||
         response.statusText ||
         'Falha no provedor de IA.';
-      throw new Error(message);
+      // Tipo E mensagem, nao um ou outro: o tipo e o enum ("invalid_request_error") e a
+      // mensagem e o texto humano. Preferir a mensagem descartava o tipo, e ai a
+      // classificacao ficava cega justamente no caso em que mais precisava dele.
+      const tipo = payload?.error?.type ? `${payload.error.type} - ` : '';
+      // O status era descartado tambem, e sem ele "o provedor recusou a chamada" nao diz
+      // nada: 400, 401, 403 e 404 pedem acoes completamente diferentes.
+      throw new Error(`HTTP ${response.status}: ${tipo}${message}`);
     }
 
     return payload;
@@ -256,30 +272,42 @@ function extractJson(text) {
   throw new Error('A IA retornou uma resposta que nao e JSON valido.');
 }
 
+// A Anthropic e o unico provedor.
+//
+// A cadeia de fallback existia para o caso de um provedor cair, mas na pratica nenhuma das
+// outras quatro chaves funcionava — e o custo era alto: cada falha da Anthropic virava uma
+// mensagem com quatro erros diferentes colados, em que o motivo real ficava escondido atras
+// de "credito esgotado" de um servico que ninguem usava. Diagnosticar ficou horas mais
+// dificil por causa de um plano B que nao existia.
+//
+// Se um dia voltar a ter fallback, ele volta com chave testada e mensagem que diz de quem e
+// cada erro. Ate la, um provedor so e mais honesto.
 function providerOrder(config = getAiConfig()) {
-  const preferred =
-    ['anthropic', 'openrouter', 'groq', 'openai', 'gemini'].includes(config.provider)
-      ? config.provider
-      : config.anthropicKey
-        ? 'anthropic'
-        : config.openRouterKey
-          ? 'openrouter'
-          : config.groqKey
-            ? 'groq'
-            : config.googleKey
-              ? 'gemini'
-              : config.openAiKey
-                ? 'openai'
-                : 'offline';
-
-  return [
-    ...new Set(
-      [preferred, config.fallbackProvider, 'anthropic', 'openrouter', 'groq', 'gemini', 'openai'].filter(
-        (provider) => provider && provider !== 'offline'
-      )
-    ),
-  ];
+  return config.anthropicKey ? ['anthropic'] : [];
 }
+
+// Orcamento de saida das chamadas Anthropic.
+//
+// Estava em 4096 e a resposta vinha vazia: os modelos atuais raciocinam por padrao
+// (adaptive thinking) e os blocos de thinking, que nem chegam na resposta, consomem esse
+// mesmo orcamento. Com um edital inteiro na entrada, o teto acabava antes do primeiro
+// bloco de texto — `payload.content` voltava sem nenhum `type: 'text'` e o app dizia
+// "resposta vazia" sem ter como saber o motivo.
+const ANTHROPIC_MAX_TOKENS = 16000;
+
+// Esforco de raciocinio das chamadas Anthropic.
+//
+// O modelo atual raciocina por padrao no nivel "high" — calibrado para problemas dificeis,
+// nao para ler um documento e transcrever o que esta escrito nele. Era isso que estourava
+// o prazo: a chamada gastava os 50s inteiros pensando e o app abortava antes da resposta.
+//
+// Ler edital e extracao, nao deducao: a resposta esta no texto. Com esforco "low" o modelo
+// responde direto. Se a qualidade cair (disciplina faltando, topico inventado), o primeiro
+// ajuste e subir para "medium" — nao voltar ao padrao.
+const ANTHROPIC_RACIOCINIO = {
+  thinking: { type: 'adaptive' },
+  output_config: { effort: 'low' },
+};
 
 function anthropicText(payload) {
   return (Array.isArray(payload?.content) ? payload.content : [])
@@ -289,27 +317,65 @@ function anthropicText(payload) {
     .trim();
 }
 
-async function runAnthropicJson(prompt, { schemaName = 'papirando_ai' } = {}) {
+// Sem isso, uma resposta 200 sem bloco de texto caia no generico "resposta vazia" do
+// extractJson — que nao distingue teto de tokens estourado, recusa do modelo ou resposta
+// so de thinking. O stop_reason e os tipos de bloco presentes dizem exatamente qual foi.
+function anthropicJson(payload, config) {
+  const texto = anthropicText(payload);
+
+  if (!texto) {
+    const tipos = (Array.isArray(payload?.content) ? payload.content : [])
+      .map((block) => block?.type)
+      .filter(Boolean);
+    const motivo = payload?.stop_reason || 'desconhecido';
+    const detalhe = tipos.length ? `blocos recebidos: ${tipos.join(', ')}` : 'nenhum bloco de conteudo';
+    const dica =
+      motivo === 'max_tokens'
+        ? ' O teto de tokens estourou antes do texto — reduza a entrada ou aumente ANTHROPIC_MAX_TOKENS em api/_ai.js.'
+        : motivo === 'refusal'
+          ? ' O modelo recusou a solicitacao.'
+          : '';
+
+    throw new Error(
+      `A IA retornou uma resposta sem texto (stop_reason: ${motivo}; ${detalhe}).${dica}`
+    );
+  }
+
+  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(texto) };
+}
+
+// Um lugar so para os cabecalhos da Anthropic: eram tres copias identicas, e o
+// anthropic-workspace-id que faltava teria que ser adicionado em todas.
+function anthropicHeaders(config) {
+  return {
+    'Content-Type': 'application/json',
+    'x-api-key': config.anthropicKey,
+    'anthropic-version': '2023-06-01',
+    ...(config.anthropicWorkspaceId ? { 'anthropic-workspace-id': config.anthropicWorkspaceId } : {}),
+  };
+}
+
+async function runAnthropicJson(prompt, { schemaName = 'papirando_ai', timeoutMs } = {}) {
   const config = getAiConfig();
   if (!config.anthropicKey) throw new Error('ANTHROPIC_API_KEY nao configurada.');
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
+    timeoutMs,
+    headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
-      max_tokens: 4096,
-      temperature: 0.25,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
+      ...ANTHROPIC_RACIOCINIO,
+      // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
+      // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
+      // ja e amarrado pelo system prompt, entao nao se perde nada.
       system: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.`,
       messages: [{ role: 'user', content: prompt }],
     }),
   });
 
-  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+  return anthropicJson(payload, config);
 }
 
 async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_ai' } = {}) {
@@ -318,15 +384,14 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
-      max_tokens: 4096,
-      temperature: 0.25,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
+      ...ANTHROPIC_RACIOCINIO,
+      // Sem temperature: os modelos atuais da Anthropic rejeitam o parametro
+      // ("`temperature` is deprecated for this model", HTTP 400). O formato da resposta
+      // ja e amarrado pelo system prompt, entao nao se perde nada.
       system: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.`,
       messages: [{
         role: 'user',
@@ -338,7 +403,7 @@ async function runAnthropicWithPdf(prompt, pdfBase64, { schemaName = 'papirando_
     }),
   });
 
-  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
+  return anthropicJson(payload, config);
 }
 
 async function runAnthropicWithImage(prompt, base64, mimeType) {
@@ -347,15 +412,12 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
 
   const payload = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.anthropicKey,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: anthropicHeaders(config),
     body: JSON.stringify({
       model: config.anthropicModel,
-      max_tokens: 2048,
-      temperature: 0.1,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
+      ...ANTHROPIC_RACIOCINIO,
+      // Ver acima: temperature e rejeitado pelos modelos atuais da Anthropic.
       system: 'Responda somente com JSON valido. Nao use markdown.',
       messages: [{
         role: 'user',
@@ -367,130 +429,7 @@ async function runAnthropicWithImage(prompt, base64, mimeType) {
     }),
   });
 
-  return { provider: 'anthropic', model: payload?.model || config.anthropicModel, json: extractJson(anthropicText(payload)) };
-}
-
-async function runOpenRouterJson(prompt, { schemaName = 'papirando_ai' } = {}) {
-  const config = getAiConfig();
-  if (!config.openRouterKey) throw new Error('OPENROUTER_API_KEY nao configurada.');
-
-  const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.openRouterKey}`,
-      'HTTP-Referer': 'https://papirando.vercel.app',
-      'X-Title': 'Papirando',
-    },
-    body: JSON.stringify({
-      model: config.openRouterModel,
-      temperature: 0.25,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.` },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-
-  const content = payload?.choices?.[0]?.message?.content;
-  return { provider: 'openrouter', model: payload?.model || config.openRouterModel, json: extractJson(content) };
-}
-
-async function runGroqJson(prompt, { schemaName = 'papirando_ai' } = {}) {
-  const config = getAiConfig();
-  if (!config.groqKey) throw new Error('GROQ_API_KEY nao configurada.');
-
-  const payload = await fetchJson('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.groqKey}`,
-    },
-    body: JSON.stringify({
-      model: config.groqModel,
-      temperature: 0.25,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.` },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-
-  const content = payload?.choices?.[0]?.message?.content;
-  return { provider: 'groq', model: payload?.model || config.groqModel, json: extractJson(content) };
-}
-
-async function runOpenAiJson(prompt, { schemaName = 'papirando_ai' } = {}) {
-  const config = getAiConfig();
-  if (!config.openAiKey) throw new Error('OPENAI_API_KEY nao configurada.');
-
-  const payload = await fetchJson('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.openAiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.openAiModel,
-      temperature: 0.25,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: `Responda somente com JSON valido para ${schemaName}. Nao use markdown.` },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-
-  const content = payload?.choices?.[0]?.message?.content;
-  return { provider: 'openai', model: payload?.model || config.openAiModel, json: extractJson(content) };
-}
-
-async function runGeminiJson(prompt) {
-  const config = getAiConfig();
-  if (!config.googleKey) throw new Error('GOOGLE_API_KEY/GEMINI_API_KEY nao configurada.');
-
-  const payload = await fetchJson(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nResponda somente com JSON valido.` }] }],
-        generationConfig: { temperature: 0.25, responseMimeType: 'application/json' },
-      }),
-    }
-  );
-
-  const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-  return { provider: 'gemini', model: config.googleModel, json: extractJson(content) };
-}
-
-async function runGeminiWithPdf(prompt, pdfBase64) {
-  const config = getAiConfig();
-  if (!config.googleKey) throw new Error('GOOGLE_API_KEY/GEMINI_API_KEY nao configurada. PDF requer Gemini.');
-
-  const payload = await fetchJson(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          role: 'user',
-          parts: [
-            { inlineData: { mimeType: 'application/pdf', data: pdfBase64 } },
-            { text: `${prompt}\n\nResponda somente com JSON valido.` },
-          ],
-        }],
-        generationConfig: { temperature: 0.25, responseMimeType: 'application/json' },
-      }),
-    }
-  );
-
-  const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-  return { provider: 'gemini', model: config.googleModel, json: extractJson(content) };
+  return anthropicJson(payload, config);
 }
 
 async function runJson(prompt, options = {}) {
@@ -498,18 +437,26 @@ async function runJson(prompt, options = {}) {
   const config = getAiConfig();
   let order = providerOrder(config);
 
-  // Preferir Groq apenas quando ele nao substituir explicitamente o Claude selecionado.
-  if (options.preferFast && config.groqKey && order[0] !== 'anthropic') {
-    order = ['groq', ...order.filter((p) => p !== 'groq')];
-  }
+  // Prazo para a cadeia inteira, nao para cada provedor.
+  //
+  // Sem isso, o principal podia gastar o timeout todo e a cadeia ainda tentava os outros
+  // quatro: a soma passava do maxDuration da funcao, a Vercel matava a invocacao no meio e
+  // o navegador recebia uma pagina de erro da propria Vercel — nao o nosso JSON. O app
+  // dizia "o servidor de IA respondeu em formato invalido", que nao e diagnostico de nada.
+  // Com prazo, sempre sobra tempo para responder com o motivo real de cada falha.
+  const prazoFinal = Date.now() + (options.budgetMs || DEFAULT_BUDGET_MS);
 
   for (const provider of order) {
+    const restante = prazoFinal - Date.now();
+    if (restante <= MIN_TENTATIVA_MS) {
+      errors.push(`[${provider}] Sem tempo para tentar: o prazo da requisicao acabou.`);
+      continue;
+    }
+
+    const tentativa = { ...options, timeoutMs: Math.min(restante, options.timeoutMs || DEFAULT_TIMEOUT_MS) };
+
     try {
-      if (provider === 'anthropic') return await runAnthropicJson(prompt, options);
-      if (provider === 'openrouter') return await runOpenRouterJson(prompt, options);
-      if (provider === 'groq') return await runGroqJson(prompt, options);
-      if (provider === 'gemini') return await runGeminiJson(prompt, options);
-      if (provider === 'openai') return await runOpenAiJson(prompt, options);
+      if (provider === 'anthropic') return await runAnthropicJson(prompt, tentativa);
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }
@@ -524,27 +471,84 @@ function clampList(items, max) {
 
 export async function getHealth() {
   const config = getAiConfig();
-  const order = providerOrder(config);
   return {
-    ok: Boolean(config.anthropicKey || config.openRouterKey || config.groqKey || config.googleKey || config.openAiKey),
+    ok: Boolean(config.anthropicKey),
     service: 'papirando-ai',
-    provider: order[0] || 'offline',
-    model:
-      order[0] === 'anthropic'
-        ? config.anthropicModel
-        : order[0] === 'openrouter'
-        ? config.openRouterModel
-        : order[0] === 'groq'
-          ? config.groqModel
-          : order[0] === 'openai'
-        ? config.openAiModel
-        : order[0] === 'gemini'
-          ? config.googleModel
-          : '',
-    fallbackProvider: config.fallbackProvider || '',
+    provider: config.anthropicKey ? 'anthropic' : 'offline',
+    model: config.anthropicKey ? config.anthropicModel : '',
     authRequired: envFlag('AI_REQUIRE_AUTH', true),
     rateLimitEnabled: envFlag('AI_RATE_LIMIT_ENABLED', true),
   };
+}
+
+export function motivoDaFalhaDeIa(mensagem) {
+  const bruto = String(mensagem || '');
+  if (!bruto.trim()) return '';
+
+  // runJson junta o erro de TODOS os provedores numa string so
+  // ("[anthropic] ... | [openrouter] ... | [groq] ..."). Classificar a string inteira faz
+  // o motivo de um provedor secundario virar o diagnostico do principal — e manda o dono
+  // resolver o problema errado. So o primeiro segmento importa: e o provedor preferido.
+  const primeiro = bruto.match(/\[[a-z]+\]\s*([\s\S]*?)(?=\s*\|\s*\[[a-z]+\]|$)/i);
+  const texto = (primeiro ? primeiro[1] : bruto).toLowerCase();
+  if (!texto.trim()) return '';
+  if (/401|unauthoriz|invalid[\s_-]*api[\s_-]*key|authentication|x-api-key/.test(texto)) {
+    return 'A chave da IA foi rejeitada pelo provedor.';
+  }
+  // Sobrecarga do provedor e genuinamente passageira e pede "tente de novo" — juntar com
+  // credito esgotado mandava o dono comprar credito que ele talvez ja tenha.
+  if (/overloaded|529|503|temporarily unavailable|service unavailable/.test(texto)) {
+    return 'O provedor de IA esta sobrecarregado agora. Tente de novo em instantes.';
+  }
+  if (/credit|billing|insufficient|payment|spend[\s_-]*limit|quota/.test(texto)) {
+    return 'Credito ou limite de gasto da conta de IA esgotado.';
+  }
+  if (/429|rate[\s_-]*limit|too many requests/.test(texto)) {
+    return 'Limite de chamadas por minuto do provedor de IA atingido.';
+  }
+  // Resposta 200 sem nenhum bloco de texto (ver anthropicJson). Quando o stop_reason foi
+  // max_tokens, a regra de tamanho logo abaixo ja diz a coisa certa; nos outros casos o
+  // edital nao tem nada a ver com a falha e culpa-lo manda o dono cortar o PDF em vao.
+  if (/resposta sem texto/.test(texto) && !/stop_reason: max_tokens/.test(texto)) {
+    return 'A IA respondeu sem texto utilizavel. Tente de novo.';
+  }
+  if (/context[\s_-]*length|max[\s_-]*tokens|too[\s_-]*(long|large)|413/.test(texto)) {
+    return 'O texto do edital ficou grande demais para o modelo.';
+  }
+  if (/timeout|timed[\s_-]*out|abort|socket hang up|etimedout|econnreset/.test(texto)) {
+    return 'O provedor de IA demorou demais para responder.';
+  }
+  // Parametro que o modelo nao aceita mais. Tem que vir ANTES da regra de modelo: a frase
+  // "`temperature` is deprecated for this model" contem "model" e caia em "modelo nao
+  // encontrado", mandando trocar o modelo quando o problema era o corpo da requisicao.
+  const deprecado = texto.match(/`?([a-z_]+)`?\s+is\s+(deprecated|not supported|unsupported)/);
+  if (deprecado) {
+    return `O provedor nao aceita mais o parametro "${deprecado[1]}" neste modelo.`;
+  }
+  if (/not[\s_-]*found|404|model/.test(texto)) {
+    return 'O modelo de IA configurado nao foi encontrado no provedor.';
+  }
+  // Chave de organizacao sem o cabecalho de workspace. Custou horas de diagnostico uma vez;
+  // agora diz o que fazer.
+  if (/not scoped to a workspace|anthropic-workspace-id/.test(texto)) {
+    return 'A chave da IA e de organizacao e exige ANTHROPIC_WORKSPACE_ID, ou troque por uma chave de workspace.';
+  }
+  // 403 e permissao: a chave e valida mas nao pode usar este recurso (escopo do workspace,
+  // modelo bloqueado para a conta, organizacao restrita).
+  if (/403|permission|forbidden|not[\s_-]*allowed|access[\s_-]*denied/.test(texto)) {
+    return 'A chave da IA nao tem permissao para este recurso.';
+  }
+  // Sem categoria conhecida, sobram dois fios: o status HTTP e o tipo de erro do provedor.
+  // O tipo ("invalid_request_error", "api_error"...) e um enum fixo, nao texto livre —
+  // diagnostica sem vazar o conteudo da resposta.
+  const status = texto.match(/http\s*(\d{3})/);
+  // O underscore e caractere de palavra, entao \b nao separa "invalid_request_error";
+  // precisa casar o identificador inteiro.
+  const tipo = texto.match(/([a-z]+(?:_[a-z]+)*_error)/);
+  const pistas = [status && `HTTP ${status[1]}`, tipo && tipo[1]].filter(Boolean);
+  return pistas.length
+    ? `O provedor de IA recusou a chamada (${pistas.join(' · ')}).`
+    : 'O provedor de IA recusou a chamada.';
 }
 
 export async function getPublicHealth() {
@@ -1287,9 +1291,6 @@ export async function analyzeContestPdf({ pdfBase64 = '' } = {}) {
       if (provider === 'anthropic') {
         return buildContestFormResponse(await runAnthropicWithPdf(prompt, pdfBase64, { schemaName: 'contest_form_template' }));
       }
-      if (provider === 'gemini') {
-        return buildContestFormResponse(await runGeminiWithPdf(prompt, pdfBase64));
-      }
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }
@@ -1301,14 +1302,36 @@ export async function analyzeEdital(editalText = '') {
   const text = String(editalText || '').trim();
   if (!text) throw new Error('Cole ou envie um edital para analise.');
 
-  const prompt = `Analise este edital de concurso e extraia cargos, disciplinas e topicos.
-Mantenha nomes em portugues e evite inventar dados ausentes.
+  // O corte antigo era text.slice(0, 24000) — pegava capa e regras de inscricao e nunca
+  // alcancava o anexo de conteudo programatico. Ver docs/TESTE-EXTRACAO-EDITAL.md.
+  const preparado = prepararTextoEdital(text);
+
+  const prompt = `Analise este edital de concurso. A plataforma de estudos do aluno se monta
+inteira a partir do que voce devolver, entao extraia o pacote completo: dados do certame,
+um item em "contests" por CARGO, e para cada cargo os dados dele, o quadro de provas e o
+conteudo programatico.
+
+Mantenha nomes em portugues. Nunca invente: campo ausente no edital fica "Nao encontrado"
+(ou lista vazia).
+
+TOPICOS: o app cria uma linha por topico, e cada linha e unidade de progresso e de revisao
+espacada. Quebre o bloco da disciplina em topicos separados — "Lingua Portuguesa:
+Interpretacao de texto. Ortografia. Crase." vira tres topicos. Mire 8 a 15 topicos por
+disciplina: agrupe os mais finos quando o edital detalhar demais, e nunca complete o que
+nao estiver la.
+
+QUADRO DE PROVAS ("prova"): quantas questoes e que peso cada disciplina tem NAQUELE cargo.
+Vem da tabela de composicao das provas ou da prosa da secao "DAS PROVAS" ("a prova sera
+composta de 120 itens, sendo 50 de conhecimentos basicos" tambem conta). Sem peso declarado,
+deixe "peso" vazio. Sem informacao nenhuma, devolva lista vazia.
+
+ETAPAS: as fases do certame — Objetiva, Discursiva, Redacao, TAF, Titulos, Pratica.
 
 JSON esperado:
-{"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
+{"analysis":{"banca":"nome ou Nao encontrado","exam_name":"nome do concurso","organization":"orgao","exam_type":"tipo","inscricao_valor":"valor ou Nao encontrado","etapas":["Objetiva"],"dates":{"publication_date":"data ou Nao encontrado","exam_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado"},"contests":[{"id":"slug","title":"titulo","role_name":"cargo","institution":"orgao","exam_date":"data ou Nao encontrado","publication_date":"data ou Nao encontrado","registration_period":"periodo ou Nao encontrado","vagas":"","salario":"","escolaridade":"","lotacao":"","carga_horaria":"","prova":[{"disciplina":"","questoes":"","peso":""}],"subjects":[{"name":"disciplina","topics":["topico"]}]}]}}
 
 Edital:
-${text.slice(0, 24000)}`;
+${preparado.texto}`;
 
   const result = await runJson(prompt, { schemaName: 'edital_analysis' });
   const analysis = result.json?.analysis || result.json || {};
@@ -1321,6 +1344,8 @@ ${text.slice(0, 24000)}`;
       exam_name: String(analysis.exam_name || 'Nao encontrado').trim(),
       organization: String(analysis.organization || 'Nao encontrado').trim(),
       exam_type: String(analysis.exam_type || 'Nao encontrado').trim(),
+      inscricao_valor: String(analysis.inscricao_valor || '').trim(),
+      etapas: clampList(analysis.etapas, 10),
       dates: {
         publication_date: String(analysis?.dates?.publication_date || 'Nao encontrado').trim(),
         exam_date: String(analysis?.dates?.exam_date || 'Nao encontrado').trim(),
@@ -1336,6 +1361,20 @@ ${text.slice(0, 24000)}`;
         registration_period: String(
           contest?.registration_period || analysis?.dates?.registration_period || 'Nao encontrado'
         ).trim(),
+        vagas: String(contest?.vagas || '').trim(),
+        salario: String(contest?.salario || '').trim(),
+        escolaridade: String(contest?.escolaridade || '').trim(),
+        lotacao: String(contest?.lotacao || '').trim(),
+        carga_horaria: String(contest?.carga_horaria || '').trim(),
+        // Linha do quadro so vale com disciplina E numero de questoes. Peso em branco vira
+        // "1", que e o que o edital quer dizer quando nao diferencia.
+        prova: (Array.isArray(contest?.prova) ? contest.prova : [])
+          .map((linha) => ({
+            disciplina: String(linha?.disciplina || '').trim(),
+            questoes: String(linha?.questoes || '').trim(),
+            peso: String(linha?.peso || '').trim() || '1',
+          }))
+          .filter((linha) => linha.disciplina && linha.questoes),
         subjects: (Array.isArray(contest?.subjects) ? contest.subjects : [])
           .map((subject) => ({
             name: String(subject?.name || '').trim(),
@@ -1395,65 +1434,6 @@ export async function transcribeEssayImage({ dataUrl = '', mimeType = '' } = {})
         };
       }
 
-      if (provider === 'openrouter' && config.openRouterKey) {
-        const payload = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${config.openRouterKey}`,
-            'HTTP-Referer': 'https://papirando.vercel.app',
-            'X-Title': 'Papirando',
-          },
-          body: JSON.stringify({
-            model: config.openRouterModel,
-            temperature: 0.1,
-            response_format: { type: 'json_object' },
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'text', text: prompt },
-                { type: 'image_url', image_url: { url: dataUrl } },
-              ],
-            }],
-          }),
-        });
-
-        const parsed = extractJson(payload?.choices?.[0]?.message?.content);
-        return {
-          provider: 'openrouter',
-          source: 'openrouter',
-          sourceLabel: 'OpenRouter',
-          model: payload?.model || config.openRouterModel,
-          text: String(parsed?.text || '').trim(),
-        };
-      }
-
-      if (provider === 'gemini' && config.googleKey) {
-        const payload = await fetchJson(
-          `https://generativelanguage.googleapis.com/v1beta/models/${config.googleModel}:generateContent?key=${config.googleKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                role: 'user',
-                parts: [{ text: prompt }, { inlineData: { mimeType: safeMimeType, data: base64 } }],
-              }],
-              generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
-            }),
-          }
-        );
-
-        const content = (payload?.candidates?.[0]?.content?.parts || []).map((part) => part?.text || '').join('\n');
-        const parsed = extractJson(content);
-        return {
-          provider: 'gemini',
-          source: 'gemini',
-          sourceLabel: 'Gemini',
-          model: config.googleModel,
-          text: String(parsed?.text || '').trim(),
-        };
-      }
     } catch (error) {
       errors.push(`[${provider}] ${error.message}`);
     }

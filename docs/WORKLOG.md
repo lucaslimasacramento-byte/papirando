@@ -18,6 +18,563 @@
 
 ---
 
+## Sessão 2026-09-21 (fecho) — Anthropic sozinha e qualidade aprovada ✅
+
+**A leitura foi verificada em produção e aprovada pelo dono** (edital da PM/AL, 2 cargos, 70
+páginas): disciplinas reais, granularidade útil, quadro de provas preenchido, dados do cargo
+presentes. Isso destrava o plano dos destaques — era o item bloqueante.
+
+**Anthropic vira provedor único.** Saem OpenRouter, Groq, Gemini e OpenAI: nenhuma das quatro
+chaves funcionava, e cada falha da Anthropic virava uma mensagem com quatro erros colados em
+que o motivo real ficava escondido. 344 linhas a menos em `api/_ai.js`. PDF e imagem já
+tinham caminho Anthropic. `AI_PROVIDER` e `AI_FALLBACK_PROVIDER` saíram junto — podem ser
+apagadas da Vercel, assim como as chaves dos outros quatro.
+
+**Progresso por cargo chegou às telas que faltavam:** o Edital ganhou uma barra por cargo (com
+questões daquela prova) e cada linha em Disciplinas diz "Nos dois cargos" ou "Só <cargo>" — a
+informação que muda a decisão do dia, porque estudar uma compartilhada rende o dobro.
+
+### O que fica aberto, e por quê
+
+- **3 de 13 editais truncam o anexo** (150k–210k caracteres). **Não mexi de propósito:** os 13
+  PDFs do lote não estão no repositório, e alterar o recorte sem poder medir arriscaria quebrar
+  o que acabou de ser aprovado. Para retomar: juntar os PDFs de novo e rodar
+  `scripts/testar-extracao-edital.mjs` antes e depois.
+- `AI_DEBUG_ERRORS` ainda ligado na Vercel (apagar).
+- Sem plano B se a Anthropic oscilar — decisão consciente, registrada acima.
+
+---
+
+## Sessão 2026-09-21 (madrugada) — Um curso, vários cargos ✅
+
+Decisão do dono ao ver a tela de revisão com os dois cargos da PM/AL batendo 100%: **dois
+cursos separados são a mesma lista estudada em duplicata**, com progresso que não conversa —
+marcar "Língua Portuguesa" concluída num deixava o outro em zero na mesma matéria. E mesmo
+sem 100%, quem presta dois cargos quer um plano, não dois.
+
+- `src/lib/cargos.js` (10 testes): o mapa disciplina → cargos, o progresso por cargo e a
+  contagem de compartilhadas. Matéria comum conta nos dois; exclusiva conta só no seu.
+  Tópicos carregam a mesma marca — o recorte da mesma disciplina muda entre oficial e praça.
+  Curso sem mapa (anterior à mudança, ou de cargo único) trata tudo como do cargo que
+  existe, senão o progresso dele zeraria da noite para o dia.
+- O curso ganha `cargos[]` com o quadro de provas de **cada** cargo. Os campos de topo
+  (`prova`, `cargo`, `vagas`) seguem o primeiro cargo: três telas ainda leem direto.
+- "Meus cursos" mostra **uma barra por cargo**. Uma barra só mentiria: matéria exclusiva de
+  um cargo entra no total geral mas não avança o outro.
+
+### Também nesta rodada
+
+- **Design do bloco de IA em Disciplinas.** O botão "Registrar sessão guiada" era um
+  retângulo preto colado no texto: `.pl-btn-ai` só troca cor e dependia de `.pl-btn` ao lado,
+  que faltava. Corrigido nos dois lados (a classe passa a carregar a própria forma). E o azul
+  do bloco era índigo cru (`rgba(99,102,241)`, `#EEF2FF`, `#3730a3`) — não é a identidade,
+  que é `#1e3a5f`. Agora usa tokens, e o número virou Fraunces itálico. O `#93b4ff` cravado
+  em três lugares virou `--pl-accent-on-ink`.
+- **Título da aba** reduzido para "Papirando" (og:title e twitter:title seguem completos —
+  ali a frase ajuda).
+- **`avisosDoDocumento` ligado no `Edital.jsx`**: a função existia e era testada, mas só a
+  importação usava; a página do Edital aceitava qualquer PDF sem avisar.
+- **Teto de altura** em `AdminUsuarios` e `AdminCourseTemplatesEditor`: em notebook os modais
+  passavam da tela e o botão de salvar ficava fora de alcance, sem rolagem.
+
+### Ainda aberto
+
+1. **Medir a qualidade da leitura** (bloqueante para os destaques) — ver o plano abaixo.
+2. `AI_DEBUG_ERRORS` ainda ligado na Vercel; apagar a variável.
+3. As outras quatro chaves de IA estão mortas (Groq, OpenRouter, Gemini, OpenAI): sem plano B
+   se a Anthropic oscilar.
+4. 3 de 13 editais ainda truncam o anexo (150k–210k caracteres); a correção é recortar por
+   cargo em `api/_edital-text.js`.
+5. O progresso por cargo aparece em "Meus cursos", mas `Edital.jsx` e `Disciplinas.jsx`
+   continuam mostrando um número só.
+
+---
+
+## Sessão 2026-09-21 — Nome piscando no cumprimento ✅
+
+Achado do dono: entrando com `contato@…`, o app abria com "Boa noite, Contato" e trocava
+para "Lucas" um segundo depois. O rodapé da Sidebar fazia o mesmo.
+
+Causa: o nome caía para o começo do e-mail enquanto o perfil não tinha chegado do Supabase.
+E as duas telas não tinham como saber a diferença — `effectiveProfile` espalha `null` em
+`{}`, então sempre *parece* carregado.
+
+- `src/lib/perfil.js` (7 testes): regra única de nome de exibição. Sem perfil carregado, não
+  há nome — a saudação sai sem nome e completa quando o dado existir. A ordem de fallback
+  (nome real > username > primeira palavra do e-mail) estava duplicada em dois arquivos, com
+  implementações diferentes; agora é uma só.
+- `App.jsx` passa `perfilCarregado` (sinal separado) para a Sidebar e o conteúdo.
+- Sidebar mostra uma barra cinza no lugar do nome enquanto carrega, então nada pula quando o
+  nome chega.
+
+Vale como regra geral para a auditoria: **não mostrar palpite com cara de dado.** O mesmo
+padrão apareceu nas disciplinas órfãs (filtrar na tela não apaga o dado) e nos chips
+"Nao encontrado vagas".
+
+---
+
+## Sessão 2026-09-22 — Curso agrupa Objetivos ✅
+
+Feito. O curso **continha** cargos; passou a **agrupar objetivos**, e o objetivo virou
+entidade própria — com data de prova, banca, cargo e vagas editáveis, e sendo ele (não o
+curso) o alvo.
+
+```
+CURSO (plano de estudo)      nome que o aluno dá
+  ├── OBJETIVO  Oficial de Estado-Maior · PMAL · prova 19/07
+  └── OBJETIVO  Soldado do Quadro de Praças · PMAL · prova 19/07
+```
+
+- `src/lib/objetivos.js` (14 testes) no lugar de `cargos.js`. **A migração roda na leitura**
+  (`coursesApi` e localStorage): curso salvo em qualquer geração continua funcionando sem
+  migração de banco — com cargos vira com objetivos; antigo sem cargos vira com um objetivo.
+- **O alvo aponta para o objetivo** (`objetivo:<curso>:<objetivo>`). O id antigo
+  (`curso:<id>`) continua resolvendo por `migrarAlvoDeCurso`, no banco e no navegador — sem
+  essa ponte, todo aluno com alvo definido voltaria a "Nenhum alvo definido" no deploy.
+- Um curso de dois objetivos oferece **dois alvos** em "Concursos acompanhados" e na aba
+  Objetivos, onde cada objetivo tem seu cartão e um botão "Alvo".
+- O modal de editar tem **um bloco por objetivo**. Mudar a data de um não mexe no outro.
+- Edital, Disciplinas e Meus cursos falam "objetivo". No fluxo de importação a palavra
+  "cargo" fica: o edital tem cargos, que viram objetivos do curso.
+
+### Também feito nesta sessão
+
+**"Onde entra este edital?"** — a revisão pergunta se cria um curso novo ou junta a um que já
+existe. Juntando, as matérias que já estão lá **não são criadas de novo**: passam a valer
+também para os objetivos do edital novo, e a tela final diz quantas foram reaproveitadas.
+Junto, `resolverColisaoDeIds`: o id do objetivo vem do título do cargo, e dois editais podem
+gerar o mesmo ("oficial") — sem isso os dois virariam o mesmo objetivo, com progresso de um
+aparecendo no outro e sem erro na tela.
+
+**Tipos misturados** — `src/lib/tiposDeObjetivo.js` (12 testes) guarda a regra de cada tipo
+num lugar só: rótulo do prazo, se há contagem, e quais campos existem.
+
+| Tipo | Prazo | Campos |
+|---|---|---|
+| Concurso | Prova | banca, cargo, vagas, salário, escolaridade |
+| Vestibular | Prova | banca, vagas |
+| Graduação | Fim do período | instituição, período |
+| Estudo livre | — | — |
+
+O modal de editar pergunta o tipo por objetivo e mostra só os campos daquele tipo; dá para
+**adicionar um objetivo que não veio de edital** (a faculdade, um estudo livre). O cartão do
+alvo e o Início passam a dizer "para fechar o período" quando o alvo é faculdade, e somem com
+o prazo no estudo livre — em vez de "Sem data" com cara de pendência.
+
+### Aberto
+
+1. A aba Objetivos ainda mostra o catálogo publicado abaixo dos objetivos do aluno — vira
+   "editais em destaque" quando o plano dos destaques for executado.
+2. A **rotina do dia** ainda prioriza por proximidade de prova. Com faculdade no mesmo curso,
+   `marcoMaisProximo` já devolve o prazo que aperta primeiro, mas o motor de recomendação
+   (`src/lib/studyRecommendation.js`) ainda não usa isso.
+
+---
+
+## Plano — Curso agrupa Objetivos ⏳
+
+Decidido em 22/09 pelo dono, **não implementado** (os quatro ajustes pontuais desta sessão
+valem nos dois modelos). Vocabulário escolhido: **Curso + Objetivos**.
+
+```
+CURSO (plano de estudo)          nome dado pelo aluno
+  ├── OBJETIVO 1   Oficial de Estado-Maior · PMAL · prova 19/07
+  └── OBJETIVO 2   Soldado do Quadro de Praças · PMAL · prova 19/07
+```
+
+Hoje o curso **contém cargos**; passa a **agrupar objetivos**, e a diferença não é de nome:
+o objetivo vira entidade própria, com dados e ciclo de vida próprios.
+
+| | Hoje | Novo |
+|---|---|---|
+| Alvo | um curso inteiro | um **objetivo** — que é quem tem data de prova |
+| Data remarcada | edita o curso (afeta tudo) | edita aquele objetivo |
+| Concurso + faculdade juntos | impossível | um curso, dois objetivos de tipos diferentes |
+| Segundo edital | outro curso | entra no mesmo curso, ou num novo — escolha do aluno |
+
+**Nada do que já existe se perde:** o mapa disciplina→cargo (`src/lib/cargos.js`) vira
+disciplina→objetivo; a compatibilidade, a revisão mesclada e o progresso por cargo seguem
+valendo, só mudam de nome.
+
+### A resolver antes de codar
+
+1. **Migração dos cursos existentes.** Cada `curso.cargos[]` vira objetivo com id próprio; o
+   `disciplinasPorCargo` passa a apontar para esses ids. Curso de cargo único vira curso com
+   um objetivo.
+2. **O alvo passa a apontar para objetivo**, não para curso. Hoje o id é `curso:<id>` (ver
+   `src/lib/cursoComoConcurso.js`); passaria a `objetivo:<id>`. O valor antigo precisa
+   continuar resolvendo, senão o aluno perde o alvo.
+3. **A aba Objetivos** deixa de ser o catálogo e passa a listar os objetivos do aluno — o que
+   conversa com o plano dos destaques (a Biblioteca vira "editais em destaque").
+4. **Importar o segundo edital** precisa perguntar: curso existente ou novo?
+5. **Tipos misturados** (concurso + faculdade no mesmo curso) mudam o que a rotina do dia
+   mostra: a faculdade tem semestre, não data única de prova.
+
+---
+
+## Plano — Objetivos e Meus cursos depois do edital ⏳
+
+Decidido na madrugada de 20/09, **não implementado**. Contexto: a plataforma passou a se
+montar a partir do PDF que o aluno sobe, e as duas páginas foram desenhadas para o modelo
+anterior (catálogo curado por nós).
+
+### O papel de cada uma
+
+**Meus cursos = a casa.** Onde o aluno estuda, escolhe o alvo e vê quanto falta. Responde
+três perguntas: quais são meus alvos, qual é o principal, e se algum edital meu mudou.
+
+**Objetivos (hoje "Biblioteca") = os editais em destaque do Brasil.** Não é o catálogo
+antigo, e a diferença é quem faz o trabalho pesado:
+
+| | Catálogo antigo | Destaques (novo) |
+|---|---|---|
+| Quem monta as disciplinas | Nós, na mão, por concurso | A IA, lendo o PDF uma vez |
+| Quem confere | Ninguém | O admin, na tela de revisão, antes de publicar |
+| O que o aluno faz | Escolhe um pronto | Escolhe um pronto, em 2 segundos |
+| Custo por aluno | — | Zero chamada de IA (a leitura é uma só) |
+
+O fluxo de publicação é o **mesmo modal de importação já construído** (envio → leitura →
+escolha de cargo → revisão), com uma diferença no fim: em vez de criar curso, salva no
+catálogo. O admin revisa antes de publicar, então o que chega ao aluno já passou por olho
+humano — hoje essa conferência é do aluno, porque a IA pode errar.
+
+Isto **não** recria a dor de manutenção: ninguém digita conteúdo programático. É o trabalho
+de um aluno, feito uma vez, aproveitado por todos.
+
+### Revisão crítica do plano (20/09, madrugada)
+
+**1. Pré-requisito bloqueante que faltava: medir a qualidade da leitura.** Hoje um erro da IA
+custa um aluno, e ele vê na tela de revisão antes de confirmar. Publicando destaques, o mesmo
+erro vira um erro × N alunos — e com a chancela do Papirando, em que o aluno confia mais do
+que no PDF que ele mesmo subiu. A auditoria pendente (quadro de provas preenchido,
+disciplinas reais, 8–15 tópicos) deixa de ser "bom ter" e vira condição para publicar.
+
+**2. A manutenção volta como STATUS, não como matéria.** O plano resolve o conteúdo (a IA
+lê) e cria outra dívida: inscrições abertas → encerradas → prova marcada → realizada. Vitrine
+com edital vencido é pior que vitrine vazia. Solução barata, mas precisa estar no desenho:
+guardar `inscricoes_ate` e `prova_data` e deixar o app arquivar sozinho; publicar sem data
+não deveria ser permitido. Os 11 status já existem em `contestGrouping.js` — falta a data que
+os faz andar sem ninguém.
+
+**3. `contest_templates` não comporta o que ganhamos.** Reaproveitar dá, mas faltam colunas:
+`prova` (jsonb — o quadro de provas, peso por disciplina), `edital_impressao` e
+`edital_lido_em` (sem eles não existe aviso de retificação), `versao` e um `edital_id` de
+verdade. Hoje é **uma linha por cargo**, agrupadas por semelhança de nome
+(`src/lib/contestGrouping.js`): frágil para virar base de catálogo. O bucket
+`contest-edital-files` já existe, e a RLS já libera leitura anônima.
+
+**4. Aviso de retificação precisa de diff.** "Saiu retificação" sem dizer o que mudou deixa o
+aluno pior: ele sabe que algo mudou e não sabe o que fazer. Mínimo: "2 disciplinas novas, 1
+removida, prova adiada".
+
+**5. Duplicidade.** Quem já subiu o edital e depois importa o destaque fica com dois cursos
+iguais, consumindo 2 das 3 vagas. Dá para detectar pelo `edital_impressao`.
+
+**6. Oportunidade (fora de escopo).** A RLS já permite leitura anônima: um destaque pode ser
+página pública ("Edital X: disciplinas, quadro de provas e datas"). Aquisição em cima de um
+trabalho que será feito de qualquer jeito.
+
+### Ordem de execução
+
+1. Medir a qualidade da leitura (bloqueante)
+2. Colunas que faltam no `contest_templates`
+3. Publicar **um** destaque, na mão, do edital da PM/AL que já temos — valida o fluxo inteiro
+   sem construir tela nenhuma
+4. A tela do aluno
+5. Retificação com diff
+
+### O que precisa ser resolvido antes de implementar
+
+1. **Onde guardar.** Avaliar reaproveitar `contest_templates` (+ cargos), que já existe e já
+   alimenta a Biblioteca, em vez de tabela nova. A análise da IA já tem a forma certa
+   (cargos, disciplinas, tópicos, quadro de provas, etapas, datas).
+2. **Retificação.** O curso do aluno já guarda `edital_impressao` e `edital_lido_em`
+   (ver sessão 2026-09-19). Republicar um destaque deve conseguir avisar quem importou
+   aquela versão — é o único jeito de a plataforma não mentir depois que o edital muda.
+3. **O PDF original fica disponível** no destaque: o aluno precisa poder conferir a fonte.
+4. **Nomes.** "Objetivo" hoje significa três coisas — a aba, o curso ("Novo objetivo") e o
+   alvo ("objetivo-alvo"). Reservar *objetivo* para o alvo e renomear a aba (candidatos:
+   "Editais em destaque", "Destaques").
+5. **Importar destaque ≠ pular a revisão.** O aluno ainda escolhe o cargo (a tela de escolha
+   múltipla com compatibilidade continua valendo) e ainda pode desmarcar disciplina. O que
+   ele pula é a espera da leitura, não a conferência do que é dele.
+
+### Enquanto não houver destaque publicado
+
+A Biblioteca vazia dizendo "Nenhum concurso publicado" ensina o aluno que o app é vazio.
+Decidir no lançamento: esconder a aba até ter o primeiro destaque, ou publicar dois ou três
+antes de abrir.
+
+---
+
+## Sessão 2026-09-19 (noite) — Cursos saem do navegador 🚧
+
+**Achado do dono, olhando a tela inicial com zero cursos cadastrados:** o Dashboard mostrava
+"História do Brasil", "Matemática" e "Noções de Direito Penal Militar" (esta última do edital
+da PM/AL importado no mesmo dia).
+
+Causa: **o curso vivia só no `localStorage`**, enquanto disciplinas e tópicos já ficavam no
+Supabase. Não existia tabela `courses`. Trocar de navegador, abrir anônima ou limpar dados do
+site fazia os cursos sumirem e as disciplinas ficarem — órfãs, aparecendo no Início e no Plano
+sem curso que as explicasse, e sem porta de saída (a exclusão de objetivo casa disciplina com
+curso pelo nome do plano; sem o curso, não há o que casar).
+
+Grave porque a plataforma passou a se montar inteira a partir do edital: o curso virou o
+objeto raiz do produto e era o que estava no armazenamento mais frágil.
+
+- `supabase/courses.sql` — tabela com RLS por aluno (admin lê para suporte). O curso é
+  guardado como documento JSONB: o app sempre carrega todos de uma vez, nunca filtra por
+  campo no SQL, e a forma muda toda semana.
+- `src/lib/coursesApi.js` (12 testes) — carga, upsert, delete e o diff entre duas listas.
+- `App.jsx` — carrega do banco na abertura e, na primeira vez, sobe em silêncio o que estava
+  no navegador. A sincronização compara a lista inteira em vez de salvar em cada ponto de
+  edição: cursos nascem em cinco lugares do arquivo e um deles esqueceria de salvar.
+
+**⚠️ Pendente: rodar `supabase/courses.sql` no projeto.** Até lá o app segue funcionando com o
+localStorage — a leitura falha, a sincronização não liga e nada é perdido.
+
+Falta ainda decidir o que fazer com as disciplinas órfãs que já existem (as do print). A
+inferência de curso a partir do plano da disciplina ignora `plano = 'Geral'`, então se as
+órfãs estiverem nesse plano elas continuam invisíveis como curso.
+
+---
+
+## Sessão 2026-09-19 — A IA respondeu em produção ✅
+
+O primeiro edital foi lido de ponta a ponta em produção. Quatro correções encadeadas, cada
+uma revelada só depois que a anterior saiu do caminho:
+
+- **Chave de escopo de organização** exigia o cabeçalho `anthropic-workspace-id`, que o
+  código não mandava. (Sessão anterior.)
+- **`temperature` não é mais aceito** pelos modelos atuais — HTTP 400. (Sessão anterior.)
+- **Resposta vazia com HTTP 200.** O modelo raciocina por padrão e os blocos de raciocínio
+  consomem o mesmo `max_tokens` da resposta; com 4096 e um edital inteiro na entrada, o teto
+  acabava antes do primeiro bloco de texto. Subiu para 16000, e a falha passou a informar
+  `stop_reason` e os tipos de bloco recebidos em vez de "resposta vazia".
+- **Função morta pela Vercel.** O tempo limite era por provedor, não pela requisição: o
+  principal gastava 55s e a cadeia ainda tentava os outros quatro, passando do `maxDuration`
+  de 60s. A invocação morria no meio e o navegador recebia a página de erro da plataforma —
+  o app dizia "formato inválido", que não diagnostica nada. Agora há prazo para a cadeia
+  inteira (50s), cada provedor recebe o que sobrou, e o cliente mostra o status HTTP.
+- **Esforço de raciocínio.** Com tudo acima resolvido, a chamada ainda estourava o prazo: o
+  modelo usa esforço `high` por padrão. Ler edital é extração, não dedução — passou a pedir
+  `effort: low` e voltou dentro do tempo.
+
+### Modal do edital reorganizado ✅
+
+Estava tudo na mesma tela: campos do curso, área de texto, upload, revisão e o botão de
+confirmar — um formulário cheio antes de existir o que preencher. Virou quatro momentos:
+
+1. **Envio** — só o alvo do PDF, agora aceitando arrastar-e-soltar (a borda tracejada já
+   prometia isso). Colar texto virou escotilha fechada, para quem não tem o arquivo.
+2. **Leitura** — só a animação, com as etapas reais: ela recebe o sinal de quando a extração
+   do PDF termina, em vez de cronometrar por tempo fixo.
+3. **Revisão** — resumo em números (disciplinas, tópicos, questões, banca) antes da lista, o
+   seletor de cargo só quando há mais de um, os campos do curso já preenchidos e o painel de
+   revisão. "Enviar outro edital" volta sem fechar o modal.
+4. **Pronto** — só a confirmação, e o botão leva de fato ao curso criado.
+
+### Escolha de cargo com compatibilidade ✅
+
+Quando o edital traz mais de um cargo, entra uma tela própria de escolha (cards com vagas,
+salário, escolaridade, questões e nº de disciplinas) entre a leitura e a revisão. Seleção
+múltipla limitada às vagas de curso do plano; cada cargo é revisado e confirmado um por vez.
+
+Marcando dois ou mais, aparece a **compatibilidade entre eles**, calculada localmente em
+`compatibilidadeDeCargos` (`src/lib/edital.js`, 13 testes). É instantânea e não gasta chamada
+de IA, porque os dados já estão em memória.
+
+Duas correções depois do primeiro teste real (PM/AL, Oficial x Soldado, que marcava 31%
+quando na prática um cargo é o outro com matérias a mais):
+
+- **O matcher exigia nome idêntico.** "Noções de Informática" e "Informática" viravam
+  disciplinas diferentes. Agora `mesmaDisciplina` compara por tokens, descartando ruído
+  ("noções de", "básica", "pertinente") e sinônimos de edital ("Língua Portuguesa" =
+  "Português"), e aceita o nome menor contido no maior. Cabeças genéricas — "Direito",
+  "Legislação" — não casam sozinhas, senão Direito Penal viraria Direito Administrativo.
+- **A métrica punia subconjunto.** Comuns sobre a união dá número baixo justamente quando um
+  cargo está contido no outro (oficial x praça), sugerindo dois estudos separados. O número
+  em destaque passou a ser o **aproveitamento** (quanto do cargo menor cai no maior), com o
+  **acréscimo** em disciplinas ao lado — que é o custo real de levar os dois.
+
+A tela nomeia as disciplinas exclusivas de cada cargo, não só conta: é assim que se vê se a
+diferença é real ou se foram dois jeitos de escrever a mesma matéria.
+
+### Revisão mesclada ✅
+
+Com dois cargos escolhidos, a revisão é **uma só**. Revisar "Cargo 1 de 2" desfazia o
+raciocínio da tela anterior: o aluno acabou de ver que os cargos se aproveitam e era obrigado
+a conferir duas listas quase iguais, sem enxergar o que é compartilhado.
+
+`mesclarDisciplinasDeCargos` funde as listas marcando em quais cargos cada disciplina cai —
+e cada **tópico** também, porque o recorte da mesma disciplina muda entre oficial e praça.
+Na tela, cada linha traz "Nos dois" ou "Só <cargo>". Dados do cargo e quadro de provas
+aparecem um por cargo (o quadro é o que dá o peso de cada disciplina naquela prova).
+
+No fim nascem **dois cursos**, um por cargo, cada um levando só o que é dele — inclusive
+tópico a tópico. Um nome de curso por cargo; concurso e banca são do edital e ficam fora.
+
+Efeito colateral corrigido: o id do cargo vem do título, então dois cargos de mesmo título
+tinham o mesmo id. Inofensivo com dropdown de escolha única; com a escolha múltipla, que casa
+disciplina e cargo por esse id, os dois virariam um só sem aviso.
+
+**Falta medir a qualidade da leitura:** quadro de provas preenchido, disciplinas reais,
+8–15 tópicos por disciplina, dados do cargo. `docs/TESTE-EXTRACAO-EDITAL.md` ainda diz que a
+saída da IA não foi verificada.
+
+---
+
+## Sessão 2026-09-18 — Primeiro teste real em produção 🔧
+
+Primeiro edital subido em produção (SEPLAG/AL, 70 páginas, Cebraspe). Três achados.
+
+- **A IA não respondeu e o motivo estava sendo escondido.** O `catch` de `runAnalysis`
+  descartava `realAiError.message` quando o fallback heurístico produzia algo, e mostrava só
+  "a IA de produção não respondeu agora". Sem o motivo não dá para saber se é chave, timeout,
+  sessão ou limite. Agora a mensagem real aparece junto.
+- **O parser interno devolve lixo com cara de leitura boa.** No edital real ele detectou 50
+  "concursos", nomeou o curso com uma frase solta do meio do texto e trouxe "REMUNERAÇÃO
+  BRUTA" e "DESCRIÇÃO SUMÁRIA DAS ATIVIDADES" como disciplinas. Era aceitável quando o edital
+  era só um caminho entre vários; agora que a plataforma inteira se monta em cima da leitura,
+  é armadilha. Passou a não preencher os campos sozinho, não vir pré-marcado e exibir aviso
+  próprio no painel de revisão.
+- **Todo textarea do app estava espremido em 38px.** `.pl-input` fixa `height: 38px` e existe
+  `.pl-textarea` para liberar — só o `AdminConcursos` lembrava de usar. Corrigido na raiz com
+  `textarea.pl-input`, que vale para os 23 textareas de uma vez. Verificado no navegador:
+  `rows=12` passou de 38px para 282px.
+
+Nosso recorte lê esse edital bem: 70 páginas, 202.992 chars, anexo localizado a 78% do
+documento, 66.023 chars (~19k tokens) enviados com anexo e quadro de provas dentro. Ou seja,
+o problema não é o texto — é a chamada da IA falhando.
+
+---
+
+## Sessão 2026-09-16 — Responsividade por altura (notebook) 🔧
+
+O app adaptava por **largura** e nunca por **altura**. Em notebook a largura passa e a altura
+não, então conteúdo era cortado sem rolagem para alcançá-lo. Antes desta sessão havia **zero**
+media queries por altura em todo o projeto.
+
+- **Login** — a página era travada em `100vh` com `overflow: hidden` e o card pede 760px.
+  Medido em 1366x660: card precisava de 703px, tinha 594px → **109px cortados**, levando junto
+  "Continuar com Google" e o link de criar conta, e a página não rolava. Novo media query em
+  `max-height: 820px`: página rola, card cresce, capa vira sticky, respiro do cabeçalho cai de
+  52px para 26px. Verificado com o app buildado em 1366x660, 1536x720, 1920x1080 e 390x844.
+- **ImportConfirmModal** — não tinha teto de altura nem rolagem. Reproduzido em 1366x660: card
+  de 784px começando em -62 e terminando fora da janela, nada rolava, botão inalcançável.
+  Ganhou `maxHeight: calc(100dvh - 32px)` + `overflow: auto`, e o rodapé virou sticky para as
+  ações não sumirem na rolagem.
+- **LinkModal, MetasSemana, MFAChallengePanel** — mesmo padrão sem teto; ganharam o mesmo
+  tratamento.
+
+**O que foi auditado e está correto:** o esqueleto do app (`overflow-y-auto` na área de
+conteúdo), Histórico/Questões/Comunidades (rolagem interna com `flex:1; min-height:0`),
+`ModalShell` do Planos e `.simulados-modal-shell` (ambos com teto em vh e corpo rolável).
+
+**Pendente:** os overlays de admin (`AdminUsuarios`, `AdminCourseTemplatesEditor`) seguem sem
+teto de altura — não vão para o aluno, ficaram para depois. E as telas autenticadas não foram
+abertas num navegador aqui (exigem login); a auditoria delas foi por código.
+
+---
+
+## Sessão 2026-09-15 — Teste de extração de PDF de editais 🔧
+
+Feito para validar a aposta do catálogo N1 (publicar concurso raso + o aluno sobe o edital e a
+IA monta o plano) antes de escrever a regra. Laudo completo em
+[TESTE-EXTRACAO-EDITAL.md](TESTE-EXTRACAO-EDITAL.md); harness reproduzível em
+`scripts/testar-extracao-edital.mjs`.
+
+Amostra: 16 PDFs de domínio oficial, 2026, 8 operadores (Cebraspe, AOCP, Fundatec, IBFC,
+Verbena/UFG, INEPAM, Selecao.net, prefeituras). 3 não eram edital de abertura → 13 válidos.
+
+- **O medo do PDF ilegível não se confirmou** — 13/13 extraíram texto legível (2.713 a 5.765
+  chars/página, todos born-digital), 13/13 com conteúdo programático no mesmo PDF, 13/13 com
+  todos os campos de catálogo. Zero escaneados na amostra. A extração via pdfjs que já está no
+  app dá conta.
+- **O problema real é outro: o corte de texto do backend.** O conteúdo programático começa
+  entre 51% e 97% do edital (posição 81.088 a 545.060). `api/_ai.js` → `analyzeEdital()` corta
+  em `slice(0, 24000)` — **0 de 13** editais têm as disciplinas chegando ao modelo em produção.
+  O caminho de dev (`ai-server.mjs`, 120.000) salva 4 de 13. Não é o modelo errando: é o texto
+  não chegando.
+- **Vocabulário varia por banca** — Cebraspe usa "OBJETOS DE AVALIAÇÃO", Fundatec usa
+  "ANEXO IX – PROGRAMAS". Procurar só "conteúdo programático" erra em ~40% dos editais.
+- Defeitos menores no mesmo lugar: o `keywordRegex` de `prepareEditalText` busca termos **sem
+  acento** contra texto acentuado (não casa em nenhum dos 13); ~19% dos links "de edital" são
+  comunicado/retificação/resultado e precisam de checagem de sanidade antes de chamar a IA.
+
+**Conclusão:** a aposta do N1 se sustenta — o insumo existe e é legível. Corrigir o corte
+(recortando o anexo, não aumentando o limite: mediana de 83k tokens por edital) é o
+pré-requisito para medir a qualidade da estruturação da IA.
+
+### Correção do corte — aplicada ✅
+
+Novo `api/_edital-text.js`, compartilhado pelos dois backends (antes cada um cortava do seu
+jeito). Acha a linha do cabeçalho do anexo e manda **identificação + conteúdo programático**,
+descartando o miolo de regras. Nos mesmos 13 editais:
+
+| | antes | depois |
+|---|---|---|
+| Anexo chegando à IA | 1/13 (e era falso positivo) | **13/13** |
+| Disciplinas identificáveis (soma) | 214 | **893** |
+| Mediana enviada | 24.000 chars (~6,9k tokens) | 89.659 chars (~26k tokens) |
+
+Custo por análise sobe ~3,7× contra o corte antigo — que não comprava nada, porque o plano
+voltava vazio; e é ~3,2× mais barato que mandar o edital inteiro. `CHARS_TOTAL` é o botão de
+ajuste. 11 testes de regressão em `api/_edital-text.test.js`; `vite.config.js` passou a
+incluir `api/**/*.test.js`. Suíte cheia: 83 testes passando, lint limpo.
+
+### Pacote completo — a plataforma gira em torno do edital ✅ (backend)
+
+**Decisão do dono:** o aluno sobe UM edital e a plataforma inteira se monta em cima dele.
+Leitura única (a IA devolve todos os cargos, o aluno escolhe na lista), extração do pacote
+completo, tela de revisão obrigatória, e as telas sem acervo viram container do que o aluno
+sobe. Consequência: **o catálogo deixa de ser dependência** — se o aluno traz o edital dele,
+não é preciso manter 1.200 concursos atualizados. O N1 vira conveniência de descoberta.
+
+- **Duas passadas testadas e descartadas.** Localizar a tabela de cargos para uma primeira
+  leitura barata dá 8/13 — falha nos dois Cebraspe (remuneração em prosa), no Catanduvas e em
+  mais dois. Ficou a leitura única; custo aceito: 3 de 13 seguem com anexo truncado.
+- **Achado: o quadro de provas estava sendo jogado fora.** Nº de questões e peso por
+  disciplina não fica no cabeçalho nem no anexo — aparece entre 1,9% e 51,6% do documento, no
+  miolo que o recorte descartava (só 2 de 13 caíam no cabeçalho). Virou terceira janela, com
+  dois sinais: título explícito (4/13) + seção numerada `DAS PROVAS` (+7/13) = 11/13
+  localizados, e **composição presente no texto enviado em 13/13**. Mediana segue ~26k tokens.
+- **Schema ampliado** nos dois backends: `inscricao_valor` e `etapas[]` por certame; `vagas`,
+  `salario`, `escolaridade`, `lotacao`, `carga_horaria` e `prova[]` (`{disciplina, questoes,
+  peso}`) por cargo. São os campos que `createCourse` já carregava e que vinham do catálogo.
+- **Granularidade de tópico** virou regra no prompt (8 a 15 por disciplina). Número calibrado
+  no olho, não medido — primeiro botão a girar com uso real.
+- 88 testes passando (16 no `api/_edital-text.test.js`), lint limpo.
+
+**Não verificado:** a saída da IA. Não há chave de API no ambiente remoto. Validado é o texto
+que chega ao modelo e o formato exigido dele; rodar `npm run ai:server` com a chave no `.env`
+para medir o que o modelo devolve de fato.
+
+### Pendências fechadas ✅ (as quatro)
+
+- **Campos novos chegam à tela** — `normalizeOpenAiAnalysis` descartava tudo que não fosse
+  disciplina; passa a repassar os dados de cargo, `prova[]`, `inscricaoValor` e `etapas[]`.
+- **Aviso antes de gastar a análise** — novo `src/lib/edital.js`. Avisa (nunca bloqueia) para
+  documento curto demais, edital que se declara retificado e nome de arquivo suspeito. O
+  limiar vem do módulo do backend, para não haver duas verdades.
+- **Tela de revisão** — `src/components/RevisaoEditalPanel.jsx` no modo IA do `Planos.jsx`:
+  dados do cargo, quadro de provas e disciplinas com caixa de inclusão, nome editável e
+  tópicos marcáveis um a um. O botão virou "Confirmar e criar" e o que vai para a importação
+  é a revisão do aluno (`disciplinasRevisadas`), não a proposta crua da IA.
+- **Curso e versão do edital** — `createCourse` ganhou `carga_horaria`, `prova[]`,
+  `edital_arquivo`, `edital_lido_em`, `edital_impressao`; o import preenche cargo, vagas,
+  salário, escolaridade, lotação, taxa, etapas e a data da prova (`parseEditalDate` converte
+  o formato do edital para ISO). No card do curso aparecem o total de questões e "Edital lido
+  em dd/mm"; na tela do Edital, cada disciplina mostra `10 questões · peso 2`.
+
+120 testes passando, lint sem erros (16 warnings pré-existentes), build limpo.
+
+**Continua não verificado:** a saída da IA — sem chave de API no ambiente remoto.
+
+---
+
+---
+
 ## Sessão 2026-09-07 (parte 3) — Coletor automático: PARADO por custo ⛔
 
 Tentativa de automatizar a coleta com a API da Anthropic (busca web + web_fetch). **Não seguir por aqui sem antes resolver o custo.**

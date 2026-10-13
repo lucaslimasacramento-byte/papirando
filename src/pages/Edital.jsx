@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { analyzeEdital } from '../lib/aiClient';
 import { getAreaToken } from '../lib/areaTokens';
+import { acharLinhaDaProva, avisosDoDocumento } from '../lib/edital';
+import { progressoPorObjetivo } from '../lib/objetivos';
 
 // Limite mínimo de caracteres para considerar que há um edital extraível.
 // Um edital real tem milhares de caracteres; PDF escaneado/vazio extrai quase nada.
@@ -102,6 +104,17 @@ export default function Edital({
     return safeDisciplinas;
   }, [bancoDisciplinas, concursoSelecionado]);
 
+  // O curso do concurso selecionado — e dele que saem os objetivos.
+  const cursoDoConcurso = useMemo(
+    () => (cursos || []).find((curso) => curso?.plano && curso.plano === concursoSelecionado?.plano) || null,
+    [cursos, concursoSelecionado]
+  );
+
+  const progressoDosObjetivos = useMemo(
+    () => progressoPorObjetivo(cursoDoConcurso, editalAtivo),
+    [cursoDoConcurso, editalAtivo]
+  );
+
   const totals = useMemo(() => {
     let topicos = 0;
     let concluidos = 0;
@@ -125,6 +138,9 @@ export default function Edital({
     };
   }, [editalAtivo]);
 
+  // O que o documento aparenta ser, antes de a IA olhar. Ver src/lib/edital.js.
+  const [avisosDoEdital, setAvisosDoEdital] = useState([]);
+
   const editalTextoLimpo = String(editalText || '').trim();
   const hasEditalText = editalTextoLimpo.length > 0;
 
@@ -144,6 +160,10 @@ export default function Edital({
 
     setAiError('');
     setAiPanelOpen(true);
+    // Avisa ANTES de gastar a analise: parte dos arquivos anunciados como edital e
+    // comunicado, retificacao ou resultado. Avisa, nao bloqueia — o aluno pode ter colado
+    // so o conteudo programatico, que e curto e legitimo. Mesma checagem da importacao.
+    setAvisosDoEdital(avisosDoDocumento(editalTextoLimpo));
     const resultado = await analyzeEdital(editalText);
     if (!temDadosUteis(resultado)) {
       setAiAnalysis(null);
@@ -203,6 +223,34 @@ export default function Edital({
         />
 
         <KpiStrip totals={totals} />
+
+        {/* Curso que agrupa mais de um objetivo: um numero so nao serve. A materia
+            exclusiva de um objetivo entra no total geral e nao avanca o outro; a comum,
+            estudada uma vez, sobe os dois. Ver src/lib/objetivos.js. */}
+        {progressoDosObjetivos.length > 1 && (
+          <section className="pl-card" style={{ padding: '14px 16px' }}>
+            <p className="pl-eyebrow" style={{ marginBottom: 10 }}>Progresso por objetivo</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+              {progressoDosObjetivos.map((cargo) => (
+                <div key={cargo.id}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pl-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {cargo.nome}
+                    </span>
+                    <span className="pl-num" style={{ fontSize: 16, color: 'var(--pl-ink)', flexShrink: 0 }}>{cargo.percentual}%</span>
+                  </div>
+                  <div className="pl-progress" style={{ marginTop: 6 }}>
+                    <div className="fill" style={{ width: `${Math.min(Math.max(cargo.percentual, 0), 100)}%`, background: 'var(--pl-ink)' }} />
+                  </div>
+                  <p style={{ margin: '5px 0 0', fontSize: 11.5, color: 'var(--pl-ink-3)' }}>
+                    {cargo.disciplinas} disciplinas · {cargo.concluidos} de {cargo.topicos} tópicos
+                    {cargo.questoes ? ` · ${cargo.questoes} questões na prova` : ''}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {importMsg && (
           <div style={{
@@ -406,6 +454,9 @@ function DisciplinaAccordion({
   const total = topicos.length;
   const pct = total > 0 ? Math.round((concluidos / total) * 100) : Number(disciplina.percentual || 0);
   const area = getAreaToken(disciplina.area || concurso?.area || inferAreaFromText(`${disciplina.nome} ${disciplina.plano}`));
+  // Peso desta disciplina na prova, vindo do quadro de provas do edital. Sem isso todas as
+  // disciplinas parecem valer o mesmo e o aluno estuda o que gosta, não o que pontua.
+  const naProva = acharLinhaDaProva(concurso?.prova, disciplina.nome);
 
   return (
     <article className="pl-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -420,6 +471,11 @@ function DisciplinaAccordion({
           area={area}
           meta={`${concluidos} de ${total} tópicos`}
         />
+        {naProva && (
+          <span className="pl-tag pl-tag-accent" style={{ whiteSpace: 'nowrap' }}>
+            {naProva.questoes} questões{Number(naProva.peso) > 1 ? ` · peso ${naProva.peso}` : ''}
+          </span>
+        )}
         <ProgressInline pct={pct} color={area.cover} />
         <span className="pl-tag">{isExpanded ? 'Recolher' : 'Expandir'}</span>
       </button>
@@ -603,6 +659,19 @@ function AiAnalysisPanel({ aiPanelOpen, setAiPanelOpen, aiLoading, aiError, aiAn
               {aiError}
             </div>
           )}
+
+          {/* O documento pode nao ser o edital de abertura (comunicado, retificacao,
+              resultado). Avisa sem bloquear: a leitura continua, mas o aluno sabe o que
+              esperar do que vier. */}
+          {!aiLoading && avisosDoEdital.map((aviso) => (
+            <div
+              key={aviso}
+              className="pl-card"
+              style={{ padding: '10px 14px', borderColor: 'var(--pl-warn)', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)', fontSize: 13, fontWeight: 600 }}
+            >
+              {aviso}
+            </div>
+          ))}
 
           {!aiLoading && !aiError && aiAnalysis && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>

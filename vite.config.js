@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       environment: 'node',
-      include: ['src/**/*.test.js'],
+      include: ['src/**/*.test.js', 'api/**/*.test.js'],
     },
     server: {
       host: '127.0.0.1',

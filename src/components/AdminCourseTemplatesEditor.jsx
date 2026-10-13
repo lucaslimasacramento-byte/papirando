@@ -470,7 +470,9 @@ function CourseNameModal({ initial, onSave, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         className="pl-card"
-        style={{ width: '100%', maxWidth: 480, padding: 20, boxShadow: 'var(--pl-sh-high)' }}
+        /* Teto de altura: em notebook o modal passava da tela e o botao de salvar ficava
+           fora de alcance, sem rolagem para chegar nele. */
+        style={{ width: '100%', maxWidth: 480, padding: 20, boxShadow: 'var(--pl-sh-high)', maxHeight: '90vh', overflowY: 'auto' }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
           <div>
