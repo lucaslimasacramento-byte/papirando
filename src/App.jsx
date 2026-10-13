@@ -5576,38 +5576,7 @@ export default function App() {
       }
     }
 
-    const cursoExistente = cursoExistenteId
-      ? cursos.find((item) => String(item.id) === String(cursoExistenteId))
-      : null;
-
-    const objetivosCrus = (cargosDoCurso.length ? cargosDoCurso : [contestBase]).map((cargo) => ({
-      id: cargo.id,
-      nome: cargo.roleName || cargo.title,
-      tipo: 'concurso',
-      cargo: cargo.roleName || cargo.title,
-      banca: courseData?.banca || analysis.banca || 'A definir',
-      vagas: cargo.vagas || '',
-      salario: cargo.salario || '',
-      escolaridade: cargo.escolaridade || '',
-      lotacao: cargo.lotacao || '',
-      carga_horaria: cargo.cargaHoraria || '',
-      inscricao_valor: analysis.inscricaoValor || '',
-      etapas_tags: analysis.etapas || [],
-      prova: Array.isArray(cargo.prova) ? cargo.prova : [],
-      prova_data: parseEditalDate(cargo.examDate) || courseData?.prova_data || '',
-      status_concurso: normalizeContestStatus('edital_publicado'),
-    }));
-
-    // O id do objetivo vem do titulo do cargo, e dois editais podem gerar o mesmo. Juntando
-    // ao curso existente, os dois virariam o MESMO objetivo — progresso de um aparecendo no
-    // outro, sem erro na tela. O de-para tambem corrige o mapa de disciplinas, que foi
-    // montado com os ids antigos.
-    const { objetivos: objetivosNovos, renomeados } = resolverColisaoDeIds(
-      objetivosCrus,
-      cursoExistente ? objetivosDoCurso(cursoExistente) : []
-    );
-
-    const novoCurso = cursoExistente || createCourse({
+    const novoCurso = createCourse({
       slug: template.slug,
       nome: template.nome,
       plano: (planName && planName.trim()) || template.plano,
@@ -6010,7 +5979,38 @@ export default function App() {
       courseData?.nome?.trim() ||
       (contestSelecionado.title !== 'Edital completo' ? contestSelecionado.title : 'Novo curso por edital');
 
-    const novoCurso = createCourse({
+    const cursoExistente = cursoExistenteId
+      ? cursos.find((item) => String(item.id) === String(cursoExistenteId))
+      : null;
+
+    const objetivosCrus = (cargosDoCurso.length ? cargosDoCurso : [contestBase]).map((cargo) => ({
+      id: cargo.id,
+      nome: cargo.roleName || cargo.title,
+      tipo: 'concurso',
+      cargo: cargo.roleName || cargo.title,
+      banca: courseData?.banca || analysis.banca || 'A definir',
+      vagas: cargo.vagas || '',
+      salario: cargo.salario || '',
+      escolaridade: cargo.escolaridade || '',
+      lotacao: cargo.lotacao || '',
+      carga_horaria: cargo.cargaHoraria || '',
+      inscricao_valor: analysis.inscricaoValor || '',
+      etapas_tags: analysis.etapas || [],
+      prova: Array.isArray(cargo.prova) ? cargo.prova : [],
+      prova_data: parseEditalDate(cargo.examDate) || courseData?.prova_data || '',
+      status_concurso: normalizeContestStatus('edital_publicado'),
+    }));
+
+    // O id do objetivo vem do titulo do cargo, e dois editais podem gerar o mesmo. Juntando
+    // ao curso existente, os dois virariam o MESMO objetivo — progresso de um aparecendo no
+    // outro, sem erro na tela. O de-para tambem corrige o mapa de disciplinas, que foi
+    // montado com os ids antigos.
+    const { objetivos: objetivosNovos, renomeados } = resolverColisaoDeIds(
+      objetivosCrus,
+      cursoExistente ? objetivosDoCurso(cursoExistente) : []
+    );
+
+    const novoCurso = cursoExistente || createCourse({
       ...courseData,
       nome: nomeCurso,
       plano: courseData?.plano || nomeCurso,
@@ -6110,10 +6110,45 @@ export default function App() {
 
     setBancoDisciplinas((prev) => [...prev, ...novasDisciplinas]);
 
+    // Curso existente: os objetivos novos entram no plano que ja estava la, e o mapa de
+    // disciplinas passa a apontar tambem para eles — inclusive nas materias reaproveitadas,
+    // que e o ganho de juntar os dois editais num plano so.
+    if (cursoExistente) {
+      const mapaNovo = renomearNoMapa(montarMapaDeObjetivos(disciplinasRevisadas), renomeados);
+      setCursos((prev) => prev.map((item) => {
+        if (item.id !== cursoExistente.id) return item;
+        const atual = migrarCurso(item);
+        const mapaAtual = { ...(atual.disciplinasPorObjetivo || {}) };
+        Object.entries(mapaNovo).forEach(([chave, objetivos]) => {
+          mapaAtual[chave] = [...new Set([...(mapaAtual[chave] || []), ...objetivos])];
+        });
+        return {
+          ...atual,
+          objetivos: [...(atual.objetivos || []), ...objetivosNovos],
+          disciplinasPorObjetivo: mapaAtual,
+        };
+      }));
+    }
+
+    // Sem alvo definido, o curso recem-importado vira o alvo.
+    //
+    // O aluno acabou de dizer, subindo o edital, qual e o objetivo dele — pedir que ele
+    // repita isso num segundo passo e burocracia. E sem alvo o Inicio fica sem contagem de
+    // dias, sem prioridade e sem foco do dia: a plataforma inteira depende deste campo.
+    // Se ja houver um alvo, nao mexemos: a escolha e dele.
+    if (!targetContestId) {
+      // O alvo aponta para um OBJETIVO, nao para o curso: e o objetivo que tem data de
+      // prova, banca e cargo. Com mais de um, o primeiro escolhido vira o alvo — trocar e
+      // um clique no cartao.
+      const primeiro = objetivosNovos[0] || objetivosDoCurso(novoCurso)[0];
+      if (primeiro) setTargetContestId(idDoObjetivo(novoCurso.id, primeiro.id));
+    }
+
     return {
       curso: novoCurso,
       disciplinasCriadas: novasDisciplinas.length,
       topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
+      disciplinasReaproveitadas,
       concursosDetectados: analysis.detectedContests,
       concursoImportado: contestSelecionado.title,
       bancaDetectada: analysis.banca,
@@ -6177,45 +6212,9 @@ export default function App() {
 
     setBancoDisciplinas((prev) => [...prev, ...novasDisciplinas]);
 
-    // Curso existente: os objetivos novos entram no plano que ja estava la, e o mapa de
-    // disciplinas passa a apontar tambem para eles — inclusive nas materias reaproveitadas,
-    // que e o ganho de juntar os dois editais num plano so.
-    if (cursoExistente) {
-      const mapaNovo = renomearNoMapa(montarMapaDeObjetivos(disciplinasRevisadas), renomeados);
-      setCursos((prev) => prev.map((item) => {
-        if (item.id !== cursoExistente.id) return item;
-        const atual = migrarCurso(item);
-        const mapaAtual = { ...(atual.disciplinasPorObjetivo || {}) };
-        Object.entries(mapaNovo).forEach(([chave, objetivos]) => {
-          mapaAtual[chave] = [...new Set([...(mapaAtual[chave] || []), ...objetivos])];
-        });
-        return {
-          ...atual,
-          objetivos: [...(atual.objetivos || []), ...objetivosNovos],
-          disciplinasPorObjetivo: mapaAtual,
-        };
-      }));
-    }
-
-    // Sem alvo definido, o curso recem-importado vira o alvo.
-    //
-    // O aluno acabou de dizer, subindo o edital, qual e o objetivo dele — pedir que ele
-    // repita isso num segundo passo e burocracia. E sem alvo o Inicio fica sem contagem de
-    // dias, sem prioridade e sem foco do dia: a plataforma inteira depende deste campo.
-    // Se ja houver um alvo, nao mexemos: a escolha e dele.
-    if (!targetContestId) {
-      // O alvo aponta para um OBJETIVO, nao para o curso: e o objetivo que tem data de
-      // prova, banca e cargo. Com mais de um, o primeiro escolhido vira o alvo — trocar e
-      // um clique no cartao.
-      const primeiro = objetivosNovos[0] || objetivosDoCurso(novoCurso)[0];
-      if (primeiro) setTargetContestId(idDoObjetivo(novoCurso.id, primeiro.id));
-    }
-
     return {
-      curso: novoCurso,
       disciplinasCriadas: novasDisciplinas.length,
       topicosCriados: novasDisciplinas.reduce((acc, item) => acc + item.topicos.length, 0),
-      disciplinasReaproveitadas,
     };
   };
 
