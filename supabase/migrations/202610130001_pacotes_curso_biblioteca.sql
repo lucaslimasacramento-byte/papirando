@@ -14,6 +14,9 @@
 --
 -- Nada aqui apaga ou altera dados existentes.
 
+-- Transação: aplicada pela Management API, entra tudo ou nada.
+begin;
+
 create extension if not exists pgcrypto;
 
 -- ── Biblioteca ────────────────────────────────────────────────────────────────
@@ -269,3 +272,5 @@ drop policy if exists course_materials_obj_admin_write on storage.objects;
 create policy course_materials_obj_admin_write on storage.objects
   for insert to authenticated
   with check (bucket_id = 'course-materials' and public.is_app_admin());
+
+commit;
