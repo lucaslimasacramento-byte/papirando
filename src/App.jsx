@@ -23,6 +23,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase, loadContestDraftsFromSupabase, loadContestTemplateContent } from './lib/contestCatalogApi';
+import { loadCoursePackages, loadMyPackageEnrollments } from './lib/coursePackagesApi';
 import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { compressImage } from './lib/imageCompress';
@@ -653,11 +654,15 @@ export default function App() {
       .trim(), []);
 
   const isLegacyDemoCourse = useCallback((course = {}) => {
+    // Só os cursos demo antigos (curso-pmba-soldado-2026 / "PMBA - Soldado (2026)" e ADAB).
+    // NÃO filtrar qualquer "PM-BA Soldado": o curso padrão real usa esse nome.
     const text = normalizeLegacyCourseText([course.id, course.nome, course.plano, course.concurso, course.cargo].join(' '));
+    const nome = normalizeLegacyCourseText(course.nome);
+    const plano = normalizeLegacyCourseText(course.plano);
     return (
-      text.includes('curso-pmba-soldado-2026') ||
-      (text.includes('pmba') && text.includes('soldado')) ||
-      (text.includes('policia militar do estado da bahia') && text.includes('soldado')) ||
+      String(course.id || '') === 'curso-pmba-soldado-2026' ||
+      nome === 'pmba - soldado (2026)' ||
+      plano === 'pmba - soldado' ||
       (text.includes('adab 2026') && text.includes('fiscal estadual agropecuario'))
     );
   }, [normalizeLegacyCourseText]);
@@ -975,6 +980,10 @@ export default function App() {
 
   const [contestLibrary, setContestLibrary] = useState(() => localConcursoCatalog);
   const [contestDrafts, setContestDrafts] = useState([]);
+  // Pacotes de curso com material pronto (ex.: PM-BA Soldado) e adesões do aluno.
+  // Não confundir com os cursos do aluno (cursos / public.courses).
+  const [coursePackages, setCoursePackages] = useState([]);
+  const [myPackageEnrollments, setMyPackageEnrollments] = useState([]);
   const [selectedContestDetailId, setSelectedContestDetailId] = useState(null);
   const [favoriteContestIds, setFavoriteContestIds] = useState(() => {
     const saved = readJsonStorage('papirando_favorite_contests', []);
@@ -1509,9 +1518,24 @@ export default function App() {
   // `[rawContest]`, esse efeito disparava a cada re-render (inclusive o causado
   // pelo próprio clique), resetando o cargo selecionado e impedindo os botões
   // de interesse/alvo de refletirem o novo estado.
+  // Admin enxerga no catálogo, como prévia, os concursos em rascunho que já têm curso
+  // com material — para conferir como o aluno vai ver antes de publicar.
+  const catalogWithAdminPreview = useMemo(() => {
+    if (!isAdmin || contestDrafts.length === 0 || coursePackages.length === 0) return contestLibrary;
+    const courseTemplateIds = new Set(coursePackages.map((pkg) => pkg.contest_template_id).filter(Boolean));
+    const libraryIds = new Set(contestLibrary.map((contest) => contest.id));
+    const previews = contestDrafts
+      .filter((draft) => courseTemplateIds.has(draft.id) && !libraryIds.has(draft.id))
+      .map((draft) => ({ ...draft, is_public: true, adminPreview: true }));
+    return previews.length > 0 ? [...previews, ...contestLibrary] : contestLibrary;
+  }, [isAdmin, contestDrafts, coursePackages, contestLibrary]);
+  const enrolledPackageIds = useMemo(
+    () => myPackageEnrollments.map((enrollment) => enrollment.package_id),
+    [myPackageEnrollments]
+  );
   const selectedContestDetail = useMemo(
-    () => findGroupedContestById(contestLibrary, selectedContestDetailId),
-    [contestLibrary, selectedContestDetailId]
+    () => findGroupedContestById(catalogWithAdminPreview, selectedContestDetailId),
+    [catalogWithAdminPreview, selectedContestDetailId]
   );
   const communityRankings = useMemo(
     () =>
@@ -2732,6 +2756,35 @@ export default function App() {
       ignore = true;
     };
   }, [isAdmin, currentAuthUser]);
+
+  const refreshPackageEnrollments = useCallback(async () => {
+    if (!currentAuthUser?.id) {
+      setMyPackageEnrollments([]);
+      return;
+    }
+    try {
+      setMyPackageEnrollments(await loadMyPackageEnrollments(currentAuthUser.id));
+    } catch (error) {
+      console.warn('Falha ao carregar adesões aos pacotes de curso.', error);
+    }
+  }, [currentAuthUser?.id]);
+
+  // isAdmin entra na dependência porque a RLS só devolve pacotes em rascunho para admin.
+  useEffect(() => {
+    if (!currentAuthUser) {
+      setCoursePackages([]);
+      setMyPackageEnrollments([]);
+      return undefined;
+    }
+    let ignore = false;
+    loadCoursePackages()
+      .then((rows) => { if (!ignore) setCoursePackages(rows); })
+      .catch((error) => console.warn('Falha ao carregar pacotes de curso.', error));
+    refreshPackageEnrollments();
+    return () => {
+      ignore = true;
+    };
+  }, [currentAuthUser, isAdmin, refreshPackageEnrollments]);
 
   useEffect(() => {
     let ignore = false;
@@ -7246,6 +7299,10 @@ export default function App() {
     uploadCourseImage,
     setSelectedCoursePlan,
     contestLibrary,
+    catalogWithAdminPreview,
+    coursePackages,
+    enrolledPackageIds,
+    refreshPackageEnrollments,
     currentCourseLimit,
     currentCourseCount,
     remainingCourseSlots,

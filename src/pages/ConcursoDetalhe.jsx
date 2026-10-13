@@ -32,6 +32,7 @@ import { supabase } from '../lib/supabase';
 import { toast } from '../lib/toast';
 import { loadContestTemplateContent } from '../lib/contestCatalogApi';
 import { ImportConfirmModal } from '../components/ImportConfirmModal';
+import CourseMaterialsPanel from '../components/CourseMaterialsPanel';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 
@@ -837,6 +838,9 @@ function ConcursoDetalheBody({
   interestedContestIds,
   targetContestId,
   onEditContest,
+  coursePackages = [],
+  enrolledPackageIds = [],
+  onPackageEnrolled,
 }) {
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [imageError, setImageError] = useState(false);
@@ -1124,6 +1128,20 @@ function ConcursoDetalheBody({
   // Cor de acento da área (borda esquerda do hero + marcadores). Navy como fallback.
   const areaAccent = areaTheme?.accentStart || '#1e3a5f';
   const isInscricoesAbertas = normalizedStatus === 'inscricoes_abertas';
+
+  // Pacote de curso (material pronto) ligado a este concurso ou a algum cargo do grupo.
+  const linkedPackage = useMemo(() => {
+    if (!coursePackages.length) return null;
+    const ids = new Set(
+      [contentTemplateId, rawContest?.id, ...(rawContest?.sourceIds || []), ...roles.map((role) => role.templateId)]
+        .filter(Boolean)
+        .map(String)
+    );
+    return coursePackages.find((pkg) => ids.has(String(pkg.contest_template_id))) || null;
+  }, [coursePackages, contentTemplateId, rawContest, roles]);
+  const alreadyInStudies = cursos.some((curso) =>
+    [curso.nome, curso.plano].some((value) => value && (value === contest?.nome || value === contest?.plano))
+  );
 
   if (!contest) {
     return (
@@ -1457,6 +1475,20 @@ function ConcursoDetalheBody({
           </div>
         )}
       </div>
+
+      {linkedPackage ? (
+        <CourseMaterialsPanel
+          course={linkedPackage}
+          enrolled={enrolledPackageIds.includes(linkedPackage.id)}
+          isAdmin={isAdmin}
+          accent={areaAccent}
+          onEnrolled={() => {
+            onPackageEnrolled?.();
+            // Aderiu ao curso mas ainda não montou o plano de estudos: oferece em seguida.
+            if (!alreadyInStudies) setImportConfirmOpen(true);
+          }}
+        />
+      ) : null}
 
       <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0, 1fr) 320px', alignItems: 'start' }}>
         {/* Disciplinas — accordion estilo D */}

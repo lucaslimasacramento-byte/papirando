@@ -1,5 +1,6 @@
 ﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PremiumGate from '../components/PremiumGate';
+import CourseMaterialsPanel from '../components/CourseMaterialsPanel';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import {
   ArrowLeft,
@@ -691,7 +692,7 @@ function PDFViewer({ material, currentUserId, onBack, onCreateFlashcard }) {
 /* ════════════════════════════════════════════════
    Página principal — listagem
    ════════════════════════════════════════════════ */
-export default function Materiais({ currentUserId, isPremium = false, onUpgrade }) {
+export default function Materiais({ currentUserId, isPremium = false, onUpgrade, coursePackages = [], enrolledPackageIds = [], onPackageEnrolled, isAdmin = false }) {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeMaterial, setActiveMaterial] = useState(null);
@@ -867,6 +868,15 @@ export default function Materiais({ currentUserId, isPremium = false, onUpgrade 
           )}
         </div>
       </header>
+
+      {/* Pacotes de curso aderidos (material pronto da plataforma). Admin vê todos para conferência. */}
+      {coursePackages
+        .filter((pkg) => enrolledPackageIds.includes(pkg.id) || isAdmin)
+        .map((pkg) => (
+          <div key={pkg.id} style={{ marginBottom: 20 }}>
+            <CourseMaterialsPanel course={pkg} enrolled={enrolledPackageIds.includes(pkg.id)} isAdmin={isAdmin} onEnrolled={onPackageEnrolled} compact />
+          </div>
+        ))}
 
       {/* KPI strip */}
       <div className="pl-kpi-strip-3">

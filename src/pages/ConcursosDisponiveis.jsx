@@ -601,6 +601,11 @@ export default function ConcursosDisponiveis({
                               {contest.cargo || contest.concurso}
                             </span>
                           )}
+                          {contest.adminPreview ? (
+                            <span title="Rascunho com curso — só administradores veem" style={{ flexShrink: 0, borderRadius: 999, padding: '2px 8px', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)', border: '1px solid var(--pl-warn)' }}>
+                              Prévia (rascunho)
+                            </span>
+                          ) : null}
                         </div>
                         {shortDate && (
                           <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: tone.color, background: tone.soft, borderRadius: 20, padding: '2px 9px' }}>

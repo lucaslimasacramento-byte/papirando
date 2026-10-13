@@ -153,6 +153,10 @@ export default function AppTabContent(props) {
     deleteCourse,
     setSelectedCoursePlan,
     contestLibrary,
+    catalogWithAdminPreview,
+    coursePackages,
+    enrolledPackageIds,
+    refreshPackageEnrollments,
     currentCourseLimit,
     currentCourseCount,
     remainingCourseSlots,
@@ -456,7 +460,7 @@ export default function AppTabContent(props) {
   if (activeTab === 'concursos') {
     return (
       <ConcursosDisponiveis
-        concursoCatalog={contestLibrary}
+        concursoCatalog={catalogWithAdminPreview || contestLibrary}
         courseTemplates={courseTemplates}
         onImportCatalogCourse={createCourseFromCatalog}
         setActiveTab={setActiveTab}
@@ -560,6 +564,9 @@ export default function AppTabContent(props) {
           if (contest?.id) localStorage.setItem('papirando_admin_edit_contest_id', contest.id);
           setActiveTab('admin_concursos');
         }}
+        coursePackages={coursePackages}
+        enrolledPackageIds={enrolledPackageIds}
+        onPackageEnrolled={refreshPackageEnrollments}
       />
     );
   }
@@ -899,7 +906,19 @@ export default function AppTabContent(props) {
     return <Flashcards currentUserId={currentUserId} bancoDisciplinas={bancoDisciplinas} cursos={cursos} setActiveTab={setActiveTab} isPremium={isPremiumPlan} onUpgrade={onUpgrade} />;
   }
 
-  if (activeTab === 'materiais') return <Materiais currentUserId={currentUserId} isPremium={isPremiumPlan} onUpgrade={onUpgrade} />;
+  if (activeTab === 'materiais') {
+    return (
+      <Materiais
+        currentUserId={currentUserId}
+        isPremium={isPremiumPlan}
+        onUpgrade={onUpgrade}
+        coursePackages={coursePackages}
+        enrolledPackageIds={enrolledPackageIds}
+        onPackageEnrolled={refreshPackageEnrollments}
+        isAdmin={isAdmin}
+      />
+    );
+  }
 
   if (activeTab === 'metas') {
     return <MetasSemana currentUserId={currentUserId} historicoReal={historicoReal} />;
