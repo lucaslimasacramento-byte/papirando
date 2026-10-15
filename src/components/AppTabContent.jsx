@@ -479,6 +479,9 @@ export default function AppTabContent(props) {
         favoriteContestIds={favoriteContestIds}
         interestedContestIds={interestedContestIds}
         cursos={cursos}
+        coursePackages={coursePackages}
+        enrolledPackageIds={enrolledPackageIds}
+        onPackageEnrolled={refreshPackageEnrollments}
       />
     );
   }

@@ -25,6 +25,8 @@ import { storageThumb } from '../lib/imageUrl';
 import { EnemDetalhe } from './ConcursoDetalhe';
 import { supabase } from '../lib/supabase';
 import { loadContestTemplateContent } from '../lib/contestCatalogApi';
+import { enrollInCoursePackage } from '../lib/coursePackagesApi';
+import { toast } from '../lib/toast';
 
 const STATUS_LABELS = CONTEST_STATUS_LABELS;
 const STATUS_FILTER_OPTIONS = ['Todos', ...CONTEST_STATUS_OPTIONS.map((option) => option.value)];
@@ -68,8 +70,36 @@ export default function ConcursosDisponiveis({
   currentCourseCount = 0,
   remainingCourseSlots = 3,
   isAdmin = false,
+  coursePackages = [],
+  enrolledPackageIds = [],
+  onPackageEnrolled,
 }) {
   const [tipoAtivo, setTipoAtivo] = useState('concurso');
+
+  // Curso pronto (pacote com material) ligado a este concurso, por qualquer id de template do grupo.
+  const packageFor = (contest) => {
+    if (!contest || coursePackages.length === 0) return null;
+    const ids = new Set(
+      [contest.id, ...(contest.sourceIds || []), ...getContestRoles(contest).map((role) => role.templateId)]
+        .filter(Boolean)
+        .map(String)
+    );
+    return coursePackages.find((pkg) => ids.has(String(pkg.contest_template_id))) || null;
+  };
+
+  // Quem adiciona um concurso que tem curso pronto já leva o material junto.
+  const enrollIfPackage = async (contest) => {
+    const pkg = packageFor(contest);
+    if (!pkg || enrolledPackageIds.includes(pkg.id)) return;
+    try {
+      const result = await enrollInCoursePackage(pkg.slug);
+      const cards = Number(result?.cards_added || 0);
+      toast.success(`Curso pronto liberado: PDFs, questões${cards > 0 ? ` e ${cards} flashcards` : ' e flashcards'}. Veja em Meus cursos, aba Cursos prontos.`);
+      onPackageEnrolled?.(result);
+    } catch (error) {
+      toast.error(error?.message || 'O concurso foi adicionado, mas não conseguimos liberar o material do curso pronto.');
+    }
+  };
   const [query, setQuery] = useState('');
   const [areasSelecionadas, setAreasSelecionadas] = useState([]);
   const [statusFiltro, setStatusFiltro] = useState('Todos');
@@ -338,6 +368,7 @@ export default function ConcursosDisponiveis({
     setImportError('');
     try {
       await onImportCatalogCourse?.(importTemplate);
+      await enrollIfPackage(contest);
       setActiveTab?.('planos');
     } catch (error) {
       setImportError(error?.message || 'Não foi possível adicionar esse concurso. Tente novamente.');
@@ -384,6 +415,7 @@ export default function ConcursosDisponiveis({
         const roles = getContestRoles(contest);
         const importTemplate = buildContestForRole(contest, roles[0]);
         await onImportCatalogCourse?.(importTemplate, name);
+        await enrollIfPackage(contest);
       }
       clearSelection();
       setActiveTab?.('planos');
@@ -682,6 +714,7 @@ export default function ConcursosDisponiveis({
                         formatCurrencyBR={formatCurrencyBR}
                         onOpen={() => handleOpenContest(contest)}
                         onImport={() => handleImport(contest)}
+                        hasCoursePackage={Boolean(packageFor(contest))}
                       />
                     );
                   })}
@@ -1323,7 +1356,7 @@ function AreaSectionHeader({ area, count, tipo = 'concurso' }) {
   );
 }
 
-function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, selected = false, onToggleSelect, formatDateBR, formatCurrencyBR, onOpen, onImport, tipo = 'concurso' }) {
+function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, selected = false, onToggleSelect, formatDateBR, formatCurrencyBR, onOpen, onImport, tipo = 'concurso', hasCoursePackage = false }) {
   const isVest = tipo === 'vestibular';
   const cargos = getContestRoles(concurso);
   const hasMultipleRoles = !isVest && cargos.length > 1;
@@ -1398,6 +1431,11 @@ function ConcursoCard({ concurso, area, imported, limiteAtingido, importing, sel
           <span className={`pl-tag ${statusTone === 'neutral' ? '' : `pl-tag-${statusTone}`}`} style={{ textTransform: 'uppercase', fontSize: 10 }}>
             {STATUS_LABELS[statusKey] || 'Previsto'}
           </span>
+          {hasCoursePackage && (
+            <span className="pl-tag pl-tag-success" title="Vem com PDFs, mapas, resumos, simulados, questões e flashcards prontos" style={{ textTransform: 'uppercase', fontSize: 10 }}>
+              Curso pronto
+            </span>
+          )}
         </div>
 
         <div>
