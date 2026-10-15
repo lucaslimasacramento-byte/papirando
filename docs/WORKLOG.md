@@ -18,6 +18,15 @@
 
 ---
 
+## Sessão 2026-10-15 — Fim do "Folha": bloqueio pós-trial (proposta) 🚧
+
+Regra (Lucas, 15/10): plano único Papiro, 30 dias grátis, depois pagamento obrigatório. O código ainda trata o fim do trial como plano grátis "Folha".
+- Mapeamento completo + proposta em [`docs/PROPOSTA_BLOQUEIO_POS_TRIAL.md`](PROPOSTA_BLOQUEIO_POS_TRIAL.md). **Nada implementado**: aguardando as 6 decisões da seção 3.
+- Bugs achados de passagem (independem da regra): Perfil/Assinatura mostram "Folha" para quem está no trial **e para quem paga** (lê `profiles.subscription_plan`); MRR do Admin calculado pelo profile (sai ~0); `canceled` corta o acesso na hora, contra o Termos; Termos ainda cita Stripe; Admin concede plano `'estudio'` (não existe).
+- Gates hoje são só no front: nenhuma checagem de assinatura no servidor/IA (fase 2, precisa de aprovação).
+
+---
+
 ## Sessão 2026-10-15 — Subir Igualdade Racial + Atualidades (plano pronto, aguardando migração) 🚧
 
 Prompt do acervo: `G:\Meu Drive\Estratégia\04. PM-BA (Soldado)...\_Papirando\Para subir na plataforma\PROMPT_SUBIR_PLATAFORMA.md`.
