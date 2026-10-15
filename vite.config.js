@@ -41,6 +41,10 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: 'http://127.0.0.1:8787',
           changeOrigin: true,
+          // Módulos ES importados do front (ex.: api/_edital-text.js em src/lib/edital.js)
+          // são servidos pelo Vite, não pelo ai-server; sem isso o app fica em branco
+          // quando a porta 8787 está desligada.
+          bypass: (req) => (/\.(m?js)(\?|$)/.test(req.url || '') ? req.url : undefined),
         },
         ...(supabaseTarget
           ? {
