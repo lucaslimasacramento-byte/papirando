@@ -7679,6 +7679,10 @@ export default function App() {
               remainingCourseSlots={remainingCourseSlots}
               isAdmin={isAdmin}
               courseTemplates={courseTemplates ?? []}
+              coursePackages={coursePackages}
+              enrolledPackageIds={enrolledPackageIds}
+              packageCatalog={catalogWithAdminPreview}
+              onPackageEnrolled={refreshPackageEnrollments}
             />
           )}
 

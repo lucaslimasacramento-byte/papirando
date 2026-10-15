@@ -119,3 +119,28 @@ export async function getPackageMaterialUrl(storagePath, expiresIn = 3600) {
   if (error) throw error;
   return data?.signedUrl || '';
 }
+
+// Resumo para o card da vitrine (matérias, temas, PDFs, questões).
+export async function loadCoursePackageSummary(course) {
+  const content = await loadCoursePackageContent(course);
+  const materias = content.subjects.map((s) => s.materia);
+  const counts = await loadQuestionCounts(materias);
+  let temas = 0;
+  let pdfs = 0;
+  for (const s of content.subjects) {
+    temas += s.topics.length;
+    for (const t of s.topics) pdfs += t.materials.length;
+  }
+  let questoes = 0;
+  for (const n of counts.values()) questoes += n;
+  return { materias, temas, pdfs, questoes };
+}
+
+// Concurso do catálogo ligado ao curso, para criar o curso do aluno em "Meus cursos".
+// Admin enxerga rascunhos; aluno só os públicos (RLS).
+export async function loadPackageContestTemplate(templateId) {
+  if (!templateId) return null;
+  const { data, error } = await supabase.from('contest_templates').select('*').eq('id', templateId).maybeSingle();
+  if (error) throw error;
+  return data || null;
+}

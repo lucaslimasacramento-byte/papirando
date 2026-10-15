@@ -35,6 +35,7 @@ import { avisosDoDocumento, compatibilidadeDeCargos, mesclarDisciplinasDeCargos 
 import { progressoPorObjetivo, objetivosDoCurso, montarMapaDeObjetivos } from '../lib/objetivos';
 import { tipoDoObjetivo, LISTA_DE_TIPOS, marcoDoObjetivo, marcoMaisProximo } from '../lib/tiposDeObjetivo';
 import { apelidoSugerido, nomeCurtoDoCurso } from '../lib/apelidoCurso';
+import CursosProntos from '../components/CursosProntos';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -107,8 +108,15 @@ export default function Planos({
   remainingCourseSlots = 3,
   isAdmin = false,
   courseTemplates = [],
+  coursePackages = [],
+  enrolledPackageIds = [],
+  packageCatalog = [],
+  onPackageEnrolled,
+  initialSection = 'meus',
 }) {
   const [mode, setMode] = useState(null);
+  // "Meus cursos" (montados pelo aluno) x "Cursos prontos" (pacotes com material para aderir).
+  const [section, setSection] = useState(initialSection);
   const [editingCourse, setEditingCourse] = useState(null);
   const [courseForm, setCourseForm] = useState(EMPTY_COURSE_FORM);
   // Dados do edital, nao do curso: o nome de cada curso mora em nomesDosCursos, um por
@@ -670,6 +678,47 @@ export default function Planos({
           onImportarIA={() => openMode('ia')}
         />
 
+        <div role="tablist" aria-label="Seções de cursos" style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--pl-rule-2)', marginBottom: -8 }}>
+          {[
+            { id: 'meus', label: 'Meus cursos' },
+            { id: 'prontos', label: 'Cursos prontos', count: coursePackages.filter((pkg) => pkg.is_published || isAdmin).length },
+          ].map((tab) => {
+            const active = section === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setSection(tab.id)}
+                style={{
+                  padding: '10px 14px', marginBottom: -1, background: 'transparent', border: 0, cursor: 'pointer',
+                  borderBottom: `2px solid ${active ? 'var(--pl-ink)' : 'transparent'}`,
+                  color: active ? 'var(--pl-ink)' : 'var(--pl-ink-3)', fontSize: 14, fontWeight: active ? 700 : 600,
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                {tab.label}
+                {tab.count ? <span className="pl-tag pl-tag-accent" style={{ fontSize: 10, padding: '1px 7px' }}>{tab.count}</span> : null}
+              </button>
+            );
+          })}
+        </div>
+
+        {section === 'prontos' ? (
+          <CursosProntos
+            packages={coursePackages}
+            enrolledIds={enrolledPackageIds}
+            isAdmin={isAdmin}
+            catalog={packageCatalog.length ? packageCatalog : concursoCatalog}
+            cursos={cursos}
+            remainingCourseSlots={remainingCourseSlots}
+            onImportCatalogCourse={onImportCatalogCourse}
+            onEnrolled={onPackageEnrolled}
+          />
+        ) : (
+        <>
+
         <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.35fr) minmax(360px, 1fr)', gap: 16 }}>
           <ConcursoAlvoCard
             target={targetContest}
@@ -726,6 +775,8 @@ export default function Planos({
             ))}
           </div>
         </section>
+        </>
+        )}
 
       </div>
 
@@ -817,7 +868,7 @@ export default function Planos({
 
       {mode === 'catalog' && (
         <ModalShell
-          title="Biblioteca de concursos"
+          title="Catálogo de concursos"
           subtitle="Escolha um concurso pré-cadastrado para carregar a estrutura base com um clique."
           onClose={closeMode}
         >
@@ -1470,7 +1521,7 @@ function PlanosHeader({ onCriarCurso, onAbrirBiblioteca, onImportarIA }) {
           <Play size={11} fill="currentColor" /> Novo objetivo
         </button>
         <button className="pl-btn" onClick={onAbrirBiblioteca}>
-          <LibraryBig size={13} /> Biblioteca
+          <LibraryBig size={13} /> Catálogo
         </button>
         <span className="btn-ai-aura">
           <button className="pl-btn pl-btn-ai" onClick={onImportarIA}>

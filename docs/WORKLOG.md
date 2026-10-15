@@ -26,7 +26,11 @@ Prompt do acervo: `G:\Meu Drive\Estratégia\04. PM-BA (Soldado)...\_Papirando\Pa
 - Dry-run das duas matérias bate 100% com o esperado: Igualdade 7 temas / 196 questões / 364 flashcards / 35 PDFs; Atualidades 10 / 494 / 447 / 50.
 - Banco: **nenhuma** questão dessas disciplinas existe ainda (sem risco de duplicar). `questions` já tem `external_id/source/raw`.
 - **Bloqueio:** migração `202610130001_pacotes_curso_biblioteca.sql` e `seed_curso_pmba_soldado.sql` ainda NÃO aplicadas (tabelas `library_*`/`course_package*` e bucket `course-materials` não existem). Escrita em produção é negada ao Claude no auto mode → Lucas roda.
-- Próximo: aplicar migração + seed → `--tema 01` de Igualdade como teste → OK → subir o resto → relatório em `scripts/reports/`.
+- (feito) migração + seed aplicados; tema 01 de Igualdade subiu e conferiu (18 questões, 49 flashcards, 5 PDFs).
+- Antes: aplicar migração + seed → `--tema 01` de Igualdade como teste → OK → subir o resto → relatório em `scripts/reports/`.
+- **Cursos prontos** ✅ (código): Meus cursos ganhou as abas "Meus cursos" e "Cursos prontos" (`src/components/CursosProntos.jsx`). Card com matérias, temas, PDFs e questões; detalhe reaproveita o `CourseMaterialsPanel`. Aderir = matrícula + flashcards + cria o curso em Meus cursos a partir do concurso do pacote. Bloco saiu de Materiais PDF. Botão "Biblioteca" virou "Catálogo".
+- Pendente: trilha com progresso por tema (precisa de tabela nova, aguardando aprovação); conferir visualmente logado como admin; subir o restante das duas matérias.
+- Cobrança: NÃO existem Caderno/Estúdio. Plano único Papiro, 30 dias grátis, depois pagamento obrigatório. O código ainda cai para "Folha" grátis após o trial (tarefa separada).
 
 ---
 

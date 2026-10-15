@@ -453,6 +453,10 @@ export default function AppTabContent(props) {
         currentCourseCount={currentCourseCount}
         remainingCourseSlots={remainingCourseSlots}
         isAdmin={isAdmin}
+        coursePackages={coursePackages}
+        enrolledPackageIds={enrolledPackageIds}
+        packageCatalog={catalogWithAdminPreview}
+        onPackageEnrolled={refreshPackageEnrollments}
       />
     );
   }
@@ -912,10 +916,6 @@ export default function AppTabContent(props) {
         currentUserId={currentUserId}
         isPremium={isPremiumPlan}
         onUpgrade={onUpgrade}
-        coursePackages={coursePackages}
-        enrolledPackageIds={enrolledPackageIds}
-        onPackageEnrolled={refreshPackageEnrollments}
-        isAdmin={isAdmin}
       />
     );
   }
