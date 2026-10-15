@@ -1,4 +1,5 @@
 ﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { QUESTION_PRESET_KEY } from '../lib/trailNavigation';
 import PremiumGate from '../components/PremiumGate';
 import {
   Loader2,
@@ -90,6 +91,18 @@ function readNotebookStorage(key) {
   }
 }
 
+// Lê e consome o filtro deixado por outra tela (ex.: trilha do curso pronto).
+function readQuestionPreset() {
+  try {
+    const raw = sessionStorage.getItem(QUESTION_PRESET_KEY);
+    if (!raw) return '';
+    sessionStorage.removeItem(QUESTION_PRESET_KEY);
+    return String(JSON.parse(raw)?.disciplina || '');
+  } catch {
+    return '';
+  }
+}
+
 export default function Questoes({
   currentUserId = '',
   isEditingMeta,
@@ -112,7 +125,9 @@ export default function Questoes({
   const [dbLoading, setDbLoading]     = useState(true);
   const [todayStats, setTodayStats]   = useState({ resolved: 0, accuracy: 0 });
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterDisc, setFilterDisc]   = useState('');
+  // A trilha dos cursos prontos abre Questões já filtrada pela matéria do tema.
+  const presetDiscRef = useRef(readQuestionPreset());
+  const [filterDisc, setFilterDisc]   = useState(presetDiscRef.current);
   const [filterBanca, setFilterBanca] = useState('');
   const [filterDif, setFilterDif]     = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -219,7 +234,7 @@ export default function Questoes({
   }, []);
 
   useEffect(() => {
-    if (filterDisc && !catalogDisciplineNames.includes(filterDisc)) {
+    if (filterDisc && filterDisc !== presetDiscRef.current && !catalogDisciplineNames.includes(filterDisc)) {
       setFilterDisc('');
     }
   }, [filterDisc, catalogDisciplineNames]);
@@ -553,6 +568,9 @@ export default function Questoes({
                   onChange={(e) => setFilterDisc(e.target.value)}
                 >
                   <option value="">Todas as disciplinas</option>
+                  {presetDiscRef.current && !catalogDisciplineNames.includes(presetDiscRef.current) ? (
+                    <option value={presetDiscRef.current}>{presetDiscRef.current}</option>
+                  ) : null}
                   {catalogDisciplineNames.length === 0 ? (
                     <option value="__catalogo_vazio__" disabled>
                       Nenhuma disciplina cadastrada no catálogo

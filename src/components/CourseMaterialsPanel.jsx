@@ -2,7 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   BookOpenCheck,
+  Check,
   ChevronDown,
+  Copy,
+  HelpCircle,
   ChevronRight,
   FileText,
   Layers,
@@ -17,12 +20,17 @@ import {
 } from 'lucide-react';
 import PdfScrollViewer from './PdfScrollViewer';
 import { toast } from '../lib/toast';
+import { supabase } from '../lib/supabase';
 import {
   MATERIAL_KIND_LABELS,
+  TRAIL_STEPS,
+  TRAIL_STEP_LABELS,
   enrollInCoursePackage,
   getPackageMaterialUrl,
   loadCoursePackageContent,
+  loadPackageProgress,
   loadQuestionCounts,
+  setPackageStepDone,
 } from '../lib/coursePackagesApi';
 
 const KIND_ICONS = {
@@ -31,6 +39,8 @@ const KIND_ICONS = {
   resumo: NotebookText,
   simulado: ListChecks,
   slides: Presentation,
+  questoes: HelpCircle,
+  flashcards: Copy,
 };
 
 function PdfModal({ material, onClose }) {
@@ -100,6 +110,7 @@ export default function CourseMaterialsPanel({
   onEnrolled,
   compact = false,
   accent = '#1e3a5f',
+  onNavigate,
 }) {
   const [content, setContent] = useState(null);
   const [questionCounts, setQuestionCounts] = useState(new Map());
@@ -107,6 +118,51 @@ export default function CourseMaterialsPanel({
   const [enrolling, setEnrolling] = useState(false);
   const [openSubjects, setOpenSubjects] = useState({});
   const [openMaterial, setOpenMaterial] = useState(null);
+  // Trilha: passos concluídos ("topicId|step"). trailOn=false enquanto a tabela não existir.
+  const [userId, setUserId] = useState('');
+  const [done, setDone] = useState(new Set());
+  const [trailOn, setTrailOn] = useState(false);
+
+  const canTrack = (enrolled || isAdmin) && trailOn && Boolean(userId);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!(enrolled || isAdmin) || !course?.id) { setTrailOn(false); return undefined; }
+    supabase.auth.getSession()
+      .then(async ({ data }) => {
+        const uid = data?.session?.user?.id || '';
+        if (cancelled) return;
+        setUserId(uid);
+        const progress = await loadPackageProgress(course.id, uid);
+        if (cancelled) return;
+        setTrailOn(progress.available);
+        setDone(progress.done);
+      })
+      .catch(() => { if (!cancelled) setTrailOn(false); });
+    return () => { cancelled = true; };
+  }, [course?.id, enrolled, isAdmin]);
+
+  const toggleStep = async (topicId, step, value) => {
+    if (!canTrack) return;
+    const key = `${topicId}|${step}`;
+    const next = value ?? !done.has(key);
+    if (next === done.has(key)) return;
+    setDone((prev) => {
+      const copy = new Set(prev);
+      if (next) copy.add(key); else copy.delete(key);
+      return copy;
+    });
+    try {
+      await setPackageStepDone({ packageId: course.id, topicId, step, userId, done: next });
+    } catch {
+      setDone((prev) => {
+        const copy = new Set(prev);
+        if (next) copy.delete(key); else copy.add(key);
+        return copy;
+      });
+      toast.error('Não foi possível salvar o progresso da trilha.');
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -139,6 +195,28 @@ export default function CourseMaterialsPanel({
     return { materias: subjects.length, temas, pdfs, questoes };
   }, [content, questionCounts]);
 
+  // Passos de cada tema: os PDFs que existem + questões (se houver) + flashcards.
+  const stepsOf = (subject, topic) => {
+    const kinds = new Set(topic.materials.map((m) => m.kind));
+    const hasQuestions = (questionCounts.get(`${subject.materia}|${topic.tema}`) || 0) > 0;
+    return TRAIL_STEPS.filter((step) => kinds.has(step) || (step === 'questoes' && hasQuestions) || step === 'flashcards');
+  };
+
+  const trailTotals = useMemo(() => {
+    let total = 0;
+    let feitos = 0;
+    for (const s of content?.subjects || []) {
+      for (const t of s.topics) {
+        for (const step of stepsOf(s, t)) {
+          total += 1;
+          if (done.has(`${t.id}|${step}`)) feitos += 1;
+        }
+      }
+    }
+    return { total, feitos, pct: total ? Math.round((feitos / total) * 100) : 0 };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content, questionCounts, done]);
+
   const canOpen = enrolled || isAdmin;
 
   const handleEnroll = async () => {
@@ -158,11 +236,20 @@ export default function CourseMaterialsPanel({
   };
 
   const handleOpen = (material) => {
-    if (!canOpen) {
+    if (!canOpen || !material) {
       toast.info('Faça a adesão ao curso para abrir o material.');
       return;
     }
     setOpenMaterial(material);
+    toggleStep(material.topic_id, material.kind, true);
+  };
+
+  const handlePractice = (topic, step) => {
+    toggleStep(topic.id, step, true);
+    if (onNavigate) onNavigate(step === 'questoes' ? 'questoes' : 'flashcards', { materia: topic.materia, tema: topic.tema });
+    else toast.info(step === 'questoes'
+      ? `As questões de "${topic.tema}" estão em Questões, filtrando por ${topic.materia}.`
+      : `Os flashcards de "${topic.tema}" estão em Flashcards, no baralho com o nome do tema.`);
   };
 
   if (!loading && totals.temas === 0) return null;
@@ -180,6 +267,15 @@ export default function CourseMaterialsPanel({
               ? 'Carregando material…'
               : `${totals.materias} ${totals.materias === 1 ? 'matéria' : 'matérias'} · ${totals.temas} temas · ${totals.pdfs} PDFs · ${totals.questoes} questões comentadas · flashcards por tema`}
           </p>
+          {canTrack && trailTotals.total > 0 ? (
+            <div style={{ marginTop: 10, maxWidth: 420 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--pl-ink-2)', marginBottom: 5 }}>
+                <span style={{ fontWeight: 700 }}>Sua trilha</span>
+                <span>{trailTotals.feitos} de {trailTotals.total} etapas · {trailTotals.pct}%</span>
+              </div>
+              <div className="pl-progress"><div className="pl-progress-bar" style={{ width: `${trailTotals.pct}%` }} /></div>
+            </div>
+          ) : null}
           {!course.is_published && isAdmin ? (
             <span style={{ display: 'inline-block', marginTop: 8, borderRadius: 999, padding: '3px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', background: 'var(--pl-warn-soft)', color: 'var(--pl-warn)', border: '1px solid var(--pl-warn)' }}>
               Rascunho — só admin vê
@@ -223,38 +319,67 @@ export default function CourseMaterialsPanel({
               <ol style={{ listStyle: 'none', margin: 0, padding: compact ? '0 18px 14px' : '0 24px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {subject.topics.map((topic, index) => {
                   const nq = questionCounts.get(`${subject.materia}|${topic.tema}`) || 0;
+                  const steps = stepsOf(subject, topic);
+                  const feitos = steps.filter((step) => done.has(`${topic.id}|${step}`)).length;
+                  const completo = canTrack && steps.length > 0 && feitos === steps.length;
+                  const materialByKind = new Map(topic.materials.map((m) => [m.kind, m]));
                   return (
-                    <li key={topic.id} style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 12, padding: '12px 14px', background: 'var(--pl-surface)' }}>
+                    <li key={topic.id} style={{ border: `1px solid ${completo ? 'var(--pl-success)' : 'var(--pl-rule-2)'}`, borderRadius: 12, padding: '12px 14px', background: 'var(--pl-surface)' }}>
                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--pl-ink-3)', fontVariantNumeric: 'tabular-nums' }}>{String(index + 1).padStart(2, '0')}</span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: completo ? 'var(--pl-success)' : 'var(--pl-ink-3)', fontVariantNumeric: 'tabular-nums' }}>
+                          {completo ? <Check size={12} /> : String(index + 1).padStart(2, '0')}
+                        </span>
                         <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pl-ink)' }}>{topic.tema}</span>
                         {topic.uf ? (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: accent }}>
                             <MapPin size={11} /> {topic.uf}
                           </span>
                         ) : null}
-                        <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--pl-ink-3)' }}>{nq} questões</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--pl-ink-3)' }}>
+                          {canTrack ? `${feitos}/${steps.length} etapas` : `${nq} questões`}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {topic.materials.map((material) => {
-                          const Icon = KIND_ICONS[material.kind] || FileText;
-                          return (
-                            <button
-                              key={material.id}
-                              type="button"
-                              onClick={() => handleOpen(material)}
-                              title={material.title}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 11px', borderRadius: 8, border: '1px solid var(--pl-rule-2)', background: 'var(--pl-bg-soft)', color: canOpen ? 'var(--pl-ink-2)' : 'var(--pl-ink-3)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
-                            >
-                              {canOpen ? <Icon size={13} /> : <Lock size={12} />}
-                              {MATERIAL_KIND_LABELS[material.kind] || material.title}
-                            </button>
-                          );
-                        })}
-                        {topic.materials.length === 0 ? (
-                          <span style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>Material em preparação.</span>
-                        ) : null}
-                      </div>
+                      {topic.materials.length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--pl-ink-3)' }}>Material em preparação.</span>
+                      ) : (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {steps.map((step) => {
+                            const Icon = KIND_ICONS[step] || FileText;
+                            const material = materialByKind.get(step);
+                            const isDone = done.has(`${topic.id}|${step}`);
+                            const label = step === 'questoes' ? `${TRAIL_STEP_LABELS.questoes} (${nq})` : TRAIL_STEP_LABELS[step];
+                            const onAction = material ? () => handleOpen(material) : () => (canOpen ? handlePractice(topic, step) : handleOpen(null));
+                            return (
+                              <span
+                                key={step}
+                                style={{ display: 'inline-flex', alignItems: 'stretch', borderRadius: 8, border: `1px solid ${isDone ? 'var(--pl-success)' : 'var(--pl-rule-2)'}`, background: isDone ? 'var(--pl-success-soft)' : 'var(--pl-bg-soft)', overflow: 'hidden' }}
+                              >
+                                {canTrack ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleStep(topic.id, step)}
+                                    aria-pressed={isDone}
+                                    aria-label={isDone ? `Desmarcar ${label}` : `Marcar ${label} como feito`}
+                                    title={isDone ? 'Feito. Clique para desmarcar.' : 'Marcar como feito'}
+                                    style={{ display: 'inline-flex', alignItems: 'center', padding: '0 7px', background: 'transparent', border: 0, borderRight: '1px solid var(--pl-rule)', cursor: 'pointer', color: isDone ? 'var(--pl-success)' : 'var(--pl-ink-4)' }}
+                                  >
+                                    <Check size={13} />
+                                  </button>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={onAction}
+                                  title={material?.title || label}
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 11px', background: 'transparent', border: 0, color: isDone ? 'var(--pl-success)' : canOpen ? 'var(--pl-ink-2)' : 'var(--pl-ink-3)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                >
+                                  {canOpen ? <Icon size={13} /> : <Lock size={12} />}
+                                  {label}
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                     </li>
                   );
                 })}

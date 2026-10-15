@@ -715,6 +715,7 @@ export default function Planos({
             remainingCourseSlots={remainingCourseSlots}
             onImportCatalogCourse={onImportCatalogCourse}
             onEnrolled={onPackageEnrolled}
+            setActiveTab={setActiveTab}
           />
         ) : (
         <>

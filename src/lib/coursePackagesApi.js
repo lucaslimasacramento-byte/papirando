@@ -144,3 +144,41 @@ export async function loadPackageContestTemplate(templateId) {
   if (error) throw error;
   return data || null;
 }
+
+// ── Trilha: progresso por tema e etapa ─────────────────────────────────────────
+// Etapas na ordem da trilha. Os 5 primeiros são os PDFs do tema.
+export const TRAIL_STEPS = ['pdf_completo', 'mapa_mental', 'resumo', 'slides', 'simulado', 'questoes', 'flashcards'];
+export const TRAIL_STEP_LABELS = { ...MATERIAL_KIND_LABELS, questoes: 'Questões', flashcards: 'Flashcards' };
+
+// Retorna { available, done:Set("topicId|step") }. available=false quando a tabela ainda não existe.
+export async function loadPackageProgress(packageId, userId) {
+  if (!packageId || !userId) return { available: false, done: new Set() };
+  const { data, error } = await supabase
+    .from('course_package_progress')
+    .select('topic_id, step')
+    .eq('package_id', packageId)
+    .eq('user_id', userId);
+  if (error) {
+    if (isMissingRelation(error)) return { available: false, done: new Set() };
+    throw error;
+  }
+  return { available: true, done: new Set((data || []).map((r) => `${r.topic_id}|${r.step}`)) };
+}
+
+export async function setPackageStepDone({ packageId, topicId, step, userId, done }) {
+  if (done) {
+    const { error } = await supabase
+      .from('course_package_progress')
+      .upsert({ user_id: userId, package_id: packageId, topic_id: topicId, step }, { onConflict: 'user_id,package_id,topic_id,step', ignoreDuplicates: true });
+    if (error) throw error;
+    return;
+  }
+  const { error } = await supabase
+    .from('course_package_progress')
+    .delete()
+    .eq('user_id', userId)
+    .eq('package_id', packageId)
+    .eq('topic_id', topicId)
+    .eq('step', step);
+  if (error) throw error;
+}

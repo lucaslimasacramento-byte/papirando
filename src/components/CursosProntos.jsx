@@ -4,6 +4,7 @@ import CourseMaterialsPanel from './CourseMaterialsPanel';
 import { toast } from '../lib/toast';
 import { normalizeContestTemplate } from '../lib/contestCatalogApi';
 import { loadCoursePackageSummary, loadPackageContestTemplate } from '../lib/coursePackagesApi';
+import { goToPracticeStep } from '../lib/trailNavigation';
 
 /**
  * Vitrine de cursos prontos (pacotes com material da plataforma). O aluno adere em vez de
@@ -19,6 +20,7 @@ export default function CursosProntos({
   remainingCourseSlots = 1,
   onImportCatalogCourse,
   onEnrolled,
+  setActiveTab,
 }) {
   const [selectedId, setSelectedId] = useState(null);
 
@@ -67,6 +69,7 @@ export default function CursosProntos({
           enrolled={enrolledIds.includes(selected.id)}
           isAdmin={isAdmin}
           onEnrolled={(result) => handleEnrolled(selected, result)}
+          onNavigate={setActiveTab ? (step, topic) => goToPracticeStep(setActiveTab, step, topic) : undefined}
         />
       </div>
     );
