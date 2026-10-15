@@ -20,7 +20,7 @@ import {
   requireCredentials, sql, lit, jsonLit, slugify, storageUpload, storageObjectExists,
 } from './lib/supabaseAdmin.mjs';
 
-const DEFAULT_ACERVO = 'D:\\Estratégia\\04. PM-BA (Soldado) Pacotaço - Pacote Teórico, Pacote Passo Estratégico\\_Papirando';
+const DEFAULT_ACERVO = 'G:\\Meu Drive\\Estratégia\\04. PM-BA (Soldado) Pacotaço - Pacote Teórico, Pacote Passo Estratégico\\_Papirando';
 const KINDS = [
   { n: 1, kind: 'pdf_completo', label: 'PDF Completo', match: /1\. PDF Completo\.pdf$/i },
   { n: 2, kind: 'mapa_mental', label: 'Mapa Mental', match: /2\. Mapa Mental\.pdf$/i },

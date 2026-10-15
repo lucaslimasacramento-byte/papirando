@@ -18,6 +18,18 @@
 
 ---
 
+## Sessão 2026-10-15 — Subir Igualdade Racial + Atualidades (plano pronto, aguardando migração) 🚧
+
+Prompt do acervo: `G:\Meu Drive\Estratégia. PM-BA (Soldado)...\_Papirando\Para subir na plataforma\PROMPT_SUBIR_PLATAFORMA.md`.
+
+- Script `scripts/upload_biblioteca.mjs` (sessão 13/10) revisado; default do acervo apontado para o Google Drive (G:).
+- Dry-run das duas matérias bate 100% com o esperado: Igualdade 7 temas / 196 questões / 364 flashcards / 35 PDFs; Atualidades 10 / 494 / 447 / 50.
+- Banco: **nenhuma** questão dessas disciplinas existe ainda (sem risco de duplicar). `questions` já tem `external_id/source/raw`.
+- **Bloqueio:** migração `202610130001_pacotes_curso_biblioteca.sql` e `seed_curso_pmba_soldado.sql` ainda NÃO aplicadas (tabelas `library_*`/`course_package*` e bucket `course-materials` não existem). Escrita em produção é negada ao Claude no auto mode → Lucas roda.
+- Próximo: aplicar migração + seed → `--tema 01` de Igualdade como teste → OK → subir o resto → relatório em `scripts/reports/`.
+
+---
+
 ## Sessão 2026-09-21 (fecho) — Anthropic sozinha e qualidade aprovada ✅
 
 **A leitura foi verificada em produção e aprovada pelo dono** (edital da PM/AL, 2 cargos, 70
