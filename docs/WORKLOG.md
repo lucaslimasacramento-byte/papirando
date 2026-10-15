@@ -20,7 +20,7 @@
 
 ## Sessão 2026-10-15 — Subir Igualdade Racial + Atualidades (plano pronto, aguardando migração) 🚧
 
-Prompt do acervo: `G:\Meu Drive\Estratégia. PM-BA (Soldado)...\_Papirando\Para subir na plataforma\PROMPT_SUBIR_PLATAFORMA.md`.
+Prompt do acervo: `G:\Meu Drive\Estratégia\04. PM-BA (Soldado)...\_Papirando\Para subir na plataforma\PROMPT_SUBIR_PLATAFORMA.md`.
 
 - Script `scripts/upload_biblioteca.mjs` (sessão 13/10) revisado; default do acervo apontado para o Google Drive (G:).
 - Dry-run das duas matérias bate 100% com o esperado: Igualdade 7 temas / 196 questões / 364 flashcards / 35 PDFs; Atualidades 10 / 494 / 447 / 50.
