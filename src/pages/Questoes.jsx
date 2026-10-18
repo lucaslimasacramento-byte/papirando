@@ -25,6 +25,10 @@ import { submitAnswer } from '../lib/questoesApi';
 import { showConfirm, showToast } from '../lib/dialogs';
 
 // Normalizes a Supabase question row to the format the UI expects
+// Só as colunas que a tela usa. O "*" trazia junto o JSON bruto do importador (raw),
+// que pesa mais que a própria questão.
+const QUESTION_COLUMNS = 'id, disciplina, topico, banca, ano, dificuldade, enunciado, alternativas, explicacao, created_at';
+
 function normalizeQuestion(row) {
   const alts = Array.isArray(row.alternativas)
     ? row.alternativas
@@ -199,7 +203,7 @@ export default function Questoes({
     try {
       // Questões visíveis ao aluno = públicas. (A coluna is_active não existe;
       // is_public é a flag real, default true.)
-      let q = supabase.from('questions').select('*').eq('is_public', true);
+      let q = supabase.from('questions').select(QUESTION_COLUMNS).eq('is_public', true);
       if (filterDisc) q = q.eq('disciplina', filterDisc);
       if (filterBanca) q = q.eq('banca', filterBanca);
       if (filterDif) q = q.eq('dificuldade', filterDif);
@@ -209,7 +213,7 @@ export default function Questoes({
       setDbQuestions((data || []).map(normalizeQuestion));
     } catch {
       // Fallback sem filtro de visibilidade (ex.: variação de schema/RLS).
-      let fallbackQuery = supabase.from('questions').select('*');
+      let fallbackQuery = supabase.from('questions').select(QUESTION_COLUMNS);
       if (filterDisc) fallbackQuery = fallbackQuery.eq('disciplina', filterDisc);
       if (filterBanca) fallbackQuery = fallbackQuery.eq('banca', filterBanca);
       if (filterDif) fallbackQuery = fallbackQuery.eq('dificuldade', filterDif);

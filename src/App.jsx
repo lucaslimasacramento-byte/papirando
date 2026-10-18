@@ -23,7 +23,7 @@ import { useSubscription } from './lib/subscriptionApi';
 import { concursoCatalog as localConcursoCatalog } from './data/concursoCatalog';
 import { subjectCatalog as localSubjectCatalog } from './data/subjectCatalog';
 import { loadContestCatalogFromSupabase, loadContestDraftsFromSupabase, loadContestTemplateContent } from './lib/contestCatalogApi';
-import { loadCoursePackages, loadMyPackageEnrollments } from './lib/coursePackagesApi';
+import { loadCoursePackageOverview, loadCoursePackages, loadMyPackageEnrollments } from './lib/coursePackagesApi';
 import { findGroupedContestById, normalizeContestStatus } from './lib/contestGrouping';
 import { uploadContestAssetAdmin } from './lib/adminContestAssetsApi';
 import { compressImage } from './lib/imageCompress';
@@ -2778,7 +2778,13 @@ export default function App() {
     }
     let ignore = false;
     loadCoursePackages()
-      .then((rows) => { if (!ignore) setCoursePackages(rows); })
+      .then((rows) => {
+        if (ignore) return;
+        setCoursePackages(rows);
+        // Pré-carrega o sumário dos cursos prontos (1 chamada cada, fica em cache):
+        // a vitrine e a tela do curso abrem sem "carregando".
+        rows.forEach((pkg) => { loadCoursePackageOverview(pkg).catch(() => {}); });
+      })
       .catch((error) => console.warn('Falha ao carregar pacotes de curso.', error));
     refreshPackageEnrollments();
     return () => {
@@ -5576,10 +5582,19 @@ export default function App() {
       }
     }
 
-    const novoCurso = createCourse({
+    // Mesmo concurso adicionado de novo (ex.: pela vitrine de cursos prontos e depois por
+    // Objetivos) reaproveita o curso que já existe em vez de criar outro.
+    const planoAlvo = (planName && planName.trim()) || template.plano;
+    const cursoExistente = cursos.find((curso) =>
+      curso.status !== 'arquivado' &&
+      curso.plano === planoAlvo &&
+      (curso.nome === template.nome || curso.concurso === template.concurso)
+    );
+
+    const novoCurso = cursoExistente || createCourse({
       slug: template.slug,
       nome: template.nome,
-      plano: (planName && planName.trim()) || template.plano,
+      plano: planoAlvo,
       concurso: template.concurso,
       area: template.area,
       cargo: template.cargo,
@@ -5625,6 +5640,14 @@ export default function App() {
       );
       const topicosTemplate =
         typeof disciplinaTemplate === 'string' ? [] : disciplinaTemplate.topicos || [];
+
+      // Disciplina com o mesmo nome no mesmo plano já existe: não duplica.
+      const chaveDisciplina = normalizeLegacyCourseText(disciplinaNome);
+      const disciplinaExistente = bancoDisciplinas.some((disciplina) =>
+        String(disciplina.plano || '') === String(novoCurso.plano || '') &&
+        normalizeLegacyCourseText(disciplina.nome) === chaveDisciplina
+      );
+      if (disciplinaExistente) continue;
 
       const subject = await insertSubjectWithCatalogFallback({
         user_id: user.id,

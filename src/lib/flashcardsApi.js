@@ -21,6 +21,21 @@ function normalizeCard(value = {}) {
   };
 }
 
+// Novos cards apresentados por dia (soma de todos os baralhos), como no Anki.
+export const NEW_CARDS_PER_DAY = 20;
+
+// O PostgREST devolve no máximo 1000 linhas por chamada; pagina até acabar.
+async function fetchAllRows(buildQuery, pageSize = 1000) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await buildQuery(from, from + pageSize - 1);
+    if (error) throw error;
+    const page = Array.isArray(data) ? data : [];
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+}
+
 export async function loadDecks(userId) {
   if (!userId) return [];
 
@@ -37,16 +52,26 @@ export async function loadDecks(userId) {
 
   const deckIds = deckList.map((deck) => deck.id);
 
-  const [{ data: cards }, { data: reviews }] = await Promise.all([
-    supabase.from('flashcard_cards').select('id, deck_id').in('deck_id', deckIds),
+  const [cards, { data: reviews }] = await Promise.all([
+    fetchAllRows((from, to) =>
+      supabase.from('flashcard_cards').select('deck_id, state, due').in('deck_id', deckIds).range(from, to)
+    ),
     supabase.from('flashcard_reviews').select('id, deck_id').in('deck_id', deckIds),
   ]);
 
   const totals = new Map();
   const reviewed = new Map();
+  const novos = new Map();
+  const revisoesHoje = new Map();
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  const bump = (map, key) => map.set(key, Number(map.get(key) || 0) + 1);
 
-  (Array.isArray(cards) ? cards : []).forEach((card) => {
-    totals.set(card.deck_id, Number(totals.get(card.deck_id) || 0) + 1);
+  cards.forEach((card) => {
+    bump(totals, card.deck_id);
+    // Novo (state 0) entra pela cota diária de novos; os demais contam quando vencem hoje.
+    if (Number(card.state || 0) === 0) bump(novos, card.deck_id);
+    else if (card.due && new Date(card.due) <= endOfDay) bump(revisoesHoje, card.deck_id);
   });
 
   (Array.isArray(reviews) ? reviews : []).forEach((review) => {
@@ -58,6 +83,8 @@ export async function loadDecks(userId) {
       ...deck,
       total_cards: totals.get(deck.id) || 0,
       revisados: reviewed.get(deck.id) || 0,
+      new_cards: novos.get(deck.id) || 0,
+      reviews_due_today: revisoesHoje.get(deck.id) || 0,
     })
   );
 }

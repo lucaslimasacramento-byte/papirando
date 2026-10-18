@@ -106,6 +106,47 @@ export async function loadQuestionCounts(materias = []) {
   return counts;
 }
 
+// Conteúdo completo + contagem de questões, numa chamada só (RPC course_package_overview).
+// Fica em cache por alguns minutos: o card da vitrine e a tela do curso usam o mesmo
+// resultado, e voltar à tela não refaz a consulta. Sem a RPC (migração pendente),
+// cai no caminho antigo de várias consultas.
+const OVERVIEW_TTL_MS = 5 * 60 * 1000;
+const overviewCache = new Map();
+
+function isMissingFunction(error) {
+  const code = String(error?.code || '');
+  return code === 'PGRST202' || code === '42883' || /could not find the function/i.test(String(error?.message || ''));
+}
+
+async function fetchCoursePackageOverview(course) {
+  const { data, error } = await supabase.rpc('course_package_overview', { p_package_id: course.id });
+  if (!error) {
+    const subjects = (Array.isArray(data) ? data : []).map((s) => ({
+      materia: s.materia,
+      topics: (s.topics || []).map((t) => ({ ...t, materials: Array.isArray(t.materials) ? t.materials : [] })),
+    }));
+    const questionCounts = new Map();
+    for (const s of subjects) for (const t of s.topics) questionCounts.set(`${s.materia}|${t.tema}`, Number(t.question_count || 0));
+    return { subjects, questionCounts };
+  }
+  if (!isMissingFunction(error)) throw error;
+  const content = await loadCoursePackageContent(course);
+  const questionCounts = await loadQuestionCounts(content.subjects.map((s) => s.materia));
+  return { subjects: content.subjects, questionCounts };
+}
+
+export function loadCoursePackageOverview(course, { force = false } = {}) {
+  if (!course?.id) return Promise.resolve({ subjects: [], questionCounts: new Map() });
+  const cached = overviewCache.get(course.id);
+  if (!force && cached && Date.now() - cached.at < OVERVIEW_TTL_MS) return cached.promise;
+  const promise = fetchCoursePackageOverview(course).catch((error) => {
+    overviewCache.delete(course.id);
+    throw error;
+  });
+  overviewCache.set(course.id, { at: Date.now(), promise });
+  return promise;
+}
+
 export async function enrollInCoursePackage(courseSlug) {
   const { data, error } = await supabase.rpc('enroll_in_course_package', { p_package_slug: courseSlug });
   if (error) throw error;
@@ -122,9 +163,9 @@ export async function getPackageMaterialUrl(storagePath, expiresIn = 3600) {
 
 // Resumo para o card da vitrine (matérias, temas, PDFs, questões).
 export async function loadCoursePackageSummary(course) {
-  const content = await loadCoursePackageContent(course);
+  const { subjects, questionCounts: counts } = await loadCoursePackageOverview(course);
+  const content = { subjects };
   const materias = content.subjects.map((s) => s.materia);
-  const counts = await loadQuestionCounts(materias);
   let temas = 0;
   let pdfs = 0;
   for (const s of content.subjects) {

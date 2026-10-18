@@ -5,6 +5,10 @@ import {
   ArrowRight,
   BookOpen,
   Check,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  EyeOff,
   Flame,
   Layers3,
   Loader2,
@@ -16,9 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import {
-  countDueToday,
   formatNextInterval,
-  getDueCards,
   RATING_LABELS,
   State,
 } from '../lib/fsrs';
@@ -30,8 +32,21 @@ import {
   loadCards,
   loadDecks,
   loadDueCards,
+  NEW_CARDS_PER_DAY,
   submitReview,
 } from '../lib/flashcardsApi';
+
+// Fila de estudo: revisões vencidas primeiro, depois no máximo NEW_CARDS_PER_DAY cards novos.
+// Sem a cota, um baralho importado (centenas de cards novos) virava uma sessão interminável.
+function buildStudyQueue(cards) {
+  const now = new Date();
+  const list = Array.isArray(cards) ? cards : [];
+  const reviews = list
+    .filter((card) => Number(card?.state || 0) !== 0 && card?.due && new Date(card.due) <= now)
+    .sort((a, b) => new Date(a.due) - new Date(b.due));
+  const novos = list.filter((card) => Number(card?.state || 0) === 0).slice(0, NEW_CARDS_PER_DAY);
+  return [...reviews, ...novos];
+}
 import { generateFlashcards } from '../lib/aiClient';
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -118,8 +133,8 @@ function FlashKpiStrip({ stats }) {
 
 function AprenderHojeCard({ totals, nextCard, onIniciar }) {
   const total = Math.max(0, Number(totals.dueToday || 0));
-  const novos = Math.max(0, Number(totals.newCards || 0));
-  const rev = Math.max(0, Number(totals.totalReviewed || 0));
+  const novos = Math.max(0, Number(totals.newToday || 0));
+  const revisoes = Math.max(0, Number(totals.reviewsToday || 0));
 
   return (
     <section className="flash-dark-card">
@@ -131,6 +146,7 @@ function AprenderHojeCard({ totals, nextCard, onIniciar }) {
             <span>{String(total).padStart(2, '0')}</span> cards te esperam
           </h2>
           <p>
+            {revisoes} {revisoes === 1 ? 'revisão' : 'revisões'} e {novos} {novos === 1 ? 'card novo' : 'cards novos'} (até {NEW_CARDS_PER_DAY} novos por dia).
             Cerca de {Math.max(4, Math.round(Math.max(total, 1) * 0.45))} minutos. O FSRS escolhe a ordem; você responde e segue.
           </p>
         </div>
@@ -144,13 +160,13 @@ function AprenderHojeCard({ totals, nextCard, onIniciar }) {
       <StackedBar
         segments={[
           { n: novos, color: 'rgba(243,239,229,0.28)' },
-          { n: Math.max(total, rev), color: 'var(--pl-success)' },
+          { n: revisoes, color: 'var(--pl-success)' },
         ]}
       />
 
       <div className="flash-state-grid">
-        <StateMetric label="Novos" value={novos} />
-        <StateMetric label="Revisão" value={total} tone="success" />
+        <StateMetric label="Novos hoje" value={novos} />
+        <StateMetric label="Revisões hoje" value={revisoes} tone="success" />
       </div>
 
       <NextCardPreview card={nextCard} />
@@ -214,6 +230,22 @@ function NextCardPreview({ card }) {
 }
 
 function DecksSection({ decks, allCount, filter, setFilter, onAbrir, onEstudar, onDelete }) {
+  // Baralhos agrupados por matéria e fechados: um curso pronto traz um baralho por tema,
+  // e a lista corrida ficava longa demais.
+  const [openGroups, setOpenGroups] = useState({});
+  const groups = useMemo(() => {
+    const map = new Map();
+    for (const deck of decks) {
+      const nome = deck.disciplina || 'Geral';
+      const group = map.get(nome) || { nome, decks: [], cards: 0, hoje: 0 };
+      group.decks.push(deck);
+      group.cards += Number(deck.total_cards || 0);
+      group.hoje += Number(deck.vencendoHoje || 0);
+      map.set(nome, group);
+    }
+    return [...map.values()].sort((a, b) => b.hoje - a.hoje || a.nome.localeCompare(b.nome, 'pt-BR'));
+  }, [decks]);
+
   const filters = [
     { id: 'todos', label: `Todos ${allCount}` },
     { id: 'vencendo', label: 'Vencendo' },
@@ -245,10 +277,36 @@ function DecksSection({ decks, allCount, filter, setFilter, onAbrir, onEstudar, 
       {decks.length === 0 ? (
         <div className="flash-dashed-note">Nenhum deck nesse filtro.</div>
       ) : (
-        <div className="flash-decks-grid">
-          {decks.map((deck) => (
-            <DeckCard key={deck.id} deck={deck} onAbrir={onAbrir} onEstudar={onEstudar} onDelete={onDelete} />
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {groups.map((group) => {
+            const open = groups.length === 1 || Boolean(openGroups[group.nome]);
+            return (
+              <div key={group.nome} style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 8, background: 'var(--pl-surface)', overflow: 'hidden' }}>
+                {groups.length > 1 ? (
+                  <button
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setOpenGroups((prev) => ({ ...prev, [group.nome]: !open }))}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'transparent', border: 0, cursor: 'pointer', textAlign: 'left', color: 'var(--pl-ink)' }}
+                  >
+                    {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group.nome}</span>
+                    <span style={{ fontSize: 12, color: 'var(--pl-ink-3)', whiteSpace: 'nowrap' }}>
+                      {group.decks.length} {group.decks.length === 1 ? 'deck' : 'decks'} · {group.cards} cards
+                    </span>
+                    {group.hoje > 0 ? <span className="pl-tag pl-tag-accent" style={{ whiteSpace: 'nowrap' }}>{group.hoje} hoje</span> : null}
+                  </button>
+                ) : null}
+                {open ? (
+                  <div className="flash-decks-grid" style={{ padding: groups.length > 1 ? '0 14px 14px' : 14 }}>
+                    {group.decks.map((deck) => (
+                      <DeckCard key={deck.id} deck={deck} onAbrir={onAbrir} onEstudar={onEstudar} onDelete={onDelete} />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       )}
     </section>
@@ -584,6 +642,9 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
   const [activeDeck, setActiveDeck] = useState(null);   // deck object
   const [cards, setCards]           = useState([]);      // cards of activeDeck
   const [cardsLoading, setCardsLoading] = useState(false);
+  // Tela do baralho: lista de cards recolhida e respostas escondidas até o aluno pedir.
+  const [showCardList, setShowCardList] = useState(false);
+  const [revealedCards, setRevealedCards] = useState({});
 
   // Study session
   const [studyMode, setStudyMode]   = useState(false);
@@ -644,14 +705,16 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     const totalDecks = decks.length;
     const totalCards = decks.reduce((acc, deck) => acc + Number(deck.total_cards || 0), 0);
     const totalReviewed = decks.reduce((acc, deck) => acc + Number(deck.revisados || 0), 0);
-    const dueToday = decks.reduce((acc, deck) => acc + Number(deck.due_today || deck.vencendoHoje || 0), 0);
-    const newCards = Math.max(0, totalCards - totalReviewed);
-    return { totalDecks, totalCards, totalReviewed, dueToday, newCards };
+    const reviewsToday = decks.reduce((acc, deck) => acc + Number(deck.reviews_due_today || 0), 0);
+    const newCards = decks.reduce((acc, deck) => acc + Number(deck.new_cards || 0), 0);
+    const newToday = Math.min(newCards, NEW_CARDS_PER_DAY);
+    const dueToday = reviewsToday + newToday;
+    return { totalDecks, totalCards, totalReviewed, dueToday, newCards, newToday, reviewsToday };
   }, [decks]);
 
   const dashboardDecks = useMemo(() => {
     return decks.map((deck) => {
-      const vencendoHoje = Number(deck.due_today || deck.vencendoHoje || 0);
+      const vencendoHoje = Number(deck.reviews_due_today || 0) + Math.min(Number(deck.new_cards || 0), NEW_CARDS_PER_DAY);
       const retention = Number(deck.retencao || deck.retention || (deck.revisados > 0 ? Math.min(99, Math.round((deck.revisados / Math.max(deck.revisados + 1, 1)) * 100)) : 0));
       const isAi = Boolean(deck.gerado_por_ia || deck.fonte === 'ia');
       const tone = vencendoHoje > Math.max(2, Number(deck.total_cards || 0) / 3) ? 'warn' : retention >= 90 ? 'success' : 'accent';
@@ -766,7 +829,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
     } catch (error) {
       console.error('[Flashcards] erro ao carregar cards para estudo:', error?.message || error);
     }
-    const due = deckDueCards.length > 0 ? deckDueCards : getDueCards(cards);
+    const due = buildStudyQueue(deckDueCards.length > 0 ? deckDueCards : cards);
     if (due.length === 0) return;
     setStudyQueue(due);
     setStudyIndex(0);
@@ -787,7 +850,7 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
       console.error('[Flashcards] erro ao iniciar estudo do deck:', error?.message || error);
       return;
     }
-    const queue = dueCards.length > 0 ? dueCards : getDueCards(loadedCards);
+    const queue = buildStudyQueue(dueCards.length > 0 ? dueCards : loadedCards);
     const fallbackQueue = loadedCards.slice(0, Math.min(20, loadedCards.length));
     const nextQueue = queue.length > 0 ? queue : fallbackQueue;
     if (nextQueue.length === 0) return;
@@ -1151,9 +1214,16 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ Render: deck open (card list) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   if (activeDeck) {
-    const dueCount = countDueToday(cards);
-    const dueNow   = getDueCards(cards).length;
-    const color    = getColor(activeDeck.color);
+    const color = getColor(activeDeck.color);
+    const deckSummary = (() => {
+      const now = new Date();
+      const novos = cards.filter((card) => Number(card.state || 0) === 0).length;
+      const aprendendo = cards.filter((card) => [1, 3].includes(Number(card.state))).length;
+      const dominados = cards.filter((card) => Number(card.state) === 2).length;
+      const revisarHoje = cards.filter((card) => Number(card.state || 0) !== 0 && card.due && new Date(card.due) <= now).length;
+      const novosHoje = Math.min(novos, NEW_CARDS_PER_DAY);
+      return { novos, aprendendo, dominados, revisarHoje, novosHoje, sessao: revisarHoje + novosHoje };
+    })();
 
     return (
       <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
@@ -1186,34 +1256,8 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--pl-rule)', padding: '8px 14px', background: color.bg }}>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{cards.length}</p>
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Total</p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{dueCount}</p>
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Vence hoje</p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{dueNow}</p>
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--pl-ink-2)', margin: 0 }}>Para revisar</p>
-          </div>
-          <div style={{ marginLeft: 'auto' }}>
-            <button
-              onClick={startStudy}
-              disabled={dueNow === 0}
-              className="pl-btn pl-btn-primary pl-btn-sm"
-            >
-              <BookOpen size={14} />
-              {dueNow === 0 ? 'Em dia!' : 'Estudar agora'}
-            </button>
-          </div>
-        </div>
-
-        {/* Card list */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
+        {/* Resumo do baralho: o que estudar hoje, sem expor as respostas */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 18px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {cardsLoading ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 0' }}>
               <Loader2 size={24} className="animate-spin" style={{ color: 'var(--pl-accent)' }} />
@@ -1224,50 +1268,93 @@ export default function Flashcards({ currentUserId, bancoDisciplinas = [], curso
                 <Layers3 size={28} style={{ color: 'var(--pl-ink-3)' }} />
               </div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--pl-ink-2)' }}>Nenhum card ainda.</p>
-              <button
-                onClick={() => { setFormErr(''); setCardModal(true); }}
-                className="pl-btn pl-btn-primary pl-btn-sm"
-              >
+              <button onClick={() => { setFormErr(''); setCardModal(true); }} className="pl-btn pl-btn-primary pl-btn-sm">
                 <Plus size={16} />
                 Criar primeiro card
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {cards.map((card) => {
-                const stateLabel = ['Novo', 'Aprendendo', 'Revisão', 'Reaprendendo'][card.state] || 'Novo';
-                const stateStyles = [
-                  { bg: 'var(--pl-bg-soft)',     color: 'var(--pl-ink-2)'   },
-                  { bg: 'var(--pl-warn-soft)',    color: 'var(--pl-warn)'    },
-                  { bg: 'var(--pl-success-soft)', color: 'var(--pl-success)' },
-                  { bg: 'var(--pl-danger-soft)',  color: 'var(--pl-danger)'  },
-                ][card.state] || { bg: 'var(--pl-bg-soft)', color: 'var(--pl-ink-2)' };
-
-                return (
-                  <div
-                    key={card.id}
-                    className="pl-card"
-                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 12px' }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{card.front}</p>
-                      <p style={{ fontSize: 12, color: 'var(--pl-ink-2)', margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{card.back}</p>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-                      <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: 10, fontWeight: 700, background: stateStyles.bg, color: stateStyles.color }}>
-                        {stateLabel}
-                      </span>
-                      <button
-                        onClick={() => setDeleteConfirm({ type: 'card', id: card.id })}
-                        style={{ borderRadius: 4, padding: 4, color: 'var(--pl-rule-strong)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+                {[
+                  { label: 'Novos', value: deckSummary.novos, sub: `${deckSummary.novosHoje} entram hoje` },
+                  { label: 'Aprendendo', value: deckSummary.aprendendo, sub: 'em fixação' },
+                  { label: 'Revisar hoje', value: deckSummary.revisarHoje, sub: 'vencidos' },
+                  { label: 'Dominados', value: deckSummary.dominados, sub: 'em revisão espaçada' },
+                ].map((kpi) => (
+                  <div key={kpi.label} className="pl-card" style={{ padding: '12px 14px' }}>
+                    <p className="pl-eyebrow" style={{ margin: '0 0 4px' }}>{kpi.label}</p>
+                    <p className="pl-num" style={{ margin: 0, fontSize: 26, color: 'var(--pl-ink)' }}>{kpi.value}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--pl-ink-3)' }}>{kpi.sub}</p>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+
+              <div className="pl-card" style={{ padding: '18px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14, background: color.bg }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pl-ink)' }}>
+                    {deckSummary.sessao > 0 ? `${deckSummary.sessao} cards na sessão de hoje` : 'Tudo em dia neste baralho'}
+                  </p>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--pl-ink-2)' }}>
+                    {deckSummary.sessao > 0
+                      ? `${deckSummary.revisarHoje} revisões e ${deckSummary.novosHoje} novos. A resposta só aparece quando você vira o card.`
+                      : 'Volte quando houver revisões vencendo.'}
+                  </p>
+                </div>
+                <button onClick={startStudy} disabled={deckSummary.sessao === 0} className="pl-btn pl-btn-primary">
+                  <BookOpen size={14} />
+                  {deckSummary.sessao === 0 ? 'Em dia!' : 'Estudar agora'}
+                </button>
+              </div>
+
+              <div style={{ border: '1px solid var(--pl-rule-2)', borderRadius: 8, background: 'var(--pl-surface)', overflow: 'hidden' }}>
+                <button
+                  type="button"
+                  aria-expanded={showCardList}
+                  onClick={() => setShowCardList((value) => !value)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', background: 'transparent', border: 0, cursor: 'pointer', textAlign: 'left', color: 'var(--pl-ink-2)', fontSize: 13, fontWeight: 600 }}
+                >
+                  {showCardList ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                  Gerenciar cards do baralho ({cards.length})
+                  <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 500, color: 'var(--pl-ink-3)' }}>só as perguntas; a resposta abre no olho</span>
+                </button>
+                {showCardList ? (
+                  <ul style={{ listStyle: 'none', margin: 0, padding: '0 14px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {cards.map((card) => {
+                      const stateLabel = ['Novo', 'Aprendendo', 'Revisão', 'Reaprendendo'][card.state] || 'Novo';
+                      const stateTone = ['', 'pl-tag-warn', 'pl-tag-success', 'pl-tag-danger'][card.state] || '';
+                      const revealed = Boolean(revealedCards[card.id]);
+                      return (
+                        <li key={card.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 10px', border: '1px solid var(--pl-rule)', borderRadius: 6 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--pl-ink)', margin: 0 }}>{card.front}</p>
+                            {revealed ? <p style={{ fontSize: 12, color: 'var(--pl-ink-2)', margin: '4px 0 0' }}>{card.back}</p> : null}
+                          </div>
+                          <span className={`pl-tag ${stateTone}`} style={{ flexShrink: 0 }}>{stateLabel}</span>
+                          <button
+                            type="button"
+                            aria-label={revealed ? 'Esconder resposta' : 'Mostrar resposta'}
+                            title={revealed ? 'Esconder resposta' : 'Mostrar resposta'}
+                            onClick={() => setRevealedCards((prev) => ({ ...prev, [card.id]: !revealed }))}
+                            style={{ borderRadius: 4, padding: 4, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                          >
+                            {revealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Excluir card"
+                            onClick={() => setDeleteConfirm({ type: 'card', id: card.id })}
+                            style={{ borderRadius: 4, padding: 4, color: 'var(--pl-ink-3)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </div>
+            </>
           )}
         </div>
 
