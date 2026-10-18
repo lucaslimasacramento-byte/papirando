@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy } from 'react';
+﻿import React, { Suspense, lazy, useEffect } from 'react';
 import { Target } from 'lucide-react';
 import PremiumGate from './PremiumGate';
 import { primeiroNomeDoPerfil } from '../lib/perfil';
@@ -98,7 +98,38 @@ const KNOWN_TABS = [
   'termos',
 ];
 
+// Telas mais usadas baixadas em segundo plano depois que o app abre, uma por vez, quando
+// o navegador está ocioso. Sem isso cada primeira visita a uma tela mostrava "Carregando área".
+const PREFETCH_PAGES = [
+  () => import('../pages/Disciplinas'),
+  () => import('../pages/Questoes'),
+  () => import('../pages/Flashcards'),
+  () => import('../pages/Sessoes'),
+  () => import('../pages/Planos'),
+  () => import('../pages/ConcursosDisponiveis'),
+  () => import('../pages/Revisoes'),
+  () => import('../pages/Simulados'),
+  () => import('../pages/Materiais'),
+  () => import('../pages/Estatisticas'),
+];
+let prefetchStarted = false;
+
+function prefetchCorePages() {
+  if (prefetchStarted || typeof window === 'undefined') return;
+  prefetchStarted = true;
+  const idle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 1200));
+  const queue = [...PREFETCH_PAGES];
+  const next = () => {
+    const load = queue.shift();
+    if (!load) return;
+    load().catch(() => {}).finally(() => idle(next));
+  };
+  idle(next);
+}
+
 export default function AppTabContent(props) {
+  useEffect(() => { prefetchCorePages(); }, []);
+
   const {
     activeTab,
     openTimerSetup,
